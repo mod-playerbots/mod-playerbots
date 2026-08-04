@@ -7,6 +7,7 @@
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "Player.h"
+#include "RaidBossHelpers.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "SWPData.h"
@@ -137,9 +138,9 @@ static void RequestInterruptForBotsWithDelayedFelmystEncapsulate(Creature* felmy
         if (!encapsulateTarget)
             continue;
 
-        constexpr float encapsulateSafeDistance = 20.0f;
+        constexpr float safeDistance = 20.0f;
         if (player != encapsulateTarget &&
-            player->GetExactDist2d(encapsulateTarget) > encapsulateSafeDistance)
+            player->GetExactDist2d(encapsulateTarget) > safeDistance)
         {
             continue;
         }
@@ -192,17 +193,17 @@ public:
 
         switch (spellInfo->Id)
         {
-            case static_cast<uint32>(SwpSpells::SPELL_SPECTRAL_BLAST_PORTAL):
+            case Id(SwpSpells::SPELL_SPECTRAL_BLAST_PORTAL):
                 if (PlayerbotAI* botAI = FindFirstSunwellCombatBotInGroup(player))
                     RecordSpectralBlastTarget(player, botAI);
                 break;
 
-            case static_cast<uint32>(SwpSpells::SPELL_TELEPORT_SPECTRAL):
+            case Id(SwpSpells::SPELL_TELEPORT_SPECTRAL):
                 if (FindFirstSunwellCombatBotInGroup(player))
                     RecordSpectralRealmEnter(player);
                 break;
 
-            case static_cast<uint32>(SwpSpells::SPELL_TELEPORT_NORMAL_REALM):
+            case Id(SwpSpells::SPELL_TELEPORT_NORMAL_REALM):
                 if (FindFirstSunwellCombatBotInGroup(player))
                     UpdateKalecgosRealmState(player, false, getMSTime());
                 break;
@@ -220,7 +221,7 @@ public:
 
     void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
     {
-        if (spellInfo->Id != static_cast<uint32>(SwpSpells::SPELL_ENCAPSULATE))
+        if (spellInfo->Id != Id(SwpSpells::SPELL_ENCAPSULATE))
             return;
 
         if (Player* target = GetFirstPlayerSpellTarget(spell, caster))
@@ -235,10 +236,10 @@ public:
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (spellInfo->Id == static_cast<uint32>(SwpSpells::SPELL_FOG_OF_CORRUPTION) ||
-            spellInfo->Id == static_cast<uint32>(SwpSpells::SPELL_FELMYST_STRAFE_TOP) ||
-            spellInfo->Id == static_cast<uint32>(SwpSpells::SPELL_FELMYST_STRAFE_MIDDLE) ||
-            spellInfo->Id == static_cast<uint32>(SwpSpells::SPELL_FELMYST_STRAFE_BOTTOM))
+        if (spellInfo->Id == Id(SwpSpells::SPELL_FOG_OF_CORRUPTION) ||
+            spellInfo->Id == Id(SwpSpells::SPELL_FELMYST_STRAFE_TOP) ||
+            spellInfo->Id == Id(SwpSpells::SPELL_FELMYST_STRAFE_MIDDLE) ||
+            spellInfo->Id == Id(SwpSpells::SPELL_FELMYST_STRAFE_BOTTOM))
         {
             Player* targetPlayer = GetFirstPlayerSpellTarget(spell, caster);
             Player* groupReference = targetPlayer;
@@ -281,7 +282,7 @@ public:
 
         switch (spellInfo->Id)
         {
-            case static_cast<uint32>(SwpSpells::SPELL_SUMMON_DEMONIC_VAPOR):
+            case Id(SwpSpells::SPELL_SUMMON_DEMONIC_VAPOR):
                 if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
                     botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
                 {
@@ -302,16 +303,16 @@ public:
 
     void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
     {
-        if (caster->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_GRAND_WARLOCK_ALYTHESS))
+        if (caster->GetEntry() != Id(SwpNpcs::NPC_GRAND_WARLOCK_ALYTHESS))
             return;
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
         if (!target || !FindFirstSunwellCombatBotInGroup(target))
             return;
 
-        if (spellInfo->Id == static_cast<uint32>(SwpSpells::SPELL_CONFLAGRATION))
+        if (spellInfo->Id == Id(SwpSpells::SPELL_CONFLAGRATION))
             RecordIncomingEredarTwinsConflagrationTarget(target);
-        else if (spellInfo->Id == static_cast<uint32>(SwpSpells::SPELL_BLAZE))
+        else if (spellInfo->Id == Id(SwpSpells::SPELL_BLAZE))
             RecordEredarTwinsBlazeTarget(target);
     }
 };
@@ -324,7 +325,7 @@ public:
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (spellInfo->Id == static_cast<uint32>(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
+        if (spellInfo->Id == Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
         {
             Map::PlayerList const& players = caster->GetMap()->GetPlayers();
             for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
@@ -360,12 +361,12 @@ public:
 
         switch (creature->GetEntry())
         {
-            case static_cast<uint32>(SwpNpcs::NPC_FELMYST):
+            case Id(SwpNpcs::NPC_FELMYST):
                 RequestInterruptForBotsNeedingFelmystFogMovement(creature, nullptr);
                 RequestInterruptForBotsWithDelayedFelmystEncapsulate(creature);
                 break;
 
-            case static_cast<uint32>(SwpNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
+            case Id(SwpNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
                 RequestInterruptForEredarTwinsAlythessTargets(creature);
                 break;
 
@@ -383,11 +384,8 @@ public:
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
-        if (!creature ||
-            creature->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_ARMAGEDDON_TARGET))
-        {
+        if (!creature || creature->GetEntry() != Id(SwpNpcs::NPC_ARMAGEDDON_TARGET))
             return;
-        }
 
         bool hasSunwellStrategy = false;
         std::vector<PlayerbotAI*> botsToInterrupt;
@@ -426,11 +424,8 @@ public:
 
     void OnCreatureRemoveWorld(Creature* creature) override
     {
-        if (!creature ||
-            creature->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_ARMAGEDDON_TARGET))
-        {
+        if (!creature || creature->GetEntry() != Id(SwpNpcs::NPC_ARMAGEDDON_TARGET))
             return;
-        }
 
         kiljaedenTrackedArmageddonTargets.erase(creature->GetGUID());
     }

@@ -16,7 +16,7 @@ bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Position const& jumpPosition = EREDAR_TWINS_P1_RANGED_POSITION;
-    Position const landingPosition = GetEredarTwinsP2MeleeStackPosition(alythess);
+    Position const landingPosition = GetEredarTwinsP2MeleePosition(alythess);
 
     constexpr float arrivalDistance = 2.0f;
     float const distanceToJumpPos = bot->GetExactDist2d(jumpPosition);
@@ -92,7 +92,7 @@ bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", tankTarget))
         return botAI->CastSpell("misdirection", tankTarget);
 
-    if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_MISDIRECTION)) &&
+    if (bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", bossTarget))
     {
         return botAI->CastSpell("steady shot", bossTarget);
@@ -231,7 +231,7 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
     {
         Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
         Position const& jumpPosition = EREDAR_TWINS_P1_RANGED_POSITION;
-        Position const landingPosition = GetEredarTwinsP2RangedStackPosition(alythess);
+        Position const landingPosition = GetEredarTwinsP2RangedPosition(alythess);
 
         constexpr float arrivalDistance = 2.0f;
         float const distanceToJumpPos = bot->GetExactDist2d(jumpPosition);
@@ -261,8 +261,8 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
         return false;
 
     Position const position = PlayerbotAI::IsRanged(bot) ?
-        GetEredarTwinsP2RangedStackPosition(alythess) :
-        GetEredarTwinsP2MeleeStackPosition(alythess);
+        GetEredarTwinsP2RangedPosition(alythess) :
+        GetEredarTwinsP2MeleePosition(alythess);
 
     if (bot->GetExactDist2d(position) <= 0.5f)
         return false;

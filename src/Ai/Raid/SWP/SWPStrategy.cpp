@@ -8,6 +8,7 @@
 #include "AiObjectContext.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
@@ -292,7 +293,7 @@ void AppendMuruDarkFiendExclusions(
     for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (attacker && attacker->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_DARK_FIEND))
+        if (attacker && attacker->GetEntry() == Id(SwpNpcs::NPC_DARK_FIEND))
             exclusions.insert(guid);
     }
 }
@@ -308,7 +309,7 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, Guid
     for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (!attacker || attacker->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_VOID_SENTINEL))
+        if (!attacker || attacker->GetEntry() == Id(SwpNpcs::NPC_VOID_SENTINEL))
             continue;
 
         if (guid == muru->GetGUID())
@@ -341,7 +342,7 @@ void AppendKiljaedenShieldOrbExclusions(
     for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (attacker && attacker->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_SHIELD_ORB))
+        if (attacker && attacker->GetEntry() == Id(SwpNpcs::NPC_SHIELD_ORB))
             exclusions.insert(guid);
     }
 }
@@ -355,11 +356,8 @@ void AppendKiljaedenSinisterReflectionExclusions(
     for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (!attacker ||
-            attacker->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_SINISTER_REFLECTION))
-        {
+        if (!attacker || attacker->GetEntry() != Id(SwpNpcs::NPC_SINISTER_REFLECTION))
             continue;
-        }
 
         Unit* victim = attacker->GetVictim();
         if (!victim || !victim->IsPlayer() || !PlayerbotAI::IsTank(victim->ToPlayer()))
