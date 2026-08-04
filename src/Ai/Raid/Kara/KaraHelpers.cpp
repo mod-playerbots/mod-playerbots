@@ -39,8 +39,7 @@ Unit* GetAttumenMounted(Player* bot)
 
 bool IsAranCastingArcaneExplosion(Unit* aran)
 {
-    return aran && aran->HasUnitState(UNIT_STATE_CASTING) &&
-        aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_ARCANE_EXPLOSION));
+    return aran && aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_ARCANE_EXPLOSION));
 }
 
 bool IsFlameWreathActive(Player* bot)
@@ -52,12 +51,8 @@ bool IsFlameWreathActive(Player* bot)
     if (!aran)
         return false;
 
-    Spell* currentSpell = aran->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (currentSpell && currentSpell->m_spellInfo &&
-            currentSpell->m_spellInfo->Id == Id(KaraSpells::SPELL_FLAME_WREATH_CAST))
-    {
+    if (aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_FLAME_WREATH_CAST)))
         return true;
-    }
 
     Group* group = bot->GetGroup();
     if (!group)
@@ -110,7 +105,7 @@ std::vector<Player*> GetRedBlockers(Player* bot)
     return redBlockers;
 }
 
-// Blue beam blockers: DPS bots, excluding Warrior/Rogue/DK
+// Blue beam blockers: Mana-using DPS bots (includes Balance Druid)
 // no Nether Exhaustion Blue and <25 stacks of Blue Beam debuff
 std::vector<Player*> GetBlueBlockers(Player* bot)
 {
@@ -123,8 +118,11 @@ std::vector<Player*> GetBlueBlockers(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-            !PlayerbotAI::IsDps(member) || member->getPowerType() != POWER_MANA)
+        if (!member || !member->IsAlive() || member->GetMapId() != KARA_MAP_ID)
+            continue;
+
+        if (!GET_PLAYERBOT_AI(member) || member->getPowerType() != POWER_MANA ||
+            !PlayerbotAI::IsDps(member))
         {
             continue;
         }
@@ -141,7 +139,7 @@ std::vector<Player*> GetBlueBlockers(Player* bot)
 }
 
 // Green beam blockers:
-// (1) Prioritize Rogues and non-tank Warrior and DK bots, no Nether Exhaustion Green
+// (1) Prioritize Rogue, cat Druid, and dps Warrior and DK bots, no Nether Exhaustion Green
 // (2) Then assign Healer bots, no Nether Exhaustion Green and <25 stacks of Green Beam debuff
 std::vector<Player*> GetGreenBlockers(Player* bot)
 {
@@ -154,8 +152,11 @@ std::vector<Player*> GetGreenBlockers(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-            !PlayerbotAI::IsDps(member) || member->getPowerType() == POWER_MANA)
+        if (!member || !member->IsAlive() || member->GetMapId() != KARA_MAP_ID)
+            continue;
+
+        if (!GET_PLAYERBOT_AI(member) || member->getPowerType() == POWER_MANA ||
+            !PlayerbotAI::IsDps(member))
         {
             continue;
         }
@@ -167,15 +168,17 @@ std::vector<Player*> GetGreenBlockers(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-            !PlayerbotAI::IsHeal(member))
-        {
+        if (!member || !member->IsAlive() || member->GetMapId() != KARA_MAP_ID)
             continue;
-        }
+
+        if (!GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsHeal(member))
+            continue;
+
+        if (member->HasAura(Id(KaraSpells::SPELL_NETHER_EXHAUSTION_GREEN)))
+            continue;
 
         Aura* greenBuff = member->GetAura(Id(KaraSpells::SPELL_GREEN_BEAM_DEBUFF));
-        if (!member->HasAura(Id(KaraSpells::SPELL_NETHER_EXHAUSTION_GREEN)) &&
-            (!greenBuff || greenBuff->GetStackAmount() < 25))
+        if (!greenBuff || greenBuff->GetStackAmount() < 25)
         {
             greenBlockers.push_back(member);
         }
