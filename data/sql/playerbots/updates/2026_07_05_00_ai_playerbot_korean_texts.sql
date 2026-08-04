@@ -1,8 +1,6 @@
 -- Korean (koKR) localization for ai_playerbot_texts (locale index 1 -> text_loc1).
 -- Translations contributed by Hobbyist and summersnowmen (PR #2547).
 
-UPDATE `ai_playerbot_texts` SET `text_loc1` = '';
-
 UPDATE `ai_playerbot_texts` SET `text_loc1`='아무도 없는 오지' WHERE `id`=1;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='알려지지 않은 장소' WHERE `id`=2;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='어딘가' WHERE `id`=3;
@@ -812,7 +810,7 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='누가 저 좀 초대해 주세요!
 UPDATE `ai_playerbot_texts` SET `text_loc1`='물빵 좀 많이 챙길껄 ㅠㅠ' WHERE `id`=808;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='너네 엄마는 너무 뚱뚱해서 소환하려면 흑마법사 두 명이 있어야 할 듯 ㅋㅋ' WHERE `id`=809;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='솔직히 여기서 연애 해본사람 없지요?' WHERE `id`=810;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='우리 아빠는 제게 늘 이런 식이셨죠. "입 닥치고 얼른 나가!' WHERE `id`=811;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='우리 아빠는 제게 늘 이런 식이셨죠. "입 닥치고 얼른 나가!"' WHERE `id`=811;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐...' WHERE `id`=812;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='대머리가 총을 한발만 쏘는 이유는?...두발이 없어서ㅋ' WHERE `id`=813;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='갑자기 드는 생각들이 가끔 무서울 때가 있어요.' WHERE `id`=814;
@@ -1047,8 +1045,8 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link삽니다  %cos
 UPDATE `ai_playerbot_texts` SET `text_loc1`='가진 골드를 어디 쓰냐고요? 제 %item_formatted_link(을)를 %cost_gold에 사는 데 써보세요.' WHERE `id`=1048;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='골드 좀 보태주세요. 대신 %item_formatted_link(을)를 %cost_gold에 드리겠습니다.' WHERE `id`=1049;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(이)가 %cost_gold면 꽤 괜찮은 가격 아님?' WHERE `id`=1050;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='어제 %item_formatted_links(을)를 샀는데 이제 필요 없네요. %cost_gold에 가져가실 분?' WHERE `id`=1051;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(을)를 경매장에 올리기전에 필요하 신분에게 팝니다 %cost_gold에 드림.' WHERE `id`=1052;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어제 %item_formatted_link(을)를 샀는데 이제 필요 없네요. %cost_gold에 가져가실 분?' WHERE `id`=1051;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(을)를 경매장에 올리기 전에 필요하신 분에게 팝니다. %cost_gold에 드림.' WHERE `id`=1052;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='아니 도대체 왜 %item_formatted_link(을)를 샀지? #!@... %cost_gold에 필요하신 분?' WHERE `id`=1053;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='판매중: %item_formatted_link / 가격: %cost_gold' WHERE `id`=1054;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(을)를 %cost_gold에 가져가실분?' WHERE `id`=1055;
@@ -1076,7 +1074,7 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link %cost_gold 자
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 단돈 %cost_gold. 자세한 건 귓말 주세요!' WHERE `id`=1077;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link %cost_gold에 바로 거래 ㄱㄱㄱ' WHERE `id`=1078;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link %cost_gold에 판매 중. 문의는 귓말로!' WHERE `id`=1079;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='판매합니다! %item_formatted_link，%cost_gold 에 가져가세요！' WHERE `id`=1080;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='판매합니다! %item_formatted_link, %cost_gold에 가져가세요!' WHERE `id`=1080;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='판매 중: %item_formatted_link, 가격은 단돈 %cost_gold.' WHERE `id`=1081;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 있습니다. %cost_gold에 거래하시죠!' WHERE `id`=1082;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 판매합니다. %cost_gold면 바로 가져가실 수 있어요!' WHERE `id`=1083;
@@ -1227,7 +1225,7 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='저기, 제가 아마 %formatted_it
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 상점에 팔아 버리야하나?;;' WHERE `id`=1228;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 님들 이거 얼마 받아야 될까용??' WHERE `id`=1229;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='적당한 가격에 %formatted_item_links를 팔 수 있어요.' WHERE `id`=1230;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 님들 이거 알마에 팔아야 됨?' WHERE `id`=1231;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 님들아 이거 얼마에 팔아야 됨?' WHERE `id`=1231;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links를 %cost_gold에 처분합니다~~~싸게 가져 가이소~~' WHERE `id`=1232;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 아 진짜 쉣이네..' WHERE `id`=1233;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 팝니다, %cost_gold 요정도만 받겠습니다' WHERE `id`=1234;
@@ -1242,7 +1240,7 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links를 아무나 
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 필요하신분?' WHERE `id`=1243;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 나눔합니다 빨랑 귓!' WHERE `id`=1244;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 가격제시 부탁 합니다.' WHERE `id`=1245;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 팝니니다, 사실분  귓말 주세요.' WHERE `id`=1246;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 팝니다, 사실분  귓말 주세요.' WHERE `id`=1246;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links를 %cost_gold에 드림' WHERE `id`=1247;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 이거 쓸때나 있을까요?' WHERE `id`=1248;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 떨이로 팝니다 얼른 귓!' WHERE `id`=1249;
@@ -1253,7 +1251,7 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links에 관심 있
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 있습니다 필요하신분 귓말 주세요' WHERE `id`=1254;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 요고요고  %cost_gold에 떨이처리중' WHERE `id`=1255;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 걍 떨이로 가져가셈' WHERE `id`=1256;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 있습니다, 자세한 내용은 귓\\ 주세요.' WHERE `id`=1257;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 있습니다. 자세한 내용은 귓말 주세요.' WHERE `id`=1257;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='저기, %formatted_item_links가 있는데 관심 있으시면 연락 주세요.' WHERE `id`=1258;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 급매합니다 얼른 귓!' WHERE `id`=1259;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 필요하신분 계심?' WHERE `id`=1260;
@@ -1283,7 +1281,7 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 싸게 팝니
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 필요하신분 계십니까?' WHERE `id`=1284;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='퀘스트를 수락했습니다.' WHERE `id`=1285;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='퀘스트가 삭제되었습니다.' WHERE `id`=1286;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='이 퀘스트를 왜 수락이 안됨?.' WHERE `id`=1287;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 퀘스트는 왜 수락이 안 되지?' WHERE `id`=1287;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='퀘스트를 주는 NPC와 대화할 수 없어요.' WHERE `id`=1288;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='이미 %quest 퀘스트를 완료했습니다.' WHERE `id`=1289;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='이미 %quest 퀘스트를 가지고 있어요.' WHERE `id`=1290;
@@ -1309,12 +1307,12 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하셔유 누가 길안내좀
 UPDATE `ai_playerbot_texts` SET `text_loc1`='하이~누가 길 안내좀 해주실분 ㅋ' WHERE `id`=1310;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='저기 %player님, 제 파티에 가입하시겠어요?' WHERE `id`=1311;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='저기 %player님, 제 공격대에 가입하시겠어요?' WHERE `id`=1312;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐여 왜 로그아웃 안되!?' WHERE `id`=1313;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐여, 왜 로그아웃이 안 돼!?' WHERE `id`=1313;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='오늘은 여까지만 해야겠네!' WHERE `id`=1314;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='잘 가세요!' WHERE `id`=1315;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='잘 가요!' WHERE `id`=1316;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='님들 나중에 봐요!' WHERE `id`=1317;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님,쫌전에 그거 뭔소리임?' WHERE `id`=1318;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 좀 전에 그거 무슨 소리임?' WHERE `id`=1318;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 무슨 뜻인지 잘 모르겠어요.' WHERE `id`=1319;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='어... 무슨 말씀을 하시는 건지 전혀 모르겠네요.' WHERE `id`=1320;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 지금 저한테 얘기하는거?' WHERE `id`=1321;
@@ -1347,7 +1345,7 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='애도를 표합니다.' WHERE `id`
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%s, 말도 안 돼 xD' WHERE `id`=1348;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='왜 그런 거야?' WHERE `id`=1349;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='ㅋㅋㅋㅋㅋ' WHERE `id`=1350;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='채팅창에서 알려준대로 하니까 더 햇갈리네...' WHERE `id`=1351;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='채팅창에서 알려준대로 하니까 더 헷갈리네...' WHERE `id`=1351;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='나 진짜 질투할지도 몰라.' WHERE `id`=1352;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 제 말에 섞인 비꼬는 투가 안 느껴지세요?' WHERE `id`=1353;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='오해할 만한 의도는 없다고 했으니 괜찮아.' WHERE `id`=1354;
@@ -1417,7 +1415,7 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='미안, %s. 마치 앤디 워홀의
 UPDATE `ai_playerbot_texts` SET `text_loc1`='미안 %s. 다음에는 고무 탄환을 써줄게!' WHERE `id`=1418;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='왜 그래, %s?? 머리가 어떻게 됐어? 하하하 침착해야지!!' WHERE `id`=1419;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='어쩔 수 없었어, %s. 이해하지? 감독님이 시켰거든!!' WHERE `id`=1420;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='야 %s.......으하하하하하하하하하하하' WHERE `id`=1421;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='야 %s.......ㅋㅋㅋㅋ 으하하하' WHERE `id`=1421;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%s, 아주 즐거웠어!! 우리 다시 한번 해보자고, 샘.' WHERE `id`=1422;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='야, %s! 이제부터 날 스카페이스라고 불러라.. 이 쓰레기 같은 녀석아!!!!' WHERE `id`=1423;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 나한테 말하는 거임, %s??' WHERE `id`=1424;
@@ -1477,11 +1475,11 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='개 존나 쓰레기 같은섹히 �
 UPDATE `ai_playerbot_texts` SET `text_loc1`='오 <target>! 이 전염병같이 못 배워먹은 계집 같으니!' WHERE `id`=1478;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='우리가 네 굴뚝에 오줌을 갈겨주마, <target>!' WHERE `id`=1479;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='오, 이 무익하고 늪에 처박힌 괴저병 꽃 같은 놈아!' WHERE `id`=1480;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='내가 만약 너 였다면 나가 뒤졌을꺼다!' WHERE `id`=1481;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내가 만약 너였다면 나가 뒤졌을 거다!' WHERE `id`=1481;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='오 <target>, 어떻게 하면 너처럼 아무 생각 없이 살 수 있는지 좀 가르쳐줘!' WHERE `id`=1482;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='이섹히 진짜 답이없는 잉여놈이네, 모지리놈 진짜.' WHERE `id`=1483;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='이 굶주린 놈, 뱀장어 가죽, 말린 소 혓바닥, 황소 거시기, 말린 생선... 아, 너 같은 놈을 형용할 숨조차 아깝구나!! 이裁縫 자, 칼집, 활통, 천박한 놈아!' WHERE `id`=1484;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='쳇! 죽음의 구덩이로 떨어져 버려임마!' WHERE `id`=1485;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 비루하고 천박한 놈아! 네놈을 욕하는 데 쓰는 숨조차 아깝다. 당장 내 눈앞에서 사라져라!' WHERE `id`=1484;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='쳇! 죽음의 구덩이로 떨어져 버려, 임마!' WHERE `id`=1485;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='<target>, 넌 그냥 생선 장수일 뿐이야!' WHERE `id`=1486;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='살아남아서 네 놈의 뇌를 한 대 후려쳐주마!' WHERE `id`=1487;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='정말 천박하구나, <target>!! 좋은 고기에 비하면 넌 그저 벌레 먹은 고기일 뿐이다!!' WHERE `id`=1488;
@@ -1510,7 +1508,7 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='<subzone> 구역은 손님만 들�
 UPDATE `ai_playerbot_texts` SET `text_loc1`='하하하! 너희는 도저히 상대가 안 된다!' WHERE `id`=1511;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='니섹히 오늘 아주 지대로 미쳤고만!' WHERE `id`=1512;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='미안하군, 곧 게임에서 지게 될 테니.' WHERE `id`=1513;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='발버둥 쳐봐야 상황만 나빠질 뿐일껀데.' WHERE `id`=1514;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='발버둥 쳐봐야 상황만 나빠질 뿐일 텐데.' WHERE `id`=1514;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='해충들! 거머리 같은 놈들! 내 피를 마시고 목이나 막혀버려라!' WHERE `id`=1515;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='또야... 또 이렇단 말인거냐!' WHERE `id`=1516;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='나의 피가 너의 종말이 되리라!' WHERE `id`=1517;
@@ -1545,12 +1543,12 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='쌍검의 위력을 봐라, 언제�
 UPDATE `ai_playerbot_texts` SET `text_loc1`='덤벼라!' WHERE `id`=1546;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='넌 이제 끝장이다!' WHERE `id`=1547;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='푹푹 찔러주마!' WHERE `id`=1548;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='빨리 끝내자고, 시간은 곧 마나니까.' WHERE `id`=1549;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='빨리 끝내자고, 시간이 얼마 남지 않았으니까.' WHERE `id`=1549;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='너님 지금 상황이 얼마나 심각한지 모르는 것 같구만.' WHERE `id`=1550;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='가문과 왕국에 영광을 돌리겠다!' WHERE `id`=1551;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='빛이여, 힘을 주소서!' WHERE `id`=1552;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='전장이 곧 나의 교회다. 예배를 시작할 시간이지...' WHERE `id`=1553;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='아휴 빙신 존나 짜증나네...' WHERE `id`=1554;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아휴 빙신 종나 짜증나네...' WHERE `id`=1554;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='정의의 망치를 받아라!' WHERE `id`=1555;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='빛 아래서 네 무용을 증명해봐라!' WHERE `id`=1556;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='나의 대의와 힘 앞에 모두가 굴복하리라. 다음은 바로 너다!' WHERE `id`=1557;
@@ -1571,7 +1569,7 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='힐 필요함' WHERE `id`=1571;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='체력 없음' WHERE `id`=1572;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='힐 좀 주세요. 제발.' WHERE `id`=1573;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='누구 힐 좀 써줄 사람?' WHERE `id`=1574;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='님! 나중에 부활시키는 것보다 지금 힐하는 게 나을껄!' WHERE `id`=1575;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='님! 나중에 부활시키는 것보다 지금 힐하는 게 나을걸!' WHERE `id`=1575;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='지송한데, 힐 한 번 더 부탁해유' WHERE `id`=1576;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='몬스터들 진짜 존나쎔... 힐 좀 부탁해요' WHERE `id`=1577;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='한 대만 더 맞으면 끝장이야. 제발 힐 좀 플리즈 ㅠㅠ' WHERE `id`=1578;
@@ -1624,8 +1622,8 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='거기에 날 기다리는 반짝�
 UPDATE `ai_playerbot_texts` SET `text_loc1`='내 주머니와 가방은 아주 넉넉하다고!' WHERE `id`=1625;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='전부 다 내 거야!' WHERE `id`=1626;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='오늘은 제발 똥템 좀 안 나왔으면!' WHERE `id`=1627;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='이 전리품은 내 꺼내?ㅋ' WHERE `id`=1628;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='루팅하는 건 좀 귀찮지만, 돈은 맨날 모잘람 ㅠ' WHERE `id`=1629;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 전리품은 내 거네? ㅋ' WHERE `id`=1628;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='루팅하는 건 좀 귀찮지만, 돈은 맨날 모자람 ㅠㅠ' WHERE `id`=1629;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='골드다!' WHERE `id`=1630;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='좋아, 뭘 가지고 있는지 볼까?' WHERE `id`=1631;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='걱정 마, 내가 싹 다 훑어줄게' WHERE `id`=1632;
@@ -1663,10 +1661,10 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='%item 장착 중' WHERE `id`=1663;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%item 해제됨' WHERE `id`=1664;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='다음 주문을 배웠어: %spells' WHERE `id`=1665;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%item 재사용 대기 중이야' WHERE `id`=1666;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='가방에 %item가 없어' WHERE `id`=1667;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='가방에 %item 해당 아이템이 없어' WHERE `id`=1667;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='ID %item인 아이템은 존재하지 않아' WHERE `id`=1668;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%item에 %gem 장착 중' WHERE `id`=1669;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='%item를 사용할 수 없구만?' WHERE `id`=1670;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item 이거 사용할 수 없구만?' WHERE `id`=1670;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='따라가는 중' WHERE `id`=1671;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='대기 중' WHERE `id`=1672;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='도망치는 중' WHERE `id`=1673;
@@ -1700,7 +1698,7 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='전투 중에는 소환할 수 없�
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%spell 주문을 몰라' WHERE `id`=1701;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%spell 시전 중' WHERE `id`=1702;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%spell 제작 중' WHERE `id`=1703;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='%spell를 시전할 수 없어' WHERE `id`=1704;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%spell 해당 스킬 시전할 수 없어' WHERE `id`=1704;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%spell 시전 실패' WHERE `id`=1705;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='|cffffff00(x%amount 남음)|r' WHERE `id`=1706;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='빛이시여... 왕의 징표를 깜빡했네요. 대신 %base_spell로 하죠!' WHERE `id`=1708;
@@ -1713,7 +1711,7 @@ UPDATE `ai_playerbot_texts` SET `text_loc1`='%player가 초록색 광선을 막�
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%player가 파란색 광선에서 벗어납니다. 다음 사람 준비!' WHERE `id`=1715;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%player가 초록색 광선에서 벗어납니다. 다음 사람 준비!' WHERE `id`=1716;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='사용법: pet <aggressive|defensive|passive|stance|attack|follow|stay>' WHERE `id`=1717;
-UPDATE `ai_playerbot_texts` SET `text_loc1`='펫이나 수호자 펫이 없습니다.' WHERE `id`=1718;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='펫이나 수호자가 없습니다.' WHERE `id`=1718;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='%type "%name"의 현재 태세: %stance.' WHERE `id`=1719;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='주인이 유효한 대상을 선택하지 않았습니다.' WHERE `id`=1720;
 UPDATE `ai_playerbot_texts` SET `text_loc1`='대상이 살아있지 않습니다.' WHERE `id`=1721;
