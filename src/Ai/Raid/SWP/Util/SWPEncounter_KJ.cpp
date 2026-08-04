@@ -7,6 +7,7 @@
 #include "SWPEncounter_KJ.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 #include "Timer.h"
 #include <algorithm>
 #include <cmath>
@@ -72,11 +73,11 @@ uint32 GetDragonAppliedAuraSpell(uint32 spellId)
 {
     switch (spellId)
     {
-        case static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_HASTE):
-            return static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_HASTE);
+        case Id(SwpSpells::SPELL_DRAGON_BREATH_HASTE):
+            return Id(SwpSpells::SPELL_DRAGON_BREATH_HASTE);
 
-        case static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE):
-            return static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE);
+        case Id(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE):
+            return Id(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE);
 
         default:
             return 0;
@@ -127,20 +128,6 @@ float GetNearestArmageddonDistance(
 }
 
 } // end anonymous namespace
-
-Position const KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };
-Position const KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.823f };
-Position const KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };
-Position const KILJAEDEN_DARKNESS_POSITION = { 1709.768f, 642.241f, 27.706f };
-Position const KILJAEDEN_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
-
-std::array<uint32, 4> const KILJAEDEN_DRAGON_ORB_ENTRIES =
-{
-    static_cast<uint32>(SwpObjects::GO_DRAGON_ORB_1),
-    static_cast<uint32>(SwpObjects::GO_DRAGON_ORB_2),
-    static_cast<uint32>(SwpObjects::GO_DRAGON_ORB_3),
-    static_cast<uint32>(SwpObjects::GO_DRAGON_ORB_4),
-};
 
 std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 
@@ -502,8 +489,7 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
 bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden)
 {
     return kiljaeden && kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
-        kiljaeden->FindCurrentSpellBySpellId(
-            static_cast<uint32>(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
+        kiljaeden->FindCurrentSpellBySpellId(Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
 }
 
 Player* GetKiljaedenDragonOrbUser(Player* bot)
@@ -556,14 +542,14 @@ bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs)
 
 bool HasKiljaedenDragonAura(Player* bot)
 {
-    return bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+    return bot->HasAura(Id(SwpSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
 }
 
 Unit* GetKiljaedenControlledDragon(Player* bot)
 {
     Unit* dragon = bot->GetCharm();
     if (!dragon || !dragon->IsAlive() ||
-        dragon->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_POWER_OF_THE_BLUE_FLIGHT))
+        dragon->GetEntry() != Id(SwpNpcs::NPC_POWER_OF_THE_BLUE_FLIGHT))
     {
         return nullptr;
     }

@@ -28,7 +28,7 @@ bool FelmystMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_MISDIRECTION)) &&
+    if (bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", felmyst))
     {
         return botAI->CastSpell("steady shot", felmyst);
@@ -193,8 +193,8 @@ bool FelmystMassDispelGasNovaAction::Execute(Event /*event*/)
 {
     Player* gasNovaTarget = GetFelmystGasNovaDispelTarget(bot);
     return gasNovaTarget &&
-        botAI->CanCastSpell(static_cast<uint32>(SwpSpells::SPELL_MASS_DISPEL), gasNovaTarget) &&
-        botAI->CastSpell(static_cast<uint32>(SwpSpells::SPELL_MASS_DISPEL), gasNovaTarget);
+        botAI->CanCastSpell(Id(SwpSpells::SPELL_MASS_DISPEL), gasNovaTarget) &&
+        botAI->CastSpell(Id(SwpSpells::SPELL_MASS_DISPEL), gasNovaTarget);
 }
 
 bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)

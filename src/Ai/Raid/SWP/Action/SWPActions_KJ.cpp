@@ -68,7 +68,7 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
     for (ObjectGuid const targetGuid : targets)
     {
         Unit* target = botAI->GetUnit(targetGuid);
-        if (target && target->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
+        if (target && target->GetEntry() == Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
             hands.push_back(target);
     }
 
@@ -199,7 +199,7 @@ bool KiljaedenStunHandsOfTheDeceiverAction::Execute(Event /*event*/)
     {
         Unit* target = botAI->GetUnit(targetGuid);
         if (!target || target->GetHealthPct() <= 20.0f ||
-            target->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
+            target->GetEntry() != Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
         {
             continue;
         }
@@ -471,14 +471,14 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
 
     // Bots with Fire Bloom wait away from the darkness stack spot until the darkness cast is
     // about to finish (4500ms, same threshold for the bot dragon to cast Shield of the Blue).
-    if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_FIRE_BLOOM)))
+    if (bot->HasAura(Id(SwpSpells::SPELL_FIRE_BLOOM)))
     {
         Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
         if (!kiljaeden)
             return false;
 
         if (Spell* darknessSpell = kiljaeden->FindCurrentSpellBySpellId(
-                static_cast<uint32>(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
+                Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
             darknessSpell && darknessSpell->GetCastTimeRemaining() >= 4500)
         {
             constexpr float targetDistance = 15.0f;
@@ -590,12 +590,11 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
 
     // End remaining drake control after phase changes
     if (kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
-        kiljaeden->FindCurrentSpellBySpellId(static_cast<uint32>(SwpSpells::SPELL_SHADOW_SPIKE)))
+        kiljaeden->FindCurrentSpellBySpellId(Id(SwpSpells::SPELL_SHADOW_SPIKE)))
     {
         if (HasKiljaedenDragonAura(bot))
         {
-            bot->RemoveAura(
-                static_cast<uint32>(SwpSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+            bot->RemoveAura(Id(SwpSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
             return true;
         }
 
@@ -616,7 +615,7 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
     Unit* kiljaeden, Unit* dragon)
 {
     Spell* darknessSpell = kiljaeden->FindCurrentSpellBySpellId(
-        static_cast<uint32>(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
+        Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
     if (!darknessSpell)
         return false;
 
@@ -651,20 +650,11 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
     }
 
     if (darknessSpell->GetCastTimeRemaining() < 4500)
-    {
-        return CastKiljaedenDragonSpell(
-            dragon, static_cast<uint32>(SwpSpells::SPELL_SHIELD_OF_THE_BLUE));
-    }
-    else if (CastKiljaedenDragonSpell(
-        dragon, static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_HASTE)))
-    {
+        return CastKiljaedenDragonSpell(dragon, Id(SwpSpells::SPELL_SHIELD_OF_THE_BLUE));
+    else if (CastKiljaedenDragonSpell(dragon, Id(SwpSpells::SPELL_DRAGON_BREATH_HASTE)))
         return true;
-    }
-    else if (CastKiljaedenDragonSpell(
-        dragon, static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE)))
-    {
+    else if (CastKiljaedenDragonSpell(dragon, Id(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE)))
         return true;
-    }
 
     return false;
 }
@@ -680,10 +670,8 @@ bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* 
     uint32 spellId = 0;
     Player* target = nullptr;
 
-    constexpr uint32 hasteSpellId =
-        static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_HASTE);
-    constexpr uint32 revitalizeSpellId =
-        static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE);
+    constexpr uint32 hasteSpellId = Id(SwpSpells::SPELL_DRAGON_BREATH_HASTE);
+    constexpr uint32 revitalizeSpellId = Id(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE);
 
     if (!dragon->HasSpellCooldown(hasteSpellId))
     {

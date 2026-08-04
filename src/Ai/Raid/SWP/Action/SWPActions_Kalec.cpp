@@ -51,12 +51,15 @@ bool KalecgosAnnounceBossHealthAction::Execute(Event /*event*/)
 
         state.spectralHealthAnnounced = true;
 
+        std::string const sathrovarrHealth = std::to_string(
+            static_cast<uint32>(sathrovarr->GetHealthPct()));
+
         text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "sathrovarr_health_when_kalecgos_below_twenty_percent_health",
             "Sathrovarr's health is at %sathrovarrHealth%! "
             "Don't forget that we need to defeat them at about the same time!",
             std::map<std::string, std::string>{
-                {"%sathrovarrHealth", std::to_string(static_cast<uint32>(sathrovarr->GetHealthPct()))}});
+                {"%sathrovarrHealth", sathrovarrHealth}});
     }
 
     return botAI->SayToRaid(text);
@@ -112,7 +115,7 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 
     constexpr float searchRadius = 75.0f;
     GameObject* rift = bot->FindNearestGameObject(
-        static_cast<uint32>(SwpObjects::GO_SPECTRAL_RIFT), searchRadius, true);
+        Id(SwpObjects::GO_SPECTRAL_RIFT), searchRadius, true);
     if (!rift)
         return false;
 
@@ -225,9 +228,7 @@ bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
         return false;
 
     constexpr float searchRadius = 20.0f;
-    Unit* kalec = bot->FindNearestCreature(
-        static_cast<uint32>(SwpNpcs::NPC_KALECGOS_HUMANOID), searchRadius);
-
+    Unit* kalec = bot->FindNearestCreature(Id(SwpNpcs::NPC_KALECGOS_HUMANOID), searchRadius);
     if (!kalec || sathrovarr->GetVictim() != kalec)
         return false;
 

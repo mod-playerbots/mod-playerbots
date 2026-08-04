@@ -139,7 +139,7 @@ enum class SwpObjects : uint32
     GO_DRAGON_ORB_4  = 188116,
 };
 
-constexpr uint32 SWP_MAP_ID = 580;
+inline constexpr uint32 SWP_MAP_ID = 580;
 
 }
 

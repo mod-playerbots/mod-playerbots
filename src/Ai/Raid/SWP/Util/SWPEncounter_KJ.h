@@ -9,6 +9,7 @@
 
 #include "ObjectGuid.h"
 #include "Position.h"
+#include "RaidBossHelpers.h"
 #include "SWPData.h"
 #include <array>
 #include <unordered_map>
@@ -51,22 +52,29 @@ struct KiljaedenEncounterState
     uint32 dragonOrbAnnouncementMs = 0;
 };
 
-constexpr uint32 KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS = 10000;
-constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 11.0f;
-constexpr float KILJAEDEN_RANGED_ARC_ORIENTATION = 0.8f;
-constexpr float KILJAEDEN_INNER_RANGED_RADIUS = 23.0f;
-constexpr float KILJAEDEN_OUTER_RANGED_RADIUS = 36.0f;
-constexpr uint8 KILJAEDEN_INNER_RANGED_SLOT_COUNT = 7;
-constexpr uint8 KILJAEDEN_OUTER_RANGED_SLOT_COUNT = 11;
-constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
-    KILJAEDEN_INNER_RANGED_SLOT_COUNT + KILJAEDEN_OUTER_RANGED_SLOT_COUNT;
-extern std::array<uint32, 4> const KILJAEDEN_DRAGON_ORB_ENTRIES;
+inline std::array const KILJAEDEN_DRAGON_ORB_ENTRIES = {
+    Id(SwpObjects::GO_DRAGON_ORB_1),
+    Id(SwpObjects::GO_DRAGON_ORB_2),
+    Id(SwpObjects::GO_DRAGON_ORB_3),
+    Id(SwpObjects::GO_DRAGON_ORB_4),
+};
 
-extern Position const KILJAEDEN_CENTER_POSITION;
-extern Position const KILJAEDEN_TANK_POSITION;
-extern Position const KILJAEDEN_S_MELEE_POSITION;
-extern Position const KILJAEDEN_E_MELEE_POSITION;
-extern Position const KILJAEDEN_DARKNESS_POSITION;
+inline constexpr uint32 KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS = 10000;
+inline constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 11.0f;
+
+inline constexpr float KILJAEDEN_RANGED_ARC_ORIENTATION = 0.8f;
+inline constexpr float KILJAEDEN_INNER_RANGED_RADIUS = 23.0f;
+inline constexpr float KILJAEDEN_OUTER_RANGED_RADIUS = 36.0f;
+inline constexpr uint8 KILJAEDEN_INNER_RANGED_SLOT_COUNT = 7;
+inline constexpr uint8 KILJAEDEN_OUTER_RANGED_SLOT_COUNT = 11;
+inline constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
+    KILJAEDEN_INNER_RANGED_SLOT_COUNT + KILJAEDEN_OUTER_RANGED_SLOT_COUNT;
+
+inline Position const KILJAEDEN_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
+inline Position const KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };
+inline Position const KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.823f };
+inline Position const KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };
+inline Position const KILJAEDEN_DARKNESS_POSITION = { 1709.768f, 642.241f, 27.706f };
 
 extern std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 extern std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
