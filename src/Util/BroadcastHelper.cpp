@@ -9,6 +9,7 @@
 #include "ServerFacade.h"
 #include "Channel.h"
 #include "AiFactory.h"
+#include "Config.h"
 
 BroadcastHelper::BroadcastHelper() {}
 
@@ -19,6 +20,16 @@ uint8 BroadcastHelper::GetLocale()
     if (locale >= TOTAL_LOCALES)
         locale = LocaleConstant::LOCALE_enUS;
     return locale;
+}
+
+uint8 BroadcastHelper::GetConfiguredDbcLocale()
+{
+    int32 dbcLocale = sConfigMgr->GetOption<int32>("DBC.Locale", 0);
+
+    if (dbcLocale >= 0 && dbcLocale < MAX_LOCALES)
+        return static_cast<uint8>(dbcLocale);
+
+    return LOCALE_enUS;
 }
 
 bool BroadcastHelper::BroadcastTest(PlayerbotAI* ai, Player* /* bot */)

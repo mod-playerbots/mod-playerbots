@@ -33,6 +33,7 @@ public:
     };
 
     static uint8_t GetLocale();
+    static uint8_t GetConfiguredDbcLocale();
     static bool BroadcastTest(
         PlayerbotAI* ai,
         Player* bot

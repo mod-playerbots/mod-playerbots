@@ -8,14 +8,35 @@
 
 #include "AccountMgr.h"
 #include "ArenaTeamMgr.h"
+#include "Config.h"
 #include "DatabaseEnv.h"
 #include "PlayerbotAI.h"
+#include "BroadcastHelper.h"
 #include "RaceMgr.h"
 #include "ScriptMgr.h"
 #include "SharedDefines.h"
 #include "SocialMgr.h"
 #include "Timer.h"
 #include "Log.h"
+
+#include <array>
+
+namespace
+{
+std::string SelectLocalizedNameFromFields(Field* fields)
+{
+    std::array<std::string, MAX_LOCALES> localizedNames;
+    for (uint8 locale = 0; locale < MAX_LOCALES; ++locale)
+        localizedNames[locale] = fields[locale].Get<std::string>();
+
+    uint8 locale = BroadcastHelper::GetConfiguredDbcLocale();
+    std::string selectedName = localizedNames[locale];
+    if (selectedName.empty())
+        selectedName = localizedNames[LOCALE_enUS];
+
+    return selectedName;
+}
+}
 
 constexpr RandomPlayerbotFactory::NameRaceAndGender RandomPlayerbotFactory::CombineRaceAndGender(uint8 race,
                                                                                                 uint8 gender)
@@ -769,8 +790,19 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
 
     uint32 id = urand(0, maxId);
     result = CharacterDatabase.Query(
-        "SELECT n.name FROM playerbots_guild_names n "
-        "LEFT OUTER JOIN guild e ON e.name = n.name WHERE e.guildid IS NULL AND n.name_id >= {} LIMIT 1",
+        "SELECT "
+        "  n.name, "        // 0  enUS (base)
+        "  n.name_koKR, "   // 1  koKR
+        "  n.name_frFR, "   // 2  frFR
+        "  n.name_deDE, "   // 3  deDE
+        "  n.name_zhCN, "   // 4  zhCN
+        "  n.name_zhTW, "   // 5  zhTW
+        "  n.name_esES, "   // 6  esES
+        "  n.name_esMX, "   // 7  esMX
+        "  n.name_ruRU "    // 8  ruRU
+        "FROM playerbots_guild_names n "
+        "LEFT OUTER JOIN guild e ON e.name = n.name "
+        "WHERE e.guildid IS NULL AND n.name_id >= {} LIMIT 1",
         id);
     if (!result)
     {
@@ -779,7 +811,8 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
     }
 
     fields = result->Fetch();
-    guildName = fields[0].Get<std::string>();
+
+    guildName = SelectLocalizedNameFromFields(fields);
 
     return guildName;
 }
@@ -897,7 +930,7 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams(ArenaType type, uint32 count
 
 std::string const RandomPlayerbotFactory::CreateRandomArenaTeamName()
 {
-    std::string arenaTeamName = "";
+    std::string arenaTeamName;
 
     QueryResult result = CharacterDatabase.Query("SELECT MAX(name_id) FROM playerbots_arena_team_names");
     if (!result)
@@ -910,8 +943,20 @@ std::string const RandomPlayerbotFactory::CreateRandomArenaTeamName()
     uint32 maxId = fields[0].Get<uint32>();
 
     uint32 id = urand(0, maxId);
+
     result = CharacterDatabase.Query(
-        "SELECT n.name FROM playerbots_arena_team_names n LEFT OUTER JOIN arena_team e ON e.name = n.name "
+        "SELECT "
+        "  n.name, "        // 0  enUS (base)
+        "  n.name_koKR, "   // 1  koKR
+        "  n.name_frFR, "   // 2  frFR
+        "  n.name_deDE, "   // 3  deDE
+        "  n.name_zhCN, "   // 4  zhCN
+        "  n.name_zhTW, "   // 5  zhTW
+        "  n.name_esES, "   // 6  esES
+        "  n.name_esMX, "   // 7  esMX
+        "  n.name_ruRU "    // 8  ruRU
+        "FROM playerbots_arena_team_names n "
+        "LEFT OUTER JOIN arena_team e ON e.name = n.name "
         "WHERE e.arenateamid IS NULL AND n.name_id >= {} LIMIT 1",
         id);
 
@@ -922,7 +967,8 @@ std::string const RandomPlayerbotFactory::CreateRandomArenaTeamName()
     }
 
     fields = result->Fetch();
-    arenaTeamName = fields[0].Get<std::string>();
+
+    arenaTeamName = SelectLocalizedNameFromFields(fields);
 
     return arenaTeamName;
 }
