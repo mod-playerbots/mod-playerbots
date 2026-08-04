@@ -10,7 +10,6 @@
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
-#include "FollowActions.h"
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
@@ -25,8 +24,8 @@
 #include "ScriptedCreature.h"
 #include "ShamanActions.h"
 #include "Spell.h"
-#include "UseMeetingStoneAction.h"
 #include "WarriorActions.h"
+#include "WipeAction.h"
 
 float GrobbulusMultiplier::GetValue(Action* action)
 {
@@ -45,47 +44,20 @@ float GrobbulusMultiplier::GetValue(Action* action)
 
 float HeiganDanceMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "heigan the unclean");
-    if (!boss)
+    if (!helper.UpdateBossAI())
+        return 1.0f;
+
+    if (dynamic_cast<HeiganDanceMeleeAction*>(action) || dynamic_cast<HeiganDanceRangedAction*>(action) ||
+        dynamic_cast<CurePartyMemberAction*>(action) || dynamic_cast<WipeAction*>(action))
     {
         return 1.0f;
     }
-    bool platform_phase = boss->IsWithinDist2d(2794.26f, -3706.67f, 10.0f);
-    bool eruption_casting = false;
-    if (boss->HasUnitState(UNIT_STATE_CASTING))
-    {
-        Spell* spell = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-        if (!spell)
-        {
-            spell = boss->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-        }
-        if (spell)
-        {
-            SpellInfo const* info = spell->GetSpellInfo();
-            bool isEruption = NaxxSpellIds::MatchesAnySpellId(info, {NaxxSpellIds::Eruption10});
-            if (!isEruption && info && info->SpellName[LOCALE_enUS])
-            {
-                // Fallback to name for custom spell data.
-                isEruption = botAI->EqualLowercaseName(info->SpellName[LOCALE_enUS], "eruption");
-            }
-            if (isEruption)
-            {
-                eruption_casting = true;
-            }
-        }
-    }
-    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action) )
+    if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action))
     {
         return 0.0f;
     }
-    if (!platform_phase && !eruption_casting)
-    {
-        return 1.0f;
-    }
-    if (dynamic_cast<HeiganDanceMeleeAction*>(action) || dynamic_cast<HeiganDanceRangedAction*>(action) ||
-        dynamic_cast<CurePartyMemberAction*>(action))
+    if (!helper.IsPlatformPhase() && !helper.HasEruptionNearby())
     {
         return 1.0f;
     }

@@ -84,18 +84,16 @@ bool GrobbulusCloudTrigger::IsActive()
 
 bool HeiganMeleeTrigger::IsActive()
 {
-    Unit* heigan = AI_VALUE2(Unit*, "find target", "heigan the unclean");
-    if (!heigan)
+    if (!AI_VALUE2(Unit*, "find target", "heigan the unclean"))
     {
         return false;
     }
-    return !botAI->IsRanged(bot);
+    return botAI->IsMelee(bot);
 }
 
 bool HeiganRangedTrigger::IsActive()
 {
-    Unit* heigan = AI_VALUE2(Unit*, "find target", "heigan the unclean");
-    if (!heigan)
+    if (!AI_VALUE2(Unit*, "find target", "heigan the unclean"))
     {
         return false;
     }

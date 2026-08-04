@@ -548,17 +548,14 @@ public:
 
     bool UpdateBossAI()
     {
-        if (!bot->IsInCombat())
-            Reset();
+        Unit* boss = AI_VALUE2(Unit*, "find target", "heigan the unclean");
+        if (!boss)
+            return false;
 
-        if (_unit && (!_unit->IsInWorld() || !_unit->IsAlive()))
-            Reset();
-
-        if (!_unit)
+        if (_unit != boss)
         {
-            _unit = AI_VALUE2(Unit*, "find target", "heigan the unclean");
-            if (!_unit)
-                return false;
+            Reset();
+            _unit = boss;
         }
 
         uint32 now = getMSTime();
@@ -571,6 +568,7 @@ public:
 
         _platform_phase = current_platform_phase;
         _last_platform_phase = current_platform_phase;
+        _eruption_nearby_cache = QueryEruptionNearby();
 
         if ((_last_eruption_ms == 0 || now - _last_eruption_ms > ERUPTION_COOLDOWN_MS) &&
             (now - _combat_start_ms > COMBAT_GRACE_MS))
@@ -585,13 +583,14 @@ public:
         return true;
     }
 
+    bool HasEruptionNearby() const { return _eruption_nearby_cache; }
     bool IsPlatformPhase() const { return _platform_phase; }
     std::pair<float, float> const& GetSafeWaypoint() const { return waypoints[_curr_safe]; }
 
 private:
-    const uint32 ERUPTION_NPC_ENTRY = 12999;
-    const uint32 ERUPTION_COOLDOWN_MS = 3000;
-    const uint32 COMBAT_GRACE_MS = 12000;
+    static constexpr uint32 NPC_HEIGAN_ERUPTION = 12999;
+    static constexpr uint32 ERUPTION_COOLDOWN_MS = 3000;
+    static constexpr uint32 COMBAT_GRACE_MS = 12000;
 
     void Reset()
     {
@@ -600,6 +599,7 @@ private:
         _last_eruption_ms = 0;
         _platform_phase = false;
         _last_platform_phase = true;
+        _eruption_nearby_cache = false;
         ResetSafe();
     }
 
@@ -616,18 +616,11 @@ private:
             _curr_dir = -_curr_dir;
     }
 
-    bool HasEruptionNearby()
+    bool QueryEruptionNearby()
     {
-        GuidVector npcs = *context->GetValue<GuidVector>("nearest hostile npcs");
-        for (auto& npc : npcs)
-        {
-            Unit* unit = botAI->GetUnit(npc);
-            if (!unit)
-                continue;
-            if (unit->GetEntry() == ERUPTION_NPC_ENTRY)
-                return true;
-        }
-        return false;
+        std::list<Creature*> eruptionNpcs;
+        bot->GetCreatureListWithEntryInGrid(eruptionNpcs, NPC_HEIGAN_ERUPTION, 100.0f);
+        return !eruptionNpcs.empty();
     }
 
     Unit* _unit = nullptr;
@@ -635,6 +628,7 @@ private:
     uint32 _last_eruption_ms = 0;
     bool _platform_phase = false;
     bool _last_platform_phase = true;
+    bool _eruption_nearby_cache = false;
     int32 _curr_safe = 0;
     int32 _curr_dir = 1;
 };
