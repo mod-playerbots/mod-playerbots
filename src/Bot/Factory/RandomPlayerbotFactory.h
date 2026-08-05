@@ -64,9 +64,12 @@ public:
     static void LoadArenaTeamData();
 
 private:
+    friend class ArenaTeamAssignOperation;
+
     static bool IsValidRaceClassCombination(uint8 race, uint8 class_, uint32 expansion);
     std::string const CreateRandomBotName(NameRaceAndGender raceAndGender);
 
+    static void AssignBotToArenaTeamInternal(Player* bot);
     static void CollectJoinableBotArenaTeams(ArenaType type, TeamId faction, std::vector<ArenaTeam*>& out);
     static void CreateBotArenaTeam(Player* bot, ArenaType type);
     static bool IsBotArenaTeam(ArenaTeam const* team);

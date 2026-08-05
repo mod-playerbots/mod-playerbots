@@ -9,10 +9,13 @@
 #include "AccountMgr.h"
 #include "ArenaTeamMgr.h"
 #include "CharacterCache.h"
+#include "ObjectAccessor.h"
 #include "Player.h"
 #include "DatabaseEnv.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotOperations.h"
+#include "PlayerbotWorldThreadProcessor.h"
 #include "RaceMgr.h"
 #include "ScriptMgr.h"
 #include "SharedDefines.h"
@@ -862,7 +865,13 @@ void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
     if (bot->GetLevel() < 70)
         return;
 
-    // One team max per bot to avoid queueing conflicts
+    PlayerbotWorldThreadProcessor::instance().QueueOperation(
+        std::make_unique<ArenaTeamAssignOperation>(bot->GetGUID()));
+}
+
+void RandomPlayerbotFactory::AssignBotToArenaTeamInternal(Player* bot)
+{
+    // Check if bot has team, only one per bot to avoid queue conflicts
     for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
     {
         if (bot->GetArenaTeamId(arena_slot))
@@ -876,6 +885,41 @@ void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
     for (size_t i = order.size() - 1; i > 0; --i)
         std::swap(order[i], order[urand(0, i)]);
 
+    std::vector<ArenaTeam*> candidates;
+    for (ArenaType type : order)
+        CollectJoinableBotArenaTeams(type, botTeam, candidates);
+
+    for (size_t i = candidates.size(); i > 0; --i)
+    {
+        size_t const index = urand(0, i - 1);
+        ArenaTeam* team = candidates[index];
+        candidates[index] = candidates[i - 1];
+
+        if (!team->AddMember(bot->GetGUID()))
+        {
+            LOG_DEBUG("playerbots", "Failed to add bot {} to arena team '{}', trying next candidate",
+                      bot->GetName(), team->GetName());
+            continue;
+        }
+
+        if (team->GetMembersSize() >= static_cast<uint32>(team->GetType()))
+        {
+            uint32 teamRating = team->GetRating();
+            team->SetRatingForAll(teamRating);
+
+            // Keep MMR synchronized with team rating so matchmaking reflects artificial bot strength
+            // (1000-2000 range) instead of the global CONFIG_ARENA_START_MATCHMAKER_RATING default.
+            for (auto& member : team->GetMembers())
+            {
+                member.MatchMakerRating = member.PersonalRating;
+                member.MaxMMR = std::max(member.MaxMMR, member.PersonalRating);
+            }
+            team->SaveToDB(true);
+        }
+        return;
+    }
+
+    // No joinable team available, create one if under target count
     for (ArenaType type : order)
     {
         if (GetBotArenaTeamCount(type) < _configTargets[type])
@@ -883,31 +927,6 @@ void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
             CreateBotArenaTeam(bot, type);
             return;
         }
-    }
-
-    std::vector<ArenaTeam*> candidates;
-    for (ArenaType type : order)
-        CollectJoinableBotArenaTeams(type, botTeam, candidates);
-
-    if (candidates.empty())
-        return;
-
-    ArenaTeam* team = candidates[urand(0, candidates.size() - 1)];
-    team->AddMember(bot->GetGUID());
-
-    if (team->GetMembersSize() >= static_cast<uint32>(team->GetType()))
-    {
-        uint32 teamRating = team->GetRating();
-        team->SetRatingForAll(teamRating);
-
-        // Keep MMR synchronized with team rating so matchmaking reflects artificial bot strength
-        // (1000-2000 range) instead of the global CONFIG_ARENA_START_MATCHMAKER_RATING default.
-        for (auto& member : team->GetMembers())
-        {
-            member.MatchMakerRating = member.PersonalRating;
-            member.MaxMMR = std::max(member.MaxMMR, member.PersonalRating);
-        }
-        team->SaveToDB(true);
     }
 }
 
@@ -922,6 +941,7 @@ void RandomPlayerbotFactory::CreateBotArenaTeam(Player* bot, ArenaType type)
     {
         LOG_ERROR("playerbots", "Error creating arena team {}", teamName);
         delete arenateam;
+        _availableArenaTeamNames.push_back(std::move(teamName));
         return;
     }
 
