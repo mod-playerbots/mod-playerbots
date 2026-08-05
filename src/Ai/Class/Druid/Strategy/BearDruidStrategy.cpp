@@ -18,6 +18,7 @@ public:
         creators["bash"] = &bash;
         creators["swipe (bear)"] = &swipe_bear;
         creators["lacerate"] = &lacerate;
+        creators["taunt spell"] = &growl; // Empty ActionNode needed to register as taunt spell
     }
 
 private:
@@ -77,6 +78,16 @@ private:
             "lacerate",
             /*P*/ {},
             /*A*/ { NextAction("maul") },
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* growl([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "growl",
+            /*P*/ {},
+            /*A*/ {},
             /*C*/ {}
         );
     }

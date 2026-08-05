@@ -277,7 +277,7 @@ std::vector<GuidPosition> ActiveQuestObjectivesValue::Calculate()
 
             if (quest->RequiredNpcOrGoCount[objective])
             {
-                uint32 reqCount = quest->RequiredItemCount[objective];
+                uint32 reqCount = quest->RequiredNpcOrGoCount[objective];
                 uint32 hasCount = statusData.CreatureOrGOCount[objective];
 
                 if (!reqCount || hasCount >= reqCount)
