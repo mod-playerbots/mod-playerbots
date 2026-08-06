@@ -9,7 +9,6 @@
 #include "AiFactory.h"
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
-#include "CharacterCache.h"
 #include "DBCStores.h"
 #include "DBCStructure.h"
 #include "GuildMgr.h"
