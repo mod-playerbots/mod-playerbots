@@ -874,7 +874,8 @@ void RandomPlayerbotFactory::AssignBotToArenaTeamInternal(Player* bot)
     // Check if bot has team, only one per bot to avoid queue conflicts
     for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
     {
-        if (bot->GetArenaTeamId(arena_slot))
+        if (bot->GetArenaTeamId(arena_slot) ||
+            sCharacterCache->GetCharacterArenaTeamIdByGuid(bot->GetGUID(), arena_slot))
             return;
     }
 
