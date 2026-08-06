@@ -7,13 +7,13 @@
 #ifndef PLAYERBOTS_RANDOMPLAYERBOTMGR_H
 #define PLAYERBOTS_RANDOMPLAYERBOTMGR_H
 
-#include <unordered_set>
-
 #include "NewRpgInfo.h"
 #include "ObjectGuid.h"
 #include "PlayerbotMgr.h"
 #include "GameTime.h"
 #include "PlayerbotCommandServer.h"
+
+#include <unordered_set>
 
 struct BattlegroundInfo
 {
