@@ -5,6 +5,9 @@
 
 #include "PlayerbotFactory.h"
 
+#include <array>
+#include <utility>
+
 #include "AccountMgr.h"
 #include "AiFactory.h"
 #include "ArenaTeam.h"
