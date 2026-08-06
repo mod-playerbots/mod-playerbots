@@ -4,6 +4,15 @@
  * or (at your option) any later version.
  */
 
+/*
+ * Ported from the CMaNGOS playerbots project (https://github.com/cmangos/playerbots), GPL v2,
+ * with modifications for AzerothCore.
+ * Original authors:
+ *   Sebastiaan Keek (mostlikely4r) <sebastiaan.keek@gmail.com> - original author
+ *   David Parra Ausina (Flekz) <davidparraausina@gmail.com>
+ *   celguar <celguar@gmail.com>
+ */
+
 #include "InviteToGroupAction.h"
 
 #include "BroadcastHelper.h"
