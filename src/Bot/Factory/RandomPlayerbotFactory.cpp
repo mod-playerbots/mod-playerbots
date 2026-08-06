@@ -814,7 +814,7 @@ void RandomPlayerbotFactory::LoadArenaTeamData()
 
     if (!result)
     {
-        LOG_ERROR("playerbots", "No arena team names available in playerbots_arena_team_names");
+        LOG_WARN("playerbots", "No arena team names left in playerbots_arena_team_names");
         return;
     }
 
