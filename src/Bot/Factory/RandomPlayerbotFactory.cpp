@@ -805,6 +805,27 @@ bool RandomPlayerbotFactory::IsBotArenaTeam(ArenaTeam const* team)
 
 void RandomPlayerbotFactory::LoadArenaTeamData()
 {
+_configTargets = {
+        {ARENA_TYPE_2v2, sPlayerbotAIConfig.randomBotArenaTeam2v2Count},
+        {ARENA_TYPE_3v3, sPlayerbotAIConfig.randomBotArenaTeam3v3Count},
+        {ARENA_TYPE_5v5, sPlayerbotAIConfig.randomBotArenaTeam5v5Count},
+    };
+
+    _botArenaTeamRegistry.clear();
+
+    for (auto const& [id, team] : sArenaTeamMgr->GetArenaTeams())
+    {
+        if (!IsBotArenaTeam(team))
+            continue;
+
+        CharacterCacheEntry const* entry = sCharacterCache->GetCharacterCacheByGuid(team->GetCaptain());
+        if (!entry)
+            continue;
+
+        ArenaType type = static_cast<ArenaType>(team->GetType());
+        _botArenaTeamRegistry[type].push_back(id);
+    }
+
     _availableArenaTeamNames.clear();
 
     QueryResult result = CharacterDatabase.Query(
@@ -831,27 +852,6 @@ void RandomPlayerbotFactory::LoadArenaTeamData()
     }
 
     LOG_INFO("playerbots", "Loaded {} available arena team names", _availableArenaTeamNames.size());
-
-    _configTargets = {
-        {ARENA_TYPE_2v2, sPlayerbotAIConfig.randomBotArenaTeam2v2Count},
-        {ARENA_TYPE_3v3, sPlayerbotAIConfig.randomBotArenaTeam3v3Count},
-        {ARENA_TYPE_5v5, sPlayerbotAIConfig.randomBotArenaTeam5v5Count},
-    };
-
-    _botArenaTeamRegistry.clear();
-
-    for (auto const& [id, team] : sArenaTeamMgr->GetArenaTeams())
-    {
-        if (!IsBotArenaTeam(team))
-            continue;
-
-        CharacterCacheEntry const* entry = sCharacterCache->GetCharacterCacheByGuid(team->GetCaptain());
-        if (!entry)
-            continue;
-
-        ArenaType type = static_cast<ArenaType>(team->GetType());
-        _botArenaTeamRegistry[type].push_back(id);
-    }
 }
 
 void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
