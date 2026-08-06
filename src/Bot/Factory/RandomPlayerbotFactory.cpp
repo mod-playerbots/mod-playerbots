@@ -805,7 +805,7 @@ bool RandomPlayerbotFactory::IsBotArenaTeam(ArenaTeam const* team)
 
 void RandomPlayerbotFactory::LoadArenaTeamData()
 {
-_configTargets = {
+    _configTargets = {
         {ARENA_TYPE_2v2, sPlayerbotAIConfig.randomBotArenaTeam2v2Count},
         {ARENA_TYPE_3v3, sPlayerbotAIConfig.randomBotArenaTeam3v3Count},
         {ARENA_TYPE_5v5, sPlayerbotAIConfig.randomBotArenaTeam5v5Count},
@@ -864,6 +864,12 @@ void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
 
     if (bot->GetLevel() < 70)
         return;
+
+    for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
+    {
+        if (bot->GetArenaTeamId(arena_slot))
+            return;
+    }
 
     PlayerbotWorldThreadProcessor::instance().QueueOperation(
         std::make_unique<ArenaTeamAssignOperation>(bot->GetGUID()));
