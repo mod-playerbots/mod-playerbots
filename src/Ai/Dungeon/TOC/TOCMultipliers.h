@@ -15,7 +15,7 @@
     tocMultiplier(PlayerbotAI* ai) : Multiplier(ai, "toc") {}
 
     public:
-        virtual float GetValue(Action* action);
+        float GetValue(Action* action) override;
 };
 */
 #endif
