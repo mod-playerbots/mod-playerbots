@@ -16,10 +16,11 @@
 
 class PlayerbotAI;
 class Player;
-class ItemTemplate;
 class Quest;
 class Creature;
 class Group;
+
+struct ItemTemplate;
 
 class BroadcastHelper
 {
