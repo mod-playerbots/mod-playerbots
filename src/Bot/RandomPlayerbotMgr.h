@@ -249,10 +249,6 @@ private:
     std::map<uint32, std::map<uint32, std::vector<WorldLocation>>> rpgLocsCacheLevel;
     std::map<TeamId, std::map<BattlegroundTypeId, std::vector<uint32>>> BattleMastersCache;
     std::unordered_map<uint32, BotEventCache> eventCache;
-    // Membership is tested on virtually every bot interaction (see IsRandomBot),
-    // so this is a hash set rather than a sequence container. It also makes the
-    // no-duplicates invariant structural instead of relying on callers to check
-    // before inserting.
     std::unordered_set<uint32> currentBots;
     uint32 bgBotsCount;
     uint32 playersLevel;
