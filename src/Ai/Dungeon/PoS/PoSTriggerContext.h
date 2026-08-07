@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_POSTRIGGERCONTEXT_H
 #define PLAYERBOTS_POSTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 #include "PoSTriggers.h"
 

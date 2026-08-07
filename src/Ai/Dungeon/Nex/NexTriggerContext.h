@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_NEXTRIGGERCONTEXT_H
 #define PLAYERBOTS_NEXTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 #include "NexTriggers.h"
 

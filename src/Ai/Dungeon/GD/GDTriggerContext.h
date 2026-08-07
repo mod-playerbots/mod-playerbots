@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_GDTRIGGERCONTEXT_H
 #define PLAYERBOTS_GDTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "GDTriggers.h"
 #include "NamedObjectContext.h"
 

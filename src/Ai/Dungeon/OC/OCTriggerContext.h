@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_OCTRIGGERCONTEXT_H
 #define PLAYERBOTS_OCTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 #include "OCTriggers.h"
 

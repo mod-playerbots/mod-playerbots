@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_TOCTRIGGERCONTEXT_H
 #define PLAYERBOTS_TOCTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 #include "TOCTriggers.h"
 

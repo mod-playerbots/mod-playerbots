@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_UPTRIGGERCONTEXT_H
 #define PLAYERBOTS_UPTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 #include "UPTriggers.h"
 

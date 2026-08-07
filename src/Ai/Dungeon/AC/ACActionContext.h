@@ -9,7 +9,7 @@
 
 #include "ACActions.h"
 #include "Action.h"
-#include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 
 class TbcDungeonAuchenaiCryptsActionContext : public NamedObjectContext<Action>
 {

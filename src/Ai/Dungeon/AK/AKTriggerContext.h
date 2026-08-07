@@ -8,7 +8,6 @@
 #define PLAYERBOTS_AKTRIGGERCONTEXT_H
 
 #include "AKTriggers.h"
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 
 class WotlkDungeonOKTriggerContext : public NamedObjectContext<Trigger>

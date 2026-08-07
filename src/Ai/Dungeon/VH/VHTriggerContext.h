@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_VHTRIGGERCONTEXT_H
 #define PLAYERBOTS_VHTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 #include "VHTriggers.h"
 

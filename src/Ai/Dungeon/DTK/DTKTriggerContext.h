@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_DTKTRIGGERCONTEXT_H
 #define PLAYERBOTS_DTKTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "DTKTriggers.h"
 #include "GenericTriggers.h"
 #include "NamedObjectContext.h"

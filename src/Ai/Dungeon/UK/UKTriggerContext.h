@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_UKTRIGGERCONTEXT_H
 #define PLAYERBOTS_UKTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 #include "UKTriggers.h"
 

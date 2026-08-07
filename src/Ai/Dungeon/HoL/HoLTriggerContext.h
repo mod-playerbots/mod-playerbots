@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_HOLTRIGGERCONTEXT_H
 #define PLAYERBOTS_HOLTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "HoLTriggers.h"
 #include "NamedObjectContext.h"
 

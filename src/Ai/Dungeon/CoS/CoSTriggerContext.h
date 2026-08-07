@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_COSTRIGGERCONTEXT_H
 #define PLAYERBOTS_COSTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "CoSTriggers.h"
 #include "NamedObjectContext.h"
 

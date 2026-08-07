@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_HOSTRIGGERCONTEXT_H
 #define PLAYERBOTS_HOSTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "HoSTriggers.h"
 #include "NamedObjectContext.h"
 
