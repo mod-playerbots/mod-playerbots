@@ -283,7 +283,7 @@ void PlayerbotHolder::LogoutAllBots()
             break;
 
         Player* bot= itr->second;
-        if (!GET_PLAYERBOT_AI(bot)->IsRealPlayer())
+        if (!IsSelfBot(bot))
             LogoutPlayerBot(bot->GetGUID());
     }
     */
@@ -296,7 +296,7 @@ void PlayerbotHolder::LogoutAllBots()
             continue;
 
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-        if (!botAI || botAI->IsRealPlayer())
+        if (!botAI || IsSelfBot(bot))
             continue;
 
         LogoutPlayerBot(bot->GetGUID());
@@ -313,7 +313,7 @@ void PlayerbotMgr::CancelLogout()
     {
         Player* const bot = it->second;
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-        if (!botAI || botAI->IsRealPlayer())
+        if (!botAI || IsSelfBot(bot))
             continue;
 
         if (bot->GetSession()->isLogingOut())
@@ -330,7 +330,7 @@ void PlayerbotMgr::CancelLogout()
     {
         Player* const bot = it->second;
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-        if (!botAI || botAI->IsRealPlayer())
+        if (!botAI || IsSelfBot(bot))
             continue;
 
         if (botAI->GetMaster() != master)
@@ -423,7 +423,7 @@ void PlayerbotHolder::DisablePlayerBot(ObjectGuid guid)
         bot->GetMotionMaster()->Clear();
 
         Group* group = bot->GetGroup();
-        if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && botAI->HasActivePlayerMaster())
+        if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && IsRealPlayer(botAI->GetMaster()))
         {
             PlayerbotRepository::instance().Save(botAI);
         }
@@ -431,13 +431,6 @@ void PlayerbotHolder::DisablePlayerBot(ObjectGuid guid)
         LOG_DEBUG("playerbots", "Bot {} logged out", bot->GetName().c_str());
 
         bot->SaveToDB(false, false);
-
-        if (botAI->GetAiObjectContext())  // Maybe some day re-write to delate all pointer values.
-        {
-            TravelTarget* target = botAI->GetAiObjectContext()->GetValue<TravelTarget*>("travel target")->Get();
-            if (target)
-                delete target;
-        }
 
         RemoveFromPlayerbotsMap(guid);  // deletes bot player ptr inside this WorldSession PlayerBotMap
 

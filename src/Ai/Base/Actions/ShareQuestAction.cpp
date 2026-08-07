@@ -115,5 +115,5 @@ bool AutoShareQuestAction::Execute(Event /*event*/)
 
 bool AutoShareQuestAction::isUseful()
 {
-    return bot->GetGroup() && !botAI->HasActivePlayerMaster();
+    return bot->GetGroup() && !IsRealPlayer(botAI->GetMaster());
 }

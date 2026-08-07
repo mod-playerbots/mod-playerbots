@@ -13,7 +13,6 @@
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "SharedDefines.h"
 #include "Unit.h"
 #include "WaitForAttackStrategy.h"
 

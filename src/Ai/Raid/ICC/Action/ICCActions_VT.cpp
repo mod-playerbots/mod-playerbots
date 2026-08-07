@@ -296,7 +296,7 @@ bool IccValithriaGroupAction::Handle25ManGroupLogic()
             continue;
 
         PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-        if (!memberAI || memberAI->IsRealPlayer())
+        if (!memberAI || IsSelfBot(member))
             continue;
 
         if (memberAI->IsHeal(member) && member->HasAura(SPELL_DREAM_STATE))
@@ -587,7 +587,7 @@ bool IccValithriaGroupAction::Handle10ManGroupLogic()
         return false;
 
     PlayerbotAI* selfAI = GET_PLAYERBOT_AI(bot);
-    if (!selfAI || selfAI->IsRealPlayer())
+    if (!selfAI || IsSelfBot(bot))
         return false;
     if (botAI->IsHeal(bot) && bot->HasAura(SPELL_DREAM_STATE))
         return false;
@@ -942,7 +942,7 @@ bool IccValithriaDreamCloudAction::Execute(Event /*event*/)
         allDream.push_back(player);
 
         PlayerbotAI* playerBotAI = GET_PLAYERBOT_AI(player);
-        if (!playerBotAI || playerBotAI->IsRealPlayer())
+        if (!playerBotAI || IsSelfBot(player))
             realDream.push_back(player);
     }
 

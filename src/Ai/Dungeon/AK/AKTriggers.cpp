@@ -5,7 +5,6 @@
  */
 
 #include "AKTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
 #include "Playerbots.h"
 

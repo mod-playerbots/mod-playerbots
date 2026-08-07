@@ -29,6 +29,7 @@
 #    RANDOMBOT-SPECIFIC SETTINGS
 #        GENERAL
 #        LEVELS
+#        RANDOM BOT LEVEL MANAGEMENT (LEVEL BRACKETS + LEVEL RESET)
 #        GEAR
 #        QUESTS
 #        ACTIVITY
@@ -555,6 +556,17 @@ AiPlayerbot.AltMaintenanceKeyring = 1
 
 # Enable/Disable autogear command, which automatically upgrades bots' gear
 # The quality is limited by AutoGearQualityLimit and AutoGearScoreLimit
+# In-game syntax (the argument can only request at or below the configured limits):
+#   autogear            - gear to the configured AutoGearQualityLimit / AutoGearScoreLimit
+#   autogear green      - cap quality to uncommon (also: white/common, blue/rare, purple/epic,
+#                         orange/legendary, artifact, heirloom)
+#   autogear match      - match the commanding player's average item level, computed over the slots the
+#                         player actually has filled so empty slots do not drag the target down
+#   autogear 200        - target a specific item level (clamped to AutoGearScoreLimit when that is non-zero).
+#                         Only positive whole numbers are accepted; negative or malformed values are rejected
+#   autogear reset      - erase all equipped gear and regear from scratch (combinable: autogear reset green,
+#                         autogear reset 200, autogear reset match)
+#   autogear bis        - separate BiS command, see AutoGearBisCommand below
 # Default: 1 (enabled)
 AiPlayerbot.AutoGearCommand = 1
 
@@ -785,6 +797,322 @@ AiPlayerbot.DowngradeMaxLevelBot = 0
 # Set XP rate for randombots (Default: 1.0)
 # Server XP Rate * AiPlayerbot.RandomBotXPRate
 AiPlayerbot.RandomBotXPRate = 1.0
+
+#
+#
+####################################################################################################
+
+####################################################################################################
+# RANDOM BOT LEVEL MANAGEMENT (LEVEL BRACKETS + LEVEL RESET)
+#
+# Two independent, opt-in sub-features for managing random bot levels over time. Both pick up
+# changed values on the standard ".reload config" GM command.
+#
+#   - Level Brackets: periodically redistributes random bots across configurable per-faction level
+#     brackets, optionally weighting the distribution toward brackets that contain real (non-bot)
+#     players. This complements AiPlayerbot.DowngradeMaxLevelBot-style behavior: instead of a
+#     one-shot downgrade, it continuously rebalances the whole random bot population across brackets
+#     over time.
+#
+#   - Level Reset: when a random bot reaches a configured max level, resets it back down to a lower
+#     level via a full PlayerbotFactory randomize, with an optional percent chance (optionally
+#     scaled by level), an optional minimum played-time restriction, and an optional "skip" that
+#     sends a bot straight to a different level as soon as it reaches a configured trigger level.
+#
+# NOTE: Level Reset overlaps with AiPlayerbot.DowngradeMaxLevelBot, which downgrades a bot that is
+#       already at RandomBotMaxLevel to RandomBotMinLevel the next time it is periodically
+#       re-randomized. Level Reset instead acts immediately (or on a played-time timer) as soon as a
+#       bot reaches the configured level, with its own chance/played-time controls. Do not normally
+#       enable both AiPlayerbot.DowngradeMaxLevelBot and AiPlayerbot.ResetBotLevel.Enabled at the
+#       same time.
+#
+
+##############################################
+# Level Brackets
+##############################################
+
+# Enables the level brackets feature.
+# Default: 0 (disabled)
+AiPlayerbot.LevelBrackets.Enabled = 0
+
+# The frequency (in seconds) at which the bot level distribution check is performed.
+# Default: 300
+AiPlayerbot.LevelBrackets.CheckFrequency = 300
+
+# The frequency (in seconds) at which pending level resets are processed for safe bots and flagged
+# bots that failed safety checks initially.
+# Default: 15
+AiPlayerbot.LevelBrackets.CheckFlaggedFrequency = 15
+
+# Maximum number of flagged bots to process per pending level change step.
+# 0 = unlimited (process all flagged bots each step)
+# Default: 5
+AiPlayerbot.LevelBrackets.FlaggedProcessLimit = 5
+
+# When enabled, bots in a guild led by a real (non-bot) player are excluded from bot bracket
+# calculations and will not be level changed or flagged. Backed by the shared PlayerbotGuildMgr
+# guild cache (validated at startup and refreshed hourly), which also covers offline players; a
+# guild counts as real when its leader is not a random-bot account.
+# Default: 1 (enabled)
+AiPlayerbot.LevelBrackets.IgnoreGuildBotsWithRealPlayers = 1
+
+# When enabled, bots that are members of arena teams are excluded from bot bracket calculations
+# and will not be level changed or flagged. This prevents bots in arena teams from being changed,
+# which would break team compositions.
+# Default: 1 (enabled)
+AiPlayerbot.LevelBrackets.IgnoreArenaTeamBots = 1
+
+# Ignore bots that are on real players' friends lists from any brackets.
+# Default: 1 (enabled)
+AiPlayerbot.LevelBrackets.IgnoreFriendListed = 1
+
+# Comma-separated list of bot names to exclude from all bracket checks. Names must match the
+# character name exactly (character names are stored capitalized, e.g. "Thrall").
+# Default: ""
+AiPlayerbot.LevelBrackets.ExcludeNames =
+
+# The number of level brackets used for bot distribution. Both Alliance and Horde should have the
+# same number of brackets defined below.
+# Default: 9
+#
+# IMPORTANT: If you extend the number of brackets beyond 9, you must add configuration lines for
+#            the additional bracket lines below (e.g. Range10, Range11, etc.) to both your
+#            playerbots.conf and this playerbots.conf.dist. Ensure that the sum of the Pct values
+#            for each faction remains 100.
+AiPlayerbot.LevelBrackets.NumRanges = 9
+
+# Enables dynamic recalculation of bot distribution percentages based on the number of non-bot
+# players present in each level bracket. This overrides any custom brackets in the conf.
+# Default: 0 (disabled)
+AiPlayerbot.LevelBrackets.Dynamic.UseDynamicDistribution = 0
+
+# Controls how much extra weight is given to brackets (level ranges) that contain real (non-bot)
+# players, when dynamic distribution is enabled. The higher this value, the more bots move to the
+# same level brackets where real players are found, but the effect is gentle, not extreme. A value
+# of 0.0 means bots always distribute evenly across all brackets, regardless of where players are.
+# The default value of 1.0 gives a mild, balanced effect. Raising this to 3.0, 5.0, or higher makes
+# bots concentrate more in brackets with real players. The value is a multiplier (not a percent):
+# 0.0 = no extra effect, 1.0 = minimal, 3.0 = stronger, 5.0 = strong but not extreme. Experiment
+# based on your total bot count and real player counts to find a good number for your server. If
+# you want a large congestion of bots in your level bracket for solo play, 10-15 is recommended.
+# What to expect:
+#   - With 1.0 (default): if 6/10 real players are in one bracket, that bracket gets about 12.77%
+#     of bots. All-empty brackets get about 10.69% each.
+#   - With 3.0: same scenario: bracket gets about 15.73% of bots. All-empty brackets: 9.93% each.
+#   - With 5.0: bracket with 6/10 real players gets 18.31%. All-empty brackets: 9.28% each.
+#   - If all real players are in one bracket and weight is 5.0, that bracket gets about 21.56% of
+#     bots (others: 9.80% each).
+#   - With 0.0: every bracket always gets the same number of bots (e.g., 11.11% each for 9
+#     brackets).
+# Formula (per bracket):
+#   bracket_weight = 1.0 + (RealPlayerWeight x (1 / TotalRealPlayers) x log(1 + RealPlayersInBracket))
+#   All bracket weights are normalized to total 100%.
+# Default: 1.0
+AiPlayerbot.LevelBrackets.Dynamic.RealPlayerWeight = 1.0
+
+# If enabled, both Alliance and Horde must have identical bracket definitions (same number, same
+# level bounds). All real players (regardless of faction) influence the dynamic distribution for
+# both factions.
+# Default: 0 (disabled)
+# NOTE: If the brackets do not match when enabled, SyncFactions is forcibly disabled for that
+#       session and an error is logged; the server will not fail to start over this.
+AiPlayerbot.LevelBrackets.Dynamic.SyncFactions = 0
+
+##############################################
+# Alliance Level Brackets Configuration
+##############################################
+# The following settings define the level brackets for Alliance bots. For each bracket, specify:
+#
+#    AiPlayerbot.LevelBrackets.Alliance.RangeX.Lower
+#        Description: The lower bound (inclusive) of bracket X.
+#
+#    AiPlayerbot.LevelBrackets.Alliance.RangeX.Upper
+#        Description: The upper bound (inclusive) of bracket X.
+#
+#    AiPlayerbot.LevelBrackets.Alliance.RangeX.Pct
+#        Description: The desired percentage of Alliance bots that should fall into bracket X.
+#
+# EXAMPLE:
+#   The default configuration below defines 9 brackets: Range1 covers levels 1-9, Range2 covers
+#   levels 10-19, Range3 covers levels 20-29, and so on.
+#
+#   To customize or add a new bracket (for example, to isolate level 60 in its own bracket):
+#       - Set Range7.Lower = 60 and Range7.Upper = 60, then adjust the Pct values for Range6 and
+#         Range8 accordingly.
+#
+#   To add an extra bracket beyond the default 9:
+#       1. Increase AiPlayerbot.LevelBrackets.NumRanges to the desired number.
+#       2. Add configuration lines for the new RangeX.Lower, RangeX.Upper, and RangeX.Pct.
+#
+# NOTE: The sum of all Pct values for the Alliance brackets must equal 100.
+#
+AiPlayerbot.LevelBrackets.Alliance.Range1.Lower = 1
+AiPlayerbot.LevelBrackets.Alliance.Range1.Upper = 9
+AiPlayerbot.LevelBrackets.Alliance.Range1.Pct   = 12
+
+AiPlayerbot.LevelBrackets.Alliance.Range2.Lower = 10
+AiPlayerbot.LevelBrackets.Alliance.Range2.Upper = 19
+AiPlayerbot.LevelBrackets.Alliance.Range2.Pct   = 11
+
+AiPlayerbot.LevelBrackets.Alliance.Range3.Lower = 20
+AiPlayerbot.LevelBrackets.Alliance.Range3.Upper = 29
+AiPlayerbot.LevelBrackets.Alliance.Range3.Pct   = 11
+
+AiPlayerbot.LevelBrackets.Alliance.Range4.Lower = 30
+AiPlayerbot.LevelBrackets.Alliance.Range4.Upper = 39
+AiPlayerbot.LevelBrackets.Alliance.Range4.Pct   = 11
+
+AiPlayerbot.LevelBrackets.Alliance.Range5.Lower = 40
+AiPlayerbot.LevelBrackets.Alliance.Range5.Upper = 49
+AiPlayerbot.LevelBrackets.Alliance.Range5.Pct   = 11
+
+AiPlayerbot.LevelBrackets.Alliance.Range6.Lower = 50
+AiPlayerbot.LevelBrackets.Alliance.Range6.Upper = 59
+AiPlayerbot.LevelBrackets.Alliance.Range6.Pct   = 11
+
+AiPlayerbot.LevelBrackets.Alliance.Range7.Lower = 60
+AiPlayerbot.LevelBrackets.Alliance.Range7.Upper = 69
+AiPlayerbot.LevelBrackets.Alliance.Range7.Pct   = 11
+
+AiPlayerbot.LevelBrackets.Alliance.Range8.Lower = 70
+AiPlayerbot.LevelBrackets.Alliance.Range8.Upper = 79
+AiPlayerbot.LevelBrackets.Alliance.Range8.Pct   = 11
+
+AiPlayerbot.LevelBrackets.Alliance.Range9.Lower = 80
+AiPlayerbot.LevelBrackets.Alliance.Range9.Upper = 80
+AiPlayerbot.LevelBrackets.Alliance.Range9.Pct   = 11
+
+##############################################
+# Horde Level Brackets Configuration
+##############################################
+# The following settings define the level brackets for Horde bots. For each bracket, specify:
+#
+#    AiPlayerbot.LevelBrackets.Horde.RangeX.Lower
+#        Description: The lower bound (inclusive) of bracket X.
+#
+#    AiPlayerbot.LevelBrackets.Horde.RangeX.Upper
+#        Description: The upper bound (inclusive) of bracket X.
+#
+#    AiPlayerbot.LevelBrackets.Horde.RangeX.Pct
+#        Description: The desired percentage of Horde bots that should fall into bracket X.
+#
+# EXAMPLE:
+#   The default configuration below defines 9 brackets: Range1 covers levels 1-9, Range2 covers
+#   levels 10-19, Range3 covers levels 20-29, and so on.
+#
+#   To customize or add a new bracket (for example, to isolate level 70 in its own bracket):
+#       - Set Range8.Lower = 70 and Range8.Upper = 70, then adjust the Pct values for the adjacent
+#         ranges.
+#
+# NOTE: The sum of all Pct values for the Horde brackets must equal 100.
+#
+AiPlayerbot.LevelBrackets.Horde.Range1.Lower = 1
+AiPlayerbot.LevelBrackets.Horde.Range1.Upper = 9
+AiPlayerbot.LevelBrackets.Horde.Range1.Pct   = 12
+
+AiPlayerbot.LevelBrackets.Horde.Range2.Lower = 10
+AiPlayerbot.LevelBrackets.Horde.Range2.Upper = 19
+AiPlayerbot.LevelBrackets.Horde.Range2.Pct   = 11
+
+AiPlayerbot.LevelBrackets.Horde.Range3.Lower = 20
+AiPlayerbot.LevelBrackets.Horde.Range3.Upper = 29
+AiPlayerbot.LevelBrackets.Horde.Range3.Pct   = 11
+
+AiPlayerbot.LevelBrackets.Horde.Range4.Lower = 30
+AiPlayerbot.LevelBrackets.Horde.Range4.Upper = 39
+AiPlayerbot.LevelBrackets.Horde.Range4.Pct   = 11
+
+AiPlayerbot.LevelBrackets.Horde.Range5.Lower = 40
+AiPlayerbot.LevelBrackets.Horde.Range5.Upper = 49
+AiPlayerbot.LevelBrackets.Horde.Range5.Pct   = 11
+
+AiPlayerbot.LevelBrackets.Horde.Range6.Lower = 50
+AiPlayerbot.LevelBrackets.Horde.Range6.Upper = 59
+AiPlayerbot.LevelBrackets.Horde.Range6.Pct   = 11
+
+AiPlayerbot.LevelBrackets.Horde.Range7.Lower = 60
+AiPlayerbot.LevelBrackets.Horde.Range7.Upper = 69
+AiPlayerbot.LevelBrackets.Horde.Range7.Pct   = 11
+
+AiPlayerbot.LevelBrackets.Horde.Range8.Lower = 70
+AiPlayerbot.LevelBrackets.Horde.Range8.Upper = 79
+AiPlayerbot.LevelBrackets.Horde.Range8.Pct   = 11
+
+AiPlayerbot.LevelBrackets.Horde.Range9.Lower = 80
+AiPlayerbot.LevelBrackets.Horde.Range9.Upper = 80
+AiPlayerbot.LevelBrackets.Horde.Range9.Pct   = 11
+
+##############################################
+# Level Reset
+##############################################
+
+# Enables the level reset feature.
+# Default: 0 (disabled)
+AiPlayerbot.ResetBotLevel.Enabled = 0
+
+# The maximum level a bot can reach before being reset.
+# Default:     80
+# Valid range: 2-80 (or 0 to disable the max-level reset check; SkipFromLevel/SkipToLevel still apply)
+AiPlayerbot.ResetBotLevel.MaxLevel = 80
+
+# The level bots will be reset to. For Death Knights, if this is below the heroic starting level,
+# they will be reset to the heroic starting level instead.
+# Default:     1
+# Valid range: 1-79 and < MaxLevel
+AiPlayerbot.ResetBotLevel.ResetToLevel = 1
+
+# When a bot reaches exactly this level, it is sent directly to the level specified by SkipToLevel.
+# This setting is not affected by ScaledChance or RestrictTimePlayed.
+# Default:     0 (disabled)
+# Valid range: 1-80 and < MaxLevel (or 0 to disable)
+AiPlayerbot.ResetBotLevel.SkipFromLevel = 0
+
+# The level bots will be sent to when they reach SkipFromLevel. For Death Knights, if this is below
+# the heroic starting level, they will be reset to the heroic starting level instead.
+# Default:     1
+# Valid range: 1-80 and <= MaxLevel
+AiPlayerbot.ResetBotLevel.SkipToLevel = 1
+
+# The percent chance a bot has to have its level reset when reaching the max level (or the
+# configured played time at max level).
+# Default:     100
+# Valid range: 0-100
+AiPlayerbot.ResetBotLevel.ResetChance = 100
+
+# If enabled, the reset chance is (re-)rolled every level-up and scales based on the distance
+# between the bot's level and MaxLevel. Bots have a small chance of resetting at lower levels,
+# increasing as they approach MaxLevel, where the chance reaches ResetChance.
+# Default: 0 (disabled)
+AiPlayerbot.ResetBotLevel.ScaledChance = 0
+
+# If enabled, bots at MaxLevel will only have their level reset once they have played at least
+# MinTimePlayed seconds at that level.
+# Default: 0 (disabled)
+AiPlayerbot.ResetBotLevel.RestrictTimePlayed = 0
+
+# If RestrictTimePlayed is enabled, the minimum time (in seconds) a bot must have played at its
+# current level before a reset can occur at MaxLevel.
+# Default: 86400 (3600 = 1 hour, 86400 = 1 day, 604800 = 1 week)
+AiPlayerbot.ResetBotLevel.MinTimePlayed = 86400
+
+# If RestrictTimePlayed is enabled, the frequency (in seconds) at which the played-time check is
+# performed for bots at or above MaxLevel.
+# Default: 864
+# Recommended: 1% of MinTimePlayed, or 300 seconds, whichever is higher.
+AiPlayerbot.ResetBotLevel.PlayedTimeCheckFrequency = 864
+
+# When enabled, bots in a guild led by a real (non-bot) player are excluded from level reset
+# processing. Backed by the same shared PlayerbotGuildMgr guild cache used by
+# AiPlayerbot.LevelBrackets.IgnoreGuildBotsWithRealPlayers (validated at startup and refreshed
+# hourly), which also covers offline players; a guild counts as real when its leader is not a
+# random-bot account.
+# Default: 0 (disabled)
+AiPlayerbot.ResetBotLevel.IgnoreGuildBotsWithRealPlayers = 0
+
+# Comma-separated list of bot names to exclude from level reset processing. Names must match the
+# character name exactly (character names are stored capitalized, e.g. "Thrall").
+# Default: "" (empty)
+AiPlayerbot.ResetBotLevel.ExcludeNames =
 
 #
 #
@@ -1381,6 +1709,11 @@ AiPlayerbot.MaxRandomBotRandomizeTime = 1209600
 # Number of bots processed (login, logout, update) per manager update cycle
 # Default: 60
 AiPlayerbot.RandomBotsPerInterval = 60
+
+# Interval (in seconds) between periodic random bot statistics dumps in the log
+# (online count, level/race/class distribution, roles, status). Set to 0 to disable.
+# Default: 300
+AiPlayerbot.RandomBotPrintStatsInterval = 300
 
 # Minimum and maximum seconds after death before a bot revives
 # Defaults: 60 (min), 300 (max)

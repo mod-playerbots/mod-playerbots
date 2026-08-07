@@ -39,5 +39,5 @@ bool PassLeadershipToMasterAction::isUseful()
 
 bool GiveLeaderAction::isUseful()
 {
-    return botAI->HasActivePlayerMaster() && bot->GetGroup() && bot->GetGroup()->IsLeader(bot->GetGUID());
+    return IsRealPlayer(botAI->GetMaster()) && bot->GetGroup() && bot->GetGroup()->IsLeader(bot->GetGUID());
 }
