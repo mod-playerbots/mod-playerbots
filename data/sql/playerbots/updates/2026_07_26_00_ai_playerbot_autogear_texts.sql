@@ -38,7 +38,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES
-    (1900, 'autogear_command_disabled_error',
+    (1901, 'autogear_command_disabled_error',
      'autogear command is not allowed, please check the configuration.', 0, 0,
      '자동 장비 명령이 허용되지 않습니다. 설정을 확인하세요.',
      'La commande autogear n''est pas autorisée, veuillez vérifier la configuration.',
@@ -49,7 +49,7 @@ VALUES
      'El comando autogear no está permitido, por favor revisa la configuración.',
      'Команда autogear не разрешена, проверьте конфигурацию.'),
 
-    (1901, 'autogear_altbot_refused_error',
+    (1902, 'autogear_altbot_refused_error',
      'You cannot use autogear on alt bots.', 0, 0,
      '부캐 봇에는 autogear를 사용할 수 없습니다.',
      'Vous ne pouvez pas utiliser autogear sur des bots alternatifs.',
@@ -60,7 +60,7 @@ VALUES
      'No puedes usar autogear en bots alternativos.',
      'Вы не можете использовать autogear на дополнительных ботах.'),
 
-    (1902, 'autogear_no_master_error',
+    (1903, 'autogear_no_master_error',
      'I have no master to match gear with.', 0, 0,
      '장비를 맞출 주인이 없습니다.',
      'Je n''ai pas de maître dont je pourrais copier l''équipement.',
@@ -71,7 +71,7 @@ VALUES
      'No tengo un maestro con quien igualar el equipo.',
      'У меня нет хозяина, под чьё снаряжение можно подстроиться.'),
 
-    (1903, 'autogear_master_no_gear_error',
+    (1904, 'autogear_master_no_gear_error',
      'You have no gear equipped for me to match.', 0, 0,
      '맞출 수 있는 장비를 착용하고 있지 않습니다.',
      'Vous ne portez aucun équipement que je puisse égaler.',
@@ -82,7 +82,7 @@ VALUES
      'No llevas equipo que yo pueda igualar.',
      'На вас нет снаряжения, под которое я мог бы подстроиться.'),
 
-    (1904, 'autogear_quality_capped_msg',
+    (1905, 'autogear_quality_capped_msg',
      'Config limits me to %quality quality, gearing to that.', 0, 0,
      '설정이 저를 %quality 등급으로 제한합니다. 해당 등급으로 장비를 맞춥니다.',
      'La configuration me limite à la qualité %quality, je m''équipe à ce niveau.',
@@ -93,7 +93,7 @@ VALUES
      'La configuración me limita a calidad %quality, me equipo con eso.',
      'Конфигурация ограничивает меня качеством %quality, экипируюсь по нему.'),
 
-    (1905, 'autogear_ilvl_capped_msg',
+    (1906, 'autogear_ilvl_capped_msg',
      'Config caps item level at %limit, gearing to that instead of %requested.', 0, 0,
      '설정이 아이템 레벨을 %limit(으)로 제한합니다. %requested 대신 해당 레벨로 장비를 맞춥니다.',
      'La configuration plafonne l''iLvl à %limit, je m''équipe à ce niveau au lieu de %requested.',
@@ -104,7 +104,7 @@ VALUES
      'La configuración limita el nivel de objeto a %limit, me equipo a eso en lugar de %requested.',
      'Конфигурация ограничивает уровень предметов до %limit, экипируюсь по нему вместо %requested.'),
 
-    (1906, 'autogear_invalid_arg_error',
+    (1907, 'autogear_invalid_arg_error',
      'Unknown autogear option ''%param''. Use bis, reset, match, a quality (white, green, blue, purple, orange) or a positive item level number.', 0, 0,
      '알 수 없는 autogear 옵션 ''%param''. bis, reset, match, 등급(white, green, blue, purple, orange) 또는 양의 아이템 레벨 숫자를 사용하세요.',
      'Option autogear inconnue ''%param''. Utilisez bis, reset, match, une qualité (white, green, blue, purple, orange) ou un iLvl entier positif.',
@@ -115,7 +115,7 @@ VALUES
      'Opción de autogear desconocida ''%param''. Usa bis, reset, match, una calidad (white, green, blue, purple, orange) o un nivel de objeto positivo.',
      'Неизвестный параметр autogear ''%param''. Используйте bis, reset, match, качество (white, green, blue, purple, orange) или положительное число уровня предметов.'),
 
-    (1907, 'autogear_quality_as_number_error',
+    (1908, 'autogear_quality_as_number_error',
      '''%param'' looks like a quality. Numbers are item levels (e.g. 200); use a colour word for quality: white, green, blue, purple, orange.', 0, 0,
      '''%param''은(는) 등급처럼 보입니다. 숫자는 아이템 레벨입니다(예: 200). 등급은 색상 단어를 사용하세요: white, green, blue, purple, orange.',
      '''%param'' ressemble à une qualité. Les nombres sont des iLvl (ex. 200) ; utilisez un mot de couleur pour la qualité : white, green, blue, purple, orange.',
@@ -126,7 +126,7 @@ VALUES
      '''%param'' parece una calidad. Los números son niveles de objeto (p. ej. 200); usa una palabra de color para la calidad: white, green, blue, purple, orange.',
      '''%param'' похоже на качество. Числа — это уровень предметов (например, 200); для качества используйте цвет: white, green, blue, purple, orange.'),
 
-    (1908, 'autogear_start_msg',
+    (1909, 'autogear_start_msg',
      'I''m auto gearing (%quality, up to item level %ilvl).', 0, 0,
      '자동으로 장비를 갖춥니다 (%quality, 최대 아이템 레벨 %ilvl).',
      'Je m''équipe automatiquement (%quality, jusqu''à l''iLvl %ilvl).',
@@ -137,7 +137,7 @@ VALUES
      'Me estoy equipando automáticamente (%quality, hasta nivel de objeto %ilvl).',
      'Экипируюсь автоматически (%quality, до уровня предметов %ilvl).'),
 
-    (1909, 'autogear_start_any_ilvl_msg',
+    (1910, 'autogear_start_any_ilvl_msg',
      'I''m auto gearing (%quality).', 0, 0,
      '자동으로 장비를 갖춥니다 (%quality).',
      'Je m''équipe automatiquement (%quality).',
@@ -148,7 +148,7 @@ VALUES
      'Me estoy equipando automáticamente (%quality).',
      'Экипируюсь автоматически (%quality).'),
 
-    (1910, 'autogear_reset_start_msg',
+    (1911, 'autogear_reset_start_msg',
      'I''m erasing my gear and regearing from scratch (%quality, up to item level %ilvl).', 0, 0,
      '장비를 모두 지우고 처음부터 다시 갖춥니다 (%quality, 최대 아이템 레벨 %ilvl).',
      'J''efface mon équipement et je me rééquipe de zéro (%quality, jusqu''à l''iLvl %ilvl).',
@@ -159,7 +159,7 @@ VALUES
      'Estoy borrando mi equipo y reequipándome desde cero (%quality, hasta nivel de objeto %ilvl).',
      'Стираю своё снаряжение и экипируюсь заново (%quality, до уровня предметов %ilvl).'),
 
-    (1911, 'autogear_reset_start_any_ilvl_msg',
+    (1912, 'autogear_reset_start_any_ilvl_msg',
      'I''m erasing my gear and regearing from scratch (%quality).', 0, 0,
      '장비를 모두 지우고 처음부터 다시 갖춥니다 (%quality).',
      'J''efface mon équipement et je me rééquipe de zéro (%quality).',
