@@ -290,7 +290,7 @@ bool LootObject::IsLootPossible(Player* bot)
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     if (!botAI)
         return false;
-    
+
     if (reqItem && !bot->HasItemCount(reqItem, 1))
         return false;
 
