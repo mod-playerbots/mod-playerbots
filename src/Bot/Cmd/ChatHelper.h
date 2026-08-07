@@ -63,6 +63,7 @@ public:
     static std::string const FormatBoolean(bool flag);
 
     static uint32 parseItemQuality(std::string const text);
+    static std::string const FormatItemQuality(uint32 quality);
     static bool parseItemClass(std::string const text, uint32* itemClass, uint32* itemSubClass);
     static uint32 parseSlot(std::string const text);
     uint32 parseSkill(std::string const text);

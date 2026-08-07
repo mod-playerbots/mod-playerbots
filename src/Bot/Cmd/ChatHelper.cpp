@@ -41,7 +41,9 @@ ChatHelper::ChatHelper(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
 {
     itemQualities["poor"] = ITEM_QUALITY_POOR;
     itemQualities["gray"] = ITEM_QUALITY_POOR;
+    itemQualities["grey"] = ITEM_QUALITY_POOR;
     itemQualities["normal"] = ITEM_QUALITY_NORMAL;
+    itemQualities["common"] = ITEM_QUALITY_NORMAL;
     itemQualities["white"] = ITEM_QUALITY_NORMAL;
     itemQualities["uncommon"] = ITEM_QUALITY_UNCOMMON;
     itemQualities["green"] = ITEM_QUALITY_UNCOMMON;
@@ -49,8 +51,12 @@ ChatHelper::ChatHelper(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
     itemQualities["blue"] = ITEM_QUALITY_RARE;
     itemQualities["epic"] = ITEM_QUALITY_EPIC;
     itemQualities["violet"] = ITEM_QUALITY_EPIC;
+    itemQualities["purple"] = ITEM_QUALITY_EPIC;
     itemQualities["legendary"] = ITEM_QUALITY_LEGENDARY;
     itemQualities["yellow"] = ITEM_QUALITY_LEGENDARY;
+    itemQualities["orange"] = ITEM_QUALITY_LEGENDARY;
+    itemQualities["artifact"] = ITEM_QUALITY_ARTIFACT;
+    itemQualities["heirloom"] = ITEM_QUALITY_HEIRLOOM;
 
     consumableSubClasses["potion"] = ITEM_SUBCLASS_POTION;
     consumableSubClasses["elixir"] = ITEM_SUBCLASS_ELIXIR;
@@ -554,6 +560,31 @@ uint32 ChatHelper::parseItemQuality(std::string const text)
         return MAX_ITEM_QUALITY;
 
     return itemQualities[text];
+}
+
+std::string const ChatHelper::FormatItemQuality(uint32 quality)
+{
+    switch (quality)
+    {
+        case ITEM_QUALITY_POOR:
+            return "grey";
+        case ITEM_QUALITY_NORMAL:
+            return "white";
+        case ITEM_QUALITY_UNCOMMON:
+            return "green";
+        case ITEM_QUALITY_RARE:
+            return "blue";
+        case ITEM_QUALITY_EPIC:
+            return "purple";
+        case ITEM_QUALITY_LEGENDARY:
+            return "orange";
+        case ITEM_QUALITY_ARTIFACT:
+            return "artifact";
+        case ITEM_QUALITY_HEIRLOOM:
+            return "heirloom";
+        default:
+            return "unknown";
+    }
 }
 
 bool ChatHelper::parseItemClass(std::string const text, uint32* itemClass, uint32* itemSubClass)
