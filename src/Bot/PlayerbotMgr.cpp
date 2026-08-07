@@ -501,7 +501,7 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
             if (sPlayerbotAIConfig.KeepAltsInGroup())
             {
                 uint32 account = sCharacterCache->GetCharacterAccountIdByGuid(member);
-                if (!sPlayerbotAIConfig.IsInRandomAccountList(account))
+                if (!sPlayerbotAIConfig.IsInBotAccountList(account))
                 {
                     groupValid = true;
                     break;
@@ -577,7 +577,7 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
     //     // bot->TeleportTo(master);
     // }
     uint32 accountId = bot->GetSession()->GetAccountId();
-    bool isRandomAccount = sPlayerbotAIConfig.IsInRandomAccountList(accountId);
+    bool isRandomAccount = sPlayerbotAIConfig.IsInBotAccountList(accountId);
 
     if (isRandomAccount && sPlayerbotAIConfig.randomBotFixedLevel)
     {
@@ -676,7 +676,7 @@ std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, Obje
         return "bot system is disabled";
 
     //bool isRandomBot = sRandomPlayerbotMgr.IsRandomBot(guid.GetCounter()); //not used, line marked for removal.
-    //bool isRandomAccount = sPlayerbotAIConfig.IsInRandomAccountList(botAccount); //not used, shadowed, line marked for removal.
+    //bool isRandomAccount = sPlayerbotAIConfig.IsInBotAccountList(botAccount); //not used, shadowed, line marked for removal.
     //bool isMasterAccount = (masterAccountId == botAccount); //not used, line marked for removal.
 
     if (cmd == "add" || cmd == "addaccount" || cmd == "login")

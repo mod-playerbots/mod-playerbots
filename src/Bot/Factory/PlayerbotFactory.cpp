@@ -3523,8 +3523,8 @@ void PlayerbotFactory::InitTalentsByTemplate(uint32 specTab)
 ObjectGuid PlayerbotFactory::GetRandomBot()
 {
     GuidVector guids;
-    for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.randomBotAccounts.begin();
-         i != sPlayerbotAIConfig.randomBotAccounts.end(); i++)
+    for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.botAccounts.begin();
+         i != sPlayerbotAIConfig.botAccounts.end(); i++)
     {
         uint32 accountId = *i;
         if (!AccountMgr::GetCharactersCount(accountId))

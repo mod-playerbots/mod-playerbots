@@ -48,7 +48,7 @@ bool ChangeNonCombatStrategyAction::Execute(Event event)
     std::string const text = event.getParam();
 
     uint32 account = bot->GetSession()->GetAccountId();
-    if (sPlayerbotAIConfig.IsInRandomAccountList(account) && botAI->GetMaster() &&
+    if (sPlayerbotAIConfig.IsInBotAccountList(account) && botAI->GetMaster() &&
         !botAI->GetMaster()->CanBeGameMaster())
     {
         if (text.find("loot") != std::string::npos)

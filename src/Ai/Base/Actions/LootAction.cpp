@@ -512,8 +512,8 @@ bool StoreLootAction::IsLootAllowed(uint32 itemid, PlayerbotAI* botAI)
     //{
 
     bool canLoot = lootStrategy->CanLoot(proto, context);
-    // if (canLoot && proto->Bonding == BIND_WHEN_PICKED_UP && IsRealPlayer(botAI->GetMaster()))
-    // canLoot = sPlayerbotAIConfig.IsInRandomAccountList(botAI->GetBot()->GetSession()->GetAccountId());
+    // if (canLoot && proto->Bonding == BIND_WHEN_PICKED_UP && botAI->HasActivePlayerMaster())
+    // canLoot = sPlayerbotAIConfig.IsInBotAccountList(botAI->GetBot()->GetSession()->GetAccountId());
 
     return canLoot;
 }

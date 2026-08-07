@@ -664,7 +664,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         Field* fields = result->Fetch();
         uint32 accountId = fields[0].Get<uint32>();
 
-        sPlayerbotAIConfig.randomBotAccounts.push_back(accountId);
+        sPlayerbotAIConfig.botAccounts.push_back(accountId);
 
         uint32 count = AccountMgr::GetCharactersCount(accountId);
         if (count >= 10)
@@ -749,13 +749,13 @@ void RandomPlayerbotFactory::CreateRandomBots()
     for (WorldSession* session : sessionBots)
         delete session;
 
-    for (uint32 accountId : sPlayerbotAIConfig.randomBotAccounts)
+    for (uint32 accountId : sPlayerbotAIConfig.botAccounts)
     {
         totalRandomBotChars += AccountMgr::GetCharactersCount(accountId);
     }
 
     LOG_INFO("server.loading", ">> {} bot accounts with {} characters available",
-            sPlayerbotAIConfig.randomBotAccounts.size(), totalRandomBotChars);
+            sPlayerbotAIConfig.botAccounts.size(), totalRandomBotChars);
 }
 
 std::string const RandomPlayerbotFactory::CreateRandomGuildName()
@@ -799,7 +799,7 @@ bool RandomPlayerbotFactory::IsBotArenaTeam(ArenaTeam const* team)
         return false;
 
     uint32 accountId = sCharacterCache->GetCharacterAccountIdByGuid(captainGuid);
-    return accountId && sPlayerbotAIConfig.IsInRandomAccountList(accountId);
+    return accountId && sPlayerbotAIConfig.IsInBotAccountList(accountId);
 }
 
 void RandomPlayerbotFactory::LoadArenaTeamData()
@@ -855,7 +855,7 @@ void RandomPlayerbotFactory::LoadArenaTeamData()
 
 void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
 {
-    if (!sPlayerbotAIConfig.IsInRandomAccountList(bot->GetSession()->GetAccountId()))
+    if (!sPlayerbotAIConfig.IsInBotAccountList(bot->GetSession()->GetAccountId()))
         return;
 
     if (sPlayerbotAIConfig.deleteRandomBotArenaTeams)

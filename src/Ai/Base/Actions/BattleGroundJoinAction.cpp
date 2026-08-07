@@ -93,7 +93,7 @@ bool BGJoinAction::gatherArenaTeam(ArenaType type)
             if (member->GetGroup() && memberBotAI->HasGameClientMaster())
                 continue;
 
-            if (!sPlayerbotAIConfig.IsInRandomAccountList(member->GetSession()->GetAccountId()))
+            if (!sPlayerbotAIConfig.IsInBotAccountList(member->GetSession()->GetAccountId()))
                 continue;
 
             if (member->IsInCombat())

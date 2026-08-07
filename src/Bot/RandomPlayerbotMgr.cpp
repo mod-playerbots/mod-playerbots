@@ -1518,7 +1518,7 @@ bool RandomPlayerbotMgr::ProcessBot(Player* bot)
             //         }
 
             //         uint32 accountId = sCharacterCache->GetCharacterAccountIdByGuid(guild->GetLeaderGUID());
-            //         if (!sPlayerbotAIConfig.IsInRandomAccountList(accountId))
+            //         if (!sPlayerbotAIConfig.IsInBotAccountList(accountId))
             //         {
             //             uint8 rank = player->GetRank();
             //             randomiser = rank < 4 ? false : true;
@@ -2130,7 +2130,7 @@ bool RandomPlayerbotMgr::IsRandomBot(Player* bot)
 bool RandomPlayerbotMgr::IsRandomBot(ObjectGuid::LowType bot)
 {
     ObjectGuid guid = ObjectGuid::Create<HighGuid::Player>(bot);
-    if (!sPlayerbotAIConfig.IsInRandomAccountList(sCharacterCache->GetCharacterAccountIdByGuid(guid)))
+    if (!sPlayerbotAIConfig.IsInBotAccountList(sCharacterCache->GetCharacterAccountIdByGuid(guid)))
         return false;
 
     return currentBots.contains(bot);
@@ -2438,8 +2438,8 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* /*handler*/,
         std::string const name = cmd.size() > prefix.size() + 1 ? cmd.substr(1 + prefix.size()) : "%";
 
         std::vector<uint32> botIds;
-        for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.randomBotAccounts.begin();
-             i != sPlayerbotAIConfig.randomBotAccounts.end(); ++i)
+        for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.botAccounts.begin();
+             i != sPlayerbotAIConfig.botAccounts.end(); ++i)
         {
             uint32 account = *i;
             if (QueryResult results = CharacterDatabase.Query(
