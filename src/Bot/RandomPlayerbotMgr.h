@@ -99,6 +99,11 @@ public:
 
     void LogPlayerLocation();
     void UpdateAIInternal(uint32 elapsed, bool minimal = false) override;
+    // RyanWoW fix (GH#893 - "Out-of-Bounds Bot Spawning"): periodically rescue bots that
+    // ended up at invalid world coordinates (Twisting Nether, map edges, underground, ...)
+    // by teleporting them to the nearest graveyard. Runs a small batch each tick to keep
+    // the cost bounded regardless of total bot count.
+    void ValidateBotPositions(uint32 maxChecksThisTick = 15);
 
     uint32 activeBots = 0;
     static bool HandlePlayerbotConsoleCommand(ChatHandler* handler, char const* args);
