@@ -8,7 +8,6 @@
 #define PLAYERBOTS_AKTRIGGERS_H
 
 #include "Trigger.h"
-#include "PlayerbotAIConfig.h"
 #include "GenericTriggers.h"
 #include "DungeonStrategyUtils.h"
 

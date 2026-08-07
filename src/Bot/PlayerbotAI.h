@@ -77,6 +77,8 @@ enum BotState
     BOT_STATE_MAX
 };
 
+bool IsRealPlayer(Player* player);
+bool IsSelfBot(Player* player);
 bool IsAlliance(uint8 race);
 
 class PlayerbotChatHandler : protected ChatHandler
@@ -537,15 +539,10 @@ public:
     Player* GetMaster() { return master; }
     Player* FindNewMaster();
 
-    // Checks if the bot is really a player. Players always have themselves as master.
-    bool IsRealPlayer() { return master ? (master == bot) : false; }
-    // Bot has a master that is a player.
-    bool HasRealPlayerMaster();
-    // Bot has a master that is activly playing.
-    bool HasActivePlayerMaster();
     // Get the group leader or the master of the bot.
-    // Checks if the bot is summoned as alt of a player
+    // Checks if the bot is summoned an altbot of a player
     bool IsAltBot();
+    bool HasGameClientMaster();
     Player* GetGroupLeader();
     uint32 GetFixedBotNumber(uint32 maxNum = 100);
     GrouperType GetGrouperType();
@@ -554,6 +551,7 @@ public:
     bool HasPlayerNearby(float range = sPlayerbotAIConfig.reactDistance);
     bool AllowActive(ActivityType activityType);
     bool AllowActivity(ActivityType activityType = ALL_ACTIVITY, bool checkNow = false);
+    bool IsActivityAllowedCached() const { return allowActive[ALL_ACTIVITY]; }
     uint32 AutoScaleActivity(uint32 mod);
 
     // Check if player is safe to use.

@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_RANDOMPLAYERBOTFACTORY_H
 #define PLAYERBOTS_RANDOMPLAYERBOTFACTORY_H
 
-#include <map>
 #include <unordered_map>
 #include <vector>
 

@@ -23,7 +23,7 @@ namespace
             return nullptr;
 
         PlayerbotAI* ai = GET_PLAYERBOT_AI(p);
-        if (!ai || ai->IsRealPlayer())
+        if (!ai || IsSelfBot(p))
             return nullptr;
 
         return p;

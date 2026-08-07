@@ -6,7 +6,6 @@
 
 #include "Playerbots.h"
 #include "HoLTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
 
 bool StormforgedLieutenantTrigger::IsActive()
