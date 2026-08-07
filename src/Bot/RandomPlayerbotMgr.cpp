@@ -488,7 +488,7 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
 // be unassigned (type 0)
 void RandomPlayerbotMgr::AssignAccountTypes()
 {
-    LOG_INFO("playerbots", "Assigning account types for random bot accounts...");
+    LOG_INFO("playerbots", "Assigning account types for bot accounts...");
 
     // Clear existing filtered lists
     rndBotTypeAccounts.clear();

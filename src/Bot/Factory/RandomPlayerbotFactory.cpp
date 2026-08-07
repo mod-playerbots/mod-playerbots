@@ -552,7 +552,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         CharacterDatabase.Execute("DELETE FROM petition_sign WHERE ownerguid NOT IN (SELECT guid FROM characters) OR playerguid NOT IN (SELECT guid FROM characters)");
 
         // Finally, delete the bot accounts themselves
-        LOG_INFO("playerbots", "Deleting random bot accounts...");
+        LOG_INFO("playerbots", "Deleting bot accounts...");
         QueryResult results = LoginDatabase.Query("SELECT id FROM account WHERE username LIKE '{}%%'",
                                              sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
         int32 deletion_count = 0;
@@ -586,13 +586,13 @@ void RandomPlayerbotFactory::CreateRandomBots()
         CharacterDatabase.Execute("FLUSH TABLES");
         PlayerbotsDatabase.Execute("FLUSH TABLES");
 
-        LOG_INFO("playerbots", ">> Random bot accounts and data deleted in {} ms", GetMSTimeDiffToNow(timer));
+        LOG_INFO("playerbots", ">> Bot accounts and data deleted in {} ms", GetMSTimeDiffToNow(timer));
         LOG_INFO("playerbots", "Please reset the AiPlayerbot.DeleteRandomBotAccounts to 0 and restart the server...");
         World::StopNow(SHUTDOWN_EXIT_CODE);
         return;
     }
 
-    LOG_INFO("playerbots", "Creating random bot accounts...");
+    LOG_INFO("playerbots", "Creating bot accounts...");
     std::unordered_map<NameRaceAndGender, std::vector<std::string>> nameCache;
     std::vector<std::future<void>> account_creations;
     int account_creation = 0;
@@ -754,7 +754,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         totalRandomBotChars += AccountMgr::GetCharactersCount(accountId);
     }
 
-    LOG_INFO("server.loading", ">> {} random bot accounts with {} characters available",
+    LOG_INFO("server.loading", ">> {} bot accounts with {} characters available",
             sPlayerbotAIConfig.randomBotAccounts.size(), totalRandomBotChars);
 }
 
