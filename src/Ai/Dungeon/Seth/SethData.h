@@ -8,9 +8,16 @@
 #define PLAYERBOTS_SETHDATA_H
 
 #include "Common.h"
+#include <type_traits>
 
 namespace SethData
 {
+
+template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
+constexpr uint32 Id(T value)
+{
+    return static_cast<uint32>(value);
+}
 
 enum class SethSpells : uint32
 {

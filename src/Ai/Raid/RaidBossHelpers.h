@@ -9,14 +9,6 @@
 
 #include "AiObject.h"
 #include "Unit.h"
-#include <type_traits>
-
-// To avoid repeated casting of enum classes to uint32
-template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
-constexpr uint32 Id(T value)
-{
-    return static_cast<uint32>(value);
-}
 
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
 bool MarkTargetWithSkull(Player* bot, Unit* target);

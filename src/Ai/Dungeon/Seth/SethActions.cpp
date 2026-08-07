@@ -14,7 +14,7 @@ using namespace SethData;
 
 bool TimeLostControllerMarkCharmingTotemWithSkullAction::Execute(Event /*event*/)
 {
-    constexpr uint32 searchRadius = 40.0f;
+    constexpr float searchRadius = 40.0f;
     Unit* totem = bot->FindNearestCreature(Id(SethNpcs::NPC_CHARMING_TOTEM), searchRadius, true);
     return totem && MarkTargetWithSkull(bot, totem);
 }
