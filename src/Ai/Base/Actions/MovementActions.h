@@ -17,6 +17,7 @@ class Player;
 class PlayerbotAI;
 class Unit;
 class WorldObject;
+
 struct Position;
 
 #define ANGLE_45_DEG (static_cast<float>(M_PI) / 4.f)
