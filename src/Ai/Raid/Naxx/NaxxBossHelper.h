@@ -8,7 +8,6 @@
 #define PLAYERBOTS_NAXXBOSSHELPER_H
 
 #include "AiObject.h"
-#include "AiObjectContext.h"
 #include "EventMap.h"
 #include "Log.h"
 #include "NamedObjectContext.h"

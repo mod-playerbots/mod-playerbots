@@ -5,7 +5,6 @@
  */
 
 #include "CatDruidStrategy.h"
-#include "AiObjectContext.h"
 
 class CatDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {

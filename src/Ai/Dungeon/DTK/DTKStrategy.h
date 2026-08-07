@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_DTKSTRATEGY_H
 #define PLAYERBOTS_DTKSTRATEGY_H
 
-#include "AiObjectContext.h"
 #include "Multiplier.h"
 #include "Strategy.h"
 

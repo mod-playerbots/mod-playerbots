@@ -1,7 +1,6 @@
 #ifndef PLAYERBOTS_MECHSTRATEGY_H
 #define PLAYERBOTS_MECHSTRATEGY_H
 
-#include "AiObjectContext.h"
 #include "Multiplier.h"
 #include "Strategy.h"
 

@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_OCSTRATEGY_H
 #define PLAYERBOTS_OCSTRATEGY_H
 
-#include "AiObjectContext.h"
 #include "Multiplier.h"
 #include "Strategy.h"
 
