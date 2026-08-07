@@ -66,11 +66,6 @@ enum class KaraNpcs : uint32
     // Attumen the Huntsman
     NPC_ATTUMEN_THE_HUNTSMAN      = 16152, // ID for mounted version
 
-    // Terestian Illhoof
-    NPC_TERESTIAN_ILLHOOF         = 15688,
-    NPC_DEMON_CHAINS              = 17248,
-    NPC_KILREK                    = 17229,
-
     // Shade of Aran
     NPC_CONJURED_ELEMENTAL        = 17167,
 
@@ -133,6 +128,9 @@ bool IsFlameWreathActive(Player* bot);
 
 // Netherspite
 extern std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
+extern std::unordered_map<uint32, ObjectGuid> currentRedBlocker;
+extern std::unordered_map<uint32, ObjectGuid> currentGreenBlocker;
+extern std::unordered_map<uint32, ObjectGuid> currentBlueBlocker;
 bool IsBanishPhase(Unit* netherspite);
 std::vector<Player*> GetRedBlockers(Player* bot);
 std::vector<Player*> GetBlueBlockers(Player* bot);

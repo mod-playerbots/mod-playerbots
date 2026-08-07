@@ -82,7 +82,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("the curator position boss", ACTION_RAID) }
     ));
     triggers.push_back(new TriggerNode("the curator boss engaged by ranged",
-        { NextAction("the curator spread ranged to mitigate arcane sear", ACTION_RAID) }
+        { NextAction("the curator spread ranged", ACTION_RAID) }
     ));
 
     // Terestian Illhoof
