@@ -7,7 +7,6 @@
 #include "SWPEncounter_Muru.h"
 #include "CharmInfo.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include <algorithm>
 #include <list>
 

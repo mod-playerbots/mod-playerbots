@@ -182,9 +182,12 @@ float KalecgosSuppressAssistTankPullThreatMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
         return 1.0f;
 
-    KalecgosEncounterState& state = kalecgosEncounterStates[bot->GetInstanceId()];
+    auto const stateItr = kalecgosEncounterStates.find(bot->GetInstanceId());
+    if (stateItr == kalecgosEncounterStates.end() || !stateItr->second.encounterStartMs)
+        return 1.0f;
+
     constexpr uint32 pullThreatSuppressionMs = 5000;
-    if (getMSTimeDiff(state.encounterStartMs, getMSTime()) < pullThreatSuppressionMs)
+    if (getMSTimeDiff(stateItr->second.encounterStartMs, getMSTime()) < pullThreatSuppressionMs)
         return 0.0f;
 
     return 1.0f;

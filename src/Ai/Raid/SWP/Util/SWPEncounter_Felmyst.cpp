@@ -1239,7 +1239,7 @@ Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
         if (PlayerbotAI::IsMelee(bot) && !felmyst->IsFlying() && !bot->IsWithinMeleeRange(member))
             continue;
 
-        if (!PlayerbotAI::IsMelee(bot) && bot->GetDistance2d(member) > 30.0f)
+        if (PlayerbotAI::IsRanged(bot) && bot->GetDistance2d(member) > 30.0f)
             continue;
 
         if (member->GetHealth() < lowestHp)

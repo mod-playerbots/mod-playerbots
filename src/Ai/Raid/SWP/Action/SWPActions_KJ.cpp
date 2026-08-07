@@ -642,11 +642,8 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
         return true;
     }
 
-    if (dragon->GetCurrentSpell(CURRENT_GENERIC_SPELL) ||
-        dragon->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-    {
+    if (dragon->IsNonMeleeSpellCast(false))
         return false;
-    }
 
     if (darknessSpell->GetCastTimeRemaining() < 4500)
         return CastKiljaedenDragonSpell(dragon, Id(SwpSpells::SPELL_SHIELD_OF_THE_BLUE));
@@ -660,11 +657,8 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
 
 bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* dragon)
 {
-    if (dragon->GetCurrentSpell(CURRENT_GENERIC_SPELL) ||
-        dragon->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-    {
+    if (dragon->IsNonMeleeSpellCast(false))
         return false;
-    }
 
     uint32 spellId = 0;
     Player* target = nullptr;

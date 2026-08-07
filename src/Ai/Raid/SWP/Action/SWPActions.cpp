@@ -33,9 +33,6 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
         if (isMechanicTracker && kalecgosEncounterStates.erase(instanceId) > 0)
             didSomething = true;
 
-        if (kalecgosRealmStates.erase(guid) > 0)
-            didSomething = true;
-
         if (PlayerbotAI::IsTank(bot))
         {
             Action* kalecAction = botAI->GetAiObjectContext()->GetAction(
@@ -63,6 +60,9 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
             didSomething = true;
 
         if (isMechanicTracker && brutallusRangedAssignments.erase(instanceId) > 0)
+            didSomething = true;
+
+        if (isMechanicTracker && brutallusMeleeAssignments.erase(instanceId) > 0)
             didSomething = true;
 
         if (isMechanicTracker && brutallusRangedBurnPadAssignments.erase(instanceId) > 0)

@@ -145,18 +145,11 @@ bool KalecgosEnterSpectralRiftAction::ShouldTankEnter()
     if (!surfaceTank)
         return false;
 
+    // The current tank cannot enter a portal until the next tank takes over. If the designated
+    // tank is still this bot, nobody has taken over yet.
     if (surfaceTank == bot)
-    {
-        KalecgosEncounterState& state = kalecgosEncounterStates[kalecgos->GetInstanceId()];
-        surfaceTank = GetNextSurfaceTankInOrder(
-            bot->GetGroup(), state.tankAssignmentGuids,
-            state.currentTankGuid, ObjectGuid::Empty, true);
+        return false;
 
-        if (!surfaceTank)
-            return false;
-    }
-
-    // The current tank cannot enter a portal until the next tank takes over
     Position const& position = KALECGOS_TANK_POSITION;
     if (surfaceTank->GetExactDist2d(position) > 3.0f || kalecgos->GetVictim() != surfaceTank)
         return false;

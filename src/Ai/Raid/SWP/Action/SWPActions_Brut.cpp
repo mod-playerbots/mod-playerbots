@@ -128,7 +128,7 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
     Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
 
     uint8 meleeIndex = 0;
-    if (!TryGetBrutallusAssignedPositionIndex(bot, false, meleeIndex))
+    if (!TryGetBrutallusAssignedPositionIndex(bot, meleeIndex))
         return false;
 
     Position position;
@@ -242,7 +242,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
 
     ObjectGuid const guid = bot->GetGUID();
     uint8 rangedIndex = 0;
-    if (!TryGetBrutallusAssignedPositionIndex(bot, true, rangedIndex))
+    if (!TryGetBrutallusAssignedPositionIndex(bot, rangedIndex))
         return false;
 
     auto const burnStateItr = brutallusRangedBurnStates.find(guid);
@@ -374,7 +374,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
     uint8 rangedIndex = 0;
 
-    if (!TryGetBrutallusAssignedPositionIndex(bot, true, rangedIndex))
+    if (!TryGetBrutallusAssignedPositionIndex(bot, rangedIndex))
         return false;
 
     auto const burnStateItr = brutallusRangedBurnStates.find(guid);

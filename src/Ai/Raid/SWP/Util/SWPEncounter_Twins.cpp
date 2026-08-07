@@ -11,7 +11,6 @@
 #include "GridNotifiersImpl.h"
 #include "NearestGameObjects.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "Spell.h"
 #include "ThreatManager.h"
 #include <list>
