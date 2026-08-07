@@ -494,8 +494,8 @@ void RandomPlayerbotMgr::AssignAccountTypes()
     rndBotTypeAccounts.clear();
     addClassTypeAccounts.clear();
 
-    // First, get ALL randombot accounts from the database
-    std::vector<uint32> allRandomBotAccounts;
+    // First, get ALL bot accounts from the database
+    std::vector<uint32> allBotAccounts;
     QueryResult allAccounts = LoginDatabase.Query(
         "SELECT id FROM account WHERE username LIKE '{}%%' ORDER BY id",
         sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
@@ -506,11 +506,11 @@ void RandomPlayerbotMgr::AssignAccountTypes()
         {
             Field* fields = allAccounts->Fetch();
             uint32 accountId = fields[0].Get<uint32>();
-            allRandomBotAccounts.push_back(accountId);
+            allBotAccounts.push_back(accountId);
         } while (allAccounts->NextRow());
     }
 
-    LOG_INFO("playerbots", "Found {} total randombot accounts in database", allRandomBotAccounts.size());
+    LOG_INFO("playerbots", "Found {} total bot accounts in database", allBotAccounts.size());
 
     // Check existing assignments
     QueryResult existingAssignments = PlayerbotsDatabase.Query("SELECT account_id, account_type FROM playerbots_account_type");
@@ -527,8 +527,8 @@ void RandomPlayerbotMgr::AssignAccountTypes()
         } while (existingAssignments->NextRow());
     }
 
-    // Mark ALL randombot accounts as unassigned if not already assigned
-    for (uint32 accountId : allRandomBotAccounts)
+    // Mark ALL bot accounts as unassigned if not already assigned
+    for (uint32 accountId : allBotAccounts)
     {
         if (currentAssignments.find(accountId) == currentAssignments.end())
         {
@@ -570,9 +570,9 @@ void RandomPlayerbotMgr::AssignAccountTypes()
         uint32 toAssign = neededRndBotAccounts - existingRndBotAccounts;
         uint32 assigned = 0;
 
-        for (uint32 i = 0; i < allRandomBotAccounts.size() && assigned < toAssign; i++)
+        for (uint32 i = 0; i < allBotAccounts.size() && assigned < toAssign; i++)
         {
-            uint32 accountId = allRandomBotAccounts[i];
+            uint32 accountId = allBotAccounts[i];
             if (currentAssignments[accountId] == 0) // Unassigned
             {
                 PlayerbotsDatabase.Execute("UPDATE playerbots_account_type SET account_type = 1, assignment_date = NOW() WHERE account_id = {}", accountId);
@@ -595,9 +595,9 @@ void RandomPlayerbotMgr::AssignAccountTypes()
         uint32 toAssign = neededAddClassAccounts - existingAddClassAccounts;
         uint32 assigned = 0;
 
-        for (size_t idx = allRandomBotAccounts.size(); idx-- > 0 && assigned < toAssign;)
+        for (size_t idx = allBotAccounts.size(); idx-- > 0 && assigned < toAssign;)
         {
-            uint32 accountId = allRandomBotAccounts[idx];
+            uint32 accountId = allBotAccounts[idx];
             if (currentAssignments[accountId] == 0) // Unassigned
             {
                 PlayerbotsDatabase.Execute("UPDATE playerbots_account_type SET account_type = 2, assignment_date = NOW() WHERE account_id = {}", accountId);
