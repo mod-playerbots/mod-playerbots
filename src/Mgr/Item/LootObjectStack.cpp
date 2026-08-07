@@ -317,7 +317,7 @@ bool LootObject::IsLootPossible(Player* bot)
     {
         uint8 bagUsage = botAI->GetAiObjectContext() ->GetValue<uint8>("bag space")->Get();
 
-        if (bagUsage >= 80)
+        if (bagUsage > 80)
             return false;
     }
 
