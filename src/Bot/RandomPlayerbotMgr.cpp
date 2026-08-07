@@ -390,7 +390,8 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
             sRandomPlayerbotMgr.CheckLfgQueue();
     }
 
-    if (sPlayerbotAIConfig.randomBotAutologin && time(nullptr) > (printStatsTimer + 300))
+    if (sPlayerbotAIConfig.randomBotAutologin && sPlayerbotAIConfig.randomBotPrintStatsInterval &&
+        time(nullptr) > (printStatsTimer + sPlayerbotAIConfig.randomBotPrintStatsInterval))
     {
         if (!printStatsTimer)
         {
@@ -1409,10 +1410,8 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
             if (player->GetGroup() && botAI->GetGroupLeader())
             {
                 PlayerbotAI* groupLeaderBotAI = GET_PLAYERBOT_AI(botAI->GetGroupLeader());
-                if (!groupLeaderBotAI || groupLeaderBotAI->IsRealPlayer())
-                {
+                if (!groupLeaderBotAI || IsSelfBot(botAI->GetGroupLeader()))
                     update = false;
-                }
             }
 
             // if (botAI->HasPlayerNearby(sPlayerbotAIConfig.grindDistance))
@@ -2103,7 +2102,7 @@ bool RandomPlayerbotMgr::IsRandomBot(Player* bot)
 {
     if (bot && GET_PLAYERBOT_AI(bot))
     {
-        if (GET_PLAYERBOT_AI(bot)->IsRealPlayer())
+        if (IsSelfBot(bot))
             return false;
     }
     if (bot)
@@ -2130,7 +2129,7 @@ bool RandomPlayerbotMgr::IsAddclassBot(Player* bot)
 {
     if (bot && GET_PLAYERBOT_AI(bot))
     {
-        if (GET_PLAYERBOT_AI(bot)->IsRealPlayer())
+        if (IsSelfBot(bot))
             return false;
     }
     if (bot)
@@ -2743,7 +2742,7 @@ void RandomPlayerbotMgr::PrintStats()
             continue;
         }
 
-        if (botAI->AllowActivity())
+        if (botAI->IsActivityAllowedCached())
             ++active;
         /* TODO: Review statistics on rpg merge
         if (botAI->GetAiObjectContext()->GetValue<bool>("random bot update")->Get())
@@ -2792,10 +2791,10 @@ void RandomPlayerbotMgr::PrintStats()
         else
             ++engine_dead;
 
-        if (botAI->IsHeal(bot, true))
+        if (botAI->IsHeal(bot, false))
             ++heal;
 
-        else if (botAI->IsTank(bot, true))
+        else if (botAI->IsTank(bot, false))
             ++tank;
 
         else

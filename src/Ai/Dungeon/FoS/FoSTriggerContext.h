@@ -8,7 +8,6 @@
 #define PLAYERBOTS_FOSTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
-#include "AiObjectContext.h"
 #include "FoSTriggers.h"
 
 class WotlkDungeonFoSTriggerContext : public NamedObjectContext<Trigger>

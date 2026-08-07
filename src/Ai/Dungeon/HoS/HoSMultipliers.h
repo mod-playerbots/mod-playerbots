@@ -15,7 +15,7 @@ class KrystallusMultiplier : public Multiplier
         KrystallusMultiplier(PlayerbotAI* ai) : Multiplier(ai, "krystallus") {}
 
     public:
-        virtual float GetValue(Action* action);
+        float GetValue(Action* action) override;
 };
 
 class SjonnirMultiplier : public Multiplier
@@ -24,7 +24,7 @@ class SjonnirMultiplier : public Multiplier
         SjonnirMultiplier(PlayerbotAI* ai) : Multiplier(ai, "sjonnir the ironshaper") {}
 
     public:
-        virtual float GetValue(Action* action);
+        float GetValue(Action* action) override;
 };
 
 #endif

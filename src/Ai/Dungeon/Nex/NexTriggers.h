@@ -8,9 +8,7 @@
 #define PLAYERBOTS_NEXTRIGGERS_H
 
 #include "Trigger.h"
-#include "PlayerbotAIConfig.h"
 #include "GenericTriggers.h"
-#include "DungeonStrategyUtils.h"
 
 enum NexusIDs
 {

@@ -6,7 +6,6 @@
 
 #include "Playerbots.h"
 #include "UKTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
 
 bool KelesethFrostTombTrigger::IsActive()
