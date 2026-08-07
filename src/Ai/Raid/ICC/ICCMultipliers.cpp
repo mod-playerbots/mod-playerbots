@@ -1,5 +1,12 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "ICCMultipliers.h"
 
+#include "AttackAction.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
@@ -21,13 +28,6 @@
 #include "PlayerbotAI.h"
 #include "ICCTriggers.h"
 #include "ICCScripts.h"
-
-// LK global variables
-namespace
-{
-std::map<ObjectGuid, uint32> g_plagueTimes;
-std::map<ObjectGuid, bool> g_allowCure;
-}
 
 // Lady Deathwhisper
 float IccLadyDeathwhisperMultiplier::GetValue(Action* action)
@@ -224,7 +224,7 @@ float IccFestergutMultiplier::GetValue(Action* action)
     // keep DPS/heal rotations running without drifting back into the impact.
     // Avoid action itself is whitelisted (may still need to dodge new goos).
     {
-        auto const& waitMap = IcecrownHelpers::festergutGooWaitUntil;
+        auto const& waitMap = IcecrownHelpers::IccState(bot->GetMap()->GetInstanceId()).festergutGooWaitUntil;
         auto it = waitMap.find(bot->GetGUID());
         if (it != waitMap.end() && getMSTime() < it->second)
         {
@@ -248,14 +248,13 @@ float IccRotfaceMultiplier::GetValue(Action* action)
 
     {
         uint32 const now = getMSTime();
-        auto const& waitMap = IcecrownHelpers::rotfaceVileGasWaitUntil;
+        IcecrownHelpers::IccInstanceState& st = IcecrownHelpers::IccState(bot->GetMap()->GetInstanceId());
+        auto const& waitMap = st.rotfaceVileGasWaitUntil;
         auto it = waitMap.find(bot->GetGUID());
         bool const inWait = it != waitMap.end() && now < it->second;
-        auto vgIt = IcecrownHelpers::rotfaceVileGas.find(bot->GetMap()->GetInstanceId());
         bool const isVictim =
-            vgIt != IcecrownHelpers::rotfaceVileGas.end() &&
-            vgIt->second.victimGuid == bot->GetGUID() &&
-            getMSTimeDiff(vgIt->second.castTime, now) < 8000;
+            st.rotfaceVileGas.victimGuid == bot->GetGUID() &&
+            getMSTimeDiff(st.rotfaceVileGas.castTime, now) < 8000;
 
         if (isVictim || inWait || botAI->HasAura("Vile Gas", bot))
         {
@@ -463,6 +462,20 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
         dynamic_cast<CastArmyOfTheDeadAction*>(action)))
         return 0.0f;
 
+    if (botAI->IsTank(bot) &&
+        (dynamic_cast<AttackRtiTargetAction*>(action) || dynamic_cast<TankAssistAction*>(action)))
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+            {
+                Player* member = itr->GetSource();
+                if (member && member->IsAlive() && botAI->IsAssistTank(member))
+                    return 0.0f;
+            }
+        }
+    }
+
     Aura* aura = botAI->GetAura("Shadow Prison", bot, false, true);
 
     // Bomb assignment check (done early so it can override shadow prison stack limits)
@@ -561,21 +574,17 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    // Shadow prison movement block (non-bomb bots use normal 12 stack limit)
-    if (aura)
-    {
-        if (aura->GetStackAmount() > 18 && botAI->IsTank(bot))
-        {
-            if (dynamic_cast<MovementAction*>(action))
-                return 0.0f;
-        }
-
-        if (aura->GetStackAmount() > 12 && !botAI->IsTank(bot))
-        {
-            if (dynamic_cast<MovementAction*>(action))
-                return 0.0f;
-        }
-    }
+    // Shadow prison movement block (non-bomb bots use normal 12 stack limit).
+    // AttackAction derives from MovementAction, so it must be excluded here or
+    // bots stop attacking entirely (not just repositioning) once stacked high.
+    // ReachTargetAction (and ReachMeleeAction, which derives from it) is what
+    // actually walks a ranged/caster bot into range of a new target - Attack()
+    // alone does not move them - so it must be excluded too or they can never
+    // close distance on a newly marked target while stacked.
+    if (aura && aura->GetStackAmount() > (botAI->IsTank(bot) ? 18 : 12) &&
+        dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
+        !dynamic_cast<ReachTargetAction*>(action))
+        return 0.0f;
 
     Unit* valanar = AI_VALUE2(Unit*, "find target", "prince valanar");
     if (!valanar)
@@ -622,7 +631,7 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
         if (dynamic_cast<IccBpcKelesethTankAction*>(action))
             return 1.0f;
 
-        // Disable normal assist behavior (allow RTI targeting)
+        // Disable normal assist behavior
         if (dynamic_cast<TankAssistAction*>(action) ||
             dynamic_cast<FleeAction*>(action) ||
             dynamic_cast<CastConsecrationAction*>(action))
@@ -753,7 +762,7 @@ float IccValithriaDreamCloudMultiplier::GetValue(Action* action)
             bool rtiIsZombie = false;
             if (Group* group = bot->GetGroup())
             {
-                ObjectGuid rtiGuid = group->GetTargetIcon(7);
+                ObjectGuid rtiGuid = group->GetTargetIcon(RtiTargetValue::skullIndex);
                 if (!rtiGuid.IsEmpty())
                 {
                     Unit* rtiUnit = ObjectAccessor::GetUnit(*bot, rtiGuid);
@@ -801,6 +810,10 @@ float IccSindragosaMultiplier::GetValue(Action* action)
     if (dynamic_cast<IccSindragosaHotAction*>(action))
         return 1.0f;
 
+    // Tanks never chase raid icons; they stay on the boss at the tank spot.
+    if (botAI->IsTank(bot) && dynamic_cast<AttackRtiTargetAction*>(action))
+        return 0.0f;
+
     Aura* aura = botAI->GetAura("Unchained Magic", bot, false, true);
 
     Difficulty diff = bot->GetRaidDifficulty();
@@ -822,15 +835,12 @@ float IccSindragosaMultiplier::GetValue(Action* action)
     }
 
     // Check if boss is casting blistering cold (using both normal and heroic spell IDs)
-    if (boss->HasUnitState(UNIT_STATE_CASTING) &&
-        (boss->FindCurrentSpellBySpellId(SPELL_BLISTERING_COLD1) || boss->FindCurrentSpellBySpellId(SPELL_BLISTERING_COLD2) ||
-         boss->FindCurrentSpellBySpellId(SPELL_BLISTERING_COLD3) || boss->FindCurrentSpellBySpellId(SPELL_BLISTERING_COLD4)))
+    if (boss->HasUnitState(UNIT_STATE_CASTING) && IccBossCastingBlisteringCold(boss))
     {
         // If this is the blistering cold action, give it highest priority
         if (dynamic_cast<IccSindragosaBlisteringColdAction*>(action) ||
             dynamic_cast<HealPartyMemberAction*>(action) ||
-            dynamic_cast<ReachPartyMemberToHealAction*>(action) ||
-            dynamic_cast<IccSindragosaTankSwapPositionAction*>(action))
+            dynamic_cast<ReachPartyMemberToHealAction*>(action))
             return 1.0f;
 
         // Ranged / healer already beyond the blast radius: keep DPSing or
@@ -856,22 +866,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    Group* group = bot->GetGroup();
-    // Check if anyone in group has Frost Beacon (SPELL_FROST_BEACON)
-    bool anyoneHasFrostBeacon = false;
-
-    if (group)
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() && member->HasAura(SPELL_FROST_BEACON))
-            {
-                anyoneHasFrostBeacon = true;
-                break;
-            }
-        }
-    }
+    bool anyoneHasFrostBeacon = IccAnyGroupMemberHasAura(bot, SPELL_FROST_BEACON);
 
     if (anyoneHasFrostBeacon && boss &&
         boss->GetExactDist2d(ICC_SINDRAGOSA_FLYING_POSITION.GetPositionX(),
@@ -884,23 +879,27 @@ float IccSindragosaMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    if (anyoneHasFrostBeacon && !botAI->IsMainTank(bot))
+    if (anyoneHasFrostBeacon && !botAI->IsTank(bot))
     {
         if (dynamic_cast<IccSindragosaGroupPositionAction*>(action))
             return 0.0f;
     }
 
-    if (botAI->IsMainTank(bot))
-    {
-        Aura* aura = botAI->GetAura("mystic buffet", bot, false, true);
-        if (aura && aura->GetStackAmount() >= 6)
-        {
-            if (dynamic_cast<MovementAction*>(action))
-                return 1.0f;
-            else
-                return 0.0f;
-        }
-    }
+    // Pin healers at the LOS2 hide spot while the hide is in effect (last
+    // phase, tomb up, no beacon). A beacon releases the pin so healers can
+    // reposition with the raid.
+    if (botAI->IsHeal(bot) && dynamic_cast<MovementAction*>(action) && !anyoneHasFrostBeacon &&
+        boss->HealthBelowPct(35) &&
+        bot->GetExactDist2d(ICC_SINDRAGOSA_LOS2_POSITION.GetPositionX(),
+                            ICC_SINDRAGOSA_LOS2_POSITION.GetPositionY()) <= 2.0f &&
+        !IccGetCreaturesByEntries(bot, {NPC_TOMB1, NPC_TOMB2, NPC_TOMB3, NPC_TOMB4}, 150.0f).empty())
+        return 0.0f;
+
+    // Last phase with a beacon out: only ranged DPS burn the tomb. Melee and
+    // healers reposition (via FrostBeaconAction) instead of chasing the skull.
+    if (anyoneHasFrostBeacon && boss->HealthBelowPct(35) && !botAI->IsTank(bot) &&
+        !(botAI->IsRanged(bot) && !botAI->IsHeal(bot)) && dynamic_cast<AttackAction*>(action))
+        return 0.0f;
 
     if (!botAI->IsTank(bot) && boss && boss->HealthBelowPct(35))
     {
@@ -912,7 +911,18 @@ float IccSindragosaMultiplier::GetValue(Action* action)
     {
         if (boss->HealthBelowPct(35))
         {
-            if (dynamic_cast<IccSindragosaTankSwapPositionAction*>(action) || dynamic_cast<TankFaceAction*>(action) ||
+            // Assist tank: hold the tank position and face the boss only, never
+            // chase the marked tomb. A beaconed assist tank returns at the Frost
+            // Beacon branch above and moves to its beacon spot instead.
+            if (!botAI->IsMainTank(bot))
+            {
+                if (dynamic_cast<IccSindragosaGroupPositionAction*>(action) ||
+                    dynamic_cast<TankFaceAction*>(action))
+                    return 1.0f;
+                return 0.0f;
+            }
+
+            if (dynamic_cast<TankFaceAction*>(action) ||
                 dynamic_cast<AttackAction*>(action) || dynamic_cast<MovementAction*>(action))
                 return 1.0f;
             else
@@ -1090,30 +1100,7 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    auto const hasWinterAura = [&]() -> bool
-    {
-        return boss->HasAura(SPELL_REMORSELESS_WINTER1) || boss->HasAura(SPELL_REMORSELESS_WINTER2) ||
-               boss->HasAura(SPELL_REMORSELESS_WINTER3) || boss->HasAura(SPELL_REMORSELESS_WINTER4) ||
-               boss->HasAura(SPELL_REMORSELESS_WINTER5) || boss->HasAura(SPELL_REMORSELESS_WINTER6) ||
-               boss->HasAura(SPELL_REMORSELESS_WINTER7) || boss->HasAura(SPELL_REMORSELESS_WINTER8);
-    };
-
-    auto const isCastingWinter = [&]() -> bool
-    {
-        if (!boss->HasUnitState(UNIT_STATE_CASTING))
-            return false;
-
-        return boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER1) ||
-               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER2) ||
-               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER3) ||
-               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER4) ||
-               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER5) ||
-               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER6) ||
-               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER7) ||
-               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER8);
-    };
-
-    if (hasWinterAura() || isCastingWinter())
+    if (IccBossHasRemorselessWinter(boss))
     {
         // Winter action and facing take priority
         if (dynamic_cast<IccLichKingWinterAction*>(action) || dynamic_cast<SetFacingTargetAction*>(action))
@@ -1121,12 +1108,32 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
 
         // Staging window: while boss is casting Winter, non-tanks must commit
         // to the staging move. Only heals are allowed; everything else blocked.
-        if (isCastingWinter() && !botAI->IsTank(bot))
+        if (IccBossCastingRemorselessWinter(boss) && !botAI->IsTank(bot))
         {
             if (dynamic_cast<HealPartyMemberAction*>(action) ||
                 dynamic_cast<ReachPartyMemberToHealAction*>(action))
                 return 1.0f;
             return 0.0f;
+        }
+
+        // Sphere-targeted bot holds at the winter midpoint spot: block all other movement
+        if (!botAI->IsTank(bot) && dynamic_cast<MovementAction*>(action))
+        {
+            GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+            for (ObjectGuid const& guid : npcs)
+            {
+                uint32 const entry = guid.GetEntry();
+                if (entry != NPC_ICE_SPHERE1 && entry != NPC_ICE_SPHERE2 &&
+                    entry != NPC_ICE_SPHERE3 && entry != NPC_ICE_SPHERE4)
+                    continue;
+
+                Unit* sphere = botAI->GetUnit(guid);
+                if (!sphere || !sphere->IsAlive())
+                    continue;
+
+                if (sphere->GetVictim() == bot)
+                    return 0.0f;
+            }
         }
 
         // Adds action is suppressed during winter
@@ -1138,6 +1145,13 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
 
         // Assist tank should not pick up adds independently during winter
         if (botAI->IsAssistTank(bot) && dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+
+        // MT movement is owned by the winter hold logic; reach actions chase
+        // far taunt targets and tug him off the hold spot (adds come to him).
+        if (botAI->IsMainTank(bot) &&
+            (dynamic_cast<ReachMeleeAction*>(action) || dynamic_cast<ReachSpellAction*>(action) ||
+             dynamic_cast<ReachTargetAction*>(action)))
             return 0.0f;
 
         // Suppress movement/attack toward the boss if we are far away

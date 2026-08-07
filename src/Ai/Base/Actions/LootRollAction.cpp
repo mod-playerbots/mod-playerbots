@@ -21,6 +21,7 @@ bool LootRollAction::Execute(Event /*event*/)
         return false;
 
     std::vector<Roll*> rolls = group->GetRolls();
+    bool voted = false;
     for (Roll*& roll : rolls)
     {
         auto voteItr = roll->playerVote.find(bot->GetGUID());
@@ -103,11 +104,10 @@ bool LootRollAction::Execute(Event /*event*/)
                 group->CountRollVote(bot->GetGUID(), guid, vote);
                 break;
         }
-        // One item at a time
-        return true;
+        voted = true;
     }
 
-    return false;
+    return voted;
 }
 
 RollVote LootRollAction::CalculateRollVote(ItemTemplate const* proto, ItemUsage usage)

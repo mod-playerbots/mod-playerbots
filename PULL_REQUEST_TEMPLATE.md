@@ -41,7 +41,12 @@ any impact on performance, you may skip these question. If necessary, a maintain
 
 
 ## Impact Assessment
-<!-- As a generic test, before and after measure of pmon (playerbot pmon tick) can help you here. -->
+<!--
+As a generic test, pmon checks before and after your edits are helpful. To standardize the measurement, set the configs
+BotActiveAlone = 100 & botActiveAloneSmartScale = 0. After server boot, enable the monitor `playerbot pmon toggle`
+right after the bots finished logging-in, and run the stack command `playerbot pmon stack` 5 minutes after that.
+The last "Total" line is the main result to look for.
+-->
 - Does this change increase per-bot/per-tick processing or risk scaling poorly with thousands of bots?
     - - [ ] No, not at all
     - - [ ] Minimal impact (**explain below**)
@@ -104,18 +109,15 @@ which you can search for in the codebase to find examples. Your code needs to ha
 while the full translations need to be in an SQL update file. The languages in the file are the nine language
 options supported by AzerothCore: English, Korean, French, German, Chinese, Taiwanese, Spanish, Spanish Mexico, and
 Russian. See data/sql/playerbots/updates/2025_12_27_ai_playerbot_fishing_text.sql as an example of a translation SQL
-update, whose content are called within the codebase at src/strategy/actions/FishingAction.cpp
+update, whose content are called within the codebase at src/Ai/Base/Actions/FishingAction.cpp
 -->
 
 ## Final Checklist
 
-- - [ ] Stability is not compromised.
-- - [ ] Performance impact is understood, tested, and acceptable.
-- - [ ] Added logic complexity is justified and explained.
+- - [ ] Changes are understood and tested for server stability and performance impact.
 - - [ ] Any new bot dialogue lines are translated.
-- - [ ] Any code ported/adapted from another project is attributed (project + author(s), `Co-authored-by:` trailer + in-file note).
 - - [ ] New source files use the GPLv2 header.
-- - [ ] Documentation updated if needed (Conf comments, WiKi commands).
+- - [ ] Documentation updated if needed (Code comments, Conf comments, WiKi commands).
 - - [ ] New and modified files do not introduce new compiler warnings.
 
 ## Notes for Reviewers

@@ -545,7 +545,7 @@ public:
     bool HasActivePlayerMaster();
     // Get the group leader or the master of the bot.
     // Checks if the bot is summoned as alt of a player
-    bool IsAlt();
+    bool IsAltBot();
     Player* GetGroupLeader();
     uint32 GetFixedBotNumber(uint32 maxNum = 100);
     GrouperType GetGrouperType();
@@ -601,7 +601,7 @@ public:
     std::set<uint32> GetCurrentIncompleteQuestIds();
     void PetFollow();
     static float GetItemScoreMultiplier(ItemQualities quality);
-    static bool IsHealingSpell(uint32 spellFamilyName, flag96 spelFalimyFlags);
+    static bool IsHealingSpell(uint32 spellFamilyName, flag96 spellFamilyFlags);
     static SpellFamilyNames Class2SpellFamilyName(uint8 cls);
     NewRpgInfo rpgInfo;
     NewRpgStatistic rpgStatistic;

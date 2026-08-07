@@ -113,10 +113,10 @@ private:
     static Trigger* vampiric_touch(PlayerbotAI* botAI) { return new VampiricTouchTrigger(botAI); }
     static Trigger* vampiric_touch_on_attacker(PlayerbotAI* botAI) { return new VampiricTouchOnAttackerTrigger(botAI); }
     static Trigger* devouring_plague(PlayerbotAI* botAI) { return new DevouringPlagueTrigger(botAI); }
-    static Trigger* shadow_word_pain(PlayerbotAI* botAI) { return new PowerWordPainTrigger(botAI); }
+    static Trigger* shadow_word_pain(PlayerbotAI* botAI) { return new ShadowWordPainTrigger(botAI); }
     static Trigger* shadow_word_pain_on_attacker(PlayerbotAI* botAI)
     {
-        return new PowerWordPainOnAttackerTrigger(botAI);
+        return new ShadowWordPainOnAttackerTrigger(botAI);
     }
     static Trigger* dispel_magic(PlayerbotAI* botAI) { return new DispelMagicTrigger(botAI); }
     static Trigger* dispel_magic_party_member(PlayerbotAI* botAI) { return new DispelMagicPartyMemberTrigger(botAI); }
@@ -256,10 +256,10 @@ private:
     static Action* psychic_scream(PlayerbotAI* botAI) { return new CastPsychicScreamAction(botAI); }
     static Action* circle_of_healing(PlayerbotAI* botAI) { return new CastCircleOfHealingAction(botAI); }
     static Action* resurrection(PlayerbotAI* botAI) { return new CastResurrectionAction(botAI); }
-    static Action* shadow_word_pain(PlayerbotAI* botAI) { return new CastPowerWordPainAction(botAI); }
+    static Action* shadow_word_pain(PlayerbotAI* botAI) { return new CastShadowWordPainAction(botAI); }
     static Action* shadow_word_pain_on_attacker(PlayerbotAI* botAI)
     {
-        return new CastPowerWordPainOnAttackerAction(botAI);
+        return new CastShadowWordPainOnAttackerAction(botAI);
     }
     static Action* devouring_plague(PlayerbotAI* botAI) { return new CastDevouringPlagueAction(botAI); }
     static Action* mind_flay(PlayerbotAI* botAI) { return new CastMindFlayAction(botAI); }

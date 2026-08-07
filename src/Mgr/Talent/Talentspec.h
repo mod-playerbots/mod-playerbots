@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_TALENTSPEC_H
 #define PLAYERBOTS_TALENTSPEC_H
 
-#include <cstdint>
 #include <string>
 #include "Player.h"
 

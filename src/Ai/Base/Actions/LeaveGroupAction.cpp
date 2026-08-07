@@ -127,7 +127,7 @@ bool LeaveFarAwayAction::isUseful()
     if (trueMaster && !GET_PLAYERBOT_AI(trueMaster))
         return false;
 
-    if (botAI->IsAlt() &&
+    if (botAI->IsAltBot() &&
         (!groupLeaderBotAI || groupLeaderBotAI->IsRealPlayer()))  // Don't leave group when alt grouped with player groupLeader.
         return false;
 

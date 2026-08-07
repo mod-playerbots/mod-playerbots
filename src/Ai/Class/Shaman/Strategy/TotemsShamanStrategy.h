@@ -230,10 +230,10 @@ public:
     std::string const getName() override { return "strength of earth"; }
 };
 
-class StoneclawTotemStrategy : public GenericShamanStrategy
+class StoneskinTotemStrategy : public GenericShamanStrategy
 {
 public:
-    StoneclawTotemStrategy(PlayerbotAI* botAI);
+    StoneskinTotemStrategy(PlayerbotAI* botAI);
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     std::string const getName() override { return "stoneskin"; }
 };

@@ -6,7 +6,6 @@
 
 #include "DKActions.h"
 
-#include "Duration.h"
 #include "GenericSpellActions.h"
 #include "Playerbots.h"
 #include "SpellInfo.h"

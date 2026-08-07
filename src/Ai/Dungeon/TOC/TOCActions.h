@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_TOCACTIONS_H
 #define PLAYERBOTS_TOCACTIONS_H
 
@@ -9,9 +15,7 @@
 #include "MovementActions.h"
 #include "LastMovementValue.h"
 #include "ObjectGuid.h"
-#include "PlayerbotAIConfig.h"
 #include "ScriptedCreature.h"
-#include "SharedDefines.h"
 #include "EquipAction.h"
 #include "Event.h"
 #include "ItemCountValue.h"

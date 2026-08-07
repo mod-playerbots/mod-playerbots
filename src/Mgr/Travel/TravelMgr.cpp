@@ -22,7 +22,6 @@
 #include "Playerbots.h"
 #include "RaceMgr.h"
 #include "TransportMgr.h"
-#include "VMapFactory.h"
 #include "VMapMgr2.h"
 #include "Map.h"
 #include "Corpse.h"
@@ -1068,7 +1067,7 @@ GuidPosition::GuidPosition(CreatureData const& creData)
 }
 
 GuidPosition::GuidPosition(GameObjectData const& goData)
-    : ObjectGuid(HighGuid::GameObject, goData.id),
+    : ObjectGuid(HighGuid::GameObject, goData.id, goData.spawnId),
       WorldPosition(goData.mapid, goData.posX, goData.posY, goData.posZ, goData.orientation)
 {
     loadedFromDB = true;

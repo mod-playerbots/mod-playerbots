@@ -172,7 +172,7 @@ void TalkToQuestGiverAction::RewardMultipleItem(Quest const* quest, Object* ques
     std::set<uint32> bestIds;
 
     std::ostringstream outid;
-    if (!botAI->IsAlt() || sPlayerbotAIConfig.autoPickReward == "yes")
+    if (!botAI->IsAltBot() || sPlayerbotAIConfig.autoPickReward == "yes")
     {
         bestIds = BestRewards(quest);
         if (!bestIds.empty())

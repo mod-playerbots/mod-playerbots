@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_GRUULACTIONCONTEXT_H
 #define PLAYERBOTS_GRUULACTIONCONTEXT_H
 
@@ -56,39 +62,30 @@ private:
     static Action* high_king_maulgar_main_tank_attack_maulgar(PlayerbotAI* botAI) {
         return new HighKingMaulgarMainTankAttackMaulgarAction(botAI);
     }
-
     static Action* high_king_maulgar_first_assist_tank_attack_olm(PlayerbotAI* botAI) {
         return new HighKingMaulgarFirstAssistTankAttackOlmAction(botAI);
     }
-
     static Action* high_king_maulgar_second_assist_tank_attack_blindeye(PlayerbotAI* botAI) {
         return new HighKingMaulgarSecondAssistTankAttackBlindeyeAction(botAI);
     }
-
     static Action* high_king_maulgar_mage_tank_attack_krosh(PlayerbotAI* botAI) {
         return new HighKingMaulgarMageTankAttackKroshAction(botAI);
     }
-
     static Action* high_king_maulgar_moonkin_tank_attack_kiggler(PlayerbotAI* botAI) {
         return new HighKingMaulgarMoonkinTankAttackKigglerAction(botAI);
     }
-
     static Action* high_king_maulgar_assign_dps_priority(PlayerbotAI* botAI) {
         return new HighKingMaulgarAssignDPSPriorityAction(botAI);
     }
-
     static Action* high_king_maulgar_run_away_from_whirlwind(PlayerbotAI* botAI) {
         return new HighKingMaulgarRunAwayFromWhirlwindAction(botAI);
     }
-
     static Action* high_king_maulgar_move_away_from_blast_nova_danger(PlayerbotAI* botAI) {
         return new HighKingMaulgarMoveAwayFromBlastNovaDangerAction(botAI);
     }
-
     static Action* high_king_maulgar_banish_fel_stalker(PlayerbotAI* botAI) {
         return new HighKingMaulgarBanishFelStalkerAction(botAI);
     }
-
     static Action* high_king_maulgar_misdirect_ogres_to_tanks(PlayerbotAI* botAI) {
         return new HighKingMaulgarMisdirectOgresToTanksAction(botAI);
     }
@@ -97,11 +94,9 @@ private:
     static Action* gruul_the_dragonkiller_tanks_position_boss(PlayerbotAI* botAI) {
         return new GruulTheDragonkillerTanksPositionBossAction(botAI);
     }
-
     static Action* gruul_the_dragonkiller_spread_ranged(PlayerbotAI* botAI) {
         return new GruulTheDragonkillerSpreadRangedAction(botAI);
     }
-
     static Action* gruul_the_dragonkiller_shatter_spread(PlayerbotAI* botAI) {
         return new GruulTheDragonkillerShatterSpreadAction(botAI);
     }

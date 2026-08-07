@@ -74,6 +74,9 @@ public:
     void InitPet();
     void InitAmmo();
     static uint32 CalcMixedGearScore(uint32 gs, uint32 quality);
+    static void DestroyEquippedGear(Player* bot);
+    static void AutoGear(Player* bot, uint32 itemQuality, uint32 ilvl, bool incremental, bool secondChance = false,
+                        bool applyFinishers = true);
     void InitPetTalents();
     void CleanupConsumables();
     void InitReagents();

@@ -6,7 +6,6 @@
 
 #include "GenericSpellActions.h"
 
-#include <ctime>
 #include <unordered_set>
 
 #include "Event.h"
