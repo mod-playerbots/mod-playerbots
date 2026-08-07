@@ -17,6 +17,7 @@ namespace SwpHelpers
 // Note: Brutallus's CombatReach is 18.0f
 
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedAssignments;
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusMeleeAssignments;
 
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedBurnPadAssignments;
 
@@ -90,6 +91,92 @@ bool TryGetBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex)
     return assignFromOrder(assistGroupPriority) || assignFromOrder(assistGroupOverflow);
 }
 
+void EnsureRangedAssignments(Group* group, Player* bot)
+{
+    auto& assignments = brutallusRangedAssignments[bot->GetInstanceId()];
+
+    std::array<bool, BRUTALLUS_TOTAL_RANGED_POSITIONS> usedPositions = {};
+    for (auto const& assignment : assignments)
+    {
+        if (assignment.second < BRUTALLUS_TOTAL_RANGED_POSITIONS)
+            usedPositions[assignment.second] = true;
+    }
+
+    auto const assignNextOpenSlot = [&](Player* member)
+    {
+        for (uint8 slotIndex = 0; slotIndex < BRUTALLUS_TOTAL_RANGED_POSITIONS; ++slotIndex)
+        {
+            if (usedPositions[slotIndex])
+                continue;
+
+            assignments[member->GetGUID()] = slotIndex;
+            usedPositions[slotIndex] = true;
+            return true;
+        }
+
+        assignments[member->GetGUID()] =
+            static_cast<uint8>(assignments.size() % BRUTALLUS_TOTAL_RANGED_POSITIONS);
+
+        return true;
+    };
+
+    std::vector<Player*> healers;
+    std::vector<Player*> rangedDamage;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsRanged(member))
+        {
+            continue;
+        }
+
+        if (assignments.find(member->GetGUID()) != assignments.end())
+            continue;
+
+        if (PlayerbotAI::IsHeal(member))
+            healers.push_back(member);
+        else
+            rangedDamage.push_back(member);
+    }
+
+    for (Player* member : healers)
+    {
+        if (!assignNextOpenSlot(member))
+            return;
+    }
+
+    for (Player* member : rangedDamage)
+    {
+        if (!assignNextOpenSlot(member))
+            return;
+    }
+}
+
+void EnsureMeleeAssignments(Group* group, Player* bot)
+{
+    auto& assignments = brutallusMeleeAssignments[bot->GetInstanceId()];
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member))
+            continue;
+
+        if (!PlayerbotAI::IsMelee(member) || PlayerbotAI::IsMainTank(member) ||
+            PlayerbotAI::IsAssistTankOfIndex(member, 0, true))
+        {
+            continue;
+        }
+
+        if (assignments.find(member->GetGUID()) != assignments.end())
+            continue;
+
+        assignments[member->GetGUID()] = static_cast<uint8>(assignments.size());
+    }
+}
+
 } // end anonymous namespace
 
 float GetBrutallusTankAngle(Unit* brutallus, Player* tank, float fallbackAngle)
@@ -150,15 +237,15 @@ float GetBrutallusCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, f
     return angleOffset;
 }
 
-bool TryGetBrutallusAssignedPositionIndex(Player* bot, bool wantRanged, uint8& positionIndex)
+bool TryGetBrutallusAssignedPositionIndex(Player* bot, uint8& positionIndex)
 {
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
-    if (wantRanged)
+    if (PlayerbotAI::IsRanged(bot))
     {
-        EnsureBrutallusRangedAssignments(bot);
+        EnsureRangedAssignments(group, bot);
 
         auto const instanceItr = brutallusRangedAssignments.find(bot->GetInstanceId());
         if (instanceItr == brutallusRangedAssignments.end())
@@ -172,92 +259,18 @@ bool TryGetBrutallusAssignedPositionIndex(Player* bot, bool wantRanged, uint8& p
         return true;
     }
 
-    positionIndex = 0;
+    EnsureMeleeAssignments(group, bot);
 
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID)
-            continue;
+    auto const instanceItr = brutallusMeleeAssignments.find(bot->GetInstanceId());
+    if (instanceItr == brutallusMeleeAssignments.end())
+        return false;
 
-        if (!PlayerbotAI::IsMelee(member) || PlayerbotAI::IsMainTank(member) ||
-            PlayerbotAI::IsAssistTankOfIndex(member, 0, true))
-        {
-            continue;
-        }
+    auto const assignmentItr = instanceItr->second.find(bot->GetGUID());
+    if (assignmentItr == instanceItr->second.end())
+        return false;
 
-        if (member == bot)
-            return true;
-
-        ++positionIndex;
-    }
-
-    return false;
-}
-
-void EnsureBrutallusRangedAssignments(Player* bot)
-{
-    Group* group = bot->GetGroup();
-    if (!group || bot->GetMapId() != SWP_MAP_ID)
-        return;
-
-    auto& assignments = brutallusRangedAssignments[bot->GetInstanceId()];
-
-    std::array<bool, BRUTALLUS_TOTAL_RANGED_POSITIONS> usedPositions = {};
-    for (auto const& assignment : assignments)
-    {
-        if (assignment.second < BRUTALLUS_TOTAL_RANGED_POSITIONS)
-            usedPositions[assignment.second] = true;
-    }
-
-    auto const assignNextOpenSlot = [&](Player* member)
-    {
-        for (uint8 slotIndex = 0; slotIndex < BRUTALLUS_TOTAL_RANGED_POSITIONS; ++slotIndex)
-        {
-            if (usedPositions[slotIndex])
-                continue;
-
-            assignments[member->GetGUID()] = slotIndex;
-            usedPositions[slotIndex] = true;
-            return true;
-        }
-
-        assignments[member->GetGUID()] =
-            static_cast<uint8>(assignments.size() % BRUTALLUS_TOTAL_RANGED_POSITIONS);
-
-        return true;
-    };
-
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    std::vector<Player*> healers;
-    std::vector<Player*> rangedDamage;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !PlayerbotAI::IsRanged(member))
-            continue;
-
-        if (assignments.find(member->GetGUID()) != assignments.end())
-            continue;
-
-        if (PlayerbotAI::IsHeal(member))
-            healers.push_back(member);
-        else
-            rangedDamage.push_back(member);
-    }
-
-    for (Player* member : healers)
-    {
-        if (!assignNextOpenSlot(member))
-            return;
-    }
-
-    for (Player* member : rangedDamage)
-    {
-        if (!assignNextOpenSlot(member))
-            return;
-    }
+    positionIndex = assignmentItr->second;
+    return true;
 }
 
 bool TryGetBrutallusRangedPosition(

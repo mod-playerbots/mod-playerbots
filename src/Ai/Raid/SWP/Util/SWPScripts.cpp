@@ -7,7 +7,6 @@
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "Player.h"
-#include "RaidBossHelpers.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "SWPData.h"
@@ -201,11 +200,6 @@ public:
             case Id(SwpSpells::SPELL_TELEPORT_SPECTRAL):
                 if (FindFirstSunwellCombatBotInGroup(player))
                     RecordSpectralRealmEnter(player);
-                break;
-
-            case Id(SwpSpells::SPELL_TELEPORT_NORMAL_REALM):
-                if (FindFirstSunwellCombatBotInGroup(player))
-                    UpdateKalecgosRealmState(player, false, getMSTime());
                 break;
 
             default:

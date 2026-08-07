@@ -46,8 +46,8 @@ bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
-            GET_PLAYERBOT_AI(member))
+        if (member && member->IsAlive() && member->GetMapId() == SWP_MAP_ID &&
+            member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
         {
             hunters.push_back(member);
         }

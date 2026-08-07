@@ -9,7 +9,6 @@
 
 #include "ObjectGuid.h"
 #include "Position.h"
-#include "RaidBossHelpers.h"
 #include "SWPData.h"
 #include <array>
 #include <unordered_map>
