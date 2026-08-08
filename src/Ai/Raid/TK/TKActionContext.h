@@ -15,6 +15,10 @@ class RaidTempestKeepActionContext : public NamedObjectContext<Action>
 public:
     RaidTempestKeepActionContext()
     {
+        // General
+        creators["tempest keep reset encounter states"] =
+            &RaidTempestKeepActionContext::tempest_keep_reset_encounter_states;
+
         // Trash
         creators["crimson hand centurion cast polymorph"] =
             &RaidTempestKeepActionContext::crimson_hand_centurion_cast_polymorph;
@@ -50,9 +54,6 @@ public:
         creators["al'ar avoid flame patches and dive bombs"] =
             &RaidTempestKeepActionContext::alar_avoid_flame_patches_and_dive_bombs;
 
-        creators["al'ar return to room center"] =
-            &RaidTempestKeepActionContext::alar_return_to_room_center;
-
         creators["al'ar manage phase tracker"] =
             &RaidTempestKeepActionContext::alar_manage_phase_tracker;
 
@@ -63,24 +64,18 @@ public:
         creators["void reaver use aggro dump ability"] =
             &RaidTempestKeepActionContext::void_reaver_use_aggro_dump_ability;
 
-        creators["void reaver spread ranged"] =
-            &RaidTempestKeepActionContext::void_reaver_spread_ranged;
+        creators["void reaver keep ranged in goldilocks zone"] =
+            &RaidTempestKeepActionContext::void_reaver_keep_ranged_in_goldilocks_zone;
 
         creators["void reaver avoid arcane orb"] =
             &RaidTempestKeepActionContext::void_reaver_avoid_arcane_orb;
 
-        creators["void reaver erase trackers"] =
-            &RaidTempestKeepActionContext::void_reaver_erase_trackers;
-
         // High Astromancer Solarian
-        creators["high astromancer solarian ranged leave space for melee"] =
-            &RaidTempestKeepActionContext::high_astromancer_solarian_ranged_leave_space_for_melee;
+        creators["high astromancer solarian main tank pick up boss"] =
+            &RaidTempestKeepActionContext::high_astromancer_solarian_main_tank_pick_up_boss;
 
         creators["high astromancer solarian move away from group"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_move_away_from_group;
-
-        creators["high astromancer solarian stack for aoe"] =
-            &RaidTempestKeepActionContext::high_astromancer_solarian_stack_for_aoe;
 
         creators["high astromancer solarian target solarium priests"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_target_solarium_priests;
@@ -146,14 +141,16 @@ public:
         creators["kael'thas sunstrider break mind control"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_break_mind_control;
 
-        creators["kael'thas sunstrider break through shock barrier"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_break_through_shock_barrier;
-
         creators["kael'thas sunstrider spread out in midair"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_spread_out_in_midair;
     }
 
 private:
+    // General
+    static Action* tempest_keep_reset_encounter_states(PlayerbotAI* botAI) {
+        return new TempestKeepResetEncounterStatesAction(botAI);
+    }
+
     // Trash
     static Action* crimson_hand_centurion_cast_polymorph(PlayerbotAI* botAI) {
         return new CrimsonHandCenturionCastPolymorphAction(botAI);
@@ -190,9 +187,6 @@ private:
     static Action* alar_avoid_flame_patches_and_dive_bombs(PlayerbotAI* botAI) {
         return new AlarAvoidFlamePatchesAndDiveBombsAction(botAI);
     }
-    static Action* alar_return_to_room_center(PlayerbotAI* botAI) {
-        return new AlarReturnToRoomCenterAction(botAI);
-    }
     static Action* alar_manage_phase_tracker(PlayerbotAI* botAI) {
         return new AlarManagePhaseTrackerAction(botAI);
     }
@@ -204,25 +198,19 @@ private:
     static Action* void_reaver_use_aggro_dump_ability(PlayerbotAI* botAI) {
         return new VoidReaverUseAggroDumpAbilityAction(botAI);
     }
-    static Action* void_reaver_spread_ranged(PlayerbotAI* botAI) {
-        return new VoidReaverSpreadRangedAction(botAI);
+    static Action* void_reaver_keep_ranged_in_goldilocks_zone(PlayerbotAI* botAI) {
+        return new VoidReaverKeepRangedInGoldilocksZoneAction(botAI);
     }
     static Action* void_reaver_avoid_arcane_orb(PlayerbotAI* botAI) {
         return new VoidReaverAvoidArcaneOrbAction(botAI);
     }
-    static Action* void_reaver_erase_trackers(PlayerbotAI* botAI) {
-        return new VoidReaverEraseTrackersAction(botAI);
-    }
 
     // High Astromancer Solarian
-    static Action* high_astromancer_solarian_ranged_leave_space_for_melee(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianRangedLeaveSpaceForMeleeAction(botAI);
+    static Action* high_astromancer_solarian_main_tank_pick_up_boss(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianMainTankPickUpBossAction(botAI);
     }
     static Action* high_astromancer_solarian_move_away_from_group(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianMoveAwayFromGroupAction(botAI);
-    }
-    static Action* high_astromancer_solarian_stack_for_aoe(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianStackForAoeAction(botAI);
     }
     static Action* high_astromancer_solarian_target_solarium_priests(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianTargetSolariumPriestsAction(botAI);
@@ -288,9 +276,6 @@ private:
     }
     static Action* kaelthas_sunstrider_break_mind_control(PlayerbotAI* botAI) {
         return new KaelthasSunstriderBreakMindControlAction(botAI);
-    }
-    static Action* kaelthas_sunstrider_break_through_shock_barrier(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderBreakThroughShockBarrierAction(botAI);
     }
     static Action* kaelthas_sunstrider_spread_out_in_midair(PlayerbotAI* botAI) {
         return new KaelthasSunstriderSpreadOutInMidairAction(botAI);

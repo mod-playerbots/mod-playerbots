@@ -8,19 +8,20 @@
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
-#include "TKHelpers.h"
 #include "Timer.h"
+#include "TKHelpers.h"
 
-using namespace TempestKeepHelpers;
+using namespace TkHelpers;
 
-class BossListenerScript : public AllSpellScript
+class VoidReaverSpellListenerScript : public AllSpellScript
 {
 public:
-    BossListenerScript() : AllSpellScript("BossListenerScript") { }
+    VoidReaverSpellListenerScript() : AllSpellScript("VoidReaverSpellListenerScript") {}
 
-    void OnSpellCast(Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    void OnSpellCast(
+        Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (spellInfo->Id != SPELL_ARCANE_ORB)
+        if (spellInfo->Id != Id(TkSpells::SPELL_ARCANE_ORB))
             return;
 
         std::list<TargetInfo> const& targets = *spell->GetUniqueTargetInfo();
@@ -32,22 +33,22 @@ public:
             return;
 
         auto& orbs = voidReaverArcaneOrbs[caster->GetMap()->GetInstanceId()];
-        uint32 currentTime = getMSTime();
+        uint32 const now = getMSTime();
 
         ArcaneOrbData orbData;
         orbData.destination = target->GetPosition();
-        orbData.castTime = currentTime;
+        orbData.castTime = now;
 
         orbs.push_back(orbData);
 
         orbs.erase(std::remove_if(orbs.begin(), orbs.end(),
-            [currentTime](const ArcaneOrbData& orb) {
-                return getMSTimeDiff(orb.castTime, currentTime) > 5000;
+            [now](ArcaneOrbData const& orb) {
+                return getMSTimeDiff(orb.castTime, now) > ARCANE_ORB_DURATION_MS;
             }), orbs.end());
     }
 };
 
 void AddSC_TempestKeepBotScripts()
 {
-    new BossListenerScript();
+    new VoidReaverSpellListenerScript();
 }

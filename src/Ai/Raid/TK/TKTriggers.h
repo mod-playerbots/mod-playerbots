@@ -11,6 +11,14 @@
 
 // General
 
+class TempestKeepBotIsNotInCombatTrigger : public Trigger
+{
+public:
+    TempestKeepBotIsNotInCombatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "tempest keep bot is not in combat") {}
+    bool IsActive() override;
+};
+
 // Trash
 
 class CrimsonHandCenturionCastsArcaneVolleyTrigger : public Trigger
@@ -79,19 +87,11 @@ public:
     bool IsActive() override;
 };
 
-class AlarPhase2EncounterIsAtRoomCenterTrigger : public Trigger
+class AlarShouldManagePhaseTrackerTrigger : public Trigger
 {
 public:
-    AlarPhase2EncounterIsAtRoomCenterTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "al'ar phase 2 encounter is at room center") {}
-    bool IsActive() override;
-};
-
-class AlarStrategyChangesBetweenPhasesTrigger : public Trigger
-{
-public:
-    AlarStrategyChangesBetweenPhasesTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "al'ar strategy changes between phases") {}
+    AlarShouldManagePhaseTrackerTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "al'ar should manage phase tracker") {}
     bool IsActive() override;
 };
 
@@ -113,11 +113,11 @@ public:
     bool IsActive() override;
 };
 
-class VoidReaverBossLaunchesArcaneOrbsTrigger : public Trigger
+class VoidReaverRangedShouldStandBackTrigger : public Trigger
 {
 public:
-    VoidReaverBossLaunchesArcaneOrbsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "void reaver boss launches arcane orbs") {}
+    VoidReaverRangedShouldStandBackTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "void reaver ranged should stand back") {}
     bool IsActive() override;
 };
 
@@ -129,21 +129,13 @@ public:
     bool IsActive() override;
 };
 
-class VoidReaverBotIsNotInCombatTrigger : public Trigger
-{
-public:
-    VoidReaverBotIsNotInCombatTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "void reaver bot is not in combat") {}
-    bool IsActive() override;
-};
-
 // High Astromancer Solarian
 
-class HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger : public Trigger
+class HighAstromancerSolarianEngagedByMainTankTrigger : public Trigger
 {
 public:
-    HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian boss casts wrath of the astromancer") {}
+    HighAstromancerSolarianEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian engaged by main tank") {}
     bool IsActive() override;
 };
 
@@ -152,14 +144,6 @@ class HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger : public Trigger
 public:
     HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian bot has wrath of the astromancer") {}
-    bool IsActive() override;
-};
-
-class HighAstromancerSolarianBossHasVanishedTrigger : public Trigger
-{
-public:
-    HighAstromancerSolarianBossHasVanishedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian boss has vanished") {}
     bool IsActive() override;
 };
 
@@ -253,11 +237,11 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger : public Trigger
+class KaelthasSunstriderShouldManageAdvisorDpsTimerTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider waiting for tanks to get aggro on advisors") {}
+    KaelthasSunstriderShouldManageAdvisorDpsTimerTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider should manage advisor dps timer") {}
     bool IsActive() override;
 };
 
@@ -322,14 +306,6 @@ class KaelthasSunstriderRaidMemberIsMindControlledTrigger : public Trigger
 public:
     KaelthasSunstriderRaidMemberIsMindControlledTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider raid member is mind controlled") {}
-    bool IsActive() override;
-};
-
-class KaelthasSunstriderBossIsCastingPyroblastTrigger : public Trigger
-{
-public:
-    KaelthasSunstriderBossIsCastingPyroblastTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider boss is casting pyroblast") {}
     bool IsActive() override;
 };
 
