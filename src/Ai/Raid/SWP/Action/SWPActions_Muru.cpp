@@ -10,6 +10,7 @@
 #include "CreatureAI.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "SWPData.h"
 #include "TargetValue.h"
 #include <array>
 #include <cmath>

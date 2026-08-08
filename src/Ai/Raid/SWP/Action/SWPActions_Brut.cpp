@@ -8,6 +8,7 @@
 #include "SWPEncounter_Brut.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "SWPData.h"
 #include <array>
 #include <cmath>
 

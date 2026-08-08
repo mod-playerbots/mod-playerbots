@@ -10,6 +10,7 @@
 #include "PlayerbotTextMgr.h"
 #include "RaidBossHelpers.h"
 #include "RtiTargetValue.h"
+#include "SWPData.h"
 #include "Timer.h"
 #include <cmath>
 

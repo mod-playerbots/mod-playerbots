@@ -9,6 +9,7 @@
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
 #include "RaidBossHelpers.h"
+#include "SWPData.h"
 #include "TargetValue.h"
 #include <algorithm>
 #include <map>
