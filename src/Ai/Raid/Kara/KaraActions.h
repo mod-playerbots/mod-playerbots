@@ -11,51 +11,62 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
+class KarazhanResetEncounterStatesAction : public Action
+{
+public:
+    KarazhanResetEncounterStatesAction(
+        PlayerbotAI* botAI) : Action(botAI, "karazhan reset encounter states") {}
+    bool Execute(Event event) override;
+};
+
+class KarazhanCastFearProtectionSpellAction : public Action
+{
+public:
+    KarazhanCastFearProtectionSpellAction(
+        PlayerbotAI* botAI) : Action(botAI, "karazhan cast fear protection spell") {}
+    bool Execute(Event event) override;
+
+private:
+    bool CastFearWardOnMainTank();
+    bool SetTremorTotem();
+};
+
 class ManaWarpStunCreatureBeforeWarpBreachAction : public AttackAction
 {
 public:
     ManaWarpStunCreatureBeforeWarpBreachAction(
-        PlayerbotAI* botAI, std::string const name = "mana warp stun creature before warp breach") : AttackAction(botAI, name) {}
+        PlayerbotAI* botAI) : AttackAction(botAI, "mana warp stun creature before warp breach") {}
     bool Execute(Event event) override;
 };
 
-class AttumenTheHuntsmanMarkTargetAction : public AttackAction
+class AttumenTheHuntsmanHandlePhaseOneAction : public AttackAction
 {
 public:
-    AttumenTheHuntsmanMarkTargetAction(
-        PlayerbotAI* botAI, std::string const name = "attumen the huntsman mark target") : AttackAction(botAI, name) {}
+    AttumenTheHuntsmanHandlePhaseOneAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "attumen the huntsman handle phase one") {}
     bool Execute(Event event) override;
+
+private:
+    bool AssistTankMoveAttumenFromGroup(Unit* midnight, Unit* attumen);
 };
 
-class AttumenTheHuntsmanSplitBossesAction : public AttackAction
+class AttumenTheHuntsmanHandlePhaseTwoAction : public AttackAction
 {
 public:
-    AttumenTheHuntsmanSplitBossesAction(
-        PlayerbotAI* botAI, std::string const name = "attumen the huntsman split bosses") : AttackAction(botAI, name) {}
+    AttumenTheHuntsmanHandlePhaseTwoAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "attumen the huntsman handle phase two") {}
     bool Execute(Event event) override;
+
+private:
+    bool CurrentTankPositionAttumen(Unit* attumen);
+    bool StackBehindAttumen(Unit* attumen);
 };
 
-class AttumenTheHuntsmanStackBehindAction : public MovementAction
+class AttumenTheHuntsmanSetDpsTimerAction : public Action
 {
 public:
-    AttumenTheHuntsmanStackBehindAction(
-        PlayerbotAI* botAI, std::string const name = "attumen the huntsman stack behind") : MovementAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class AttumenTheHuntsmanManageDpsTimerAction : public Action
-{
-public:
-    AttumenTheHuntsmanManageDpsTimerAction(
-        PlayerbotAI* botAI, std::string const name = "attumen the huntsman manage dps timer") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class MoroesMainTankAttackBossAction : public AttackAction
-{
-public:
-    MoroesMainTankAttackBossAction(
-        PlayerbotAI* botAI, std::string const name = "moroes main tank attack boss") : AttackAction(botAI, name) {}
+    AttumenTheHuntsmanSetDpsTimerAction(
+        PlayerbotAI* botAI) : Action(botAI, "attumen the huntsman set dps timer") {}
     bool Execute(Event event) override;
 };
 
@@ -63,23 +74,34 @@ class MoroesMarkTargetAction : public Action
 {
 public:
     MoroesMarkTargetAction(
-        PlayerbotAI* botAI, std::string const name = "moroes mark target") : Action(botAI, name) {}
+        PlayerbotAI* botAI) : Action(botAI, "moroes mark target") {}
     bool Execute(Event event) override;
 };
 
-class MaidenOfVirtueMoveBossToHealerAction : public AttackAction
+class MaidenOfVirtueTankPositionBossAction : public AttackAction
 {
 public:
-    MaidenOfVirtueMoveBossToHealerAction(
-        PlayerbotAI* botAI, std::string const name = "maiden of virtue move boss to healer") : AttackAction(botAI, name) {}
+    MaidenOfVirtueTankPositionBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "maiden of virtue tank position boss") {}
+    bool Execute(Event event) override;
+
+private:
+    bool MoveBossToStunnedHealer(Player* healer);
+};
+
+class MaidenOfVirtuePositionRangedBetweenPillarsAction : public MovementAction
+{
+public:
+    MaidenOfVirtuePositionRangedBetweenPillarsAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "maiden of virtue position ranged between pillars") {}
     bool Execute(Event event) override;
 };
 
-class MaidenOfVirtuePositionRangedAction : public MovementAction
+class MaidenOfVirtueSetGroundingTotemAction : public Action
 {
 public:
-    MaidenOfVirtuePositionRangedAction(
-        PlayerbotAI* botAI, std::string const name = "maiden of virtue position ranged") : MovementAction(botAI, name) {}
+    MaidenOfVirtueSetGroundingTotemAction(
+        PlayerbotAI* botAI) : Action(botAI, "maiden of virtue set grounding totem") {}
     bool Execute(Event event) override;
 };
 
@@ -87,23 +109,33 @@ class BigBadWolfPositionBossAction : public AttackAction
 {
 public:
     BigBadWolfPositionBossAction(
-        PlayerbotAI* botAI, std::string const name = "big bad wolf position boss") : AttackAction(botAI, name) {}
+        PlayerbotAI* botAI) : AttackAction(botAI, "big bad wolf position boss") {}
     bool Execute(Event event) override;
 };
 
-class BigBadWolfRunAwayFromBossAction : public MovementAction
+class BigBadWolfLittleRedRidingHoodRunAwayAction : public MovementAction
 {
 public:
-    BigBadWolfRunAwayFromBossAction(
-        PlayerbotAI* botAI, std::string const name = "big bad wolf run away from boss") : MovementAction(botAI, name) {}
+    BigBadWolfLittleRedRidingHoodRunAwayAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "big bad wolf little red riding hood run away") {}
     bool Execute(Event event) override;
+    bool ResetRunIndex()
+    {
+        if (!_runIndex)
+            return false;
+        _runIndex = 0;
+        return true;
+    }
+
+private:
+    uint8 _runIndex = 0;
 };
 
 class RomuloAndJulianneMarkTargetAction : public Action
 {
 public:
     RomuloAndJulianneMarkTargetAction(
-        PlayerbotAI* botAI, std::string const name = "romulo and julianne mark target") : Action(botAI, name) {}
+        PlayerbotAI* botAI) : Action(botAI, "romulo and julianne mark target") {}
     bool Execute(Event event) override;
 };
 
@@ -111,7 +143,7 @@ class WizardOfOzMarkTargetAction : public Action
 {
 public:
     WizardOfOzMarkTargetAction(
-        PlayerbotAI* botAI, std::string const name = "wizard of oz mark target") : Action(botAI, name) {}
+        PlayerbotAI* botAI) : Action(botAI, "wizard of oz mark target") {}
     bool Execute(Event event) override;
 };
 
@@ -119,7 +151,7 @@ class WizardOfOzScorchStrawmanAction : public Action
 {
 public:
     WizardOfOzScorchStrawmanAction(
-        PlayerbotAI* botAI, std::string const name = "wizard of oz scorch strawman") : Action(botAI, name) {}
+        PlayerbotAI* botAI) : Action(botAI, "wizard of oz scorch strawman") {}
     bool Execute(Event event) override;
 };
 
@@ -127,7 +159,7 @@ class TheCuratorMarkAstralFlareAction : public Action
 {
 public:
     TheCuratorMarkAstralFlareAction(
-        PlayerbotAI* botAI, std::string const name = "the curator mark astral flare") : Action(botAI, name) {}
+        PlayerbotAI* botAI) : Action(botAI, "the curator mark astral flare") {}
     bool Execute(Event event) override;
 };
 
@@ -135,7 +167,7 @@ class TheCuratorPositionBossAction : public AttackAction
 {
 public:
     TheCuratorPositionBossAction(
-        PlayerbotAI* botAI, std::string const name = "the curator position boss") : AttackAction(botAI, name) {}
+        PlayerbotAI* botAI) : AttackAction(botAI, "the curator position boss") {}
     bool Execute(Event event) override;
 };
 
@@ -143,7 +175,7 @@ class TheCuratorSpreadRangedAction : public MovementAction
 {
 public:
     TheCuratorSpreadRangedAction(
-        PlayerbotAI* botAI, std::string const name = "the curator spread ranged") : MovementAction(botAI, name) {}
+        PlayerbotAI* botAI) : MovementAction(botAI, "the curator spread ranged") {}
     bool Execute(Event event) override;
 };
 
@@ -151,7 +183,7 @@ class TerestianIllhoofMarkTargetAction : public Action
 {
 public:
     TerestianIllhoofMarkTargetAction(
-        PlayerbotAI* botAI, std::string const name = "terestian illhoof mark target") : Action(botAI, name) {}
+        PlayerbotAI* botAI) : Action(botAI, "terestian illhoof mark target") {}
     bool Execute(Event event) override;
 };
 
@@ -159,7 +191,7 @@ class ShadeOfAranRunAwayFromArcaneExplosionAction : public MovementAction
 {
 public:
     ShadeOfAranRunAwayFromArcaneExplosionAction(
-        PlayerbotAI* botAI, std::string const name = "shade of aran run away from arcane explosion") : MovementAction(botAI, name) {}
+        PlayerbotAI* botAI) : MovementAction(botAI, "shade of aran run away from arcane explosion") {}
     bool Execute(Event event) override;
 };
 
@@ -167,7 +199,7 @@ class ShadeOfAranStopMovingDuringFlameWreathAction : public MovementAction
 {
 public:
     ShadeOfAranStopMovingDuringFlameWreathAction(
-        PlayerbotAI* botAI, std::string const name = "shade of aran stop moving during flame wreath") : MovementAction(botAI, name) {}
+        PlayerbotAI* botAI) : MovementAction(botAI, "shade of aran stop moving during flame wreath") {}
     bool Execute(Event event) override;
 };
 
@@ -175,7 +207,7 @@ class ShadeOfAranMarkConjuredElementalAction : public Action
 {
 public:
     ShadeOfAranMarkConjuredElementalAction(
-        PlayerbotAI* botAI, std::string const name = "shade of aran mark conjured elemental") : Action(botAI, name) {}
+        PlayerbotAI* botAI) : Action(botAI, "shade of aran mark conjured elemental") {}
     bool Execute(Event event) override;
 };
 
@@ -183,7 +215,7 @@ class ShadeOfAranRangedMaintainDistanceAction : public MovementAction
 {
 public:
     ShadeOfAranRangedMaintainDistanceAction(
-        PlayerbotAI* botAI, std::string const name = "shade of aran ranged maintain distance") : MovementAction(botAI, name) {}
+        PlayerbotAI* botAI) : MovementAction(botAI, "shade of aran ranged maintain distance") {}
     bool Execute(Event event) override;
 };
 
@@ -191,57 +223,86 @@ class NetherspiteBlockRedBeamAction : public MovementAction
 {
 public:
     NetherspiteBlockRedBeamAction(
-        PlayerbotAI* botAI, std::string const name = "netherspite block red beam") : MovementAction(botAI, name) {}
+        PlayerbotAI* botAI) : MovementAction(botAI, "netherspite block red beam") {}
     bool Execute(Event event) override;
+    bool ResetRedBeamState()
+    {
+        if (!_redBeamTimerWasSet)
+            return false;
+        _redBeamMoveTimer = 0;
+        _lastBeamMoveSideways = false;
+        _wasBlockingRedBeam = false;
+        _redBeamTimerWasSet = false;
+        return true;
+    }
 
 private:
-    Position GetPositionOnBeam(Unit* netherspite, Unit* portal, float distanceFromBoss);
-    std::unordered_map<ObjectGuid, bool> _wasBlockingRedBeam;
+    time_t _redBeamMoveTimer = 0;
+    bool _lastBeamMoveSideways = false;
+    bool _wasBlockingRedBeam = false;
+    bool _redBeamTimerWasSet = false;
 };
 
 class NetherspiteBlockBlueBeamAction : public MovementAction
 {
 public:
     NetherspiteBlockBlueBeamAction(
-        PlayerbotAI* botAI, std::string const name = "netherspite block blue beam") : MovementAction(botAI, name) {}
+        PlayerbotAI* botAI) : MovementAction(botAI, "netherspite block blue beam") {}
     bool Execute(Event event) override;
+    bool ResetBlueBeamState()
+    {
+        if (!_wasBlockingBlueBeam)
+            return false;
+        _wasBlockingBlueBeam = false;
+        return true;
+    }
 
 private:
-    std::unordered_map<ObjectGuid, bool> _wasBlockingBlueBeam;
+    bool _wasBlockingBlueBeam = false;
 };
 
 class NetherspiteBlockGreenBeamAction : public MovementAction
 {
 public:
     NetherspiteBlockGreenBeamAction(
-        PlayerbotAI* botAI, std::string const name = "netherspite block green beam") : MovementAction(botAI, name) {}
+        PlayerbotAI* botAI) : MovementAction(botAI, "netherspite block green beam") {}
     bool Execute(Event event) override;
+    bool ResetGreenBeamState()
+    {
+        if (!_wasBlockingGreenBeam)
+            return false;
+        _wasBlockingGreenBeam = false;
+        return true;
+    }
 
 private:
-    std::unordered_map<ObjectGuid, bool> _wasBlockingGreenBeam;
+    bool _wasBlockingGreenBeam = false;
 };
 
 class NetherspiteAvoidBeamAndVoidZoneAction : public MovementAction
 {
 public:
     NetherspiteAvoidBeamAndVoidZoneAction(
-        PlayerbotAI* botAI, std::string const name = "netherspite avoid beam and void zone") : MovementAction(botAI, name) {}
+        PlayerbotAI* botAI) : MovementAction(botAI, "netherspite avoid beam and void zone") {}
     bool Execute(Event event) override;
 
 private:
     struct BeamAvoid
     {
-        Unit* portal;
-        float minDist, maxDist;
+        float minDist;
+        float maxDist;
+        float dirX;
+        float dirY;
     };
-    bool IsAwayFromBeams(float x, float y, const std::vector<BeamAvoid>& beams, Unit* netherspite);
+    bool IsAwayFromBeams(
+        float x, float y, float botX, float botY, const std::vector<BeamAvoid>& beams);
 };
 
 class NetherspiteBanishPhaseAvoidVoidZoneAction : public MovementAction
 {
 public:
     NetherspiteBanishPhaseAvoidVoidZoneAction(
-        PlayerbotAI* botAI, std::string const name = "netherspite banish phase avoid void zone") : MovementAction(botAI, name) {}
+        PlayerbotAI* botAI) : MovementAction(botAI, "netherspite banish phase avoid void zone") {}
     bool Execute(Event event) override;
 };
 
@@ -249,15 +310,15 @@ class NetherspiteManageTimersAndTrackersAction : public Action
 {
 public:
     NetherspiteManageTimersAndTrackersAction(
-        PlayerbotAI* botAI, std::string const name = "netherspite manage timers and trackers") : Action(botAI, name) {}
+        PlayerbotAI* botAI) : Action(botAI, "netherspite manage timers and trackers") {}
     bool Execute(Event event) override;
 };
 
-class PrinceMalchezaarEnfeebledAvoidHazardAction : public MovementAction
+class PrinceMalchezaarEnfeebledBotAvoidHazardAction : public MovementAction
 {
 public:
-    PrinceMalchezaarEnfeebledAvoidHazardAction(
-        PlayerbotAI* botAI, std::string const name = "prince malchezaar enfeebled avoid hazard") : MovementAction(botAI, name) {}
+    PrinceMalchezaarEnfeebledBotAvoidHazardAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "prince malchezaar enfeebled bot avoid hazard") {}
     bool Execute(Event event) override;
 };
 
@@ -265,55 +326,69 @@ class PrinceMalchezaarNonTankAvoidInfernalAction : public MovementAction
 {
 public:
     PrinceMalchezaarNonTankAvoidInfernalAction(
-        PlayerbotAI* botAI, std::string const name = "prince malchezaar non tank avoid infernal") : MovementAction(botAI, name) {}
+        PlayerbotAI* botAI) : MovementAction(botAI, "prince malchezaar non tank avoid infernal") {}
     bool Execute(Event event) override;
 };
 
-class PrinceMalchezaarMainTankMovementAction : public AttackAction
+class PrinceMalchezaarTanksPositionBossAction : public AttackAction
 {
 public:
-    PrinceMalchezaarMainTankMovementAction(
-        PlayerbotAI* botAI, std::string const name = "prince malchezaar main tank movement") : AttackAction(botAI, name) {}
+    PrinceMalchezaarTanksPositionBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "prince malchezaar tanks position boss") {}
     bool Execute(Event event) override;
 };
 
-class NightbaneGroundPhasePositionBossAction : public AttackAction
+class NightbaneGroundPhaseTanksPositionBossAction : public AttackAction
 {
 public:
-    NightbaneGroundPhasePositionBossAction(
-        PlayerbotAI* botAI, std::string const name = "nightbane ground phase position boss") : AttackAction(botAI, name) {}
+    NightbaneGroundPhaseTanksPositionBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "nightbane ground phase tanks position boss") {}
     bool Execute(Event event) override;
 };
 
-class NightbaneGroundPhaseRotateRangedPositionsAction : public MovementAction
+class NightbaneGroundPhaseCoordinateRangedMovementAction : public MovementAction
 {
 public:
-    NightbaneGroundPhaseRotateRangedPositionsAction(
-        PlayerbotAI* botAI, std::string const name = "nightbane ground phase rotate ranged positions") : MovementAction(botAI, name) {}
+    NightbaneGroundPhaseCoordinateRangedMovementAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "nightbane ground phase coordinate ranged movement") {}
     bool Execute(Event event) override;
-};
 
-class NightbaneCastFearWardOnMainTankAction : public Action
-{
-public:
-    NightbaneCastFearWardOnMainTankAction(
-        PlayerbotAI* botAI, std::string const name = "nightbane cast fear ward on main tank") : Action(botAI, name) {}
-    bool Execute(Event event) override;
+private:
+    bool MoveRangedLeaderToSafeSpot();
+    bool StackOnRangedLeader(Player* rangedLeader);
 };
 
 class NightbaneControlPetAggressionAction : public Action
 {
 public:
     NightbaneControlPetAggressionAction(
-        PlayerbotAI* botAI, std::string const name = "nightbane control pet aggression") : Action(botAI, name) {}
+        PlayerbotAI* botAI) : Action(botAI, "nightbane control pet aggression") {}
     bool Execute(Event event) override;
 };
 
-class NightbaneFlightPhaseMovementAction : public MovementAction
+class NightbaneFlightPhaseStackAndMoveAction : public MovementAction
 {
 public:
-    NightbaneFlightPhaseMovementAction(
-        PlayerbotAI* botAI, std::string const name = "nightbane flight phase movement") : MovementAction(botAI, name) {}
+    NightbaneFlightPhaseStackAndMoveAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "nightbane flight phase stack and move") {}
+    bool Execute(Event event) override;
+    bool ResetRainOfBonesHit()
+    {
+        if (!_rainOfBonesHit)
+            return false;
+        _rainOfBonesHit = false;
+        return true;
+    }
+
+private:
+    bool _rainOfBonesHit = false;
+};
+
+class NightbaneTeleportBackToTerraceAction : public MovementAction
+{
+public:
+    NightbaneTeleportBackToTerraceAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "nightbane teleport back to terrace") {}
     bool Execute(Event event) override;
 };
 
@@ -321,7 +396,7 @@ class NightbaneManageTimersAndTrackersAction : public Action
 {
 public:
     NightbaneManageTimersAndTrackersAction(
-        PlayerbotAI* botAI, std::string const name = "nightbane manage timers and trackers") : Action(botAI, name) {}
+        PlayerbotAI* botAI) : Action(botAI, "nightbane manage timers and trackers") {}
     bool Execute(Event event) override;
 };
 
