@@ -6,8 +6,8 @@
 
 #include "UBActions.h"
 #include "Playerbots.h"
+#include "Timer.h"
 #include "UBShared.h"
-
 #include <cmath>
 
 using namespace UnderbogHungarfen;
@@ -66,4 +66,60 @@ bool UBVacateSporeCloudAction::Execute(Event /*event*/)
     }
 
     return FleePosition(mushroom->GetPosition(), dangerRange);
+}
+
+bool UBClearUnderbatBackAction::Execute(Event /*event*/)
+{
+    if (!bot->IsAlive() || botAI->IsTank(bot))
+        return false;
+
+    GuidVector const& attackers = AI_VALUE_REF(GuidVector, "attackers");
+    Creature* bat = GetNearestUnderbatInLashRange(bot, attackers);
+    if (!bat)
+        return false;
+
+    bool const throttled = _lastReposition && GetMSTimeDiffToNow(_lastReposition) < UNDERBAT_REPOSITION_COOLDOWN;
+
+    bool const melee = botAI->IsMelee(bot);
+    if (melee)
+    {
+        Unit* rally = UnderbatRallyUnit(bot, attackers);
+        bool const parked = rally && bot->GetExactDist(rally) <= UNDERBAT_RALLY_TOLERANCE;
+
+        if (rally && !parked)
+        {
+            if (throttled)
+                return false;
+
+            float const rx = rally->GetPositionX();
+            float const ry = rally->GetPositionY();
+            float const rz = rally->GetPositionZ();
+            if (SpotClearOfUnderbats(bot, attackers, rx, ry, rz) &&
+                MoveTo(bot->GetMapId(), rx, ry, rz, false, false, true, true,
+                       MovementPriority::MOVEMENT_COMBAT))
+            {
+                _lastReposition = getMSTime();
+                return true;
+            }
+        }
+
+        if (!GetLashingUnderbat(bot, attackers))
+            return false;
+    }
+    else if (bot->IsNonMeleeSpellCast(true) && !GetLashingUnderbat(bot, attackers))
+        return false;
+
+    if (throttled)
+        return false;
+
+    float const clearDistance = UNDERBAT_LASH_RANGE + UNDERBAT_LASH_MARGIN;
+    float const gap = bot->GetDistance2d(bat);
+    if (gap >= clearDistance)
+        return false;
+
+    if (!MoveAway(bat, clearDistance - gap + 1.0f))
+        return false;
+
+    _lastReposition = getMSTime();
+    return true;
 }

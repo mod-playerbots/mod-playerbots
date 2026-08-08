@@ -6,12 +6,12 @@
 
 #include "UBShared.h"
 #include "Creature.h"
+#include "Group.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "SpellAuras.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
-
 #include <algorithm>
 #include <cmath>
 #include <list>
@@ -29,6 +29,23 @@ namespace UnderbogHungarfen
             radius = std::max(radius, spellInfo->Effects[i].CalcRadius());
 
         return radius > 0.0f ? radius : fallback;
+    }
+
+    Unit* HungarfenTarget(AiObjectContext* context)
+    {
+        return AI_VALUE2(Unit*, "find target", "hungarfen");
+    }
+
+    ObjectGuid FindHungarfenGuid(Player* bot)
+    {
+        Creature* hungarfen = bot->FindNearestCreature(NPC_HUNGARFEN, MUSHROOM_SCAN_RANGE, false);
+        return hungarfen ? hungarfen->GetGUID() : ObjectGuid::Empty;
+    }
+
+    bool HungarfenGone(Player* bot, ObjectGuid guid)
+    {
+        Creature* hungarfen = ObjectAccessor::GetCreature(*bot, guid);
+        return !hungarfen || !hungarfen->IsAlive();
     }
 
     float MushroomDangerRange(Player* bot)
@@ -64,6 +81,23 @@ namespace UnderbogHungarfen
         return guids;
     }
 
+    bool IsMushroom(Unit* unit)
+    {
+        return unit && unit->GetEntry() == NPC_UNDERBOG_MUSHROOM;
+    }
+
+    bool AnyMushroomAlive(Player* bot, GuidVector const& mushrooms)
+    {
+        for (ObjectGuid guid : mushrooms)
+        {
+            Creature* mushroom = ObjectAccessor::GetCreature(*bot, guid);
+            if (mushroom && mushroom->IsAlive())
+                return true;
+        }
+
+        return false;
+    }
+
     Creature* GetNearestDangerousMushroom(Player* bot, GuidVector const& mushrooms, float range)
     {
         Creature* best = nullptr;
@@ -83,6 +117,119 @@ namespace UnderbogHungarfen
         }
 
         return best;
+    }
+
+    Creature* GetNearestUnderbatInLashRange(Player* bot, GuidVector const& attackers)
+    {
+        Creature* best = nullptr;
+        float bestDist = 0.0f;
+        for (ObjectGuid guid : attackers)
+        {
+            Unit* unit = ObjectAccessor::GetUnit(*bot, guid);
+            Creature* bat = unit ? unit->ToCreature() : nullptr;
+            if (!bat || !bat->IsAlive() || bat->GetEntry() != NPC_UNDERBAT)
+                continue;
+
+            if (!bat->IsWithinCombatRange(bot, UNDERBAT_LASH_RANGE + UNDERBAT_LASH_MARGIN))
+                continue;
+
+            float const dist = bot->GetDistance2d(bat);
+            if (!best || dist < bestDist)
+            {
+                bestDist = dist;
+                best = bat;
+            }
+        }
+
+        return best;
+    }
+
+    bool AnyUnderbatInLashRange(Player* bot, GuidVector const& attackers)
+    {
+        return GetNearestUnderbatInLashRange(bot, attackers) != nullptr;
+    }
+
+    Creature* GetLashingUnderbat(Player* bot, GuidVector const& attackers)
+    {
+        Creature* best = nullptr;
+        float bestDist = 0.0f;
+        for (ObjectGuid guid : attackers)
+        {
+            Unit* unit = ObjectAccessor::GetUnit(*bot, guid);
+            Creature* bat = unit ? unit->ToCreature() : nullptr;
+            if (!bat || !bat->IsAlive() || bat->GetEntry() != NPC_UNDERBAT)
+                continue;
+
+            if (!bat->IsWithinCombatRange(bot, UNDERBAT_LASH_RANGE + UNDERBAT_LASH_MARGIN))
+                continue;
+
+            if (bat->HasInArc(UNDERBAT_SAFE_ARC, bot))
+                continue;
+
+            float const dist = bot->GetDistance2d(bat);
+            if (!best || dist < bestDist)
+            {
+                bestDist = dist;
+                best = bat;
+            }
+        }
+
+        return best;
+    }
+
+    Unit* UnderbatRallyUnit(Player* bot, GuidVector const& attackers)
+    {
+        Creature* bat = GetNearestUnderbatInLashRange(bot, attackers);
+        if (!bat)
+            return nullptr;
+
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (!member || member == bot || !member->IsAlive() ||
+                    member->GetMapId() != bot->GetMapId())
+                    continue;
+
+                if (!PlayerbotAI::IsTank(member))
+                    continue;
+
+                if (bot->GetExactDist(member) > UNDERBAT_RALLY_MAX_RANGE)
+                    continue;
+
+                return member;
+            }
+        }
+
+        Unit* victim = bat->GetVictim();
+        if (victim && victim != bot && victim->IsAlive() &&
+            bot->GetExactDist(victim) <= UNDERBAT_RALLY_MAX_RANGE)
+            return victim;
+
+        return nullptr;
+    }
+
+    bool SpotClearOfUnderbats(Player* bot, GuidVector const& attackers, float x, float y, float z)
+    {
+        Position const spot(x, y, z);
+        for (ObjectGuid guid : attackers)
+        {
+            Unit* unit = ObjectAccessor::GetUnit(*bot, guid);
+            Creature* bat = unit ? unit->ToCreature() : nullptr;
+            if (!bat || !bat->IsAlive() || bat->GetEntry() != NPC_UNDERBAT)
+                continue;
+
+            float const window =
+                UNDERBAT_LASH_RANGE + UNDERBAT_LASH_MARGIN + bat->GetCombatReach() + bot->GetCombatReach();
+            if (bat->GetExactDist(x, y, z) > window)
+                continue;
+
+            if (!bat->HasInArc(UNDERBAT_SAFE_ARC, &spot))
+                return false;
+        }
+
+        return true;
     }
 
     namespace

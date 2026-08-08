@@ -23,4 +23,11 @@ public:
     float GetValue(Action* action) override;
 };
 
+class UnderbatFacingMultiplier : public Multiplier
+{
+public:
+    UnderbatFacingMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "underbat facing") {}
+    float GetValue(Action* action) override;
+};
+
 #endif

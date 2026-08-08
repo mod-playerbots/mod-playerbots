@@ -8,16 +8,76 @@
 #define PLAYERBOTS_UBVALUECONTEXT_H
 
 #include "NamedObjectContext.h"
+#include "ObjectGuid.h"
+#include "Player.h"
+#include "Timer.h"
 #include "UBShared.h"
+#include "Unit.h"
 #include "Value.h"
 
 class UnderbogMushroomsValue : public CalculatedValue<GuidVector>
 {
 public:
-    UnderbogMushroomsValue(PlayerbotAI* botAI) : CalculatedValue<GuidVector>(botAI, "ub mushrooms", 200) {}
+    UnderbogMushroomsValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(botAI, "ub mushrooms", UnderbogHungarfen::MUSHROOM_SCAN_INTERVAL)
+    {
+    }
 
 protected:
-    GuidVector Calculate() override { return UnderbogHungarfen::FindMushroomGuids(bot); }
+    GuidVector Calculate() override
+    {
+        if (!_scanning)
+        {
+            if (!bot->IsInCombat() || UnderbogHungarfen::HungarfenGone(bot, _hungarfen))
+                return {};
+
+            _scanning = true;
+            _deadSince = 0;
+        }
+
+        Unit* boss = UnderbogHungarfen::HungarfenTarget(context);
+        if (boss)
+        {
+            _hungarfen = boss->GetGUID();
+            _deadSince = 0;
+        }
+
+        if (!boss && !_sawMushrooms && _skipped++ < UnderbogHungarfen::MUSHROOM_IDLE_SCAN_SKIPS)
+            return {};
+
+        _skipped = 0;
+        GuidVector mushrooms = UnderbogHungarfen::FindMushroomGuids(bot);
+        _sawMushrooms = !mushrooms.empty();
+
+        if (!boss)
+            CheckHungarfenGone();
+
+        return mushrooms;
+    }
+
+private:
+    void CheckHungarfenGone()
+    {
+        if (_hungarfen.IsEmpty())
+            _hungarfen = UnderbogHungarfen::FindHungarfenGuid(bot);
+
+        if (_hungarfen.IsEmpty() || !UnderbogHungarfen::HungarfenGone(bot, _hungarfen))
+        {
+            _deadSince = 0;
+            return;
+        }
+
+        if (!_deadSince)
+            _deadSince = getMSTime();
+        else if (GetMSTimeDiffToNow(_deadSince) >= UnderbogHungarfen::MUSHROOM_LINGER_TIME)
+            _scanning = false;
+    }
+
+    ObjectGuid _hungarfen;
+    uint32 _deadSince = 0;
+    uint32 _skipped = 0;
+    bool _sawMushrooms = false;
+    bool _scanning = true;
 };
 
 class TbcDungeonUnderbogValueContext : public NamedObjectContext<UntypedValue>

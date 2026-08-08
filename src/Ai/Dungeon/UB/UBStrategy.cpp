@@ -15,20 +15,21 @@ void TbcDungeonUnderbogStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 
     triggers.push_back(new TriggerNode("ub spore cloud danger", {
         NextAction("ub vacate spore cloud", ACTION_EMERGENCY + 2) }));
+
+    triggers.push_back(new TriggerNode("ub underbat lash", {
+        NextAction("ub clear underbat back", ACTION_EMERGENCY + 1) }));
 }
 
 void TbcDungeonUnderbogStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new HungarfenFoulSporesMultiplier(botAI));
     multipliers.push_back(new HungarfenMushroomIgnoreMultiplier(botAI));
+    multipliers.push_back(new UnderbatFacingMultiplier(botAI));
 }
 
 void TbcDungeonUnderbogStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
     AiObjectContext* context = botAI->GetAiObjectContext();
-    if (!AI_VALUE2(Unit*, "find target", "hungarfen"))
-        return;
-
     GuidVector const& mushrooms = AI_VALUE_REF(GuidVector, "ub mushrooms");
     exclusions.insert(mushrooms.begin(), mushrooms.end());
 }

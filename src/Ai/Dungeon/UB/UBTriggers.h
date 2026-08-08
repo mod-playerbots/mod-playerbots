@@ -23,4 +23,11 @@ public:
     bool IsActive() override;
 };
 
+class UBUnderbatLashTrigger : public Trigger
+{
+public:
+    UBUnderbatLashTrigger(PlayerbotAI* botAI) : Trigger(botAI, "ub underbat lash") {}
+    bool IsActive() override;
+};
+
 #endif

@@ -23,4 +23,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class UBClearUnderbatBackAction : public MovementAction
+{
+public:
+    UBClearUnderbatBackAction(PlayerbotAI* botAI) : MovementAction(botAI, "ub clear underbat back") {}
+    bool Execute(Event event) override;
+
+private:
+    uint32 _lastReposition = 0;
+};
+
 #endif
