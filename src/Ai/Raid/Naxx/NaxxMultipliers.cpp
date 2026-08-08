@@ -49,32 +49,25 @@ float HeiganDanceMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<HeiganDanceMeleeAction*>(action) || dynamic_cast<HeiganDanceRangedAction*>(action) ||
         dynamic_cast<CurePartyMemberAction*>(action) || dynamic_cast<WipeAction*>(action))
-    {
         return 1.0f;
-    }
+
     if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action))
-    {
         return 0.0f;
-    }
+
     if (!helper.IsPlatformPhase() && !helper.HasEruptionNearby())
-    {
         return 1.0f;
-    }
+
     if (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastMeleeSpellAction*>(action))
     {
         CastSpellAction* spellAction = dynamic_cast<CastSpellAction*>(action);
         uint32 spellId = AI_VALUE2(uint32, "spell id", spellAction->getSpell());
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
         if (!spellInfo)
-        {
             return 0.0f;
-        }
         uint32 castTime = spellInfo->CalcCastTime();
         if (castTime == 0 && !spellInfo->IsChanneled())
-        {
             return 1.0f;
-        }
     }
     return 0.0f;
 }
