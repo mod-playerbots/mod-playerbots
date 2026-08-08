@@ -3,6 +3,7 @@
 
 #include "MechShared.h"
 #include "NamedObjectContext.h"
+#include "ObjectGuid.h"
 #include "Value.h"
 
 class SepethreaFixatingFlameValue : public CalculatedValue<ObjectGuid>

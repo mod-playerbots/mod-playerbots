@@ -13,6 +13,7 @@
 
 #include "ObjectGuid.h"
 #include "PlayerbotAIConfig.h"
+#include "SharedDefines.h"
 #include <vector>
 
 class Player;

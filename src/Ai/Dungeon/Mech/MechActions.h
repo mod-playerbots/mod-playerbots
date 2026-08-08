@@ -4,6 +4,7 @@
 #include "AttackAction.h"
 #include "MechTriggers.h"
 #include "MovementActions.h"
+#include "ObjectGuid.h"
 
 class SepethreaKiteFlameAction : public MovementAction
 {
