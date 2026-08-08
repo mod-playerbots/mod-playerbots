@@ -114,7 +114,7 @@ bool IsPositionInActiveDebris(uint32 instanceId, float x, float y, float radius)
     return false;
 }
 
-bool IsPositionInActiveConflagration(PlayerbotAI* botAI, Player* bot, float x, float y)
+bool IsPositionInActiveConflagration(PlayerbotAI* botAI, float x, float y)
 {
     constexpr float conflagrationHazardRadius = 5.0f;
     GuidVector const& gameObjects =

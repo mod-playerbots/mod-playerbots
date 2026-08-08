@@ -859,10 +859,21 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams(ArenaType type, uint32 count
         // Field* fields = results->Fetch();
         // uint8 slot = fields[0].Get<uint8>();
 
+        uint8 arenaSlot = ArenaTeam::GetSlotByType(type);
+
+        if (player->GetArenaTeamId(arenaSlot) ||
+            sCharacterCache->GetCharacterArenaTeamIdByGuid(player->GetGUID(), arenaSlot) != 0)
+        {
+            continue;
+        }
+
         ArenaTeam* arenateam = new ArenaTeam();
+
         if (!arenateam->Create(player->GetGUID(), type, arenaTeamName, 0, 0, 0, 0, 0))
         {
             LOG_ERROR("playerbots", "Error creating arena team {}", arenaTeamName.c_str());
+
+            delete arenateam;
             continue;
         }
 

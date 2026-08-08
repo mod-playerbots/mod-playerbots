@@ -6,7 +6,6 @@
 
 #include "Playerbots.h"
 #include "VHTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
 
 bool ErekemTargetTrigger::IsActive()

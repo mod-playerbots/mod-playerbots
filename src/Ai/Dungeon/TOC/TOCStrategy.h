@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_TOCSTRATEGY_H
 #define PLAYERBOTS_TOCSTRATEGY_H
 
-#include "AiObjectContext.h"
 #include "Multiplier.h"
 #include "Strategy.h"
 #include "TOCMultipliers.h"

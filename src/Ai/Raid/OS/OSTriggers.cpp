@@ -6,8 +6,6 @@
 
 #include "OSTriggers.h"
 
-#include "SharedDefines.h"
-
 bool SartharionTankTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");

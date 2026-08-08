@@ -22,7 +22,6 @@
 #include "Playerbots.h"
 #include "RaceMgr.h"
 #include "TransportMgr.h"
-#include "VMapFactory.h"
 #include "VMapMgr2.h"
 #include "Map.h"
 #include "Corpse.h"
