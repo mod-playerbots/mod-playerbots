@@ -75,7 +75,7 @@ bool SapphironFlightPositionAction::MoveToNearestIcebolt()
     Group* group = bot->GetGroup();
     if (!group)
         return false;
-    
+
     Player* playerWithIcebolt = nullptr;
     float minDistance;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -91,7 +91,6 @@ bool SapphironFlightPositionAction::MoveToNearestIcebolt()
             }
         }
     }
-
     if (playerWithIcebolt)
     {
         Unit* boss = AI_VALUE2(Unit*, "find target", "sapphiron");
