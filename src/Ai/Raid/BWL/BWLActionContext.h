@@ -28,6 +28,8 @@ public:
 
         creators["bwl use hourglass sand"] = &RaidBwlActionContext::bwl_use_hourglass_sand;
         creators["bwl nefarian fear ward"] = &RaidBwlActionContext::bwl_nefarian_fear_ward;
+        creators["bwl attack warlock pack anchor"] = &RaidBwlActionContext::bwl_attack_warlock_pack_anchor;
+        creators["bwl technician spread"] = &RaidBwlActionContext::bwl_technician_spread;
         creators["bwl death talon wyrmguard tank move away"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_tank_move_away;
         creators["bwl death talon wyrmguard ranged move away"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_ranged_move_away;
     }
@@ -42,6 +44,8 @@ private:
     static Action* bwl_vaelastrasz_move_away(PlayerbotAI* ai) { return new BwlVaelastraszMoveAwayAction(ai); }
     static Action* bwl_use_hourglass_sand(PlayerbotAI* ai) { return new BwlUseHourglassSandAction(ai); }
     static Action* bwl_nefarian_fear_ward(PlayerbotAI* ai) { return new BwlNefarianFearWardAction(ai); }
+    static Action* bwl_attack_warlock_pack_anchor(PlayerbotAI* ai) { return new BwlAttackWarlockPackAnchorAction(ai); }
+    static Action* bwl_technician_spread(PlayerbotAI* ai) { return new BwlTechnicianSpreadAction(ai); }
     static Action* bwl_death_talon_wyrmguard_tank_move_away(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardTankMoveAwayAction(ai); }
     static Action* bwl_death_talon_wyrmguard_ranged_move_away(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardRangedMoveAwayAction(ai); }
 };

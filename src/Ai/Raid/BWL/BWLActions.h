@@ -76,6 +76,23 @@ public:
 
 // Trash
 
+class BwlAttackWarlockPackAnchorAction : public AttackAction
+{
+public:
+    BwlAttackWarlockPackAnchorAction(PlayerbotAI* botAI) : AttackAction(botAI, "bwl attack warlock pack anchor") {}
+    bool Execute(Event event) override;
+};
+
+class BwlTechnicianSpreadAction : public MovementAction
+{
+public:
+    BwlTechnicianSpreadAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl technician spread") {}
+    bool Execute(Event event) override;
+
+private:
+    uint32 _lastMoveMs = 0;
+};
+
 class BwlDeathTalonWyrmguardTankMoveAwayAction : public MovementAction
 {
 public:
