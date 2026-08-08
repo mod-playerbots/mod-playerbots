@@ -5,7 +5,6 @@
  */
 
 #include "IsFacingValue.h"
-#include <cmath>
 
 #include "Playerbots.h"
 

@@ -15,8 +15,6 @@
 #include "ICCScripts.h"
 #include "RtiValue.h"
 #include "Vehicle.h"
-#include <fstream>
-#include <ctime>
 #include <limits>
 
 // Professor Putricide

@@ -8,7 +8,6 @@
 #define PLAYERBOTS_COSTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
-#include "AiObjectContext.h"
 #include "CoSTriggers.h"
 
 class WotlkDungeonCoSTriggerContext : public NamedObjectContext<Trigger>

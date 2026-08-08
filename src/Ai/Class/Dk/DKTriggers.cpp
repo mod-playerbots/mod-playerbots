@@ -6,8 +6,6 @@
 
 #include "DKTriggers.h"
 
-#include <string>
-
 #include "GenericTriggers.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"

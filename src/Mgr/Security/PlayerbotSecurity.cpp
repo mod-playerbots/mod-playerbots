@@ -180,7 +180,7 @@ bool PlayerbotSecurity::CheckLevelFor(PlayerbotSecurityLevel level, bool silent,
         return true;
 
     PlayerbotAI* fromBotAI = GET_PLAYERBOT_AI(from);
-    if (silent || (fromBotAI && !fromBotAI->IsRealPlayer()))
+    if (silent || (fromBotAI && !IsSelfBot(from)))
         return false;
 
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);

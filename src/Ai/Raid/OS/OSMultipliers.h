@@ -15,7 +15,7 @@ public:
     SartharionMultiplier(PlayerbotAI* ai) : Multiplier(ai, "sartharion") {}
 
 public:
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 #endif

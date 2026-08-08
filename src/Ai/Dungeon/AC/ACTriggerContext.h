@@ -7,7 +7,7 @@
 #ifndef PLAYERBOTS_ACTRIGGERCONTEXT_H
 #define PLAYERBOTS_ACTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 #include "TriggerContext.h"
 #include "ACTriggers.h"
 

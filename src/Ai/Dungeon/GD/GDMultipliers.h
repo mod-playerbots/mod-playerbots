@@ -15,7 +15,7 @@ class SladranMultiplier : public Multiplier
         SladranMultiplier(PlayerbotAI* ai) : Multiplier(ai, "slad'ran") {}
 
     public:
-        virtual float GetValue(Action* action);
+        float GetValue(Action* action) override;
 };
 
 class GaldarahMultiplier : public Multiplier
@@ -24,7 +24,7 @@ class GaldarahMultiplier : public Multiplier
         GaldarahMultiplier(PlayerbotAI* ai) : Multiplier(ai, "gal'darah") {}
 
     public:
-        virtual float GetValue(Action* action);
+        float GetValue(Action* action) override;
 };
 
 #endif

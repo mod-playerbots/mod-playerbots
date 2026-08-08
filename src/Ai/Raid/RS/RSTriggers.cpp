@@ -9,8 +9,6 @@
 #include "RSScripts.h"
 #include "Playerbots.h"
 #include "Trigger.h"
-#include "Timer.h"
-#include <set>
 
 bool RsBaltharusBrandTrigger::IsActive()
 {

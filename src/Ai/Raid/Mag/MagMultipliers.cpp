@@ -4,7 +4,6 @@
  * or (at your option) any later version.
  */
 
-#include <unordered_map>
 #include <ctime>
 
 #include "MagMultipliers.h"

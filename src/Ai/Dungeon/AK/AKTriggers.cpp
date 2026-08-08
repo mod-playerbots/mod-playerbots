@@ -6,7 +6,6 @@
 
 #include "Playerbots.h"
 #include "AKTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
 
 bool NadoxGuardianTrigger::IsActive()

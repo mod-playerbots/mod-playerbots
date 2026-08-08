@@ -155,7 +155,7 @@ bool AutoReleaseSpiritAction::HandleBattlegroundSpiritHealer()
         RESET_AI_VALUE(bool, "combat::self target");
         RESET_AI_VALUE(WorldPosition, "current position");
     }
-    else if (!botAI->IsRealPlayer())
+    else if (!IsSelfBot(bot))
     {
         m_bgGossipTime = now;
         WorldPacket packet(CMSG_GOSSIP_HELLO);
@@ -175,10 +175,10 @@ bool AutoReleaseSpiritAction::ShouldAutoRelease() const
     if (!groupLeader || groupLeader == bot)
         return true;
 
-    if (!botAI->HasActivePlayerMaster())
+    if (!IsRealPlayer(botAI->GetMaster()))
         return true;
 
-    if (botAI->HasActivePlayerMaster() &&
+    if (IsRealPlayer(botAI->GetMaster()) &&
         groupLeader->GetMapId() == bot->GetMapId() &&
         bot->GetMap() &&
         (bot->GetMap()->IsRaid() || bot->GetMap()->IsDungeon()))

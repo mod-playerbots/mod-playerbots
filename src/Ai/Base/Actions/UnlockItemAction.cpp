@@ -6,7 +6,6 @@
 
 #include "UnlockItemAction.h"
 #include "PlayerbotAI.h"
-#include "ItemTemplate.h"
 #include "Player.h"
 #include "ObjectMgr.h"
 #include "SpellInfo.h"

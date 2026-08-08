@@ -18,13 +18,22 @@
 #include "PlayerbotAI.h"
 #include "QuestDef.h"
 #include "TravelMgr.h"
+#include <string>
 
-class TellRpgStatusAction : public Action
+class Player;
+
+class TellRpgStatusAction : public NewRpgBaseAction
 {
 public:
-    TellRpgStatusAction(PlayerbotAI* botAI) : Action(botAI, "rpg status") {}
+    TellRpgStatusAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "rpg status") {}
 
     bool Execute(Event event) override;
+
+private:
+    static constexpr char const* RPG_STATUS_CHANGED_KEY = "rpg_status_changed";
+    static constexpr char const* RPG_STATUS_CHANGED_DEFAULT = "rpg status -> %status";
+
+    void WhisperStatusChange(Player* owner, std::string const& statusName);
 };
 
 class StartRpgDoQuestAction : public Action

@@ -5,5 +5,3 @@
  */
 
 #include "DebugStrategy.h"
-
-#include "Playerbots.h"

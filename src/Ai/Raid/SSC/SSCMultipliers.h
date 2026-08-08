@@ -16,7 +16,7 @@ class UnderbogColossusEscapeToxicPoolMultiplier : public Multiplier
 public:
     UnderbogColossusEscapeToxicPoolMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "underbog colossus escape toxic pool") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 // Hydross the Unstable <Duke of Currents>
@@ -26,7 +26,7 @@ class HydrossTheUnstableDisableTankActionsMultiplier : public Multiplier
 public:
     HydrossTheUnstableDisableTankActionsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "hydross the unstable disable tank actions") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class HydrossTheUnstableWaitForDpsMultiplier : public Multiplier
@@ -34,7 +34,7 @@ class HydrossTheUnstableWaitForDpsMultiplier : public Multiplier
 public:
     HydrossTheUnstableWaitForDpsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "hydross the unstable wait for dps") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class HydrossTheUnstableControlMisdirectionMultiplier : public Multiplier
@@ -42,7 +42,7 @@ class HydrossTheUnstableControlMisdirectionMultiplier : public Multiplier
 public:
     HydrossTheUnstableControlMisdirectionMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "hydross the unstable control misdirection") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 // The Lurker Below
@@ -52,7 +52,7 @@ class TheLurkerBelowStayAwayFromSpoutMultiplier : public Multiplier
 public:
     TheLurkerBelowStayAwayFromSpoutMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "the lurker below stay away from spout") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class TheLurkerBelowMaintainRangedSpreadMultiplier : public Multiplier
@@ -60,7 +60,7 @@ class TheLurkerBelowMaintainRangedSpreadMultiplier : public Multiplier
 public:
     TheLurkerBelowMaintainRangedSpreadMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "the lurker below maintain ranged spread") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class TheLurkerBelowDisableTankAssistMultiplier : public Multiplier
@@ -68,7 +68,7 @@ class TheLurkerBelowDisableTankAssistMultiplier : public Multiplier
 public:
     TheLurkerBelowDisableTankAssistMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "the lurker below disable tank assist") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 // Leotheras the Blind
@@ -78,7 +78,7 @@ class LeotherasTheBlindAvoidWhirlwindMultiplier : public Multiplier
 public:
     LeotherasTheBlindAvoidWhirlwindMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind avoid whirlwind") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class LeotherasTheBlindDisableTankActionsMultiplier : public Multiplier
@@ -86,7 +86,7 @@ class LeotherasTheBlindDisableTankActionsMultiplier : public Multiplier
 public:
     LeotherasTheBlindDisableTankActionsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind disable tank actions") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier : public Multiplier
@@ -94,7 +94,7 @@ class LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier : public Multiplier
 public:
     LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind melee dps avoid chaos blast") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class LeotherasTheBlindFocusOnInnerDemonMultiplier : public Multiplier
@@ -102,7 +102,7 @@ class LeotherasTheBlindFocusOnInnerDemonMultiplier : public Multiplier
 public:
     LeotherasTheBlindFocusOnInnerDemonMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind focus on inner demon") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class LeotherasTheBlindWaitForDpsMultiplier : public Multiplier
@@ -110,7 +110,7 @@ class LeotherasTheBlindWaitForDpsMultiplier : public Multiplier
 public:
     LeotherasTheBlindWaitForDpsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind wait for dps") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class LeotherasTheBlindDelayBloodlustAndHeroismMultiplier : public Multiplier
@@ -118,7 +118,7 @@ class LeotherasTheBlindDelayBloodlustAndHeroismMultiplier : public Multiplier
 public:
     LeotherasTheBlindDelayBloodlustAndHeroismMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind delay bloodlust and heroism") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 // Fathom-Lord Karathress
@@ -128,7 +128,7 @@ class FathomLordKarathressDisableTankActionsMultiplier : public Multiplier
 public:
     FathomLordKarathressDisableTankActionsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "fathom-lord karathress disable tank actions") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class FathomLordKarathressDisableAoeMultiplier : public Multiplier
@@ -136,7 +136,7 @@ class FathomLordKarathressDisableAoeMultiplier : public Multiplier
 public:
     FathomLordKarathressDisableAoeMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "fathom-lord karathress disable aoe") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class FathomLordKarathressControlMisdirectionMultiplier : public Multiplier
@@ -144,7 +144,7 @@ class FathomLordKarathressControlMisdirectionMultiplier : public Multiplier
 public:
     FathomLordKarathressControlMisdirectionMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "fathom-lord karathress control misdirection") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class FathomLordKarathressWaitForDpsMultiplier : public Multiplier
@@ -152,7 +152,7 @@ class FathomLordKarathressWaitForDpsMultiplier : public Multiplier
 public:
     FathomLordKarathressWaitForDpsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "fathom-lord karathress wait for dps") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier : public Multiplier
@@ -160,7 +160,7 @@ class FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier : public 
 public:
     FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "fathom-lord karathress caribdis tank healer maintain position") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 // Morogrim Tidewalker
@@ -170,7 +170,7 @@ class MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier : public Multiplier
 public:
     MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "morogrim tidewalker delay bloodlust and heroism") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class MorogrimTidewalkerDisableTankActionsMultiplier : public Multiplier
@@ -178,7 +178,7 @@ class MorogrimTidewalkerDisableTankActionsMultiplier : public Multiplier
 public:
     MorogrimTidewalkerDisableTankActionsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "morogrim tidewalker disable tank actions") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class MorogrimTidewalkerMaintainPhase2StackingMultiplier : public Multiplier
@@ -186,7 +186,7 @@ class MorogrimTidewalkerMaintainPhase2StackingMultiplier : public Multiplier
 public:
     MorogrimTidewalkerMaintainPhase2StackingMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "morogrim tidewalker maintain phase2 stacking") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 // Lady Vashj <Coilfang Matron>
@@ -196,7 +196,7 @@ class LadyVashjDelayCooldownsMultiplier : public Multiplier
 public:
     LadyVashjDelayCooldownsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj delay cooldowns") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier : public Multiplier
@@ -204,7 +204,7 @@ class LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier : public Multiplie
 public:
     LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj main tank group shaman use grounding totem") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class LadyVashjMaintainPhase1RangedSpreadMultiplier : public Multiplier
@@ -212,7 +212,7 @@ class LadyVashjMaintainPhase1RangedSpreadMultiplier : public Multiplier
 public:
     LadyVashjMaintainPhase1RangedSpreadMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj maintain phase1 ranged spread") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class LadyVashjStaticChargeStayAwayFromGroupMultiplier : public Multiplier
@@ -220,7 +220,7 @@ class LadyVashjStaticChargeStayAwayFromGroupMultiplier : public Multiplier
 public:
     LadyVashjStaticChargeStayAwayFromGroupMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj static charge stay away from group") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class LadyVashjDoNotLootTheTaintedCoreMultiplier : public Multiplier
@@ -228,7 +228,7 @@ class LadyVashjDoNotLootTheTaintedCoreMultiplier : public Multiplier
 public:
     LadyVashjDoNotLootTheTaintedCoreMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj do not loot the tainted core") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class LadyVashjCorePassersPrioritizePositioningMultiplier : public Multiplier
@@ -236,7 +236,7 @@ class LadyVashjCorePassersPrioritizePositioningMultiplier : public Multiplier
 public:
     LadyVashjCorePassersPrioritizePositioningMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj core passers prioritize positioning") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class LadyVashjDisableAutomaticTargetingAndMovementModifier : public Multiplier
@@ -244,7 +244,7 @@ class LadyVashjDisableAutomaticTargetingAndMovementModifier : public Multiplier
 public:
     LadyVashjDisableAutomaticTargetingAndMovementModifier(
         PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj disable automatic targeting and movement") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 #endif

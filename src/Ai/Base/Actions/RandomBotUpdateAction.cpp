@@ -17,7 +17,7 @@ bool RandomBotUpdateAction::Execute(Event /*event*/)
     if (bot->GetGroup() && botAI->GetGroupLeader())
     {
         PlayerbotAI* groupLeaderBotAI = GET_PLAYERBOT_AI(botAI->GetGroupLeader());
-        if (!groupLeaderBotAI || groupLeaderBotAI->IsRealPlayer())
+        if (!groupLeaderBotAI || IsSelfBot(botAI->GetGroupLeader()))
             return true;
     }
 

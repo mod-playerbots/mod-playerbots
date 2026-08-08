@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_ACACTIONCONTEXT_H
 #define PLAYERBOTS_ACACTIONCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "Action.h"
+#include "NamedObjectContext.h"
 #include "ACActions.h"
 
 class TbcDungeonAuchenaiCryptsActionContext : public NamedObjectContext<Action>

@@ -13,7 +13,6 @@
 #include "GenericSpellActions.h"
 #include "GenericActions.h"
 #include "ICCTriggers.h"
-#include "Multiplier.h"
 
 bool IccValkyreSpearAction::Execute(Event /*event*/)
 {

@@ -430,7 +430,7 @@ public:
             return false;
 
         Group* group = bot->GetGroup();
-        if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && botAI->HasActivePlayerMaster())
+        if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && IsRealPlayer(botAI->GetMaster()))
             PlayerbotRepository::instance().Save(botAI);
 
         return true;

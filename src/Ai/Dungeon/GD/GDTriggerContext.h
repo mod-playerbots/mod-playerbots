@@ -8,7 +8,6 @@
 #define PLAYERBOTS_GDTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
-#include "AiObjectContext.h"
 #include "GDTriggers.h"
 
 class WotlkDungeonGDTriggerContext : public NamedObjectContext<Trigger>

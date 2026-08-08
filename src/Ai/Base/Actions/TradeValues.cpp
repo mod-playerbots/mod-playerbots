@@ -17,7 +17,7 @@ std::vector<Item*> ItemsUsefulToGiveValue::Calculate()
 
     std::vector<Item*> giveItems;
 
-    if (botAI->HasActivePlayerMaster() || !GET_PLAYERBOT_AI(player))
+    if (IsRealPlayer(botAI->GetMaster()) || !GET_PLAYERBOT_AI(player))
         return giveItems;
 
     std::vector<ItemUsage> myUsages = {ITEM_USAGE_NONE, ITEM_USAGE_VENDOR, ITEM_USAGE_AH, ITEM_USAGE_DISENCHANT};

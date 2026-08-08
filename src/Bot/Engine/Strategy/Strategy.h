@@ -50,19 +50,19 @@ enum StrategyType : uint32
 //     ACTION_EMERGENCY = 90
 // };
 
-static float ACTION_IDLE = 0.0f;
-static float ACTION_BG = 1.0f;
-static float ACTION_DEFAULT = 5.0f;
-static float ACTION_NORMAL = 10.0f;
-static float ACTION_HIGH = 20.0f;
-static float ACTION_MOVE = 30.0f;
-static float ACTION_INTERRUPT = 40.0f;
-static float ACTION_DISPEL = 50.0f;
-static float ACTION_RAID = 60.0f;
-static float ACTION_LIGHT_HEAL = 10.0f;
-static float ACTION_MEDIUM_HEAL = 20.0f;
-static float ACTION_CRITICAL_HEAL = 30.0f;
-static float ACTION_EMERGENCY = 90.0f;
+static constexpr float ACTION_IDLE = 0.0f;
+static constexpr float ACTION_BG = 1.0f;
+static constexpr float ACTION_DEFAULT = 5.0f;
+static constexpr float ACTION_NORMAL = 10.0f;
+static constexpr float ACTION_HIGH = 20.0f;
+static constexpr float ACTION_MOVE = 30.0f;
+static constexpr float ACTION_INTERRUPT = 40.0f;
+static constexpr float ACTION_DISPEL = 50.0f;
+static constexpr float ACTION_RAID = 60.0f;
+static constexpr float ACTION_LIGHT_HEAL = 10.0f;
+static constexpr float ACTION_MEDIUM_HEAL = 20.0f;
+static constexpr float ACTION_CRITICAL_HEAL = 30.0f;
+static constexpr float ACTION_EMERGENCY = 90.0f;
 
 class Strategy : public PlayerbotAIAware
 {

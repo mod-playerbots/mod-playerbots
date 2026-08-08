@@ -8,7 +8,6 @@
 #define PLAYERBOTS_HOLTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
-#include "AiObjectContext.h"
 #include "HoLTriggers.h"
 
 class WotlkDungeonHoLTriggerContext : public NamedObjectContext<Trigger>

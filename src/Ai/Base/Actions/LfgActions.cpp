@@ -315,8 +315,8 @@ bool LfgJoinAction::isUseful()
     if (bot->GetLevel() < 15)
         return false;
 
-    // don't use if active player master
-    if (GET_PLAYERBOT_AI(bot)->IsRealPlayer())
+    // Don't use for selfbots (a real player is at the keyboard).
+    if (IsSelfBot(bot))
         return false;
 
     if (bot->GetGroup() && bot->GetGroup()->GetLeaderGUID() != bot->GetGUID())
