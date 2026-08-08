@@ -43,13 +43,18 @@ namespace BlackwingLairHelpers
     enum class BlackwingLairNPCs : uint32
     {
         // Trash
-        NPC_DEATH_TALON_WYRMGUARD = 12460
+        NPC_DEATH_TALON_WYRMGUARD = 12460,
+        NPC_BLACKWING_TECHNICIAN = 13996,
+        NPC_BLACKWING_WARLOCK = 12459
     };
 
     bool IsActiveSuppressionDeviceInRange(const GameObject* go, const Player* bot);
     bool AreRazorgoreEggsAlive(PlayerbotAI* botAI);
     bool IsRazorgoreOffTank(Player* bot);
     bool IsNonBABotNearPosition(const Player* bot, Position const& position, float distance);
+    Creature* FindNearestInCombat(const Player* bot, BlackwingLairNPCs entry, float range);
+    Creature* FindAssignedWarlock(Player* bot, float range);
+    bool IsTargetingLiveWarlock(PlayerbotAI* botAI);
 }
 
 #endif

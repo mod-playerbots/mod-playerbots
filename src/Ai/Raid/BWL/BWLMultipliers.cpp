@@ -88,3 +88,29 @@ float VaelastraszBurningAdrenalineMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
+
+static constexpr float BWL_TRASH_SEARCH_RANGE = 35.0f;
+
+float WarlockPackFocusMultiplier::GetValue(Action* action)
+{
+    // The pack-anchor action locks dps onto a live warlock; zero the generic
+    // target pickers so the summoned felguards cannot drag a bot off it.
+    // Cheapest exits first: this runs for every queued action of every bot,
+    // so the action-type filter goes ahead of the warlock grid search.
+    if (!dynamic_cast<DpsAssistAction*>(action) &&
+        !dynamic_cast<DpsAoeAction*>(action) &&
+        !dynamic_cast<AggressiveTargetAction*>(action) &&
+        !dynamic_cast<AttackAnythingAction*>(action))
+        return 1.0f;
+
+    if (!PlayerbotAI::IsDps(bot))
+        return 1.0f;
+
+    if (IsTargetingLiveWarlock(botAI))
+        return 0.0f;
+
+    if (!FindNearestInCombat(bot, BlackwingLairNPCs::NPC_BLACKWING_WARLOCK, BWL_TRASH_SEARCH_RANGE))
+        return 1.0f;
+
+    return 0.0f;
+}

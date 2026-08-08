@@ -36,6 +36,10 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("bwl nefarian fear ward", {
         NextAction("bwl nefarian fear ward", ACTION_RAID) }));
 
+    triggers.push_back(new TriggerNode("bwl warlock pack anchor", {
+        NextAction("bwl attack warlock pack anchor", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("bwl technician spread", {
+        NextAction("bwl technician spread", ACTION_RAID) }));
     triggers.push_back(new TriggerNode("bwl death talon wyrmguard tank", {
         NextAction("bwl death talon wyrmguard tank move away", ACTION_RAID) }));
     triggers.push_back(new TriggerNode("bwl death talon wyrmguard ranged", {
@@ -47,4 +51,5 @@ void RaidBwlStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new RazorgoreTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszBurningAdrenalineMultiplier(botAI));
+    multipliers.push_back(new WarlockPackFocusMultiplier(botAI));
 }

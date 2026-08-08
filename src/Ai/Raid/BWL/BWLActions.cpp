@@ -9,6 +9,7 @@
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "RtiTargetValue.h"
+#include "Timer.h"
 
 using namespace BlackwingLairHelpers;
 
@@ -284,6 +285,93 @@ bool BwlNefarianFearWardAction::Execute(Event /*event*/)
 }
 
 // Trash
+
+static constexpr float BWL_TRASH_SEARCH_RANGE = 35.0f;
+// The technicians' Bomb (22334) splashes 5 yards around where it lands, so a
+// 6-yard gap is all it takes to keep one bomb off the rest of the raid.
+static constexpr float TECHNICIAN_SPREAD_DISTANCE = 6.0f;
+// ...tolerating a couple of neighbours inside the gap: repelling until every
+// raider is isolated pushes the back half out of cast range. Only a genuine
+// clump moves, so a bomb catches three raiders at worst.
+static constexpr uint32 TECHNICIAN_SPREAD_TOLERATED_NEIGHBOURS = 2;
+// One committed step at a time: recomputing the repulsion every tick against
+// neighbours who are also mid-step degrades the settle into a constant zigzag.
+static constexpr uint32 TECHNICIAN_SPREAD_MOVE_COOLDOWN_MS = 1500;
+
+bool BwlAttackWarlockPackAnchorAction::Execute(Event /*event*/)
+{
+    // Hold a live warlock once acquired; reassignment waits until it dies.
+    if (IsTargetingLiveWarlock(botAI))
+        return false;
+
+    // Melee split evenly across the live warlocks so several die at once;
+    // ranged just burn the nearest one from wherever they spread to.
+    Creature* anchor = PlayerbotAI::IsMelee(bot)
+        ? FindAssignedWarlock(bot, BWL_TRASH_SEARCH_RANGE)
+        : FindNearestInCombat(bot, BlackwingLairNPCs::NPC_BLACKWING_WARLOCK, BWL_TRASH_SEARCH_RANGE);
+    if (!anchor)
+        return false;
+
+    return Attack(anchor);
+}
+
+bool BwlTechnicianSpreadAction::Execute(Event /*event*/)
+{
+    uint32 const now = getMSTime();
+    if (_lastMoveMs && now - _lastMoveMs < TECHNICIAN_SPREAD_MOVE_COOLDOWN_MS)
+        return false;
+
+    // Weighted repulsion from nearby group members (same approach as the
+    // Vaelastrasz Burning Adrenaline spread): closer = stronger push.
+    float fleeX = 0.0f;
+    float fleeY = 0.0f;
+    uint32 neighbours = 0;
+
+    const Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (const GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+    {
+        Player* p = gref->GetSource();
+        if (!p || p == bot || !p->IsAlive() || p->GetMapId() != bot->GetMapId())
+            continue;
+
+        // Only space out from others who are also spreading (ranged/healers).
+        // Melee are intentionally stacked on the warlocks; repelling from them
+        // just chases the raid around and never lets ranged settle.
+        if (PlayerbotAI::IsMelee(p))
+            continue;
+
+        float dist = bot->GetDistance2d(p);
+        if (dist < TECHNICIAN_SPREAD_DISTANCE && dist > 0.1f)
+        {
+            ++neighbours;
+            float weight = 1.0f - dist / TECHNICIAN_SPREAD_DISTANCE;
+            fleeX += (bot->GetPositionX() - p->GetPositionX()) / dist * weight;
+            fleeY += (bot->GetPositionY() - p->GetPositionY()) / dist * weight;
+        }
+    }
+
+    // Every step taken here is a cast interrupted; bots that are already
+    // spread enough stay put and keep casting.
+    if (neighbours <= TECHNICIAN_SPREAD_TOLERATED_NEIGHBOURS)
+        return false;
+
+    float fleeLen = sqrt(fleeX * fleeX + fleeY * fleeY);
+    if (fleeLen < 0.1f)
+        return false;
+
+    float moveX = bot->GetPositionX() + (fleeX / fleeLen) * INCREMENTAL_MOVE_STEP_DISTANCE;
+    float moveY = bot->GetPositionY() + (fleeY / fleeLen) * INCREMENTAL_MOVE_STEP_DISTANCE;
+
+    if (!MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false,
+                false, false, MovementPriority::MOVEMENT_COMBAT, true))
+        return false;
+
+    _lastMoveMs = now;
+    return true;
+}
 
 static constexpr float WYRMGUARD_SAFE_DISTANCE = 16.0f;
 
