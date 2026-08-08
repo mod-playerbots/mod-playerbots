@@ -5,7 +5,6 @@
  */
 
 #include "PassLeadershipToMasterAction.h"
-
 #include "Event.h"
 #include "PlayerbotOperations.h"
 #include "PlayerbotWorldThreadProcessor.h"

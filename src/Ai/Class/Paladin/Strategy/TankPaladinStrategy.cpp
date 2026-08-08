@@ -5,7 +5,6 @@
  */
 
 #include "TankPaladinStrategy.h"
-
 #include "Playerbots.h"
 
 class TankPaladinStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

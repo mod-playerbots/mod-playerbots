@@ -5,7 +5,6 @@
  */
 
 #include "AcceptBattlegroundInvitationAction.h"
-
 #include "Event.h"
 #include "PlayerbotAI.h"
 

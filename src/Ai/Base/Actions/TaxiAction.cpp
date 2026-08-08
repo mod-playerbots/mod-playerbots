@@ -4,12 +4,12 @@
  */
 
 #include "TaxiAction.h"
-
+#include "Config.h"
 #include "Event.h"
 #include "LastMovementValue.h"
+#include "PlayerbotAIConfig.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
-#include "PlayerbotAIConfig.h"
 
 bool TaxiAction::Execute(Event event)
 {

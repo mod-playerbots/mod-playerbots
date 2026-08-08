@@ -5,10 +5,9 @@
  */
 
 #include "MCActions.h"
-
+#include "MCHelpers.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
-#include "MCHelpers.h"
 
 static constexpr float LIVING_BOMB_DISTANCE = 20.0f;
 static constexpr float INFERNO_DISTANCE = 20.0f;

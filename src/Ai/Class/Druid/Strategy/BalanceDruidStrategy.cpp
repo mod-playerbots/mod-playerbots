@@ -5,8 +5,6 @@
  */
 
 #include "BalanceDruidStrategy.h"
-
-#include "AiObjectContext.h"
 #include "FeralDruidStrategy.h"
 
 class BalanceDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

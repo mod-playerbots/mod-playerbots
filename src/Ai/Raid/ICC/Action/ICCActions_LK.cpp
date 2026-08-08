@@ -4,17 +4,17 @@
  * or (at your option) any later version.
  */
 
+#include "GenericActions.h"
+#include "GenericSpellActions.h"
 #include "ICCActions.h"
+#include "ICCScripts.h"
+#include "ICCTriggers.h"
+#include "Multiplier.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
-#include "Vehicle.h"
 #include "RtiValue.h"
-#include "GenericSpellActions.h"
-#include "GenericActions.h"
-#include "ICCTriggers.h"
-#include "ICCScripts.h"
-#include "Multiplier.h"
+#include "Vehicle.h"
 
 static bool IsLkShambling(uint32 entry)
 {

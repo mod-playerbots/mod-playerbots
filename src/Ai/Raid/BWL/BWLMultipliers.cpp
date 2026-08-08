@@ -5,7 +5,6 @@
  */
 
 #include "BWLMultipliers.h"
-
 #include "BWLActions.h"
 #include "BWLHelpers.h"
 #include "ChooseTargetActions.h"

@@ -5,7 +5,6 @@
  */
 
 #include "Formations.h"
-
 #include "Arrow.h"
 #include "Event.h"
 #include "Map.h"

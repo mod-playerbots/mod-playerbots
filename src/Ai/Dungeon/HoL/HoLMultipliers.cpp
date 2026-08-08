@@ -5,13 +5,12 @@
  */
 
 #include "HoLMultipliers.h"
-#include "HoLActions.h"
-#include "GenericSpellActions.h"
-#include "ChooseTargetActions.h"
-#include "MovementActions.h"
-#include "HoLTriggers.h"
 #include "Action.h"
-
+#include "ChooseTargetActions.h"
+#include "GenericSpellActions.h"
+#include "HoLActions.h"
+#include "HoLTriggers.h"
+#include "MovementActions.h"
 #include "WarriorActions.h"
 
 float BjarngrimMultiplier::GetValue(Action* action)

@@ -5,7 +5,6 @@
  */
 
 #include "Helpers.h"
-
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>

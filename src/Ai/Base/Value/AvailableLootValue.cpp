@@ -5,7 +5,6 @@
  */
 
 #include "AvailableLootValue.h"
-
 #include "LootObjectStack.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"

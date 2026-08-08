@@ -7,11 +7,11 @@
 #ifndef PLAYERBOTS_TKACTIONS_H
 #define PLAYERBOTS_TKACTIONS_H
 
-#include "TKHelpers.h"
-#include "TKKaelthasBossAI.h"
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+#include "TKHelpers.h"
+#include "TKKaelthasBossAI.h"
 
 using namespace TempestKeepHelpers;
 

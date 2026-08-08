@@ -7,13 +7,12 @@
 #ifndef PLAYERBOTS_MAGHELPERS_H
 #define PLAYERBOTS_MAGHELPERS_H
 
-#include <ctime>
-#include <unordered_map>
-#include <vector>
-
 #include "Group.h"
 #include "ObjectGuid.h"
 #include "PlayerbotAI.h"
+#include <ctime>
+#include <unordered_map>
+#include <vector>
 
 namespace MagtheridonHelpers
 {

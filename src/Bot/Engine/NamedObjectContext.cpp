@@ -5,7 +5,6 @@
  */
 
 #include "NamedObjectContext.h"
-
 #include "Playerbots.h"
 
 void Qualified::Qualify(int qual)

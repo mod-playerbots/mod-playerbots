@@ -8,6 +8,7 @@
 #define PLAYERBOTS_UPACTIONCONTEXT_H
 
 #include "Action.h"
+#include "ChooseTargetActions.h"
 #include "NamedObjectContext.h"
 #include "UPActions.h"
 

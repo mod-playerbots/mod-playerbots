@@ -7,10 +7,9 @@
 #ifndef PLAYERBOTS_CHECKMOUNTSTATEACTION_H
 #define PLAYERBOTS_CHECKMOUNTSTATEACTION_H
 
+#include "UseItemAction.h"
 #include <unordered_map>
 #include <vector>
-
-#include "UseItemAction.h"
 
 const uint16 SPELL_TRAVEL_FORM = 783;
 const uint16 SPELL_FLIGHT_FORM = 33943;

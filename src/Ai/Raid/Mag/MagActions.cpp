@@ -5,8 +5,8 @@
  */
 
 #include "MagActions.h"
-#include "MagHelpers.h"
 #include "Creature.h"
+#include "MagHelpers.h"
 #include "ObjectAccessor.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"

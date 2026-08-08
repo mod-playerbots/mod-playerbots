@@ -5,10 +5,10 @@
  */
 
 #include "NexMultipliers.h"
-#include "NexActions.h"
-#include "GenericSpellActions.h"
 #include "ChooseTargetActions.h"
+#include "GenericSpellActions.h"
 #include "MovementActions.h"
+#include "NexActions.h"
 #include "NexTriggers.h"
 
 float FactionCommanderMultiplier::GetValue(Action* action)

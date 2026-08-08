@@ -5,7 +5,6 @@
  */
 
 #include "RunawayStrategy.h"
-
 #include "Playerbots.h"
 
 void RunawayStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

@@ -5,11 +5,9 @@
  */
 
 #include "TellEmblemsAction.h"
-
-#include <array>
-
 #include "Event.h"
 #include "Playerbots.h"
+#include <array>
 
 bool TellEmblemsAction::Execute(Event /*event*/)
 {

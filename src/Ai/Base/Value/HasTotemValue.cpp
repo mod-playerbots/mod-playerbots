@@ -5,7 +5,6 @@
  */
 
 #include "HasTotemValue.h"
-
 #include "Playerbots.h"
 
 char* strstri(char const* str1, char const* str2);

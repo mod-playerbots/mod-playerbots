@@ -7,10 +7,9 @@
 #ifndef PLAYERBOTS_PLAYERBOTSECURITY_H
 #define PLAYERBOTS_PLAYERBOTSECURITY_H
 
-#include <map>
-
 #include "Common.h"
 #include "ObjectGuid.h"
+#include <map>
 
 class Player;
 

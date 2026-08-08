@@ -6,9 +6,9 @@
 
 #include "WarlockTriggers.h"
 #include "GenericTriggers.h"
-#include "Playerbots.h"
-#include "PlayerbotAI.h"
 #include "Player.h"
+#include "PlayerbotAI.h"
+#include "Playerbots.h"
 
 static const uint32 SOUL_SHARD_ITEM_ID = 6265;
 

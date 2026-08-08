@@ -5,7 +5,6 @@
  */
 
 #include "WarlockAiObjectContext.h"
-
 #include "AfflictionWarlockStrategy.h"
 #include "DemonologyWarlockStrategy.h"
 #include "DestructionWarlockStrategy.h"

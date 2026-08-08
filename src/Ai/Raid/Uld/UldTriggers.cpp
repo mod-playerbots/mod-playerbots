@@ -5,20 +5,19 @@
  */
 
 #include "UldTriggers.h"
-
+#include "FollowMasterStrategy.h"
 #include "GameObject.h"
+#include "MovementActions.h"
 #include "Object.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
-#include "UldBossHelper.h"
-#include "UldScripts.h"
+#include "RtiTargetValue.h"
 #include "ScriptedCreature.h"
 #include "SharedDefines.h"
 #include "Trigger.h"
+#include "UldBossHelper.h"
+#include "UldScripts.h"
 #include "Vehicle.h"
-#include <MovementActions.h>
-#include <FollowMasterStrategy.h>
-#include <RtiTargetValue.h>
 
 const std::vector<uint32> availableVehicles = {NPC_VEHICLE_CHOPPER, NPC_SALVAGED_DEMOLISHER,
                                                NPC_SALVAGED_DEMOLISHER_TURRET, NPC_SALVAGED_SIEGE_ENGINE,

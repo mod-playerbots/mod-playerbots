@@ -5,18 +5,17 @@
  */
 
 #include "EoEMultipliers.h"
-
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
+#include "EoEActions.h"
+#include "EoETriggers.h"
 #include "FollowActions.h"
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "MovementActions.h"
 #include "PaladinActions.h"
-#include "EoEActions.h"
-#include "EoETriggers.h"
 #include "ReachTargetActions.h"
 #include "ScriptedCreature.h"
 #include "WarriorActions.h"

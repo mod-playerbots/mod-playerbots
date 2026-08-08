@@ -5,7 +5,6 @@
  */
 
 #include "Value.h"
-
 #include "PerfMonitor.h"
 #include "Playerbots.h"
 #include "Timer.h"

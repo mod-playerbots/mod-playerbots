@@ -5,7 +5,6 @@
  */
 
 #include "HealthTriggers.h"
-
 #include "Playerbots.h"
 
 bool HealthInRangeTrigger::IsActive()

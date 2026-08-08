@@ -5,10 +5,10 @@
  */
 
 #include "ZATriggers.h"
-#include "ZAHelpers.h"
-#include "ZAActions.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "ZAActions.h"
+#include "ZAHelpers.h"
 
 using namespace ZulAmanHelpers;
 

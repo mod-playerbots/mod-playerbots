@@ -5,7 +5,6 @@
  */
 
 #include "TradeValues.h"
-
 #include "ItemUsageValue.h"
 #include "Playerbots.h"
 

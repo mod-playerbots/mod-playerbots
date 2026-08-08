@@ -5,7 +5,6 @@
  */
 
 #include "AggressiveTargetValue.h"
-
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "SharedDefines.h"

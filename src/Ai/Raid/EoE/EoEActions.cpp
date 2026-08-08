@@ -4,9 +4,9 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "EoEActions.h"
 #include "EoETriggers.h"
+#include "Playerbots.h"
 
 bool MalygosPositionAction::Execute(Event /*event*/)
 {

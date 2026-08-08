@@ -4,6 +4,8 @@
  * or (at your option) any later version.
  */
 
+#include "Playerbots.h"
+#include "RSActions.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -11,9 +13,6 @@
 #include <set>
 #include <utility>
 #include <vector>
-
-#include "Playerbots.h"
-#include "RSActions.h"
 
 namespace
 {

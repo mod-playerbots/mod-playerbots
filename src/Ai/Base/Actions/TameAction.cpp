@@ -5,11 +5,6 @@
  */
 
 #include "TameAction.h"
-#include <algorithm>
-#include <cctype>
-#include <random>
-#include <set>
-#include <sstream>
 #include "DBCStructure.h"
 #include "ObjectMgr.h"
 #include "Pet.h"
@@ -19,6 +14,11 @@
 #include "PlayerbotTextMgr.h"
 #include "SpellMgr.h"
 #include "WorldSession.h"
+#include <algorithm>
+#include <cctype>
+#include <random>
+#include <set>
+#include <sstream>
 
 bool IsExoticPet(const CreatureTemplate* creature)
 {

@@ -5,7 +5,6 @@
  */
 
 #include "BattlegroundStrategy.h"
-
 #include "Playerbots.h"
 
 void BGStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

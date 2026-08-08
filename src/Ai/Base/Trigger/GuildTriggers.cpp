@@ -5,7 +5,6 @@
  */
 
 #include "GuildTriggers.h"
-
 #include "GuildMgr.h"
 #include "Playerbots.h"
 

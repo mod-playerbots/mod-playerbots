@@ -4,19 +4,18 @@
  * or (at your option) any later version.
  */
 
-#include <unordered_map>
-#include <unordered_set>
-
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
+#include "ICCActions.h"
+#include "ICCTriggers.h"
 #include "Multiplier.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
-#include "ICCActions.h"
-#include "ICCTriggers.h"
 #include "RtiValue.h"
 #include "Vehicle.h"
+#include <unordered_map>
+#include <unordered_set>
 
 namespace
 {

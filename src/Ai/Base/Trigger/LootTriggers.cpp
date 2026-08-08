@@ -5,7 +5,6 @@
  */
 
 #include "LootTriggers.h"
-
 #include "LootObjectStack.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"

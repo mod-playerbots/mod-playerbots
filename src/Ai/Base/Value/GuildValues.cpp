@@ -5,7 +5,6 @@
  */
 
 #include "GuildValues.h"
-
 #include "Playerbots.h"
 
 uint8 PetitionSignsValue::Calculate()

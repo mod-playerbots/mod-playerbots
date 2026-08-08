@@ -5,7 +5,6 @@
  */
 
 #include "TellMasterAction.h"
-
 #include "Event.h"
 #include "Playerbots.h"
 

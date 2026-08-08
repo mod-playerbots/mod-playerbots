@@ -8,8 +8,8 @@
 #define PLAYERBOTS_ICCACTIONCONTEXT_H
 
 #include "Action.h"
-#include "NamedObjectContext.h"
 #include "ICCActions.h"
+#include "NamedObjectContext.h"
 
 class RaidIccActionContext : public NamedObjectContext<Action>
 {

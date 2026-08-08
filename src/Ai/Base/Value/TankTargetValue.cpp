@@ -5,7 +5,6 @@
  */
 
 #include "TankTargetValue.h"
-
 #include "AiObjectContext.h"
 #include "AttackersValue.h"
 #include "Group.h"

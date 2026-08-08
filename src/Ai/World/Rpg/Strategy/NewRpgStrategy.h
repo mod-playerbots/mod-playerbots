@@ -7,9 +7,9 @@
 #ifndef PLAYERBOTS_NEWRPGSTRATEGY_H
 #define PLAYERBOTS_NEWRPGSTRATEGY_H
 
+#include "NewRpgInfo.h"
 #include "Strategy.h"
 #include "TravelMgr.h"
-#include "NewRpgInfo.h"
 
 class PlayerbotAI;
 

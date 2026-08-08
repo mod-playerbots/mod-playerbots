@@ -7,12 +7,11 @@
 #ifndef PLAYERBOTS_PLAYERBOTFACTORY_H
 #define PLAYERBOTS_PLAYERBOTFACTORY_H
 
-#include <string>
-#include <utility>
-
 #include "InventoryAction.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
+#include <string>
+#include <utility>
 
 class Item;
 

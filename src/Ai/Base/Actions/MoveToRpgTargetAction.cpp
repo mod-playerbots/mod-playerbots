@@ -5,7 +5,6 @@
  */
 
 #include "MoveToRpgTargetAction.h"
-
 #include "ChatHelper.h"
 #include "ChooseRpgTargetAction.h"
 #include "Event.h"

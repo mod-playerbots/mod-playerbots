@@ -5,7 +5,6 @@
  */
 
 #include "GossipHelloAction.h"
-
 #include "Event.h"
 #include "GossipDef.h"
 #include "Playerbots.h"

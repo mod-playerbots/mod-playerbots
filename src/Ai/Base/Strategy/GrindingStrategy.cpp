@@ -5,7 +5,6 @@
  */
 
 #include "GrindingStrategy.h"
-
 #include "Playerbots.h"
 
 std::vector<NextAction> GrindingStrategy::getDefaultActions()

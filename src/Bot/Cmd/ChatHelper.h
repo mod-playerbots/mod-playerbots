@@ -7,12 +7,11 @@
 #ifndef PLAYERBOTS_CHATHELPER_H
 #define PLAYERBOTS_CHATHELPER_H
 
-#include <map>
-
 #include "Common.h"
 #include "ObjectGuid.h"
 #include "PlayerbotAIAware.h"
 #include "SharedDefines.h"
+#include <map>
 
 class GameObject;
 class Quest;

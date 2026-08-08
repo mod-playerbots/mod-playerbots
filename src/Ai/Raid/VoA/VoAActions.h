@@ -8,9 +8,9 @@
 #define PLAYERBOTS_VOAACTIONS_H
 
 #include "Action.h"
+#include "Event.h"
 #include "MovementActions.h"
 #include "PlayerbotAI.h"
-#include "Event.h"
 
 //
 //  Emalon the Storm Watcher

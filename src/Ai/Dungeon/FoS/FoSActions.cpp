@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "FoSActions.h"
+#include "Playerbots.h"
 
 bool MoveFromBronjahmAction::Execute(Event /*event*/)
 {

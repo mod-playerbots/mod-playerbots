@@ -5,7 +5,6 @@
  */
 
 #include "AggressiveStrategy.h"
-
 #include "Playerbots.h"
 
 void AggressiveStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

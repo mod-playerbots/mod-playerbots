@@ -9,9 +9,9 @@
 
 #include "Action.h"
 #include "AttackAction.h"
+#include "GDTriggers.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
-#include "GDTriggers.h"
 
 class AvoidPoisonNovaAction : public MovementAction
 {

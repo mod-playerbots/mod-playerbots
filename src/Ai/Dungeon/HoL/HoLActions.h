@@ -9,9 +9,9 @@
 
 #include "Action.h"
 #include "AttackAction.h"
+#include "HoLTriggers.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
-#include "HoLTriggers.h"
 
 const Position IONAR_TANK_POSITION = Position(1078.860f, -261.928f, 61.226f);
 const Position DISPERSE_POSITION = Position(1161.152f, -261.584f, 53.223f);

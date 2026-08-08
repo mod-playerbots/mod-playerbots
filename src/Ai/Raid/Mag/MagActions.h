@@ -7,9 +7,9 @@
 #ifndef PLAYERBOTS_MAGACTIONS_H
 #define PLAYERBOTS_MAGACTIONS_H
 
-#include "MagHelpers.h"
 #include "Action.h"
 #include "AttackAction.h"
+#include "MagHelpers.h"
 #include "MovementActions.h"
 
 class MagtheridonMainTankAttackFirstThreeChannelersAction : public AttackAction

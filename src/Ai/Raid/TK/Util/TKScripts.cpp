@@ -4,11 +4,11 @@
  * or (at your option) any later version.
  */
 
-#include "TKHelpers.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
+#include "TKHelpers.h"
 #include "Timer.h"
 
 using namespace TempestKeepHelpers;

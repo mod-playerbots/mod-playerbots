@@ -5,7 +5,6 @@
  */
 
 #include "NearestAdsValue.h"
-
 #include "Playerbots.h"
 
 bool NearestAddsValue::AcceptUnit(Unit* unit)

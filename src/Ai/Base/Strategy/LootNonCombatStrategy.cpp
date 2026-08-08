@@ -5,7 +5,6 @@
  */
 
 #include "LootNonCombatStrategy.h"
-
 #include "Playerbots.h"
 
 void LootNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

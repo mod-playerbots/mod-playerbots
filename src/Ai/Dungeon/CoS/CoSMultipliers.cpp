@@ -5,12 +5,12 @@
  */
 
 #include "CoSMultipliers.h"
-#include "CoSActions.h"
-#include "GenericSpellActions.h"
-#include "ChooseTargetActions.h"
-#include "MovementActions.h"
-#include "CoSTriggers.h"
 #include "Action.h"
+#include "ChooseTargetActions.h"
+#include "CoSActions.h"
+#include "CoSTriggers.h"
+#include "GenericSpellActions.h"
+#include "MovementActions.h"
 
 float EpochMultiplier::GetValue(Action* action)
 {

@@ -5,7 +5,6 @@
  */
 
 #include "SendMailAction.h"
-
 #include "ChatHelper.h"
 #include "Event.h"
 #include "ItemVisitors.h"

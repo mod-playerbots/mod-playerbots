@@ -5,7 +5,6 @@
  */
 
 #include "HunterActions.h"
-
 #include "Event.h"
 #include "GenericSpellActions.h"
 #include "PlayerbotAI.h"

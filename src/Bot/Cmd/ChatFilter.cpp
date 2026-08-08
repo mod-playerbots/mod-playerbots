@@ -5,12 +5,10 @@
  */
 
 #include "ChatFilter.h"
-
+#include "AiFactory.h"
 #include "Group.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
-#include "AiFactory.h"
-
 #include <algorithm>
 #include <cctype>
 #include <string>

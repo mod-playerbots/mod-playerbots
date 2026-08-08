@@ -5,7 +5,6 @@
  */
 
 #include "NaxxActions.h"
-
 #include "Playerbots.h"
 
 bool LoathebPositionAction::Execute(Event /*event*/)

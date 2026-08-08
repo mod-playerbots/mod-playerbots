@@ -5,7 +5,6 @@
  */
 
 #include "HunterBuffStrategies.h"
-
 #include "Playerbots.h"
 
 class BuffHunterStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

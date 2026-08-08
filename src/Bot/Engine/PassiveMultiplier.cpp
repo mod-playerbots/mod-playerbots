@@ -5,9 +5,7 @@
  */
 
 #include "PassiveMultiplier.h"
-
 #include "Action.h"
-#include "AiObjectContext.h"
 
 std::vector<std::string> PassiveMultiplier::allowedActions;
 std::vector<std::string> PassiveMultiplier::allowedParts;

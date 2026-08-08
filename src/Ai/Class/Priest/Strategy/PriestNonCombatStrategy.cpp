@@ -5,7 +5,6 @@
  */
 
 #include "PriestNonCombatStrategy.h"
-
 #include "Playerbots.h"
 #include "PriestNonCombatStrategyActionNodeFactory.h"
 

@@ -5,8 +5,6 @@
  */
 
 #include "ZAMultipliers.h"
-#include "ZAActions.h"
-#include "ZAHelpers.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidBearActions.h"
@@ -23,6 +21,8 @@
 #include "ShamanActions.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
+#include "ZAActions.h"
+#include "ZAHelpers.h"
 
 using namespace ZulAmanHelpers;
 

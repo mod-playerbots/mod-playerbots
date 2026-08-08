@@ -5,14 +5,13 @@
  */
 
 #include "PlayerbotAIConfig.h"
-
 #include "BisListMgr.h"
 #include "Config.h"
 #include "NewRpgInfo.h"
 #include "PlayerbotDungeonRepository.h"
 #include "PlayerbotFactory.h"
-#include "Playerbots.h"
 #include "PlayerbotGuildMgr.h"
+#include "Playerbots.h"
 #include "RandomItemMgr.h"
 #include "RandomPlayerbotFactory.h"
 #include "RandomPlayerbotMgr.h"

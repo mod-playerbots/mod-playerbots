@@ -5,7 +5,6 @@
  */
 
 #include "GuildStrategy.h"
-
 #include "Playerbots.h"
 
 void GuildStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

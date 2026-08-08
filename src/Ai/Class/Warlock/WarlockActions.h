@@ -7,10 +7,10 @@
 #ifndef PLAYERBOTS_WARLOCKACTIONS_H
 #define PLAYERBOTS_WARLOCKACTIONS_H
 
-#include "GenericSpellActions.h"
-#include "UseItemAction.h"
-#include "InventoryAction.h"
 #include "Action.h"
+#include "GenericSpellActions.h"
+#include "InventoryAction.h"
+#include "UseItemAction.h"
 
 class PlayerbotAI;
 class Unit;

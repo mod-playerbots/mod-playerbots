@@ -9,6 +9,7 @@
 
 #include "PlayerbotAIConfig.h"
 #include "Trigger.h"
+#include <stdexcept>
 
 class PlayerbotAI;
 

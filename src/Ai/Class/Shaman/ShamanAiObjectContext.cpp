@@ -5,13 +5,12 @@
  */
 
 #include "ShamanAiObjectContext.h"
-
 #include "ElementalShamanStrategy.h"
-#include "GenericShamanStrategy.h"
-#include "RestoShamanStrategy.h"
 #include "EnhancementShamanStrategy.h"
+#include "GenericShamanStrategy.h"
 #include "NamedObjectContext.h"
 #include "Playerbots.h"
+#include "RestoShamanStrategy.h"
 #include "ShamanActions.h"
 #include "ShamanNonCombatStrategy.h"
 #include "ShamanTriggers.h"

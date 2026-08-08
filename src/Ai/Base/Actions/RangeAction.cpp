@@ -5,7 +5,6 @@
  */
 
 #include "RangeAction.h"
-
 #include "Event.h"
 #include "Playerbots.h"
 

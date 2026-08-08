@@ -5,12 +5,11 @@
  */
 
 #include "TellTargetAction.h"
-
-#include "Event.h"
-#include "CombatManager.h"
-#include "ThreatManager.h"
 #include "AiObjectContext.h"
+#include "CombatManager.h"
+#include "Event.h"
 #include "PlayerbotAI.h"
+#include "ThreatManager.h"
 
 bool TellTargetAction::Execute(Event /*event*/)
 {

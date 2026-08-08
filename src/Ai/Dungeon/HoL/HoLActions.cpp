@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "HoLActions.h"
+#include "Playerbots.h"
 
 bool BjarngrimTargetAction::Execute(Event /*event*/)
 {

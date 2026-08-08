@@ -7,9 +7,10 @@
 #ifndef PLAYERBOTS_VHTRIGGERS_H
 #define PLAYERBOTS_VHTRIGGERS_H
 
-#include "Trigger.h"
-#include "GenericTriggers.h"
 #include "DungeonStrategyUtils.h"
+#include "GenericTriggers.h"
+#include "PlayerbotAIConfig.h"
+#include "Trigger.h"
 
 enum VioletHoldIDs
 {

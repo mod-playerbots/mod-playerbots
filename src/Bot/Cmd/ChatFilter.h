@@ -7,10 +7,9 @@
 #ifndef PLAYERBOTS_CHATFILTER_H
 #define PLAYERBOTS_CHATFILTER_H
 
-#include <vector>
-
 #include "Common.h"
 #include "PlayerbotAIAware.h"
+#include <vector>
 
 class PlayerbotAI;
 

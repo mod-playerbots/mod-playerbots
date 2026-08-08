@@ -5,7 +5,6 @@
  */
 
 #include "RestoDruidStrategy.h"
-
 #include "Playerbots.h"
 
 RestoDruidStrategy::RestoDruidStrategy(PlayerbotAI* botAI) : GenericDruidStrategy(botAI)

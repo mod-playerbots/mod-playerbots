@@ -5,7 +5,6 @@
  */
 
 #include "MaintenanceValues.h"
-
 #include "BudgetValues.h"
 #include "ItemUsageValue.h"
 #include "Playerbots.h"

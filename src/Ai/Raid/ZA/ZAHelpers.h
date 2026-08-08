@@ -7,11 +7,10 @@
 #ifndef PLAYERBOTS_ZAHELPERS_H
 #define PLAYERBOTS_ZAHELPERS_H
 
-#include <unordered_map>
-
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
+#include <unordered_map>
 
 namespace ZulAmanHelpers
 {

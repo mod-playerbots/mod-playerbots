@@ -5,16 +5,14 @@
  */
 
 #include "EquipGlyphsAction.h"
-
-#include "Playerbots.h"
-#include "ObjectMgr.h"
-#include "SpellMgr.h"
-#include "DBCStores.h"
 #include "AiObjectContext.h"
+#include "DBCStores.h"
 #include "Log.h"
-
-#include <unordered_map>
+#include "ObjectMgr.h"
+#include "Playerbots.h"
+#include "SpellMgr.h"
 #include <sstream>
+#include <unordered_map>
 #include <unordered_set>
 
 namespace

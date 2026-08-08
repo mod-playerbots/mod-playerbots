@@ -5,7 +5,6 @@
  */
 
 #include "LootValues.h"
-
 #include "Playerbots.h"
 #include "SharedValueContext.h"
 

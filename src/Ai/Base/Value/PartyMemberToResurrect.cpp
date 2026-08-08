@@ -5,7 +5,6 @@
  */
 
 #include "PartyMemberToResurrect.h"
-
 #include "Playerbots.h"
 
 class IsTargetOfResurrectSpell : public SpellEntryPredicate

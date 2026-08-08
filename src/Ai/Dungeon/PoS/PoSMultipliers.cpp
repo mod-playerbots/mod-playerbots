@@ -5,10 +5,10 @@
  */
 
 #include "PoSMultipliers.h"
-#include "PoSActions.h"
-#include "GenericSpellActions.h"
 #include "ChooseTargetActions.h"
+#include "GenericSpellActions.h"
 #include "MovementActions.h"
+#include "PoSActions.h"
 #include "PoSTriggers.h"
 
 float IckAndKrickMultiplier::GetValue(Action* action)

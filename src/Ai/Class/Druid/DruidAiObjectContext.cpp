@@ -5,20 +5,19 @@
  */
 
 #include "DruidAiObjectContext.h"
-
 #include "BalanceDruidStrategy.h"
 #include "BearDruidStrategy.h"
 #include "CatDruidStrategy.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
+#include "DruidPullStrategy.h"
 #include "DruidShapeshiftActions.h"
 #include "DruidTriggers.h"
 #include "GenericDruidNonCombatStrategy.h"
 #include "GenericDruidStrategy.h"
-#include "RestoDruidStrategy.h"
 #include "Playerbots.h"
-#include "DruidPullStrategy.h"
+#include "RestoDruidStrategy.h"
 
 class DruidStrategyFactoryInternal : public NamedObjectContext<Strategy>
 {

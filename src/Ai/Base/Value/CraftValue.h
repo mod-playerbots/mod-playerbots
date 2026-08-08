@@ -7,9 +7,8 @@
 #ifndef PLAYERBOTS_CRAFTVALUE_H
 #define PLAYERBOTS_CRAFTVALUE_H
 
-#include <map>
-
 #include "Value.h"
+#include <map>
 
 class PlayerbotAI;
 

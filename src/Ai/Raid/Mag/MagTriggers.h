@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_MAGTRIGGERS_H
 #define PLAYERBOTS_MAGTRIGGERS_H
 
-#include "Trigger.h"
 #include "PlayerbotAI.h"
+#include "Trigger.h"
 
 class MagtheridonFirstThreeChannelersEngagedByMainTankTrigger : public Trigger
 {

@@ -4,13 +4,13 @@
  * or (at your option) any later version.
  */
 
-#include "HyjalHelpers.h"
 #include "AllCreatureScript.h"
+#include "DynamicObjectScript.h"
+#include "HyjalHelpers.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
-#include "RaidBossHelpers.h"
-#include "DynamicObjectScript.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "Timer.h"

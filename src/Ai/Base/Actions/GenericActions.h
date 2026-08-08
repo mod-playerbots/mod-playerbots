@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_GENERICACTIONS_H
 #define PLAYERBOTS_GENERICACTIONS_H
 
-#include "AttackAction.h"
 #include "Action.h"
+#include "AttackAction.h"
 #include "PlayerbotAI.h"
 
 class PlayerbotAI;

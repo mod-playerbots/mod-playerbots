@@ -5,7 +5,6 @@
  */
 
 #include "UnholyDKStrategy.h"
-
 #include "Playerbots.h"
 
 class UnholyDKStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

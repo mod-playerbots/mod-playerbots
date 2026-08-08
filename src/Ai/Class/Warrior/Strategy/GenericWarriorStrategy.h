@@ -7,6 +7,7 @@
 #ifndef PLAYERBOTS_GENERICWARRIORSTRATEGY_H
 #define PLAYERBOTS_GENERICWARRIORSTRATEGY_H
 
+#include "Action.h"
 #include "CombatStrategy.h"
 
 class PlayerbotAI;

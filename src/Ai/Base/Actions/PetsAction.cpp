@@ -5,7 +5,6 @@
  */
 
 #include "PetsAction.h"
-
 #include "CharmInfo.h"
 #include "Creature.h"
 #include "CreatureAI.h"

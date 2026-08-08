@@ -5,7 +5,6 @@
  */
 
 #include "TrainerAction.h"
-
 #include "AiFactory.h"
 #include "BisListMgr.h"
 #include "BudgetValues.h"

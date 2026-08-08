@@ -5,7 +5,6 @@
  */
 
 #include "NaxxMultipliers.h"
-
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
@@ -16,10 +15,10 @@
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "MovementActions.h"
-#include "PaladinActions.h"
-#include "PriestActions.h"
 #include "NaxxActions.h"
 #include "NaxxSpellIds.h"
+#include "PaladinActions.h"
+#include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ScriptedCreature.h"

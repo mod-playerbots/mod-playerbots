@@ -5,7 +5,6 @@
  */
 
 #include "TravelTriggers.h"
-
 #include "Playerbots.h"
 #include "ServerFacade.h"
 

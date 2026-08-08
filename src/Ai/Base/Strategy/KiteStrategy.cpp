@@ -5,7 +5,6 @@
  */
 
 #include "KiteStrategy.h"
-
 #include "Playerbots.h"
 
 KiteStrategy::KiteStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}

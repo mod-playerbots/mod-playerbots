@@ -7,10 +7,9 @@
 #ifndef PLAYERBOTS_EMOTEACTION_H
 #define PLAYERBOTS_EMOTEACTION_H
 
-#include <map>
-
 #include "Action.h"
 #include "NamedObjectContext.h"
+#include <map>
 
 class Player;
 class PlayerbotAI;

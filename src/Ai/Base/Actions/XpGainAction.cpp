@@ -5,12 +5,11 @@
  */
 
 #include "XpGainAction.h"
-
+#include "BroadcastHelper.h"
 #include "Event.h"
 #include "GuildMgr.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
-#include "BroadcastHelper.h"
 
 bool XpGainAction::Execute(Event event)
 {

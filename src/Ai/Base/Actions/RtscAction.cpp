@@ -5,7 +5,6 @@
  */
 
 #include "RtscAction.h"
-
 #include "Playerbots.h"
 #include "RTSCValues.h"
 

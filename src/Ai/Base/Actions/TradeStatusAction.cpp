@@ -5,7 +5,6 @@
  */
 
 #include "TradeStatusAction.h"
-
 #include "CraftValue.h"
 #include "Event.h"
 #include "GuildTaskMgr.h"

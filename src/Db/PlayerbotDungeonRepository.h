@@ -7,10 +7,9 @@
 #ifndef PLAYERBOTS_PLAYERBOTDUNGEONREPOSITORY_H
 #define PLAYERBOTS_PLAYERBOTDUNGEONREPOSITORY_H
 
-#include <vector>
-#include <string>
-
 #include "DBCEnums.h"
+#include <string>
+#include <vector>
 
 struct DungeonSuggestion
 {

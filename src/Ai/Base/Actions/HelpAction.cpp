@@ -5,10 +5,9 @@
  */
 
 #include "HelpAction.h"
-
+#include "AiObjectContext.h"
 #include "ChatActionContext.h"
 #include "Event.h"
-#include "AiObjectContext.h"
 
 HelpAction::HelpAction(PlayerbotAI* botAI) : Action(botAI, "help") { chatContext = new ChatActionContext(); }
 

@@ -8,7 +8,6 @@
 #define PLAYERBOTS_BISLISTMGR_H
 
 #include "Define.h"
-
 #include <map>
 
 class BisListMgr

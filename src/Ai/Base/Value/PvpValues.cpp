@@ -5,7 +5,6 @@
  */
 
 #include "PvpValues.h"
-
 #include "BattlegroundEY.h"
 #include "BattlegroundMgr.h"
 #include "BattlegroundWS.h"

@@ -5,7 +5,6 @@
  */
 
 #include "RpgTriggers.h"
-
 #include "BudgetValues.h"
 #include "GuildCreateActions.h"
 #include "Playerbots.h"

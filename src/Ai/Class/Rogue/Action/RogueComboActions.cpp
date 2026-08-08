@@ -5,7 +5,6 @@
  */
 
 #include "RogueComboActions.h"
-
 #include "Playerbots.h"
 
 bool CastComboAction::isUseful()

@@ -5,7 +5,6 @@
  */
 
 #include "Trigger.h"
-
 #include "AiObjectContext.h"
 #include "Event.h"
 

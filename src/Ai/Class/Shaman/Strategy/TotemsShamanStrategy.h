@@ -8,8 +8,8 @@
 #define PLAYERBOTS_TOTEMSSHAMANSTRATEGY_H
 
 #include "GenericShamanStrategy.h"
-#include <vector>
 #include <string>
+#include <vector>
 
 // This is the header with all of the totem-related constants and arrays used in the Shaman strategies.
 

@@ -9,10 +9,10 @@
 
 #include "CureTriggers.h"
 #include "GenericTriggers.h"
-#include "RtiTriggers.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "RtiTriggers.h"
 #include "SharedDefines.h"
 #include "Trigger.h"
 #include <set>

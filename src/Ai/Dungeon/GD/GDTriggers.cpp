@@ -4,9 +4,9 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "GDTriggers.h"
 #include "AiObjectContext.h"
+#include "Playerbots.h"
 
 bool SladranPoisonNovaTrigger::IsActive()
 {

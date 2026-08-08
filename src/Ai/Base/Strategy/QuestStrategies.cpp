@@ -5,7 +5,6 @@
  */
 
 #include "QuestStrategies.h"
-
 #include "Playerbots.h"
 
 QuestStrategy::QuestStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI) { supported.push_back("accept quest"); }

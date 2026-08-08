@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_SSCTRIGGERCONTEXT_H
 #define PLAYERBOTS_SSCTRIGGERCONTEXT_H
 
-#include "SSCTriggers.h"
 #include "NamedObjectContext.h"
+#include "SSCTriggers.h"
 
 class RaidSSCTriggerContext : public NamedObjectContext<Trigger>
 {

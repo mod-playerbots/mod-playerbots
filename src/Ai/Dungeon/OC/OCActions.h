@@ -9,9 +9,9 @@
 
 #include "Action.h"
 #include "AttackAction.h"
+#include "GenericSpellActions.h"
 #include "PlayerbotAI.h"
 #include "UseItemAction.h"
-#include "GenericSpellActions.h"
 
 const Position uromSafePositions[3] =
 {

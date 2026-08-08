@@ -5,7 +5,6 @@
  */
 
 #include "Queue.h"
-#include "AiObjectContext.h"
 #include "Log.h"
 #include "PlayerbotAIConfig.h"
 

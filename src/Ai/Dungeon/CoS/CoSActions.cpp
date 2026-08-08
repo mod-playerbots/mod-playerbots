@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "CoSActions.h"
+#include "Playerbots.h"
 
 bool ExplodeGhoulSpreadAction::Execute(Event /*event*/)
 {

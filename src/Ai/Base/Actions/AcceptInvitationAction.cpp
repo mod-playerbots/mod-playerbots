@@ -5,7 +5,6 @@
  */
 
 #include "AcceptInvitationAction.h"
-
 #include "Event.h"
 #include "ObjectAccessor.h"
 #include "PlayerbotAIConfig.h"

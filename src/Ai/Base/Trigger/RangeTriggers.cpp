@@ -5,7 +5,6 @@
  */
 
 #include "RangeTriggers.h"
-
 #include "MoveSplineInit.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"

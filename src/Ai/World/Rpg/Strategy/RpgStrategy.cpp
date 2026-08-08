@@ -5,7 +5,6 @@
  */
 
 #include "RpgStrategy.h"
-
 #include "Playerbots.h"
 #include "RpgSubActions.h"
 

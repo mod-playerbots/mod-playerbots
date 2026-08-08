@@ -5,15 +5,14 @@
  */
 
 #include "LfgActions.h"
-
 #include "AiFactory.h"
 #include "ItemVisitors.h"
 #include "LFGMgr.h"
 #include "Opcodes.h"
 #include "Playerbots.h"
+#include "RandomPlayerbotMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
-#include "RandomPlayerbotMgr.h"
 
 using namespace lfg;
 

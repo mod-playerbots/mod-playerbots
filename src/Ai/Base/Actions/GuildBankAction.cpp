@@ -5,10 +5,9 @@
  */
 
 #include "GuildBankAction.h"
-
+#include "AiObjectContext.h"
 #include "GuildMgr.h"
 #include "PlayerbotAI.h"
-#include "AiObjectContext.h"
 
 bool GuildBankAction::Execute(Event event)
 {

@@ -5,7 +5,6 @@
  */
 
 #include "RepairAllAction.h"
-
 #include "ChatHelper.h"
 #include "Event.h"
 #include "Playerbots.h"

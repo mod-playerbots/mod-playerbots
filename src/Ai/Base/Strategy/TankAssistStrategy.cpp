@@ -5,7 +5,6 @@
  */
 
 #include "TankAssistStrategy.h"
-
 #include "Playerbots.h"
 
 void TankAssistStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

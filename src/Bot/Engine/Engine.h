@@ -7,13 +7,12 @@
 #ifndef PLAYERBOTS_ENGINE_H
 #define PLAYERBOTS_ENGINE_H
 
-#include <map>
-
 #include "Multiplier.h"
 #include "PlayerbotAIAware.h"
 #include "Queue.h"
 #include "Strategy.h"
 #include "Trigger.h"
+#include <map>
 
 class Action;
 class ActionNode;

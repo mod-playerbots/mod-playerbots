@@ -5,7 +5,6 @@
  */
 
 #include "LootObjectStack.h"
-
 #include "LootMgr.h"
 #include "Object.h"
 #include "ObjectAccessor.h"

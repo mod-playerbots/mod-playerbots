@@ -7,11 +7,11 @@
 #ifndef PLAYERBOTS_WARLOCKTRIGGERS_H
 #define PLAYERBOTS_WARLOCKTRIGGERS_H
 
+#include "CureTriggers.h"
 #include "GenericTriggers.h"
 #include "PlayerbotAI.h"
-#include "RtiTriggers.h"
 #include "Playerbots.h"
-#include "CureTriggers.h"
+#include "RtiTriggers.h"
 #include "Trigger.h"
 #include <set>
 

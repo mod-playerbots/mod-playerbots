@@ -5,11 +5,10 @@
  */
 
 #include "BWLActions.h"
-
-#include "RtiTargetValue.h"
-#include "Playerbots.h"
 #include "BWLHelpers.h"
+#include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "RtiTargetValue.h"
 
 using namespace BlackwingLairHelpers;
 

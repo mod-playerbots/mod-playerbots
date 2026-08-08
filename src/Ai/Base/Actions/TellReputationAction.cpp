@@ -5,14 +5,11 @@
  */
 
 #include "TellReputationAction.h"
-
-#include <algorithm>
-
 #include "Event.h"
 #include "PlayerbotAI.h"
 #include "ReputationMgr.h"
-
 #include "SharedDefines.h"
+#include <algorithm>
 
 std::string TellReputationAction::BuildReputationLine(FactionEntry const* entry)
 {

@@ -5,7 +5,6 @@
  */
 
 #include "StatsCollector.h"
-
 #include "DBCStores.h"
 #include "ItemTemplate.h"
 #include "PlayerbotAI.h"

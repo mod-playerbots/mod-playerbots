@@ -5,7 +5,6 @@
  */
 
 #include "SayStrategy.h"
-
 #include "Playerbots.h"
 
 void SayStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

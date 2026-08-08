@@ -5,7 +5,6 @@
  */
 
 #include "CastCustomSpellAction.h"
-
 #include "ChatHelper.h"
 #include "Event.h"
 #include "ItemUsageValue.h"

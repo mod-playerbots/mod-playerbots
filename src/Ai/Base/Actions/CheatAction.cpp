@@ -5,7 +5,6 @@
  */
 
 #include "CheatAction.h"
-
 #include "Playerbots.h"
 
 bool CheatAction::Execute(Event event)

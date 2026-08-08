@@ -5,11 +5,11 @@
  */
 
 #include "FishValues.h"
+#include "FishingAction.h"
+#include "Map.h"
 #include "PlayerbotAI.h"
 #include "RandomPlayerbotMgr.h"
-#include "Map.h"
 #include "Spell.h"
-#include "FishingAction.h"
 
 bool CanFishValue::Calculate()
 {

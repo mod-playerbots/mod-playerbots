@@ -5,7 +5,6 @@
  */
 
 #include "TellTargetStrategy.h"
-
 #include "Playerbots.h"
 
 void TellTargetStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

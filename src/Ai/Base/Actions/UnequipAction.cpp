@@ -5,12 +5,11 @@
  */
 
 #include "UnequipAction.h"
-
 #include "Event.h"
 #include "ItemCountValue.h"
+#include "ItemPackets.h"
 #include "Playerbots.h"
 #include "WorldSession.h"
-#include "ItemPackets.h"
 
 std::vector<std::string> split(std::string const s, char delim);
 

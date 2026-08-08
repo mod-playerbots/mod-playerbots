@@ -5,7 +5,7 @@
  */
 
 #include "ReviveFromCorpseAction.h"
-
+#include "Corpse.h"
 #include "Event.h"
 #include "FleeManager.h"
 #include "GameGraveyard.h"
@@ -14,7 +14,6 @@
 #include "Playerbots.h"
 #include "RandomPlayerbotMgr.h"
 #include "ServerFacade.h"
-#include "Corpse.h"
 
 bool ReviveFromCorpseAction::Execute(Event event)
 {

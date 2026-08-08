@@ -7,9 +7,10 @@
 #ifndef PLAYERBOTS_HOSTRIGGERS_H
 #define PLAYERBOTS_HOSTRIGGERS_H
 
-#include "Trigger.h"
-#include "GenericTriggers.h"
 #include "DungeonStrategyUtils.h"
+#include "GenericTriggers.h"
+#include "PlayerbotAIConfig.h"
+#include "Trigger.h"
 
 enum HallsOfStoneIDs
 {

@@ -4,6 +4,12 @@
  * or (at your option) any later version.
  */
 
+#include "NaxxActions.h"
+#include "NaxxSpellIds.h"
+#include "Playerbots.h"
+#include "Spell.h"
+#include "Timer.h"
+
 //bool HeiganDanceAction::CalculateSafe()
 //{
 //    Unit* boss = AI_VALUE2(Unit*, "find target", "heigan the unclean");

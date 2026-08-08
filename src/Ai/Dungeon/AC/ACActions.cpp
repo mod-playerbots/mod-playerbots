@@ -4,10 +4,10 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
-#include "AiFactory.h"
-#include "ACTriggers.h"
 #include "ACActions.h"
+#include "ACTriggers.h"
+#include "AiFactory.h"
+#include "Playerbots.h"
 
 // Shirrak the Dead Watcher
 

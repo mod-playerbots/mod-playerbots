@@ -6,11 +6,11 @@
 
 #include "AKMultipliers.h"
 #include "AKActions.h"
-#include "GenericSpellActions.h"
-#include "ChooseTargetActions.h"
-#include "MovementActions.h"
 #include "AKTriggers.h"
 #include "Action.h"
+#include "ChooseTargetActions.h"
+#include "GenericSpellActions.h"
+#include "MovementActions.h"
 
 float ElderNadoxMultiplier::GetValue(Action* action)
 {

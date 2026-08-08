@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_ZATRIGGERCONTEXT_H
 #define PLAYERBOTS_ZATRIGGERCONTEXT_H
 
-#include "ZATriggers.h"
 #include "NamedObjectContext.h"
+#include "ZATriggers.h"
 
 class RaidZulAmanTriggerContext : public NamedObjectContext<Trigger>
 {

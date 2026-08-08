@@ -5,6 +5,7 @@
  */
 
 #include "OSTriggers.h"
+#include "SharedDefines.h"
 
 bool SartharionTankTrigger::IsActive()
 {

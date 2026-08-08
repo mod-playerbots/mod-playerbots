@@ -7,14 +7,13 @@
 #ifndef PLAYERBOTS_RSSHARED_H
 #define PLAYERBOTS_RSSHARED_H
 
-#include <vector>
-
 #include "Group.h"
 #include "MotionMaster.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "ThreatManager.h"
+#include <vector>
 
 template <typename Pred>
 inline void RsCollectTargets(PlayerbotAI* botAI, std::vector<Unit*>& out, Pred pred)

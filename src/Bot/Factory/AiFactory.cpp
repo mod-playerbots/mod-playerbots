@@ -5,7 +5,6 @@
  */
 
 #include "AiFactory.h"
-
 #include "BattlegroundMgr.h"
 #include "DKAiObjectContext.h"
 #include "DruidAiObjectContext.h"

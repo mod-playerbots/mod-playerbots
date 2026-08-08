@@ -5,13 +5,13 @@
  */
 
 #include "MageTriggers.h"
-#include "Playerbots.h"
-#include "Player.h"
-#include "Spell.h"
 #include "DynamicObject.h"
-#include "Value.h"
-#include "SpellAuraEffects.h"
+#include "Player.h"
+#include "Playerbots.h"
 #include "ServerFacade.h"
+#include "Spell.h"
+#include "SpellAuraEffects.h"
+#include "Value.h"
 
 bool NoManaGemTrigger::IsActive()
 {

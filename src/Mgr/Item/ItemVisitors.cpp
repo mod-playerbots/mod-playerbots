@@ -5,7 +5,6 @@
  */
 
 #include "ItemVisitors.h"
-
 #include "Playerbots.h"
 
 bool FindUsableItemVisitor::Visit(Item* item)

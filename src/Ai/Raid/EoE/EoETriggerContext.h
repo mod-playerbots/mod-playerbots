@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_EOETRIGGERCONTEXT_H
 #define PLAYERBOTS_EOETRIGGERCONTEXT_H
 
-#include "NamedObjectContext.h"
 #include "EoETriggers.h"
+#include "NamedObjectContext.h"
 
 class RaidEoETriggerContext : public NamedObjectContext<Trigger>
 {

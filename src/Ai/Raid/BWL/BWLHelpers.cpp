@@ -5,7 +5,6 @@
  */
 
 #include "BWLHelpers.h"
-
 #include "AiObjectContext.h"
 #include "Group.h"
 

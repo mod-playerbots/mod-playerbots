@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "VHActions.h"
+#include "Playerbots.h"
 
 bool AttackErekemAction::Execute(Event /*event*/)
 {

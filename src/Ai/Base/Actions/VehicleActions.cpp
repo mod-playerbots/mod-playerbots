@@ -5,7 +5,6 @@
  */
 
 #include "VehicleActions.h"
-
 #include "BattlegroundIC.h"
 #include "ItemVisitors.h"
 #include "ObjectDefines.h"

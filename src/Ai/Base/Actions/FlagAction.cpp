@@ -5,7 +5,6 @@
  */
 
 #include "FlagAction.h"
-
 #include "Event.h"
 #include "Playerbots.h"
 

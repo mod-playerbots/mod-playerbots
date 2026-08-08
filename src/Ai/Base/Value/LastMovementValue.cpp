@@ -5,7 +5,6 @@
  */
 
 #include "LastMovementValue.h"
-
 #include "Timer.h"
 
 LastMovement::LastMovement() { clear(); }

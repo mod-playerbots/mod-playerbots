@@ -5,7 +5,6 @@
  */
 
 #include "EmoteAction.h"
-
 #include "Event.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"

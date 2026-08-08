@@ -5,7 +5,6 @@
  */
 
 #include "GenericDKStrategy.h"
-
 #include "DKAiObjectContext.h"
 #include "Playerbots.h"
 

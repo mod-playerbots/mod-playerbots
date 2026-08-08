@@ -5,7 +5,6 @@
  */
 
 #include "GroupLeaderValue.h"
-
 #include "Playerbots.h"
 
 Unit* GroupLeaderValue::Calculate() { return botAI->GetGroupLeader(); }

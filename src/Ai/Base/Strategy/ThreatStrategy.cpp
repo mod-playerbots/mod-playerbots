@@ -5,7 +5,6 @@
  */
 
 #include "ThreatStrategy.h"
-
 #include "GenericSpellActions.h"
 #include "Map.h"
 #include "Playerbots.h"

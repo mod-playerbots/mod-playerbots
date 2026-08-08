@@ -5,7 +5,6 @@
  */
 
 #include "SpellIdValue.h"
-
 #include "ChatHelper.h"
 #include "Playerbots.h"
 #include "Vehicle.h"

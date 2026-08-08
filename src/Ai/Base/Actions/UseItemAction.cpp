@@ -5,7 +5,6 @@
  */
 
 #include "UseItemAction.h"
-
 #include "ChatHelper.h"
 #include "Event.h"
 #include "ItemPackets.h"

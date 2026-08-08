@@ -5,7 +5,6 @@
  */
 
 #include "PassThroughStrategy.h"
-
 #include "Playerbots.h"
 
 void PassThroughStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

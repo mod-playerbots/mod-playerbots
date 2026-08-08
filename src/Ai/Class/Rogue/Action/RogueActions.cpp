@@ -5,7 +5,6 @@
  */
 
 #include "RogueActions.h"
-
 #include "Event.h"
 #include "ObjectGuid.h"
 #include "Player.h"

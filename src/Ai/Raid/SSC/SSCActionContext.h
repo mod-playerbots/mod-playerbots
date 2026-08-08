@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_SSCACTIONCONTEXT_H
 #define PLAYERBOTS_SSCACTIONCONTEXT_H
 
-#include "SSCActions.h"
 #include "NamedObjectContext.h"
+#include "SSCActions.h"
 
 class RaidSSCActionContext : public NamedObjectContext<Action>
 {

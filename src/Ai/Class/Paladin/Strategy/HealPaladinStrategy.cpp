@@ -5,7 +5,6 @@
  */
 
 #include "HealPaladinStrategy.h"
-
 #include "Playerbots.h"
 #include "Strategy.h"
 

@@ -5,7 +5,6 @@
  */
 
 #include "DKAiObjectContext.h"
-
 #include "BloodDKStrategy.h"
 #include "DKActions.h"
 #include "DKTriggers.h"

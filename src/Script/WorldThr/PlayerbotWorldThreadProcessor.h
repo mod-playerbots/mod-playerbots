@@ -7,12 +7,11 @@
 #ifndef PLAYERBOTS_PLAYERBOTWORLDTHREADPROCESSOR_H
 #define PLAYERBOTS_PLAYERBOTWORLDTHREADPROCESSOR_H
 
+#include "Log.h"
+#include "PlayerbotOperation.h"
 #include <memory>
 #include <mutex>
 #include <queue>
-
-#include "Log.h"
-#include "PlayerbotOperation.h"
 
 /**
  * @brief Processes thread-unsafe bot operations in the world thread

@@ -5,7 +5,6 @@
  */
 
 #include "DropQuestAction.h"
-
 #include "ChatHelper.h"
 #include "Event.h"
 #include "PlayerbotTextMgr.h"

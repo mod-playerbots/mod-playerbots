@@ -5,7 +5,6 @@
  */
 
 #include "GenericWarriorStrategy.h"
-
 #include "Playerbots.h"
 
 class GenericWarriorStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

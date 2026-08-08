@@ -5,7 +5,6 @@
  */
 
 #include "AcceptQuestAction.h"
-
 #include "Event.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"

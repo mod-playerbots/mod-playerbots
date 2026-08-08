@@ -5,7 +5,6 @@
  */
 
 #include "QuestConfirmAcceptAction.h"
-
 #include "QuestPackets.h"
 #include "WorldPacket.h"
 

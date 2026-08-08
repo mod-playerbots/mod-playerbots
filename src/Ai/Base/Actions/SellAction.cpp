@@ -5,12 +5,11 @@
  */
 
 #include "SellAction.h"
-
 #include "Event.h"
+#include "ItemPackets.h"
 #include "ItemUsageValue.h"
 #include "ItemVisitors.h"
 #include "Playerbots.h"
-#include "ItemPackets.h"
 
 class SellItemsVisitor : public IterateItemsVisitor
 {

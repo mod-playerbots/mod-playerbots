@@ -5,7 +5,6 @@
  */
 
 #include "BTHelpers.h"
-
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 

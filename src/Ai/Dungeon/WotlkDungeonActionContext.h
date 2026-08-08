@@ -7,20 +7,20 @@
 #ifndef PLAYERBOTS_WOTLKDUNGEONACTIONCONTEXT_H
 #define PLAYERBOTS_WOTLKDUNGEONACTIONCONTEXT_H
 
-#include "UKActionContext.h"
-#include "NexActionContext.h"
-#include "ANActionContext.h"
 #include "AKActionContext.h"
-#include "DTKActionContext.h"
-#include "VHActionContext.h"
-#include "GDActionContext.h"
-#include "HoSActionContext.h"
-#include "HoLActionContext.h"
-#include "OCActionContext.h"
-#include "UPActionContext.h"
+#include "ANActionContext.h"
 #include "CoSActionContext.h"
+#include "DTKActionContext.h"
 #include "FoSActionContext.h"
+#include "GDActionContext.h"
+#include "HoLActionContext.h"
+#include "HoSActionContext.h"
+#include "NexActionContext.h"
+#include "OCActionContext.h"
 #include "PoSActionContext.h"
 #include "TOCActionContext.h"
+#include "UKActionContext.h"
+#include "UPActionContext.h"
+#include "VHActionContext.h"
 
 #endif

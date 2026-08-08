@@ -5,7 +5,6 @@
  */
 
 #include "RpgSubActions.h"
-
 #include "BudgetValues.h"
 #include "ChooseRpgTargetAction.h"
 #include "EmoteAction.h"

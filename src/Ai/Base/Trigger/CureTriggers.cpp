@@ -5,7 +5,6 @@
  */
 
 #include "CureTriggers.h"
-
 #include "Playerbots.h"
 #include "WorldBuffAction.h"
 

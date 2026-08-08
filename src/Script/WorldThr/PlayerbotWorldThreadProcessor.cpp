@@ -4,12 +4,10 @@
  * or (at your option) any later version.
  */
 
-#include <algorithm>
-
 #include "PlayerbotWorldThreadProcessor.h"
-
-#include "Timer.h"
 #include "Log.h"
+#include "Timer.h"
+#include <algorithm>
 
 void PlayerbotWorldThreadProcessor::Update(uint32 diff)
 {

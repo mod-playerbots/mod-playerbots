@@ -5,7 +5,6 @@
  */
 
 #include "ShadowPriestStrategy.h"
-
 #include "Playerbots.h"
 #include "ShadowPriestStrategyActionNodeFactory.h"
 

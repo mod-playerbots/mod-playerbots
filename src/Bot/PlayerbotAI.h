@@ -6,8 +6,6 @@
 #ifndef PLAYERBOTS_PLAYERBOTAI_H
 #define PLAYERBOTS_PLAYERBOTAI_H
 
-#include <stack>
-
 #include "Chat.h"
 #include "ChatFilter.h"
 #include "ChatHelper.h"
@@ -23,6 +21,7 @@
 #include "SpellAuras.h"
 #include "Util.h"
 #include "WorldPacket.h"
+#include <stack>
 
 class AiObjectContext;
 class Creature;

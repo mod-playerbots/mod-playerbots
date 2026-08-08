@@ -5,9 +5,8 @@
  */
 
 #include "PaladinGreaterBlessingAction.h"
-
-#include "AiObjectContext.h"
 #include "AiFactory.h"
+#include "AiObjectContext.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"
 #include "PaladinHelper.h"
@@ -15,7 +14,6 @@
 #include "SharedDefines.h"
 #include "SpellAuraEffects.h"
 #include "Value.h"
-
 #include <algorithm>
 #include <limits>
 

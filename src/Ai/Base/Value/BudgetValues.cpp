@@ -5,7 +5,6 @@
  */
 
 #include "BudgetValues.h"
-
 #include "Playerbots.h"
 
 uint32 MaxGearRepairCostValue::Calculate()

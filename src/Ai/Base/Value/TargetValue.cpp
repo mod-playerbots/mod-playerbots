@@ -5,7 +5,6 @@
  */
 
 #include "TargetValue.h"
-
 #include "CombatManager.h"
 #include "LastMovementValue.h"
 #include "ObjectGuid.h"

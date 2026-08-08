@@ -5,7 +5,6 @@
  */
 
 #include "Aq20Triggers.h"
-
 #include "Aq20Utils.h"
 
 bool Aq20MoveToCrystalTrigger::IsActive()

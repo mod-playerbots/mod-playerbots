@@ -5,13 +5,11 @@
  */
 
 #include "BTActions.h"
-
-#include <vector>
-
+#include "BTHelpers.h"
 #include "CreatureAI.h"
 #include "Playerbots.h"
-#include "BTHelpers.h"
 #include "RaidBossHelpers.h"
+#include <vector>
 
 using namespace BlackTempleHelpers;
 

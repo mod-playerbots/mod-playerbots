@@ -4,12 +4,11 @@
  * or (at your option) any later version.
  */
 
-#include "ScriptMgr.h"
+#include "ObjectAccessor.h"
 #include "Opcodes.h"
 #include "Player.h"
-#include "ObjectAccessor.h"
-
 #include "Playerbots.h"
+#include "ScriptMgr.h"
 
 namespace
 {

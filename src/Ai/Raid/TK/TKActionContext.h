@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_TKACTIONCONTEXT_H
 #define PLAYERBOTS_TKACTIONCONTEXT_H
 
-#include "TKActions.h"
 #include "NamedObjectContext.h"
+#include "TKActions.h"
 
 class RaidTempestKeepActionContext : public NamedObjectContext<Action>
 {

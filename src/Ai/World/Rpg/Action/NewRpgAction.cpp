@@ -5,11 +5,9 @@
  */
 
 #include "NewRpgAction.h"
-
 #include "AreaDefines.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
-#include "G3D/Vector2.h"
 #include "GossipDef.h"
 #include "IVMapMgr.h"
 #include "NewRpgInfo.h"
@@ -28,6 +26,9 @@
 #include "SharedDefines.h"
 #include "Timer.h"
 #include "TravelMgr.h"
+#include "G3D/Vector2.h"
+#include <cmath>
+#include <cstdlib>
 
 void TellRpgStatusAction::WhisperStatusChange(Player* owner, std::string const& statusName)
 {

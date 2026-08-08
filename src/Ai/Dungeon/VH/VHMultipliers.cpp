@@ -5,12 +5,12 @@
  */
 
 #include "VHMultipliers.h"
-#include "VHActions.h"
-#include "GenericSpellActions.h"
-#include "ChooseTargetActions.h"
-#include "MovementActions.h"
-#include "VHTriggers.h"
 #include "Action.h"
+#include "ChooseTargetActions.h"
+#include "GenericSpellActions.h"
+#include "MovementActions.h"
+#include "VHActions.h"
+#include "VHTriggers.h"
 
 float ErekemMultiplier::GetValue(Action* action)
 {
