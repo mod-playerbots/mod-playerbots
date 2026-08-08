@@ -5,10 +5,9 @@
  */
 
 #include "HireAction.h"
-
 #include "Event.h"
-#include "RandomPlayerbotMgr.h"
 #include "PlayerbotAI.h"
+#include "RandomPlayerbotMgr.h"
 
 bool HireAction::Execute(Event /*event*/)
 {

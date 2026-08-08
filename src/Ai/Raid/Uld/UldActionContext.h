@@ -8,9 +8,9 @@
 #define PLAYERBOTS_ULDACTIONCONTEXT_H
 
 #include "Action.h"
+#include "BossAuraActions.h"
 #include "NamedObjectContext.h"
 #include "UldActions.h"
-#include "BossAuraActions.h"
 
 class RaidUlduarActionContext : public NamedObjectContext<Action>
 {

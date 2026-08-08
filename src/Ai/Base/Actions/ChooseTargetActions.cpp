@@ -5,15 +5,14 @@
  */
 
 #include "ChooseTargetActions.h"
-
 #include "ChooseRpgTargetAction.h"
 #include "Event.h"
 #include "LootObjectStack.h"
 #include "NewRpgStrategy.h"
 #include "Playerbots.h"
-#include "RtiTargetValue.h"
 #include "PossibleRpgTargetsValue.h"
 #include "PvpTriggers.h"
+#include "RtiTargetValue.h"
 #include "ServerFacade.h"
 
 bool AttackEnemyPlayerAction::isUseful()

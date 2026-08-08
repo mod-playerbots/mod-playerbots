@@ -5,7 +5,6 @@
  */
 
 #include "StatsAction.h"
-
 #include "ChatHelper.h"
 #include "Event.h"
 #include "PlayerbotAI.h"

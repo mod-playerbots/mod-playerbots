@@ -5,7 +5,6 @@
  */
 
 #include "RtiValue.h"
-
 #include "Playerbots.h"
 
 RtiValue::RtiValue(PlayerbotAI* botAI) : ManualSetValue<std::string>(botAI, "skull", "rti") {}

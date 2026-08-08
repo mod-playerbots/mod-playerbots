@@ -8,8 +8,8 @@
 #define PLAYERBOTS_HOSACTIONCONTEXT_H
 
 #include "Action.h"
-#include "NamedObjectContext.h"
 #include "HoSActions.h"
+#include "NamedObjectContext.h"
 
 class WotlkDungeonHoSActionContext : public NamedObjectContext<Action>
 {

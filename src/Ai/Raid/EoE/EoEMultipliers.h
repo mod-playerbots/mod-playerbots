@@ -15,7 +15,7 @@ public:
     MalygosMultiplier(PlayerbotAI* ai) : Multiplier(ai, "malygos") {}
 
 public:
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 #endif

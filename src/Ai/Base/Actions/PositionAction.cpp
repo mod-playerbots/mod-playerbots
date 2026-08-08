@@ -5,7 +5,6 @@
  */
 
 #include "PositionAction.h"
-
 #include "Event.h"
 #include "Playerbots.h"
 #include "PositionValue.h"

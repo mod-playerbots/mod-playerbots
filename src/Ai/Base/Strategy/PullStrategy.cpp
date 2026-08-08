@@ -14,7 +14,6 @@
  */
 
 #include "PullStrategy.h"
-
 #include "AiObjectContext.h"
 #include "PassiveMultiplier.h"
 #include "Player.h"

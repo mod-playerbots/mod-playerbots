@@ -7,14 +7,13 @@
 #ifndef PLAYERBOTS_PALADINGREATERBLESSINGACTION_H
 #define PLAYERBOTS_PALADINGREATERBLESSINGACTION_H
 
-#include <array>
-#include <string>
-#include <vector>
-
 #include "Action.h"
 #include "AiFactory.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
+#include <array>
+#include <string>
+#include <vector>
 
 class UntypedValue;
 

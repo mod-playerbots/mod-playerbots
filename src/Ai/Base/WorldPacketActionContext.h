@@ -14,8 +14,10 @@
 #include "AcceptResurrectAction.h"
 #include "AreaTriggerAction.h"
 #include "ArenaTeamActions.h"
+#include "BattleGroundJoinAction.h"
 #include "BattleGroundTactics.h"
 #include "CheckMountStateAction.h"
+#include "EquipAction.h"
 #include "GuildAcceptAction.h"
 #include "GuildCreateActions.h"
 #include "InventoryChangeFailureAction.h"
@@ -26,9 +28,11 @@
 #include "NamedObjectContext.h"
 #include "PassLeadershipToMasterAction.h"
 #include "PetitionSignAction.h"
+#include "PetsAction.h"
 #include "QuestAction.h"
 #include "QuestConfirmAcceptAction.h"
 #include "ReadyCheckAction.h"
+#include "ReleaseSpiritAction.h"
 #include "RememberTaxiAction.h"
 #include "ReviveFromCorpseAction.h"
 #include "RewardAction.h"
@@ -40,9 +44,6 @@
 #include "TradeStatusAction.h"
 #include "TradeStatusExtendedAction.h"
 #include "UseMeetingStoneAction.h"
-#include "NamedObjectContext.h"
-#include "ReleaseSpiritAction.h"
-#include "PetsAction.h"
 
 class PlayerbotAI;
 

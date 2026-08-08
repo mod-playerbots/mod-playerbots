@@ -5,7 +5,6 @@
  */
 
 #include "Engine.h"
-
 #include "Action.h"
 #include "Event.h"
 #include "PerfMonitor.h"
@@ -608,7 +607,7 @@ bool Engine::ListenAndExecute(Action* action, Event event)
 void Engine::LogAction(char const* format, ...)
 {
     Player* bot = botAI->GetBot();
-    if (sPlayerbotAIConfig.logInGroupOnly && (!bot->GetGroup() || !botAI->HasRealPlayerMaster()) && !testMode)
+    if (sPlayerbotAIConfig.logInGroupOnly && (!bot->GetGroup() || !botAI->HasGameClientMaster()) && !testMode)
         return;
 
     char buf[1024];
@@ -670,7 +669,7 @@ void Engine::LogValues()
         return;
 
     Player* bot = botAI->GetBot();
-    if (sPlayerbotAIConfig.logInGroupOnly && (!bot->GetGroup() || !botAI->HasRealPlayerMaster()))
+    if (sPlayerbotAIConfig.logInGroupOnly && (!bot->GetGroup() || !botAI->HasGameClientMaster()))
         return;
 
     std::string const text = botAI->GetAiObjectContext()->FormatValues();

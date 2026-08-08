@@ -5,7 +5,6 @@
  */
 
 #include "ReturnStrategy.h"
-
 #include "Playerbots.h"
 
 void ReturnStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

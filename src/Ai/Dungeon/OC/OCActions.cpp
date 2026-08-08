@@ -4,10 +4,10 @@
  * or (at your option) any later version.
  */
 
-#include "OCTriggers.h"
-#include "Playerbots.h"
 #include "OCActions.h"
 #include "LastSpellCastValue.h"
+#include "OCTriggers.h"
+#include "Playerbots.h"
 
 bool AvoidUnstableSphereAction::Execute(Event /*event*/)
 {

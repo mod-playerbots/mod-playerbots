@@ -5,12 +5,11 @@
  */
 
 #include "OnyTriggers.h"
-
 #include "GenericTriggers.h"
+#include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
-#include "NearestNpcsValue.h"
 
 OnyxiaDeepBreathTrigger::OnyxiaDeepBreathTrigger(PlayerbotAI* botAI) : Trigger(botAI, "ony deep breath warning") {}
 

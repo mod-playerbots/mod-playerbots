@@ -5,14 +5,14 @@
  */
 
 #include "SSCTriggers.h"
-#include "SSCHelpers.h"
-#include "SSCActions.h"
 #include "AiFactory.h"
 #include "Corpse.h"
 #include "LootObjectStack.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "SSCActions.h"
+#include "SSCHelpers.h"
 
 using namespace SerpentShrineCavernHelpers;
 

@@ -6,8 +6,8 @@
 
 #include "ShamanNonCombatStrategy.h"
 #include "AiFactory.h"
-#include "Strategy.h"
 #include "Playerbots.h"
+#include "Strategy.h"
 
 class ShamanNonCombatStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {

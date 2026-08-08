@@ -6,7 +6,6 @@
 
 #include "OSActions.h"
 #include "OSTriggers.h"
-
 #include "Playerbots.h"
 
 bool SartharionTankPositionAction::Execute(Event /*event*/)

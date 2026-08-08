@@ -7,23 +7,25 @@
 #ifndef PLAYERBOTS_DUNGEONSTRATEGYCONTEXT_H
 #define PLAYERBOTS_DUNGEONSTRATEGYCONTEXT_H
 
-#include "Strategy.h"
 #include "ACStrategy.h"
-#include "UKStrategy.h"
-#include "NexStrategy.h"
-#include "ANStrategy.h"
 #include "AKStrategy.h"
-#include "DTKStrategy.h"
-#include "VHStrategy.h"
-#include "GDStrategy.h"
-#include "HoSStrategy.h"
-#include "HoLStrategy.h"
-#include "OCStrategy.h"
-#include "UPStrategy.h"
+#include "ANStrategy.h"
 #include "CoSStrategy.h"
+#include "DTKStrategy.h"
 #include "FoSStrategy.h"
+#include "GDStrategy.h"
+#include "HoLStrategy.h"
+#include "HoSStrategy.h"
+#include "MechStrategy.h"
+#include "NexStrategy.h"
+#include "OCStrategy.h"
 #include "PoSStrategy.h"
+#include "SethStrategy.h"
+#include "Strategy.h"
 #include "TOCStrategy.h"
+#include "UKStrategy.h"
+#include "UPStrategy.h"
+#include "VHStrategy.h"
 
 class DungeonStrategyContext : public NamedObjectContext<Strategy>
 {
@@ -35,6 +37,8 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
 
             // Burning Crusade
             creators["tbc-ac"] = &DungeonStrategyContext::tbc_ac;           // Auchindoun: Auchenai Crypts
+            creators["tbc-seth"] = &DungeonStrategyContext::tbc_seth;       // Auchindoun: Sethekk Halls
+            creators["tbc-mech"] = &DungeonStrategyContext::tbc_mech;       // Tempest Keep: The Mechanar
 
             // Wrath of the Lich King
             creators["wotlk-uk"] = &DungeonStrategyContext::wotlk_uk;       // Utgarde Keep
@@ -55,6 +59,8 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
         }
     private:
         static Strategy* tbc_ac(PlayerbotAI* botAI) { return new TbcDungeonAuchenaiCryptsStrategy(botAI); }
+        static Strategy* tbc_seth(PlayerbotAI* botAI) { return new TbcDungeonSethekkHallsStrategy(botAI); }
+        static Strategy* tbc_mech(PlayerbotAI* botAI) { return new TbcDungeonMechanarStrategy(botAI); }
         static Strategy* wotlk_uk(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
         static Strategy* wotlk_nex(PlayerbotAI* botAI) { return new WotlkDungeonNexStrategy(botAI); }
         static Strategy* wotlk_an(PlayerbotAI* botAI) { return new WotlkDungeonANStrategy(botAI); }

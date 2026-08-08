@@ -7,9 +7,9 @@
 #ifndef PLAYERBOTS_ULDTRIGGERCONTEXT_H
 #define PLAYERBOTS_ULDTRIGGERCONTEXT_H
 
+#include "BossAuraTriggers.h"
 #include "NamedObjectContext.h"
 #include "UldTriggers.h"
-#include "BossAuraTriggers.h"
 
 class RaidUlduarTriggerContext : public NamedObjectContext<Trigger>
 {

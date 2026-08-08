@@ -15,7 +15,7 @@ class IckAndKrickMultiplier : public Multiplier
     IckAndKrickMultiplier(PlayerbotAI* ai) : Multiplier(ai, "ick and krick") {}
 
     public:
-        virtual float GetValue(Action* action);
+        float GetValue(Action* action) override;
 };
 
 class GarfrostMultiplier : public Multiplier

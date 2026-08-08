@@ -7,9 +7,9 @@
 #ifndef PLAYERBOTS_ANACTIONCONTEXT_H
 #define PLAYERBOTS_ANACTIONCONTEXT_H
 
+#include "ANActions.h"
 #include "Action.h"
 #include "NamedObjectContext.h"
-#include "ANActions.h"
 
 class WotlkDungeonANActionContext : public NamedObjectContext<Action>
 {

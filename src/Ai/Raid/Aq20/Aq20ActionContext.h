@@ -8,8 +8,8 @@
 #define PLAYERBOTS_AQ20ACTIONCONTEXT_H
 
 #include "Action.h"
-#include "NamedObjectContext.h"
 #include "Aq20Actions.h"
+#include "NamedObjectContext.h"
 
 class RaidAq20ActionContext : public NamedObjectContext<Action>
 {

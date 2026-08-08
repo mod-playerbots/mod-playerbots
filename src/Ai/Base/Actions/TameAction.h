@@ -7,9 +7,9 @@
 #ifndef PLAYERBOTS_TAMEACTION_H
 #define PLAYERBOTS_TAMEACTION_H
 
-#include <string>
 #include "Action.h"
 #include "PlayerbotFactory.h"
+#include <string>
 
 class PlayerbotAI;
 

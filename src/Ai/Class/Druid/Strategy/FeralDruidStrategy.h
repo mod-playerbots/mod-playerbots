@@ -7,6 +7,7 @@
 #ifndef PLAYERBOTS_FERALDRUIDSTRATEGY_H
 #define PLAYERBOTS_FERALDRUIDSTRATEGY_H
 
+#include "Action.h"
 #include "GenericDruidStrategy.h"
 
 constexpr uint32 SPELL_CAT_FORM  = 768;

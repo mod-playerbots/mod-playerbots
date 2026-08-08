@@ -5,16 +5,14 @@
  */
 
 #include "ICCShared.h"
-
-#include <algorithm>
-#include <map>
-
 #include "ICCActions.h"
 #include "ICCScripts.h"
 #include "ICCTriggers.h"
 #include "Playerbots.h"
 #include "ThreatManager.h"
 #include "Timer.h"
+#include <algorithm>
+#include <map>
 
 namespace
 {
@@ -252,10 +250,10 @@ std::optional<bool> IccValithriaShouldHealRaid(Player* bot, PlayerbotAI* botAI)
     for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         Player* member = itr->GetSource();
-        if (!member || !member->IsAlive() || botAI->IsRealPlayer())
+        if (!member || !member->IsAlive() || IsSelfBot(bot))
             continue;
 
-        if (botAI->IsHeal(member) && !botAI->IsRealPlayer())
+        if (botAI->IsHeal(member) && !IsSelfBot(bot))
         {
             healerCount++;
             healerGuids.push_back(member->GetGUID());

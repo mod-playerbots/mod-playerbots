@@ -5,9 +5,8 @@
  */
 
 #include "NaxxTriggers.h"
-
-#include "Playerbots.h"
 #include "NaxxSpellIds.h"
+#include "Playerbots.h"
 #include "Timer.h"
 #include "Trigger.h"
 

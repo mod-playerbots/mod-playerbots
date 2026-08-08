@@ -9,8 +9,8 @@
 
 #include "Action.h"
 #include "BossAuraActions.h"
-#include "NamedObjectContext.h"
 #include "MCActions.h"
+#include "NamedObjectContext.h"
 
 class RaidMcActionContext : public NamedObjectContext<Action>
 {

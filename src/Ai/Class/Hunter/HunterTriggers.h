@@ -9,8 +9,8 @@
 
 #include "CureTriggers.h"
 #include "GenericTriggers.h"
-#include "Trigger.h"
 #include "PlayerbotAI.h"
+#include "Trigger.h"
 #include <set>
 
 class PlayerbotAI;
