@@ -2,8 +2,9 @@
 #define PLAYERBOTS_MECHACTIONS_H
 
 #include "AttackAction.h"
-#include "MovementActions.h"
 #include "MechTriggers.h"
+#include "MovementActions.h"
+#include "ObjectGuid.h"
 
 class SepethreaKiteFlameAction : public MovementAction
 {

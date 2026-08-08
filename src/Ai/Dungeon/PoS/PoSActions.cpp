@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "PoSActions.h"
+#include "Playerbots.h"
 
 bool IckAndKrickAction::Execute(Event /*event*/)
 {

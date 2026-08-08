@@ -5,7 +5,6 @@
  */
 
 #include "SpellCastUsefulValue.h"
-
 #include "LastSpellCastValue.h"
 #include "Playerbots.h"
 

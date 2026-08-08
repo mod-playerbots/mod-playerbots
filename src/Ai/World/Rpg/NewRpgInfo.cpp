@@ -5,8 +5,8 @@
  */
 
 #include "NewRpgInfo.h"
-
 #include "Timer.h"
+#include <cmath>
 
 void NewRpgInfo::ChangeToGoGrind(WorldPosition pos)
 {

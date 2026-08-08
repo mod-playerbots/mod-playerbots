@@ -1,9 +1,10 @@
 #ifndef PLAYERBOTS_MECHVALUECONTEXT_H
 #define PLAYERBOTS_MECHVALUECONTEXT_H
 
-#include "NamedObjectContext.h"
-#include "Value.h"
 #include "MechShared.h"
+#include "NamedObjectContext.h"
+#include "ObjectGuid.h"
+#include "Value.h"
 
 class SepethreaFixatingFlameValue : public CalculatedValue<ObjectGuid>
 {

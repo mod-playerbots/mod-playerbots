@@ -5,8 +5,6 @@
  */
 
 #include "WarlockActions.h"
-
-#include <vector>
 #include "Event.h"
 #include "Item.h"
 #include "ObjectGuid.h"
@@ -14,10 +12,12 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "Unit.h"
 #include "Timer.h"
-#include <unordered_map>
+#include "Unit.h"
 #include <mutex>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 const int ITEM_SOUL_SHARD = 6265;
 

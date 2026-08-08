@@ -5,7 +5,6 @@
  */
 
 #include "AcceptDuelAction.h"
-
 #include "Event.h"
 #include "Playerbots.h"
 

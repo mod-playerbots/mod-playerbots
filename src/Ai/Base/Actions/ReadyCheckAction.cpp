@@ -4,13 +4,12 @@
  * or (at your option) any later version.
  */
 
-#include <memory>
-#include <mutex>
-#include <vector>
-
 #include "ReadyCheckAction.h"
 #include "Event.h"
 #include "Playerbots.h"
+#include <memory>
+#include <mutex>
+#include <vector>
 
 std::string const formatPercent(std::string const name, uint8 value, float percent)
 {

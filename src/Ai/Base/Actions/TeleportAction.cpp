@@ -5,13 +5,12 @@
  */
 
 #include "TeleportAction.h"
-
+#include "AiObjectContext.h"
 #include "Event.h"
 #include "LastMovementValue.h"
-#include "AiObjectContext.h"
 #include "PlayerbotAI.h"
-#include "SpellMgr.h"
 #include "Spell.h"
+#include "SpellMgr.h"
 
 bool TeleportAction::Execute(Event /*event*/)
 {

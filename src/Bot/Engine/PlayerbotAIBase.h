@@ -8,8 +8,8 @@
 #define PLAYERBOTS_PLAYERBOTAIBASE_H
 
 #include "Define.h"
-#include "PlayerbotAIConfig.h"
 #include "Player.h"
+#include "PlayerbotAIConfig.h"
 
 class PlayerbotAIBase
 {

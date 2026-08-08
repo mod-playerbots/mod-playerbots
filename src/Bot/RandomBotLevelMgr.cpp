@@ -9,13 +9,6 @@
  */
 
 #include "RandomBotLevelMgr.h"
-
-#include <algorithm>
-#include <cmath>
-#include <limits>
-#include <string>
-#include <vector>
-
 #include "DatabaseEnv.h"
 #include "LFGMgr.h"
 #include "Log.h"
@@ -28,6 +21,11 @@
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
 #include "World.h"
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <string>
+#include <vector>
 
 // True if bot's name is present in excludeList.
 static bool IsNameInExcludeList(Player* bot, std::vector<std::string> const& excludeList)

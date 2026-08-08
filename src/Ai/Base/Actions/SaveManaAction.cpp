@@ -5,7 +5,6 @@
  */
 
 #include "SaveManaAction.h"
-
 #include "Event.h"
 #include "Playerbots.h"
 

@@ -5,16 +5,14 @@
  */
 
 #include "ICCShared.h"
-
-#include <algorithm>
-#include <map>
-
 #include "ICCActions.h"
 #include "ICCScripts.h"
 #include "ICCTriggers.h"
 #include "Playerbots.h"
 #include "ThreatManager.h"
 #include "Timer.h"
+#include <algorithm>
+#include <map>
 
 namespace
 {

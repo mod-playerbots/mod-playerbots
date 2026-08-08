@@ -5,14 +5,10 @@
  */
 
 #include "UldActions.h"
-
-#include <CombatStrategy.h>
-#include <FollowMasterStrategy.h>
-
-#include <cmath>
-
 #include "AiObjectContext.h"
+#include "CombatStrategy.h"
 #include "DBCEnums.h"
+#include "FollowMasterStrategy.h"
 #include "GameObject.h"
 #include "Group.h"
 #include "LastMovementValue.h"
@@ -21,15 +17,16 @@
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "Position.h"
-#include "UldBossHelper.h"
-#include "UldScripts.h"
+#include "RtiTargetValue.h"
 #include "RtiValue.h"
 #include "ScriptedCreature.h"
 #include "ServerFacade.h"
+#include "TankAssistStrategy.h"
+#include "UldBossHelper.h"
+#include "UldScripts.h"
 #include "Unit.h"
 #include "Vehicle.h"
-#include <RtiTargetValue.h>
-#include <TankAssistStrategy.h>
+#include <cmath>
 
 const std::string ADD_STRATEGY_CHAR = "+";
 const std::string REMOVE_STRATEGY_CHAR = "-";

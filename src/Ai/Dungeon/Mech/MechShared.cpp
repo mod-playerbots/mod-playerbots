@@ -1,14 +1,13 @@
-#include "Playerbots.h"
 #include "MechShared.h"
-#include "MechTriggers.h"
-#include "Creature.h"
-#include "DynamicObject.h"
-#include "ObjectAccessor.h"
 #include "Cell.h"
 #include "CellImpl.h"
+#include "Creature.h"
+#include "DynamicObject.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
-
+#include "MechTriggers.h"
+#include "ObjectAccessor.h"
+#include "Playerbots.h"
 #include <algorithm>
 #include <cmath>
 #include <list>

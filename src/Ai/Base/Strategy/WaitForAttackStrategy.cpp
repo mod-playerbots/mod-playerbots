@@ -5,7 +5,6 @@
  */
 
 #include "WaitForAttackStrategy.h"
-
 #include "Action.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"

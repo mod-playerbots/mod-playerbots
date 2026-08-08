@@ -7,10 +7,9 @@
 #ifndef PLAYERBOTS_GENERICBUFFUTILS_H
 #define PLAYERBOTS_GENERICBUFFUTILS_H
 
+#include "Common.h"
 #include <string>
 #include <unordered_map>
-
-#include "Common.h"
 
 class Player;
 class PlayerbotAI;

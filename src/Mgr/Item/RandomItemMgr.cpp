@@ -5,7 +5,6 @@
  */
 
 #include "RandomItemMgr.h"
-
 #include "DBCStores.h"
 #include "ItemTemplate.h"
 #include "Playerbots.h"

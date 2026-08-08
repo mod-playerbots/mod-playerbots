@@ -4,9 +4,9 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "FoSTriggers.h"
 #include "AiObjectContext.h"
+#include "Playerbots.h"
 
 bool MoveFromBronjahmTrigger::IsActive()
 {

@@ -7,11 +7,10 @@
 #ifndef PLAYERBOTS_MOVEMENTACTIONS_H
 #define PLAYERBOTS_MOVEMENTACTIONS_H
 
-#include <cmath>
-
 #include "Action.h"
 #include "LastMovementValue.h"
 #include "PlayerbotAIConfig.h"
+#include <cmath>
 
 class Player;
 class PlayerbotAI;

@@ -5,15 +5,14 @@
  */
 
 #include "PossibleRpgTargetsValue.h"
-
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "NearestGameObjects.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "SharedDefines.h"
-#include "NearestGameObjects.h"
 #include <unordered_set>
 
 std::vector<uint32> PossibleRpgTargetsValue::allowedNpcFlags;

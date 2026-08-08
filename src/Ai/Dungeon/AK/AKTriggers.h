@@ -7,9 +7,10 @@
 #ifndef PLAYERBOTS_AKTRIGGERS_H
 #define PLAYERBOTS_AKTRIGGERS_H
 
-#include "Trigger.h"
-#include "GenericTriggers.h"
 #include "DungeonStrategyUtils.h"
+#include "GenericTriggers.h"
+#include "PlayerbotAIConfig.h"
+#include "Trigger.h"
 
 enum OldKingdomIDs
 {

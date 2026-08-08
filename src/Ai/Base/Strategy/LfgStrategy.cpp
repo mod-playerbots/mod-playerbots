@@ -5,7 +5,6 @@
  */
 
 #include "LfgStrategy.h"
-
 #include "Playerbots.h"
 
 void LfgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

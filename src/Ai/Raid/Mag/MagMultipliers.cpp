@@ -4,17 +4,15 @@
  * or (at your option) any later version.
  */
 
-#include <ctime>
-
 #include "MagMultipliers.h"
-#include "MagActions.h"
-#include "MagHelpers.h"
-#include "DruidBearActions.h"
-#include "DKActions.h"
 #include "ChooseTargetActions.h"
+#include "DKActions.h"
+#include "DruidBearActions.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
+#include "MagActions.h"
+#include "MagHelpers.h"
 #include "MageActions.h"
 #include "MovementActions.h"
 #include "PaladinActions.h"
@@ -22,6 +20,8 @@
 #include "ReachTargetActions.h"
 #include "WarriorActions.h"
 #include "WipeAction.h"
+#include <ctime>
+#include <unordered_map>
 
 using namespace MagtheridonHelpers;
 

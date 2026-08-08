@@ -5,7 +5,6 @@
  */
 
 #include "VoATriggers.h"
-
 #include "EventMap.h"
 #include "Object.h"
 #include "PlayerbotAI.h"

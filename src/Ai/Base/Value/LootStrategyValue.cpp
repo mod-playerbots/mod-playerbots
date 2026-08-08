@@ -5,7 +5,6 @@
  */
 
 #include "LootStrategyValue.h"
-
 #include "AiObjectContext.h"
 #include "ItemUsageValue.h"
 #include "LootObjectStack.h"

@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_ACSTRATEGY_H
 #define PLAYERBOTS_ACSTRATEGY_H
 
-#include "Strategy.h"
 #include "Multiplier.h"
+#include "Strategy.h"
 
 class TbcDungeonAuchenaiCryptsStrategy : public Strategy
 {

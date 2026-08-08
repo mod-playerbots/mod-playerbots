@@ -5,7 +5,6 @@
  */
 
 #include "LootRollAction.h"
-
 #include "Event.h"
 #include "Group.h"
 #include "ItemUsageValue.h"

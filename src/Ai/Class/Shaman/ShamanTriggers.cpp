@@ -5,13 +5,13 @@
  */
 
 #include "ShamanTriggers.h"
+#include "Creature.h"
+#include "InstanceScript.h"
+#include "ItemTemplate.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
-#include "ItemTemplate.h"
 #include "Playerbots.h"
 #include "TotemsShamanStrategy.h"
-#include "InstanceScript.h"
-#include "Creature.h"
 #include "Unit.h"
 #include <ctime>
 

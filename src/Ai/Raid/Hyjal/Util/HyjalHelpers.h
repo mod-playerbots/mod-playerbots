@@ -7,13 +7,12 @@
 #ifndef PLAYERBOTS_HYJALHELPERS_H
 #define PLAYERBOTS_HYJALHELPERS_H
 
-#include <unordered_map>
-#include <utility>
-#include <vector>
-
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace HyjalSummitHelpers
 {

@@ -5,7 +5,6 @@
  */
 
 #include "RewardAction.h"
-
 #include "ChatHelper.h"
 #include "Event.h"
 #include "Playerbots.h"

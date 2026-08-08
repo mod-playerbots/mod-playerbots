@@ -5,7 +5,6 @@
  */
 
 #include "PartyMemberWithoutItemValue.h"
-
 #include "Playerbots.h"
 
 class PlayerWithoutItemPredicate : public FindPlayerPredicate, public PlayerbotAIAware

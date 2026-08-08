@@ -5,11 +5,11 @@
  */
 
 #include "PlayerbotGuildMgr.h"
-#include "Player.h"
-#include "PlayerbotAIConfig.h"
 #include "DatabaseEnv.h"
 #include "Guild.h"
 #include "GuildMgr.h"
+#include "Player.h"
+#include "PlayerbotAIConfig.h"
 #include "ScriptMgr.h"
 
 void PlayerbotGuildMgr::Init()

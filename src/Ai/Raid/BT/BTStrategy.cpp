@@ -5,7 +5,6 @@
  */
 
 #include "BTStrategy.h"
-
 #include "BTMultipliers.h"
 
 void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

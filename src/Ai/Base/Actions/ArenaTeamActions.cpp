@@ -5,7 +5,6 @@
  */
 
 #include "ArenaTeamActions.h"
-
 #include "ArenaTeamMgr.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"

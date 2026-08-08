@@ -1,9 +1,9 @@
 #ifndef PLAYERBOTS_MECHTRIGGERS_H
 #define PLAYERBOTS_MECHTRIGGERS_H
 
-#include "Trigger.h"
-#include "GenericTriggers.h"
 #include "DungeonStrategyUtils.h"
+#include "GenericTriggers.h"
+#include "Trigger.h"
 
 enum class MechanarIDs : uint32
 {

@@ -5,7 +5,6 @@
  */
 
 #include "StayStrategy.h"
-
 #include "Playerbots.h"
 
 void StayStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

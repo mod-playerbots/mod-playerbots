@@ -5,7 +5,6 @@
  */
 
 #include "RangeValues.h"
-
 #include "Playerbots.h"
 
 RangeValue::RangeValue(PlayerbotAI* botAI) : ManualSetValue<float>(botAI, 0.f, "range"), Qualified() {}

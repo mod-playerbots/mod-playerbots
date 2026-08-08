@@ -9,8 +9,8 @@
 
 #include "Action.h"
 #include "AttackAction.h"
-#include "MovementActions.h"
 #include "BTHelpers.h"
+#include "MovementActions.h"
 
 namespace BlackTempleHelpers
 {

@@ -5,12 +5,11 @@
  */
 
 #include "GuildManagementActions.h"
-
+#include "BroadcastHelper.h"
 #include "GuildMgr.h"
 #include "GuildPackets.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "BroadcastHelper.h"
 
 Player* GuidManageAction::GetPlayer(Event event)
 {

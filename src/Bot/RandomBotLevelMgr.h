@@ -11,10 +11,10 @@
 #ifndef PLAYERBOTS_RANDOMBOTLEVELMGR_H
 #define PLAYERBOTS_RANDOMBOTLEVELMGR_H
 
-#include <vector>
-
 #include "ObjectGuid.h"
 #include "PlayerbotAIConfig.h"
+#include "SharedDefines.h"
+#include <vector>
 
 class Player;
 

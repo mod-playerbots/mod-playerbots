@@ -4,12 +4,6 @@
  */
 
 #include "PlayerbotAI.h"
-
-#include <cmath>
-#include <mutex>
-#include <sstream>
-#include <string>
-
 #include "AiFactory.h"
 #include "BudgetValues.h"
 #include "ChannelMgr.h"
@@ -38,10 +32,10 @@
 #include "ObjectMgr.h"
 #include "PerfMonitor.h"
 #include "Player.h"
-#include "PlayerbotTextMgr.h"
 #include "PlayerbotAIConfig.h"
-#include "PlayerbotMgr.h"
 #include "PlayerbotGuildMgr.h"
+#include "PlayerbotMgr.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
 #include "RBAC.h"
@@ -57,6 +51,10 @@
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
+#include <cmath>
+#include <mutex>
+#include <sstream>
+#include <string>
 
 constexpr uint32 SPELL_TITAN_GRIP = 49152;
 constexpr uint32 SPELL_DK_FROST_PRESENCE = 48263;
@@ -1623,10 +1621,10 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
     static const std::vector<std::string> allInstanceStrategies =
     {
         "aq20", "blacktemple", "bwl", "gruulslair", "hyjal", "icc", "karazhan", "magtheridon",
-        "moltencore", "naxx", "onyxia", "rs", "ssc", "sunwell", "tbc-ac", "tbc-mech", "tempestkeep",
-        "ulduar", "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk", "wotlk-eoe", "wotlk-fos",
-        "wotlk-gd", "wotlk-hol", "wotlk-hos", "wotlk-nex", "wotlk-occ", "wotlk-ok", "wotlk-os",
-        "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh", "zulaman"
+        "moltencore", "naxx", "onyxia", "rs", "ssc", "sunwell", "tbc-ac", "tbc-mech", "tbc-seth",
+        "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk", "wotlk-eoe",
+        "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hos", "wotlk-nex", "wotlk-occ", "wotlk-ok",
+        "wotlk-os", "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh", "zulaman"
     };
 
     for (const std::string& strat : allInstanceStrategies)
@@ -1667,6 +1665,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         case 550:
             strategyName = "tempestkeep";  // Tempest Keep: The Eye
+            break;
+        case 556:
+            strategyName = "tbc-seth";  // Auchindoun: Sethekk Halls
             break;
         case 554:
             strategyName = "tbc-mech";  // Tempest Keep: The Mechanar

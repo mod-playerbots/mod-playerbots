@@ -4,10 +4,10 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "OCTriggers.h"
 #include "AiObject.h"
 #include "AiObjectContext.h"
+#include "Playerbots.h"
 #include "Unit.h"
 
 bool DrakosUnstableSphereTrigger::IsActive()

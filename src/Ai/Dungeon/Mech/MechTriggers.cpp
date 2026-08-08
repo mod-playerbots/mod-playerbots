@@ -1,8 +1,7 @@
-#include "Playerbots.h"
 #include "MechTriggers.h"
-#include "MechShared.h"
 #include "AiObject.h"
-#include "AiObjectContext.h"
+#include "MechShared.h"
+#include "Playerbots.h"
 
 bool SepethreaKiteFlameTrigger::IsActive()
 {

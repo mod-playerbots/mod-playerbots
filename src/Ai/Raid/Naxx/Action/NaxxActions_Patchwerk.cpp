@@ -4,6 +4,10 @@
  * or (at your option) any later version.
  */
 
+#include "NaxxActions.h"
+#include <algorithm>
+#include <cmath>
+
 //bool PatchwerkRangedPositionAction::Execute(Event event)
 //{
 //    Unit* boss = AI_VALUE2(Unit*, "find target", "patchwerk");

@@ -8,7 +8,9 @@
 #define PLAYERBOTS_UKACTIONCONTEXT_H
 
 #include "Action.h"
+#include "MovementActions.h"
 #include "NamedObjectContext.h"
+#include "TellLosAction.h"
 #include "UKActions.h"
 
 class WotlkDungeonUKActionContext : public NamedObjectContext<Action>

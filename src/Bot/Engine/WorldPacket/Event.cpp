@@ -5,7 +5,6 @@
  */
 
 #include "Event.h"
-
 #include "Playerbots.h"
 
 Event::Event(std::string const source, ObjectGuid object, Player* owner) : source(source), owner(owner)

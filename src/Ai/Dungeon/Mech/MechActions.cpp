@@ -1,11 +1,10 @@
-#include "Playerbots.h"
-#include "AiFactory.h"
 #include "MechActions.h"
-#include "MechShared.h"
+#include "AiFactory.h"
 #include "Creature.h"
 #include "Group.h"
+#include "MechShared.h"
+#include "Playerbots.h"
 #include "Timer.h"
-
 #include <algorithm>
 #include <cmath>
 #include <utility>

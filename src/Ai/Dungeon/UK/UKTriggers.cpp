@@ -4,9 +4,9 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "UKTriggers.h"
 #include "AiObjectContext.h"
+#include "Playerbots.h"
 
 bool KelesethFrostTombTrigger::IsActive()
 {

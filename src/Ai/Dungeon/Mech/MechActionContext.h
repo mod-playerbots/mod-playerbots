@@ -1,9 +1,9 @@
 #ifndef PLAYERBOTS_MECHACTIONCONTEXT_H
 #define PLAYERBOTS_MECHACTIONCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "Action.h"
 #include "MechActions.h"
+#include "NamedObjectContext.h"
 
 class TbcDungeonMechanarActionContext : public NamedObjectContext<Action>
 {

@@ -2,9 +2,7 @@
  * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
- */
-
-/*
+ *
  * Ported from the CMaNGOS playerbots project (https://github.com/cmangos/playerbots), GPL v2,
  * with modifications for AzerothCore.
  * Original authors:
@@ -13,12 +11,12 @@
  *   Cyberium <cyberium@users.noreply.github.com>
  */
 
+#include "PullActions.h"
 #include "AttackersValue.h"
 #include "CreatureAI.h"
-#include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
+#include "Playerbots.h"
 #include "PositionValue.h"
-#include "PullActions.h"
 #include "PullStrategy.h"
 #include "RtiTargetValue.h"
 #include <algorithm>

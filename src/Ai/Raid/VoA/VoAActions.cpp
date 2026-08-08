@@ -5,7 +5,6 @@
  */
 
 #include "VoAActions.h"
-#include "VoATriggers.h"
 #include "Define.h"
 #include "Event.h"
 #include "Group.h"
@@ -13,6 +12,7 @@
 #include "Player.h"
 #include "Playerbots.h"
 #include "Unit.h"
+#include "VoATriggers.h"
 
 const Position VOA_EMALON_RESTORE_POSITION = Position(-221.8f, -243.8f, 96.8f, 4.7f);
 

@@ -4,17 +4,16 @@
  */
 
 #include "ReleaseSpiritAction.h"
-#include "ServerFacade.h"
+#include "Corpse.h"
 #include "Event.h"
 #include "GameGraveyard.h"
+#include "Log.h"
 #include "NearestNpcsValue.h"
 #include "ObjectDefines.h"
 #include "ObjectGuid.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "Corpse.h"
-#include "Log.h"
 
 // ReleaseSpiritAction implementation
 bool ReleaseSpiritAction::Execute(Event event)

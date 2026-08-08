@@ -1,6 +1,6 @@
-#include "MechTriggers.h"
 #include "MechStrategy.h"
 #include "MechMultipliers.h"
+#include "MechTriggers.h"
 
 void TbcDungeonMechanarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {

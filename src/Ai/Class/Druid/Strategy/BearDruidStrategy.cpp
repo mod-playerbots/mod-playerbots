@@ -5,7 +5,6 @@
  */
 
 #include "BearDruidStrategy.h"
-
 #include "Playerbots.h"
 
 class BearDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

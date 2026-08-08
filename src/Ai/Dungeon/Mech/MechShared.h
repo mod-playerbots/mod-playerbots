@@ -3,7 +3,6 @@
 
 #include "Define.h"
 #include "ObjectGuid.h"
-
 #include <utility>
 #include <vector>
 

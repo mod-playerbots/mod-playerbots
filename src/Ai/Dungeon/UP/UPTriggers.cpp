@@ -4,9 +4,9 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "UPTriggers.h"
 #include "AiObjectContext.h"
+#include "Playerbots.h"
 
 bool SkadiFreezingCloudTrigger::IsActive()
 {

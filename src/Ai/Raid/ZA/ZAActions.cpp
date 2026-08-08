@@ -5,9 +5,9 @@
  */
 
 #include "ZAActions.h"
-#include "ZAHelpers.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "ZAHelpers.h"
 
 using namespace ZulAmanHelpers;
 
