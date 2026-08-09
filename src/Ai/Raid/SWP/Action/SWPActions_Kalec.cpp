@@ -10,8 +10,8 @@
 #include "PlayerbotTextMgr.h"
 #include "RaidBossHelpers.h"
 #include "SWPData.h"
-#include "TargetValue.h"
 #include <algorithm>
+#include <string>
 #include <map>
 
 using namespace SwpHelpers;
