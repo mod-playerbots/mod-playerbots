@@ -7,13 +7,17 @@
 #ifndef PLAYERBOTS_KARAHELPERS_H
 #define PLAYERBOTS_KARAHELPERS_H
 
-#include "AiObject.h"
+#include "ObjectGuid.h"
 #include "Position.h"
 #include "Unit.h"
 #include <array>
 #include <ctime>
+#include <tuple>
 #include <type_traits>
 #include <unordered_map>
+#include <vector>
+
+class Player;
 
 namespace KaraHelpers
 {

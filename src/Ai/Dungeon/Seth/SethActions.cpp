@@ -154,7 +154,7 @@ bool TalonKingIkissRangedStayNearVictimOfBossAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool TalonKingIkissLosArcaneExplosionAction::Execute(Event event)
+bool TalonKingIkissLosArcaneExplosionAction::Execute(Event /*event*/)
 {
     Position const& pillarCenter = PILLAR_CENTER;
     float const botAngle = pillarCenter.GetAngle(bot);
