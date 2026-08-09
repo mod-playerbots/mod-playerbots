@@ -1433,9 +1433,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastation
 
     bool result = false;
 
-    if (!PlayerbotAI::IsTank(bot) || hasAggroFromWeapon)
+    if (!isTank || hasAggroFromWeapon)
     {
-        float const safeDistance = PlayerbotAI::IsTank(bot) ? 15.0f : 10.0f;
+        float const safeDistance = isTank ? 15.0f : 10.0f;
         float const currentDistance = bot->GetDistance2d(axe);
         if (currentDistance < safeDistance)
             result = MoveAway(axe, safeDistance - currentDistance);

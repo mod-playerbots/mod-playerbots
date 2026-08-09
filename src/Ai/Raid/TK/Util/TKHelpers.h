@@ -8,6 +8,7 @@
 #define PLAYERBOTS_TKHELPERS_H
 
 #include "ObjectGuid.h"
+#include "Player.h"
 #include "Position.h"
 #include "Unit.h"
 #include <array>
@@ -17,7 +18,7 @@
 #include <utility>
 #include <vector>
 
-class Player;
+class PlayerbotAI;
 
 namespace TkHelpers
 {
