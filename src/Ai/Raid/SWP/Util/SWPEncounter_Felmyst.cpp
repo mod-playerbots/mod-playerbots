@@ -1049,7 +1049,6 @@ bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FogOfCorruptionState&
     const FogLocation currentLocation = GetCurrentFogLocation(felmyst);
     const FogLocation destinationLocation = GetDestinationFogLocation(felmyst);
     const FogLane currentLane = GetFogLaneFromLocation(currentLocation);
-    const FogLane destinationLane = GetFogLaneFromLocation(destinationLocation);
 
     if (currentLane != FogLane::None)
     {
