@@ -9,6 +9,7 @@
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "SWPData.h"
+#include <algorithm>
 #include <array>
 #include <cmath>
 

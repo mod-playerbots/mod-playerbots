@@ -11,6 +11,7 @@
 #include "RaidBossHelpers.h"
 #include "SWPData.h"
 #include <map>
+#include <string>
 #include <vector>
 
 using namespace SwpHelpers;

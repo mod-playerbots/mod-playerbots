@@ -10,6 +10,7 @@
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+#include "Position.h"
 #include <limits>
 #include <vector>
 
