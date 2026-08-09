@@ -28,9 +28,6 @@ public:
 
     float sumDistance;
     float minDistance;
-
-private:
-    PlayerbotAI* botAI;
 };
 
 class FleeManager
