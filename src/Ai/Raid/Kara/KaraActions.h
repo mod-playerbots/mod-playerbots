@@ -10,6 +10,7 @@
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+#include <vector>
 
 class KarazhanResetEncounterStatesAction : public Action
 {
@@ -295,7 +296,7 @@ private:
         float dirY;
     };
     bool IsAwayFromBeams(
-        float x, float y, float botX, float botY, const std::vector<BeamAvoid>& beams);
+        float x, float y, float botX, float botY, std::vector<BeamAvoid> const& beams);
 };
 
 class NetherspiteBanishPhaseAvoidVoidZoneAction : public MovementAction

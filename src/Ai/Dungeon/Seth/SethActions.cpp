@@ -9,6 +9,7 @@
 #include "RaidBossHelpers.h"
 #include "SethData.h"
 #include <array>
+#include <cmath>
 
 using namespace SethData;
 

@@ -7,6 +7,7 @@
 #ifndef PLAYERBOTS_KARAHELPERS_H
 #define PLAYERBOTS_KARAHELPERS_H
 
+#include "Common.h"
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>

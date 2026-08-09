@@ -4,12 +4,19 @@
  * or (at your option) any later version.
  */
 
-#include "KaraActions.h"
-#include "KaraHelpers.h"
-#include "PlayerbotTextMgr.h"
-#include "Playerbots.h"
-#include "RaidBossHelpers.h"
-#include <array>
+ #include "KaraActions.h"
+ #include "KaraHelpers.h"
+ #include "PlayerbotTextMgr.h"
+ #include "Playerbots.h"
+ #include "RaidBossHelpers.h"
+ #include <algorithm>
+ #include <array>
+ #include <cmath>
+ #include <ctime>
+ #include <limits>
+ #include <list>
+ #include <map>
+ #include <string>
 
 using namespace KaraHelpers;
 
@@ -949,7 +956,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
 }
 
 bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
-     float x, float y, float botX, float botY, const std::vector<BeamAvoid>& beams)
+     float x, float y, float botX, float botY, std::vector<BeamAvoid> const& beams)
 {
     for (auto const& beam : beams)
     {

@@ -22,6 +22,7 @@
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "WarriorActions.h"
+#include <ctime>
 
 using namespace KaraHelpers;
 
