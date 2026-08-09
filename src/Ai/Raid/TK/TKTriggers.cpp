@@ -10,6 +10,7 @@
 #include "TKActions.h"
 #include "TKHelpers.h"
 #include "TKKaelthasBossAI.h"
+#include <array>
 
 using namespace TkHelpers;
 

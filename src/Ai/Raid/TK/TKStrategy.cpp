@@ -6,7 +6,6 @@
 
 #include "TKStrategy.h"
 #include "AiObjectContext.h"
-#include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "TKHelpers.h"
 #include "TKKaelthasBossAI.h"
