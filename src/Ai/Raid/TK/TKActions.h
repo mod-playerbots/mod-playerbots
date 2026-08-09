@@ -12,6 +12,8 @@
 #include "MovementActions.h"
 #include "TKHelpers.h"
 #include "TKKaelthasBossAI.h"
+#include <utility>
+#include <vector>
 
 using namespace TkHelpers;
 
