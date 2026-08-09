@@ -18,6 +18,13 @@
 #include "StatsWeightCalculator.h"
 #include "TKHelpers.h"
 #include "TKKaelthasBossAI.h"
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <ctime>
+#include <iterator>
+#include <limits>
+#include <list>
 
 using namespace TkHelpers;
 

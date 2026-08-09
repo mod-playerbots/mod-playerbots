@@ -7,6 +7,7 @@
 #ifndef PLAYERBOTS_TKHELPERS_H
 #define PLAYERBOTS_TKHELPERS_H
 
+#include "Common.h"
 #include "Position.h"
 #include <array>
 #include <ctime>

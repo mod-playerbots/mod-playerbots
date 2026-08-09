@@ -23,6 +23,7 @@
 #include "TKKaelthasBossAI.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
+#include <ctime>
 
 namespace
 {

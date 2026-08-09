@@ -8,6 +8,8 @@
 #define PLAYERBOTS_TKSTRATEGY_H
 
 #include "Strategy.h"
+#include <string>
+#include <vector>
 
 class RaidTempestKeepStrategy : public Strategy
 {
