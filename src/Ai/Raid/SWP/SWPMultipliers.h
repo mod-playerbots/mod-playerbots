@@ -14,48 +14,48 @@
 class KalecgosControlMisdirectionMultiplier : public Multiplier
 {
 public:
-    KalecgosControlMisdirectionMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kalecgos control misdirection") {}
+    KalecgosControlMisdirectionMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kalecgos control misdirection") {}
     float GetValue(Action* action) override;
 };
 
 class KalecgosWaitToDecurseMultiplier : public Multiplier
 {
 public:
-    KalecgosWaitToDecurseMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kalecgos wait to decurse") {}
+    KalecgosWaitToDecurseMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kalecgos wait to decurse") {}
     float GetValue(Action* action) override;
 };
 
 class KalecgosControlMovementMultiplier : public Multiplier
 {
 public:
-    KalecgosControlMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kalecgos control movement") {}
+    KalecgosControlMovementMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kalecgos control movement") {}
     float GetValue(Action* action) override;
 };
 
 class KalecgosRestrictTauntMultiplier : public Multiplier
 {
 public:
-    KalecgosRestrictTauntMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kalecgos restrict taunt") {}
+    KalecgosRestrictTauntMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kalecgos restrict taunt") {}
     float GetValue(Action* action) override;
 };
 
 class KalecgosSuppressAssistTankPullThreatMultiplier : public Multiplier
 {
 public:
-    KalecgosSuppressAssistTankPullThreatMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kalecgos suppress assist tank pull threat") {}
+    KalecgosSuppressAssistTankPullThreatMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kalecgos suppress assist tank pull threat") {}
     float GetValue(Action* action) override;
 };
 
 class KalecgosDelayCooldownsForSathrovarrMultiplier : public Multiplier
 {
 public:
-    KalecgosDelayCooldownsForSathrovarrMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kalecgos delay cooldowns for sathrovarr") {}
+    KalecgosDelayCooldownsForSathrovarrMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kalecgos delay cooldowns for sathrovarr") {}
     float GetValue(Action* action) override;
 };
 
@@ -64,40 +64,40 @@ public:
 class BrutallusControlMisdirectionMultiplier : public Multiplier
 {
 public:
-    BrutallusControlMisdirectionMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "brutallus control misdirection") {}
+    BrutallusControlMisdirectionMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "brutallus control misdirection") {}
     float GetValue(Action* action) override;
 };
 
 class BrutallusControlMovementMultiplier : public Multiplier
 {
 public:
-    BrutallusControlMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "brutallus control movement") {}
+    BrutallusControlMovementMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "brutallus control movement") {}
     float GetValue(Action* action) override;
 };
 
 class BrutallusNoKillingSpreeWhenNearbyBurnMultiplier : public Multiplier
 {
 public:
-    BrutallusNoKillingSpreeWhenNearbyBurnMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "brutallus no killing spree when nearby burn") {}
+    BrutallusNoKillingSpreeWhenNearbyBurnMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "brutallus no killing spree when nearby burn") {}
     float GetValue(Action* action) override;
 };
 
 class BrutallusRestrictTauntMultiplier : public Multiplier
 {
 public:
-    BrutallusRestrictTauntMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "brutallus restrict taunt") {}
+    BrutallusRestrictTauntMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "brutallus restrict taunt") {}
     float GetValue(Action* action) override;
 };
 
 class BrutallusDelayCooldownsMultiplier : public Multiplier
 {
 public:
-    BrutallusDelayCooldownsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "brutallus delay cooldowns") {}
+    BrutallusDelayCooldownsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "brutallus delay cooldowns") {}
     float GetValue(Action* action) override;
 };
 
@@ -106,64 +106,64 @@ public:
 class FelmystControlMovementMultiplier : public Multiplier
 {
 public:
-    FelmystControlMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "felmyst control movement") {}
+    FelmystControlMovementMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "felmyst control movement") {}
     float GetValue(Action* action) override;
 };
 
 class FelmystWaitForLandingDpsMultiplier : public Multiplier
 {
 public:
-    FelmystWaitForLandingDpsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "felmyst wait for landing dps") {}
+    FelmystWaitForLandingDpsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "felmyst wait for landing dps") {}
     float GetValue(Action* action) override;
 };
 
 class FelmystPrioritizeEncapsulateAvoidanceMultiplier : public Multiplier
 {
 public:
-    FelmystPrioritizeEncapsulateAvoidanceMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "felmyst prioritize encapsulate avoidance") {}
+    FelmystPrioritizeEncapsulateAvoidanceMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "felmyst prioritize encapsulate avoidance") {}
     float GetValue(Action* action) override;
 };
 
 class FelmystPrioritizeFogAvoidanceMultiplier : public Multiplier
 {
 public:
-    FelmystPrioritizeFogAvoidanceMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "felmyst prioritize fog avoidance") {}
+    FelmystPrioritizeFogAvoidanceMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "felmyst prioritize fog avoidance") {}
     float GetValue(Action* action) override;
 };
 
 class FelmystPrioritizeDemonicVaporAvoidanceMultiplier : public Multiplier
 {
 public:
-    FelmystPrioritizeDemonicVaporAvoidanceMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "felmyst prioritize demonic vapor avoidance") {}
+    FelmystPrioritizeDemonicVaporAvoidanceMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "felmyst prioritize demonic vapor avoidance") {}
     float GetValue(Action* action) override;
 };
 
 class FelmystFocusAttacksOnCharmedPlayerMultiplier : public Multiplier
 {
 public:
-    FelmystFocusAttacksOnCharmedPlayerMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "felmyst focus attacks on charmed player") {}
+    FelmystFocusAttacksOnCharmedPlayerMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "felmyst focus attacks on charmed player") {}
     float GetValue(Action* action) override;
 };
 
 class FelmystDontDotAddsMultiplier : public Multiplier
 {
 public:
-    FelmystDontDotAddsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "felmyst don't dot adds") {}
+    FelmystDontDotAddsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "felmyst don't dot adds") {}
     float GetValue(Action* action) override;
 };
 
 class FelmystDelayCooldownsMultiplier : public Multiplier
 {
 public:
-    FelmystDelayCooldownsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "felmyst delay cooldowns") {}
+    FelmystDelayCooldownsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "felmyst delay cooldowns") {}
     float GetValue(Action* action) override;
 };
 
@@ -172,56 +172,56 @@ public:
 class EredarTwinsDisableAutomaticTargetingMultiplier : public Multiplier
 {
 public:
-    EredarTwinsDisableAutomaticTargetingMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "eredar twins disable automatic targeting") {}
+    EredarTwinsDisableAutomaticTargetingMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "eredar twins disable automatic targeting") {}
     float GetValue(Action* action) override;
 };
 
 class EredarTwinsControlMisdirectionMultiplier : public Multiplier
 {
 public:
-    EredarTwinsControlMisdirectionMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "eredar twins misdirect bosses to tanks") {}
+    EredarTwinsControlMisdirectionMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "eredar twins misdirect bosses to tanks") {}
     float GetValue(Action* action) override;
 };
 
 class EredarTwinsHoldDpsAtStartMultiplier : public Multiplier
 {
 public:
-    EredarTwinsHoldDpsAtStartMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "eredar twins hold dps at start") {}
+    EredarTwinsHoldDpsAtStartMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "eredar twins hold dps at start") {}
     float GetValue(Action* action) override;
 };
 
 class EredarTwinsControlThreatMultiplier : public Multiplier
 {
 public:
-    EredarTwinsControlThreatMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "eredar twins control threat") {}
+    EredarTwinsControlThreatMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "eredar twins control threat") {}
     float GetValue(Action* action) override;
 };
 
 class EredarTwinsControlMovementMultiplier : public Multiplier
 {
 public:
-    EredarTwinsControlMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "eredar twins control movement") {}
+    EredarTwinsControlMovementMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "eredar twins control movement") {}
     float GetValue(Action* action) override;
 };
 
 class EredarTwinsNoMovingIntoConflagrationMultiplier : public Multiplier
 {
 public:
-    EredarTwinsNoMovingIntoConflagrationMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "eredar twins no moving into conflagration") {}
+    EredarTwinsNoMovingIntoConflagrationMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "eredar twins no moving into conflagration") {}
     float GetValue(Action* action) override;
 };
 
 class EredarTwinsDelayCooldownsMultiplier : public Multiplier
 {
 public:
-    EredarTwinsDelayCooldownsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "eredar twins delay cooldowns") {}
+    EredarTwinsDelayCooldownsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "eredar twins delay cooldowns") {}
     float GetValue(Action* action) override;
 };
 
@@ -230,32 +230,32 @@ public:
 class MuruDisableDefaultTargetingMultiplier : public Multiplier
 {
 public:
-    MuruDisableDefaultTargetingMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "m'uru disable default targeting") {}
+    MuruDisableDefaultTargetingMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "m'uru disable default targeting") {}
     float GetValue(Action* action) override;
 };
 
 class MuruControlMisdirectionMultiplier : public Multiplier
 {
 public:
-    MuruControlMisdirectionMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "m'uru control misdirection") {}
+    MuruControlMisdirectionMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "m'uru control misdirection") {}
     float GetValue(Action* action) override;
 };
 
 class MuruControlMovementMultiplier : public Multiplier
 {
 public:
-    MuruControlMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "m'uru control movement") {}
+    MuruControlMovementMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "m'uru control movement") {}
     float GetValue(Action* action) override;
 };
 
 class MuruDelayCooldownsMultiplier : public Multiplier
 {
 public:
-    MuruDelayCooldownsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "m'uru delay cooldowns") {}
+    MuruDelayCooldownsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "m'uru delay cooldowns") {}
     float GetValue(Action* action) override;
 };
 
@@ -264,40 +264,40 @@ public:
 class KiljaedenDelayCooldownsMultiplier : public Multiplier
 {
 public:
-    KiljaedenDelayCooldownsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kil'jaeden delay cooldowns") {}
+    KiljaedenDelayCooldownsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kil'jaeden delay cooldowns") {}
     float GetValue(Action* action) override;
 };
 
 class KiljaedenTanksFocusAssignedHandOnlyMultiplier : public Multiplier
 {
 public:
-    KiljaedenTanksFocusAssignedHandOnlyMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kil'jaeden tanks focus assigned hand only") {}
+    KiljaedenTanksFocusAssignedHandOnlyMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kil'jaeden tanks focus assigned hand only") {}
     float GetValue(Action* action) override;
 };
 
 class KiljaedenControlMovementAndTargetingMultiplier : public Multiplier
 {
 public:
-    KiljaedenControlMovementAndTargetingMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kil'jaeden control movement and targeting") {}
+    KiljaedenControlMovementAndTargetingMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kil'jaeden control movement and targeting") {}
     float GetValue(Action* action) override;
 };
 
 class KiljaedenPrioritizeDarknessProtectionMultiplier : public Multiplier
 {
 public:
-    KiljaedenPrioritizeDarknessProtectionMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kil'jaeden prioritize darkness protection") {}
+    KiljaedenPrioritizeDarknessProtectionMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kil'jaeden prioritize darkness protection") {}
     float GetValue(Action* action) override;
 };
 
 class KiljaedenControlDragonMultiplier : public Multiplier
 {
 public:
-    KiljaedenControlDragonMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kil'jaeden control dragon") {}
+    KiljaedenControlDragonMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kil'jaeden control dragon") {}
     float GetValue(Action* action) override;
 };
 
