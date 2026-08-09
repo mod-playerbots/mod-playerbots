@@ -18,7 +18,6 @@
 
 class Creature;
 class Player;
-class PlayerbotAI;
 class Unit;
 
 namespace SwpHelpers

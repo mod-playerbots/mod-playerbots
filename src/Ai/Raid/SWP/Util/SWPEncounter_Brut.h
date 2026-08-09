@@ -10,10 +10,10 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include "SWPData.h"
+#include <cmath>
 #include <unordered_map>
 
 class Player;
-class PlayerbotAI;
 class Unit;
 
 namespace SwpHelpers
