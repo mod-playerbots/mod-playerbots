@@ -191,7 +191,7 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::ExecuteTankHandAssignme
 
 bool KiljaedenStunHandsOfTheDeceiverAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_SHAMAN || bot->getClass() == CLASS_MAGE)
+    if (bot->getClass() == CLASS_SHAMAN)
         return false;
 
     auto const& targets = AI_VALUE(GuidVector, "possible targets no los");
@@ -237,6 +237,9 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
         case CLASS_PALADIN:
             return castSpell("hammer of justice");
 
+        case CLASS_MAGE:
+            return castSpell("deep freeze");
+
         case CLASS_ROGUE:
             return castSpell("kidney shot");
 
@@ -262,14 +265,14 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
 
     switch (bot->getClass())
     {
+        case CLASS_HUNTER:
+            return castSpell("silencing shot");
+
         case CLASS_PRIEST:
             return castSpell("silence");
 
         case CLASS_DEATH_KNIGHT:
             return castSpell("strangulate");
-
-        case CLASS_HUNTER:
-            return castSpell("silencing shot");
 
         default:
             if (bot->getRace() == RACE_BLOODELF)

@@ -9,6 +9,7 @@
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
+#include "DruidCatActions.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
@@ -41,31 +42,79 @@ using namespace SwpHelpers;
 namespace
 {
 
-bool IsDpsCooldownAction(Action* action, PlayerbotAI* botAI)
+bool IsLustAction(Player* bot, Action* action)
 {
-    return dynamic_cast<CastHeroismAction*>(action) ||
-        dynamic_cast<CastBloodlustAction*>(action) ||
-        dynamic_cast<CastMetamorphosisAction*>(action) ||
-        dynamic_cast<CastAdrenalineRushAction*>(action) ||
-        dynamic_cast<CastBladeFlurryAction*>(action) ||
-        dynamic_cast<CastIcyVeinsAction*>(action) ||
-        dynamic_cast<CastColdSnapAction*>(action) ||
-        dynamic_cast<CastArcanePowerAction*>(action) ||
-        dynamic_cast<CastPresenceOfMindAction*>(action) ||
-        dynamic_cast<CastCombustionAction*>(action) ||
-        dynamic_cast<CastRapidFireAction*>(action) ||
-        dynamic_cast<CastReadinessAction*>(action) ||
-        dynamic_cast<CastAvengingWrathAction*>(action) ||
-        dynamic_cast<CastElementalMasteryAction*>(action) ||
-        dynamic_cast<CastFeralSpiritAction*>(action) ||
-        dynamic_cast<CastFireElementalTotemAction*>(action) ||
-        dynamic_cast<CastFireElementalTotemMeleeAction*>(action) ||
-        dynamic_cast<CastForceOfNatureAction*>(action) ||
-        dynamic_cast<CastArmyOfTheDeadAction*>(action) ||
-        dynamic_cast<CastSummonGargoyleAction*>(action) ||
-        dynamic_cast<CastBerserkingAction*>(action) ||
-        dynamic_cast<CastBloodFuryAction*>(action) ||
-        (dynamic_cast<UseTrinketAction*>(action) && PlayerbotAI::IsDps(botAI->GetBot()));
+    return bot->getClass() == CLASS_SHAMAN &&
+        (dynamic_cast<CastHeroismAction*>(action) ||
+         dynamic_cast<CastBloodlustAction*>(action));
+}
+
+bool IsDpsCooldownAction(Player* bot, Action* action)
+{
+    if (bot->getClass() == CLASS_DEATH_KNIGHT)
+    {
+        return dynamic_cast<CastSummonGargoyleAction*>(action) ||
+            dynamic_cast<CastDeathchillAction*>(action) ||
+            dynamic_cast<CastEmpowerRuneWeaponAction*>(action) ||
+            dynamic_cast<CastArmyOfTheDeadAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_DRUID)
+    {
+        return dynamic_cast<CastStarfallAction*>(action) ||
+            dynamic_cast<CastForceOfNatureAction*>(action) ||
+            dynamic_cast<CastBerserkAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_HUNTER)
+    {
+        return dynamic_cast<CastKillCommandAction*>(action) ||
+            dynamic_cast<CastRapidFireAction*>(action) ||
+            dynamic_cast<CastReadinessAction*>(action) ||
+            dynamic_cast<CastBestialWrathAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_MAGE)
+    {
+        return dynamic_cast<CastArcanePowerAction*>(action) ||
+            dynamic_cast<CastCombustionAction*>(action) ||
+            dynamic_cast<CastIcyVeinsAction*>(action) ||
+            dynamic_cast<CastMirrorImageAction*>(action) ||
+            dynamic_cast<CastColdSnapAction*>(action) ||
+            dynamic_cast<CastPresenceOfMindAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_SHAMAN)
+    {
+        return dynamic_cast<CastElementalMasteryAction*>(action) ||
+            dynamic_cast<CastFeralSpiritAction*>(action) ||
+            dynamic_cast<CastFireElementalTotemAction*>(action) ||
+            dynamic_cast<CastFireElementalTotemMeleeAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_PALADIN)
+    {
+        return dynamic_cast<CastAvengingWrathAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_ROGUE)
+    {
+        return dynamic_cast<CastKillingSpreeAction*>(action) ||
+            dynamic_cast<CastBladeFlurryAction*>(action) ||
+            dynamic_cast<CastAdrenalineRushAction*>(action) ||
+            dynamic_cast<CastColdBloodAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_WARLOCK)
+    {
+        return dynamic_cast<CastMetamorphosisAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_WARRIOR)
+    {
+        return dynamic_cast<CastDeathWishAction*>(action) ||
+            dynamic_cast<CastBladestormAction*>(action) ||
+            dynamic_cast<CastRecklessnessAction*>(action);
+    }
+
+    return false; // Priest =(
+}
+
+bool IsDpsTrinketAction(Action* action, PlayerbotAI* botAI)
+{
+    return dynamic_cast<UseTrinketAction*>(action) && PlayerbotAI::IsDps(botAI->GetBot());
 }
 
 bool IsTauntAction(Action* action)
@@ -196,8 +245,11 @@ float KalecgosSuppressAssistTankPullThreatMultiplier::GetValue(Action* action)
 
 float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
 {
-    if (!IsDpsCooldownAction(action, botAI))
+    if (!IsLustAction(bot, action) && !IsDpsCooldownAction(bot, action) &&
+        !IsDpsTrinketAction(action, botAI))
+    {
         return 1.0f;
+    }
 
     if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
         return 1.0f;
@@ -288,8 +340,11 @@ float BrutallusRestrictTauntMultiplier::GetValue(Action* action)
 
 float BrutallusDelayCooldownsMultiplier::GetValue(Action* action)
 {
-    if (!IsDpsCooldownAction(action, botAI))
+    if (!IsLustAction(bot, action) && !IsDpsCooldownAction(bot, action) &&
+        !IsDpsTrinketAction(action, botAI))
+    {
         return 1.0f;
+    }
 
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (brutallus && brutallus->GetHealthPct() > 95.0f)
@@ -465,8 +520,11 @@ float FelmystDontDotAddsMultiplier::GetValue(Action* action)
 
 float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
 {
-    if (!IsDpsCooldownAction(action, botAI))
+    if (!IsLustAction(bot, action) && !IsDpsCooldownAction(bot, action) &&
+        !IsDpsTrinketAction(action, botAI))
+    {
         return 1.0f;
+    }
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (felmyst && (felmyst->IsFlying() || felmyst->GetHealthPct() > 95.0f))
@@ -656,8 +714,11 @@ float EredarTwinsNoMovingIntoConflagrationMultiplier::GetValue(Action* action)
 
 float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
 {
-    if (!IsDpsCooldownAction(action, botAI))
+    if (!IsLustAction(bot, action) && !IsDpsCooldownAction(bot, action) &&
+        !IsDpsTrinketAction(action, botAI))
+    {
         return 1.0f;
+    }
 
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     if (!alythess)
@@ -783,13 +844,11 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
 
 float MuruDelayCooldownsMultiplier::GetValue(Action* action)
 {
-    bool const isLustSpell = bot->getClass() == CLASS_SHAMAN &&
-        (dynamic_cast<CastHeroismAction*>(action) ||
-         dynamic_cast<CastBloodlustAction*>(action));
+    bool const isLust = IsLustAction(bot, action);
+    bool const isDpsCooldown =
+        IsDpsCooldownAction(bot, action) || IsDpsTrinketAction(action, botAI);
 
-    bool const isDpsCooldown = IsDpsCooldownAction(action, botAI);
-
-    if (!isLustSpell && !isDpsCooldown)
+    if (!isLust && !isDpsCooldown)
         return 1.0f;
 
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
@@ -800,7 +859,7 @@ float MuruDelayCooldownsMultiplier::GetValue(Action* action)
     if (entropius && entropius->GetHealthPct() < 95.0f)
         return 1.0f;
 
-    if (isLustSpell)
+    if (isLust)
         return 0.0f;
 
     if (muru->GetHealthPct() < 97.0f)
@@ -816,13 +875,11 @@ float MuruDelayCooldownsMultiplier::GetValue(Action* action)
 
 float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
 {
-    bool const isLustSpell = bot->getClass() == CLASS_SHAMAN &&
-        (dynamic_cast<CastHeroismAction*>(action) ||
-         dynamic_cast<CastBloodlustAction*>(action));
+    bool const isLust = IsLustAction(bot, action);
+    bool const isDpsCooldown =
+        IsDpsCooldownAction(bot, action) || IsDpsTrinketAction(action, botAI);
 
-    bool const isDpsCooldown = IsDpsCooldownAction(action, botAI);
-
-    if (!isLustSpell && !isDpsCooldown)
+    if (!isLust && !isDpsCooldown)
         return 1.0f;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
@@ -832,7 +889,7 @@ float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
     if (kiljaeden && kiljaeden->GetHealthPct() < 25.0f) // Phase 5
         return 1.0f;
 
-    if (isLustSpell)
+    if (isLust)
         return 0.0f;
 
     if (kiljaeden && kiljaeden->GetHealthPct() < 85.0f) // Phase 3
