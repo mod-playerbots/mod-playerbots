@@ -900,7 +900,6 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
         return false;
 
     constexpr uint8 numAngles = 36;
-    constexpr float maxSearchDist = 30.0f;
     constexpr float stepDist = 0.5f;
     constexpr uint8 numSteps = 56;
 

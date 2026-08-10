@@ -213,7 +213,7 @@ uint32 RandomItemMgr::GetUpgrade(Player* player, std::string spec, uint8 slot, u
             continue;
 
         // skip too low level
-        if (info.minLevel < (player->GetLevel() - 10))
+        if (static_cast<int32>(info.minLevel) < (static_cast<int32>(player->GetLevel()) - 10))
             continue;
 
         // skip wrong team
