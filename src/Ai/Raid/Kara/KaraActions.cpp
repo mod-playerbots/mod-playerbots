@@ -48,8 +48,7 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
 
     if (!AI_VALUE2(Unit*, "find target", "the big bad wolf"))
     {
-        Action* wolfAction = botAI->GetAiObjectContext()->GetAction(
-            "big bad wolf little red riding hood run away");
+        Action* wolfAction = context->GetAction("big bad wolf little red riding hood run away");
         if (wolfAction &&
             static_cast<BigBadWolfLittleRedRidingHoodRunAwayAction*>(wolfAction)->ResetRunIndex())
         {
@@ -62,24 +61,21 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         if (isMechanicTracker && netherspiteDpsWaitTimer.erase(instanceId) > 0)
             reset = true;
 
-        Action* redAction = botAI->GetAiObjectContext()->GetAction(
-            "netherspite block red beam");
+        Action* redAction = context->GetAction("netherspite block red beam");
         if (redAction &&
             static_cast<NetherspiteBlockRedBeamAction*>(redAction)->ResetRedBeamState())
         {
             reset = true;
         }
 
-        Action* blueAction = botAI->GetAiObjectContext()->GetAction(
-            "netherspite block blue beam");
+        Action* blueAction = context->GetAction("netherspite block blue beam");
         if (blueAction &&
             static_cast<NetherspiteBlockBlueBeamAction*>(blueAction)->ResetBlueBeamState())
         {
             reset = true;
         }
 
-        Action* greenAction = botAI->GetAiObjectContext()->GetAction(
-            "netherspite block green beam");
+        Action* greenAction = context->GetAction("netherspite block green beam");
         if (greenAction &&
             static_cast<NetherspiteBlockGreenBeamAction*>(greenAction)->ResetGreenBeamState())
         {
@@ -1014,21 +1010,21 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
         if (isMechanicTracker && netherspiteDpsWaitTimer.erase(instanceId) > 0)
             didSomething = true;
 
-        Action* redAction = botAI->GetAiObjectContext()->GetAction("netherspite block red beam");
+        Action* redAction = context->GetAction("netherspite block red beam");
         if (redAction &&
             static_cast<NetherspiteBlockRedBeamAction*>(redAction)->ResetRedBeamState())
         {
             didSomething = true;
         }
 
-        Action* blueAction = botAI->GetAiObjectContext()->GetAction("netherspite block blue beam");
+        Action* blueAction = context->GetAction("netherspite block blue beam");
         if (blueAction &&
             static_cast<NetherspiteBlockBlueBeamAction*>(blueAction)->ResetBlueBeamState())
         {
             didSomething = true;
         }
 
-        Action* greenAction = botAI->GetAiObjectContext()->GetAction("netherspite block green beam");
+        Action* greenAction = context->GetAction("netherspite block green beam");
         if (greenAction &&
             static_cast<NetherspiteBlockGreenBeamAction*>(greenAction)->ResetGreenBeamState())
         {
@@ -1549,8 +1545,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
 
     if (nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
     {
-        Action* action = botAI->GetAiObjectContext()->GetAction(
-            "nightbane flight phase stack and move");
+        Action* action = context->GetAction("nightbane flight phase stack and move");
         if (action &&
             static_cast<NightbaneFlightPhaseStackAndMoveAction*>(action)->ResetRainOfBonesHit())
         {
