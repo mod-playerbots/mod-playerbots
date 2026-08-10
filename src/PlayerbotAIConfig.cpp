@@ -89,7 +89,6 @@ bool PlayerbotAIConfig::Initialize()
 
     farDistance = sConfigMgr->GetOption<float>("AiPlayerbot.FarDistance", 20.0f);
     sightDistance = sConfigMgr->GetOption<float>("AiPlayerbot.SightDistance", 100.0f);
-    transportSkipRide = sConfigMgr->GetOption<bool>("AiPlayerbot.TransportSkipRide", false);
     spellDistance = sConfigMgr->GetOption<float>("AiPlayerbot.SpellDistance", 28.5f);
     shootDistance = sConfigMgr->GetOption<float>("AiPlayerbot.ShootDistance", 5.0f);
     healDistance = sConfigMgr->GetOption<float>("AiPlayerbot.HealDistance", 38.5f);
@@ -705,6 +704,7 @@ bool PlayerbotAIConfig::Initialize()
     enableTravelNodes = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableTravelNodes", false);
     travelNodeProbeSteps = sConfigMgr->GetOption<uint32>("AiPlayerbot.TravelNodeProbeSteps", 10);
     travelNodeDirectDistance = sConfigMgr->GetOption<float>("AiPlayerbot.TravelNodeDirectDistance", 300.0f);
+    travelCommandDebugMove = sConfigMgr->GetOption<bool>("AiPlayerbot.TravelCommandDebugMove", false);
 
     RpgStatusProbWeight[RPG_WANDER_RANDOM] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.WanderRandom", 15);
     RpgStatusProbWeight[RPG_WANDER_NPC] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.WanderNpc", 20);

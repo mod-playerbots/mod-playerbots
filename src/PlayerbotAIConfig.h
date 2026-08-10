@@ -101,12 +101,6 @@ public:
     bool randomBotGuildNearby, randomBotInvitePlayer, inviteChat;
     uint32 globalCoolDown, reactDelay, maxWaitForMove, disableMoveSplinePath, expireActionTime,
         dispelAuraDuration, passiveDelay, repeatDelay, errorDelay, rpgDelay, sitDelay, returnDelay, lootDelay;
-    // Transport handling:
-    //   false (default) = teleport-board, ride the transport, teleport-disembark
-    //   true            = skip the ride entirely (teleport directly across)
-    // AC has no transport-surface mmap so an in-deck walking mode can't be
-    // faithfully implemented — the on-board phase always teleport-snaps.
-    bool transportSkipRide;
     bool dynamicReactDelay;
     float sightDistance, spellDistance, reactDistance, grindDistance, lootDistance, shootDistance, fleeDistance,
         tooCloseDistance, meleeDistance, followDistance, whisperDistance, contactDistance, aoeRadius, rpgDistance,
@@ -395,6 +389,7 @@ public:
     // node graph; beyond it the graph routes first and the direct probe is
     // only a no-route fallback.
     float travelNodeDirectDistance;
+    bool travelCommandDebugMove;
     std::unordered_map<NewRpgStatus, uint32> RpgStatusProbWeight;
     bool syncLevelWithPlayers;
     bool autoLearnQuestSpells;

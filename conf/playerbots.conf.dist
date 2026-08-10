@@ -1055,16 +1055,6 @@ AiPlayerbot.EnableNewRpgStrategy = 1
 # Default: 0 (disabled)
 AiPlayerbot.EnableTravelNodes = 0
 
-# Transport ride mode (travel node graph only):
-#   0 = bot walks to dock, teleport-snaps onto transport, rides, teleport-snaps off
-#   1 = bot teleports directly across the transport route, skipping the ride
-# Default 0 is the visible behavior. Set to 1 for invisible/random-bot mass
-# travel performance — the bot never actually boards anything.
-# (AC has no transport-surface mmap, so an on-deck walking mode can't be
-# faithfully implemented; the on-board phase always teleport-snaps.)
-# Default: 0
-AiPlayerbot.TransportSkipRide = 0
-
 # Travel-node router tiering (same-map journeys):
 #   dist <= TravelNodeDirectDistance : direct mmap path preferred (cheap)
 #   dist >  TravelNodeDirectDistance : node graph routes first; direct path
@@ -1075,6 +1065,13 @@ AiPlayerbot.TransportSkipRide = 0
 # Defaults: 10 steps, 300 yards
 AiPlayerbot.TravelNodeProbeSteps = 10
 AiPlayerbot.TravelNodeDirectDistance = 300
+
+# The "travel" whisper command (a debugging tool: 'travel <map> <x> <y> <z>',
+# 'travel <x> <y> <z>', 'travel status', 'travel stop') auto-enables
+# "+debug move" for the duration of the order when this is on, so its route
+# trace is visible without a separate command. Off by default.
+# Default: 0 (disabled)
+AiPlayerbot.TravelCommandDebugMove = 0
 
 # Control probability weights for RPG status of bots. Takes effect only when the status meets its premise.​
 # Sum of weights need not be 100. Set to 0 to disable the status.

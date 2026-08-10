@@ -149,7 +149,7 @@ bool TravelCommandAction::Execute(Event event)
     order.lastTransportEntry = bot->GetTransport() ? bot->GetTransport()->GetEntry() : 0;
     order.wasInFlight = bot->IsInFlight();
 
-    if (!botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT))
+    if (sPlayerbotAIConfig.travelCommandDebugMove && !botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT))
     {
         botAI->ChangeStrategy("+debug move", BOT_STATE_NON_COMBAT);
         order.enabledDebugMove = true;
