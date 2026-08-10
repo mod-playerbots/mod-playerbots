@@ -28,7 +28,7 @@
 namespace
 {
 
-bool IsSingleTargetTaunt(Action* action)
+bool IsSingleTargetTauntAction(Action* action)
 {
     return dynamic_cast<CastTauntAction*>(action) ||
         dynamic_cast<CastGrowlAction*>(action) ||
@@ -140,7 +140,7 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
 
 float AlarControlTauntingMultiplier::GetValue(Action* action)
 {
-    if (!IsSingleTargetTaunt(action))
+    if (!IsSingleTargetTauntAction(action))
         return 1.0f;
 
     bool const isFirstAlarTank = IsFirstAlarTank(bot);
@@ -393,7 +393,7 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
         return 1.0f;
 
     // Try to keep main tank from grabbing aggro on any weapon other than the axe
-    if (!IsSingleTargetTaunt(action) &&
+    if (!IsSingleTargetTauntAction(action) &&
         !dynamic_cast<CastChallengingShoutAction*>(action) &&
         !dynamic_cast<CastThunderClapAction*>(action) &&
         !dynamic_cast<CastShockwaveAction*>(action) &&
