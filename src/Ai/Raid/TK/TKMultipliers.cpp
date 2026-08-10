@@ -9,6 +9,7 @@
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
+#include "DruidCatActions.h"
 #include "EquipAction.h"
 #include "FollowActions.h"
 #include "HunterActions.h"
@@ -35,6 +36,69 @@ bool IsSingleTargetTauntAction(Action* action)
         dynamic_cast<CastHandOfReckoningAction*>(action) ||
         dynamic_cast<CastDarkCommandAction*>(action) ||
         dynamic_cast<CastDeathGripAction*>(action);
+}
+
+bool IsDpsCooldownAction(Player* bot, Action* action)
+{
+    if (bot->getClass() == CLASS_DEATH_KNIGHT)
+    {
+        return dynamic_cast<CastSummonGargoyleAction*>(action) ||
+            dynamic_cast<CastDeathchillAction*>(action) ||
+            dynamic_cast<CastEmpowerRuneWeaponAction*>(action) ||
+            dynamic_cast<CastArmyOfTheDeadAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_DRUID)
+    {
+        return dynamic_cast<CastStarfallAction*>(action) ||
+            dynamic_cast<CastForceOfNatureAction*>(action) ||
+            dynamic_cast<CastBerserkAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_HUNTER)
+    {
+        return dynamic_cast<CastKillCommandAction*>(action) ||
+            dynamic_cast<CastRapidFireAction*>(action) ||
+            dynamic_cast<CastReadinessAction*>(action) ||
+            dynamic_cast<CastBestialWrathAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_MAGE)
+    {
+        return dynamic_cast<CastArcanePowerAction*>(action) ||
+            dynamic_cast<CastCombustionAction*>(action) ||
+            dynamic_cast<CastIcyVeinsAction*>(action) ||
+            dynamic_cast<CastMirrorImageAction*>(action) ||
+            dynamic_cast<CastColdSnapAction*>(action) ||
+            dynamic_cast<CastPresenceOfMindAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_SHAMAN)
+    {
+        return dynamic_cast<CastElementalMasteryAction*>(action) ||
+            dynamic_cast<CastFeralSpiritAction*>(action) ||
+            dynamic_cast<CastFireElementalTotemAction*>(action) ||
+            dynamic_cast<CastFireElementalTotemMeleeAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_PALADIN)
+    {
+        return dynamic_cast<CastAvengingWrathAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_ROGUE)
+    {
+        return dynamic_cast<CastKillingSpreeAction*>(action) ||
+            dynamic_cast<CastBladeFlurryAction*>(action) ||
+            dynamic_cast<CastAdrenalineRushAction*>(action) ||
+            dynamic_cast<CastColdBloodAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_WARLOCK)
+    {
+        return dynamic_cast<CastMetamorphosisAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_WARRIOR)
+    {
+        return dynamic_cast<CastDeathWishAction*>(action) ||
+            dynamic_cast<CastBladestormAction*>(action) ||
+            dynamic_cast<CastRecklessnessAction*>(action);
+    }
+
+    return false; // Priest =(
 }
 
 }
@@ -518,30 +582,11 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
 float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
 {
     bool const isLustAction = bot->getClass() == CLASS_SHAMAN &&
-        (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action));
+        (dynamic_cast<CastBloodlustAction*>(action) ||
+         dynamic_cast<CastHeroismAction*>(action));
 
-    if (!isLustAction &&
-        !dynamic_cast<CastMetamorphosisAction*>(action) &&
-        !dynamic_cast<CastAdrenalineRushAction*>(action) &&
-        !dynamic_cast<CastBladeFlurryAction*>(action) &&
-        !dynamic_cast<CastIcyVeinsAction*>(action) &&
-        !dynamic_cast<CastColdSnapAction*>(action) &&
-        !dynamic_cast<CastArcanePowerAction*>(action) &&
-        !dynamic_cast<CastPresenceOfMindAction*>(action) &&
-        !dynamic_cast<CastCombustionAction*>(action) &&
-        !dynamic_cast<CastRapidFireAction*>(action) &&
-        !dynamic_cast<CastReadinessAction*>(action) &&
-        !dynamic_cast<CastAvengingWrathAction*>(action) &&
-        !dynamic_cast<CastElementalMasteryAction*>(action) &&
-        !dynamic_cast<CastFeralSpiritAction*>(action) &&
-        !dynamic_cast<CastFireElementalTotemAction*>(action) &&
-        !dynamic_cast<CastFireElementalTotemMeleeAction*>(action) &&
-        !dynamic_cast<CastForceOfNatureAction*>(action) &&
-        !dynamic_cast<CastArmyOfTheDeadAction*>(action) &&
-        !dynamic_cast<CastSummonGargoyleAction*>(action) &&
-        !dynamic_cast<CastBerserkingAction*>(action) &&
-        !dynamic_cast<CastBloodFuryAction*>(action) &&
-        !(PlayerbotAI::IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
+    if (!isLustAction && !IsDpsCooldownAction(bot, action) &&
+        !(dynamic_cast<UseTrinketAction*>(action) && PlayerbotAI::IsDps(bot)))
     {
         return 1.0f;
     }
@@ -551,7 +596,13 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (kaelAI && kaelAI->GetPhase() != PHASE_ALL_ADVISORS && kaelAI->GetPhase() != PHASE_FINAL)
+    if (!kaelAI)
+        return 1.0f;
+
+    if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR || kaelAI->GetPhase() == PHASE_TRANSITION)
+        return 0.0f;
+
+    if (isLustAction && kaelAI->GetPhase() == PHASE_WEAPONS)
         return 0.0f;
 
     return 1.0f;
