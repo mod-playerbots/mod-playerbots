@@ -61,7 +61,6 @@
 #include "StayActions.h"
 #include "TravelOrderActions.h"
 #include "SuggestWhatToDoAction.h"
-#include "TravelAction.h"
 #include "VehicleActions.h"
 #include "WorldBuffAction.h"
 #include "XpGainAction.h"
@@ -84,7 +83,6 @@ public:
         creators["crpg"] = &ActionContext::crpg;
         creators["choose rpg target"] = &ActionContext::choose_rpg_target;
         creators["move to rpg target"] = &ActionContext::move_to_rpg_target;
-        creators["travel"] = &ActionContext::travel;
         creators["choose travel target"] = &ActionContext::choose_travel_target;
         creators["move to travel target"] = &ActionContext::move_to_travel_target;
         creators["move out of collision"] = &ActionContext::move_out_of_collision;
@@ -293,7 +291,6 @@ private:
     static Action* crpg(PlayerbotAI* botAI) { return new CRpgAction(botAI); }
     static Action* choose_rpg_target(PlayerbotAI* botAI) { return new ChooseRpgTargetAction(botAI); }
     static Action* move_to_rpg_target(PlayerbotAI* botAI) { return new MoveToRpgTargetAction(botAI); }
-    static Action* travel(PlayerbotAI* botAI) { return new TravelAction(botAI); }
     static Action* choose_travel_target(PlayerbotAI* botAI) { return new ChooseTravelTargetAction(botAI); }
     static Action* move_to_travel_target(PlayerbotAI* botAI) { return new MoveToTravelTargetAction(botAI); }
     static Action* move_out_of_collision(PlayerbotAI* botAI) { return new MoveOutOfCollisionAction(botAI); }

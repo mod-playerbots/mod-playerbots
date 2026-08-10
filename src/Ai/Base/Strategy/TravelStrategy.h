@@ -18,7 +18,6 @@ public:
 
     std::string const getName() override { return "travel"; }
 
-    std::vector<NextAction> getDefaultActions() override;
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
 };
 
