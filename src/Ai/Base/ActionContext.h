@@ -59,6 +59,7 @@
 #include "RtiAction.h"
 #include "SayAction.h"
 #include "StayActions.h"
+#include "TravelAction.h"
 #include "TravelOrderActions.h"
 #include "SuggestWhatToDoAction.h"
 #include "VehicleActions.h"
