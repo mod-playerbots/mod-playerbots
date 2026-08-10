@@ -34,9 +34,9 @@ private:
 class NearestGameObjects : public ObjectGuidListCalculatedValue
 {
 public:
-    NearestGameObjects(PlayerbotAI* botAI, float range = sPlayerbotAIConfig.sightDistance,
+    NearestGameObjects(PlayerbotAI* botAI, float range = sPlayerbotAIConfig.sightDistance, bool ignoreLos = false,
                        std::string const name = "nearest game objects")
-        : ObjectGuidListCalculatedValue(botAI, name, 1 * 1000), range(range)
+        : ObjectGuidListCalculatedValue(botAI, name, 1 * 1000), range(range), ignoreLos(ignoreLos)
     {
     }
 
@@ -45,6 +45,7 @@ protected:
 
 private:
     float range;
+    [[maybe_unused]] bool ignoreLos;  // unused while the LOS filter in Calculate() stays commented out
 };
 
 class NearestTrapWithDamageValue : public ObjectGuidListCalculatedValue
