@@ -35,8 +35,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 
         if (PlayerbotAI::IsTank(bot))
         {
-            Action* kalecAction = botAI->GetAiObjectContext()->GetAction(
-                "kalecgos disperse ranged");
+            Action* kalecAction = context->GetAction("kalecgos disperse ranged");
             if (kalecAction && static_cast<KalecgosDisperseRangedAction*>(
                     kalecAction)->ResetInitialRangedPositionReached())
             {
@@ -70,8 +69,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 
         if (PlayerbotAI::IsTank(bot))
         {
-            Action* brutallusAction = botAI->GetAiObjectContext()->GetAction(
-                "brutallus tanks handle boss");
+            Action* brutallusAction = context->GetAction("brutallus tanks handle boss");
             if (brutallusAction && static_cast<BrutallusTanksHandleBossAction*>(
                     brutallusAction)->ResetInitialPositionReached())
             {
@@ -97,7 +95,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 
     if (PlayerbotAI::IsTank(bot) && !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
-        Action* twinsAction = botAI->GetAiObjectContext()->GetAction(
+        Action* twinsAction = context->GetAction(
             "eredar twins first assist tank move out of blaze");
         if (twinsAction && static_cast<EredarTwinsFirstAssistTankMoveOutOfBlazeAction*>(
                 twinsAction)->ResetAlythessTankStep())
