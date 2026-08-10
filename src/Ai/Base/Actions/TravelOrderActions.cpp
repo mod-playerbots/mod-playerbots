@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <sstream>
 
+#include "DBCStores.h"
 #include "Event.h"
 #include "LastMovementValue.h"
 #include "PlayerbotAIConfig.h"
@@ -112,6 +113,14 @@ bool TravelCommandAction::Execute(Event event)
     {
         botAI->TellMasterNoFacing(
             "Usage: 'travel <map> <x> <y> <z>', 'travel <x> <y> <z>', 'travel status' or 'travel stop'.");
+        return false;
+    }
+
+    if (!sMapStore.LookupEntry(mapId))
+    {
+        std::ostringstream out;
+        out << "Unknown map id " << mapId << ".";
+        botAI->TellMasterNoFacing(out.str());
         return false;
     }
 
