@@ -1106,6 +1106,170 @@ bool RazorscaleFuseArmorAction::Execute(Event /*event*/)
     return true;
 }
 
+//xt002
+bool Xt002DeconstructorRaidPositionAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+    if (!boss)
+        return false;
+
+    if (botAI->IsMainTank(bot) && bot->GetExactDist(ULDUAR_XT002_DECONSTRUCTOR_MAINTANK_SPOT) > 3.0f)
+    {
+        return MoveTo(ULDUAR_MAP_ID, ULDUAR_XT002_DECONSTRUCTOR_MAINTANK_SPOT.GetPositionX(),
+                      ULDUAR_XT002_DECONSTRUCTOR_MAINTANK_SPOT.GetPositionY(),
+                      ULDUAR_XT002_DECONSTRUCTOR_MAINTANK_SPOT.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT);
+    }
+
+    if (botAI->IsRanged(bot) && bot->GetExactDist(ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT) > 1.0f)
+    {
+        return MoveTo(ULDUAR_MAP_ID, ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT.GetPositionX(),
+                      ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT.GetPositionY(),
+                      ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT);
+    }
+    return false;
+}
+
+bool Xt002DeconstructorMoveSearingLightAction::isUseful()
+{
+    Xt002DeconstructorSearingLightTrigger searingLightTrigger(botAI);
+    return searingLightTrigger.IsActive();
+}
+
+bool Xt002DeconstructorMoveSearingLightAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+
+    if (!boss || botAI->IsMainTank(bot))
+        return false;
+
+    return MoveTo(ULDUAR_MAP_ID, ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT.GetPositionX(),
+                  ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT.GetPositionY(),
+                  ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT.GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT);
+}
+
+bool Xt002DeconstructorMoveGravityBombAction::isUseful()
+{
+    Xt002DeconstructorGravityBombTrigger gravityBombTrigger(botAI);
+    return gravityBombTrigger.IsActive();
+}
+
+bool Xt002DeconstructorMoveGravityBombAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+
+    if (!boss || botAI->IsMainTank(bot))
+        return false;
+
+    bool isMelee = botAI->IsMelee(bot);
+    Position basePos =
+        isMelee ? ULDUAR_XT002_DECONSTRUCTOR_GRAVITY_BOMB_SPOT_1 : ULDUAR_XT002_DECONSTRUCTOR_GRAVITY_BOMB_SPOT_2;
+
+    constexpr float VOID_ZONE_RADIUS = 6.0f;
+    constexpr float SAFETY_BUFFER = 1.0f;
+    constexpr float SAFE_DIST = VOID_ZONE_RADIUS + SAFETY_BUFFER;
+    constexpr float SEARCH_RADIUS = 50.0f;
+    constexpr float MIN_AVOID_DIST = 20.0f;
+    std::list<Creature*> voidZones;
+    boss->GetCreatureListWithEntryInGrid(voidZones, NPC_XT002_VOIDZONE, SEARCH_RADIUS);
+
+    Position target = basePos;
+    bool found = false;
+
+    for (int ring = 0; ring <= 4 && !found; ++ring)
+    {
+        for (int dx = -ring; dx <= ring && !found; ++dx)
+        {
+            for (int dy = -ring; dy <= ring && !found; ++dy)
+            {
+                if (std::max(std::abs(dx), std::abs(dy)) != ring)
+                    continue;
+
+                Position candidate = basePos;
+                candidate.m_positionX += dx * 2.0f;
+                candidate.m_positionY += dy * 2.0f;
+
+                bool safe = true;
+                if (candidate.GetExactDist2d(ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT) < MIN_AVOID_DIST)
+                    safe = false;
+
+                for (Creature* vz : voidZones)
+                {
+                    if (candidate.GetExactDist2d(vz) < SAFE_DIST)
+                    {
+                        safe = false;
+                        break;
+                    }
+                }
+
+                if (safe)
+                {
+                    target = candidate;
+                    found = true;
+                }
+            }
+        }
+    }
+
+    if (bot->GetDistance(target.GetPositionX(), target.GetPositionY(), target.GetPositionZ()) <= 1.0f)
+        return true;
+
+    return MoveTo(ULDUAR_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(), false, false,
+                  false, false, MovementPriority::MOVEMENT_COMBAT);
+}
+
+bool Xt002DeconstructorTargetAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+    Unit* heart = AI_VALUE2(Unit*, "find target", "heart of the deconstructor");
+    Unit* pummeller = AI_VALUE2(Unit*, "find target", "xm-024 pummeller");
+    Unit* scrapbot = AI_VALUE2(Unit*, "find target", "xs-013 scrapbot");
+    Unit* boombot = AI_VALUE2(Unit*, "find target", "xe-321 boombot");
+    Unit* lifespark = AI_VALUE2(Unit*, "find target", "life spark");
+
+    Unit* target = nullptr;
+
+    if (lifespark)
+        target = lifespark;
+    else if (boombot)
+        target = boombot;
+    else if (scrapbot)
+        target = scrapbot;
+    else if (pummeller)
+        target = pummeller;
+    else if (heart)
+        target = heart;
+    else if (boss)
+        target = boss;
+
+    if (botAI->IsMainTank(bot))
+    {
+        if (boss && AI_VALUE(Unit*, "current target") != boss)
+            return Attack(boss);
+        return false;
+    }
+
+    if (botAI->IsAssistTank(bot))
+    {
+        if (lifespark && AI_VALUE(Unit*, "current target") != lifespark)
+            return Attack(lifespark);
+        if (pummeller && AI_VALUE(Unit*, "current target") != pummeller)
+            return Attack(pummeller);
+        return false;
+    }
+
+    if ((heart || boss) && botAI->IsMelee(bot) && AI_VALUE(Unit*, "current target") != (heart ? heart : boss))
+        return Attack(heart ? heart : boss);
+
+    if (target && botAI->IsRangedDps(bot) && AI_VALUE(Unit*, "current target") != target &&
+        bot->IsWithinDist2d(target, 3.0f))
+        return Attack(target);
+
+    return false;
+}
+
 bool IronAssemblyLightningTendrilsAction::isUseful()
 {
     IronAssemblyLightningTendrilsTrigger ironAssemblyLightningTendrilsTrigger(botAI);
