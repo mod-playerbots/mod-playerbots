@@ -278,6 +278,7 @@ bool DebugAction::Execute(Event event)
             {
                 TravelNodeMap::instance().removeNodes();
                 TravelNodeMap::instance().LoadNodeStore();
+                TravelNodeMap::instance().PrecomputeReachability();
             });
 
         t.detach();
