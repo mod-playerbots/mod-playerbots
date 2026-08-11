@@ -5,7 +5,6 @@
  */
 
 #include "DelayAction.h"
-
 #include "Event.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"

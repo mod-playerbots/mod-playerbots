@@ -5,7 +5,6 @@
  */
 
 #include "BloodDKStrategy.h"
-
 #include "Playerbots.h"
 
 class BloodDKStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

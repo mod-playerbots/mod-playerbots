@@ -5,7 +5,8 @@
  */
 
 #include "BTMultipliers.h"
-
+#include "BTActions.h"
+#include "BTHelpers.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
@@ -16,8 +17,6 @@
 #include "MageActions.h"
 #include "PaladinActions.h"
 #include "PriestActions.h"
-#include "BTActions.h"
-#include "BTHelpers.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
@@ -403,7 +402,8 @@ float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
         dynamic_cast<CastShockwaveAction*>(action) ||
         dynamic_cast<CastCleaveAction*>(action) ||
         dynamic_cast<CastGrowlAction*>(action) ||
-        dynamic_cast<CastSwipeAction*>(action) ||
+        dynamic_cast<CastSwipeBearAction*>(action) ||
+        dynamic_cast<CastChallengingRoarAction*>(action) ||
         dynamic_cast<CastHandOfReckoningAction*>(action) ||
         dynamic_cast<CastRighteousDefenseAction*>(action) ||
         dynamic_cast<CastDarkCommandAction*>(action) ||

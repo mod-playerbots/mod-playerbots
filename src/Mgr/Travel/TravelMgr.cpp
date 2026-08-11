@@ -5,28 +5,26 @@
  */
 
 #include "TravelMgr.h"
-
-#include <iomanip>
-#include <numeric>
-
 #include "AreaDefines.h"
+#include "CellImpl.h"
+#include "ChatHelper.h"
+#include "Corpse.h"
 #include "Creature.h"
 #include "Log.h"
-#include "ObjectAccessor.h"
-#include "TravelNode.h"
-#include "Talentspec.h"
-#include "ChatHelper.h"
+#include "Map.h"
 #include "MapCollisionData.h"
 #include "MapMgr.h"
+#include "ObjectAccessor.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
 #include "RaceMgr.h"
+#include "Talentspec.h"
 #include "TransportMgr.h"
+#include "TravelNode.h"
 #include "VMapFactory.h"
 #include "VMapMgr2.h"
-#include "Map.h"
-#include "Corpse.h"
-#include "CellImpl.h"
+#include <iomanip>
+#include <numeric>
 
 // Navigation data
 
@@ -1068,7 +1066,7 @@ GuidPosition::GuidPosition(CreatureData const& creData)
 }
 
 GuidPosition::GuidPosition(GameObjectData const& goData)
-    : ObjectGuid(HighGuid::GameObject, goData.id),
+    : ObjectGuid(HighGuid::GameObject, goData.id, goData.spawnId),
       WorldPosition(goData.mapid, goData.posX, goData.posY, goData.posZ, goData.orientation)
 {
     loadedFromDB = true;

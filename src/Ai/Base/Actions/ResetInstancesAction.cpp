@@ -5,10 +5,8 @@
  */
 
 #include "ResetInstancesAction.h"
-
-#include "PlayerbotAI.h"
-
 #include "InstancePackets.h"
+#include "PlayerbotAI.h"
 
 bool ResetInstancesAction::Execute(Event /*event*/)
 {

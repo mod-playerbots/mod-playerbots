@@ -5,22 +5,20 @@
  */
 
 #include "GenericSpellActions.h"
-
-#include <ctime>
-#include <unordered_set>
-
+#include "Chat.h"
 #include "Event.h"
+#include "GenericBuffUtils.h"
+#include "Group.h"
 #include "ItemTemplate.h"
 #include "ObjectDefines.h"
 #include "Opcodes.h"
 #include "Player.h"
+#include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "WorldPacket.h"
-#include "Group.h"
-#include "Chat.h"
-#include "GenericBuffUtils.h"
-#include "PlayerbotAI.h"
+#include <ctime>
+#include <unordered_set>
 
 using ai::buff::MakeAuraQualifierForBuff;
 using ai::spell::HasSpellOrCategoryCooldown;
@@ -211,10 +209,9 @@ bool CastSpellAction::isPossible()
 {
     if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && botAI->HasRealPlayerMaster()))
-        {
+        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && botAI->HasGameClientMaster()))
             LOG_DEBUG("playerbots", "Can cast spell failed. Vehicle. - bot name: {}", bot->GetName());
-        }
+
         return false;
     }
 
@@ -223,10 +220,9 @@ bool CastSpellAction::isPossible()
 
     if (spell == "mount" && bot->IsInCombat())
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && botAI->HasRealPlayerMaster()))
-        {
+        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && botAI->HasGameClientMaster()))
             LOG_DEBUG("playerbots", "Can cast spell failed. Mount. - bot name: {}", bot->GetName());
-        }
+
         bot->Dismount();
         return false;
     }

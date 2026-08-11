@@ -1,5 +1,14 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_DUNGEONSTRATEGYUTILS_H
 #define PLAYERBOTS_DUNGEONSTRATEGYUTILS_H
+
+#include "DBCEnums.h"
+#include "Player.h"
 
 template<class T> inline
 const T& DUNGEON_MODE(Player* bot, const T& normal5, const T& heroic10)

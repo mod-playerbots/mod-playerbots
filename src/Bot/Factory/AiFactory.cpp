@@ -5,7 +5,6 @@
  */
 
 #include "AiFactory.h"
-
 #include "BattlegroundMgr.h"
 #include "DKAiObjectContext.h"
 #include "DruidAiObjectContext.h"
@@ -288,7 +287,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
     if (!player->InBattleground())
         engine->addStrategiesNoInit("racials", "chat", "default", "cast time", "potions", "duel", "boost", nullptr);
 
-    if (sPlayerbotAIConfig.autoAvoidAoe && facade->HasRealPlayerMaster())
+    if (sPlayerbotAIConfig.autoAvoidAoe && facade->HasGameClientMaster())
         engine->addStrategy("avoid aoe", false);
 
     engine->addStrategy("formation", false);
@@ -411,7 +410,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             engine->addStrategy("healer dps", false);
     }
 
-    if (facade->IsRealPlayer() || sRandomPlayerbotMgr.IsRandomBot(player))
+    if (IsSelfBot(player) || sRandomPlayerbotMgr.IsRandomBot(player))
     {
         if (!player->GetGroup())
         {

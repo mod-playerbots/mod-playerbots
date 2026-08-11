@@ -141,6 +141,11 @@ public:
         if (item->IsSoulBound())
             return true;
 
+        // Some gray junk (e.g. "NPC Equip", deprecated items) is flagged as trade goods in
+        // Blizzard data; a category match should not pick it up. Use "gray" for those instead.
+        if (item->GetTemplate()->Quality == ITEM_QUALITY_POOR)
+            return true;
+
         if (item->GetTemplate()->Class != itemClass || item->GetTemplate()->SubClass != itemSubClass)
             return true;
 
@@ -156,6 +161,52 @@ public:
 private:
     uint32 itemClass;
     uint32 itemSubClass;
+    uint32 count;
+    std::vector<Item*> result;
+};
+
+// "materials" aggregates the gatherable/craftable trade-goods subclasses that have dedicated
+// keywords (cloth, leather, metal/stone, meat, herb, elemental, enchanting). It deliberately
+// excludes parts/explosives/devices/jewelcrafting and enchant vellums, and skips gray junk,
+// so it maps to what a player means by "crafting materials".
+class FindTradeMaterialsVisitor : public IterateItemsVisitor
+{
+public:
+    FindTradeMaterialsVisitor(uint32 count) : IterateItemsVisitor(), count(count) {}
+
+    bool Visit(Item* item) override
+    {
+        if (item->IsSoulBound())
+            return true;
+
+        ItemTemplate const* proto = item->GetTemplate();
+        if (proto->Class != ITEM_CLASS_TRADE_GOODS || proto->Quality == ITEM_QUALITY_POOR)
+            return true;
+
+        switch (proto->SubClass)
+        {
+            case ITEM_SUBCLASS_CLOTH:
+            case ITEM_SUBCLASS_LEATHER:
+            case ITEM_SUBCLASS_METAL_STONE:
+            case ITEM_SUBCLASS_MEAT:
+            case ITEM_SUBCLASS_HERB:
+            case ITEM_SUBCLASS_ELEMENTAL:
+            case ITEM_SUBCLASS_ENCHANTING:
+                break;
+            default:
+                return true;
+        }
+
+        if (result.size() >= (size_t)count)
+            return false;
+
+        result.push_back(item);
+        return true;
+    }
+
+    std::vector<Item*>& GetResult() { return result; }
+
+private:
     uint32 count;
     std::vector<Item*> result;
 };
@@ -425,6 +476,18 @@ public:
 
 private:
     SkillType skill;
+};
+
+// Matches any recipe in the bags regardless of whether the bot can learn it.
+// FindRecipeVisitor filters through CanUseItem (FindUsableItemVisitor), so it only
+// returns recipes for the bot's own professions/skill level. This variant matches
+// every recipe, which is what "recipe" trades/deposits are expected to move.
+class FindAnyRecipeVisitor : public FindItemVisitor
+{
+public:
+    FindAnyRecipeVisitor() : FindItemVisitor() {}
+
+    bool Accept(ItemTemplate const* proto) override { return proto->Class == ITEM_CLASS_RECIPE; }
 };
 
 class FindItemUsageVisitor : public FindUsableItemVisitor

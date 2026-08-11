@@ -1,9 +1,14 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_FOSTRIGGERCONTEXT_H
 #define PLAYERBOTS_FOSTRIGGERCONTEXT_H
 
-#include "NamedObjectContext.h"
-#include "AiObjectContext.h"
 #include "FoSTriggers.h"
+#include "NamedObjectContext.h"
 
 class WotlkDungeonFoSTriggerContext : public NamedObjectContext<Trigger>
 {

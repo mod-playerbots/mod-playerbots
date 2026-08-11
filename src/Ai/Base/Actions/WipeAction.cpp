@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#include "PlayerbotAI.h"
 #include "WipeAction.h"
+#include "PlayerbotAI.h"
 
 bool WipeAction::Execute(Event event)
 {

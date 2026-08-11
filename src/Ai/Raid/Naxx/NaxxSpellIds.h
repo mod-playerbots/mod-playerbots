@@ -1,9 +1,14 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_NAXXSPELLIDS_H
 #define PLAYERBOTS_NAXXSPELLIDS_H
 
-#include <initializer_list>
-
 #include "PlayerbotAI.h"
+#include <initializer_list>
 
 // use src/server/scripts/Northrend/Naxxramas/naxxramas.h for CreatureId, NaxxramasSay, NaxxramasEvent, NaxxramasMisc
 namespace NaxxSpellIds

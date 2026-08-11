@@ -5,7 +5,6 @@
  */
 
 #include "Strategy.h"
-
 #include "Playerbots.h"
 
 class ActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>

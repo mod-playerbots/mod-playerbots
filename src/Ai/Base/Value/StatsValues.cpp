@@ -8,9 +8,9 @@
 #include "AiObjectContext.h"
 #include "Group.h"
 #include "Pet.h"
+#include "Player.h"
 #include "PlayerbotAIConfig.h"
 #include "ServerFacade.h"
-#include "Player.h"
 
 Unit* HealthValue::GetTarget()
 {

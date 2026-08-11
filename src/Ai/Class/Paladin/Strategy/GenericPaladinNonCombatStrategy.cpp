@@ -5,10 +5,9 @@
  */
 
 #include "GenericPaladinNonCombatStrategy.h"
-
+#include "AiFactory.h"
 #include "GenericPaladinStrategyActionNodeFactory.h"
 #include "Playerbots.h"
-#include "AiFactory.h"
 
 GenericPaladinNonCombatStrategy::GenericPaladinNonCombatStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI)
 {

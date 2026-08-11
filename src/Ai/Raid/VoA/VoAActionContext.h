@@ -10,8 +10,8 @@
 #include "Action.h"
 #include "BossAuraActions.h"
 #include "NamedObjectContext.h"
-#include "VoAActions.h"
 #include "PlayerbotAI.h"
+#include "VoAActions.h"
 
 class RaidVoAActionContext : public NamedObjectContext<Action>
 {

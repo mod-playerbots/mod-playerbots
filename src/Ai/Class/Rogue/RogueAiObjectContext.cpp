@@ -5,7 +5,6 @@
  */
 
 #include "RogueAiObjectContext.h"
-
 #include "AiObjectContext.h"
 #include "AssassinationRogueStrategy.h"
 #include "DpsRogueStrategy.h"

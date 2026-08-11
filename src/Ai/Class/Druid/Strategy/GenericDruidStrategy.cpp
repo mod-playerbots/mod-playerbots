@@ -5,7 +5,6 @@
  */
 
 #include "GenericDruidStrategy.h"
-
 #include "AiFactory.h"
 #include "FeralDruidStrategy.h"
 #include "Playerbots.h"

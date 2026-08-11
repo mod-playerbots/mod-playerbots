@@ -5,15 +5,14 @@
  */
 
 #include "StuckTriggers.h"
-
 #include "CellImpl.h"
+#include "MapCollisionData.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
-#include "MapCollisionData.h"
 
 bool MoveStuckTrigger::IsActive()
 {
-    if (botAI->HasActivePlayerMaster())
+    if (IsRealPlayer(botAI->GetMaster()))
         return false;
 
     if (!botAI->AllowActivity(ALL_ACTIVITY))
@@ -60,7 +59,7 @@ bool MoveStuckTrigger::IsActive()
 
 bool MoveLongStuckTrigger::IsActive()
 {
-    if (botAI->HasActivePlayerMaster())
+    if (IsRealPlayer(botAI->GetMaster()))
         return false;
 
     if (!botAI->AllowActivity(ALL_ACTIVITY))
@@ -147,7 +146,7 @@ bool CombatStuckTrigger::IsActive()
     if (!bot->IsInCombat())
         return false;
 
-    if (botAI->HasActivePlayerMaster())
+    if (IsRealPlayer(botAI->GetMaster()))
         return false;
 
     if (!botAI->AllowActivity(ALL_ACTIVITY))
@@ -175,7 +174,7 @@ bool CombatLongStuckTrigger::IsActive()
     if (!bot->IsInCombat())
         return false;
 
-    if (botAI->HasActivePlayerMaster())
+    if (IsRealPlayer(botAI->GetMaster()))
         return false;
 
     if (!botAI->AllowActivity(ALL_ACTIVITY))

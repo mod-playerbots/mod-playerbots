@@ -5,9 +5,9 @@
  */
 
 #include "HyjalTriggers.h"
-#include "HyjalHelpers.h"
-#include "HyjalActions.h"
 #include "AiFactory.h"
+#include "HyjalActions.h"
+#include "HyjalHelpers.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -17,7 +17,8 @@ using namespace HyjalSummitHelpers;
 
 bool HyjalSummitBotIsNotInCombatTrigger::IsActive()
 {
-    return !bot->IsInCombat() && bot->GetMapId() == HYJAL_SUMMIT_MAP_ID;
+    return bot->GetMapId() == HYJAL_SUMMIT_MAP_ID &&
+           !AI_VALUE2(bool, "combat", "self target");
 }
 
 // Rage Winterchill

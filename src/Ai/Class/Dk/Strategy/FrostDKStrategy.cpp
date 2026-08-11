@@ -5,7 +5,6 @@
  */
 
 #include "FrostDKStrategy.h"
-
 #include "Playerbots.h"
 
 class FrostDKStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

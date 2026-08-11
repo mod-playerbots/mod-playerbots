@@ -7,10 +7,9 @@
 #ifndef PLAYERBOTS_PLAYERBOTTEXTMGR_H
 #define PLAYERBOTS_PLAYERBOTTEXTMGR_H
 
+#include "Common.h"
 #include <map>
 #include <vector>
-
-#include "Common.h"
 
 struct BotTextEntry
 {

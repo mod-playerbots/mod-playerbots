@@ -5,7 +5,6 @@
  */
 
 #include "AttackersValue.h"
-
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
@@ -217,7 +216,7 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
         if (bot->GetGroup() && botAI->GetMaster())
         {
             PlayerbotAI* masterBotAI = GET_PLAYERBOT_AI(botAI->GetMaster());
-            if (masterBotAI && !masterBotAI->IsRealPlayer())
+            if (masterBotAI && !IsSelfBot(botAI->GetMaster()))
                 isMemberBotGroup = true;
         }
 

@@ -5,7 +5,6 @@
  */
 
 #include "ExternalEventHelper.h"
-
 #include "ChatHelper.h"
 #include "Playerbots.h"
 #include "Trigger.h"

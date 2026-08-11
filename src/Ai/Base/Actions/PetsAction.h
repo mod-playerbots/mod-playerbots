@@ -7,9 +7,8 @@
 #ifndef PLAYERBOTS_PETSACTION_H
 #define PLAYERBOTS_PETSACTION_H
 
-#include <string>
-
 #include "Action.h"
+#include <string>
 
 class PlayerbotAI;
 

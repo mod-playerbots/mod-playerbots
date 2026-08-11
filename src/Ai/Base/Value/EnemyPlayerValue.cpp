@@ -5,7 +5,6 @@
  */
 
 #include "EnemyPlayerValue.h"
-
 #include "CombatManager.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"

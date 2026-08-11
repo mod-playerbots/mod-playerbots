@@ -1,9 +1,14 @@
-#include "BWLActions.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
-#include "RtiTargetValue.h"
-#include "Playerbots.h"
+#include "BWLActions.h"
 #include "BWLHelpers.h"
+#include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "RtiTargetValue.h"
 
 using namespace BlackwingLairHelpers;
 
@@ -109,7 +114,9 @@ bool BwlRazorgoreMarkBossAction::Execute(Event /*event*/)
     {
         if (IsRazorgoreOffTank(bot))
         {
-            MarkTargetWithMoon(bot, boss);
+            if (MarkTargetWithMoon(bot, boss))
+                return true;
+
             SetRtiTarget(botAI, "moon", boss);
 
             if (AI_VALUE(Unit*, "current target") != boss)

@@ -5,7 +5,6 @@
  */
 
 #include "RemoveAuraAction.h"
-
 #include "Event.h"
 #include "Playerbots.h"
 

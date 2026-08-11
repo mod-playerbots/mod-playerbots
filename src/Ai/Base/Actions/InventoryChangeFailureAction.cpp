@@ -5,7 +5,6 @@
  */
 
 #include "InventoryChangeFailureAction.h"
-
 #include "Event.h"
 #include "Playerbots.h"
 

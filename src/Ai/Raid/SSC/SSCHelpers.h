@@ -7,12 +7,11 @@
 #ifndef PLAYERBOTS_SSCHELPERS_H
 #define PLAYERBOTS_SSCHELPERS_H
 
-#include <ctime>
-#include <unordered_map>
-
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
+#include <ctime>
+#include <unordered_map>
 
 namespace SerpentShrineCavernHelpers
 {

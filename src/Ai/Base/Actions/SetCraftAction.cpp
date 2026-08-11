@@ -5,7 +5,6 @@
  */
 
 #include "SetCraftAction.h"
-
 #include "ChatHelper.h"
 #include "CraftValue.h"
 #include "Event.h"

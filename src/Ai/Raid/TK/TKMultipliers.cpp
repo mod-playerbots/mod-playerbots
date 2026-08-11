@@ -5,9 +5,6 @@
  */
 
 #include "TKMultipliers.h"
-#include "TKActions.h"
-#include "TKHelpers.h"
-#include "TKKaelthasBossAI.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
@@ -20,6 +17,9 @@
 #include "Playerbots.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
+#include "TKActions.h"
+#include "TKHelpers.h"
+#include "TKKaelthasBossAI.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 
@@ -322,7 +322,8 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
          dynamic_cast<CastShockwaveAction*>(action) ||
          dynamic_cast<CastCleaveAction*>(action) ||
          dynamic_cast<CastGrowlAction*>(action) ||
-         dynamic_cast<CastSwipeAction*>(action) ||
+         dynamic_cast<CastSwipeBearAction*>(action) ||
+         dynamic_cast<CastChallengingRoarAction*>(action) ||
          dynamic_cast<CastHandOfReckoningAction*>(action) ||
          dynamic_cast<CastAvengersShieldAction*>(action) ||
          dynamic_cast<CastConsecrationAction*>(action) ||

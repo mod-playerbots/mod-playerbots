@@ -5,7 +5,6 @@
  */
 
 #include "OffhealRetPaladinStrategy.h"
-
 #include "Playerbots.h"
 #include "Strategy.h"
 

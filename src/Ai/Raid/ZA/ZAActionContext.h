@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_ZAACTIONCONTEXT_H
 #define PLAYERBOTS_ZAACTIONCONTEXT_H
 
-#include "ZAActions.h"
 #include "NamedObjectContext.h"
+#include "ZAActions.h"
 
 class RaidZulAmanActionContext : public NamedObjectContext<Action>
 {

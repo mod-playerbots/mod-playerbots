@@ -1,16 +1,21 @@
-#include "MCMultipliers.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
-#include "Playerbots.h"
+#include "MCMultipliers.h"
 #include "ChooseTargetActions.h"
-#include "GenericSpellActions.h"
-#include "DruidActions.h"
-#include "HunterActions.h"
-#include "PaladinActions.h"
-#include "ShamanActions.h"
-#include "WarriorActions.h"
 #include "DKActions.h"
+#include "DruidActions.h"
+#include "GenericSpellActions.h"
+#include "HunterActions.h"
 #include "MCActions.h"
 #include "MCHelpers.h"
+#include "PaladinActions.h"
+#include "Playerbots.h"
+#include "ShamanActions.h"
+#include "WarriorActions.h"
 
 using namespace MoltenCoreHelpers;
 

@@ -5,7 +5,6 @@
  */
 
 #include "TellItemCountAction.h"
-
 #include "Event.h"
 #include "ItemCountValue.h"
 #include "Playerbots.h"

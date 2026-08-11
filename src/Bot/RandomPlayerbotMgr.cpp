@@ -5,7 +5,6 @@
  */
 
 #include "RandomPlayerbotMgr.h"
-
 #include "AiFactory.h"
 #include "Battleground.h"
 #include "BattlegroundMgr.h"
@@ -309,7 +308,9 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
     }
 
     GetBots();
-    std::list<uint32> availableBots = currentBots;
+    // Copied deliberately: ProcessBot() erases from currentBots while this is
+    // being iterated below, so the loops must run over a snapshot.
+    std::unordered_set<uint32> availableBots = currentBots;
     uint32 availableBotCount = availableBots.size();
     uint32 onlineBotCount = playerBots.size();
 
@@ -389,7 +390,8 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
             sRandomPlayerbotMgr.CheckLfgQueue();
     }
 
-    if (sPlayerbotAIConfig.randomBotAutologin && time(nullptr) > (printStatsTimer + 300))
+    if (sPlayerbotAIConfig.randomBotAutologin && sPlayerbotAIConfig.randomBotPrintStatsInterval &&
+        time(nullptr) > (printStatsTimer + sPlayerbotAIConfig.randomBotPrintStatsInterval))
     {
         if (!printStatsTimer)
         {
@@ -738,7 +740,7 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
             if (GetEventValue(charInfo.guid, "add") ||
                 GetEventValue(charInfo.guid, "logout") ||
                 GetPlayerBot(charInfo.guid) ||
-                std::find(currentBots.begin(), currentBots.end(), charInfo.guid) != currentBots.end() ||
+                currentBots.contains(charInfo.guid) ||
                 (sPlayerbotAIConfig.disableDeathKnightLogin && charInfo.rClass == CLASS_DEATH_KNIGHT))
             {
                 return false;
@@ -751,7 +753,7 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
 
             SetEventValue(charInfo.guid, "add", 1, add_time);
             SetEventValue(charInfo.guid, "logout", 0, 0);
-            currentBots.push_back(charInfo.guid);
+            currentBots.insert(charInfo.guid);
 
             return true;
         };
@@ -1350,7 +1352,7 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
                 LOG_DEBUG("playerbots", "Bot #{}: log out", bot);
 
             SetEventValue(bot, "add", 0, 0);
-            currentBots.remove(bot);
+            currentBots.erase(bot);
 
             if (player)
                 LogoutPlayerBot(botGUID);
@@ -1408,10 +1410,8 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
             if (player->GetGroup() && botAI->GetGroupLeader())
             {
                 PlayerbotAI* groupLeaderBotAI = GET_PLAYERBOT_AI(botAI->GetGroupLeader());
-                if (!groupLeaderBotAI || groupLeaderBotAI->IsRealPlayer())
-                {
+                if (!groupLeaderBotAI || IsSelfBot(botAI->GetGroupLeader()))
                     update = false;
-                }
             }
 
             // if (botAI->HasPlayerNearby(sPlayerbotAIConfig.grindDistance))
@@ -1433,7 +1433,7 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
         LOG_DEBUG("playerbots", "Bot #{} {}:{} <{}>: log out", bot, IsAlliance(player->getRace()) ? "A" : "H",
                   player->GetLevel(), player->GetName().c_str());
         LogoutPlayerBot(botGUID);
-        currentBots.remove(bot);
+        currentBots.erase(bot);
         SetEventValue(bot, "logout", 1,
                       urand(sPlayerbotAIConfig.minRandomBotInWorldTime, sPlayerbotAIConfig.maxRandomBotInWorldTime));
         return true;
@@ -2174,7 +2174,7 @@ bool RandomPlayerbotMgr::IsRandomBot(Player* bot)
 {
     if (bot && GET_PLAYERBOT_AI(bot))
     {
-        if (GET_PLAYERBOT_AI(bot)->IsRealPlayer())
+        if (IsSelfBot(bot))
             return false;
     }
     if (bot)
@@ -2191,17 +2191,14 @@ bool RandomPlayerbotMgr::IsRandomBot(ObjectGuid::LowType bot)
     if (!sPlayerbotAIConfig.IsInRandomAccountList(sCharacterCache->GetCharacterAccountIdByGuid(guid)))
         return false;
 
-    if (std::find(currentBots.begin(), currentBots.end(), bot) != currentBots.end())
-        return true;
-
-    return false;
+    return currentBots.contains(bot);
 }
 
 bool RandomPlayerbotMgr::IsAddclassBot(Player* bot)
 {
     if (bot && GET_PLAYERBOT_AI(bot))
     {
-        if (GET_PLAYERBOT_AI(bot)->IsRealPlayer())
+        if (IsSelfBot(bot))
             return false;
     }
     if (bot)
@@ -2259,7 +2256,7 @@ void RandomPlayerbotMgr::GetBots()
             Field* fields = result->Fetch();
             uint32 bot = fields[0].Get<uint32>();
             if (GetEventValue(bot, "add"))
-                currentBots.push_back(bot);
+                currentBots.insert(bot);
 
             if (currentBots.size() >= maxAllowedBotCount)
                 break;
@@ -2728,7 +2725,7 @@ void RandomPlayerbotMgr::OnPlayerLogin(Player* player)
 void RandomPlayerbotMgr::OnPlayerLoginError(uint32 bot)
 {
     SetEventValue(bot, "add", 0, 0);
-    currentBots.remove(bot);
+    currentBots.erase(bot);
 }
 
 Player* RandomPlayerbotMgr::GetRandomPlayer()
@@ -2814,7 +2811,7 @@ void RandomPlayerbotMgr::PrintStats()
             continue;
         }
 
-        if (botAI->AllowActivity())
+        if (botAI->IsActivityAllowedCached())
             ++active;
         /* TODO: Review statistics on rpg merge
         if (botAI->GetAiObjectContext()->GetValue<bool>("random bot update")->Get())
@@ -2863,10 +2860,10 @@ void RandomPlayerbotMgr::PrintStats()
         else
             ++engine_dead;
 
-        if (botAI->IsHeal(bot, true))
+        if (botAI->IsHeal(bot, false))
             ++heal;
 
-        else if (botAI->IsTank(bot, true))
+        else if (botAI->IsTank(bot, false))
             ++tank;
 
         else
