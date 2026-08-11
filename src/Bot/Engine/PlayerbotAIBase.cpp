@@ -31,11 +31,6 @@ void PlayerbotAIBase::UpdateAI(uint32 elapsed, bool minimal)
 
 void PlayerbotAIBase::SetNextCheckDelay(uint32 const delay)
 {
-    // TEMP DIAG: catch whoever downgrades a long pending wait to a short
-    // one (per-tick re-dispatch investigation — remove afterwards).
-    if (nextAICheckDelay > 1000 && delay < 500)
-        LOG_DEBUG("playerbots", "[WaitDiag] delay downgrade {} -> {}", nextAICheckDelay, delay);
-
     nextAICheckDelay = delay;
 
     // if (nextAICheckDelay > sPlayerbotAIConfig.globalCoolDown)
