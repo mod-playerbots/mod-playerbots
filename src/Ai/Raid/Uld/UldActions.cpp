@@ -1110,6 +1110,7 @@ bool RazorscaleFuseArmorAction::Execute(Event /*event*/)
 bool Xt002DeconstructorRaidPositionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+
     if (!boss)
         return false;
 
@@ -1145,6 +1146,7 @@ bool Xt002DeconstructorMoveSearingLightAction::Execute(Event /*event*/)
                       ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT.GetPositionY(),
                       ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT);
+    return false;
 }
 
 bool Xt002DeconstructorMoveGravityBombAction::isUseful()
@@ -1197,8 +1199,8 @@ bool Xt002DeconstructorMoveGravityBombAction::Execute(Event /*event*/)
     {
         float candX = originX + offset.dx;
         float candY = originY + offset.dy;
-
         bool hasVoidZone = false;
+
         for (Creature* vz : voidZones)
         {
             if (vz->GetExactDist2d(candX, candY) < voidZoneRadius)
@@ -1270,10 +1272,10 @@ bool Xt002DeconstructorTargetAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (botAI->IsMelee(bot) && (heart || boss) && AI_VALUE(Unit*, "current target") != (heart ? heart : boss))
+    if ((heart || boss) && botAI->IsMelee(bot) && AI_VALUE(Unit*, "current target") != (heart ? heart : boss))
         return Attack(heart ? heart : boss);
 
-    if (botAI->IsRangedDps(bot) && target && AI_VALUE(Unit*, "current target") != target &&
+    if (target && botAI->IsRangedDps(bot) && AI_VALUE(Unit*, "current target") != target &&
         bot->IsWithinDist2d(target, 31.0f))
         return Attack(target);
 
