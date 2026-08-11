@@ -116,7 +116,7 @@ public:
 
     static bool HandleGenerateTravelNodesCommand(ChatHandler* handler, char const* /*args*/)
     {
-        if (!sPlayerbotAIConfig.enableTravelNodes)
+        if (sTravelNodeMap.getNodes().empty())
         {
             handler->PSendSysMessage("Travel node generation refused: AiPlayerbot.EnableTravelNodes is disabled, so the node store was never loaded and generating now would overwrite it.");
             return true;
