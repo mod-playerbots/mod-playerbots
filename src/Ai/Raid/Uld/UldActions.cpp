@@ -1114,20 +1114,16 @@ bool Xt002DeconstructorRaidPositionAction::Execute(Event /*event*/)
         return false;
 
     if (botAI->IsMainTank(bot) && bot->GetExactDist(ULDUAR_XT002_DECONSTRUCTOR_MAINTANK_SPOT) > 3.0f)
-    {
         return MoveTo(ULDUAR_MAP_ID, ULDUAR_XT002_DECONSTRUCTOR_MAINTANK_SPOT.GetPositionX(),
                       ULDUAR_XT002_DECONSTRUCTOR_MAINTANK_SPOT.GetPositionY(),
                       ULDUAR_XT002_DECONSTRUCTOR_MAINTANK_SPOT.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT);
-    }
 
     if (botAI->IsRanged(bot) && bot->GetExactDist(ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT) > 1.0f)
-    {
         return MoveTo(ULDUAR_MAP_ID, ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT.GetPositionX(),
                       ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT.GetPositionY(),
                       ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT);
-    }
     return false;
 }
 
@@ -1144,10 +1140,11 @@ bool Xt002DeconstructorMoveSearingLightAction::Execute(Event /*event*/)
     if (!boss || botAI->IsMainTank(bot))
         return false;
 
-    return MoveTo(ULDUAR_MAP_ID, ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT.GetPositionX(),
-                  ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT.GetPositionY(),
-                  ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT.GetPositionZ(), false, false, false, false,
-                  MovementPriority::MOVEMENT_COMBAT);
+    if (bot->GetExactDist(ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT) > 1.0f)
+        return MoveTo(ULDUAR_MAP_ID, ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT.GetPositionX(),
+                      ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT.GetPositionY(),
+                      ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT);
 }
 
 bool Xt002DeconstructorMoveGravityBombAction::isUseful()
@@ -1159,65 +1156,71 @@ bool Xt002DeconstructorMoveGravityBombAction::isUseful()
 bool Xt002DeconstructorMoveGravityBombAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
-
     if (!boss || botAI->IsMainTank(bot))
         return false;
 
     bool isMelee = botAI->IsMelee(bot);
-    Position basePos =
+    const Position& origin =
         isMelee ? ULDUAR_XT002_DECONSTRUCTOR_GRAVITY_BOMB_SPOT_1 : ULDUAR_XT002_DECONSTRUCTOR_GRAVITY_BOMB_SPOT_2;
 
-    constexpr float VOID_ZONE_RADIUS = 6.0f;
-    constexpr float SAFETY_BUFFER = 1.0f;
-    constexpr float SAFE_DIST = VOID_ZONE_RADIUS + SAFETY_BUFFER;
-    constexpr float SEARCH_RADIUS = 50.0f;
-    constexpr float MIN_AVOID_DIST = 20.0f;
-    std::list<Creature*> voidZones;
-    boss->GetCreatureListWithEntryInGrid(voidZones, NPC_XT002_VOIDZONE, SEARCH_RADIUS);
-
-    Position target = basePos;
-    bool found = false;
-
-    for (int ring = 0; ring <= 4 && !found; ++ring)
+    const float originX = origin.GetPositionX();
+    const float originY = origin.GetPositionY();
+    struct Offset2D
     {
-        for (int dx = -ring; dx <= ring && !found; ++dx)
+        float dx;
+        float dy;
+    };
+
+    static const auto OFFSETS = []()
+    {
+        std::vector<Offset2D> offsets;
+        offsets.reserve(12);
+        constexpr float stepDown = 6.0f;
+        constexpr float stepLeft = 6.0f;
+
+        for (int i = 0; i < 12; ++i)
         {
-            for (int dy = -ring; dy <= ring && !found; ++dy)
+            int row = i % 4;
+            int col = i / 4;
+            offsets.push_back({+(row * stepDown), +(col * stepLeft)});
+        }
+        return offsets;
+    }();
+
+    constexpr float voidZoneRadius = 5.0f;
+    constexpr float searchRadius = 100.0f;
+    std::list<Creature*> voidZones;
+    boss->GetCreatureListWithEntryInGrid(voidZones, NPC_XT002_VOIDZONE, searchRadius);
+    float targetX = originX;
+    float targetY = originY;
+    for (const auto& offset : OFFSETS)
+    {
+        float candX = originX + offset.dx;
+        float candY = originY + offset.dy;
+
+        bool hasVoidZone = false;
+        for (Creature* vz : voidZones)
+        {
+            if (vz->GetExactDist2d(candX, candY) < voidZoneRadius)
             {
-                if (std::max(std::abs(dx), std::abs(dy)) != ring)
-                    continue;
-
-                Position candidate = basePos;
-                candidate.m_positionX += dx * 2.0f;
-                candidate.m_positionY += dy * 2.0f;
-
-                bool safe = true;
-                if (candidate.GetExactDist2d(ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT) < MIN_AVOID_DIST)
-                    safe = false;
-
-                for (Creature* vz : voidZones)
-                {
-                    if (candidate.GetExactDist2d(vz) < SAFE_DIST)
-                    {
-                        safe = false;
-                        break;
-                    }
-                }
-
-                if (safe)
-                {
-                    target = candidate;
-                    found = true;
-                }
+                hasVoidZone = true;
+                break;
             }
+        }
+
+        if (!hasVoidZone)
+        {
+            targetX = candX;
+            targetY = candY;
+            break;
         }
     }
 
-    if (bot->GetDistance(target.GetPositionX(), target.GetPositionY(), target.GetPositionZ()) <= 1.0f)
+    if (bot->GetDistance(targetX, targetY, origin.GetPositionZ()) < 1.0f)
         return true;
 
-    return MoveTo(ULDUAR_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(), false, false,
-                  false, false, MovementPriority::MOVEMENT_COMBAT);
+    return MoveTo(ULDUAR_MAP_ID, targetX, targetY, origin.GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT);
 }
 
 bool Xt002DeconstructorTargetAction::Execute(Event /*event*/)
@@ -1253,18 +1256,25 @@ bool Xt002DeconstructorTargetAction::Execute(Event /*event*/)
 
     if (botAI->IsAssistTank(bot))
     {
-        if (lifespark && AI_VALUE(Unit*, "current target") != lifespark)
-            return Attack(lifespark);
-        if (pummeller && AI_VALUE(Unit*, "current target") != pummeller)
-            return Attack(pummeller);
+        if (pummeller && pummeller->IsWithinDist2d(ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT.GetPositionX(),
+                                                   ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT.GetPositionY(), 31.0f))
+        {
+            if (AI_VALUE(Unit*, "current target") != pummeller)
+                return Attack(pummeller);
+            return false;
+        }
+
+        if (boss && boss->GetVictim() == bot)
+            return bot->AttackStop();
+
         return false;
     }
 
-    if ((heart || boss) && botAI->IsMelee(bot) && AI_VALUE(Unit*, "current target") != (heart ? heart : boss))
+    if (botAI->IsMelee(bot) && (heart || boss) && AI_VALUE(Unit*, "current target") != (heart ? heart : boss))
         return Attack(heart ? heart : boss);
 
-    if (target && botAI->IsRangedDps(bot) && AI_VALUE(Unit*, "current target") != target &&
-        bot->IsWithinDist2d(target, 3.0f))
+    if (botAI->IsRangedDps(bot) && target && AI_VALUE(Unit*, "current target") != target &&
+        bot->IsWithinDist2d(target, 31.0f))
         return Attack(target);
 
     return false;
