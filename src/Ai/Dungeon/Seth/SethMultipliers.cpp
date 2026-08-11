@@ -20,6 +20,9 @@ using namespace SethData;
 
 float SethekkProphetSetTremorTotemMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
@@ -61,6 +64,9 @@ float AnzuControlSpellCastingWithSpellBombMultiplier::GetValue(Action* action)
 
 float TalonKingIkissDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
@@ -79,25 +85,25 @@ float TalonKingIkissDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 
 float TalonKingIkissControlMovementMultiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<TalonKingIkissLosArcaneExplosionAction*>(action) ||
-        dynamic_cast<TankFaceAction*>(action) ||
-        dynamic_cast<SetBehindTargetAction*>(action))
-    {
-        return 1.0f;
-    }
-
     bool const isAlwaysDisabled =
         dynamic_cast<CombatFormationMoveAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action);
 
-    bool const isDisabledDuringArcaneExplosion =
-        dynamic_cast<CastReachTargetSpellAction*>(action) ||
-        dynamic_cast<MovementAction*>(action);
-
-    if (!isAlwaysDisabled && !isDisabledDuringArcaneExplosion)
+    if (!isAlwaysDisabled &&
+        !dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
         return 1.0f;
+    }
+
+    if (dynamic_cast<TankFaceAction*>(action) ||
+        dynamic_cast<SetBehindTargetAction*>(action) ||
+        dynamic_cast<TalonKingIkissLosArcaneExplosionAction*>(action))
+    {
+        return 1.0f;
+    }
 
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
     if (!ikiss)
@@ -106,10 +112,7 @@ float TalonKingIkissControlMovementMultiplier::GetValue(Action* action)
     if (isAlwaysDisabled)
         return 0.0f;
 
-    if (!ikiss->HasAura(Id(SethSpells::SPELL_ARCANE_BUBBLE)))
-        return 1.0f;
-
-    if (isDisabledDuringArcaneExplosion)
+    if (ikiss->HasAura(Id(SethSpells::SPELL_ARCANE_BUBBLE))) // Movement generally
         return 0.0f;
 
     return 1.0f;
