@@ -1162,7 +1162,7 @@ bool Xt002DeconstructorMoveGravityBombAction::Execute(Event /*event*/)
         return false;
 
     bool isMelee = botAI->IsMelee(bot);
-    const Position& origin =
+    Position const& origin =
         isMelee ? ULDUAR_XT002_DECONSTRUCTOR_GRAVITY_BOMB_SPOT_1 : ULDUAR_XT002_DECONSTRUCTOR_GRAVITY_BOMB_SPOT_2;
 
     const float originX = origin.GetPositionX();
@@ -1173,7 +1173,7 @@ bool Xt002DeconstructorMoveGravityBombAction::Execute(Event /*event*/)
         float dy;
     };
 
-    static const auto OFFSETS = []()
+    static auto const OFFSETS = []()
     {
         std::vector<Offset2D> offsets;
         offsets.reserve(12);
@@ -1195,7 +1195,7 @@ bool Xt002DeconstructorMoveGravityBombAction::Execute(Event /*event*/)
     boss->GetCreatureListWithEntryInGrid(voidZones, NPC_XT002_VOIDZONE, searchRadius);
     float targetX = originX;
     float targetY = originY;
-    for (const auto& offset : OFFSETS)
+    for (auto const& offset : OFFSETS)
     {
         float candX = originX + offset.dx;
         float candY = originY + offset.dy;
