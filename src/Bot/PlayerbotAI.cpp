@@ -5453,6 +5453,15 @@ float PlayerbotAI::GetRange(std::string const type)
     if (type == "melee")
         return sPlayerbotAIConfig.meleeDistance;
 
+    if (type == "follow")
+        return sPlayerbotAIConfig.followDistance;
+
+    if (type == "guard")
+        return sPlayerbotAIConfig.sightDistance;
+
+    if (type == "attack")
+        return 0;
+
     return 0;
 }
 
