@@ -3563,12 +3563,12 @@ void TravelMgr::printObj(WorldObject* obj, std::string const type)
 void TravelMgr::Init()
 {
     if (sPlayerbotAIConfig.enabled)
-{
-        if (!destinationCachesReady)
     {
-        PrepareZone2LevelBracket();
-        PrepareDestinationCache();
-destinationCachesReady = true;
+        if (!destinationCachesReady)
+        {
+            PrepareZone2LevelBracket();
+            PrepareDestinationCache();
+            destinationCachesReady = true;
         }
     }
     sTravelNodeMap.Init();
