@@ -294,6 +294,21 @@ bool BGJoinAction::shouldJoinBg(BattlegroundQueueTypeId queueTypeId, Battlegroun
     uint32 activeBgQueue = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].activeBgQueue;
     uint32 bgInstanceCount = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].bgInstanceCount;
 
+    // Check if queue type is random, they have no static TeamSize.
+    if (queueTypeId == BATTLEGROUND_QUEUE_RB)
+    {
+        for (Battleground const* bg : sBattlegroundMgr->GetActiveBattlegrounds())
+        {
+            if (bg->GetBgTypeID() != BATTLEGROUND_RB ||
+                bg->GetBracketId() != bracketId)
+                continue;
+
+            if (bg->GetFreeSlotsForTeam(teamId) > 0)
+                return true;
+        }
+    }
+
+    
     if (teamId == TEAM_ALLIANCE)
     {
         if ((bgAllianceBotCount + bgAlliancePlayerCount) < TeamSize * (activeBgQueue + bgInstanceCount))
