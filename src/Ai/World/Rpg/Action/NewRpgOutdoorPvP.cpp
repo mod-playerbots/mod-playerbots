@@ -113,13 +113,28 @@ OPvPCapturePoint* NewRpgOutdoorPvpAction::SelectNewObjective(OutdoorPvP::OPvPCap
 
 bool NewRpgOutdoorPvpAction::PatrolCapturePoint(GameObject* objectiveGO, float radius)
 {
+    auto* data = std::get_if<NewRpgInfo::OutdoorPvP>(&botAI->rpgInfo.data);
+    if (!data)
+        return false;
+
+    if (data->pauseTs && GetMSTimeDiffToNow(data->pauseTs) < data->pauseDuration)
+        return true;
+    data->pauseTs = 0;
+
     // Randomly pause at the current spot before picking a new patrol point
     if (urand(0, 2) == 0)
-        return ForceToWait(urand(3000, 6000));
+    {
+        data->pauseTs = getMSTime();
+        data->pauseDuration = urand(3000, 6000);
+        return true;
+    }
 
     float patrolRadius = radius * 0.8f;
     if (MoveRandomNear(patrolRadius, MovementPriority::MOVEMENT_NORMAL, objectiveGO))
         return true;
 
-    return ForceToWait(urand(3000, 6000));
+    // No patrol spot found this tick: pause instead of re-rolling every tick.
+    data->pauseTs = getMSTime();
+    data->pauseDuration = urand(3000, 6000);
+    return true;
 }
