@@ -41,6 +41,7 @@
 #include "TravelNode.h"
 #include "TravelOrderValue.h"
 #include "Unit.h"
+#include "Vehicle.h"
 #include "WaypointMovementGenerator.h"
 
 MovementAction::MovementAction(PlayerbotAI* botAI, std::string const name) : Action(botAI, name)
@@ -100,31 +101,40 @@ void MovementAction::EmitDebugMove(char const* method, char const* generator, fl
                     else
                     {
                         Quest const* q = data->quest;
-                        QuestStatusData const& qs = bot->getQuestStatusMap().at(data->questId);
                         std::string goal;
-                        for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+                        // getQuestStatusMap() can lack an entry mid accept/
+                        // turn-in transition; .at() would throw and crash
+                        // the bot's tick over a debug-only trace. Skip the
+                        // objective-scan decoration when absent and fall
+                        // through to the generic "quest:Title(id)" label.
+                        auto const questStatusItr = bot->getQuestStatusMap().find(data->questId);
+                        if (questStatusItr != bot->getQuestStatusMap().end())
                         {
-                            int32 entry = q->RequiredNpcOrGo[i];
-                            if (entry != 0 && qs.CreatureOrGOCount[i] < q->RequiredNpcOrGoCount[i])
+                            QuestStatusData const& qs = questStatusItr->second;
+                            for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
                             {
-                                if (entry > 0)
+                                int32 entry = q->RequiredNpcOrGo[i];
+                                if (entry != 0 && qs.CreatureOrGOCount[i] < q->RequiredNpcOrGoCount[i])
                                 {
-                                    if (CreatureTemplate const* ct = sObjectMgr->GetCreatureTemplate(entry))
-                                        goal = "mob:" + ct->Name;
+                                    if (entry > 0)
+                                    {
+                                        if (CreatureTemplate const* ct = sObjectMgr->GetCreatureTemplate(entry))
+                                            goal = "mob:" + ct->Name;
+                                    }
+                                    else
+                                    {
+                                        if (GameObjectTemplate const* gt = sObjectMgr->GetGameObjectTemplate(-entry))
+                                            goal = "go:" + gt->name;
+                                    }
+                                    break;
                                 }
-                                else
+                                uint32 item = q->RequiredItemId[i];
+                                if (item && bot->GetItemCount(item, true) < q->RequiredItemCount[i])
                                 {
-                                    if (GameObjectTemplate const* gt = sObjectMgr->GetGameObjectTemplate(-entry))
-                                        goal = "go:" + gt->name;
+                                    if (ItemTemplate const* it = sObjectMgr->GetItemTemplate(item))
+                                        goal = "item:" + it->Name1;
+                                    break;
                                 }
-                                break;
-                            }
-                            uint32 item = q->RequiredItemId[i];
-                            if (item && bot->GetItemCount(item, true) < q->RequiredItemCount[i])
-                            {
-                                if (ItemTemplate const* it = sObjectMgr->GetItemTemplate(item))
-                                    goal = "item:" + it->Name1;
-                                break;
                             }
                         }
                         if (goal.empty())
@@ -202,7 +212,8 @@ bool MovementAction::JumpTo(uint32 mapId, float x, float y, float z, MovementPri
     MotionMaster& mm = *bot->GetMotionMaster();
     mm.Clear();
     mm.MoveJump(x, y, z, speed, speed, 1);
-    AI_VALUE(LastMovement&, "last movement").Set(mapId, x, y, z, bot->GetOrientation(), 1000, priority);
+    AI_VALUE(LastMovement&, "last movement")
+        .Set(mapId, x, y, z, bot->GetOrientation(), priority);
     return true;
 }
 
@@ -306,10 +317,40 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     UpdateMovementState();
     if (!IsMovingAllowed())
         return false;
+
+    // Vehicle mover resolution (reference MoveTo pattern): a controlling
+    // passenger steers the vehicle base, not its own body; a passenger
+    // without control can't dispatch movement at all. Node-graph routing
+    // (MoveTo2's ResolveMovePath) has no concept of a non-bot mover, so
+    // vehicles are forced onto the direct-pathing bypass below instead
+    // of ever reaching MoveTo2.
+    Unit* mover = bot;
+    bool const isVehiclePassenger = bot->GetVehicle() != nullptr;
+    if (isVehiclePassenger)
+    {
+        Vehicle* vehicle = bot->GetVehicle();
+        VehicleSeatEntry const* seat = vehicle->GetSeatForPassenger(bot);
+        if (!seat || !seat->CanControl())
+            return false;
+        mover = vehicle->GetBase();
+    }
+
+    // MovementPriority dictates replacement: while the bot is still
+    // executing a walk — or standing its ground under an explicit hold
+    // (SetNextMovementDelay) — a lower-priority wish does not replace it;
+    // higher or equal priority does (newest wins). Nothing more elaborate
+    // ships here — full arbitration is the reaction engine's job
+    // (addReactionEngine branch).
+    LastMovement& lastMoveGate = AI_VALUE(LastMovement&, "last movement");
+    if (priority < lastMoveGate.priority && (bot->isMoving() || lastMoveGate.IsHoldActive()))
+        return false;
+
     if (IsDuplicateMove(x, y, z))
         return false;
 
-    bool const generatePath = !bot->IsFlying() && !bot->isSwimming();
+    bool generatePath = !bot->IsFlying() && !bot->isSwimming();
+    if (isVehiclePassenger)
+        generatePath = !mover->CanFly();
     bool const disableMoveSplinePath =
         sPlayerbotAIConfig.disableMoveSplinePath >= 2 ||
         (sPlayerbotAIConfig.disableMoveSplinePath == 1 && bot->InBattleground());
@@ -320,32 +361,35 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     //   disableMoveSplinePath: config-driven engine fallback
     //   flying/swimming: pathfinding via engine MovePoint, not mmap probe
     //   backwards: AC-specific back-shuffle; no parity in MoveTo2
-    if (exact_waypoint || disableMoveSplinePath || !generatePath || backwards)
+    //   isVehiclePassenger: node-graph routing has no notion of a
+    //     non-bot mover — vehicles always take direct pathing
+    if (exact_waypoint || disableMoveSplinePath || !generatePath || backwards || isVehiclePassenger)
     {
-        float distance = bot->GetExactDist(x, y, z);
+        float distance = mover->GetExactDist(x, y, z);
         if (distance > 0.01f)
         {
-            if (!bot->IsStandState())
-                bot->SetStandState(UNIT_STAND_STATE_STAND);
+            if (!mover->IsStandState())
+                mover->SetStandState(UNIT_STAND_STATE_STAND);
 
-            DoMovePoint(bot, x, y, z, generatePath, backwards);
+            DoMovePoint(mover, x, y, z, generatePath, backwards);
             float delay = 1000.0f * MoveDelay(distance, backwards);
             if (lessDelay)
                 delay -= botAI->GetReactDelay();
             delay = std::max(.0f, delay);
             delay = std::min((float)sPlayerbotAIConfig.maxWaitForMove, delay);
             AI_VALUE(LastMovement&, "last movement")
-                .Set(mapId, x, y, z, bot->GetOrientation(), delay, priority);
+                .Set(mapId, x, y, z, bot->GetOrientation(), priority);
             return true;
         }
         return false;
     }
 
     // Path-aware funnel: ResolveMovePath → makeShortCut →
-    // UpcommingSpecialMovement/HandleSpecialMovement → ClipPath →
-    // DispatchMovement. Matches the reference's MoveTo2 flow.
+    // UpcomingSpecialMovement/HandleSpecialMovement → ClipPath →
+    // DispatchMovement. Matches the reference's MoveTo2 flow. Never
+    // reached for a vehicle mover (forced onto the bypass above).
     return MoveTo2(WorldPosition(mapId, x, y, z),
-                   idle, react, false, ignoreEnemyTargets, priority, lessDelay);
+                   idle, react, ignoreEnemyTargets, priority, lessDelay);
 }
 
 bool MovementAction::MoveTo(WorldObject* target, float distance, MovementPriority priority)
@@ -445,9 +489,8 @@ bool MovementAction::ReachCombatTo(Unit* target, float distance)
     // Combat callers pass ignoreEnemyTargets=true so ClipPath doesn't
     // halt the chase at an intermediate hostile when funnelling through
     // MoveTo2 — the chase target itself is the enemy we want to reach.
-    // react=true skips the end-of-dispatch WaitForReach so the bot keeps
-    // re-evaluating mid-chase instead of waiting for the spline to play
-    // out (which would suspend combat reactions for seconds at a time).
+    // react=true skips the awake early-out so the chase re-aims at the
+    // moving target every tick instead of riding out the current leg.
     bool moved = MoveTo(target->GetMapId(), endPos.x, endPos.y, endPos.z, /*idle*/false, /*react*/true, false, false,
                         MovementPriority::MOVEMENT_COMBAT, /*lessDelay*/true, false, /*ignoreEnemyTargets*/true);
     // Only emit on a successful new commit — combat ticks call this
@@ -839,8 +882,14 @@ bool MovementAction::FollowOnTransport(Unit* target)
     if (!target)
         return false;
 
-    bool const onDifferentTransports =
-        bot->m_movementInfo.transport.guid != target->m_movementInfo.transport.guid;
+    // Vehicle passengers aren't "on a transport" in the boat/zeppelin
+    // sense — NearTeleportTo-relocating a bot seated in a vehicle (or
+    // matching a target seated in one) would desync or eject it instead
+    // of the intended transport hand-off.
+    if (bot->GetVehicle() || target->GetVehicle())
+        return false;
+
+    bool const onDifferentTransports = bot->GetTransport() != target->GetTransport();
     if (!onDifferentTransports)
         return false;
 
@@ -870,61 +919,6 @@ bool MovementAction::FollowOnTransport(Unit* target)
     return true;
 }
 
-bool MovementAction::ChaseTo(WorldObject* obj, float distance)
-{
-    if (!IsMovingAllowed())
-        return false;
-
-    if (obj)
-        EmitDebugMove("ChaseTo", "chase", obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ());
-
-    UpdateMovementState();
-
-    // Drop any looping emote (sit/dance/etc.) before the chase, matching
-    // the reference pre-dispatch normalization.
-    bot->ClearEmoteState();
-
-    if (!bot->IsStandState())
-        bot->SetStandState(UNIT_STAND_STATE_STAND);
-
-    if (bot->IsNonMeleeSpellCast(true))
-    {
-        bot->CastStop();
-        botAI->InterruptSpell();
-    }
-
-    // Try a chained mmap probe first — for targets behind obstacles
-    // this routes the bot around terrain instead of straight-charging
-    // into a wall. Falls back to engine MoveChase for short/clear
-    // chases where target tracking matters more than path routing.
-    float const targetDist = bot->GetExactDist(obj);
-    if (targetDist > distance + 3.0f)
-    {
-        float const angle = obj->GetAngle(bot);
-        float x = obj->GetPositionX();
-        float y = obj->GetPositionY();
-        float z = obj->GetPositionZ();
-        obj->GetNearPoint(bot, x, y, z, bot->GetObjectSize(), distance, angle);
-
-        PathGenerator path(bot);
-        path.CalculatePath(x, y, z, false);
-        PathType type = path.GetPathType();
-        if ((type & (PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_SHORTCUT)) &&
-            path.GetPath().size() >= 2)
-        {
-            Movement::PointsArray points = path.GetPath();
-            bot->GetMotionMaster()->Clear();
-            bot->GetMotionMaster()->MoveSplinePath(&points, FORCED_MOVEMENT_RUN);
-            WaitForReach(targetDist - distance);
-            return true;
-        }
-    }
-
-    bot->GetMotionMaster()->MoveChase((Unit*)obj, distance);
-    WaitForReach(bot->GetExactDist2d(obj) - distance);
-    return true;
-}
-
 float MovementAction::MoveDelay(float distance, bool backwards)
 {
     float speed;
@@ -944,62 +938,10 @@ float MovementAction::MoveDelay(float distance, bool backwards)
     return delay;
 }
 
-void MovementAction::WaitForReach(float distance)
-{
-    // Reference formula: 1000 * MoveDelay(distance) + reactDelay. The
-    // reactDelay gives the bot a small slack at the end of a move so the
-    // next action sees the bot at rest rather than mid-spline.
-    float delay = 1000.0f * MoveDelay(distance) + sPlayerbotAIConfig.reactDelay;
-
-    if (delay > sPlayerbotAIConfig.maxWaitForMove)
-        delay = sPlayerbotAIConfig.maxWaitForMove;
-
-    // Combat clamp deliberately disabled (reference comments it out):
-    // clamping to globalCoolDown in combat caused bots to re-evaluate
-    // mid-pull and abandon a chase before reaching attack range. The
-    // commented block is preserved verbatim should we need to revisit.
-    /*
-    Unit* target = *botAI->GetAiObjectContext()->GetValue<Unit*>("current target");
-    Unit* player = *botAI->GetAiObjectContext()->GetValue<Unit*>("enemy player target");
-    if ((player || target) && delay > sPlayerbotAIConfig.globalCoolDown)
-        delay = sPlayerbotAIConfig.globalCoolDown;
-    */
-
-    if (delay < 0)
-        delay = 0;
-
-    // Reference uses SetDuration on the Action; AC's equivalent is
-    // SetNextCheckDelay on the AI loop. Same outcome: re-evaluation is
-    // postponed by `delay` ms.
-    // TEMP DIAG: trace the wait actually applied per dispatch (remove
-    // after the per-tick re-dispatch investigation).
-    LOG_DEBUG("playerbots", "[WaitDiag] {} WaitForReach dist={:.1f} delay={:.0f}ms",
-              bot->GetName(), distance, delay);
-    botAI->SetNextCheckDelay((uint32)delay);
-}
-
-void MovementAction::WaitForReach(Movement::PointsArray const& path)
-{
-    float distance = 0.0f;
-    if (!path.empty())
-    {
-        G3D::Vector3 const* previousPoint = &path[0];
-        for (auto it = path.begin() + 1; it != path.end(); ++it)
-        {
-            G3D::Vector3 const& pathPoint = (*it);
-            distance += (*previousPoint - pathPoint).length();
-            previousPoint = &pathPoint;
-        }
-    }
-    WaitForReach(distance);
-}
-
-// similiar to botAI->SetNextCheckDelay() but only stops movement
-void MovementAction::SetNextMovementDelay(float delayMillis)
+void MovementAction::SetNextMovementDelay(float delayMillis, MovementPriority priority)
 {
     AI_VALUE(LastMovement&, "last movement")
-        .Set(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetOrientation(),
-             delayMillis, MovementPriority::MOVEMENT_FORCED);
+        .SetHold(delayMillis > 0.0f ? (uint32)delayMillis : 0, priority);
 }
 
 bool MovementAction::Flee(Unit* target)
@@ -1377,11 +1319,9 @@ PathResult MovementAction::GeneratePath(float x, float y, float z, uint32 accept
     gen.SetNavTerrainCost(NAV_GROUND_STEEP, 5.0f);
     gen.SetNavTerrainCost(NAV_WATER, 10.0f);
     gen.CalculatePath(x, y, z, forceDestination);
-    result.pathType = gen.GetPathType();
-    result.reachable = !(result.pathType & (~acceptMask));
+    PathType const pathType = gen.GetPathType();
+    result.reachable = !(pathType & (~acceptMask));
     result.points = gen.GetPath();
-    result.actualEnd = gen.GetActualEndPosition();
-    result.end = gen.GetEndPosition();
     return result;
 }
 
@@ -2575,7 +2515,7 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos,
     // pathfind that map's navmesh query from this thread, which races that map's own
     // update thread and can corrupt the shared dtNavMeshQuery node pool into an
     // infinite loop (world-thread freeze). Refuse instead: MoveTo2 returns false on
-    // an empty path, so MoveFarTo fails and the RPG layer drops the objective.
+    // an empty path, so the move fails and the RPG layer drops the objective.
     if (startPos.GetMapId() != endPos.GetMapId() &&
         (!startPos.isOverworld() || !endPos.isOverworld()))
     {
@@ -2701,12 +2641,12 @@ bool MovementAction::WaitForTransport()
         lastMove.lastPath[0].entry != lastMove.lastTransportEntry)
         return false;
 
-    // Run UpcommingSpecialMovement on the cached path with maxDist=0 to
+    // Run UpcomingSpecialMovement on the cached path with maxDist=0 to
     // see if the head segment is a disembark-ready special (reference
     // pattern). No special → still mid-ride, return false to let
-    // MoveFarTo continue normally.
+    // MoveTo2 continue normally.
     TravelPath path = lastMove.lastPath;
-    if (!path.UpcommingSpecialMovement(WorldPosition(bot), 0.0f, /*onTransport=*/true))
+    if (!path.UpcomingSpecialMovement(WorldPosition(bot), 0.0f, /*onTransport=*/true))
         return false;
 
     // Disembark: head is the transport node where we should get off,
@@ -2773,7 +2713,13 @@ bool MovementAction::HandleSpecialMovement(TravelPath& path)
                             goInfo->type != GAMEOBJECT_TYPE_GOOBER))
                 return false;
 
-            uint32 const spellId = goInfo->spellcaster.spellId;
+            // GOOBER portals store the teleport spell at data10
+            // (goober.spellId); SPELLCASTER portals store it at data0
+            // (spellcaster.spellId) — reading the wrong union member for
+            // a GOOBER pulls goober.lockId instead of the spell.
+            uint32 const spellId = goInfo->type == GAMEOBJECT_TYPE_GOOBER
+                                       ? goInfo->goober.spellId
+                                       : goInfo->spellcaster.spellId;
             SpellInfo const* spellInfo = SpellMgr::instance()->GetSpellInfo(spellId);
             if (!spellInfo)
                 return false;
@@ -3071,11 +3017,33 @@ bool MovementAction::HandleSpecialMovement(TravelPath& path)
             // activation doesn't fail on an undiscovered node.
             bot->GetSession()->SendLearnNewTaxiNode(flightMaster);
 
+            // Legacy cheat-gold behaviour (restored — pre-nav_polish):
+            // cover the fare with the "gold" cheat so activation doesn't
+            // fail on an empty purse, then put the bot's real money back
+            // regardless of outcome. Bots without the cheat pay normally.
+            uint32 const botMoney = bot->GetMoney();
+            if (botAI->HasCheat(BotCheatMask::gold))
+                bot->SetMoney(10000000);
+
             bool const activated = bot->ActivateTaxiPathTo(route, flightMaster, 0);
+
+            if (botAI->HasCheat(BotCheatMask::gold))
+                bot->SetMoney(botMoney);
+
             LOG_DEBUG("playerbots",
                       "[FlightDiag] {} t={} ActivateTaxiPathTo {} -> {} ({} hops) fm={} dist={:.1f} ok={}",
                       bot->GetName(), getMSTime(), fromTaxi, toTaxi, route.size(),
                       flightMaster->GetEntry(), bot->GetExactDist(flightMaster), activated);
+
+            if (!activated)
+            {
+                // Back off: activation can fail for reasons that won't
+                // change next tick (e.g. insufficient funds with the
+                // cheat off). Throttle the retry instead of re-running
+                // this whole FM lookup + A* taxi-route search every tick
+                // while it keeps failing.
+                botAI->SetNextCheckDelay(1000);
+            }
             return activated;
         }
 
@@ -3197,8 +3165,8 @@ bool MovementAction::BoardTransport(Transport* transport)
             bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
             edgeX, edgeY, edgeZ))
     {
-        // No boarding edge found — wait a tick. Caller's WaitForReach
-        // upstream throttles the retry.
+        // No boarding edge found — wait a tick; the caller retries on a
+        // later brain tick.
         EmitDebugMove("Transport:board", "no-edge",
                       transport->GetPositionX(), transport->GetPositionY(),
                       transport->GetPositionZ());
@@ -3221,7 +3189,6 @@ bool MovementAction::BoardTransport(Transport* transport)
 
 bool MovementAction::MoveTo2(WorldPosition endPos,
                              bool idle, bool react,
-                             [[maybe_unused]] bool noPath,
                              bool ignoreEnemyTargets,
                              MovementPriority priority,
                              bool lessDelay)
@@ -3249,7 +3216,7 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
     // bot is alone on the far continent, AllowActivity drops it into
     // low-activity mode, and the teleport-advance/cooldown pair silently
     // parks it for minutes (observed post-crossing 300s stall).
-    bool const detailedMove = botAI->AllowActivity(DETAILED_MOVE_ACTIVITY, true) ||
+    bool const detailedMove = botAI->AllowActivity(DETAILED_MOVE_ACTIVITY) ||
                               AI_VALUE(TravelOrder&, "travel order").active;
     if (!detailedMove && lastMove.nextTeleport)
     {
@@ -3278,6 +3245,22 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
         bot->StopMoving();
         return false;
     }
+
+    // Awake + early-out (no dozing): the brain ticks every ~100ms and
+    // re-wishes this journey each tick. While the legs are still playing
+    // a leg of the SAME journey — bot moving, cached path aimed at
+    // (nearly) this destination — there is nothing to decide: report
+    // success without resolving anything. The journey advances at leg
+    // boundaries: the spline ends, isMoving() drops, and the next tick
+    // resolves the next leg. Chases (react=true) re-aim every tick and
+    // skip this. A changed destination (>10% of the journey) falls
+    // through to a fresh resolve immediately.
+    if (!react && bot->isMoving() && !lastMove.lastPath.empty() &&
+        (bot->GetTransport() ||
+         lastMove.lastPath.getFront().GetMapId() == botPos.GetMapId()) &&
+        lastMove.lastPath.getBack().distance(endPos) <
+            std::max(totalDistance * 0.1f, sPlayerbotAIConfig.targetPosRecalcDistance))
+        return true;
 
     // Per-tick re-resolve: rebuild the TravelPath from the bot's current
     // position every tick. ResolveMovePath internally gates graph A* by
@@ -3339,7 +3322,7 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
     }
 
     bool const onTransport = bot->GetTransport() != nullptr;
-    if (path.UpcommingSpecialMovement(botPos,
+    if (path.UpcomingSpecialMovement(botPos,
                                       sPlayerbotAIConfig.reactDistance,
                                       onTransport))
     {
@@ -3433,7 +3416,7 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
     // Proactive board-wait. Transport stop nodes sit at z=0 IN THE WATER
     // beside the pier (e.g. Northspear at Menethil, node 1969), and the
     // unbiased link generation swims straight to them — so the bot treads
-    // water at the stop point and UpcommingSpecialMovement's board
+    // water at the stop point and UpcomingSpecialMovement's board
     // detection may never fire (observed: zero board logs at Menethil).
     // Handle boarding here instead: with an upcoming transport point on
     // this map, board when the ship is present; otherwise wait DRY by
@@ -3551,7 +3534,9 @@ bool MovementAction::DispatchMovement(TravelPath path,
                                       WorldPosition dest,
                                       char const* label,
                                       MovementPriority priority,
-                                      bool lessDelay,
+                                      // Duration plumbing returns with the reaction engine
+                                      // (declared action durations); unused until then.
+                                      [[maybe_unused]] bool lessDelay,
                                       bool react)
 {
     // Build the PointsArray from the TravelPath. Done here (not at the
@@ -3575,12 +3560,13 @@ bool MovementAction::DispatchMovement(TravelPath path,
     // to a single point, so the point-to-point sum alone is zero and the
     // post-dispatch wait collapses to the 100ms react floor (the per-tick
     // re-dispatch cadence seen in testing). Include the bot->first-point
-    // leg so the wait covers the real move. Skipped on transports, where
-    // the points are hull-local while the bot position is world-space.
-    if (!bot->GetTransport())
-        totalDist += (points.front() -
-                      G3D::Vector3(bot->GetPositionX(), bot->GetPositionY(),
-                                   bot->GetPositionZ())).length();
+    // leg so the wait covers the real move. (Not skipped on transports:
+    // MoveTo2's onTransport gate always returns before reaching here, so
+    // bot->GetTransport() is guaranteed null at this point — see the
+    // terrain-clamp comment further down.)
+    totalDist += (points.front() -
+                  G3D::Vector3(bot->GetPositionX(), bot->GetPositionY(),
+                               bot->GetPositionZ())).length();
 
     // Skip cosmetic walking for low-activity bots with no nearby
     // player — teleport to the path tail and schedule a cooldown
@@ -3588,7 +3574,7 @@ bool MovementAction::DispatchMovement(TravelPath path,
     // (`!detailedMove && !HasPlayerNearby`). Bots driving an explicit
     // travel order stay in detailed mode (same gate as MoveTo2) — the
     // order should walk visibly even with the master maps away.
-    if (!botAI->AllowActivity(DETAILED_MOVE_ACTIVITY, true) &&
+    if (!botAI->AllowActivity(DETAILED_MOVE_ACTIVITY) &&
         !AI_VALUE(TravelOrder&, "travel order").active)
     {
         // `last` (points.back()) is a coordinate on the bot's CURRENT map: the same
@@ -3625,6 +3611,14 @@ bool MovementAction::DispatchMovement(TravelPath path,
                       bot->GetName(), getMSTime(), teleOk,
                       tail.GetPositionX(), tail.GetPositionY(), tail.GetPositionZ(),
                       totalDist, (int64)(lastMove.nextTeleport - now));
+            // Charter §1: teleport is allowed and visible, but every use
+            // is an ERROR in the log — observability replaces invisibility.
+            LOG_ERROR("playerbots",
+                      "movement safety-net teleport: low-activity-advance bot={} from={:.1f},{:.1f},{:.1f} map {} "
+                      "to={:.1f},{:.1f},{:.1f} map {}",
+                      bot->GetName(), botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(),
+                      botPos.GetMapId(), tail.GetPositionX(), tail.GetPositionY(), tail.GetPositionZ(),
+                      tail.GetMapId());
             return teleOk;
         }
     }
@@ -3657,62 +3651,44 @@ bool MovementAction::DispatchMovement(TravelPath path,
     if (bot->IsNonMeleeSpellCast(true))
         bot->InterruptNonMeleeSpells(true);
 
-    // Per-point terrain clamp with transport-passenger conversion
-    // sandwich: when on a transport, path coords are in transport-local
-    // space; UpdateAllowedPositionZ samples world terrain, so we convert
-    // local→world, snap, world→local. Without the sandwich, snapping a
-    // transport-relative point against world terrain produces garbage.
-    Transport* transport = bot->GetTransport();
+    // Per-point terrain clamp. The reference wraps this in a transport-
+    // passenger local<->world coordinate sandwich, but that's dead code
+    // here: MoveTo2's onTransport gate always returns before reaching
+    // DispatchMovement (verified — single call site), so bot->GetTransport()
+    // is guaranteed null and `points` are always world-space already.
     for (auto& pt : points)
-    {
-        if (transport)
-            transport->CalculatePassengerPosition(pt.x, pt.y, pt.z);
         bot->UpdateAllowedPositionZ(pt.x, pt.y, pt.z);
-        if (transport)
-            transport->CalculatePassengerOffset(pt.x, pt.y, pt.z);
-    }
 
-    // mm.Clear → MovePoint(last) → MoveSplinePath.
+    // mm.Clear → exactly one generator (P2: never both MovePoint AND
+    // MoveSplinePath in the same dispatch). Any multi-point route keeps
+    // its waypoints via MoveSplinePath — including swimming/wading/flying
+    // movers, whose resolved shore-hugging points must not collapse into
+    // a straight MovePoint beeline through geometry. Only a path that
+    // reduced to a single point falls back to MovePoint.
     MotionMaster* mm = bot->GetMotionMaster();
     mm->Clear();
 
-    if (!generatePath || !bot->IsFreeFlying())
+    if (points.size() >= 2)
+    {
+        mm->MoveSplinePath(&points, moveMode);
+    }
+    else
     {
         float const flySpeed = bot->IsFlying() ? bot->GetSpeed(MOVE_FLIGHT) : 0.0f;
         mm->MovePoint(0, last.x, last.y, last.z, moveMode,
                       flySpeed, 0.0f, generatePath, false);
     }
 
-    if (points.size() >= 2)
-        mm->MoveSplinePath(&points, moveMode);
-
     EmitDebugMove("MoveFar", label, last.x, last.y, last.z);
 
-    // WaitForReach equivalent: cache the dispatched target + duration on
-    // lastMove. Leave ~10y headroom on long paths so we re-evaluate
-    // before arrival. (Reference also calls WaitForReach here, which
-    // blocks the AI loop; we omit that — see header comment.)
-    float waitDist = totalDist > sPlayerbotAIConfig.reactDistance
-                         ? std::max(totalDist - 10.0f, 0.0f) : totalDist;
-    UnitMoveType const speedType = (moveMode == FORCED_MOVEMENT_WALK) ? MOVE_WALK : MOVE_RUN;
-    float speed = std::max(bot->GetSpeed(speedType), 0.1f);
-    float duration = 1000.0f * (waitDist / speed) + sPlayerbotAIConfig.reactDelay;
-    if (lessDelay)
-        duration -= sPlayerbotAIConfig.reactDelay;
-    duration = std::min(duration, (float)sPlayerbotAIConfig.maxWaitForMove);
-    if (duration < 0.0f)
-        duration = 0.0f;
-
+    // Record the dispatched target + priority on lastMove: the duplicate
+    // dedup and MoveTo's priority-replacement gate read these.
     lastMove.Set(bot->GetMapId(), last.x, last.y, last.z,
-                 bot->GetOrientation(), (uint32)duration, priority);
+                 bot->GetOrientation(), priority);
 
-    // Reference: DispatchMovement ends with WaitForReach(size) to block
-    // the AI loop while the spline plays. Combat callers (react=true)
-    // opt out so they can keep re-evaluating mid-chase. Pass totalDist
-    // (which includes the bot->first-point leg) instead of re-summing the
-    // points: a single-point path sums to 0 and floors the wait at 100ms.
-    if (!react)
-        WaitForReach(totalDist);
-
+    // No doze: the brain keeps ticking at react delay. Re-wishes of this
+    // journey are absorbed by MoveTo2's awake early-out (still moving
+    // toward an unchanged destination → nothing to do), so dispatching
+    // does not put the AI to sleep.
     return true;
 }

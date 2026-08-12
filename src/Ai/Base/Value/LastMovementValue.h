@@ -39,6 +39,8 @@ public:
         lastPath = other.lastPath;
         nextTeleport = other.nextTeleport;
         priority = other.priority;
+        holdStartMs = other.holdStartMs;
+        holdDurationMs = other.holdDurationMs;
         lastTransportEntry = other.lastTransportEntry;
         lastCompletedTransportEntry = other.lastCompletedTransportEntry;
         return *this;
@@ -47,7 +49,11 @@ public:
     void clear();
 
     void Set(Unit* follow);
-    void Set(uint32 mapId, float x, float y, float z, float ori, float delayTime, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
+    void Set(uint32 mapId, float x, float y, float z, float ori,
+             MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
+    //Setting the hold is seperated from Set so that bots can be told to hold position without losing their last movement information.
+    void SetHold(uint32 durationMs, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
+    bool IsHoldActive() const;
 
     void setShort(WorldPosition point);
     void setPath(TravelPath path);
@@ -59,6 +65,8 @@ public:
     WorldPosition lastMoveShort;
     uint32 msTime;
     MovementPriority priority;
+    uint32 holdStartMs{0};
+    uint32 holdDurationMs{0};
     TravelPath lastPath;
     time_t nextTeleport;
     // Entry of the transport the bot is currently aboard mid-journey,

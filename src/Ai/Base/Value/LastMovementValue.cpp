@@ -20,6 +20,8 @@ LastMovement::LastMovement(LastMovement& other)
     nextTeleport = other.nextTeleport;
     lastPath = other.lastPath;
     priority = other.priority;
+    holdStartMs = other.holdStartMs;
+    holdDurationMs = other.holdDurationMs;
     lastTransportEntry = other.lastTransportEntry;
     lastCompletedTransportEntry = other.lastCompletedTransportEntry;
 }
@@ -33,6 +35,8 @@ void LastMovement::clear()
     nextTeleport = 0;
     msTime = 0;
     priority = MovementPriority::MOVEMENT_NORMAL;
+    holdStartMs = 0;
+    holdDurationMs = 0;
     lastTransportEntry = 0;
 }
 
@@ -40,17 +44,31 @@ void LastMovement::Set([[maybe_unused]] Unit* follow)
 {
     // Legacy signature — `follow` is ignored (lastFollow field removed).
     // The function still serves callers that want a soft-reset:
-    // clears short + path, resets msTime/priority via the chain below.
-    Set(0, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+    // clears short + path + hold, resets msTime/priority via the chain below.
+    Set(0, 0.0f, 0.0f, 0.0f, 0.0f);
+    SetHold(0);
     setShort(WorldPosition());
     setPath(TravelPath());
 }
 
-void LastMovement::Set(uint32 mapId, float x, float y, float z, float ori, float delayTime, MovementPriority pri)
+void LastMovement::Set(uint32 mapId, float x, float y, float z, float ori, MovementPriority pri)
 {
     lastMoveShort = WorldPosition(mapId, x, y, z, ori);
     msTime = getMSTime();
     priority = pri;
+}
+
+void LastMovement::SetHold(uint32 durationMs, MovementPriority pri)
+{
+    holdStartMs = getMSTime();
+    holdDurationMs = durationMs;
+    if (durationMs)
+        priority = pri;
+}
+
+bool LastMovement::IsHoldActive() const
+{
+    return holdDurationMs && getMSTime() - holdStartMs < holdDurationMs;
 }
 
 void LastMovement::setShort(WorldPosition point)
