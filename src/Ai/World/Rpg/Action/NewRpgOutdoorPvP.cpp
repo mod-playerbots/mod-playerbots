@@ -1,6 +1,8 @@
 #include "NewRpgOutdoorPvP.h"
+#include "LastMovementValue.h"
 #include "OutdoorPvP.h"
 #include "OutdoorPvPMgr.h"
+#include "Playerbots.h"
 
 bool NewRpgOutdoorPvpAction::Execute(Event)
 {
