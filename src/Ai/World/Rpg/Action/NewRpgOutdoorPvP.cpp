@@ -113,19 +113,15 @@ OPvPCapturePoint* NewRpgOutdoorPvpAction::SelectNewObjective(OutdoorPvP::OPvPCap
 
 bool NewRpgOutdoorPvpAction::PatrolCapturePoint(GameObject* objectiveGO, float radius)
 {
-    auto* data = std::get_if<NewRpgInfo::OutdoorPvP>(&botAI->rpgInfo.data);
-    if (!data)
-        return false;
-
-    if (data->pauseTs && GetMSTimeDiffToNow(data->pauseTs) < data->pauseDuration)
+    if (AI_VALUE(LastMovement&, "last movement").IsHoldActive())
         return true;
-    data->pauseTs = 0;
 
-    // Randomly pause at the current spot before picking a new patrol point
+    // Randomly pause at the current spot before picking a new patrol
+    // point. NORMAL-priority movement hold, not a brain sleep — combat
+    // movement breaks it instantly.
     if (urand(0, 2) == 0)
     {
-        data->pauseTs = getMSTime();
-        data->pauseDuration = urand(3000, 6000);
+        SetNextMovementDelay(urand(3000, 6000), MovementPriority::MOVEMENT_NORMAL);
         return true;
     }
 
@@ -134,7 +130,6 @@ bool NewRpgOutdoorPvpAction::PatrolCapturePoint(GameObject* objectiveGO, float r
         return true;
 
     // No patrol spot found this tick: pause instead of re-rolling every tick.
-    data->pauseTs = getMSTime();
-    data->pauseDuration = urand(3000, 6000);
+    SetNextMovementDelay(urand(3000, 6000), MovementPriority::MOVEMENT_NORMAL);
     return true;
 }
