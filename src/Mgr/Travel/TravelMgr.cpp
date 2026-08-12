@@ -3563,9 +3563,13 @@ void TravelMgr::printObj(WorldObject* obj, std::string const type)
 void TravelMgr::Init()
 {
     if (sPlayerbotAIConfig.enabled)
+{
+        if (!destinationCachesReady)
     {
         PrepareZone2LevelBracket();
         PrepareDestinationCache();
+destinationCachesReady = true;
+        }
     }
     sTravelNodeMap.Init();
 }
@@ -3844,6 +3848,15 @@ void TravelMgr::PrepareZone2LevelBracket()
 
 void TravelMgr::PrepareDestinationCache()
 {
+    allianceFlightMasterCache.clear();
+    hordeFlightMasterCache.clear();
+    allianceHubsPerLevelCache.clear();
+    hordeHubsPerLevelCache.clear();
+    bankerLocsPerLevelCache.clear();
+    bankerEntryToLocation.clear();
+    locsPerLevelCache.clear();
+    creatureSpawnsByTemplate.clear();
+
     uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
     uint32 flightMastersCount = 0;
     uint32 innkeepersCount = 0;

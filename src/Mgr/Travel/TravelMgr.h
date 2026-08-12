@@ -995,6 +995,7 @@ private:
     // Navigation initialization
     void PrepareZone2LevelBracket();
     void PrepareDestinationCache();
+    bool destinationCachesReady = false;
 
     // Internal types
     struct LevelBracket
