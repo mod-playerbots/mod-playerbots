@@ -310,36 +310,6 @@ bool BGJoinAction::shouldJoinBg(BattlegroundQueueTypeId queueTypeId, Battlegroun
                 return true;
         }
 
-        // No existing RBG has room for this faction.
-        uint32 teamPlayerCount =
-        teamId == TEAM_ALLIANCE
-        ? bgAllianceBotCount + bgAlliancePlayerCount
-        : bgHordeBotCount + bgHordePlayerCount;
-
-        uint32 remainingTeamDemand = teamPlayerCount;
-
-        for (Battleground const* activeBg : sBattlegroundMgr->GetActiveBattlegrounds())
-        {
-            if (activeBg->GetBgTypeID() != BATTLEGROUND_RB ||
-                activeBg->GetBracketId() != bracketId)
-                continue;
-
-            uint32 actualTeamSize = activeBg->GetMaxPlayersPerTeam();
-
-            remainingTeamDemand =
-            remainingTeamDemand > actualTeamSize
-            ? remainingTeamDemand - actualTeamSize
-            : 0;
-        }
-
-        // Do not seed a new Random bg unless a real player is queued.
-        if (!activeBgQueue)
-            return false;
-
-        // TeamSize is deliberately the BATTLEGROUND_RB template size
-        return remainingTeamDemand < TeamSize;
-    }
-
     if (teamId == TEAM_ALLIANCE)
     {
         if ((bgAllianceBotCount + bgAlliancePlayerCount) < TeamSize * (activeBgQueue + bgInstanceCount))
