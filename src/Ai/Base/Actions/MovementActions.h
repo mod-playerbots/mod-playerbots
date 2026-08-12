@@ -110,11 +110,13 @@ class Position;
 // --- The rules the pipeline enforces ----------------------------------------
 //
 // REPLACEMENT (stage 3). Movement replacement is dictated by MovementPriority.
-// A lower-priority action never replaces a walk still in progress — or a
-// position hold (SetNextMovementDelay) still running; a higher or equal
-// one does (newest wins). A hold is movement-only: the brain stays awake
-// and keeps fighting. Movement never sleeps the brain; RPG idles pace
-// themselves with awake rpgInfo timestamps instead.
+// Walk in progress: a lower-priority wish never replaces it, higher or
+// equal does (newest wins). Position hold (SetNextMovementDelay): STRICT —
+// only strictly higher priority breaks it, so a FORCED encounter hold is
+// absolute while a NORMAL hold (RPG reading/patrol pause) blocks the
+// bot's own walks but yields to combat movement. Holds are movement-only:
+// the brain stays awake and keeps fighting. Movement never sleeps the
+// brain.
 //
 // ALWAYS AWAKE. Walk movement never sleeps the AI. An early-out in the
 // action absorbs re-issues and lower-priority calls instead: still moving
