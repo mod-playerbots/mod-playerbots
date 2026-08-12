@@ -20,6 +20,127 @@ class Unit;
 class WorldObject;
 class Position;
 
+// ============================================================================
+// MOVEMENT DESIGN INTENT
+//
+// The goal is the most natural bot movement achievable while maintaining
+// responsiveness and low server cost — any approach must scale across
+// thousands of bots. Cheating (teleports, skipped travel) is minimized, and
+// generates a debug log to identify areas for improvement.
+//
+// The pipeline is a port of the cmangos playerbot movement code (MoveTo /
+// MoveTo2 / DispatchMovement / ResolveMovePath). Throughout this header and
+// MovementActions.cpp, "the reference" means that implementation — those
+// comments record where this port deliberately follows it or diverges.
+//
+// --- MoveTo ----------------------------------------------------
+//  1. CAN WE MOVE AT ALL?  UpdateMovementState + IsMovingAllowed — dead,
+//     CC'd, mid-flight, uncontrolled.
+//  2. WHO IS THE MOVER?  A bot in a controlling vehicle seat moves the
+//     vehicle base — dispatching on the seated Player would move a body the
+//     encounter ignores while the vehicle stands still. A passenger without
+//     control refuses: its legs aren't its own.
+//  3. IS THIS ACTION ALLOWED RIGHT NOW?  MovementPriority dictates
+//     replacement: while the bot is still executing a walk, a
+//     lower-priority action does not replace it; higher or equal does
+//     (newest wins). Then exact-duplicate dedup so identical re-issues
+//     cost nothing.
+//  4. LITERAL OR ROUTED?  Some moves must be taken exactly as given — exact
+//     waypoints (formations), flying/swimming movers, backward steps,
+//     vehicles (the route planner has no notion of a non-bot mover), and the
+//     disableMoveSplinePath config — those go straight to a plain point
+//     dispatch (DoMovePoint) and never enter MoveTo2. Everything else runs
+//     the routing pipeline.
+//
+// --- MoveTo2: the routing pipeline ------------------------------------------
+//  5. ALREADY RIDING?  (WaitForTransport) On a recorded transport ride the
+//     only decisions are "stay aboard" or "this is my stop" — walking logic
+//     is meaningless on a moving deck, so the ride is resolved before any
+//     of it runs.
+//  6. UNWATCHED-BOT ECONOMY.  A config-gated cheat that lets bots no player
+//     can see advance by teleport instead of walking, cutting server cost.
+//  7. CLOSE ENOUGH TO DESTINATION? (short-stop, targetPosRecalcDistance) Arriving is a
+//     decision too: within the threshold the journey ends — stop, clear state.
+//  8. GET A ROUTE.  (ResolveMovePath)
+//       - reuse the cached path while the destination has barely moved
+//         (<10% of the journey). Avoid re-planning every tick;
+//       - near + same map (within sightDistance): direct navmesh query —
+//         no mental map needed to cross a field;
+//       - far or cross-map: the travel-node graph (roads, boats, flights, portals),
+//         plans the trip leg by leg. The graph is built at server start and is IMMUTABLE at
+//         runtime (map threads read it concurrently; live mutation is a
+//         data race). No route on the map? Probe in bounded stretches
+//         toward the goal, give up LOUDLY the first stretch that gains
+//         nothing — quitting fast and visibly beats flailing forever;
+//       - regression guard: a fresh plan that ends no closer to the goal
+//         than the cached one loses to the cached one. A re-plan has to earn
+//         its replacement;
+//       - last resort: a single-point beeline, so something is always
+//         attempted and failure surfaces as "no progress", never silence.
+//     Planning only — ResolveMovePath reads lastMove and dispatches nothing.
+//  9. TRIM IT.  (makeShortCut) Drop waypoints the bot can already walk
+//     straight to; if trimming ate the whole path, bridge back to the
+//     nearest reachable on-path anchor — a plan you can't stand on is not
+//     a plan.
+// 10. SPECIAL FIRST LEG?  (UpcomingSpecialMovement / HandleSpecialMovement)
+//     When the next path element isn't plain ground it needs an
+//     interaction, not a walk: click the portal, step through the area
+//     trigger, board or leave the transport, talk to the flight master and
+//     take the taxi. Each converts one special leg into game actions, then
+//     the pipeline resumes on the far side. UpcomingSpecialMovement runs
+//     first and cuts the path so the head IS the special leg —
+//     HandleSpecialMovement only ever looks at the head, so the two are
+//     always called as a pair.
+// 11. SHIP LOGISTICS.  Approaching a dock: ship present → board; absent →
+//     walk to the water's edge and hold. Ship schedules are slow, so
+//     waiting is legitimate player behavior — indefinitely, and NEVER
+//     "stuck".
+// 12. DANGER ON THE PATH.  (ClipPath) Cut the walk short before hostile
+//     camps unless the caller explicitly accepts the risk — stopping short
+//     beats delivering the bot into a pull it didn't choose.
+// 13. WATER SURFACE.  (surfaceSnapWaypoints) Swimmable waypoints snap to
+//     the surface so swimming bots travel on top of the water, not along
+//     floor-level path points.
+// 14. DISPATCH.  (DispatchMovement) The only place legs actually move:
+//     exactly one motion generator per dispatch (multi-point spline, or a
+//     single-point fallback), the target + priority are recorded for the
+//     dedup/replacement gates, and unwatched bots may teleport-advance
+//     (logged). The AI is never put to sleep for movement.
+//
+// --- The rules the pipeline enforces ----------------------------------------
+//
+// REPLACEMENT (stage 3). Movement replacement is dictated by MovementPriority.
+// A lower-priority action never replaces a walk still in progress — or a
+// position hold (SetNextMovementDelay) still running; a higher or equal
+// one does (newest wins). A hold is movement-only: the brain stays awake
+// and keeps fighting. Movement never sleeps the brain; RPG idles pace
+// themselves with awake rpgInfo timestamps instead.
+//
+// ALWAYS AWAKE. Walk movement never sleeps the AI. An early-out in the
+// action absorbs re-issues and lower-priority calls instead: still moving
+// toward a destination that hasn't meaningfully changed → nothing to do.
+// Combat callers pass react=true to opt out of that early-out, so a chase
+// re-aims every tick.
+//
+// CROSS-TRANSPORT FOLLOW. Following someone onto a different deck is not a
+// walk — there is no navmesh spanning two independently moving transports.
+// When bot and target are on different transports (or one is off-transport)
+// and within sight, the bot disembarks, teleports to the target, and boards
+// the target's transport, all in one tick, ahead of the engine-level follow.
+//
+// STUCK & RESCUE. Stuck = ~90 seconds of honest no-progress while NOT
+// legitimately waiting. A botched map crossing teleports the
+// bot to its intended arrival. Teleports are logged.
+//
+// MOVENEAR SEMANTICS. MoveNear(WorldObject*, dist) means TOUCH RANGE — dist
+// is clamped to GetRange("follow"), so "near a thing" is walking-up-to-it
+// distance regardless of what the caller passes. Callers needing a real
+// standoff (spread mechanics: "stand 22y from the marked player") must use
+// the coordinate overload MoveNear(mapId, x, y, z, dist), which applies the
+// raw offset. One primitive per meaning, instead of one primitive whose
+// behavior depends on a clamp the caller can't see.
+// ============================================================================
+
 #define ANGLE_90_DEG M_PI_2
 #define ANGLE_120_DEG (2.f * static_cast<float>(M_PI) / 3.f)
 
