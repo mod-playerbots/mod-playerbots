@@ -126,7 +126,8 @@ bool RazuviousUseObedienceCrystalAction::Execute(Event /*event*/)
             if (target)
             {
                 if (bot->GetDistance2d(target) > sPlayerbotAIConfig.spellDistance)
-                    return MoveNear(target, sPlayerbotAIConfig.spellDistance, MovementPriority::MOVEMENT_COMBAT);
+                    return MoveNear(target->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(),
+                                    sPlayerbotAIConfig.spellDistance, MovementPriority::MOVEMENT_COMBAT);
                 else
                     return botAI->CastSpell("mind control", target);
             }

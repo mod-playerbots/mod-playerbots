@@ -96,7 +96,8 @@ bool SapphironFlightPositionAction::MoveToNearestIcebolt()
             if (MoveTo(NAXX_MAP_ID, posX, posY, helper.GENERIC_HEIGHT, false, false, false, false, MovementPriority::MOVEMENT_COMBAT))
                 return true;
 
-            return MoveNear(playerWithIcebolt, 3.0f, MovementPriority::MOVEMENT_COMBAT);
+            return MoveNear(playerWithIcebolt->GetMapId(), playerWithIcebolt->GetPositionX(), playerWithIcebolt->GetPositionY(),
+                            playerWithIcebolt->GetPositionZ(), 3.0f, MovementPriority::MOVEMENT_COMBAT);
         }
     }
     return false;
