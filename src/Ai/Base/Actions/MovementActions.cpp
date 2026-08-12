@@ -556,6 +556,23 @@ bool MovementAction::IsDuplicateMove(float x, float y, float z)
     return true;
 }
 
+bool MovementAction::IsHoldingAtDockWait() const
+{
+    LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
+    WorldPosition botPos(bot);
+    for (PathNodePoint const& p : lastMove.lastPath.GetPathRef())
+    {
+        if (p.type == PathNodeType::NODE_TRANSPORT && p.entry &&
+            p.entry != lastMove.lastCompletedTransportEntry &&
+            p.point.GetMapId() == botPos.GetMapId() &&
+            botPos.distance(p.point) < sPlayerbotAIConfig.reactDistance * 2.0f)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool MovementAction::IsMovingAllowed()
 {
     return botAI->CanMove();

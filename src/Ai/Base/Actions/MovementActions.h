@@ -255,6 +255,7 @@ protected:
     bool IsMovingAllowed(WorldObject* target);
     bool IsDuplicateMove(float x, float y, float z);
     bool IsMovingAllowed();
+    bool IsHoldingAtDockWait() const;
     bool Flee(Unit* target);
     void ClearIdleState();
     void UpdateMovementState();
@@ -315,6 +316,7 @@ protected:
 private:
     bool wasMovementRestricted = false;
     void DoMovePoint(Unit* unit, float x, float y, float z, bool generatePath, bool backwards);
+
 };
 
 class FleeAction : public MovementAction
