@@ -294,18 +294,50 @@ bool BGJoinAction::shouldJoinBg(BattlegroundQueueTypeId queueTypeId, Battlegroun
     uint32 activeBgQueue = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].activeBgQueue;
     uint32 bgInstanceCount = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].bgInstanceCount;
 
-    // Check if queue type is random, they have no static TeamSize.
+    // Check if queue type is Random BG; existing RBG instances have variable team sizes.
     if (queueTypeId == BATTLEGROUND_QUEUE_RB)
     {
-        for (Battleground const* bg : sBattlegroundMgr->GetActiveBattlegrounds())
+        // Existing RBGs are always filled first.
+        for (Battleground const* activeBg : sBattlegroundMgr->GetActiveBattlegrounds())
         {
-            if (bg->GetBgTypeID() != BATTLEGROUND_RB ||
-                bg->GetBracketId() != bracketId)
+            if (activeBg->GetBgTypeID() != BATTLEGROUND_RB ||
+                activeBg->GetBracketId() != bracketId)
                 continue;
 
-            if (bg->GetFreeSlotsForTeam(teamId) > 0)
+            // An existing RBG has room for this faction.
+            // Fill it regardless of whether there is demand for a NEW RBG.
+            if (activeBg->GetFreeSlotsForTeam(teamId) > 0)
                 return true;
         }
+
+        // No existing RBG has room for this faction.
+        uint32 teamPlayerCount =
+        teamId == TEAM_ALLIANCE
+        ? bgAllianceBotCount + bgAlliancePlayerCount
+        : bgHordeBotCount + bgHordePlayerCount;
+
+        uint32 remainingTeamDemand = teamPlayerCount;
+
+        for (Battleground const* activeBg : sBattlegroundMgr->GetActiveBattlegrounds())
+        {
+            if (activeBg->GetBgTypeID() != BATTLEGROUND_RB ||
+                activeBg->GetBracketId() != bracketId)
+                continue;
+
+            uint32 actualTeamSize = activeBg->GetMaxPlayersPerTeam();
+
+            remainingTeamDemand =
+            remainingTeamDemand > actualTeamSize
+            ? remainingTeamDemand - actualTeamSize
+            : 0;
+        }
+
+        // Do not seed a new Random bg unless a real player is queued.
+        if (!activeBgQueue)
+            return false;
+
+        // TeamSize is deliberately the BATTLEGROUND_RB template size
+        return remainingTeamDemand < TeamSize;
     }
 
     if (teamId == TEAM_ALLIANCE)
