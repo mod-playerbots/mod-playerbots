@@ -2333,7 +2333,11 @@ AiPlayerbot.BroadcastChanceGuildManagement = 30000
 #
 
 # Custom config to allow logfiles to be created.
-# Example: AiPlayerbot.AllowedLogFiles = travelNodes.csv,travelPaths.csv,TravelNodeStore.h,bot_movement.csv,bot_location.csv
+# Movement telemetry: bot_movement.csv = one row per dispatched movement
+# (from/to, priority, spline|point|teleport); pathfind_result.csv = one row
+# per fresh route resolution (graph|probe|cache-kept|beeline). Both start
+# fresh each server run and cost nothing when not listed.
+# Example: AiPlayerbot.AllowedLogFiles = travelNodes.csv,travelPaths.csv,TravelNodeStore.h,bot_movement.csv,pathfind_result.csv
 AiPlayerbot.AllowedLogFiles = ""
 
 #

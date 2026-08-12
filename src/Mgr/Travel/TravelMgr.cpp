@@ -2163,12 +2163,7 @@ void TravelMgr::LoadQuestTravelTable()
     sPlayerbotAIConfig.openLog("zones.csv", "w");
     sPlayerbotAIConfig.openLog("creatures.csv", "w");
     sPlayerbotAIConfig.openLog("gos.csv", "w");
-    sPlayerbotAIConfig.openLog("bot_movement.csv", "w");
-    sPlayerbotAIConfig.openLog("bot_pathfinding.csv", "w");
-    sPlayerbotAIConfig.openLog("pathfind_attempt.csv", "w");
-    sPlayerbotAIConfig.openLog("pathfind_attempt_point.csv", "w");
     sPlayerbotAIConfig.openLog("pathfind_result.csv", "w");
-    sPlayerbotAIConfig.openLog("load_map_grid.csv", "w");
     sPlayerbotAIConfig.openLog("strategy.csv", "w");
 
     sPlayerbotAIConfig.openLog("unload_grid.csv", "w");
