@@ -2605,6 +2605,19 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos,
                       endPos.GetMapId(), endPos.GetPositionX(),
                       endPos.GetPositionY(), endPos.GetPositionZ());
         out.addPoint(endPos);
+        resolveMethod = "beeline";
+    }
+
+    if (sPlayerbotAIConfig.hasLog("pathfind_result.csv"))
+    {
+        std::ostringstream logRow;
+        logRow << sPlayerbotAIConfig.GetTimestampStr() << "," << bot->GetName() << ","
+               << startPos.GetMapId() << "," << startPos.GetPositionX() << ","
+               << startPos.GetPositionY() << "," << startPos.GetPositionZ() << ","
+               << endPos.GetMapId() << "," << endPos.GetPositionX() << ","
+               << endPos.GetPositionY() << "," << endPos.GetPositionZ() << ","
+               << totalDistance << "," << resolveMethod << "," << out.getPointPath().size();
+        sPlayerbotAIConfig.log("pathfind_result.csv", logRow.str().c_str());
     }
 
     return out;
@@ -3619,6 +3632,17 @@ bool MovementAction::DispatchMovement(TravelPath path,
                       bot->GetName(), botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(),
                       botPos.GetMapId(), tail.GetPositionX(), tail.GetPositionY(), tail.GetPositionZ(),
                       tail.GetMapId());
+            if (sPlayerbotAIConfig.hasLog("bot_movement.csv"))
+            {
+                std::ostringstream out;
+                out << sPlayerbotAIConfig.GetTimestampStr() << "," << bot->GetName() << ","
+                    << botPos.GetMapId() << ","
+                    << botPos.GetPositionX() << "," << botPos.GetPositionY() << "," << botPos.GetPositionZ() << ","
+                    << tail.GetPositionX() << "," << tail.GetPositionY() << "," << tail.GetPositionZ() << ","
+                    << totalDist << "," << static_cast<int>(priority) << "," << (react ? 1 : 0)
+                    << ",1,teleport," << label;
+                sPlayerbotAIConfig.log("bot_movement.csv", out.str().c_str());
+            }
             return teleOk;
         }
     }
@@ -3685,6 +3709,18 @@ bool MovementAction::DispatchMovement(TravelPath path,
     // dedup and MoveTo's priority-replacement gate read these.
     lastMove.Set(bot->GetMapId(), last.x, last.y, last.z,
                  bot->GetOrientation(), priority);
+
+    if (sPlayerbotAIConfig.hasLog("bot_movement.csv"))
+    {
+        std::ostringstream out;
+        out << sPlayerbotAIConfig.GetTimestampStr() << "," << bot->GetName() << ","
+            << bot->GetMapId() << ","
+            << bot->GetPositionX() << "," << bot->GetPositionY() << "," << bot->GetPositionZ() << ","
+            << last.x << "," << last.y << "," << last.z << ","
+            << totalDist << "," << static_cast<int>(priority) << "," << (react ? 1 : 0) << ","
+            << points.size() << "," << (points.size() >= 2 ? "spline" : "point") << "," << label;
+        sPlayerbotAIConfig.log("bot_movement.csv", out.str().c_str());
+    }
 
     // No doze: the brain keeps ticking at react delay. Re-wishes of this
     // journey are absorbed by MoveTo2's awake early-out (still moving
