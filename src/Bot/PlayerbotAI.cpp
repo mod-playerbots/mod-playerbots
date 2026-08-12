@@ -1537,6 +1537,7 @@ void PlayerbotAI::DoNextAction(bool min)
         aiObjectContext->GetValue<ObjectGuid>("pull target")->Set(ObjectGuid::Empty);
         aiObjectContext->GetValue<ObjectGuid>("pull strategy target")->Set(ObjectGuid::Empty);
         aiObjectContext->GetValue<LootObject>("loot target")->Set(LootObject());
+        aiObjectContext->GetValue<LastMovement&>("last movement")->Get().Set(nullptr);
 
         ChangeEngine(BOT_STATE_DEAD);
         return;
