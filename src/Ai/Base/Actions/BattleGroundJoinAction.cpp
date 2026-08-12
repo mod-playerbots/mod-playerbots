@@ -306,9 +306,6 @@ bool BGJoinAction::shouldJoinBg(BattlegroundQueueTypeId queueTypeId, Battlegroun
             if (bg->GetFreeSlotsForTeam(teamId) > 0)
                 return true;
         }
-
-        // All RB instances are full. If a real player is waiting, allow bots to populate a new queue.
-        return activeBgQueue != 0;
     }
 
     if (teamId == TEAM_ALLIANCE)
