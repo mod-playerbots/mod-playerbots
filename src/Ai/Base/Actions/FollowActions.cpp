@@ -118,11 +118,8 @@ bool FollowAction::Execute(Event /*event*/)
                     else
                         return false;
 
-                    float delay = 1000.0f * MoveDelay(bot->GetExactDist(destX, destY, destZ));
-                    delay = std::clamp(delay, 0.0f, static_cast<float>(sPlayerbotAIConfig.maxWaitForMove));
-
                     AI_VALUE(LastMovement&, "last movement")
-                        .Set(mapId, destX, destY, destZ, bot->GetOrientation(), delay, priority);
+                        .Set(mapId, destX, destY, destZ, bot->GetOrientation(), priority);
                     ClearIdleState();
                     return true;
                 }
