@@ -686,6 +686,9 @@ public:
     HasCcTargetTrigger(PlayerbotAI* botAI, std::string const name) : Trigger(botAI, name) {}
 
     bool IsActive() override;
+
+protected:
+    bool IsCcTargetFree(Unit* ccTarget, Unit* rtiCcTarget);
 };
 
 class NoMovementTrigger : public Trigger

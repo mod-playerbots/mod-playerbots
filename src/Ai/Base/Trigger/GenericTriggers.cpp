@@ -577,7 +577,23 @@ bool IsNotFacingTargetTrigger::IsActive()
 
 bool HasCcTargetTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "cc target", getName()) && !AI_VALUE2(Unit*, "current cc target", getName());
+    Unit* rtiCcTarget = nullptr;
+    if (botAI->IsInNonRaidDungeon())
+    {
+        rtiCcTarget = AI_VALUE(Unit*, "rti cc target");
+        if (!rtiCcTarget)
+            return false;
+    }
+
+    return IsCcTargetFree(AI_VALUE2(Unit*, "cc target", getName()), rtiCcTarget);
+}
+
+bool HasCcTargetTrigger::IsCcTargetFree(Unit* ccTarget, Unit* rtiCcTarget)
+{
+    if (!ccTarget || (rtiCcTarget && ccTarget != rtiCcTarget))
+        return false;
+
+    return !AI_VALUE2(Unit*, "current cc target", getName());
 }
 
 bool NoMovementTrigger::IsActive() { return !AI_VALUE2(bool, "moving", "self target"); }
