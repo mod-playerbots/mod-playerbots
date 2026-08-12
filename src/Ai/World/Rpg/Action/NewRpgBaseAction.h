@@ -32,8 +32,7 @@ protected:
     bool MoveFarTo(WorldPosition dest);
     bool MoveWorldObjectTo(ObjectGuid guid, float distance = INTERACTION_DISTANCE);
     bool MoveRandomNear(float moveStep = 50.0f, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL, WorldObject* center = nullptr);
-    bool ForceToWait(uint32 duration, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
-
+    
     /* QUEST RELATED CHECK */
     ObjectGuid ChooseNpcOrGameObjectToInteract(bool questgiverOnly = false, float distanceLimit = 0.0f);
     bool HasQuestToAcceptOrReward(WorldObject* object);
@@ -46,6 +45,7 @@ protected:
 
     /* QUEST RELATED ACTION */
     bool SearchQuestGiverAndAcceptOrReward();
+    static constexpr uint32 questGiverStayTime = 5 * 1000;
     bool AcceptQuest(Quest const* quest, ObjectGuid guid);
     bool TurnInQuest(Quest const* quest, ObjectGuid guid);
     bool OrganizeQuestLog();
