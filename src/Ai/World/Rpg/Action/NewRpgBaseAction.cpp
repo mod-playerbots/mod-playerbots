@@ -42,20 +42,12 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     {
         // clear stuck information if it's a new dest
         botAI->rpgInfo.SetMoveFarTo(dest);
-        // New journey: the rescue ladder starts over too.
-        stuckRescueReplanned = false;
     }
 
-    // Design charter §5/§6: legitimate waiting is NEVER stuck, no matter
-    // how long it takes — riding a transport, on a taxi, or holding at a
-    // dock for a ship/zeppelin that hasn't arrived (MoveTo2's proactive
-    // board-wait). A cross-map destination is exempt from the distance
-    // check below for a different reason: bot->GetDistance(dest) diffs
-    // raw coordinates with no map check, so once dest is on another map
-    // than the bot (mid-crossing, or just landed on the far continent)
-    // the "distance" is meaningless noise, not evidence of stalling.
-    // Treat all four as in-transit: keep resetting the progress clock
-    // instead of letting the wait accumulate toward the stuck teleport.
+    // First check if there is some activity where a bot being stationary does not
+    // mean they are stuck. Transport, taxi, or waiting for a ship/zeppelin.
+    // A cross-map destination is exempt from stuck checks as the distance is random due
+    // to bot->GetDistance(dest) diffs doing raw coordinates with no map check.
     bool const onTransport = bot->GetTransport() != nullptr;
     bool const onTaxi = bot->IsInFlight();
     bool const crossMap = bot->GetMapId() != dest.GetMapId();
@@ -81,30 +73,9 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     }
     else if (++botAI->rpgInfo.stuckAttempts >= 5 && GetMSTimeDiffToNow(botAI->rpgInfo.stuckTs) >= stuckTime)
     {
-        // Design charter §6 rescue ladder: "re-plan once, then teleport."
-        // First stuck detection for this destination gets one fresh
-        // attempt: drop the cached path/teleport-cooldown/transport-ride
-        // state so the next MoveTo2 call fully re-resolves from scratch
-        // instead of retrying whatever produced the stall, and give that
-        // fresh attempt its own full stuckTime window to prove itself.
-        if (!stuckRescueReplanned)
-        {
-            stuckRescueReplanned = true;
-            AI_VALUE(LastMovement&, "last movement").clear();
-            botAI->rpgInfo.nearestMoveFarDis = FLT_MAX;
-            botAI->rpgInfo.stuckTs = getMSTime();
-            botAI->rpgInfo.stuckAttempts = 0;
-            LOG_DEBUG("playerbots",
-                      "[New RPG] {} stuck moving far to ({},{},{},{}) - re-planning once before teleport",
-                      bot->GetName(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(),
-                      dest.GetMapId());
-            return MoveTo2(dest);
-        }
-
-        // The re-plan also made no progress: safety-net teleport.
-        // Charter §1: teleport is allowed and visible, but every use is
-        // an ERROR in the log — observability replaces invisibility.
-        stuckRescueReplanned = false;
+        // No meaningful progress toward dest for `stuckTime`: fall
+        // back to teleporting directly so the bot can get on with
+        // its RPG objective instead of oscillating indefinitely.
         botAI->rpgInfo.stuckTs = getMSTime();
         botAI->rpgInfo.stuckAttempts = 0;
         const AreaTableEntry* entry = sAreaTableStore.LookupEntry(bot->GetZoneId());
@@ -115,17 +86,9 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
             bot->GetName(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetMapId(),
             dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), dest.GetMapId(), bot->GetZoneId(),
             zone_name);
-        LOG_ERROR("playerbots",
-                  "movement safety-net teleport: rpg-stuck bot={} from={},{},{} map {} to={},{},{} map {}",
-                  bot->GetName(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetMapId(),
-                  dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), dest.GetMapId());
         bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
         return bot->TeleportTo(dest);
     }
-
-    // Path resolution and dispatch (short-stop damping, graph vs mmap
-    // choice, transport/flight head segments) live in the unified
-    // movement funnel.
     return MoveTo2(dest);
 }
 
