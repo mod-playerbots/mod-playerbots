@@ -198,11 +198,6 @@ WorldPosition::WorldPosition(uint32 mapid, CellCoord cell)
 {
 }
 
-WorldPosition::WorldPosition(uint32 mapid, mGridCoord grid)
-    : WorldLocation(mapid, (32 - grid.first) * SIZE_OF_GRIDS, (32 - grid.second) * SIZE_OF_GRIDS, 0, 0)
-{
-}
-
 void WorldPosition::set(const WorldLocation& pos) { WorldRelocate(pos); }
 
 void WorldPosition::set(const WorldPosition& pos)
@@ -658,52 +653,6 @@ std::vector<WorldPosition> WorldPosition::gridFromCellCoord(CellCoord cellCoord)
     Cell c(cellCoord);
 
     return fromGridCoord(GridCoord(c.GridX(), c.GridY()));
-}
-
-std::vector<std::pair<int32, int32>> WorldPosition::getmGridCoords(WorldPosition secondPos)
-{
-    std::vector<mGridCoord> retVec;
-
-    int lx = std::min(getmGridCoord().first, secondPos.getmGridCoord().first);
-    int ly = std::min(getmGridCoord().second, secondPos.getmGridCoord().second);
-    int ux = std::max(getmGridCoord().first, secondPos.getmGridCoord().first);
-    int uy = std::max(getmGridCoord().second, secondPos.getmGridCoord().second);
-    int border = 1;
-
-    // lx = std::min(std::max(border, lx), MAX_NUMBER_OF_GRIDS - border);
-    // ly = std::min(std::max(border, ly), MAX_NUMBER_OF_GRIDS - border);
-    // ux = std::min(std::max(border, ux), MAX_NUMBER_OF_GRIDS - border);
-    // uy = std::min(std::max(border, uy), MAX_NUMBER_OF_GRIDS - border);
-
-    for (int x = lx - border; x <= ux + border; x++)
-    {
-        for (int y = ly - border; y <= uy + border; y++)
-        {
-            retVec.push_back(std::make_pair(x, y));
-        }
-    }
-
-    return retVec;
-}
-
-std::vector<WorldPosition> WorldPosition::frommGridCoord(mGridCoord GridCoord)
-{
-    std::vector<WorldPosition> retVec;
-    mGridCoord g;
-
-    for (uint32 d = 0; d < 4; d++)
-    {
-        g = GridCoord;
-
-        if (d == 1 || d == 2)
-            g.second++;
-        if (d == 2 || d == 3)
-            g.first++;
-
-        retVec.push_back(WorldPosition(GetMapId(), g));
-    }
-
-    return retVec;
 }
 
 std::vector<WorldPosition> WorldPosition::fromPointsArray(std::vector<G3D::Vector3> path)
@@ -3813,34 +3762,6 @@ std::vector<WorldLocation> TravelMgr::GetCityLocations(Player* bot)
     return fallbackLocations;
 }
 
-bool TravelMgr::SelectAuctioneerByMap(Player* bot, NpcLocation& outAuctioneer)
-{
-    uint16 botMapId = bot->GetMapId();
-    auto const& cache = (bot->GetTeamId() == TEAM_HORDE) ? hordeAuctioneerCache : allianceAuctioneerCache;
-
-    auto mapIt = cache.find(botMapId);
-    if (mapIt == cache.end() || mapIt->second.empty())
-        return false;
-
-    // Collect all areas on this map that have auctioneers
-    std::vector<uint32> areaIds;
-    areaIds.reserve(mapIt->second.size());
-    for (auto const& [areaId, npcs] : mapIt->second)
-    {
-        if (!npcs.empty())
-            areaIds.push_back(areaId);
-    }
-
-    if (areaIds.empty())
-        return false;
-
-    // Pick a random area, then a random auctioneer in that area
-    uint32 selectedArea = areaIds[urand(0, areaIds.size() - 1)];
-    auto const& auctioneers = mapIt->second.at(selectedArea);
-    outAuctioneer = auctioneers[urand(0, auctioneers.size() - 1)];
-    return true;
-}
-
 void TravelMgr::PrepareZone2LevelBracket()
 {
     // Classic WoW - starter zones
@@ -3927,7 +3848,6 @@ void TravelMgr::PrepareDestinationCache()
     uint32 flightMastersCount = 0;
     uint32 innkeepersCount = 0;
     uint32 bankerCount = 0;
-    uint32 auctioneerCount = 0;
 
     LOG_INFO("playerbots", "Preparing destination caches for {} levels...", maxLevel);
     // Temporary map to group creatures by entry and area
@@ -4093,31 +4013,6 @@ void TravelMgr::PrepareDestinationCache()
             }
             bankerCount++;
         }
-        // === AUCTIONEERS ===
-        else if (creatureTemplate->npcflag & UNIT_NPC_FLAG_AUCTIONEER)
-        {
-            FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(creatureTemplate->faction);
-            if (!factionEntry)
-                continue;
-
-            bool forHorde = !(factionEntry->hostileMask & 4);
-            bool forAlliance = !(factionEntry->hostileMask & 2);
-
-            if (!forHorde && !forAlliance)
-                continue;
-
-            NpcLocation aLoc;
-            aLoc.loc = WorldLocation(mapId, x + cos(orient) * 3.0f, y + sin(orient) * 3.0f, z + 0.5f, orient + M_PI);
-            aLoc.entry = templateEntry;
-
-            if (forHorde)
-                hordeAuctioneerCache[mapId][areaId].push_back(aLoc);
-
-            if (forAlliance)
-                allianceAuctioneerCache[mapId][areaId].push_back(aLoc);
-
-            auctioneerCount++;
-        }
     }
 
     // Process temporary caches
@@ -4195,5 +4090,5 @@ void TravelMgr::PrepareDestinationCache()
             break;
         }
     }
-    LOG_INFO("playerbots", ">> {} flight masters, {} innkeepers, {} bankers, {} auctioneers collected.", flightMastersCount, innkeepersCount, bankerCount, auctioneerCount);
+    LOG_INFO("playerbots", ">> {} flight masters, {} innkeepers, {} bankers collected.", flightMastersCount, innkeepersCount, bankerCount);
 }

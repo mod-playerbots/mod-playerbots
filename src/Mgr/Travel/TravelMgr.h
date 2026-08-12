@@ -83,8 +83,6 @@ struct QuestContainer
     std::vector<QuestTravelDestination*> questObjectives;
 };
 
-typedef std::pair<int32, int32> mGridCoord;
-
 // Extension of WorldLocation with distance functions.
 class WorldPosition : public WorldLocation
 {
@@ -104,7 +102,6 @@ public:
     WorldPosition(std::vector<WorldPosition> list, WorldPositionConst conType);
     WorldPosition(uint32 mapid, GridCoord grid);
     WorldPosition(uint32 mapid, CellCoord cell);
-    WorldPosition(uint32 mapid, mGridCoord grid);
 
     //Setters
     void set(const WorldLocation& pos);
@@ -291,15 +288,6 @@ public:
     std::vector<WorldPosition> fromCellCoord(CellCoord cellCoord);
     std::vector<WorldPosition> gridFromCellCoord(CellCoord cellCoord);
 
-    mGridCoord getmGridCoord()
-    {
-        return std::make_pair((int32)(CENTER_GRID_ID - GetPositionX() / SIZE_OF_GRIDS),
-                              (int32)(CENTER_GRID_ID - GetPositionY() / SIZE_OF_GRIDS));
-    }
-
-    std::vector<mGridCoord> getmGridCoords(WorldPosition secondPos);
-    std::vector<WorldPosition> frommGridCoord(mGridCoord GridCoord);
-
     // Display functions
     WorldPosition getDisplayLocation();
     float getDisplayX() { return getDisplayLocation().GetPositionY() * -1.0; }
@@ -313,7 +301,6 @@ public:
     std::vector<WorldPosition> fromPointsArray(std::vector<G3D::Vector3> path);
 
     // Pathfinding
-    std::vector<WorldPosition> getPathStepFrom(WorldPosition startPos, Unit* bot);
     std::vector<WorldPosition> getPathStepFrom(WorldPosition startPos, PathGenerator& pathfinder);
     std::vector<WorldPosition> getPathFromPath(std::vector<WorldPosition> startPath, Unit* bot, uint8 maxAttempt = 40);
 
@@ -929,7 +916,6 @@ public:
     const std::vector<WorldLocation> GetTravelHubs(Player* bot);
     std::vector<WorldLocation> GetCityLocations(Player* bot);
     std::vector<uint32> GetFlightNodesInZone(uint32 zoneId, TeamId team, uint32 excludeNode = 0) const;
-    bool SelectAuctioneerByMap(Player* bot, NpcLocation& outAuctioneer);
     const std::vector<WorldLocation>& GetLocsPerLevelCache(uint8 level) { return locsPerLevelCache[level]; }
 
     template <class D, class W, class URBG>
@@ -978,20 +964,6 @@ public:
     NullTravelDestination* nullTravelDestination = new NullTravelDestination();
     WorldPosition* nullWorldPosition = new WorldPosition();
 
-    void addBadVmap(uint32 mapId, uint8 x, uint8 y) { badVmap.push_back(std::make_tuple(mapId, x, y)); }
-
-    void addBadMmap(uint32 mapId, uint8 x, uint8 y) { badMmap.push_back(std::make_tuple(mapId, x, y)); }
-
-    bool isBadVmap(uint32 mapId, uint8 x, uint8 y)
-    {
-        return std::find(badVmap.begin(), badVmap.end(), std::make_tuple(mapId, x, y)) != badVmap.end();
-    }
-
-    bool isBadMmap(uint32 mapId, uint8 x, uint8 y)
-    {
-        return std::find(badMmap.begin(), badMmap.end(), std::make_tuple(mapId, x, y)) != badMmap.end();
-    }
-
     void printGrid(uint32 mapId, int x, int y, std::string const type);
     void printObj(WorldObject* obj, std::string const type);
 
@@ -1006,8 +978,6 @@ public:
 
     std::unordered_map<uint32, ExploreTravelDestination*> exploreLocs;
     std::unordered_map<uint32, QuestContainer*> quests;
-
-    std::vector<std::tuple<uint32, uint8, uint8>> badVmap, badMmap;
 
     std::unordered_map<std::pair<uint32, uint32>, std::vector<mapTransfer>, boost::hash<std::pair<uint32, uint32>>>
         mapTransfersMap;
@@ -1040,8 +1010,6 @@ private:
     std::map<uint8, std::vector<WorldLocation>> allianceHubsPerLevelCache;
     std::map<uint8, std::vector<WorldLocation>> hordeHubsPerLevelCache;
     std::map<uint8, std::vector<NpcLocation>> bankerLocsPerLevelCache;
-    std::unordered_map<uint16, std::unordered_map<uint32, std::vector<NpcLocation>>> hordeAuctioneerCache;
-    std::unordered_map<uint16, std::unordered_map<uint32, std::vector<NpcLocation>>> allianceAuctioneerCache;
     std::unordered_map<uint32, WorldLocation> bankerEntryToLocation;
     std::map<uint8, std::vector<WorldLocation>> locsPerLevelCache;
     std::unordered_map<uint32, std::vector<WorldLocation>> creatureSpawnsByTemplate;
