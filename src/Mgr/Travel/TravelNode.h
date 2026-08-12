@@ -9,8 +9,6 @@
 
 #include <shared_mutex>
 
-// TravelMgr.h first: G3D/Vector3.h pulls in <math.h> (via g3dmath.h), which on
-// MSVC must not be reached before Define.h sets _USE_MATH_DEFINES.
 #include "TravelMgr.h"
 
 #include "G3D/Vector3.h"
@@ -50,10 +48,11 @@
 //    staticPortal(6)  — Manually defined teleport link (DB only, not pruned by generation)
 //
 //  On server start saved nodes and links are loaded via TravelNodeMap::Init(). An index of nodes by zone is prepared
-//  (instead of scanning all ~4000 nodes), precomputes connected components for O(1) reachability checks, and builds
-//  a taxi BFS graph. Paths and routes are calculated on the fly and saved for future use. Nodes are only added at
-//  startup or via the console `.generate` command — runtime mutation was removed because taking a unique_lock
-//  caused 100-250ms contention spikes against bot threads.
+//  (instead of scanning all ~4000 nodes), precomputes undirected connected components for O(1) reachability checks
+//  (see PrecomputeReachability), and builds a taxi BFS graph. Paths and routes are calculated once during generation
+//  and saved for future use — runtime path-building was removed (H3) because it mutated the shared graph from bot
+//  map threads under only a shared_lock. Nodes are only added at startup or via the console `.generate` command —
+//  runtime mutation was removed because taking a unique_lock caused 100-250ms contention spikes against bot threads.
 //
 //  Initially the current nodes have been made:
 //  Flightmasters and Inns (Bots can use these to fast-travel so eventually they will be included in the route
@@ -72,7 +71,7 @@
 //
 //  GetFullPath finds nearest nodes (zone-indexed), runs A* to get a node route, then
 //  BuildPath assembles a flat TravelPath with typed waypoints (walk, portal, transport, flight).
-//  MoveFarTo re-resolves a fresh TravelPath each tick; UpcommingSpecialMovement cuts
+//  MoveFarTo re-resolves a fresh TravelPath each tick; UpcomingSpecialMovement cuts
 //  to the head segment when special; HandleSpecialMovement dispatches the matching
 //  action (portal interact, area-trigger marker, transport board, flight taxi).
 //  Cross-map travel is handled naturally by portal/transport edges in the A* graph.
@@ -84,10 +83,19 @@
 //
 //  Thread Safety:
 //
-//  The node graph is immutable at runtime (no adds/removes after Init). A shared_timed_mutex (m_nMapMtx) still
-//  exists and shared_locks are taken in GetFullPath and GenerateWalkPath for safety, but since there are no
-//  runtime mutations these are effectively uncontested. The only exclusive locks are taken at startup
-//  (saveNodeStore) and by the debug dump command.
+//  The graph is built once at startup on the world thread (LoadNodeStore + generation in Init()) and is never
+//  mutated by bot AI afterward: H3 removed the last runtime mutation path, where TravelNodeRoute::BuildPath's
+//  canBuildHere branch called TravelNode::BuildPath (a Detour query that also calls setPathTo/setComplete) from
+//  bot map threads. A missing/incomplete same-map segment now falls straight through to the existing node-point
+//  hop instead (see TravelNodeRoute::BuildPath).
+//
+//  GetFullPath still takes a shared_lock on m_nMapMtx (TravelNode.cpp) before reading the graph; with no runtime
+//  writers left on the bot-AI path this is uncontested in normal play. saveNodeStore() takes NO lock at all — it
+//  only reads the graph to persist it, which is safe as long as nothing else mutates it concurrently.
+//
+//  GM-only debug chat commands (DebugAction.cpp, outside this file) remain the only way to edit the graph at
+//  runtime (add/remove/reload nodes); those call sites manage m_nMapMtx locking around their own edits. They are
+//  rare, operator-invoked, and entirely off the bot AI's automatic decision loop.
 //
 
 enum class TravelNodePathType : uint8
