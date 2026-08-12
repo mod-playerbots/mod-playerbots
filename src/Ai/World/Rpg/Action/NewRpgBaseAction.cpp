@@ -603,19 +603,14 @@ bool NewRpgBaseAction::OrganizeQuestLog()
 
 bool NewRpgBaseAction::SearchQuestGiverAndAcceptOrReward()
 {
-    NewRpgInfo& info = botAI->rpgInfo;
-    if (info.questGiverPauseTs && GetMSTimeDiffToNow(info.questGiverPauseTs) < questGiverStayTime)
-        return true;
-    info.questGiverPauseTs = 0;
-
-    OrganizeQuestLog();
+        OrganizeQuestLog();
     if (ObjectGuid npcOrGo = ChooseNpcOrGameObjectToInteract(true, 80.0f))
     {
         WorldObject* object = ObjectAccessor::GetWorldObject(*bot, npcOrGo);
         if (bot->CanInteractWithQuestGiver(object))
         {
             InteractWithNpcOrGameObjectForQuest(npcOrGo);
-            info.questGiverPauseTs = getMSTime();
+            SetNextMovementDelay(questGiverStayTime, MovementPriority::MOVEMENT_NORMAL);
             return true;
         }
         return MoveWorldObjectTo(npcOrGo);
