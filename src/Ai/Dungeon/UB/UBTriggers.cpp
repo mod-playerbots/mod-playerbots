@@ -18,18 +18,15 @@ bool UBFoulSporesTrigger::IsActive()
 
 bool UBSporeCloudDangerTrigger::IsActive()
 {
-    if (!bot->IsAlive())
-        return false;
-
-    GuidVector const& mushrooms = AI_VALUE_REF(GuidVector, "ub mushrooms");
+    auto const& mushrooms = AI_VALUE_REF(GuidVector, "ub mushrooms");
     return GetNearestDangerousMushroom(bot, mushrooms, MushroomDangerRange(bot)) != nullptr;
 }
 
 bool UBUnderbatLashTrigger::IsActive()
 {
-    if (!bot->IsAlive() || botAI->IsTank(bot))
+    if (PlayerbotAI::IsTank(bot))
         return false;
 
-    GuidVector const& attackers = AI_VALUE_REF(GuidVector, "attackers");
+    auto const& attackers = AI_VALUE_REF(GuidVector, "attackers");
     return GetNearestUnderbatInLashRange(bot, attackers) != nullptr;
 }

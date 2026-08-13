@@ -26,7 +26,7 @@ bool UBRetreatFromFoulSporesAction::Execute(Event /*event*/)
     float const moveDist = safeDistance - currentDistance + 1.0f;
     float const awayAngle = boss->GetAngle(bot);
 
-    GuidVector const& mushrooms = AI_VALUE_REF(GuidVector, "ub mushrooms");
+    auto const& mushrooms = AI_VALUE_REF(GuidVector, "ub mushrooms");
 
     for (float delta : { 0.0f, float(M_PI / 8), float(-M_PI / 8), float(M_PI / 4), float(-M_PI / 4),
                          float(3 * M_PI / 8), float(-3 * M_PI / 8), float(M_PI / 2), float(-M_PI / 2) })
@@ -53,16 +53,19 @@ bool UBRetreatFromFoulSporesAction::Execute(Event /*event*/)
 bool UBVacateSporeCloudAction::Execute(Event /*event*/)
 {
     float const dangerRange = MushroomDangerRange(bot);
-    GuidVector const& mushrooms = AI_VALUE_REF(GuidVector, "ub mushrooms");
+    auto const& mushrooms = AI_VALUE_REF(GuidVector, "ub mushrooms");
     Creature* mushroom = GetNearestDangerousMushroom(bot, mushrooms, dangerRange);
     if (!mushroom)
         return false;
 
-    Unit* boss = AI_VALUE2(Unit*, "find target", "hungarfen");
-    if (botAI->IsTank(bot) && boss && boss->GetVictim() == bot)
+    if (PlayerbotAI::IsTank(bot))
     {
-        float const currentDistance = bot->GetDistance2d(mushroom);
-        return MoveAway(mushroom, dangerRange - currentDistance + 2.0f);
+        Unit* boss = AI_VALUE2(Unit*, "find target", "hungarfen");
+        if (boss && boss->GetVictim() == bot)
+        {
+            float const currentDistance = bot->GetDistance2d(mushroom);
+            return MoveAway(mushroom, dangerRange - currentDistance + 2.0f);
+        }
     }
 
     return FleePosition(mushroom->GetPosition(), dangerRange);
@@ -70,17 +73,17 @@ bool UBVacateSporeCloudAction::Execute(Event /*event*/)
 
 bool UBClearUnderbatBackAction::Execute(Event /*event*/)
 {
-    if (!bot->IsAlive() || botAI->IsTank(bot))
+    if (PlayerbotAI::IsTank(bot))
         return false;
 
-    GuidVector const& attackers = AI_VALUE_REF(GuidVector, "attackers");
+    auto const& attackers = AI_VALUE_REF(GuidVector, "attackers");
     Creature* bat = GetNearestUnderbatInLashRange(bot, attackers);
     if (!bat)
         return false;
 
     bool const throttled = _lastReposition && GetMSTimeDiffToNow(_lastReposition) < UNDERBAT_REPOSITION_COOLDOWN;
 
-    bool const melee = botAI->IsMelee(bot);
+    bool const melee = PlayerbotAI::IsMelee(bot);
     if (melee)
     {
         Unit* rally = UnderbatRallyUnit(bot, attackers);

@@ -18,18 +18,18 @@ using namespace UnderbogHungarfen;
 
 float HungarfenFoulSporesMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "hungarfen");
-    if (!boss || !boss->HasAura(SPELL_FOUL_SPORES))
+    if (!dynamic_cast<MovementAction*>(action) && !dynamic_cast<CastReachTargetSpellAction*>(action))
         return 1.0f;
 
     if (dynamic_cast<UBRetreatFromFoulSporesAction*>(action) || dynamic_cast<UBVacateSporeCloudAction*>(action) ||
         dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<MovementAction*>(action) || dynamic_cast<CastReachTargetSpellAction*>(action))
-        return 0.0f;
+    Unit* boss = AI_VALUE2(Unit*, "find target", "hungarfen");
+    if (!boss || !boss->HasAura(SPELL_FOUL_SPORES))
+        return 1.0f;
 
-    return 1.0f;
+    return 0.0f;
 }
 
 float HungarfenMushroomIgnoreMultiplier::GetValue(Action* action)
@@ -38,18 +38,15 @@ float HungarfenMushroomIgnoreMultiplier::GetValue(Action* action)
     if (!aoe && !dynamic_cast<AttackAnythingAction*>(action))
         return 1.0f;
 
-    GuidVector const& mushrooms = AI_VALUE_REF(GuidVector, "ub mushrooms");
+    if (aoe && (dynamic_cast<CastHealingSpellAction*>(action) || !PlayerbotAI::IsDps(bot)))
+        return 1.0f;
+
+    auto const& mushrooms = AI_VALUE_REF(GuidVector, "ub mushrooms");
     if (!AnyMushroomAlive(bot, mushrooms))
         return 1.0f;
 
     if (!aoe)
         return IsMushroom(AI_VALUE(Unit*, "grind target")) ? 0.0f : 1.0f;
-
-    if (!botAI->IsDps(bot))
-        return 1.0f;
-
-    if (dynamic_cast<CastHealingSpellAction*>(action))
-        return 1.0f;
 
     return 0.0f;
 }
@@ -59,6 +56,6 @@ float UnderbatFacingMultiplier::GetValue(Action* action)
     if (!dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    GuidVector const& attackers = AI_VALUE_REF(GuidVector, "attackers");
+    auto const& attackers = AI_VALUE_REF(GuidVector, "attackers");
     return AnyUnderbatInLashRange(bot, attackers) ? 0.0f : 1.0f;
 }
