@@ -293,18 +293,57 @@ bool BGJoinAction::shouldJoinBg(BattlegroundQueueTypeId queueTypeId, Battlegroun
     uint32 bgHordePlayerCount = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].bgHordePlayerCount;
     uint32 activeBgQueue = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].activeBgQueue;
     uint32 bgInstanceCount = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].bgInstanceCount;
-
+    
+    uint32 maxRequiredAllianceSlots;
+    uint32 maxRequiredHordeSlots;
+    
+    // For random battlegrounds we need to find out the real BG size.
+    if (queueTypeId == BATTLEGROUND_QUEUE_RB)
+    {
+        // Use the original tempplate size to make the queue pop.
+        maxRequiredAllianceSlots = TeamSize * activeBgQueue;
+        maxRequiredHordeSlots = TeamSize * activeBgQueue;
+        
+        // Existing Random BG instances use their real battleground size.
+        for (Battleground const* activeBg : sBattlegroundMgr->GetActiveBattlegrounds())
+        {
+            if (!activeBg ||
+                activeBg->GetBgTypeID() != BATTLEGROUND_RB ||
+                activeBg->GetBracketId() != bracketId)
+                continue;
+            
+            BattlegroundTypeId realBgTypeId = activeBg->GetBgTypeID(true);
+            
+            if (realBgTypeId == BATTLEGROUND_RB)
+                continue;
+            
+            uint32 realTeamSize = activeBg->GetMaxPlayersPerTeam();
+            
+            maxRequiredAllianceSlots += realTeamSize;
+            maxRequiredHordeSlots += realTeamSize;
+        }
+    }
+    else
+    {
+        // Existing behavior for normal battlegrounds.
+        maxRequiredAllianceSlots =
+        TeamSize * (activeBgQueue + bgInstanceCount);
+        
+        maxRequiredHordeSlots =
+        TeamSize * (activeBgQueue + bgInstanceCount);
+    }
+    
     if (teamId == TEAM_ALLIANCE)
     {
-        if ((bgAllianceBotCount + bgAlliancePlayerCount) < TeamSize * (activeBgQueue + bgInstanceCount))
+        if ((bgAllianceBotCount + bgAlliancePlayerCount) < maxRequiredAllianceSlots)
             return true;
     }
     else
     {
-        if ((bgHordeBotCount + bgHordePlayerCount) < TeamSize * (activeBgQueue + bgInstanceCount))
+        if ((bgHordeBotCount + bgHordePlayerCount) < maxRequiredHordeSlots)
             return true;
     }
-
+    
     return false;
 }
 
