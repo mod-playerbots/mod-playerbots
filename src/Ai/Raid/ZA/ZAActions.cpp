@@ -5,11 +5,12 @@
  */
 
 #include "ZAActions.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "ZAHelpers.h"
 
 using namespace ZulAmanHelpers;
+using namespace EncounterHelpers;
 
 // Trash
 
@@ -38,7 +39,7 @@ bool AkilzonMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!akilzon)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return false;
 
@@ -97,7 +98,7 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event /*event*/)
 {
     Player* target = GetElectricalStormTarget(bot);
     if (!target && !botAI->IsMainTank(bot))
-        target = GetGroupMainTank(botAI, bot);
+        target = GetGroupMainTank(bot);
 
     if (target && bot->GetExactDist2d(target) > 2.0f)
     {
@@ -137,7 +138,7 @@ bool NalorakkMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!nalorakk)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return false;
 
@@ -244,7 +245,7 @@ bool JanalaiMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!janalai)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return false;
 
@@ -387,7 +388,7 @@ bool HalazziMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!halazzi)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return false;
 
@@ -410,7 +411,7 @@ bool HalazziMainTankPositionBossAction::Execute(Event /*event*/)
     if (MarkTargetWithStar(bot, halazzi))
         return true;
 
-    SetRtiTarget(botAI, "star", halazzi);
+    SetRtiTarget(botAI, "star");
 
     if (AI_VALUE(Unit*, "current target") != halazzi)
         return Attack(halazzi);
@@ -446,7 +447,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event /*event*/)
         if (MarkTargetWithCircle(bot, lynx))
             return true;
 
-        SetRtiTarget(botAI, "circle", lynx);
+        SetRtiTarget(botAI, "circle");
 
         if (AI_VALUE(Unit*, "current target") != lynx)
             return Attack(lynx);
@@ -458,7 +459,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event /*event*/)
     }
     else if (Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi"))
     {
-        SetRtiTarget(botAI, "star", halazzi);
+        SetRtiTarget(botAI, "star");
 
         if (AI_VALUE(Unit*, "current target") != halazzi)
             return Attack(halazzi);
@@ -497,7 +498,7 @@ bool HalazziAssignDpsPriorityAction::Execute(Event /*event*/)
         if (MarkTargetWithSkull(bot, totem))
             return true;
 
-        SetRtiTarget(botAI, "skull", totem);
+        SetRtiTarget(botAI, "skull");
 
         if (AI_VALUE(Unit*, "current target") != totem)
             return Attack(totem);
@@ -508,7 +509,7 @@ bool HalazziAssignDpsPriorityAction::Execute(Event /*event*/)
     // Target priority 2: Halazzi
     if (Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi"))
     {
-        SetRtiTarget(botAI, "star", halazzi);
+        SetRtiTarget(botAI, "star");
 
         if (AI_VALUE(Unit*, "current target") != halazzi)
             return Attack(halazzi);
@@ -526,7 +527,7 @@ bool HexLordMalacrassMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!malacrass)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return false;
 
@@ -581,7 +582,7 @@ bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event /*event*/)
         if (MarkTargetWithSkull(bot, priorityTarget))
             return true;
 
-        SetRtiTarget(botAI, "skull", priorityTarget);
+        SetRtiTarget(botAI, "skull");
     }
 
     return false;
@@ -646,7 +647,7 @@ bool ZuljinMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!zuljin)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return false;
 

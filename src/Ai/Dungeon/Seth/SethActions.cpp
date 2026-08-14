@@ -5,12 +5,13 @@
  */
 
 #include "SethActions.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "SethData.h"
 #include <array>
 
 using namespace SethData;
+using namespace EncounterHelpers;
 
 bool TimeLostControllerMarkCharmingTotemWithSkullAction::Execute(Event /*event*/)
 {
