@@ -5,7 +5,6 @@
  */
 
 #include "CcTargetValue.h"
-
 #include "Action.h"
 #include "AiObjectContext.h"
 #include "Group.h"

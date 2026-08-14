@@ -5,15 +5,13 @@
  */
 
 #include "PlayerbotCommandServer.h"
-
+#include "IoContext.h"
+#include "RandomPlayerbotMgr.h"
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/thread/thread.hpp>
 #include <cstdlib>
-#include "RandomPlayerbotMgr.h"
-
-#include "IoContext.h"
 
 using boost::asio::ip::tcp;
 typedef boost::shared_ptr<tcp::socket> socket_ptr;

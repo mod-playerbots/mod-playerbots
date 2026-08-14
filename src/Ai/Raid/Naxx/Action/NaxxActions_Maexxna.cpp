@@ -4,6 +4,4 @@
  * or (at your option) any later version.
  */
 
-#include "NaxxActions.h"
-
 // Reserved for Maexxna-specific actions.

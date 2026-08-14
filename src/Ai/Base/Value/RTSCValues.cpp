@@ -5,7 +5,6 @@
  */
 
 #include "RTSCValues.h"
-
 #include "Playerbots.h"
 
 bool SeeSpellLocationValue::EqualToLast(WorldPosition value) { return value == lastValue; }

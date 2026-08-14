@@ -5,9 +5,9 @@
  */
 
 #include "GenericShamanStrategy.h"
+#include "AiFactory.h"
 #include "Playerbots.h"
 #include "Strategy.h"
-#include "AiFactory.h"
 
 class GenericShamanStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {

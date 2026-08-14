@@ -7,10 +7,9 @@
 #ifndef PLAYERBOTS_FLEEMANAGER_H
 #define PLAYERBOTS_FLEEMANAGER_H
 
-#include <vector>
-
 #include "Common.h"
 #include "TravelMgr.h"
+#include <vector>
 
 class Player;
 class PlayerbotAI;
@@ -18,8 +17,7 @@ class PlayerbotAI;
 class FleePoint
 {
 public:
-    FleePoint(PlayerbotAI* botAI, float x, float y, float z)
-        : x(x), y(y), z(z), sumDistance(0.0f), minDistance(0.0f), botAI(botAI)
+    FleePoint(float x, float y, float z) : x(x), y(y), z(z), sumDistance(0.0f), minDistance(0.0f)
     {
     }
 
@@ -29,9 +27,6 @@ public:
 
     float sumDistance;
     float minDistance;
-
-private:
-    PlayerbotAI* botAI;
 };
 
 class FleeManager

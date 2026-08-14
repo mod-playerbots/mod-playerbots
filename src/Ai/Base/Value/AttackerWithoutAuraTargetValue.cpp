@@ -5,7 +5,6 @@
  */
 
 #include "AttackerWithoutAuraTargetValue.h"
-
 #include "Playerbots.h"
 #include "Strategy.h"
 #include "TargetValue.h"

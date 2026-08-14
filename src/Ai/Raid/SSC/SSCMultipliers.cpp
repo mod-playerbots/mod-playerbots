@@ -5,11 +5,9 @@
  */
 
 #include "SSCMultipliers.h"
-#include "SSCActions.h"
-#include "SSCHelpers.h"
 #include "ChooseTargetActions.h"
-#include "DestroyItemAction.h"
 #include "DKActions.h"
+#include "DestroyItemAction.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
@@ -23,6 +21,8 @@
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
+#include "SSCActions.h"
+#include "SSCHelpers.h"
 #include "ShamanActions.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"

@@ -5,7 +5,6 @@
  */
 
 #include "HolyPriestStrategy.h"
-
 #include "Playerbots.h"
 
 class HolyPriestStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

@@ -5,13 +5,13 @@
  */
 
 #include "HyjalMultipliers.h"
-#include "HyjalActions.h"
-#include "HyjalHelpers.h"
 #include "AiFactory.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidBearActions.h"
 #include "HunterActions.h"
+#include "HyjalActions.h"
+#include "HyjalHelpers.h"
 #include "PaladinActions.h"
 #include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"

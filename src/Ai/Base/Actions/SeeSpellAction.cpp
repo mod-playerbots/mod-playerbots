@@ -5,14 +5,13 @@
  */
 
 #include "SeeSpellAction.h"
-
+#include "ByteBuffer.h"
 #include "Event.h"
 #include "Formations.h"
 #include "Playerbots.h"
+#include "PositionValue.h"
 #include "RTSCValues.h"
 #include "RtscAction.h"
-#include "PositionValue.h"
-#include "ByteBuffer.h"
 
 std::set<uint32> const FISHING_SPELLS = {7620, 7731, 7732, 18248, 33095, 51294};
 

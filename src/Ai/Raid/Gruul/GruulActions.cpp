@@ -5,8 +5,8 @@
  */
 
 #include "GruulActions.h"
-#include "GruulHelpers.h"
 #include "CreatureAI.h"
+#include "GruulHelpers.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "Unit.h"

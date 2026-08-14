@@ -5,7 +5,6 @@
  */
 
 #include "PaladinActions.h"
-
 #include "AiFactory.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"

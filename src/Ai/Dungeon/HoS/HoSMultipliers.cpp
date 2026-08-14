@@ -5,12 +5,12 @@
  */
 
 #include "HoSMultipliers.h"
-#include "HoSActions.h"
-#include "GenericSpellActions.h"
-#include "ChooseTargetActions.h"
-#include "MovementActions.h"
-#include "HoSTriggers.h"
 #include "Action.h"
+#include "ChooseTargetActions.h"
+#include "GenericSpellActions.h"
+#include "HoSActions.h"
+#include "HoSTriggers.h"
+#include "MovementActions.h"
 
 float KrystallusMultiplier::GetValue(Action* action)
 {

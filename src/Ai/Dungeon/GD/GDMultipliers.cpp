@@ -5,12 +5,12 @@
  */
 
 #include "GDMultipliers.h"
-#include "GDActions.h"
-#include "GenericSpellActions.h"
-#include "ChooseTargetActions.h"
-#include "MovementActions.h"
-#include "GDTriggers.h"
 #include "Action.h"
+#include "ChooseTargetActions.h"
+#include "GDActions.h"
+#include "GDTriggers.h"
+#include "GenericSpellActions.h"
+#include "MovementActions.h"
 
 float SladranMultiplier::GetValue(Action* action)
 {

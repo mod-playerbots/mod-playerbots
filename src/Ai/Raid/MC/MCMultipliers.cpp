@@ -5,18 +5,17 @@
  */
 
 #include "MCMultipliers.h"
-
-#include "Playerbots.h"
 #include "ChooseTargetActions.h"
-#include "GenericSpellActions.h"
-#include "DruidActions.h"
-#include "HunterActions.h"
-#include "PaladinActions.h"
-#include "ShamanActions.h"
-#include "WarriorActions.h"
 #include "DKActions.h"
+#include "DruidActions.h"
+#include "GenericSpellActions.h"
+#include "HunterActions.h"
 #include "MCActions.h"
 #include "MCHelpers.h"
+#include "PaladinActions.h"
+#include "Playerbots.h"
+#include "ShamanActions.h"
+#include "WarriorActions.h"
 
 using namespace MoltenCoreHelpers;
 

@@ -5,19 +5,21 @@
  */
 
 #include "PlayerbotAIConfig.h"
-#include <iostream>
 #include "BisListMgr.h"
 #include "Config.h"
 #include "NewRpgInfo.h"
 #include "PlayerbotDungeonRepository.h"
 #include "PlayerbotFactory.h"
-#include "Playerbots.h"
 #include "PlayerbotGuildMgr.h"
+#include "Playerbots.h"
 #include "RandomItemMgr.h"
 #include "RandomPlayerbotFactory.h"
 #include "RandomPlayerbotMgr.h"
 #include "Talentspec.h"
 #include "TravelMgr.h"
+#include <cctype>
+#include <iostream>
+#include <sstream>
 
 template <class T>
 void LoadList(std::string const value, T& list)
@@ -56,6 +58,21 @@ void LoadListString(std::string const value, T& list)
             continue;
 
         list.push_back(string);
+    }
+}
+
+// Parses a comma-separated, whitespace-tolerant bot name list (as used by both
+// AiPlayerbot.LevelBrackets.ExcludeNames and AiPlayerbot.ResetBotLevel.ExcludeNames) into out.
+static void ParseLevelMgrExcludeNames(std::string const& csv, std::vector<std::string>& out)
+{
+    out.clear();
+    std::istringstream f(csv);
+    std::string s;
+    while (getline(f, s, ','))
+    {
+        s.erase(std::remove_if(s.begin(), s.end(), [](unsigned char c) { return std::isspace(c); }), s.end());
+        if (!s.empty())
+            out.push_back(s);
     }
 }
 
@@ -246,6 +263,7 @@ bool PlayerbotAIConfig::Initialize()
         sConfigMgr->GetOption<int32>("AiPlayerbot.PermanentlyInWorldTime", 1 * YEAR);
     randomBotTeleportDistance = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotTeleportDistance", 100);
     randomBotsPerInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotsPerInterval", 60);
+    randomBotPrintStatsInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotPrintStatsInterval", 300);
     minRandomBotsPriceChangeInterval =
         sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBotsPriceChangeInterval", 2 * HOUR);
     maxRandomBotsPriceChangeInterval =
@@ -391,6 +409,10 @@ bool PlayerbotAIConfig::Initialize()
     randomBotMaxLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotMaxLevel", 80);
     if (randomBotMaxLevel > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
         randomBotMaxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+
+    // Bracket defaults (below) derive from randomBotMaxLevel, so this must run after it is read.
+    LoadRandomBotLevelConfig();
+
     randomBotTeleLowerLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotTeleLowerLevel", 1);
     randomBotTeleHigherLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotTeleHigherLevel", 3);
     openGoSpell = sConfigMgr->GetOption<int32>("AiPlayerbot.OpenGoSpell", 6477);
@@ -763,6 +785,155 @@ bool PlayerbotAIConfig::Initialize()
     LOG_INFO("server.loading", "---------------------------------------");
 
     return true;
+}
+
+// Loads AiPlayerbot.LevelBrackets.* and AiPlayerbot.ResetBotLevel.* (see RandomBotLevelMgr). Also
+// re-run on ".reload config" via RandomBotLevelWorldScript::OnAfterConfigLoad. Bracket
+// bounds/percentages are only the as-configured values here; RandomBotLevelMgr::LoadConfig()
+// copies them into its own working state, since dynamic distribution and clamp/rebalance mutate
+// percentages at runtime.
+void PlayerbotAIConfig::LoadRandomBotLevelConfig()
+{
+    // ---- Level brackets ----
+    levelBracketsEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.Enabled", false);
+    levelBracketsIgnoreGuildWithRealPlayers =
+        sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.IgnoreGuildBotsWithRealPlayers", true);
+    levelBracketsIgnoreArenaTeamBots =
+        sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.IgnoreArenaTeamBots", true);
+
+    levelBracketsCheckFrequency = sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.CheckFrequency", 300);
+    levelBracketsFlaggedCheckFrequency =
+        sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.CheckFlaggedFrequency", 15);
+    levelBracketsDynamicDistribution =
+        sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.Dynamic.UseDynamicDistribution", false);
+    levelBracketsRealPlayerWeight =
+        sConfigMgr->GetOption<float>("AiPlayerbot.LevelBrackets.Dynamic.RealPlayerWeight", 1.0f);
+    levelBracketsSyncFactions = sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.Dynamic.SyncFactions", false);
+    levelBracketsIgnoreFriendListed = sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.IgnoreFriendListed", true);
+    levelBracketsFlaggedProcessLimit =
+        sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.FlaggedProcessLimit", 5);
+
+    ParseLevelMgrExcludeNames(sConfigMgr->GetOption<std::string>("AiPlayerbot.LevelBrackets.ExcludeNames", ""),
+        levelBracketsExcludeNames);
+
+    levelBracketsNumRanges =
+        static_cast<uint8>(sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.NumRanges", 9));
+    levelBracketsAlliance.resize(levelBracketsNumRanges);
+    levelBracketsHorde.resize(levelBracketsNumRanges);
+
+    for (uint8 i = 0; i < levelBracketsNumRanges; ++i)
+    {
+        std::string idx = std::to_string(i + 1);
+        uint32 defaultLower = (i == 0 ? 1 : i * 10);
+        uint32 defaultUpper = (i < levelBracketsNumRanges - 1 ? i * 10 + 9 : randomBotMaxLevel);
+        levelBracketsAlliance[i].lower = static_cast<uint8>(
+            sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.Alliance.Range" + idx + ".Lower", defaultLower));
+        levelBracketsAlliance[i].upper = static_cast<uint8>(
+            sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.Alliance.Range" + idx + ".Upper", defaultUpper));
+        levelBracketsAlliance[i].pct = static_cast<uint8>(
+            sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.Alliance.Range" + idx + ".Pct", 11));
+    }
+
+    for (uint8 i = 0; i < levelBracketsNumRanges; ++i)
+    {
+        std::string idx = std::to_string(i + 1);
+        uint32 defaultLower = (i == 0 ? 1 : i * 10);
+        uint32 defaultUpper = (i < levelBracketsNumRanges - 1 ? i * 10 + 9 : randomBotMaxLevel);
+        levelBracketsHorde[i].lower = static_cast<uint8>(
+            sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.Horde.Range" + idx + ".Lower", defaultLower));
+        levelBracketsHorde[i].upper = static_cast<uint8>(
+            sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.Horde.Range" + idx + ".Upper", defaultUpper));
+        levelBracketsHorde[i].pct = static_cast<uint8>(
+            sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.Horde.Range" + idx + ".Pct", 11));
+    }
+
+    // A mismatch forcibly disables SyncFactions and logs an error; it never brings the server down.
+    if (levelBracketsSyncFactions)
+    {
+        for (uint8 i = 0; i < levelBracketsNumRanges; ++i)
+        {
+            if (levelBracketsAlliance[i].lower != levelBracketsHorde[i].lower ||
+                levelBracketsAlliance[i].upper != levelBracketsHorde[i].upper)
+            {
+                LOG_ERROR("server.loading",
+                    "[RandomBotLevelMgr] Bracket mismatch detected between factions at index {}. Alliance: {}-{}, "
+                    "Horde: {}-{}. SyncFactions requires both bracket count and min/max levels to match exactly; "
+                    "forcibly disabling SyncFactions for this session. Check your configuration.",
+                    i, levelBracketsAlliance[i].lower, levelBracketsAlliance[i].upper,
+                    levelBracketsHorde[i].lower, levelBracketsHorde[i].upper);
+                levelBracketsSyncFactions = false;
+                break;
+            }
+        }
+    }
+
+    // ---- Level reset ----
+    resetBotLevelEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.ResetBotLevel.Enabled", false);
+
+    resetBotLevelMaxLevel =
+        static_cast<uint8>(sConfigMgr->GetOption<uint32>("AiPlayerbot.ResetBotLevel.MaxLevel", 80));
+    if ((resetBotLevelMaxLevel < 2 || resetBotLevelMaxLevel > 80) && resetBotLevelMaxLevel != 0)
+    {
+        LOG_ERROR("server.loading",
+            "[RandomBotLevelMgr] Invalid AiPlayerbot.ResetBotLevel.MaxLevel value: {}. Using default value 80.",
+            resetBotLevelMaxLevel);
+        resetBotLevelMaxLevel = 80;
+    }
+
+    resetBotLevelResetTo =
+        static_cast<uint8>(sConfigMgr->GetOption<uint32>("AiPlayerbot.ResetBotLevel.ResetToLevel", 1));
+    if (resetBotLevelResetTo < 1 || (resetBotLevelMaxLevel > 0 && resetBotLevelResetTo >= resetBotLevelMaxLevel))
+    {
+        LOG_ERROR("server.loading",
+            "[RandomBotLevelMgr] Invalid AiPlayerbot.ResetBotLevel.ResetToLevel value: {}. Using default value 1.",
+            resetBotLevelResetTo);
+        resetBotLevelResetTo = 1;
+    }
+
+    resetBotLevelSkipFrom =
+        static_cast<uint8>(sConfigMgr->GetOption<uint32>("AiPlayerbot.ResetBotLevel.SkipFromLevel", 0));
+    if (resetBotLevelSkipFrom > 80 || (resetBotLevelMaxLevel > 0 && resetBotLevelSkipFrom >= resetBotLevelMaxLevel))
+    {
+        LOG_ERROR("server.loading",
+            "[RandomBotLevelMgr] Invalid AiPlayerbot.ResetBotLevel.SkipFromLevel value: {}. Using default value 0 "
+            "(disabled).",
+            resetBotLevelSkipFrom);
+        resetBotLevelSkipFrom = 0;
+    }
+
+    resetBotLevelSkipTo = static_cast<uint8>(sConfigMgr->GetOption<uint32>("AiPlayerbot.ResetBotLevel.SkipToLevel", 1));
+    if (resetBotLevelSkipTo < 1 || resetBotLevelSkipTo > 80 ||
+        (resetBotLevelMaxLevel > 0 && resetBotLevelSkipTo > resetBotLevelMaxLevel))
+    {
+        LOG_ERROR("server.loading",
+            "[RandomBotLevelMgr] Invalid AiPlayerbot.ResetBotLevel.SkipToLevel value: {}. Using default value 1.",
+            resetBotLevelSkipTo);
+        resetBotLevelSkipTo = 1;
+    }
+
+    resetBotLevelChance =
+        static_cast<uint8>(sConfigMgr->GetOption<uint32>("AiPlayerbot.ResetBotLevel.ResetChance", 100));
+    if (resetBotLevelChance > 100)
+    {
+        LOG_ERROR("server.loading",
+            "[RandomBotLevelMgr] Invalid AiPlayerbot.ResetBotLevel.ResetChance value: {}. Using default value 100.",
+            resetBotLevelChance);
+        resetBotLevelChance = 100;
+    }
+
+    resetBotLevelScaledChance = sConfigMgr->GetOption<bool>("AiPlayerbot.ResetBotLevel.ScaledChance", false);
+
+    resetBotLevelRestrictTimePlayed =
+        sConfigMgr->GetOption<bool>("AiPlayerbot.ResetBotLevel.RestrictTimePlayed", false);
+    resetBotLevelMinTimePlayed = sConfigMgr->GetOption<uint32>("AiPlayerbot.ResetBotLevel.MinTimePlayed", 86400);
+    resetBotLevelPlayedTimeCheckFrequency =
+        sConfigMgr->GetOption<uint32>("AiPlayerbot.ResetBotLevel.PlayedTimeCheckFrequency", 864);
+
+    resetBotLevelIgnoreGuildWithRealPlayers =
+        sConfigMgr->GetOption<bool>("AiPlayerbot.ResetBotLevel.IgnoreGuildBotsWithRealPlayers", false);
+
+    ParseLevelMgrExcludeNames(sConfigMgr->GetOption<std::string>("AiPlayerbot.ResetBotLevel.ExcludeNames", ""),
+        resetBotLevelExcludeNames);
 }
 
 bool PlayerbotAIConfig::IsInRandomAccountList(uint32 id)

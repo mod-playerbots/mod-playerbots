@@ -5,7 +5,6 @@
  */
 
 #include "RandomItemMgr.h"
-
 #include "DBCStores.h"
 #include "ItemTemplate.h"
 #include "Playerbots.h"
@@ -2783,7 +2782,7 @@ void RandomItemMgr::BuildCacheRarity()
         "        SUM(CASE WHEN Chance = 0 THEN 1 ELSE 0 END)      OVER (PARTITION BY entry, GroupId) AS group_zero "
         "    FROM creature_loot_template WHERE item != 0) lt "
         "JOIN creature_template ct ON ct.LootId = lt.entry "
-        "JOIN creature c ON c.id1 = ct.entry "
+        "JOIN creature c ON c.id = ct.entry "
         "GROUP BY lt.item "
         "UNION ALL "
         // <-- gameobject
@@ -2840,7 +2839,7 @@ void RandomItemMgr::BuildCacheRarity()
         "       SUM(CASE WHEN Chance = 0 THEN 1 ELSE 0 END)      OVER (PARTITION BY entry, GroupId) AS group_zero "
         "   FROM skinning_loot_template WHERE item != 0) lt "
         "JOIN creature_template ct ON ct.skinloot = lt.entry "
-        "JOIN creature c ON c.id1 = ct.entry "
+        "JOIN creature c ON c.id = ct.entry "
         "GROUP BY lt.item) q GROUP BY item HAVING max_chance > 0.01 ORDER BY item");
 
     if (!result)

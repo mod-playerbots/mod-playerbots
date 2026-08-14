@@ -5,7 +5,6 @@
  */
 
 #include "RSStrategy.h"
-
 #include "RSMultipliers.h"
 
 void RaidRsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

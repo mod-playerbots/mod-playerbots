@@ -7,10 +7,9 @@
 #ifndef PLAYERBOTS_HEALTHTRIGGERS_H
 #define PLAYERBOTS_HEALTHTRIGGERS_H
 
-#include <stdexcept>
-
 #include "PlayerbotAIConfig.h"
 #include "Trigger.h"
+#include <stdexcept>
 
 class PlayerbotAI;
 

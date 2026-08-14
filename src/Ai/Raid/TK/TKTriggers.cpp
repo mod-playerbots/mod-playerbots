@@ -5,11 +5,11 @@
  */
 
 #include "TKTriggers.h"
-#include "TKHelpers.h"
-#include "TKActions.h"
-#include "TKKaelthasBossAI.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "TKActions.h"
+#include "TKHelpers.h"
+#include "TKKaelthasBossAI.h"
 
 using namespace TempestKeepHelpers;
 

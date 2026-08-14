@@ -5,12 +5,10 @@
  */
 
 #include "BossAuraTriggers.h"
-
-#include <HunterBuffStrategies.h>
-#include <PaladinBuffStrategies.h>
-#include <Unit.h>
-
+#include "HunterBuffStrategies.h"
+#include "PaladinBuffStrategies.h"
 #include "Playerbots.h"
+#include "Unit.h"
 
 bool BossFireResistanceTrigger::IsActive()
 {

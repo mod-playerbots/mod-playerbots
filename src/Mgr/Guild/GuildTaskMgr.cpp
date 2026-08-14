@@ -5,7 +5,6 @@
  */
 
 #include "GuildTaskMgr.h"
-
 #include "ChatHelper.h"
 #include "Group.h"
 #include "GuildMgr.h"

@@ -7,9 +7,6 @@
 #ifndef PLAYERBOTS_AIOBJECTCONTEXT_H
 #define PLAYERBOTS_AIOBJECTCONTEXT_H
 
-#include <sstream>
-#include <string>
-
 #include "Common.h"
 #include "DynamicObject.h"
 #include "NamedObjectContext.h"
@@ -17,6 +14,8 @@
 #include "Strategy.h"
 #include "Trigger.h"
 #include "Value.h"
+#include <sstream>
+#include <string>
 
 class PlayerbotAI;
 

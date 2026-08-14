@@ -5,9 +5,7 @@
  */
 
 #include "Action.h"
-
 #include "Playerbots.h"
-#include "Timer.h"
 
 Value<Unit*>* Action::GetTargetValue() { return context->GetValue<Unit*>(GetTargetName()); }
 

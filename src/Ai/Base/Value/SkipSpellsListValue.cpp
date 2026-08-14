@@ -5,7 +5,6 @@
  */
 
 #include "SkipSpellsListValue.h"
-
 #include "Playerbots.h"
 
 std::string const SkipSpellsListValue::Save()

@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_AIFACTORY_H
 #define PLAYERBOTS_AIFACTORY_H
 
-#include <map>
 #include "Common.h"
+#include <map>
 
 class AiObjectContext;
 class Engine;

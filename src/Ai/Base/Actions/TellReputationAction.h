@@ -7,9 +7,8 @@
 #ifndef PLAYERBOTS_TELLREPUTATIONACTION_H
 #define PLAYERBOTS_TELLREPUTATIONACTION_H
 
-#include <string>
-
 #include "Action.h"
+#include <string>
 
 struct FactionEntry;
 class PlayerbotAI;

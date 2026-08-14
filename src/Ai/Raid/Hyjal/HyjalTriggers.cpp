@@ -5,9 +5,9 @@
  */
 
 #include "HyjalTriggers.h"
-#include "HyjalHelpers.h"
-#include "HyjalActions.h"
 #include "AiFactory.h"
+#include "HyjalActions.h"
+#include "HyjalHelpers.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 

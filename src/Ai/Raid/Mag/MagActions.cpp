@@ -5,8 +5,8 @@
  */
 
 #include "MagActions.h"
-#include "MagHelpers.h"
 #include "Creature.h"
+#include "MagHelpers.h"
 #include "ObjectAccessor.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
@@ -292,7 +292,7 @@ bool MagtheridonWarlockCcBurningAbyssalAction::Execute(Event /*event*/)
         }
     }
 
-    if (warlockIndex >= 0 && warlockIndex < abyssals.size())
+    if (warlockIndex >= 0 && warlockIndex < static_cast<int>(abyssals.size()))
     {
         Unit* assignedAbyssal = abyssals[warlockIndex];
         if (!botAI->HasAura("banish", assignedAbyssal) &&
@@ -490,7 +490,7 @@ bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
         if (IsPositionInActiveDebris(bot->GetMap()->GetInstanceId(), x, y))
             continue;
 
-        if (IsPositionInActiveConflagration(botAI, bot, x, y))
+        if (IsPositionInActiveConflagration(botAI, x, y))
             continue;
 
         const float moveDistance = bot->GetExactDist2d(x, y);
@@ -562,7 +562,7 @@ bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
             if (IsPositionInActiveDebris(instanceId, x, y))
                 continue;
 
-            if (IsPositionInActiveConflagration(botAI, bot, x, y))
+            if (IsPositionInActiveConflagration(botAI, x, y))
                 continue;
 
             float const moveDistance = bot->GetExactDist2d(x, y);

@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_BTACTIONCONTEXT_H
 #define PLAYERBOTS_BTACTIONCONTEXT_H
 
-#include "NamedObjectContext.h"
 #include "BTActions.h"
+#include "NamedObjectContext.h"
 
 class RaidBlackTempleActionContext : public NamedObjectContext<Action>
 {

@@ -6,8 +6,8 @@
 
 #include "ICCScripts.h"
 #include "Creature.h"
-#include "Player.h"
 #include "ICCTriggers.h"
+#include "Player.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "SpellInfo.h"

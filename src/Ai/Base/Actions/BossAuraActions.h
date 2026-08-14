@@ -7,9 +7,8 @@
 #ifndef PLAYERBOTS_BOSSAURAACTIONS_H
 #define PLAYERBOTS_BOSSAURAACTIONS_H
 
-#include <string>
-
 #include "Action.h"
+#include <string>
 
 class PlayerbotAI;
 
