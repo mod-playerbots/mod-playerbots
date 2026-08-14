@@ -317,7 +317,10 @@ bool LootObject::IsLootPossible(Player* bot)
     //Prevents bot from getting stuck in an infinite loop of
     //gathering herb/ore/skin -> bag too full, don't pick up -> gather again
     bool gatheringObject = skillId == SKILL_HERBALISM || skillId == SKILL_MINING || skillId == SKILL_SKINNING || skillId == SKILL_ENGINEERING;
-    if (gatheringObject && !botAI->HasActivePlayerMaster())
+
+    Player* master = botAI->GetMaster();
+    bool hasActivePlayerMaster = master && !GET_PLAYERBOT_AI(master);
+    if (gatheringObject && !hasActivePlayerMaster)
     {
         uint8 bagUsage = botAI->GetAiObjectContext() ->GetValue<uint8>("bag space")->Get();
 
