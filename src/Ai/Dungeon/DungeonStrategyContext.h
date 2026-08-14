@@ -7,40 +7,25 @@
 #ifndef PLAYERBOTS_DUNGEONSTRATEGYCONTEXT_H
 #define PLAYERBOTS_DUNGEONSTRATEGYCONTEXT_H
 
-#include "Strategy.h"
 #include "ACStrategy.h"
-#include "UKStrategy.h"
-#include "NexStrategy.h"
-#include "ANStrategy.h"
 #include "AKStrategy.h"
-#include "DTKStrategy.h"
-#include "VHStrategy.h"
-#include "GDStrategy.h"
-#include "HoSStrategy.h"
-#include "HoLStrategy.h"
-#include "OCStrategy.h"
-#include "UPStrategy.h"
+#include "ANStrategy.h"
 #include "CoSStrategy.h"
+#include "DTKStrategy.h"
 #include "FoSStrategy.h"
+#include "GDStrategy.h"
+#include "HoLStrategy.h"
+#include "HoSStrategy.h"
+#include "MechStrategy.h"
+#include "NexStrategy.h"
+#include "OCStrategy.h"
 #include "PoSStrategy.h"
+#include "SethStrategy.h"
+#include "Strategy.h"
 #include "TOCStrategy.h"
-
-/*
-Full list/TODO:
-
-Trial of the Champion - ToC
-Alliance Champions: Deathstalker Visceri, Eressea Dawnsinger, Mokra the Skullcrusher, Runok Wildmane, Zul'tore
-Horde Champions: Ambrose Boltspark, Colosos, Jacob Alerius, Jaelyne Evensong, Lana Stouthammer
-Argent Champion: Argent Confessor Paletress/Eadric the Pure
-The Black Knight
-Halls of Reflection - HoR
-Falric, Marwyn, The Lich King
-Pit of Saron - PoS
-Forgemaster Garfrost, Krick & Ick, Scourgelord Tyrannus
-The Forge of Souls - FoS
-Bronjahm, Devourer of Souls
-
-*/
+#include "UKStrategy.h"
+#include "UPStrategy.h"
+#include "VHStrategy.h"
 
 class DungeonStrategyContext : public NamedObjectContext<Strategy>
 {
@@ -52,6 +37,8 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
 
             // Burning Crusade
             creators["tbc-ac"] = &DungeonStrategyContext::tbc_ac;           // Auchindoun: Auchenai Crypts
+            creators["tbc-seth"] = &DungeonStrategyContext::tbc_seth;       // Auchindoun: Sethekk Halls
+            creators["tbc-mech"] = &DungeonStrategyContext::tbc_mech;       // Tempest Keep: The Mechanar
 
             // Wrath of the Lich King
             creators["wotlk-uk"] = &DungeonStrategyContext::wotlk_uk;       // Utgarde Keep
@@ -67,12 +54,13 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
             creators["wotlk-up"] = &DungeonStrategyContext::wotlk_up;       // Utgarde Pinnacle
             creators["wotlk-cos"] = &DungeonStrategyContext::wotlk_cos;     // The Culling of Stratholme
             creators["wotlk-toc"] = &DungeonStrategyContext::wotlk_toc;     // Trial of the Champion
-            creators["wotlk-hor"] = &DungeonStrategyContext::wotlk_hor;     // Halls of Reflection
             creators["wotlk-pos"] = &DungeonStrategyContext::wotlk_pos;     // Pit of Saron
             creators["wotlk-fos"] = &DungeonStrategyContext::wotlk_fos;     // The Forge of Souls
         }
     private:
         static Strategy* tbc_ac(PlayerbotAI* botAI) { return new TbcDungeonAuchenaiCryptsStrategy(botAI); }
+        static Strategy* tbc_seth(PlayerbotAI* botAI) { return new TbcDungeonSethekkHallsStrategy(botAI); }
+        static Strategy* tbc_mech(PlayerbotAI* botAI) { return new TbcDungeonMechanarStrategy(botAI); }
         static Strategy* wotlk_uk(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
         static Strategy* wotlk_nex(PlayerbotAI* botAI) { return new WotlkDungeonNexStrategy(botAI); }
         static Strategy* wotlk_an(PlayerbotAI* botAI) { return new WotlkDungeonANStrategy(botAI); }
@@ -88,8 +76,6 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
         static Strategy* wotlk_fos(PlayerbotAI* botAI) { return new WotlkDungeonFoSStrategy(botAI); }
         static Strategy* wotlk_pos(PlayerbotAI* botAI) { return new WotlkDungeonPoSStrategy(botAI); }
         static Strategy* wotlk_toc(PlayerbotAI* botAI) { return new WotlkDungeonToCStrategy(botAI); }
-        // NYI from here down
-        static Strategy* wotlk_hor(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
 };
 
 #endif

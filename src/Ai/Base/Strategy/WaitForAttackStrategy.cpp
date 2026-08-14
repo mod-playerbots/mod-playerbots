@@ -5,7 +5,6 @@
  */
 
 #include "WaitForAttackStrategy.h"
-
 #include "Action.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
@@ -32,7 +31,7 @@ bool WaitForAttackStrategy::ShouldWait(PlayerbotAI* botAI)
     if (botAI->HasStrategy("wait for attack", BOT_STATE_COMBAT))
     {
         Player* bot = botAI->GetBot();
-        if (bot->GetGroup() && botAI->HasRealPlayerMaster())
+        if (bot->GetGroup() && botAI->HasGameClientMaster())
         {
             // Don't wait if the current target is an enemy player
             Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();

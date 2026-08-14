@@ -6,12 +6,12 @@
 
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
+#include "ICCActions.h"
+#include "ICCTriggers.h"
 #include "Multiplier.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
-#include "ICCActions.h"
-#include "ICCTriggers.h"
 #include "RtiValue.h"
 #include "Vehicle.h"
 
@@ -151,7 +151,7 @@ bool IccAddsLadyDeathwhisperAction::Execute(Event /*event*/)
                 continue;
 
             PlayerbotAI* memberBotAI = GET_PLAYERBOT_AI(member);
-            if (memberBotAI && !memberBotAI->IsRealPlayer())
+            if (memberBotAI && !IsSelfBot(member))
                 continue;
 
             if (botAI->HasAura("Dominate Mind", member, false, false) && !member->HasAura(SPELL_CYCLONE))

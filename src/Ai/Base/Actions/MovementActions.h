@@ -7,17 +7,17 @@
 #ifndef PLAYERBOTS_MOVEMENTACTIONS_H
 #define PLAYERBOTS_MOVEMENTACTIONS_H
 
-#include <cmath>
-
 #include "Action.h"
 #include "LastMovementValue.h"
 #include "PlayerbotAIConfig.h"
+#include <cmath>
 
 class Player;
 class PlayerbotAI;
 class Unit;
 class WorldObject;
-class Position;
+
+struct Position;
 
 #define ANGLE_45_DEG (static_cast<float>(M_PI) / 4.f)
 #define ANGLE_90_DEG M_PI_2

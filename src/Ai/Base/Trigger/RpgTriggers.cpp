@@ -5,7 +5,6 @@
  */
 
 #include "RpgTriggers.h"
-
 #include "BudgetValues.h"
 #include "GuildCreateActions.h"
 #include "Playerbots.h"
@@ -356,7 +355,7 @@ bool RpgDuelTrigger::IsActive()
     if (bot->GetLevel() < 3)
         return false;
 
-    if (botAI->HasRealPlayerMaster())
+    if (botAI->HasGameClientMaster())
     {
         // do not auto duel if master is not afk
         if (botAI->GetMaster() && !botAI->GetMaster()->isAFK())

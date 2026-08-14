@@ -5,7 +5,6 @@
  */
 
 #include "BuyAction.h"
-
 #include "BudgetValues.h"
 #include "Event.h"
 #include "ItemCountValue.h"

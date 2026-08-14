@@ -5,7 +5,6 @@
  */
 
 #include "EstimatedLifetimeValue.h"
-
 #include "AiFactory.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
@@ -42,8 +41,8 @@ float EstimatedGroupDpsValue::Calculate()
             if (member == bot)  // calculated
                 continue;
 
-            // ignore real player as they may not help with damage
-            if (!GET_PLAYERBOT_AI(member) || GET_PLAYERBOT_AI(member)->IsRealPlayer())
+            // Ignore real players and selfbots as they may not help with damage.
+            if (!GET_PLAYERBOT_AI(member) || IsSelfBot(member))
                 continue;
 
             if (!member || !member->IsInWorld() || !member->IsAlive())

@@ -4,17 +4,16 @@
  */
 
 #include "ReleaseSpiritAction.h"
-#include "ServerFacade.h"
+#include "Corpse.h"
 #include "Event.h"
 #include "GameGraveyard.h"
+#include "Log.h"
 #include "NearestNpcsValue.h"
 #include "ObjectDefines.h"
 #include "ObjectGuid.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "Corpse.h"
-#include "Log.h"
 
 // ReleaseSpiritAction implementation
 bool ReleaseSpiritAction::Execute(Event event)
@@ -155,7 +154,7 @@ bool AutoReleaseSpiritAction::HandleBattlegroundSpiritHealer()
         RESET_AI_VALUE(bool, "combat::self target");
         RESET_AI_VALUE(WorldPosition, "current position");
     }
-    else if (!botAI->IsRealPlayer())
+    else if (!IsSelfBot(bot))
     {
         m_bgGossipTime = now;
         WorldPacket packet(CMSG_GOSSIP_HELLO);
@@ -175,10 +174,10 @@ bool AutoReleaseSpiritAction::ShouldAutoRelease() const
     if (!groupLeader || groupLeader == bot)
         return true;
 
-    if (!botAI->HasActivePlayerMaster())
+    if (!IsRealPlayer(botAI->GetMaster()))
         return true;
 
-    if (botAI->HasActivePlayerMaster() &&
+    if (IsRealPlayer(botAI->GetMaster()) &&
         groupLeader->GetMapId() == bot->GetMapId() &&
         bot->GetMap() &&
         (bot->GetMap()->IsRaid() || bot->GetMap()->IsDungeon()))

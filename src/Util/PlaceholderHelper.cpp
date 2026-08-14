@@ -5,7 +5,6 @@
  */
 
 #include "PlaceholderHelper.h"
-
 #include "AiFactory.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"

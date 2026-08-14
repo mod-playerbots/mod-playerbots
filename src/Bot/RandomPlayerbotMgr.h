@@ -7,11 +7,12 @@
 #ifndef PLAYERBOTS_RANDOMPLAYERBOTMGR_H
 #define PLAYERBOTS_RANDOMPLAYERBOTMGR_H
 
+#include "GameTime.h"
 #include "NewRpgInfo.h"
 #include "ObjectGuid.h"
-#include "PlayerbotMgr.h"
-#include "GameTime.h"
 #include "PlayerbotCommandServer.h"
+#include "PlayerbotMgr.h"
+#include <unordered_set>
 
 struct BattlegroundInfo
 {
@@ -247,7 +248,7 @@ private:
     std::map<uint32, std::map<uint32, std::vector<WorldLocation>>> rpgLocsCacheLevel;
     std::map<TeamId, std::map<BattlegroundTypeId, std::vector<uint32>>> BattleMastersCache;
     std::unordered_map<uint32, BotEventCache> eventCache;
-    std::list<uint32> currentBots;
+    std::unordered_set<uint32> currentBots;
     uint32 bgBotsCount;
     uint32 playersLevel;
 

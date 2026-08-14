@@ -7,16 +7,15 @@
 #ifndef PLAYERBOTS_PLAYERBOTAICONFIG_H
 #define PLAYERBOTS_PLAYERBOTAICONFIG_H
 
-#include <mutex>
-#include <unordered_map>
-#include <set>
-#include <vector>
-#include <map>
-#include <algorithm>
-#include <string>
-
 #include "DBCEnums.h"
 #include "SharedDefines.h"
+#include <algorithm>
+#include <map>
+#include <mutex>
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 enum class BotCheatMask : uint32
 {
@@ -77,6 +76,14 @@ enum NewRpgStatus : int
 
 #define MAX_SPECNO 20
 
+// One level range/bucket used by the random bot level brackets sub-feature (see RandomBotLevelMgr).
+struct LevelBracketConfig
+{
+    uint8 lower = 1;
+    uint8 upper = 80;
+    uint8 pct = 0;
+};
+
 class PlayerbotAIConfig
 {
 public:
@@ -88,6 +95,7 @@ public:
     }
 
     bool Initialize();
+    void LoadRandomBotLevelConfig();
     bool IsInRandomAccountList(uint32 id);
     bool IsInRandomQuestItemList(uint32 id);
     bool IsPvpProhibited(uint32 zoneId, uint32 areaId);
@@ -160,6 +168,7 @@ public:
     uint32 permanentlyInWorldTime;
     uint32 minRandomBotPvpTime, maxRandomBotPvpTime;
     uint32 randomBotsPerInterval;
+    uint32 randomBotPrintStatsInterval;
     uint32 minRandomBotsPriceChangeInterval, maxRandomBotsPriceChangeInterval;
     uint32 disabledWithoutRealPlayerLoginDelay, disabledWithoutRealPlayerLogoutDelay;
     bool randomBotJoinLfg;
@@ -472,6 +481,37 @@ public:
     bool IsRestrictedHealerDPSMap(uint32 mapId) const;
 
     std::vector<uint32> excludedHunterPetFamilies;
+
+    // Random bot level brackets (periodic redistribution across per-faction level ranges). See
+    // RandomBotLevelMgr; percentages here are the as-configured values, not the runtime working copy.
+    bool levelBracketsEnabled;
+    uint32 levelBracketsCheckFrequency;
+    uint32 levelBracketsFlaggedCheckFrequency;
+    uint32 levelBracketsFlaggedProcessLimit;
+    bool levelBracketsIgnoreGuildWithRealPlayers;
+    bool levelBracketsIgnoreArenaTeamBots;
+    bool levelBracketsIgnoreFriendListed;
+    std::vector<std::string> levelBracketsExcludeNames;
+    uint8 levelBracketsNumRanges;
+    std::vector<LevelBracketConfig> levelBracketsAlliance;
+    std::vector<LevelBracketConfig> levelBracketsHorde;
+    bool levelBracketsDynamicDistribution;
+    float levelBracketsRealPlayerWeight;
+    bool levelBracketsSyncFactions;
+
+    // Random bot level reset (reset random bots reaching max level). See RandomBotLevelMgr.
+    bool resetBotLevelEnabled;
+    uint8 resetBotLevelMaxLevel;
+    uint8 resetBotLevelResetTo;
+    uint8 resetBotLevelSkipFrom;
+    uint8 resetBotLevelSkipTo;
+    uint8 resetBotLevelChance;
+    bool resetBotLevelScaledChance;
+    bool resetBotLevelRestrictTimePlayed;
+    uint32 resetBotLevelMinTimePlayed;
+    uint32 resetBotLevelPlayedTimeCheckFrequency;
+    bool resetBotLevelIgnoreGuildWithRealPlayers;
+    std::vector<std::string> resetBotLevelExcludeNames;
 
 private:
     PlayerbotAIConfig() = default;

@@ -5,7 +5,6 @@
  */
 
 #include "FeralDruidStrategy.h"
-
 #include "Playerbots.h"
 
 class FeralDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

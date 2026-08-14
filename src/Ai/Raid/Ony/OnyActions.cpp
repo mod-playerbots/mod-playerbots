@@ -5,7 +5,6 @@
  */
 
 #include "OnyActions.h"
-
 #include "GenericSpellActions.h"
 #include "LastMovementValue.h"
 #include "MovementActions.h"

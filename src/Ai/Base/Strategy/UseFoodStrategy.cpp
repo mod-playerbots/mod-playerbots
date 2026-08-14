@@ -5,7 +5,6 @@
  */
 
 #include "UseFoodStrategy.h"
-
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 

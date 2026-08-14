@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "AKActions.h"
+#include "Playerbots.h"
 
 bool AttackNadoxGuardianAction::Execute(Event /*event*/)
 {

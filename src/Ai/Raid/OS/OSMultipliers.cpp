@@ -5,7 +5,6 @@
  */
 
 #include "OSMultipliers.h"
-
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
@@ -14,9 +13,9 @@
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "MovementActions.h"
-#include "PaladinActions.h"
 #include "OSActions.h"
 #include "OSTriggers.h"
+#include "PaladinActions.h"
 #include "ReachTargetActions.h"
 #include "ScriptedCreature.h"
 #include "WarriorActions.h"

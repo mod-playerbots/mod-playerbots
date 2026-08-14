@@ -5,7 +5,6 @@
  */
 
 #include "AcceptDuelAction.h"
-
 #include "Event.h"
 #include "Playerbots.h"
 
@@ -18,8 +17,9 @@ bool AcceptDuelAction::Execute(Event event)
     ObjectGuid playerGuid;
     p >> playerGuid;
 
-    // do not auto duel with low hp
-    if ((!botAI->HasRealPlayerMaster() || (botAI->GetMaster() && botAI->GetMaster()->GetGUID() != playerGuid)) &&
+    // Do not auto duel with low health
+    if ((!botAI->HasGameClientMaster() ||
+        (botAI->GetMaster() && botAI->GetMaster()->GetGUID() != playerGuid)) &&
         AI_VALUE2(uint8, "health", "self target") < 90)
     {
         WorldPacket packet(CMSG_DUEL_CANCELLED, 8);

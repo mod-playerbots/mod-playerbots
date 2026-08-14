@@ -8,8 +8,8 @@
 #include "Event.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
-#include "WorldPacket.h"
 #include "TradeData.h"
+#include "WorldPacket.h"
 
 bool TradeStatusExtendedAction::Execute(Event event)
 {

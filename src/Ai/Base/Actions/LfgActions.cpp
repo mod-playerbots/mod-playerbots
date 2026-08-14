@@ -5,15 +5,14 @@
  */
 
 #include "LfgActions.h"
-
 #include "AiFactory.h"
 #include "ItemVisitors.h"
 #include "LFGMgr.h"
 #include "Opcodes.h"
 #include "Playerbots.h"
+#include "RandomPlayerbotMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
-#include "RandomPlayerbotMgr.h"
 
 using namespace lfg;
 
@@ -315,8 +314,8 @@ bool LfgJoinAction::isUseful()
     if (bot->GetLevel() < 15)
         return false;
 
-    // don't use if active player master
-    if (GET_PLAYERBOT_AI(bot)->IsRealPlayer())
+    // Don't use for selfbots (a real player is at the keyboard).
+    if (IsSelfBot(bot))
         return false;
 
     if (bot->GetGroup() && bot->GetGroup()->GetLeaderGUID() != bot->GetGUID())

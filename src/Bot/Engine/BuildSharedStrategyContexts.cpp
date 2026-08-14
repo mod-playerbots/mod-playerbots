@@ -5,9 +5,9 @@
  */
 
 #include "AiObjectContext.h"
+#include "DungeonStrategyContext.h"
+#include "RaidStrategyContext.h"
 #include "StrategyContext.h"
-#include "Ai/Dungeon/DungeonStrategyContext.h"
-#include "Ai/Raid/RaidStrategyContext.h"
 
 void AiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContextList<Strategy>& strategyContexts)
 {

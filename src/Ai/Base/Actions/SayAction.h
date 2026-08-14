@@ -8,8 +8,8 @@
 #define PLAYERBOTS_SAYACTION_H
 
 #include "Action.h"
-#include "PlayerbotAI.h"
 #include "NamedObjectContext.h"
+#include "PlayerbotAI.h"
 
 class PlayerbotAI;
 class SayAction : public Action, public Qualified

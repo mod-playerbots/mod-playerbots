@@ -5,7 +5,6 @@
  */
 
 #include "GuildTriggers.h"
-
 #include "GuildMgr.h"
 #include "Playerbots.h"
 
@@ -25,7 +24,7 @@ bool LeaveLargeGuildTrigger::IsActive()
     if (!bot->GetGuildId())
         return false;
 
-    if (botAI->IsRealPlayer())
+    if (IsSelfBot(bot))
         return false;
 
     if (botAI->IsAltBot())
@@ -40,9 +39,9 @@ bool LeaveLargeGuildTrigger::IsActive()
 
     Player* leader = ObjectAccessor::FindPlayer(guild->GetLeaderGUID());
 
-    // Only leave the guild if the leader is an online bot (not a real player).
+    // Only leave the guild if the leader is a bot (but not a selfbot).
     PlayerbotAI* leaderBotAI = leader ? GET_PLAYERBOT_AI(leader) : nullptr;
-    if (!leaderBotAI || leaderBotAI->IsRealPlayer())
+    if (!leaderBotAI || IsSelfBot(leader))
         return false;
 
     if (type == GuilderType::SOLO && guild->GetLeaderGUID() != bot->GetGUID())

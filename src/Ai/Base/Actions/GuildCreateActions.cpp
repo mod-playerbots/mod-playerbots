@@ -5,7 +5,6 @@
  */
 
 #include "GuildCreateActions.h"
-
 #include "ArenaTeam.h"
 #include "BudgetValues.h"
 #include "Event.h"
@@ -174,11 +173,11 @@ bool PetitionOfferNearbyAction::Execute(Event /*event*/)
         if (botAI)
         {
             /*
-            if (botAI->GetGrouperType() == SOLO && !botAI->HasRealPlayerMaster()) //Do not invite solo players.
+            if (botAI->GetGrouperType() == SOLO && !botAI->HasGameClientMaster())   // Do not invite solo players.
                 continue;
 
             */
-            if (botAI->HasActivePlayerMaster())  // Do not invite alts of active players.
+            if (IsRealPlayer(botAI->GetMaster()))   // Do not invite bots that belong to an active player.
                 continue;
         }
         else

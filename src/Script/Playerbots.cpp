@@ -4,7 +4,7 @@
  */
 
 #include "Playerbots.h"
-
+#include "BattleGroundTactics.h"
 #include "BattlefieldScript.h"
 #include "Channel.h"
 #include "Config.h"
@@ -13,14 +13,13 @@
 #include "GuildTaskMgr.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotCommandScript.h"
 #include "PlayerbotGuildMgr.h"
 #include "PlayerbotSpellRepository.h"
 #include "PlayerbotWorldThreadProcessor.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
-#include "PlayerbotCommandScript.h"
 #include "cmath"
-#include "BattleGroundTactics.h"
 
 class PlayerbotsDatabaseScript : public DatabaseScript
 {
@@ -122,9 +121,9 @@ public:
         if (!player->IsInWorld() || player->GetMapId() == mapid)
             return true;
 
-        // If real player do nothing
+        // If this is a selfbot, do nothing
         PlayerbotAI* ai = GET_PLAYERBOT_AI(player);
-        if (!ai || ai->IsRealPlayer())
+        if (!ai || IsSelfBot(player))
             return true;
 
         // Cross-map bot teleport: defer visibility reference cleanup.
@@ -416,7 +415,7 @@ public:
         if (botAI == nullptr)
             return true;
 
-        return botAI->IsRealPlayer();
+        return IsSelfBot(player);
     }
 
     void OnPlayerbotPacketSent(Player* player, WorldPacket const* packet) override
@@ -451,10 +450,8 @@ public:
         {
             PlayerbotAI* botAI = PlayerbotsMgr::instance().GetPlayerbotAI(player);
 
-            if (botAI == nullptr || botAI->IsRealPlayer())
-            {
+            if (botAI == nullptr || IsSelfBot(player))
                 playerbotMgr->LogoutAllBots();
-            }
         }
 
         sRandomPlayerbotMgr.OnPlayerLogout(player);
@@ -518,6 +515,7 @@ void AddSC_TempestKeepBotScripts();
 void AddSC_HyjalSummitBotScripts();
 void AddSC_IcecrownBotScripts();
 void AddSC_RubySanctumBotScripts();
+void AddSC_randombot_level_mgr();
 
 void AddPlayerbotsScripts()
 {
@@ -537,4 +535,5 @@ void AddPlayerbotsScripts()
     AddSC_HyjalSummitBotScripts();
     AddSC_IcecrownBotScripts();
     AddSC_RubySanctumBotScripts();
+    AddSC_randombot_level_mgr();
 }

@@ -7,13 +7,12 @@
 #ifndef PLAYERBOTS_TKHELPERS_H
 #define PLAYERBOTS_TKHELPERS_H
 
-#include <ctime>
-#include <unordered_map>
-#include <vector>
-
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
+#include <ctime>
+#include <unordered_map>
+#include <vector>
 
 namespace TempestKeepHelpers
 {

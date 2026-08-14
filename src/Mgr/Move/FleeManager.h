@@ -7,10 +7,9 @@
 #ifndef PLAYERBOTS_FLEEMANAGER_H
 #define PLAYERBOTS_FLEEMANAGER_H
 
-#include <vector>
-
 #include "Common.h"
 #include "TravelMgr.h"
+#include <vector>
 
 class Player;
 class PlayerbotAI;

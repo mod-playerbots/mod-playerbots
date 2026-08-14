@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_BEASTMASTERYHUNTERSTRATEGY_H
 #define PLAYERBOTS_BEASTMASTERYHUNTERSTRATEGY_H
 
-#include "GenericHunterStrategy.h"
 #include "CombatStrategy.h"
+#include "GenericHunterStrategy.h"
 
 class PlayerbotAI;
 

@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#include "MagHelpers.h"
 #include "AllSpellScript.h"
+#include "MagHelpers.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "Playerbots.h"

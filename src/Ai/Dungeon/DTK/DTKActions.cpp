@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "DTKActions.h"
+#include "Playerbots.h"
 
 bool CorpseExplodeSpreadAction::Execute(Event /*event*/)
 {

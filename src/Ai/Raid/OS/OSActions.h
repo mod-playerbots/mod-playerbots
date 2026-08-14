@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_OSACTIONS_H
 #define PLAYERBOTS_OSACTIONS_H
 
-#include "MovementActions.h"
 #include "AttackAction.h"
+#include "MovementActions.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 

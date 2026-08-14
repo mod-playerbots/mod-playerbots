@@ -4,11 +4,11 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "BroadcastHelper.h"
-#include "ServerFacade.h"
-#include "Channel.h"
 #include "AiFactory.h"
+#include "Channel.h"
+#include "Playerbots.h"
+#include "ServerFacade.h"
 
 BroadcastHelper::BroadcastHelper() {}
 

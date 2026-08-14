@@ -4,31 +4,31 @@
  * or (at your option) any later version.
  */
 
-#include "AiObjectContext.h"
 #include "ActionContext.h"
-#include "ChatActionContext.h"
-#include "WorldPacketActionContext.h"
+#include "AiObjectContext.h"
 #include "Aq20ActionContext.h"
-#include "MCActionContext.h"
+#include "BTActionContext.h"
 #include "BWLActionContext.h"
-#include "KaraActionContext.h"
+#include "ChatActionContext.h"
+#include "EoEActionContext.h"
 #include "GruulActionContext.h"
-#include "NaxxActionContext.h"
+#include "HyjalActionContext.h"
+#include "ICCActionContext.h"
+#include "KaraActionContext.h"
+#include "MCActionContext.h"
 #include "MagActionContext.h"
+#include "NaxxActionContext.h"
+#include "OSActionContext.h"
+#include "OnyActionContext.h"
+#include "RSActionContext.h"
 #include "SSCActionContext.h"
 #include "TKActionContext.h"
-#include "HyjalActionContext.h"
-#include "BTActionContext.h"
-#include "ZAActionContext.h"
-#include "OSActionContext.h"
-#include "EoEActionContext.h"
-#include "VoAActionContext.h"
+#include "TbcDungeonActionContext.h"
 #include "UldActionContext.h"
-#include "OnyActionContext.h"
-#include "ICCActionContext.h"
-#include "RSActionContext.h"
-#include "Ai/Dungeon/TbcDungeonActionContext.h"
-#include "Ai/Dungeon/WotlkDungeonActionContext.h"
+#include "VoAActionContext.h"
+#include "WorldPacketActionContext.h"
+#include "WotlkDungeonActionContext.h"
+#include "ZAActionContext.h"
 
 void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
 {
@@ -55,6 +55,8 @@ void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Act
     actionContexts.Add(new RaidIccActionContext());
     actionContexts.Add(new RaidRsActionContext());
     actionContexts.Add(new TbcDungeonAuchenaiCryptsActionContext());
+    actionContexts.Add(new TbcDungeonSethekkHallsActionContext());
+    actionContexts.Add(new TbcDungeonMechanarActionContext());
     actionContexts.Add(new WotlkDungeonUKActionContext());
     actionContexts.Add(new WotlkDungeonNexActionContext());
     actionContexts.Add(new WotlkDungeonANActionContext());

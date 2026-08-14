@@ -4,21 +4,21 @@
  * or (at your option) any later version.
  */
 
-#include <array>
-#include <cmath>
-#include <map>
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
+#include "ICCActions.h"
+#include "ICCScripts.h"
+#include "ICCTriggers.h"
 #include "Multiplier.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
-#include "ICCActions.h"
-#include "ICCScripts.h"
-#include "ICCTriggers.h"
 #include "RtiValue.h"
 #include "Timer.h"
 #include "Vehicle.h"
+#include <array>
+#include <cmath>
+#include <map>
 
 // Rotface
 bool IccRotfaceTankPositionAction::Execute(Event /*event*/)

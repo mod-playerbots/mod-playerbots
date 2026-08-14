@@ -5,7 +5,6 @@
  */
 
 #include "RtiAction.h"
-
 #include "Event.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"

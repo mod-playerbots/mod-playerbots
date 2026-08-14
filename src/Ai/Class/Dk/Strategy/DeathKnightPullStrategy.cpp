@@ -5,7 +5,6 @@
  */
 
 #include "DeathKnightPullStrategy.h"
-
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
