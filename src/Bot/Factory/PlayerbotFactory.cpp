@@ -4776,7 +4776,7 @@ void PlayerbotFactory::InitArenaTeam()
     {
         if (sPlayerbotAIConfig.deleteRandomBotArenaTeams)
         {
-            LOG_INFO("playerbots", "Deleting random bot arena teams...");
+            LOG_INFO("playerbots", "Deleting randombot arena teams...");
 
             for (auto it = sArenaTeamMgr->GetArenaTeams().begin(); it != sArenaTeamMgr->GetArenaTeams().end(); ++it)
             {
@@ -4784,15 +4784,14 @@ void PlayerbotFactory::InitArenaTeam()
                 if (arenateam->GetCaptain() && arenateam->GetCaptain().IsPlayer())
                 {
                     Player* bot = ObjectAccessor::FindPlayer(arenateam->GetCaptain());
-                    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-                    if (!botAI || IsSelfBot(bot))
+                    if (!sRandomPlayerbotMgr.IsRandomBot(bot))
                         continue;
                     else
                         arenateam->Disband(nullptr);
                 }
             }
 
-            LOG_INFO("playerbots", "Random bot arena teams deleted");
+            LOG_INFO("playerbots", "Randombot arena teams deleted");
         }
 
         RandomPlayerbotFactory::CreateRandomArenaTeams(ARENA_TYPE_2v2, sPlayerbotAIConfig.randomBotArenaTeam2v2Count);
@@ -4809,7 +4808,7 @@ void PlayerbotFactory::InitArenaTeam()
 
          if (arenateams.empty())
          {
-             LOG_ERROR("playerbots", "No random arena team available");
+             LOG_ERROR("playerbots", "No randombot arena team available");
              return;
          }
 

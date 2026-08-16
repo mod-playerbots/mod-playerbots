@@ -16,7 +16,7 @@ void PlayerbotGuildMgr::Init()
 {
     _guildCache.clear();
     if (sPlayerbotAIConfig.deleteRandomBotGuilds)
-        DeleteBotGuilds();
+        DeleteRandomBotGuilds();
 
     LoadGuildNames();
     ValidateGuildCache();
@@ -245,12 +245,13 @@ void PlayerbotGuildMgr::ValidateGuildCache()
     }
 }
 
-void PlayerbotGuildMgr::DeleteBotGuilds()
+void PlayerbotGuildMgr::DeleteRandomBotGuilds()
 {
-    LOG_INFO("playerbots", "Deleting random bot guilds...");
+    LOG_INFO("playerbots", "Deleting randombot guilds...");
     std::vector<uint32> randomBots;
 
-    PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_RANDOM_BOTS_BOT);
+    PlayerbotsDatabasePreparedStatement* stmt =
+        PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_RANDOM_BOTS_BOT);
     stmt->SetData(0, "add");
     if (PreparedQueryResult result = PlayerbotsDatabase.Query(stmt))
     {
@@ -267,7 +268,7 @@ void PlayerbotGuildMgr::DeleteBotGuilds()
         if (Guild* guild = sGuildMgr->GetGuildByLeader(ObjectGuid::Create<HighGuid::Player>(*i)))
             guild->Disband();
     }
-    LOG_INFO("playerbots", "Random bot guilds deleted");
+    LOG_INFO("playerbots", "Randombot guilds deleted");
 }
 
 bool PlayerbotGuildMgr::IsRealGuild(Player* bot)
