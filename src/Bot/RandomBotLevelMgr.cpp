@@ -47,6 +47,11 @@ static bool BotInFriendList(Player* bot, std::vector<uint32> const& socialFriend
         socialFriendsList.end();
 }
 
+static bool IsDisabledBracket(std::vector<LevelBracketConfig> const& configured, uint8 index)
+{
+    return index < configured.size() && configured[index].pct == 0;
+}
+
 // Checks if the given bot is a member of any arena team.
 static bool BotInArenaTeam(Player* bot)
 {
@@ -431,6 +436,9 @@ int RandomBotLevelMgr::GetOrFlagPlayerBracket(Player* player)
         if (factionRanges[i].lower > factionRanges[i].upper)
             continue;
 
+        if (factionRanges[i].pct == 0)
+            continue;
+
         // Skip brackets that Death Knights cannot be assigned to.
         if (player->getClass() == CLASS_DEATH_KNIGHT && factionRanges[i].upper < dkMinLevel)
             continue;
@@ -597,6 +605,14 @@ void RandomBotLevelMgr::RunLevelBracketsDistribution()
             uint32 totalCombinedReal = totalAllianceReal + totalHordeReal;
             for (uint8 i = 0; i < _numRanges; ++i)
             {
+                if (IsDisabledBracket(sPlayerbotAIConfig.levelBracketsAlliance, i) &&
+                    IsDisabledBracket(sPlayerbotAIConfig.levelBracketsHorde, i))
+                {
+                    allianceWeights[i] = 0.0f;
+                    hordeWeights[i] = 0.0f;
+                    continue;
+                }
+
                 int combinedReal = allianceRealCounts[i] + hordeRealCounts[i];
                 float weight = baseline + sPlayerbotAIConfig.levelBracketsRealPlayerWeight *
                     (totalCombinedReal > 0 ? (1.0f / float(totalCombinedReal)) : 1.0f) * std::log(1 + combinedReal);
@@ -609,14 +625,16 @@ void RandomBotLevelMgr::RunLevelBracketsDistribution()
             // Separate dynamic weighting for each faction.
             for (uint8 i = 0; i < _numRanges; ++i)
             {
-                if (_allianceRanges[i].lower > _allianceRanges[i].upper)
+                if (_allianceRanges[i].lower > _allianceRanges[i].upper ||
+                    IsDisabledBracket(sPlayerbotAIConfig.levelBracketsAlliance, i))
                     allianceWeights[i] = 0.0f;
                 else
                     allianceWeights[i] = baseline + sPlayerbotAIConfig.levelBracketsRealPlayerWeight *
                         (totalAllianceReal > 0 ? (1.0f / totalAllianceReal) : 1.0f) *
                         std::log(1 + allianceRealCounts[i]);
 
-                if (_hordeRanges[i].lower > _hordeRanges[i].upper)
+                if (_hordeRanges[i].lower > _hordeRanges[i].upper ||
+                    IsDisabledBracket(sPlayerbotAIConfig.levelBracketsHorde, i))
                     hordeWeights[i] = 0.0f;
                 else
                     hordeWeights[i] = baseline + sPlayerbotAIConfig.levelBracketsRealPlayerWeight *
