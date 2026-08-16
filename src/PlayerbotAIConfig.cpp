@@ -614,9 +614,14 @@ bool PlayerbotAIConfig::Initialize()
     loadWorldBuff();
     LOG_INFO("playerbots", "Loading World Buff Feature...");
 
-    randomBotAccountPrefix = GetPlayerbotsOption<std::string>("AiPlayerbot.RandomBotAccountPrefix", "rndbot");
-    randomBotAccountCount = GetPlayerbotsOption<int32>("AiPlayerbot.RandomBotAccountCount", 0);
-    deleteRandomBotAccounts = GetPlayerbotsOption<bool>("AiPlayerbot.DeleteRandomBotAccounts", false);
+    botAccountPrefix = GetPlayerbotsOption<std::string>("AiPlayerbot.BotAccountPrefix", "rndbot",
+                                                        { "AiPlayerbot.RandomBotAccountPrefix" });
+    botAccountCount = GetPlayerbotsOption<int32>("AiPlayerbot.BotAccountCount", 0,
+                                                 { "AiPlayerbot.RandomBotAccountCount" });
+    deleteBotAccounts = GetPlayerbotsOption<bool>("AiPlayerbot.DeleteBotAccounts", false,
+                                                  { "AiPlayerbot.DeleteRandomBotAccounts" });
+    botRandomPassword = GetPlayerbotsOption<bool>("AiPlayerbot.BotRandomPassword", false,
+                                                  { "AiPlayerbot.RandomBotRandomPassword" });
     randomBotGuildCount = GetPlayerbotsOption<int32>("AiPlayerbot.RandomBotGuildCount", 20);
     randomBotGuildSizeMax = GetPlayerbotsOption<int32>("AiPlayerbot.RandomBotGuildSizeMax", 15);
     deleteRandomBotGuilds = GetPlayerbotsOption<bool>("AiPlayerbot.DeleteRandomBotGuilds", false);
@@ -667,7 +672,6 @@ bool PlayerbotAIConfig::Initialize()
     summonWhenGroup = GetPlayerbotsOption<bool>("AiPlayerbot.SummonWhenGroup", true);
     randomBotFixedLevel = GetPlayerbotsOption<bool>("AiPlayerbot.RandomBotFixedLevel", false);
     disableRandomLevels = GetPlayerbotsOption<bool>("AiPlayerbot.DisableRandomLevels", false);
-    randomBotRandomPassword = GetPlayerbotsOption<bool>("AiPlayerbot.RandomBotRandomPassword", true);
     downgradeMaxLevelBot = GetPlayerbotsOption<bool>("AiPlayerbot.DowngradeMaxLevelBot", true);
     equipAndSpecPersistence = GetPlayerbotsOption<bool>("AiPlayerbot.EquipAndSpecPersistence", true);
     equipAndSpecPersistenceLevel = GetPlayerbotsOption<int32>("AiPlayerbot.EquipAndSpecPersistenceLevel", 1);

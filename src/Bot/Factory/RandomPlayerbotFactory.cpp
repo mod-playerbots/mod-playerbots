@@ -311,7 +311,7 @@ std::string const RandomPlayerbotFactory::CreateRandomBotName(NameRaceAndGender 
     return botName;
 }
 
-// Calculates the total number of required accounts, either using the specified randomBotAccountCount
+// Calculates the total number of required accounts, either using the specified botAccountCount
 // or determining it dynamically based on MaxRandomBots, EnablePeriodicOnlineOffline and its ratio,
 // and AddClassAccountPoolSize. The system also factors in the types of existing account, as assigned by
 // AssignAccountTypes()
@@ -416,13 +416,13 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
     // Return existing total plus any additional accounts needed
     uint32 calculatedTotal = existingTotal + additionalAccountsNeeded;
 
-    // Manually set randomBotAccountCount meets the requirements
-    if (sPlayerbotAIConfig.randomBotAccountCount >= calculatedTotal)
-        return sPlayerbotAIConfig.randomBotAccountCount;
-    // Manually set randomBotAccountCount doesn't meet the requirements. Using calculated value
-    if (sPlayerbotAIConfig.randomBotAccountCount > 0)
-        LOG_WARN("playerbots", "RandomBotAccountCount ({}) is lower than the required calculated value ({}). Using the calculated value instead.",
-            sPlayerbotAIConfig.randomBotAccountCount, calculatedTotal);
+    // Manually set botAccountCount meets the requirements
+    if (sPlayerbotAIConfig.botAccountCount >= calculatedTotal)
+        return sPlayerbotAIConfig.botAccountCount;
+    // Manually set botAccountCount doesn't meet the requirements. Using calculated value
+    if (sPlayerbotAIConfig.botAccountCount > 0)
+        LOG_WARN("playerbots", "BotAccountCount ({}) is lower than the required calculated value ({}). Using the calculated value instead.",
+            sPlayerbotAIConfig.botAccountCount, calculatedTotal);
 
     return calculatedTotal;
 }
@@ -454,7 +454,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
 {
     /* multi-thread here is meaningless? since the async db operations */
 
-    if (sPlayerbotAIConfig.deleteRandomBotAccounts)
+    if (sPlayerbotAIConfig.deleteBotAccounts)
     {
         std::vector<uint32> botAccounts;
         std::vector<uint32> botFriends;
@@ -465,7 +465,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         for (uint32 accountNumber = 0; accountNumber < totalAccountCount; ++accountNumber)
         {
             std::ostringstream out;
-            out << sPlayerbotAIConfig.randomBotAccountPrefix << accountNumber;
+            out << sPlayerbotAIConfig.botAccountPrefix << accountNumber;
             std::string const accountName = out.str();
 
             if (uint32 accountId = AccountMgr::GetId(accountName))
@@ -485,7 +485,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
 
         // Delete all characters from bot accounts
         CharacterDatabase.Execute("DELETE FROM characters WHERE account IN (SELECT id FROM " + loginDBName + ".account WHERE username LIKE '{}%%')",
-            sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
+            sPlayerbotAIConfig.botAccountPrefix.c_str());
 
         // Wait for the characters to be deleted before proceeding to dependent deletes
         while (CharacterDatabase.QueueSize())
@@ -499,7 +499,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
 
         // Clean up orphaned entries in playerbots_db_store
         PlayerbotsDatabase.Execute("DELETE FROM playerbots_db_store WHERE guid NOT IN (SELECT guid FROM " + characterDBName + ".characters WHERE account IN (SELECT id FROM " + loginDBName + ".account WHERE username NOT LIKE '{}%%'))",
-            sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
+            sPlayerbotAIConfig.botAccountPrefix.c_str());
 
         // Clean up orphaned records in character-related tables
         CharacterDatabase.Execute("DELETE FROM arena_team_member WHERE guid NOT IN (SELECT guid FROM characters)");
@@ -552,9 +552,9 @@ void RandomPlayerbotFactory::CreateRandomBots()
         CharacterDatabase.Execute("DELETE FROM petition_sign WHERE ownerguid NOT IN (SELECT guid FROM characters) OR playerguid NOT IN (SELECT guid FROM characters)");
 
         // Finally, delete the bot accounts themselves
-        LOG_INFO("playerbots", "Deleting random bot accounts...");
+        LOG_INFO("playerbots", "Deleting bot accounts...");
         QueryResult results = LoginDatabase.Query("SELECT id FROM account WHERE username LIKE '{}%%'",
-                                             sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
+                                             sPlayerbotAIConfig.botAccountPrefix.c_str());
         int32 deletion_count = 0;
         if (results)
         {
@@ -586,13 +586,13 @@ void RandomPlayerbotFactory::CreateRandomBots()
         CharacterDatabase.Execute("FLUSH TABLES");
         PlayerbotsDatabase.Execute("FLUSH TABLES");
 
-        LOG_INFO("playerbots", ">> Random bot accounts and data deleted in {} ms", GetMSTimeDiffToNow(timer));
-        LOG_INFO("playerbots", "Please reset the AiPlayerbot.DeleteRandomBotAccounts to 0 and restart the server...");
+        LOG_INFO("playerbots", ">> Bot accounts and data deleted in {} ms", GetMSTimeDiffToNow(timer));
+        LOG_INFO("playerbots", "Please reset the AiPlayerbot.DeleteBotAccounts to 0 and restart the server...");
         World::StopNow(SHUTDOWN_EXIT_CODE);
         return;
     }
 
-    LOG_INFO("playerbots", "Creating random bot accounts...");
+    LOG_INFO("playerbots", "Creating bot accounts...");
     std::unordered_map<NameRaceAndGender, std::vector<std::string>> nameCache;
     std::vector<std::future<void>> account_creations;
     int account_creation = 0;
@@ -604,7 +604,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
     for (uint32 accountNumber = 0; accountNumber < totalAccountCount; ++accountNumber)
     {
         std::ostringstream out;
-        out << sPlayerbotAIConfig.randomBotAccountPrefix << accountNumber;
+        out << sPlayerbotAIConfig.botAccountPrefix << accountNumber;
         std::string const accountName = out.str();
 
         LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_ID_BY_USERNAME);
@@ -616,7 +616,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         }
         account_creation++;
         std::string password = "";
-        if (sPlayerbotAIConfig.randomBotRandomPassword)
+        if (sPlayerbotAIConfig.botRandomPassword)
         {
             for (int i = 0; i < 10; i++)
             {
@@ -652,7 +652,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
     for (uint32 accountNumber = 0; accountNumber < totalAccountCount; ++accountNumber)
     {
         std::ostringstream out;
-        out << sPlayerbotAIConfig.randomBotAccountPrefix << accountNumber;
+        out << sPlayerbotAIConfig.botAccountPrefix << accountNumber;
         std::string const accountName = out.str();
 
         LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_ID_BY_USERNAME);

@@ -498,7 +498,7 @@ void RandomPlayerbotMgr::AssignAccountTypes()
     std::vector<uint32> allRandomBotAccounts;
     QueryResult allAccounts = LoginDatabase.Query(
         "SELECT id FROM account WHERE username LIKE '{}%%' ORDER BY id",
-        sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
+        sPlayerbotAIConfig.botAccountPrefix.c_str());
 
     if (allAccounts)
     {
@@ -634,7 +634,7 @@ bool RandomPlayerbotMgr::IsAccountType(uint32 accountId, uint8 accountType)
 // and Phase 2 logs-in the remainder Horde bots to reach the total maxAllowedBotCount. If maxAllowedBotCount is not
 // reached after Phase 2, the function goes back to log-in Alliance bots and reach maxAllowedBotCount. This is done
 // because not every account is guaranteed 5A/5H bots, so the true ratio might be skewed by few percentages. Finally,
-// Phase 4 is reached if and only if the value of RandomBotAccountCount is lower than it should.
+// Phase 4 is reached if and only if the value of BotAccountCount is lower than it should.
 uint32 RandomPlayerbotMgr::AddRandomBots()
 {
     uint32 maxAllowedBotCount = GetEventValue(0, "bot_count");
@@ -800,7 +800,7 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
                 int divisor = RandomPlayerbotFactory::CalculateAvailableCharsPerAccount();
                 uint32 moreAccountsNeeded = (maxAllowedBotCount + divisor - 1) / divisor;
                 LOG_ERROR("playerbots",
-                          "Can't log-in all the requested bots. Try increasing RandomBotAccountCount in your conf file.\n"
+                          "Can't log-in all the requested bots. Try increasing BotAccountCount in your conf file.\n"
                           "{} more accounts needed.", moreAccountsNeeded);
                 missingBotsTimer = 0;    // Reset timer so error is not spammed every tick
             }

@@ -293,10 +293,10 @@ public:
     uint32 randomClassSpecIndex[MAX_CLASSES][MAX_SPECNO];
 
     std::string commandPrefix, commandSeparator;
-    std::string randomBotAccountPrefix;
-    uint32 randomBotAccountCount;
-    bool randomBotRandomPassword;
-    bool deleteRandomBotAccounts;
+    std::string botAccountPrefix;
+    uint32 botAccountCount;
+    bool botRandomPassword;
+    bool deleteBotAccounts;
     uint32 randomBotGuildCount, randomBotGuildSizeMax;
     bool deleteRandomBotGuilds;
     std::vector<uint32> pvpProhibitedZoneIds;
