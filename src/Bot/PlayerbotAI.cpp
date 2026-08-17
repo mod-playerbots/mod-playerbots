@@ -1172,7 +1172,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
         }
         case SMSG_MESSAGECHAT:  // do not react to self or if not ready to reply
         {
-            if (!sPlayerbotAIConfig.randomBotTalk)
+            if (!sPlayerbotAIConfig.botTalk)
                 return;
 
             if (!AllowActivity())
@@ -3005,7 +3005,7 @@ bool PlayerbotAI::TellMasterNoFacing(std::string const text, PlayerbotSecurityLe
         masterBotAI = GET_PLAYERBOT_AI(master);
 
     if ((!master || (masterBotAI && !IsSelfBot(master))) &&
-        (sPlayerbotAIConfig.randomBotSayWithoutMaster || HasStrategy("debug", BOT_STATE_NON_COMBAT)))
+        (sPlayerbotAIConfig.botSayWithoutMaster || HasStrategy("debug", BOT_STATE_NON_COMBAT)))
     {
         bot->Say(text, (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
         return true;
@@ -3072,7 +3072,7 @@ bool PlayerbotAI::TellMaster(std::string const text, PlayerbotSecurityLevel secu
 {
     if (!master)
     {
-        if (sPlayerbotAIConfig.randomBotSayWithoutMaster)
+        if (sPlayerbotAIConfig.botSayWithoutMaster)
             return TellMasterNoFacing(text, securityLevel);
 
         return false;

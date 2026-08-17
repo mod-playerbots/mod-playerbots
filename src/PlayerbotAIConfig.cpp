@@ -342,10 +342,14 @@ bool PlayerbotAIConfig::Initialize()
     enableFishingWithMaster = GetPlayerbotsOption<bool>("AiPlayerbot.EnableFishingWithMaster", true);
     //////////////////////////// CHAT
     enableBroadcasts = GetPlayerbotsOption<bool>("AiPlayerbot.EnableBroadcasts", true);
-    randomBotTalk = GetPlayerbotsOption<bool>("AiPlayerbot.RandomBotTalk", false);
-    randomBotEmote = GetPlayerbotsOption<bool>("AiPlayerbot.RandomBotEmote", false);
-    randomBotSuggestDungeons = GetPlayerbotsOption<bool>("AiPlayerbot.RandomBotSuggestDungeons", true);
-    randomBotSayWithoutMaster = GetPlayerbotsOption<bool>("AiPlayerbot.RandomBotSayWithoutMaster", false);
+    botTalk = GetPlayerbotsOption<bool>("AiPlayerbot.BotTalk", false,
+                                        { "AiPlayerbot.RandomBotTalk" });
+    botEmote = GetPlayerbotsOption<bool>("AiPlayerbot.BotEmote", false,
+                                         { "AiPlayerbot.RandomBotEmote" });
+    botSuggestDungeons = GetPlayerbotsOption<bool>("AiPlayerbot.BotSuggestDungeons", true,
+                                                   { "AiPlayerbot.RandomBotSuggestDungeons" });
+    botSayWithoutMaster = GetPlayerbotsOption<bool>("AiPlayerbot.BotSayWithoutMaster", false,
+                                                    { "AiPlayerbot.RandomBotSayWithoutMaster" });
 
     // broadcastChanceMaxValue is used in urand(1, broadcastChanceMaxValue) for broadcasts,
     // lowering it will increase the chance, setting it to 0 will disable broadcasts
@@ -828,10 +832,9 @@ bool PlayerbotAIConfig::Initialize()
 
     AiObjectContext::BuildAllSharedContexts();
 
-    if (sPlayerbotAIConfig.randomBotSuggestDungeons)
-    {
+    if (sPlayerbotAIConfig.botSuggestDungeons)
         PlayerbotDungeonRepository::instance().LoadDungeonSuggestions();
-    }
+
     sTravelMgr.Init();
 
     excludedHunterPetFamilies.clear();

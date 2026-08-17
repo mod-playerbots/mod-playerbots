@@ -9,7 +9,7 @@
 
 void EmoteStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    if (sPlayerbotAIConfig.randomBotEmote)
+    if (sPlayerbotAIConfig.botEmote)
     {
         triggers.push_back(new TriggerNode("often", { NextAction("talk", 1.0f) }));
         triggers.push_back(new TriggerNode("seldom", { NextAction("emote", 1.0f) }));
@@ -19,7 +19,7 @@ void EmoteStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             new TriggerNode("receive emote", { NextAction("emote", 10.0f) }));
     }
 
-    if (sPlayerbotAIConfig.randomBotTalk)
+    if (sPlayerbotAIConfig.botTalk)
     {
         triggers.push_back(new TriggerNode(
             "often",

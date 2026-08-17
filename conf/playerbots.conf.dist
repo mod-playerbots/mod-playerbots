@@ -768,7 +768,7 @@ AiPlayerbot.DisableDeathKnightLogin = 0
 # Default: 0 (disabled)
 AiPlayerbot.LimitTalentsExpansion = 0
 
-# Configure randombot trading (0: Disabled, 1: Enabled, 2: Only Buy, 3: Only Sell)
+# Configure randombot and addclass bot trading (0: Disabled, 1: Enabled, 2: Only Buy, 3: Only Sell)
 # Default: 1 (enabled)
 AiPlayerbot.EnableRandomBotTrading = 1
 
@@ -2560,11 +2560,11 @@ AiPlayerbot.CommandSeparator = "\\\\"
 AiPlayerbot.EnableAutoTradeOnItemMention = 1
 
 # Enable bots talking (say / yell / general chatting / lfg)
-AiPlayerbot.RandomBotTalk = 1
+AiPlayerbot.BotTalk = 1
 # Enable bots emoting
-AiPlayerbot.RandomBotEmote = 0
-# Enable randombots suggesting dungeons in chat
-AiPlayerbot.RandomBotSuggestDungeons = 1
+AiPlayerbot.BotEmote = 0
+# Enable bots suggesting dungeons in chat
+AiPlayerbot.BotSuggestDungeons = 1
 # Bots greet players when invited
 AiPlayerbot.EnableGreet = 0
 # Chance to reply to toxic links with toxic links (0-100)
@@ -2576,7 +2576,7 @@ AIPlayerbot.GuildFeedback = 1
 # Chance bots will chat in guild about certain events (int) (0-100)
 AiPlayerbot.GuildRepliesRate = 100
 # Bots without a master will say their lines
-AiPlayerbot.RandomBotSayWithoutMaster = 0
+AiPlayerbot.BotSayWithoutMaster = 0
 
 #
 #

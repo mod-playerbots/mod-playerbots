@@ -181,12 +181,12 @@ public:
     float fishingDistanceFromMaster, fishingDistance, endFishingWithMaster;
 
     // chat
-    bool randomBotTalk;
-    bool randomBotEmote;
-    bool randomBotSuggestDungeons;
+    bool botTalk;
+    bool botEmote;
+    bool botSuggestDungeons;
     bool enableBroadcasts;
     bool enableGreet;
-    bool randomBotSayWithoutMaster;
+    bool botSayWithoutMaster;
 
     uint32 broadcastChanceMaxValue;
 
