@@ -5,9 +5,7 @@
  */
 
 #include "GenericBuffUtils.h"
-
 #include "AiObjectContext.h"
-
 #include "GameTime.h"
 #include "Group.h"
 #include "Player.h"

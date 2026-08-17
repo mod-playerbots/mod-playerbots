@@ -4,10 +4,9 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "DTKTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
+#include "Playerbots.h"
 
 bool CorpseExplodeTrigger::IsActive()
 {

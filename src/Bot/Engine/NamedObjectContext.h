@@ -7,14 +7,13 @@
 #ifndef PLAYERBOTS_NAMEDOBJECTCONTEXT_H
 #define PLAYERBOTS_NAMEDOBJECTCONTEXT_H
 
+#include "Common.h"
+#include <functional>
 #include <list>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include <functional>
-
-#include "Common.h"
 
 class PlayerbotAI;
 

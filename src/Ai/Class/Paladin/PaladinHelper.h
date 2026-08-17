@@ -7,11 +7,9 @@
 #ifndef PLAYERBOTS_PALADINHELPER_H
 #define PLAYERBOTS_PALADINHELPER_H
 
-#include <initializer_list>
-
+#include "Player.h"
 #include "Unit.h"
-
-class Player;
+#include <initializer_list>
 
 namespace ai::paladin
 {

@@ -9,9 +9,9 @@
 
 #include "Action.h"
 #include "AttackAction.h"
+#include "FoSTriggers.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
-#include "FoSTriggers.h"
 
 const Position BRONJAHM_TANK_POSITION = Position(5297.920f, 2506.698f, 686.068f);
 

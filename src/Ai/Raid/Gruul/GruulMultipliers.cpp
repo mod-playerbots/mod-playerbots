@@ -5,10 +5,10 @@
  */
 
 #include "GruulMultipliers.h"
-#include "GruulActions.h"
-#include "GruulHelpers.h"
 #include "ChooseTargetActions.h"
 #include "GenericSpellActions.h"
+#include "GruulActions.h"
+#include "GruulHelpers.h"
 #include "HunterActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"

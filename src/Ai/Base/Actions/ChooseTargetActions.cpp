@@ -5,15 +5,14 @@
  */
 
 #include "ChooseTargetActions.h"
-
 #include "ChooseRpgTargetAction.h"
 #include "Event.h"
 #include "LootObjectStack.h"
 #include "NewRpgStrategy.h"
 #include "Playerbots.h"
-#include "RtiTargetValue.h"
 #include "PossibleRpgTargetsValue.h"
 #include "PvpTriggers.h"
+#include "RtiTargetValue.h"
 #include "ServerFacade.h"
 
 bool AttackEnemyPlayerAction::isUseful()
@@ -93,12 +92,9 @@ bool AttackAnythingAction::Execute(Event event)
     {
         if (Unit* grindTarget = GetTarget())
         {
-            if (char const* grindName = grindTarget->GetName().c_str())
-            {
-                context->GetValue<ObjectGuid>("pull target")->Set(grindTarget->GetGUID());
-                bot->GetMotionMaster()->Clear();
-                // bot->StopMoving();
-            }
+            context->GetValue<ObjectGuid>("pull target")->Set(grindTarget->GetGUID());
+            bot->GetMotionMaster()->Clear();
+            // bot->StopMoving();
         }
     }
 

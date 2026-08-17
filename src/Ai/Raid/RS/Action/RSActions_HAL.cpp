@@ -4,13 +4,6 @@
  * or (at your option) any later version.
  */
 
-#include <algorithm>
-#include <cmath>
-#include <limits>
-#include <map>
-#include <utility>
-#include <vector>
-
 #include "ObjectAccessor.h"
 #include "Pet.h"
 #include "Playerbots.h"
@@ -19,6 +12,12 @@
 #include "ThreatManager.h"
 #include "Timer.h"
 #include "Vehicle.h"
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <map>
+#include <utility>
+#include <vector>
 
 bool RsHalionTankPositionAction::Execute(Event )
 {

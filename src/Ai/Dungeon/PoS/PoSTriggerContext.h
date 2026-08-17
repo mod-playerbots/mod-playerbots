@@ -8,7 +8,6 @@
 #define PLAYERBOTS_POSTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
-#include "AiObjectContext.h"
 #include "PoSTriggers.h"
 
 class WotlkDungeonPoSTriggerContext : public NamedObjectContext<Trigger>

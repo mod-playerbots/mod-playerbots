@@ -5,7 +5,6 @@
  */
 
 #include "RtiTriggers.h"
-
 #include "Playerbots.h"
 
 bool NoRtiTrigger::IsActive()

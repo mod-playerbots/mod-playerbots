@@ -4,9 +4,9 @@
  */
 
 #include "PlayerbotFactory.h"
-
 #include "AccountMgr.h"
 #include "AiFactory.h"
+#include "AiObjectContext.h"
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
 #include "DBCStores.h"
@@ -14,6 +14,7 @@
 #include "GuildMgr.h"
 #include "InventoryAction.h"
 #include "Item.h"
+#include "ItemPackets.h"
 #include "ItemTemplate.h"
 #include "ItemVisitors.h"
 #include "Log.h"
@@ -24,8 +25,8 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
-#include "PlayerbotRepository.h"
 #include "PlayerbotGuildMgr.h"
+#include "PlayerbotRepository.h"
 #include "Playerbots.h"
 #include "QuestDef.h"
 #include "RandomItemMgr.h"
@@ -34,8 +35,8 @@
 #include "SharedDefines.h"
 #include "StatsWeightCalculator.h"
 #include "World.h"
-#include "AiObjectContext.h"
-#include "ItemPackets.h"
+#include <array>
+#include <utility>
 
 #include <array>
 #include <utility>
@@ -618,6 +619,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     LOG_DEBUG("playerbots", "{} randomizing {} (level {} class = {})...", (incremental ? "Incremental" : "Full"),
              bot->GetName().c_str(), level, bot->getClass());
     // LOG_DEBUG("playerbots", "Preparing to {} randomize...", (incremental ? "incremental" : "full"));
+    uint32 oldLevel = bot->GetLevel();
     Prepare();
     LOG_DEBUG("playerbots", "Resetting player...");
     PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Reset");
@@ -633,8 +635,9 @@ void PlayerbotFactory::Randomize(bool incremental)
         ClearSkills();
         ClearSpells();
         ResetQuests();
+
         if (!sPlayerbotAIConfig.equipAndSpecPersistence ||
-            level < uint32(sPlayerbotAIConfig.equipAndSpecPersistenceLevel))
+            level < uint32(sPlayerbotAIConfig.equipAndSpecPersistenceLevel) || level < oldLevel)
         {
             ClearAllItems();
         }
@@ -2419,7 +2422,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
             bool isTrinketSlot = (slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2);
             calculator.SetExcludeResilience(isTrinketSlot);
 
-            if (Item* oldItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
                 bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
 
             std::vector<std::pair<uint32, int32>>& ids = items[slot];
@@ -3673,6 +3676,33 @@ void PlayerbotFactory::InitAmmo()
 uint32 PlayerbotFactory::CalcMixedGearScore(uint32 gs, uint32 quality)
 {
     return gs * PlayerbotAI::GetItemScoreMultiplier(ItemQualities(quality));
+}
+
+void PlayerbotFactory::DestroyEquippedGear(Player* bot)
+{
+    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+    {
+        if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
+            continue;
+        if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
+    }
+}
+
+void PlayerbotFactory::AutoGear(Player* bot, uint32 itemQuality, uint32 ilvl, bool incremental, bool secondChance,
+                                bool applyFinishers)
+{
+    uint32 gs = ilvl == 0 ? 0 : CalcMixedGearScore(ilvl, itemQuality);
+    PlayerbotFactory factory(bot, bot->GetLevel(), itemQuality, gs);
+    factory.InitEquipment(incremental, secondChance);
+
+    if (!applyFinishers)
+        return;
+
+    factory.InitAmmo();
+    if (bot->GetLevel() >= sPlayerbotAIConfig.minEnchantingBotLevel)
+        factory.ApplyEnchantAndGemsNew();
+    bot->DurabilityRepairAll(false, 1.0f, false);
 }
 
 void PlayerbotFactory::InitMounts()

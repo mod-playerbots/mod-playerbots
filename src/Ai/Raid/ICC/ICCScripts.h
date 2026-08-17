@@ -7,12 +7,12 @@
 #ifndef PLAYERBOTS_ICCSCRIPTS_H
 #define PLAYERBOTS_ICCSCRIPTS_H
 
+#include "ObjectGuid.h"
+#include "Position.h"
 #include <map>
 #include <set>
 #include <unordered_map>
 #include <vector>
-#include "ObjectGuid.h"
-#include "Position.h"
 
 namespace IcecrownHelpers
 {

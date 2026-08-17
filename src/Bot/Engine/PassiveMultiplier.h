@@ -7,9 +7,8 @@
 #ifndef PLAYERBOTS_PASSIVEMULTIPLIER_H
 #define PLAYERBOTS_PASSIVEMULTIPLIER_H
 
-#include <vector>
-
 #include "Multiplier.h"
+#include <vector>
 
 class Action;
 class PlayerbotAI;

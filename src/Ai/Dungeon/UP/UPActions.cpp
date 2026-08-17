@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "UPActions.h"
+#include "Playerbots.h"
 
 bool AvoidFreezingCloudAction::Execute(Event /*event*/)
 {

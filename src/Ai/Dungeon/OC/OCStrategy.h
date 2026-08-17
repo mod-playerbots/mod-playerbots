@@ -8,7 +8,6 @@
 #define PLAYERBOTS_OCSTRATEGY_H
 
 #include "Multiplier.h"
-#include "AiObjectContext.h"
 #include "Strategy.h"
 
 class WotlkDungeonOccStrategy : public Strategy

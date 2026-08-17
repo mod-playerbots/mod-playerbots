@@ -5,7 +5,6 @@
  */
 
 #include "Aq20Utils.h"
-
 #include "SpellAuras.h"
 
 uint32 const OSSIRIAN_BUFF = 25176;

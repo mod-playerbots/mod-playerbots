@@ -5,7 +5,6 @@
  */
 
 #include "SSCActions.h"
-#include "SSCHelpers.h"
 #include "AiFactory.h"
 #include "Corpse.h"
 #include "LootAction.h"
@@ -14,6 +13,7 @@
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "RtiTargetValue.h"
+#include "SSCHelpers.h"
 
 using namespace SerpentShrineCavernHelpers;
 

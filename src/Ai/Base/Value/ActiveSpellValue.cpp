@@ -5,7 +5,6 @@
  */
 
 #include "ActiveSpellValue.h"
-
 #include "Playerbots.h"
 
 uint32 ActiveSpellValue::Calculate()

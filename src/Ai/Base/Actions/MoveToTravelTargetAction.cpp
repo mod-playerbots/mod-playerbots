@@ -5,7 +5,6 @@
  */
 
 #include "MoveToTravelTargetAction.h"
-
 #include "ChooseRpgTargetAction.h"
 #include "LootObjectStack.h"
 #include "Playerbots.h"

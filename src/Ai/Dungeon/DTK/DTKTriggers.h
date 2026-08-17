@@ -7,10 +7,10 @@
 #ifndef PLAYERBOTS_DTKTRIGGERS_H
 #define PLAYERBOTS_DTKTRIGGERS_H
 
-#include "Trigger.h"
-#include "PlayerbotAIConfig.h"
-#include "GenericTriggers.h"
 #include "DungeonStrategyUtils.h"
+#include "GenericTriggers.h"
+#include "PlayerbotAIConfig.h"
+#include "Trigger.h"
 
 enum DrakTharonIDs
 {

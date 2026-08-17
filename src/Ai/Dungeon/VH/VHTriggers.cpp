@@ -4,10 +4,9 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "VHTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
+#include "Playerbots.h"
 
 bool ErekemTargetTrigger::IsActive()
 {

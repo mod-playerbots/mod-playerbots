@@ -5,13 +5,13 @@
  */
 
 #include "RandomPlayerbotFactory.h"
-
 #include "AccountMgr.h"
 #include "ArenaTeamMgr.h"
 #include "CharacterCache.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "DatabaseEnv.h"
+#include "Log.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotOperations.h"
@@ -21,7 +21,6 @@
 #include "SharedDefines.h"
 #include "SocialMgr.h"
 #include "Timer.h"
-#include "Log.h"
 
 constexpr RandomPlayerbotFactory::NameRaceAndGender RandomPlayerbotFactory::CombineRaceAndGender(uint8 race,
                                                                                                 uint8 gender)
@@ -359,7 +358,7 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
         {
             Field* fields = typeCheck->Fetch();
             uint8 accountType = fields[0].Get<uint8>();
-            uint32 count = fields[1].Get<uint32>();
+            uint32 count = static_cast<uint32>(fields[1].Get<uint64>());
 
             if (accountType == 0) existingUnassignedAccounts = count;
             else if (accountType == 1) existingRndBotAccounts = count;

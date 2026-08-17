@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "UKActions.h"
+#include "Playerbots.h"
 
 bool AttackFrostTombAction::isUseful() { return !botAI->IsHeal(bot); }
 bool AttackFrostTombAction::Execute(Event /*event*/)

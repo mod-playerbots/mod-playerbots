@@ -7,9 +7,9 @@
 #ifndef PLAYERBOTS_FISHVALUES_H
 #define PLAYERBOTS_FISHVALUES_H
 
-#include "Value.h"
-#include "TravelMgr.h"
 #include "NamedObjectContext.h"
+#include "TravelMgr.h"
+#include "Value.h"
 
 class PlayerbotAI;
 

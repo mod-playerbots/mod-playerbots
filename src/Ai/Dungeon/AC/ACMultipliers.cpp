@@ -7,11 +7,11 @@
 #include "ACMultipliers.h"
 #include "ACActions.h"
 #include "ACTriggers.h"
-#include "MovementActions.h"
-#include "ReachTargetActions.h"
-#include "FollowActions.h"
 #include "AiObjectContext.h"
+#include "FollowActions.h"
+#include "MovementActions.h"
 #include "Playerbots.h"
+#include "ReachTargetActions.h"
 
 // Shirrak the Dead Watcher
 

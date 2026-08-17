@@ -5,15 +5,13 @@
  */
 
 #include "PvpTriggers.h"
-
 #include "BattleGroundTactics.h"
+#include "BattlegroundAV.h"
 #include "BattlegroundEY.h"
 #include "BattlegroundMgr.h"
 #include "BattlegroundWS.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "BattlegroundAV.h"
-#include "BattlegroundEY.h"
 
 bool EnemyPlayerNear::IsActive() { return AI_VALUE(Unit*, "enemy player target"); }
 

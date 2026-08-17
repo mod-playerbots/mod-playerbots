@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_BTTRIGGERCONTEXT_H
 #define PLAYERBOTS_BTTRIGGERCONTEXT_H
 
-#include "NamedObjectContext.h"
 #include "BTTriggers.h"
+#include "NamedObjectContext.h"
 
 class RaidBlackTempleTriggerContext : public NamedObjectContext<Trigger>
 {

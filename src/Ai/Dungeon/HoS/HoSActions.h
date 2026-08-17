@@ -9,9 +9,9 @@
 
 #include "Action.h"
 #include "AttackAction.h"
+#include "HoSTriggers.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
-#include "HoSTriggers.h"
 
 class ShatterSpreadAction : public MovementAction
 {

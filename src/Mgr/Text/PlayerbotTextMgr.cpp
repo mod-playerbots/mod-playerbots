@@ -4,13 +4,11 @@
  * or (at your option) any later version.
  */
 
-#include "DatabaseEnv.h"
-#include "WorldSessionMgr.h"
-#include "Random.h"
-// Required due to a poor implementation by AC
-#include "QueryResult.h"
-
 #include "PlayerbotTextMgr.h"
+#include "DatabaseEnv.h"
+#include "QueryResult.h"    // Required due to a poor implementation by AC
+#include "Random.h"
+#include "WorldSessionMgr.h"
 
 void PlayerbotTextMgr::replaceAll(std::string& str, const std::string& from, const std::string& to)
 {

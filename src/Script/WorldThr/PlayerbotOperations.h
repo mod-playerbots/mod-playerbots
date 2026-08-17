@@ -10,14 +10,14 @@
 #include "Group.h"
 #include "GroupMgr.h"
 #include "GuildMgr.h"
-#include "Playerbots.h"
 #include "ObjectAccessor.h"
-#include "PlayerbotOperation.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotMgr.h"
+#include "PlayerbotOperation.h"
 #include "PlayerbotRepository.h"
+#include "Playerbots.h"
 #include "RandomPlayerbotFactory.h"
 #include "RandomPlayerbotMgr.h"
 #include "UseMeetingStoneAction.h"
@@ -431,7 +431,7 @@ public:
             return false;
 
         Group* group = bot->GetGroup();
-        if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && botAI->HasActivePlayerMaster())
+        if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && IsRealPlayer(botAI->GetMaster()))
             PlayerbotRepository::instance().Save(botAI);
 
         return true;

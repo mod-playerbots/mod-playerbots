@@ -5,7 +5,6 @@
  */
 
 #include "DistanceValue.h"
-
 #include "Formations.h"
 #include "LootObjectStack.h"
 #include "Playerbots.h"

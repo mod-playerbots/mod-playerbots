@@ -4,8 +4,6 @@
  * or (at your option) any later version.
  */
 
-#include <random>
-
 #include "ChooseRpgTargetAction.h"
 #include "BudgetValues.h"
 #include "ChatHelper.h"
@@ -13,13 +11,14 @@
 #include "Formations.h"
 #include "GuildCreateActions.h"
 #include "Playerbots.h"
+#include "PossibleRpgTargetsValue.h"
 #include "RpgSubActions.h"
 #include "ServerFacade.h"
-#include "PossibleRpgTargetsValue.h"
+#include <random>
 
 bool ChooseRpgTargetAction::HasSameTarget(ObjectGuid guid, uint32 max, GuidVector const& nearGuids)
 {
-    if (botAI->HasRealPlayerMaster())
+    if (botAI->HasGameClientMaster())
         return false;
 
     uint32 num = 0;
@@ -312,7 +311,7 @@ bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldPosition pos)
 
     bool inDungeon = false;
 
-    if (botAI->HasActivePlayerMaster())
+    if (IsRealPlayer(botAI->GetMaster()))
     {
         if (realMaster->IsInWorld() && realMaster->GetMap()->IsDungeon() && bot->GetMapId() == realMaster->GetMapId())
             inDungeon = true;
@@ -334,7 +333,7 @@ bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldPosition pos)
     Formation* formation = AI_VALUE(Formation*, "formation");
     float distance = groupLeader->GetDistance2d(pos.GetPositionX(), pos.GetPositionY());
 
-    if (!botAI->HasActivePlayerMaster() && distance < 50.0f)
+    if (!IsRealPlayer(botAI->GetMaster()) && distance < 50.0f)
     {
         Player* player = groupLeader;
         if ((groupLeader && !groupLeader->isMoving()) ||

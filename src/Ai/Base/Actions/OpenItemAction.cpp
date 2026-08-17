@@ -5,13 +5,13 @@
  */
 
 #include "OpenItemAction.h"
-#include "PlayerbotAI.h"
-#include "ItemTemplate.h"
-#include "WorldPacket.h"
-#include "Player.h"
-#include "ObjectMgr.h"
-#include "LootObjectStack.h"
 #include "AiObjectContext.h"
+#include "ItemTemplate.h"
+#include "LootObjectStack.h"
+#include "ObjectMgr.h"
+#include "Player.h"
+#include "PlayerbotAI.h"
+#include "WorldPacket.h"
 
 bool OpenItemAction::Execute(Event /*event*/)
 {

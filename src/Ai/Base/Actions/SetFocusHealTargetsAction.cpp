@@ -5,11 +5,9 @@
  */
 
 #include "SetFocusHealTargetsAction.h"
-
 #include "ObjectAccessor.h"
-#include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
-
+#include "Playerbots.h"
 #include <algorithm>
 #include <cctype>
 

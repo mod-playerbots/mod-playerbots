@@ -5,7 +5,6 @@
  */
 
 #include "BudgetValues.h"
-
 #include "Playerbots.h"
 
 uint32 MaxGearRepairCostValue::Calculate()
@@ -226,7 +225,7 @@ uint32 FreeMoneyForValue::Calculate()
     if (botAI->HasCheat(BotCheatMask::gold))
         return 10000000;
 
-    if (botAI->HasActivePlayerMaster())
+    if (IsRealPlayer(botAI->GetMaster()))
         return money;
 
     uint32 savedMoney = AI_VALUE2(uint32, "total money needed for", getQualifier()) -

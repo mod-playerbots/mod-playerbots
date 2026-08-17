@@ -5,11 +5,9 @@
  */
 
 #include "PartyMemberSnaredTargetValue.h"
-
-#include <limits>
-
 #include "PlayerbotAIAware.h"
 #include "Playerbots.h"
+#include <limits>
 
 class PartyMemberSnaredTargetPredicate : public FindPlayerPredicate, public PlayerbotAIAware
 {

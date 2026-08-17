@@ -7,15 +7,15 @@
 #ifndef PLAYERBOTS_RANDOMPLAYERBOTFACTORY_H
 #define PLAYERBOTS_RANDOMPLAYERBOTFACTORY_H
 
+#include "ArenaTeam.h"
+#include "Battleground.h"
+#include "Common.h"
+#include "DBCEnums.h"
+#include "SharedDefines.h"
 #include <map>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include "ArenaTeam.h"
-#include "Common.h"
-#include "DBCEnums.h"
-#include "SharedDefines.h"
 
 class Player;
 class WorldSession;

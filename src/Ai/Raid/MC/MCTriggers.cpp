@@ -5,9 +5,8 @@
  */
 
 #include "MCTriggers.h"
-
-#include "SharedDefines.h"
 #include "MCHelpers.h"
+#include "SharedDefines.h"
 
 using namespace MoltenCoreHelpers;
 
