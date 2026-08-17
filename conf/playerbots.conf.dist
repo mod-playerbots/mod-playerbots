@@ -559,7 +559,7 @@ AiPlayerbot.AltMaintenanceBags = 1
 AiPlayerbot.AltMaintenanceMounts = 1
 AiPlayerbot.AltMaintenanceSkills = 1
 
-# "Special Spells" consist of any spells listed in AiPlayerbot.RandomBotSpellIds and Death Gate for Death Knights
+# "Special Spells" consist of any spells listed in AiPlayerbot.BotSpellIds and Death Gate for Death Knights
 AiPlayerbot.AltMaintenanceClassSpells = 1
 AiPlayerbot.AltMaintenanceAvailableSpells = 1
 AiPlayerbot.AltMaintenanceSpecialSpells = 1
@@ -1315,8 +1315,8 @@ AiPlayerbot.botActiveAloneSmartScaleWhenMaxLevel = 80
 # QUESTS
 #
 
-# Quests that will be completed and rewarded for all randombots
-AiPlayerbot.RandomBotQuestIds = "3802,5505,6502,7761,7848,10277,10285,11492,13188,13189,24499,24511,24710,24712"
+# Quests that will be completed and rewarded for all bots
+AiPlayerbot.BotQuestIds = "3802,5505,6502,7761,7848,10277,10285,11492,13188,13189,24499,24511,24710,24712"
 
 # Randombots will group with nearby randombots to do shared quests
 # Note: Currently not functioning properly
@@ -1327,7 +1327,7 @@ AiPlayerbot.RandomBotGroupNearby = 0
 AiPlayerbot.AutoDoQuests = 1
 
 # Quest items to keep in bots' inventories (do not automatically destroy)
-AiPlayerbot.RandomBotQuestItems = "5175,5176,5177,5178,6948,11000,12382,13704,16309"
+AiPlayerbot.BotQuestItems = "5175,5176,5177,5178,6948,11000,12382,13704,16309"
 
 #
 #
@@ -1351,7 +1351,7 @@ AiPlayerbot.AutoPickTalents = 1
 
 # Spells every randombot will learn automatically and every altbot will learn with maintenance
 # Default: 54197 (Cold Weather Flying)
-AiPlayerbot.RandomBotSpellIds = "54197"
+AiPlayerbot.BotSpellIds = "54197"
 
 # ID of spell to open lootable chests
 AiPlayerbot.OpenGoSpell = 6477

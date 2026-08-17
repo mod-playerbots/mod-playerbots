@@ -248,11 +248,13 @@ bool PlayerbotAIConfig::Initialize()
     weightTeleToShattrathCity = GetPlayerbotsOption<int>("AiPlayerbot.TeleToShattrathCityWeight", 1);
     weightTeleToDalaran = GetPlayerbotsOption<int>("AiPlayerbot.TeleToDalaranWeight", 1);
     LoadList<std::vector<uint32>>(
-        GetPlayerbotsOption<std::string>("AiPlayerbot.RandomBotQuestItems",
-                                           "5175,5176,5177,5178,6948,11000,12382,13704,16309"),
-        randomBotQuestItems);
-    LoadList<std::vector<uint32>>(GetPlayerbotsOption<std::string>("AiPlayerbot.RandomBotSpellIds", "54197"),
-                                  randomBotSpellIds);
+        GetPlayerbotsOption<std::string>("AiPlayerbot.BotQuestItems",
+                                           "5175,5176,5177,5178,6948,11000,12382,13704,16309",
+                                         { "AiPlayerbot.RandomBotQuestItems" }),
+        botQuestItems);
+    LoadList<std::vector<uint32>>(GetPlayerbotsOption<std::string>("AiPlayerbot.BotSpellIds", "54197",
+                                                                   { "AiPlayerbot.RandomBotSpellIds" }),
+                                  botSpellIds);
     LoadList<std::vector<uint32>>(
         GetPlayerbotsOption<std::string>("AiPlayerbot.PvpProhibitedZoneIds",
                                            "2255,656,2361,2362,2363,976,35,2268,3425,392,541,1446,3828,3712,3738,3565,"
@@ -265,9 +267,11 @@ bool PlayerbotAIConfig::Initialize()
         pvpProhibitedAreaIds);
     fastReactInBG = GetPlayerbotsOption<bool>("AiPlayerbot.FastReactInBG", true);
     LoadList<std::vector<uint32>>(
-        GetPlayerbotsOption<std::string>("AiPlayerbot.RandomBotQuestIds", "3802,5505,6502,7761,7848,10277,10285,11492,"
-                                           "13188,13189,24499,24511,24710,24712"),
-        randomBotQuestIds);
+        GetPlayerbotsOption<std::string>("AiPlayerbot.BotQuestIds",
+                                           "3802,5505,6502,7761,7848,10277,10285,11492,"
+                                           "13188,13189,24499,24511,24710,24712",
+                                         { "AiPlayerbot.RandomBotQuestIds" }),
+        botQuestIds);
 
     LoadSet<std::set<uint32>>(
         GetPlayerbotsOption<std::string>("AiPlayerbot.DisallowedGameObjects",
@@ -994,9 +998,9 @@ bool PlayerbotAIConfig::IsInRandomAccountList(uint32 id)
     return find(randomBotAccounts.begin(), randomBotAccounts.end(), id) != randomBotAccounts.end();
 }
 
-bool PlayerbotAIConfig::IsInRandomQuestItemList(uint32 id)
+bool PlayerbotAIConfig::IsInBotQuestItemList(uint32 id)
 {
-    return find(randomBotQuestItems.begin(), randomBotQuestItems.end(), id) != randomBotQuestItems.end();
+    return find(botQuestItems.begin(), botQuestItems.end(), id) != botQuestItems.end();
 }
 
 bool PlayerbotAIConfig::IsPvpProhibited(uint32 zoneId, uint32 areaId)

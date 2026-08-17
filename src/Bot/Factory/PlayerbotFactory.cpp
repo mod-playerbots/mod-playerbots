@@ -419,8 +419,8 @@ void PlayerbotFactory::Init()
         }
     }
 
-    for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.randomBotQuestIds.begin();
-         i != sPlayerbotAIConfig.randomBotQuestIds.end(); ++i)
+    for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.botQuestIds.begin();
+         i != sPlayerbotAIConfig.botQuestIds.end(); ++i)
     {
         uint32 questId = *i;
         AddPrevQuests(questId, specialQuestIds);
@@ -1739,7 +1739,7 @@ private:
         if (keep.find(id) != keep.end())
             return false;
 
-        if (sPlayerbotAIConfig.IsInRandomQuestItemList(id))
+        if (sPlayerbotAIConfig.IsInBotQuestItemList(id))
             return true;
 
         return false;
@@ -3355,8 +3355,8 @@ void PlayerbotFactory::InitClassSpells()
 
 void PlayerbotFactory::InitSpecialSpells()
 {
-    for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.randomBotSpellIds.begin();
-         i != sPlayerbotAIConfig.randomBotSpellIds.end(); ++i)
+    for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.botSpellIds.begin();
+         i != sPlayerbotAIConfig.botSpellIds.end(); ++i)
     {
         uint32 spellId = *i;
         bot->learnSpell(spellId);
