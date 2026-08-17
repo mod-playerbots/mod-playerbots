@@ -153,9 +153,9 @@ public:
     std::vector<uint32> randomBotSpellIds;
     std::vector<uint32> randomBotQuestIds;
     uint32 randomBotTeleportDistance;
-    float randomGearLoweringChance;
-    int32 randomGearQualityLimit;
-    int32 randomGearScoreLimit;
+    float gearLoweringChance;
+    int32 gearQualityLimit;
+    int32 gearScoreLimit;
     bool preferClassArmorType;
     bool preferredSpecWeapons;
     float randomBotMinLevelChance, randomBotMaxLevelChance;
@@ -348,8 +348,8 @@ public:
     uint32 commandServerPort;
     bool perfMonEnabled;
     bool summonWhenGroup;
-    ShowHideCosmetic randomBotShowHelmet;
-    ShowHideCosmetic randomBotShowCloak;
+    ShowHideCosmetic botShowHelmet;
+    ShowHideCosmetic botShowCloak;
     bool randomBotFixedLevel;
     bool disableRandomLevels;
     float randomBotXPRate;

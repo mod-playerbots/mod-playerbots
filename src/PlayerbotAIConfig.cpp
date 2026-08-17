@@ -210,9 +210,12 @@ bool PlayerbotAIConfig::Initialize()
                               aoeAvoidSpellWhitelist);
     tellWhenAvoidAoe = GetPlayerbotsOption<bool>("AiPlayerbot.TellWhenAvoidAoe", false);
 
-    randomGearLoweringChance = GetPlayerbotsOption<float>("AiPlayerbot.RandomGearLoweringChance", 0.0f);
-    randomGearQualityLimit = GetPlayerbotsOption<int32>("AiPlayerbot.RandomGearQualityLimit", 3);
-    randomGearScoreLimit = GetPlayerbotsOption<int32>("AiPlayerbot.RandomGearScoreLimit", 0);
+    gearLoweringChance = GetPlayerbotsOption<float>("AiPlayerbot.GearLoweringChance", 0.0f,
+                                                    { "AiPlayerbot.RandomGearLoweringChance" });
+    gearQualityLimit = GetPlayerbotsOption<int32>("AiPlayerbot.GearQualityLimit", 3,
+                                                  { "AiPlayerbot.RandomGearQualityLimit" });
+    gearScoreLimit = GetPlayerbotsOption<int32>("AiPlayerbot.GearScoreLimit", 0,
+                                                { "AiPlayerbot.RandomGearScoreLimit" });
     preferClassArmorType  = GetPlayerbotsOption<bool>("AiPlayerbot.PreferClassArmorType", false);
     preferredSpecWeapons  = GetPlayerbotsOption<bool>("AiPlayerbot.PreferredSpecWeapons", false);
 
@@ -640,30 +643,32 @@ bool PlayerbotAIConfig::Initialize()
     targetPosRecalcDistance = GetPlayerbotsOption<float>("AiPlayerbot.TargetPosRecalcDistance", 0.1f);
 
     //cosmetics
-    switch (GetPlayerbotsOption<int32>("AiPlayerbot.RandomBotShowHelmet", 1))
+    switch (GetPlayerbotsOption<int32>("AiPlayerbot.BotShowHelmet", 1,
+                                       { "AiPlayerbot.RandomBotShowHelmet" }))
     {
         case 0:
-            randomBotShowHelmet = ShowHideCosmetic::ALWAYS_HIDE;
+            botShowHelmet = ShowHideCosmetic::ALWAYS_HIDE;
             break;
         case 2:
-            randomBotShowHelmet = ShowHideCosmetic::RANDOMIZE;
+            botShowHelmet = ShowHideCosmetic::RANDOMIZE;
             break;
         case 1:
         default:
-            randomBotShowHelmet = ShowHideCosmetic::ALWAYS_SHOW;
+            botShowHelmet = ShowHideCosmetic::ALWAYS_SHOW;
             break;
     }
-    switch (GetPlayerbotsOption<int32>("AiPlayerbot.RandomBotShowCloak", 1))
+    switch (GetPlayerbotsOption<int32>("AiPlayerbot.BotShowCloak", 1,
+                                       { "AiPlayerbot.RandomBotShowCloak" }))
     {
         case 0:
-            randomBotShowCloak = ShowHideCosmetic::ALWAYS_HIDE;
+            botShowCloak = ShowHideCosmetic::ALWAYS_HIDE;
             break;
         case 2:
-            randomBotShowCloak = ShowHideCosmetic::RANDOMIZE;
+            botShowCloak = ShowHideCosmetic::RANDOMIZE;
             break;
         case 1:
         default:
-            randomBotShowCloak = ShowHideCosmetic::ALWAYS_SHOW;
+            botShowCloak = ShowHideCosmetic::ALWAYS_SHOW;
             break;
     }
 
