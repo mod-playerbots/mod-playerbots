@@ -370,8 +370,8 @@ bool PlayerbotFactory::LearnProfessionSpecialization(Player* bot,
     return bot->HasSpell(knownSpellId);
 }
 
-PlayerbotFactory::PlayerbotFactory(Player* bot, uint32 level, uint32 itemQuality, uint32 gearScoreLimit)
-    : level(level), itemQuality(itemQuality), gearScoreLimit(gearScoreLimit), bot(bot)
+PlayerbotFactory::PlayerbotFactory(Player* bot, uint32 level, uint32 itemQuality, uint32 maxGearScore)
+    : level(level), itemQuality(itemQuality), maxGearScore(maxGearScore), bot(bot)
 {
     botAI = GET_PLAYERBOT_AI(bot);
     if (!this->itemQuality)
@@ -381,7 +381,7 @@ PlayerbotFactory::PlayerbotFactory(Player* bot, uint32 level, uint32 itemQuality
                         : PlayerbotFactory::CalcMixedGearScore(sPlayerbotAIConfig.gearScoreLimit,
                                                                sPlayerbotAIConfig.gearQualityLimit);
         this->itemQuality = sPlayerbotAIConfig.gearQualityLimit;
-        this->gearScoreLimit = gs;
+        this->maxGearScore = gs;
     }
 }
 
@@ -2267,8 +2267,8 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
 
                         bool shouldCheckGS = desiredQuality > ITEM_QUALITY_NORMAL;
 
-                        if (shouldCheckGS && gearScoreLimit != 0 &&
-                            CalcMixedGearScore(proto->ItemLevel, proto->Quality) > gearScoreLimit)
+                        if (shouldCheckGS && maxGearScore != 0 &&
+                            CalcMixedGearScore(proto->ItemLevel, proto->Quality) > maxGearScore)
                         {
                             continue;
                         }
