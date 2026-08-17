@@ -4778,9 +4778,11 @@ void PlayerbotFactory::InitArenaTeam()
         {
             LOG_INFO("playerbots", "Deleting randombot arena teams...");
 
-            for (auto it = sArenaTeamMgr->GetArenaTeams().begin(); it != sArenaTeamMgr->GetArenaTeams().end(); ++it)
+            // Disband() in ArenaTeam.cpp erases the team from ArenaTeamStore, invalidating the loop
+            // iterator, so the ids are collected before any team is disbanded.
+            std::vector<uint32> teamsToDisband;
+            for (auto const& [teamId, arenateam] : sArenaTeamMgr->GetArenaTeams())
             {
-                ArenaTeam* arenateam = it->second;
                 ObjectGuid captain = arenateam->GetCaptain();
                 if (!captain || !captain.IsPlayer())
                     continue;
@@ -4788,6 +4790,12 @@ void PlayerbotFactory::InitArenaTeam()
                 // The captain's account is checked instead of the 'add' event or anything else that depends on the
                 // bot being online.
                 if (sPlayerbotAIConfig.IsInRandomAccountList(sCharacterCache->GetCharacterAccountIdByGuid(captain)))
+                    teamsToDisband.push_back(teamId);
+            }
+
+            for (uint32 teamId : teamsToDisband)
+            {
+                if (ArenaTeam* arenateam = sArenaTeamMgr->GetArenaTeamById(teamId))
                     arenateam->Disband(nullptr);
             }
 
