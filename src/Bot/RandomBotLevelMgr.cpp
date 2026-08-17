@@ -9,6 +9,7 @@
  */
 
 #include "RandomBotLevelMgr.h"
+#include "ArenaTeamMgr.h"
 #include "DatabaseEnv.h"
 #include "LFGMgr.h"
 #include "Log.h"
