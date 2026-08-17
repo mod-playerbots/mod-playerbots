@@ -1036,6 +1036,13 @@ void RandomBotLevelMgr::OnBotLevelChanged(Player* player, uint8 oldLevel)
 
     uint8 newLevel = player->GetLevel();
 
+    if (newLevel == 1)
+        return;
+
+    if (player->getClass() == CLASS_DEATH_KNIGHT &&
+        newLevel == static_cast<uint8>(sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL)))
+        return;
+
     // SkipFromLevel takes priority and is not affected by ScaledChance or RestrictTimePlayed.
     if (sPlayerbotAIConfig.resetBotLevelSkipFrom > 0 && newLevel == sPlayerbotAIConfig.resetBotLevelSkipFrom)
     {
