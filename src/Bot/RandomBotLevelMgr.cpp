@@ -57,9 +57,9 @@ static bool BotInArenaTeam(Player* bot)
 {
     if (!bot)
         return false;
-    for (uint32 slot = 0; slot < MAX_ARENA_SLOT; ++slot)
+    for (uint8 slot = ARENA_SLOT_2v2; slot <= ARENA_SLOT_5v5; ++slot)
     {
-        if (bot->GetArenaTeamId(slot))
+        if (sArenaTeamMgr->GetArenaTeamById(bot->GetArenaTeamId(slot)))
             return true;
     }
     return false;
