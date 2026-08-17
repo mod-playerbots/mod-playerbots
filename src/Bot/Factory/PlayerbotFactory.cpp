@@ -4769,9 +4769,9 @@ void PlayerbotFactory::InitArenaTeam()
     if (!sPlayerbotAIConfig.IsInRandomAccountList(bot->GetSession()->GetAccountId()))
         return;
 
-    // Currently the teams are only remade after a server restart and if deleteRandomBotArenaTeams = 1
-    // This is because randomBotArenaTeams is only empty on server restart.
-    // A manual reinitalization (.playerbots rndbot init) is also required after the teams have been deleted.
+    // Currently the teams are only remade after a server restart and if deleteRandomBotArenaTeams = 1, this
+    // is because randomBotArenaTeams is only empty on server restart.
+    // A manual reinitialization (.playerbots rndbot init) is also required after the teams have been deleted.
     if (sPlayerbotAIConfig.randomBotArenaTeams.empty())
     {
         if (sPlayerbotAIConfig.deleteRandomBotArenaTeams)
@@ -4781,14 +4781,14 @@ void PlayerbotFactory::InitArenaTeam()
             for (auto it = sArenaTeamMgr->GetArenaTeams().begin(); it != sArenaTeamMgr->GetArenaTeams().end(); ++it)
             {
                 ArenaTeam* arenateam = it->second;
-                if (arenateam->GetCaptain() && arenateam->GetCaptain().IsPlayer())
-                {
-                    Player* bot = ObjectAccessor::FindPlayer(arenateam->GetCaptain());
-                    if (!sRandomPlayerbotMgr.IsRandomBot(bot))
-                        continue;
-                    else
-                        arenateam->Disband(nullptr);
-                }
+                ObjectGuid captain = arenateam->GetCaptain();
+                if (!captain || !captain.IsPlayer())
+                    continue;
+
+                // The captain's account is checked instead of the 'add' event or anything else that depends on the
+                // bot being online.
+                if (sPlayerbotAIConfig.IsInRandomAccountList(sCharacterCache->GetCharacterAccountIdByGuid(captain)))
+                    arenateam->Disband(nullptr);
             }
 
             LOG_INFO("playerbots", "Randombot arena teams deleted");
