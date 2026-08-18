@@ -2583,6 +2583,7 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos,
 
     bool const usedGraph = needsLongPath &&
                            !sTravelNodeMap.getNodes().empty() && !bot->InBattleground();
+    char const* resolveMethod = usedGraph ? "graph" : "probe";
     if (usedGraph)
     {
         out = sTravelNodeMap.GetFullPath(startPos, endPos, bot);
@@ -2597,9 +2598,11 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos,
     // path's tail, keep the cached one (catches probes blocked by geometry).
     // Same cacheUsable gate — never resurrect a dead old-map path.
     if (cacheUsable && !out.empty() &&
-        lastMove.lastPath.getBack().distance(endPos) <=
-            out.getBack().distance(endPos))
+        lastMove.lastPath.getBack().distance(endPos) <= out.getBack().distance(endPos))
+    {
         out = lastMove.lastPath;
+        resolveMethod = "cache-kept";
+    }
 
     // Last-ditch fallback: a single point at the destination, so the
     // caller has at least something to dispatch.
