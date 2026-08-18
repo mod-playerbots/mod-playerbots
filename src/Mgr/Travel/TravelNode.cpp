@@ -1477,26 +1477,6 @@ void TravelNodeMap::removeNode(TravelNode* node)
     nodes.erase(std::remove(nodes.begin(), nodes.end(), nullptr), nodes.end());
 }
 
-void TravelNodeMap::fullLinkNode(TravelNode* startNode, Unit* bot)
-{
-    WorldPosition* startPosition = startNode->getPosition();
-    std::vector<TravelNode*> linkNodes = getNodes(*startPosition);
-
-    for (auto& endNode : linkNodes)
-    {
-        if (endNode == startNode)
-            continue;
-
-        if (startNode->hasLinkTo(endNode))
-            continue;
-
-        startNode->BuildPath(endNode, bot);
-        endNode->BuildPath(startNode, bot);
-    }
-
-    startNode->setLinked(true);
-}
-
 std::vector<TravelNode*> TravelNodeMap::getNodes(WorldPosition pos, float range)
 {
     std::vector<TravelNode*> retVec;
@@ -2785,40 +2765,6 @@ void TravelNodeMap::generateTaxiPaths()
     }
 
     LOG_INFO("playerbots", ">> Generated {} flight links from {} taxi paths.", created, totalPaths);
-}
-
-void TravelNodeMap::removeLowNodes()
-{
-    std::vector<TravelNode*> goodNodes;
-    std::vector<TravelNode*> remNodes;
-    for (auto& node : TravelNodeMap::instance().getNodes())
-    {
-        if (!node->getPosition()->isOverworld())
-            continue;
-
-        if (std::find(goodNodes.begin(), goodNodes.end(), node) != goodNodes.end())
-            continue;
-
-        if (std::find(remNodes.begin(), remNodes.end(), node) != remNodes.end())
-            continue;
-
-        std::vector<TravelNode*> nodes = node->getNodeMap(true);
-
-        if (nodes.size() < 5)
-            remNodes.insert(remNodes.end(), nodes.begin(), nodes.end());
-        else
-            goodNodes.insert(goodNodes.end(), nodes.begin(), nodes.end());
-    }
-
-    // Never prune important nodes (flight masters, innkeepers, spirit healers,
-    // spirit guides). removeLowNodes runs BEFORE generateTaxiPaths, so at this
-    // point an FM on an isolated/high platform only has its tiny walk-cluster
-    // and scores < 5 -- it would be deleted moments before the flight links that
-    // connect it to the taxi network are added, leaving flight masters with no
-    // node and large unreachable-destination hotspots.
-    for (auto& node : remNodes)
-        if (!node->isImportant())
-            TravelNodeMap::instance().removeNode(node);
 }
 
 void TravelNodeMap::removeUselessPaths()
