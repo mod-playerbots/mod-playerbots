@@ -177,51 +177,21 @@ protected:
     bool MoveNear(uint32 mapId, float x, float y, float z, float distance = sPlayerbotAIConfig.contactDistance,
                   MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
     bool MoveToLOS(WorldObject* target, bool ranged = false);
+    // Stages 5-14 of the funnel above: the routing pipeline. Reached from
+    // MoveTo(mapId,...) unless a stage-4 bypass sends the move straight to
+    // DoMovePoint. `react=true` opts this move out of the awake early-out.
     bool MoveTo(uint32 mapId, float x, float y, float z, bool idle = false, bool react = false,
                 bool normal_only = false, bool exact_waypoint = false,
                 MovementPriority priority = MovementPriority::MOVEMENT_NORMAL, bool lessDelay = false,
                 bool backwards = false, bool ignoreEnemyTargets = false);
 
-    // Path-aware funnel mirroring the reference movement implementation.
-    // Runs UpdateMovementState + IsMovingAllowed + WaitForTransport gates,
-    // applies the targetPosRecalcDistance short-stop, resolves a TravelPath
-    // via ResolveMovePath (which gates graph A* by sightDistance), trims
-    // with makeShortCut, handles special head segments
-    // (portal/area-trigger/transport/flight) via HandleSpecialMovement,
-    // clips at hostile creatures via ClipPath (unless ignoreEnemyTargets),
-    // and dispatches the resulting walk via DispatchMovement.
-    // MoveTo(mapId,...) delegates here unless an intentional bypass
-    // (exact_waypoint / disableMoveSplinePath / flying / swimming /
-    // backwards) routes the move straight to DoMovePoint.
-    // `react=true` opts the move out of the end-of-dispatch
-    // WaitForReach AI-loop block — combat callers should set this so the
-    // bot can keep re-evaluating mid-chase. Default false matches the
-    // reference's MoveTo2 default.
     bool MoveTo2(WorldPosition endPos,
                  bool idle = false, bool react = false,
-                 bool noPath = false, bool ignoreEnemyTargets = false,
+                 bool ignoreEnemyTargets = false,
                  MovementPriority priority = MovementPriority::MOVEMENT_NORMAL,
                  bool lessDelay = false);
 
-    // Centralized walk dispatch. Mirrors the reference's DispatchMovement
-    // shape: takes a TravelPath, builds the PointsArray internally,
-    // applies inactive-bot teleport carve-out, masterWalking mode,
-    // pre-dispatch state cleanup (clear emote, stand, interrupt cast),
-    // transport-passenger coordinate sandwich
-    // (CalculatePassengerPosition → UpdateAllowedPositionZ → Offset)
-    // around the per-point Z snap, mm.Clear → MovePoint(last) →
-    // MoveSplinePath. Caches the destination + duration on lastMove.
-    //
-    // Divergence from reference: reference ends with WaitForReach(size)
-    // which blocks the AI loop until the move completes. AC's combat
-    // callers (ReachCombatTo) currently funnel through MoveTo → MoveTo2
-    // → DispatchMovement; blocking the AI loop here would suspend combat
-    // re-evaluation for the full move duration. Until combat dispatch is
-    // restructured to bypass MoveTo2, the WaitForReach is deliberately
-    // omitted.
-    // `react=true` skips the end-of-dispatch WaitForReach so the AI
-    // loop isn't blocked while the spline plays — combat callers use
-    // this to keep re-evaluating mid-chase.
+    // Stage 14: Centralized walking dispatch.
     bool DispatchMovement(TravelPath path,
                           WorldPosition dest,
                           char const* label,
