@@ -148,14 +148,10 @@ class Position;
 
 // Default acceptable path types for GeneratePath
 constexpr uint32 DEFAULT_PATH_ACCEPT_MASK = PATHFIND_NORMAL | PATHFIND_INCOMPLETE;
-constexpr uint32 RELAXED_PATH_ACCEPT_MASK = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY;
 
 struct PathResult
 {
     Movement::PointsArray points;
-    G3D::Vector3 actualEnd;
-    G3D::Vector3 end;
-    PathType pathType;
     bool reachable;
 };
 

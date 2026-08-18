@@ -335,14 +335,19 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
         mover = vehicle->GetBase();
     }
 
-    // MovementPriority dictates replacement: while the bot is still
-    // executing a walk — or standing its ground under an explicit hold
-    // (SetNextMovementDelay) — a lower-priority wish does not replace it;
-    // higher or equal priority does (newest wins). Nothing more elaborate
-    // ships here — full arbitration is the reaction engine's job
-    // (addReactionEngine branch).
+    // MovementPriority dictates replacement. Walk in progress: a
+    // lower-priority wish does not replace it, higher or equal does
+    // (newest wins). Explicit hold (SetNextMovementDelay): STRICT — only
+    // a strictly higher priority breaks it, so a NORMAL hold (RPG
+    // reading/patrol pause) blocks the bot's own NORMAL walks but yields
+    // to combat, and a FORCED encounter hold is absolute for its
+    // duration (upstream IsWaitingForLastMove semantics). Nothing more
+    // elaborate ships here — full arbitration is the reaction engine's
+    // job (addReactionEngine branch).
     LastMovement& lastMoveGate = AI_VALUE(LastMovement&, "last movement");
-    if (priority < lastMoveGate.priority && (bot->isMoving() || lastMoveGate.IsHoldActive()))
+    if (priority < lastMoveGate.priority && bot->isMoving())
+        return false;
+    if (lastMoveGate.IsHoldActive() && priority <= lastMoveGate.priority)
         return false;
 
     if (IsDuplicateMove(x, y, z))
