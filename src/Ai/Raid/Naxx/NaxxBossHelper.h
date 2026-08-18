@@ -79,6 +79,88 @@ protected:
     uint32 _timer = 0;
 };
 
+// Heigan the Unclean ("safety dance").
+//
+// Everything here is derived from observable state only; the core boss script (boss_heigan.cpp) is not touched.
+// The fight is fully periodic:
+//   * slow dance (starts on pull, 90s): eruptions at 15s then every 10s (8 eruptions);
+//   * fast dance (45s): Heigan teleports onto his platform and channels Plague Cloud (29350, 45s aura, 1s after
+//     the teleport), eruptions at 7s then every 4s (10 eruptions); then back to the slow dance.
+// The eruption itself is cast by the floor gameobjects (never by the boss), so it cannot be seen as a boss cast;
+// instead the safe spot is computed from the phase clock. In each phase the safe section walks
+// waypoint 0 -> 1 -> 2 -> 3 -> 2 -> 1 -> 0 -> ... (the core's sections 3,2,1,0,1,2,3,...).
+// The phase clock is exact during the fast dance (Plague Cloud remaining duration) and derived from that for the
+// following slow dances; only the very first slow dance is anchored on the moment the raid saw the pull.
+// The clock is shared between all bots fighting the same Heigan so a bot that died and got resurrected mid-fight
+// (or joined late) picks the schedule up again.
+class HeiganBossHelper : public AiObject
+{
+public:
+    static constexpr uint32 WaypointCount = 4;
+    // Section centres, index 0 is the section that is safe at the first eruption of every phase.
+    static constexpr float WaypointX[WaypointCount] = {2794.88f, 2775.49f, 2762.30f, 2755.99f};
+    static constexpr float WaypointY[WaypointCount] = {-3668.12f, -3674.43f, -3684.59f, -3703.96f};
+    // Heigan's platform: ranged/healers stand here during the slow dance, nobody may be near it during the fast one.
+    static constexpr float PlatformX = 2794.26f;
+    static constexpr float PlatformY = -3706.67f;
+    static constexpr float PlatformZ = 276.54f;
+    static constexpr float PlatformRadius = 10.0f;
+
+    static constexpr uint32 SlowFirstEruptionMs = 15000;
+    static constexpr uint32 SlowEruptionIntervalMs = 10000;
+    static constexpr uint32 SlowEruptionCount = 8;
+    static constexpr uint32 SlowPhaseDurationMs = 90000;
+    static constexpr uint32 FastFirstEruptionMs = 7000;
+    static constexpr uint32 FastEruptionIntervalMs = 4000;
+    static constexpr uint32 FastEruptionCount = 10;
+    static constexpr uint32 FastPhaseDurationMs = 45000;
+    static constexpr uint32 PlagueCloudDelayMs = 1000;    // Plague Cloud is cast 1s after the teleport
+    // Do not leave the current safe spot until this long after the computed eruption time (scheduler jitter).
+    static constexpr uint32 EruptionSafetyMarginMs = 300;
+    static constexpr float SafeSpotTolerance = 4.0f;
+
+    struct FightState
+    {
+        bool fastPhase = false;
+        uint32 phaseStartMs = 0;
+        bool exact = false;   // phaseStartMs derived from the Plague Cloud aura (directly or via the phase length)
+        uint32 lastSeenMs = 0;
+    };
+
+    HeiganBossHelper(PlayerbotAI* botAI) : AiObject(botAI) {}
+
+    // Finds Heigan and refreshes the shared fight clock. False when the bot is not fighting Heigan.
+    bool UpdateBossAI();
+    Unit* GetBoss() const { return _unit; }
+    bool IsFastPhase() const { return _fastPhase; }
+    uint32 GetPhaseElapsedMs() const { return _phaseElapsedMs; }
+    // Number of eruptions of the current phase that already happened (safety margin applied).
+    uint32 GetEruptionIndex() const;
+    // Waypoint (0..3) the bot has to stand at right now.
+    uint32 GetSafeWaypoint() const;
+    uint32 GetMsUntilNextEruption() const;
+    bool IsAtWaypoint(uint32 index, float tolerance = SafeSpotTolerance) const;
+    // Ranged bots wait on the platform during the slow dance until its last eruption is over, then head to the
+    // first fast-dance spot.
+    bool ShouldRangedHoldPlatform() const { return !_fastPhase && GetEruptionIndex() < SlowEruptionCount; }
+    // Melee always dance, ranged only during the fast dance. A main tank without aggro is free to go get it.
+    bool ShouldDance();
+    // Safe to stand still (e.g. cast) for the given time without missing the next move.
+    bool CanStandStillFor(uint32 ms);
+
+private:
+    void Reset()
+    {
+        _unit = nullptr;
+        _fastPhase = false;
+        _phaseElapsedMs = 0;
+    }
+
+    Unit* _unit = nullptr;
+    bool _fastPhase = false;
+    uint32 _phaseElapsedMs = 0;
+};
+
 class KelthuzadBossHelper : public AiObject
 {
 public:
