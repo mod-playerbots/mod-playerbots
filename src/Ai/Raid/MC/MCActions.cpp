@@ -36,9 +36,9 @@ bool McMoveFromBaronGeddonAction::Execute(Event /*event*/)
         float distToTravel = INFERNO_DISTANCE - bot->GetDistance2d(boss);
         if (distToTravel > 0)
         {
-            // Stop current spell first
+            // Stop channeling spell first
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
+            bot->CastStop();
 
             return MoveAway(boss, distToTravel);
         }

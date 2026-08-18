@@ -477,7 +477,6 @@ public:
 
     void SpellInterrupted(uint32 spellid);
     int32 CalculateGlobalCooldown(uint32 spellid);
-    void InterruptSpell();
     void RequestSpellInterrupt();
     void RemoveAura(std::string const name);
     void RemoveShapeshift();

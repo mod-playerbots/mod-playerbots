@@ -175,7 +175,7 @@ bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event /*event*/)
 
             if (currentDistance < safeDistance)
             {
-                botAI->InterruptSpell();
+                bot->CastStop();
                 return MoveAway(krosh, safeDistance - currentDistance);
             }
         }
@@ -206,7 +206,7 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event /*event*/)
 
         if (currentDistance < safeDistance)
         {
-            botAI->InterruptSpell();
+            bot->CastStop();
             return MoveAway(kiggler, safeDistance - currentDistance);
         }
     }
@@ -299,7 +299,7 @@ bool HighKingMaulgarRunAwayFromWhirlwindAction::Execute(Event /*event*/)
 
     if (currentDistance < safeDistance)
     {
-        botAI->InterruptSpell();
+        bot->CastStop();
         return MoveAway(maulgar, safeDistance - currentDistance);
     }
 
@@ -318,7 +318,7 @@ bool HighKingMaulgarMoveAwayFromBlastNovaDangerAction::Execute(Event /*event*/)
 
     if (currentDistance < safeDistance)
     {
-        botAI->InterruptSpell();
+        bot->CastStop();
         return FleePosition(krosh->GetPosition(), safeDistance, minInterval);
     }
 

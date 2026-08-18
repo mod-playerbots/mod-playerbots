@@ -360,7 +360,7 @@ bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
         FindSafestNearbyPosition(bot, bombs, janalaiCenter, safeZoneRadius, hazardRadius, false);
 
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->CastStop();
     return MoveTo(ZULAMAN_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true, false);
@@ -596,7 +596,7 @@ bool HexLordMalacrassRunAwayFromWhirlwindAction::Execute(Event /*event*/)
         if (currentDistance < safeDistance)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             return MoveAway(malacrass, safeDistance - currentDistance);
         }
     }
@@ -614,7 +614,7 @@ bool HexLordMalacrassCastersStopAttackingAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") == malacrass)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         return true;
     }
 
@@ -700,7 +700,7 @@ bool ZuljinRunAwayFromWhirlwindAction::Execute(Event /*event*/)
         if (currentDistance < safeDistance)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             return MoveAway(zuljin, safeDistance - currentDistance);
         }
     }
@@ -737,7 +737,7 @@ bool ZuljinAvoidCyclonesAction::Execute(Event /*event*/)
         FindSafestNearbyPosition(bot, cyclones, zuljinCenter, safeZoneRadius, hazardRadius, true);
 
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->CastStop();
     return MoveTo(ZULAMAN_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true, false);

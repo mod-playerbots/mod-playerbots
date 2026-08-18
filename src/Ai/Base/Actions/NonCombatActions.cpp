@@ -51,7 +51,7 @@ bool DrinkAction::Execute(Event event)
             bot->StopMoving();
         }
         bot->SetStandState(UNIT_STAND_STATE_SIT);
-        botAI->InterruptSpell();
+        bot->CastStop();
 
         float delay;
 
@@ -105,7 +105,7 @@ bool EatAction::Execute(Event event)
         }
 
         bot->SetStandState(UNIT_STAND_STATE_SIT);
-        botAI->InterruptSpell();
+        bot->CastStop();
 
         float delay;
 

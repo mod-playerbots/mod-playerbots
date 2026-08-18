@@ -175,11 +175,7 @@ bool FollowAction::Execute(Event /*event*/)
                     if (bot->IsSitState())
                         bot->SetStandState(UNIT_STAND_STATE_STAND);
 
-                    if (bot->IsNonMeleeSpellCast(true))
-                    {
-                        bot->CastStop();
-                        botAI->InterruptSpell();
-                    }
+                    bot->CastStop();
 
                     if (MotionMaster* mm = bot->GetMotionMaster())
                     {

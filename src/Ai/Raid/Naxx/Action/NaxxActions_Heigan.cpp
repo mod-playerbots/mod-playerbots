@@ -77,7 +77,7 @@
 //        return MoveInside(bot->GetMapId(), platform.first, platform.second, 276.54f, 2.0f,
 //                          MovementPriority::MOVEMENT_COMBAT);
 //    }
-//    botAI->InterruptSpell();
+//    bot->CastStop()
 //    return MoveInside(bot->GetMapId(), waypoints[curr_safe].first, waypoints[curr_safe].second, bot->GetPositionZ(), 0,
 //                      MovementPriority::MOVEMENT_COMBAT);
 //}

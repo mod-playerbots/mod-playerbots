@@ -1089,11 +1089,8 @@ bool IccValithriaZombieKiteAction::Execute(Event /*event*/)
     if (!bot->HasAura(SPELL_NITRO_BOOSTS))
         bot->AddAura(SPELL_NITRO_BOOSTS, bot);
 
-    // Stop spell-casting that would root the bot. DON'T call botAI->Reset() -
-    // it nukes the motion master mid-tick which restarts pathing every tick
-    // and lets zombies catch up.
-    if (bot->IsNonMeleeSpellCast(true))
-        bot->InterruptNonMeleeSpells(true);
+    // Stop active channeling that would root the bot
+    bot->CastStop();
 
     constexpr float ANCHOR_RADIUS_LIMIT = 25.0f;  // kite stays within this radius of heal anchor
     constexpr float STEP = 18.0f;                 // how far we move per tick
