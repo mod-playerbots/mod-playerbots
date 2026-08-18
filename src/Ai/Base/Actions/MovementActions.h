@@ -205,23 +205,14 @@ protected:
     float GetFollowAngle();
     bool Follow(Unit* target, float distance = sPlayerbotAIConfig.followDistance);
     bool Follow(Unit* target, float distance, float angle);
-    // Handles the cross-transport follow case: when bot and target are
-    // on different transports (or one is off-transport) and within
-    // sight, this disembarks the bot from its current transport (if
-    // any), teleports it to the target's position, and boards the
-    // target's transport (if any). Returns true if the transport
-    // transition was performed this tick (caller should skip the
-    // engine-level follow for this tick).
+    // Cross-transport follow (see the rule above). Returns true if the
+    // transport transition was performed this tick — the caller must then
+    // skip the engine-level follow for this tick.
     bool FollowOnTransport(Unit* target);
-    bool ChaseTo(WorldObject* obj, float distance = 0.0f);
     bool ReachCombatTo(Unit* target, float distance = 0.0f);
     float MoveDelay(float distance, bool backwards = false);
-    void WaitForReach(float distance);
-    // PointsArray overload: sums segment distances and calls the float
-    // version. Matches the reference's WaitForReach(PointsArray) used at
-    // the end of DispatchMovement.
-    void WaitForReach(Movement::PointsArray const& path);
-    void SetNextMovementDelay(float delayMillis);
+    void SetNextMovementDelay(float delayMillis,
+                              MovementPriority priority = MovementPriority::MOVEMENT_FORCED);
     bool IsMovingAllowed(WorldObject* target);
     bool IsDuplicateMove(float x, float y, float z);
     bool IsMovingAllowed();
@@ -242,29 +233,24 @@ protected:
 
     PathResult GeneratePath(float x, float y, float z, uint32 acceptMask = DEFAULT_PATH_ACCEPT_MASK, bool forceDestination = false);
 
-    // Returns a unified TravelPath for the move. Mirror of the reference
-    // ResolveMovePath shape: 10% lastPath reuse short-circuit, choose
-    // graph (cross-map / >sightDistance) or live mmap probe, regression
-    // guard preferring cached path when no better, fall back to a
-    // single-point path on dest. Stateless — does not dispatch.
+    // Stage 8: returns a unified TravelPath for the move. Stateless —
+    // `lastMove` is read (cache reuse, regression guard) and never written,
+    // and nothing is dispatched.
     TravelPath ResolveMovePath(WorldPosition startPos,
                                WorldPosition endPos,
                                LastMovement& lastMove);
 
-    // Dispatches the head-of-path special segment (portal interact /
-    // area-trigger marker / transport boarding / flight master taxi).
-    // Caller is expected to first call TravelPath::UpcommingSpecialMovement
-    // which cuts the path so the head is the special segment. Returns
-    // true if a movement-consuming action was dispatched this tick.
-    // Returns false for AREA_TRIGGER-with-entry (caller still dispatches
-    // the walk into the trigger volume).
+    // Stage 10: dispatches the head-of-path special segment. Precondition:
+    // the caller must first call TravelPath::UpcomingSpecialMovement.
+    // Returns true if a movement-consuming action was dispatched this tick;
+    // false for AREA_TRIGGER-with-entry, where the caller still dispatches
+    // the walk into the trigger volume.
     bool HandleSpecialMovement(TravelPath& path);
 
-    // Top-of-MoveFarTo gate that keeps a bot riding a transport across
-    // ticks. Returns true if the bot is still on the transport we last
-    // boarded (caller should skip the rest of MoveFarTo this tick).
-    // Clears lastTransportEntry and returns false if the bot has
-    // disembarked or is no longer on the expected transport.
+    // Stage 5: returns true if the bot is still on the transport we last
+    // boarded — the caller skips the rest of MoveTo2 this tick. Clears
+    // lastTransportEntry and returns false once the bot has disembarked or
+    // is no longer on the expected transport.
     bool WaitForTransport();
 
     // Transport boarding helpers (shared by FollowAction and travel plan)
