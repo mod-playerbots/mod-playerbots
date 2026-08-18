@@ -378,7 +378,6 @@ void TravelNode::removeLinkTo(TravelNode* node, bool removePaths)
             paths.erase(node);
 
         links.erase(node);
-        routes.erase(node);
     }
     else
     {
@@ -390,7 +389,6 @@ void TravelNode::removeLinkTo(TravelNode* node, bool removePaths)
         }
         links.clear();
         paths.clear();
-        routes.clear();
     }
 }
 
@@ -567,7 +565,7 @@ namespace
     // exits) used to be fully exempt from redundancy cropping. That exemption
     // was a bandage for crop severing their approaches, whose real causes are
     // all fixed now (honest pathfinder, intrinsic identity, sweep-before-crop,
-    // clearRoutes per iteration, mapOnly route pre-filter) -- and it let
+    // reachability recomputed per iteration, mapOnly route pre-filter) -- and it let
     // instance exits accumulate up to 200 walk links (~30% of all graph
     // edges). Crop their redundant walk links like any other node, but with a
     // seatbelt that makes the old isolation bug structurally impossible: a
@@ -1024,10 +1022,9 @@ bool TravelPath::UpcomingSpecialMovement(WorldPosition startPos,
                   fmDist, startPos.GetPositionX(), startPos.GetPositionY(), startPos.GetPositionZ());
     }
 
-    // Board-and-ride mode (transportSkipRide == false). Cut to dock if
-    // off-transport, traverse to disembark if on-transport.
-    if (!sPlayerbotAIConfig.transportSkipRide &&
-        startP->type == PathNodeType::NODE_TRANSPORT)
+    // Transports are always ridden for real: cut to dock if off-transport,
+    // traverse to disembark if on-transport.
+    if (startP->type == PathNodeType::NODE_TRANSPORT)
     {
         uint32 const entry = nextP->entry;
 
@@ -1045,24 +1042,6 @@ bool TravelPath::UpcomingSpecialMovement(WorldPosition startPos,
                 (p->entry && p->entry != entry))
             {
                 cutTo(*p, false);
-                return true;
-            }
-            prevP = p;
-        }
-    }
-
-    // Skip-ride mode (transportSkipRide == true): bot is approaching a
-    // transport node — walk forward to find the first non-transport node
-    // (the disembark side), cut to prevP (last transport node) so
-    // HandleSpecialMovement teleports the bot across directly.
-    if (sPlayerbotAIConfig.transportSkipRide &&
-        nextP->type == PathNodeType::NODE_TRANSPORT)
-    {
-        for (auto p = std::next(startP); p != fullPath.end(); ++p)
-        {
-            if (p->type != PathNodeType::NODE_TRANSPORT)
-            {
-                cutTo(*prevP, false);
                 return true;
             }
             prevP = p;
@@ -1305,45 +1284,6 @@ TravelPath TravelNodeRoute::BuildPath(std::vector<WorldPosition> pathToStart, st
             if (prevNode->hasPathTo(node))  // Get the path to the next node if it exists.
                 nodePath = prevNode->getPathTo(node);
 
-            // Runtime live path-building (TravelNode::BuildPath -> getPathFromPath)
-            // issues a Detour query on the segment's map AND mutates shared node
-            // state (setPathTo/setComplete) under only a shared lock. Restrict it to
-            // segments whose BOTH endpoints are on the bot's CURRENT map: a
-            // foreign-map segment (e.g. beyond a not-yet-crossed transition) must
-            // never be pathfound from this thread. Foreign / incomplete segments fall
-            // through to the node-point hop below and are resolved locally on arrival.
-            bool const canBuildHere = bot &&
-                prevNode->getPosition()->GetMapId() == bot->GetMapId() &&
-                node->getPosition()->GetMapId() == bot->GetMapId();
-
-            if (!nodePath || !nodePath->getComplete())  // Build the path to the next node if it doesn't exist.
-            {
-                if (canBuildHere)
-                {
-                    if (!prevNode->isTransport())
-                        nodePath = prevNode->BuildPath(node, bot);
-                    else
-                    {
-                        node->BuildPath(prevNode, bot);
-                        nodePath = prevNode->getPathTo(node);
-                    }
-                }
-            }
-
-            TravelNodePath returnNodePath;
-
-            if (!nodePath || !nodePath->getComplete())
-            {
-                if (canBuildHere)
-                {
-                    returnNodePath =
-                        *node->BuildPath(prevNode, bot);
-                    std::vector<WorldPosition> path = returnNodePath.GetPath();
-                    std::reverse(path.begin(), path.end());
-                    returnNodePath.setPath(path);
-                    nodePath = &returnNodePath;
-                }
-            }
 
             if (!nodePath || !nodePath->getComplete())  // If we can not build a path just try to move to the node.
             {
@@ -1541,7 +1481,7 @@ TravelNodeRoute TravelNodeMap::GetNodeRoute(TravelNode* start, TravelNode* goal,
     float g = 0.f;
     float h = 0.f;
 
-    std::vector<TravelNodeStub*> open, closed;
+    std::vector<TravelNodeStub*> open;
 
     if (bot)
     {
@@ -1602,7 +1542,6 @@ TravelNodeRoute TravelNodeMap::GetNodeRoute(TravelNode* start, TravelNode* goal,
         currentNode->open = false;
 
         currentNode->closed = true;
-        closed.push_back(currentNode);
 
         if (currentNode->dataNode == goal)
         {
@@ -2136,8 +2075,8 @@ void TravelNodeMap::makeDockNode(TravelNode* node, WorldPosition exitPos, std::s
             n->getPosition()->distance(*node->getPosition()) > 75.0f)
             continue;
 
-        WorldPosition const dockPos = *n->getPosition();
-        WorldPosition const nodePos = *node->getPosition();
+        WorldPosition dockPos = *n->getPosition();
+        WorldPosition nodePos = *node->getPosition();
         TravelNodePath travelPath(dockPos.distance(nodePos), 0.1f, (uint8)TravelNodePathType::transport, 0, true);
         travelPath.setComplete(true);
         travelPath.setPath({dockPos, nodePos});
@@ -2776,6 +2715,8 @@ void TravelNodeMap::removeUselessPaths()
             if (path.second.getComplete() && startNode->hasLinkTo(path.first))
                 ASSERT(true);
     }
+    PrecomputeReachability();
+
     uint32 it = 0;
     while (true)
     {
@@ -2787,15 +2728,10 @@ void TravelNodeMap::removeUselessPaths()
                 rem++;
         }
 
-        // Drop cached routes after each crop pass (ref 3064-3067). Routes are
-        // memoized on first hasRouteTo/getNodeMap call; once links are cropped
-        // those cached routes are stale and would traverse already-removed
-        // links, driving mis-classification in the next isUselessLink pass.
-        for (auto& startNode : TravelNodeMap::instance().getNodes())
-            startNode->clearRoutes();
-
         if (!rem)
             break;
+
+        PrecomputeReachability();
 
         hasToSave = true;
         it++;
@@ -2968,12 +2904,10 @@ void TravelNodeMap::generatePaths()
     LOG_INFO("playerbots", "-Generating helper nodes");
     generateHelperNodes();
 
-    // cmangos runs both prune passes unconditionally here. removeUselessPaths
-    // is essential: it drops links to nodes already reachable via another node,
-    // which (with the 2000y candidate radius) is the difference between a
-    // saveable graph and tens of millions of redundant path points -> OOM.
-    LOG_INFO("playerbots", "-Removing useless nodes");
-    removeLowNodes();
+    // removeUselessPaths (below) is essential: it drops links to nodes already
+    // reachable via another node, which (with the 2000y candidate radius) is
+    // the difference between a saveable graph and tens of millions of
+    // redundant path points -> OOM.
 
     // Cheat sweep MUST run before removeUselessPaths: the crop pass judges a
     // link "useless" when an alternate route exists, and if that route runs
@@ -3004,6 +2938,10 @@ void TravelNodeMap::generateAll()
 
 void TravelNodeMap::Init()
 {
+    if (initialized)
+        return;
+    initialized = true;
+
     InitTaxiGraph();
 
     if (!sPlayerbotAIConfig.enableTravelNodes)
@@ -3314,8 +3252,6 @@ void TravelNodeMap::saveNodeStore()
 
 void TravelNodeMap::LoadNodeStore()
 {
-    std::string const query = "SELECT id, name, map_id, x, y, z, linked FROM playerbots_travelnode";
-
     std::unordered_map<uint32, TravelNode*> saveNodes;
 
     {
@@ -3631,50 +3567,103 @@ std::vector<uint32> TravelNodeMap::BuildPath(uint32 fromNode, uint32 toNode,
 
 void TravelNodeMap::PrecomputeReachability()
 {
-    // Find connected components via BFS
-    std::unordered_set<TravelNode*> visited;
-    std::vector<std::vector<TravelNode*>> components;
-
+    std::unordered_map<TravelNode*, std::vector<TravelNode*>> reverseAdj;
     for (auto* node : nodes)
     {
-        if (!node || visited.count(node))
+        if (!node)
             continue;
 
-        // BFS from this node
-        std::vector<TravelNode*> component;
-        std::queue<TravelNode*> q;
-        q.push(node);
-        visited.insert(node);
+        for (auto const& link : *node->getLinks())
+            if (link.first)
+                reverseAdj[link.first].push_back(node);
+    }
 
-        while (!q.empty())
+    std::vector<TravelNode*> neighbors;
+    auto collectUndirectedNeighbors = [&](TravelNode* current)
+    {
+        neighbors.clear();
+
+        for (auto const& link : *current->getLinks())
+            if (link.first)
+                neighbors.push_back(link.first);
+
+        auto it = reverseAdj.find(current);
+        if (it != reverseAdj.end())
+            neighbors.insert(neighbors.end(), it->second.begin(), it->second.end());
+    };
+
+    // Global components: every link type, may cross maps via portal /
+    // transport / flight edges. Feeds hasRouteTo(node) (mapOnly = false),
+    // e.g. GetNodeRoute's runtime early-out.
+    {
+        std::unordered_set<TravelNode*> visited;
+        uint32 nextId = 1;
+
+        for (auto* node : nodes)
         {
-            TravelNode* current = q.front();
-            q.pop();
-            component.push_back(current);
+            if (!node || visited.count(node))
+                continue;
 
-            for (auto const& link : *current->getLinks())
+            uint32 const id = nextId++;
+            std::queue<TravelNode*> q;
+            q.push(node);
+            visited.insert(node);
+
+            while (!q.empty())
             {
-                TravelNode* neighbor = link.first;
-                if (neighbor && !visited.count(neighbor))
+                TravelNode* current = q.front();
+                q.pop();
+                current->setComponentId(id);
+
+                collectUndirectedNeighbors(current);
+                for (auto* neighbor : neighbors)
                 {
+                    if (visited.count(neighbor))
+                        continue;
+
                     visited.insert(neighbor);
                     q.push(neighbor);
                 }
             }
         }
-
-        components.push_back(std::move(component));
     }
 
-    // Populate routes: every node in a component can reach every other node
-    // in the same component
-    for (auto const& comp : components)
+    // Same-map components: a cross-map link (portal/transport/flight) is
+    // never followed, so this is a strictly finer partition than the global
+    // one above. Feeds hasRouteTo(node, true) — the crop pass's isUselessLink
+    // pre-filter, which must not treat a cheap cross-map portal "route" as a
+    // same-map alternative to a direct walk link (see isUselessLink).
     {
-        for (auto* node : comp)
+        std::unordered_set<TravelNode*> visited;
+        uint32 nextId = 1;
+
+        for (auto* node : nodes)
         {
-            node->clearRoutes();
-            for (auto* other : comp)
-                node->setRouteTo(other);
+            if (!node || visited.count(node))
+                continue;
+
+            uint32 const id = nextId++;
+            uint32 const mapId = node->GetMapId();
+            std::queue<TravelNode*> q;
+            q.push(node);
+            visited.insert(node);
+
+            while (!q.empty())
+            {
+                TravelNode* current = q.front();
+                q.pop();
+                current->setMapComponentId(id);
+
+                collectUndirectedNeighbors(current);
+                for (auto* neighbor : neighbors)
+                {
+                    if (visited.count(neighbor) || neighbor->GetMapId() != mapId)
+                        continue;
+
+                    visited.insert(neighbor);
+                    q.push(neighbor);
+                }
+            }
         }
     }
 }
