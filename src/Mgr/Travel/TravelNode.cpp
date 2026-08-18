@@ -955,7 +955,7 @@ TravelPath::getNextPoint(WorldPosition startPos, float maxDist, bool onTransport
     return startP;
 }
 
-bool TravelPath::UpcommingSpecialMovement(WorldPosition startPos,
+bool TravelPath::UpcomingSpecialMovement(WorldPosition startPos,
                                           float maxDist, bool onTransport)
 {
     if (fullPath.empty())

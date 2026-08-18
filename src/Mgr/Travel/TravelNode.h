@@ -594,7 +594,7 @@ public:
     // and the bot is close enough / positioned right to handle it now.
     // Trims the path up to that segment as a side effect. Caller then
     // dispatches the matching special-movement handler on the new head.
-    bool UpcommingSpecialMovement(WorldPosition startPos, float maxDist, bool onTransport);
+    bool UpcomingSpecialMovement(WorldPosition startPos, float maxDist, bool onTransport);
 
     // Truncate the path at the first waypoint that would put the bot in
     // range of a hostile creature (within attack range, in LOS, level-cap
