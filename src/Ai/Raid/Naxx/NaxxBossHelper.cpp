@@ -13,12 +13,21 @@
 
 namespace
 {
-    // Fight clock shared by every bot fighting the same Heigan (keyed by the boss guid).
-    std::mutex heiganStateLock;
-    std::unordered_map<ObjectGuid, HeiganBossHelper::FightState> heiganStates;
-
     // A fight not observed for this long is over (wipe / evade); the next pull starts from scratch.
     constexpr uint32 HeiganStateStaleMs = 30000;
+
+    // Fight clock shared by every bot fighting the same Heigan (keyed by the boss guid).
+    struct HeiganFightRegistry
+    {
+        std::mutex lock;
+        std::unordered_map<ObjectGuid, HeiganBossHelper::FightState> states;
+    };
+
+    HeiganFightRegistry& GetHeiganFightRegistry()
+    {
+        static HeiganFightRegistry registry;
+        return registry;
+    }
 }
 
 bool HeiganBossHelper::UpdateBossAI()
@@ -47,31 +56,48 @@ bool HeiganBossHelper::UpdateBossAI()
     Aura* plagueCloud = _unit->GetAura(NaxxSpellIds::PlagueCloud);
     bool idleOnPlatform = !_unit->GetVictim() && _unit->IsWithinDist2d(PlatformX, PlatformY, PlatformRadius);
 
-    std::lock_guard<std::mutex> lock(heiganStateLock);
+    HeiganFightRegistry& registry = GetHeiganFightRegistry();
+    std::scoped_lock lock(registry.lock);
 
     // Drop stale entries (previous attempts / other instances that are long over).
-    for (auto itr = heiganStates.begin(); itr != heiganStates.end();)
+    for (auto itr = registry.states.begin(); itr != registry.states.end();)
     {
         if (now - itr->second.lastSeenMs > HeiganStateStaleMs)
-            itr = heiganStates.erase(itr);
+            itr = registry.states.erase(itr);
         else
             ++itr;
     }
 
-    FightState& state = heiganStates[_unit->GetGUID()];
+    FightState& state = registry.states[_unit->GetGUID()];
     bool firstObservation = state.lastSeenMs == 0;
     uint32 elapsed = firstObservation ? 0 : now - state.phaseStartMs;
 
-    bool fast;
-    if (plagueCloud)
-        fast = true;
-    else if (state.fastPhase)
-        fast = idleOnPlatform;   // still on the platform without a victim: the fast dance goes on
-    else
-        // A slow dance always lasts SlowPhaseDurationMs, so ignore an idle boss on the platform before that
-        // (e.g. victim just died while he was still standing there at the pull).
-        fast = idleOnPlatform && !firstObservation && elapsed + 5000 >= SlowPhaseDurationMs;
+    bool fast = DetectFastPhase(state, plagueCloud != nullptr, idleOnPlatform, firstObservation, elapsed);
+    UpdateFightState(state, fast, plagueCloud, firstObservation, now);
 
+    _fastPhase = state.fastPhase;
+    _phaseElapsedMs = now - state.phaseStartMs;
+    return true;
+}
+
+bool HeiganBossHelper::DetectFastPhase(FightState const& state, bool plagueCloudUp, bool idleOnPlatform,
+                                       bool firstObservation, uint32 elapsed) const
+{
+    if (plagueCloudUp)
+        return true;
+
+    // Still on the platform without a victim: the fast dance goes on (bridges the second before the aura).
+    if (state.fastPhase)
+        return idleOnPlatform;
+
+    // A slow dance always lasts SlowPhaseDurationMs, so ignore an idle boss on the platform before that
+    // (e.g. victim just died while he was still standing there at the pull).
+    return idleOnPlatform && !firstObservation && elapsed + 5000 >= SlowPhaseDurationMs;
+}
+
+void HeiganBossHelper::UpdateFightState(FightState& state, bool fast, Aura const* plagueCloud,
+                                        bool firstObservation, uint32 now)
+{
     if (fast)
     {
         if (plagueCloud)
@@ -107,10 +133,6 @@ bool HeiganBossHelper::UpdateBossAI()
         state.fastPhase = false;
     }
     state.lastSeenMs = now;
-
-    _fastPhase = state.fastPhase;
-    _phaseElapsedMs = now - state.phaseStartMs;
-    return true;
 }
 
 uint32 HeiganBossHelper::GetEruptionIndex() const
@@ -163,9 +185,9 @@ bool HeiganBossHelper::ShouldDance()
 {
     if (_fastPhase)
         return true;
-    if (botAI->IsRanged(bot))
+    if (PlayerbotAI::IsRanged(bot))
         return false;
-    if (botAI->IsMainTank(bot) && !AI_VALUE2(bool, "has aggro", "boss target"))
+    if (PlayerbotAI::IsMainTank(bot) && !AI_VALUE2(bool, "has aggro", "boss target"))
         return false;
     return true;
 }

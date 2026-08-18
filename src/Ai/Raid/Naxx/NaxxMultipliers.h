@@ -22,7 +22,7 @@ public:
 class HeiganDanceMultiplier : public Multiplier
 {
 public:
-    HeiganDanceMultiplier(PlayerbotAI* ai) : Multiplier(ai, "heigan dance"), helper(ai) {}
+    explicit HeiganDanceMultiplier(PlayerbotAI* ai) : Multiplier(ai, "heigan dance"), helper(ai) {}
 
 public:
     float GetValue(Action* action) override;

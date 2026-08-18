@@ -26,6 +26,7 @@
 #include "Spell.h"
 #include "UseMeetingStoneAction.h"
 #include "WarriorActions.h"
+#include "WipeAction.h"
 
 float GrobbulusMultiplier::GetValue(Action* action)
 {
@@ -44,15 +45,24 @@ float GrobbulusMultiplier::GetValue(Action* action)
 
 float HeiganDanceMultiplier::GetValue(Action* action)
 {
+    // Cheap action-type checks first; the encounter state is only looked up for actions we may have to block.
+    if (dynamic_cast<HeiganDanceAction*>(action) || dynamic_cast<CurePartyMemberAction*>(action) ||
+        dynamic_cast<WipeAction*>(action))
+        return 1.0f;
+
+    bool repositions = dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+                       dynamic_cast<CastDisengageAction*>(action) || dynamic_cast<CastBlinkBackAction*>(action);
+    bool moves = dynamic_cast<MovementAction*>(action) || dynamic_cast<CastReachTargetSpellAction*>(action);
+    auto* spellAction = dynamic_cast<CastSpellAction*>(action);
+    bool timedCast = spellAction && !dynamic_cast<CastMeleeSpellAction*>(action);
+    if (!repositions && !moves && !timedCast)
+        return 1.0f;
+
     if (!helper.UpdateBossAI())
         return 1.0f;
 
-    if (dynamic_cast<HeiganDanceAction*>(action) || dynamic_cast<CurePartyMemberAction*>(action))
-        return 1.0f;
-
     // Generic repositioning must never pull a bot off its safe spot or off the platform.
-    if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action) || dynamic_cast<CastBlinkBackAction*>(action))
+    if (repositions)
         return 0.0f;
 
     // Ranged bots on the platform during the slow dance are free to act as usual.
@@ -61,12 +71,8 @@ float HeiganDanceMultiplier::GetValue(Action* action)
 
     // Dancing: only the dance moves us (charge/intercept/feral charge included - during the fast dance the boss
     // stands in his Plague Cloud). Everything that is not a cast is fine (target selection, facing, ...).
-    if (dynamic_cast<MovementAction*>(action) || dynamic_cast<CastReachTargetSpellAction*>(action))
+    if (moves)
         return 0.0f;
-
-    CastSpellAction* spellAction = dynamic_cast<CastSpellAction*>(action);
-    if (!spellAction || dynamic_cast<CastMeleeSpellAction*>(action))
-        return 1.0f;
 
     // Casts are allowed while standing on the safe spot with enough time left before the next eruption.
     uint32 spellId = AI_VALUE2(uint32, "spell id", spellAction->getSpell());

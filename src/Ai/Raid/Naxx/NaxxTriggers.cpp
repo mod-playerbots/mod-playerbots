@@ -83,12 +83,12 @@ bool GrobbulusCloudTrigger::IsActive()
 
 bool HeiganMeleeTrigger::IsActive()
 {
-    return helper.UpdateBossAI() && !botAI->IsRanged(bot);
+    return PlayerbotAI::IsMelee(bot) && helper.UpdateBossAI();
 }
 
 bool HeiganRangedTrigger::IsActive()
 {
-    return helper.UpdateBossAI() && botAI->IsRanged(bot);
+    return PlayerbotAI::IsRanged(bot) && helper.UpdateBossAI();
 }
 
 bool RazuviousTankTrigger::IsActive()

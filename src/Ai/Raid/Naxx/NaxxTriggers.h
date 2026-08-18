@@ -67,7 +67,7 @@ private:
 class HeiganMeleeTrigger : public Trigger
 {
 public:
-    HeiganMeleeTrigger(PlayerbotAI* ai) : Trigger(ai, "heigan melee"), helper(ai) {}
+    explicit HeiganMeleeTrigger(PlayerbotAI* ai) : Trigger(ai, "heigan melee"), helper(ai) {}
     bool IsActive() override;
 
 private:
@@ -77,7 +77,7 @@ private:
 class HeiganRangedTrigger : public Trigger
 {
 public:
-    HeiganRangedTrigger(PlayerbotAI* ai) : Trigger(ai, "heigan ranged"), helper(ai) {}
+    explicit HeiganRangedTrigger(PlayerbotAI* ai) : Trigger(ai, "heigan ranged"), helper(ai) {}
     bool IsActive() override;
 
 private:

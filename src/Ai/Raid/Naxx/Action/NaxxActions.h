@@ -62,33 +62,25 @@ private:
     float distance;
 };
 
+// One action for both roles: melee (and tanks) dance every phase, ranged/healers wait on the platform during the
+// slow dance and only dance the fast one.
 class HeiganDanceAction : public MovementAction
 {
 public:
-    HeiganDanceAction(PlayerbotAI* ai, std::string const name = "heigan dance")
-        : MovementAction(ai, name), helper(ai) {}
+    HeiganDanceAction(PlayerbotAI* ai, bool ranged)
+        : MovementAction(ai, ranged ? "heigan dance ranged" : "heigan dance melee"), helper(ai), ranged(ranged)
+    {
+    }
+    bool Execute(Event event) override;
 
-protected:
+private:
     // Move to (near) the given dance waypoint. Returns true while a move had to be issued.
     bool MoveToWaypoint(uint32 index, float distance);
     bool MoveToPlatform(float distance);
 
     HeiganBossHelper helper;
+    bool ranged;
     int32 lastWaypoint = -1;
-};
-
-class HeiganDanceMeleeAction : public HeiganDanceAction
-{
-public:
-    HeiganDanceMeleeAction(PlayerbotAI* ai) : HeiganDanceAction(ai, "heigan dance melee") {}
-    bool Execute(Event event) override;
-};
-
-class HeiganDanceRangedAction : public HeiganDanceAction
-{
-public:
-    HeiganDanceRangedAction(PlayerbotAI* ai) : HeiganDanceAction(ai, "heigan dance ranged") {}
-    bool Execute(Event event) override;
 };
 
 class ThaddiusAttackNearestPetAction : public AttackAction

@@ -39,27 +39,20 @@ bool HeiganDanceAction::MoveToPlatform(float distance)
                       HeiganBossHelper::PlatformZ, distance, MovementPriority::MOVEMENT_COMBAT);
 }
 
-bool HeiganDanceMeleeAction::Execute(Event /*event*/)
+bool HeiganDanceAction::Execute(Event /*event*/)
 {
     if (!helper.UpdateBossAI())
         return false;
+
+    // Slow dance: the platform is safe from eruptions. Ranged leave it right after the last slow eruption
+    // so they are out of Plague Cloud range (and at the first fast spot) before the fast dance starts.
+    if (ranged)
+        return helper.ShouldRangedHoldPlatform() ? MoveToPlatform(2.0f)
+                                                 : MoveToWaypoint(helper.GetSafeWaypoint(), 1.5f);
 
     // The boss follows the main tank, so the tank first has to hold him before it can lead the dance.
     if (!helper.ShouldDance())
         return false;
 
-    return MoveToWaypoint(helper.GetSafeWaypoint(), botAI->IsMainTank(bot) ? 0.5f : 1.5f);
-}
-
-bool HeiganDanceRangedAction::Execute(Event /*event*/)
-{
-    if (!helper.UpdateBossAI())
-        return false;
-
-    // Slow dance: the platform is safe from eruptions. Leave it right after the last slow eruption
-    // so we are out of Plague Cloud range (and at the first fast spot) before the fast dance starts.
-    if (helper.ShouldRangedHoldPlatform())
-        return MoveToPlatform(2.0f);
-
-    return MoveToWaypoint(helper.GetSafeWaypoint(), 1.5f);
+    return MoveToWaypoint(helper.GetSafeWaypoint(), PlayerbotAI::IsMainTank(bot) ? 0.5f : 1.5f);
 }

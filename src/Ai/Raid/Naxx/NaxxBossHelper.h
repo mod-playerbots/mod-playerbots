@@ -20,7 +20,10 @@
 #include "SharedDefines.h"
 #include "Spell.h"
 #include "Timer.h"
+#include <array>
 #include <string>
+
+class Aura;
 
 const uint32 NAXX_MAP_ID = 533;
 
@@ -98,8 +101,8 @@ class HeiganBossHelper : public AiObject
 public:
     static constexpr uint32 WaypointCount = 4;
     // Section centres, index 0 is the section that is safe at the first eruption of every phase.
-    static constexpr float WaypointX[WaypointCount] = {2794.88f, 2775.49f, 2762.30f, 2755.99f};
-    static constexpr float WaypointY[WaypointCount] = {-3668.12f, -3674.43f, -3684.59f, -3703.96f};
+    static constexpr std::array<float, WaypointCount> WaypointX = {2794.88f, 2775.49f, 2762.30f, 2755.99f};
+    static constexpr std::array<float, WaypointCount> WaypointY = {-3668.12f, -3674.43f, -3684.59f, -3703.96f};
     // Heigan's platform: ranged/healers stand here during the slow dance, nobody may be near it during the fast one.
     static constexpr float PlatformX = 2794.26f;
     static constexpr float PlatformY = -3706.67f;
@@ -127,7 +130,7 @@ public:
         uint32 lastSeenMs = 0;
     };
 
-    HeiganBossHelper(PlayerbotAI* botAI) : AiObject(botAI) {}
+    explicit HeiganBossHelper(PlayerbotAI* botAI) : AiObject(botAI) {}
 
     // Finds Heigan and refreshes the shared fight clock. False when the bot is not fighting Heigan.
     bool UpdateBossAI();
@@ -155,6 +158,13 @@ private:
         _fastPhase = false;
         _phaseElapsedMs = 0;
     }
+
+    // Decide from the boss state whether the fast dance is on right now.
+    bool DetectFastPhase(FightState const& state, bool plagueCloudUp, bool idleOnPlatform, bool firstObservation,
+                         uint32 elapsed) const;
+    // Move the shared clock to the phase we just observed.
+    static void UpdateFightState(FightState& state, bool fast, Aura const* plagueCloud, bool firstObservation,
+                                 uint32 now);
 
     Unit* _unit = nullptr;
     bool _fastPhase = false;
