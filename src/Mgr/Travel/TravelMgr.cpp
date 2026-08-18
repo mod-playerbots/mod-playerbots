@@ -688,61 +688,6 @@ namespace
 }
 
 // A single pathfinding attempt from one position to another. Returns pathfinding status and path.
-std::vector<WorldPosition> WorldPosition::getPathStepFrom(WorldPosition startPos, Unit* bot)
-{
-    Unit* pathUnit = bot;
-    Creature* tempCreature = nullptr;
-
-    if (!pathUnit)
-    {
-        // CreateBaseMap, not FindBaseMap: generation must path on instance
-        // maps nobody has entered since boot. The fresh map's navmesh is
-        // empty; ensureNavTilesForGeneration below loads the tiles.
-        Map* map = sMapMgr->CreateBaseMap(startPos.GetMapId());
-        if (!map)
-            return {};
-
-        tempCreature = new Creature();
-        if (!tempCreature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map,
-                                   PHASEMASK_NORMAL, 1 /*entry*/, 0,
-                                   startPos.GetPositionX(), startPos.GetPositionY(),
-                                   startPos.GetPositionZ(), 0))
-        {
-            delete tempCreature;
-            return {};
-        }
-        pathUnit = tempCreature;
-
-        ensureNavTilesForGeneration(map);
-    }
-
-    PathGenerator path(pathUnit);
-    // Runtime bots get these cost biases automatically via CreateFilter's
-    // bot block. A temp-Creature source (travel-node GENERATION) does not,
-    // and we intentionally leave generation UNBIASED: biasing it makes the
-    // pathfinder route around steep/water and drops reachable-but-steep
-    // structure approaches from the graph. The graph must encode
-    // reachability; the steep/water preference belongs to runtime
-    // path-selection only.
-    //
-    // (Reference also applies setAreaCost(12, 5) + setAreaCost(13, 20) here.
-    // Not ported: reference and AC use different mmap generators and Detour
-    // area-id assignments diverge. If we ever regenerate mmaps to match the
-    // reference dataset, revisit.)
-    if (!tempCreature)
-    {
-        path.SetNavTerrainCost(NAV_GROUND_STEEP, 5.0f);
-        path.SetNavTerrainCost(NAV_WATER, 10.0f);
-    }
-    auto result = getPathStepFrom(startPos, path);
-
-    if (tempCreature)
-        delete tempCreature;
-
-    return result;
-}
-
-// A single pathfinding attempt from one position to another. Returns pathfinding status and path.
 std::vector<WorldPosition> WorldPosition::getPathStepFrom(WorldPosition startPos, PathGenerator& path)
 {
     // Explicit-start overload. Without this, the chain begins from the
@@ -850,7 +795,9 @@ std::vector<WorldPosition> WorldPosition::getPathFromPath(std::vector<WorldPosit
     Creature* tempCreature = nullptr;
     if (!pathUnit)
     {
-        // Same as getPathStepFrom: create the map, then load its navmesh tiles.
+        // CreateBaseMap, not FindBaseMap: generation must path on instance
+        // maps nobody has entered since boot. The fresh map's navmesh is
+        // empty; ensureNavTilesForGeneration below loads the tiles.
         Map* map = sMapMgr->CreateBaseMap(GetMapId());
         if (!map)
             return fullPath;
