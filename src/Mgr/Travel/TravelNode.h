@@ -414,36 +414,45 @@ public:
     std::vector<TravelNode*> getNodeMap(bool importantOnly = false,
         std::vector<TravelNode*> ignoreNodes = {}, bool mapOnly = false);
 
-    // Checks if it is even possible to route to this node. mapOnly answers
-    // "reachable without leaving the map" — the crop pass uses it so a walk
-    // link is never judged redundant based on a route through portal/flight
-    // edges (cmangos hasRouteTo(node, true)).
+    // O(1) reachability check via the undirected connected components
+    // precomputed by TravelNodeMap::PrecomputeReachability() (H2). mapOnly
+    // selects the same-map-only partition (mapComponentId) — the crop pass
+    // uses it so a walk link is never judged redundant based on a route
+    // through portal/flight edges to another map (cmangos hasRouteTo(node,
+    // true)); the default (componentId) allows any link type, including
+    // cross-map ones.
+    //
+    // This over-approximates true DIRECTED reachability by design: two
+    // nodes sharing a component may only be connected one-way. hasRouteTo is
+    // a fast pre-filter only — GetNodeRoute (A*) remains the authoritative,
+    // direction-correct check and simply returns an empty route when no
+    // directed path exists. It therefore can never wrongly SKIP a routable
+    // pair (the worst case is one wasted A* call), the result no longer
+    // depends on node processing order (unlike the old forward-BFS forest),
+    // and it costs O(1) memory per node instead of a full reachable-set map.
     bool hasRouteTo(TravelNode* node, bool mapOnly = false)
     {
-        auto& cache = mapOnly ? routesSameMap : routes;
-        if (cache.empty())
-            for (auto mNode : getNodeMap(false, {}, mapOnly))
-                cache[mNode] = true;
+        if (!node)
+            return false;
 
-        return cache.find(node) != cache.end();
+        if (mapOnly)
+            return mapComponentId != 0 && mapComponentId == node->mapComponentId;
+
+        return componentId != 0 && componentId == node->componentId;
     }
 
-    // Number of nodes reachable from this one (size of its route network).
-    uint32 getRouteSize()
-    {
-        if (routes.empty())
-            for (auto mNode : getNodeMap())
-                routes[mNode] = true;
+    // Number of nodes reachable from this one (size of its forward route
+    // network). Generation-time only (called from generateHelperNodes,
+    // which runs before PrecomputeReachability has assigned componentId for
+    // this generation pass), so this is a plain, uncached forward BFS
+    // rather than the componentId fast path above.
+    uint32 getRouteSize() { return (uint32)getNodeMap().size(); }
 
-        return routes.size();
-    }
-
-    void clearRoutes()
-    {
-        routes.clear();
-        routesSameMap.clear();
-    }
-    void setRouteTo(TravelNode* node) { routes[node] = true; }
+    // Set by TravelNodeMap::PrecomputeReachability() only. 0 = unassigned.
+    void setComponentId(uint32 id) { componentId = id; }
+    uint32 getComponentId() { return componentId; }
+    void setMapComponentId(uint32 id) { mapComponentId = id; }
+    uint32 getMapComponentId() { return mapComponentId; }
 
     void print(bool printFailed = true);
 
@@ -458,9 +467,12 @@ protected:
     // List of links to other nodes.
     std::unordered_map<TravelNode*, TravelNodePath*> links;
 
-    // List of nodes and if there is 'any' route possible
-    std::unordered_map<TravelNode*, bool> routes;
-    std::unordered_map<TravelNode*, bool> routesSameMap;
+    // Undirected connected-component ids assigned by
+    // TravelNodeMap::PrecomputeReachability() (H2). 0 = unassigned. See
+    // hasRouteTo for how these are used and why the grouping is safe to
+    // over-approximate.
+    uint32 componentId = 0;
+    uint32 mapComponentId = 0;
 
     // This node should not be removed
     bool important = false;
@@ -712,8 +724,6 @@ public:
         return false;
     }
 
-    void fullLinkNode(TravelNode* startNode, Unit* bot);
-
     // Get all nodes
     std::vector<TravelNode*> getNodes() { return nodes; }
     std::vector<TravelNode*> getNodes(WorldPosition pos, float range = -1);
@@ -784,7 +794,6 @@ public:
     void generateWalkPaths();
     void generateHelperNodes(uint32 mapId);
     void generateHelperNodes();
-    void removeLowNodes();
     void removeUselessPaths();
     // Re-validate every saved walk link against IsPathCheating and drop the
     // failures (and their reverse). The build-time guards only gate links as
@@ -852,6 +861,7 @@ private:
     bool hasToSave = false;
     bool hasToGen = false;
     bool hasToFullGen = false;
+    bool initialized = false;
 };
 
 #define sTravelNodeMap TravelNodeMap::instance()
