@@ -11,8 +11,6 @@
 
 #include "TravelMgr.h"
 
-#include "G3D/Vector3.h"
-
 // THEORY
 //
 //  Pathfinding uses the detour recast navmesh engine for mob, npc, and bot movement.
