@@ -161,6 +161,9 @@ bool PlayerbotAIConfig::Initialize()
     randomBotRpgChance = sConfigMgr->GetOption<float>("AiPlayerbot.RandomBotRpgChance", 0.20f);
 
     iterationsPerTick = sConfigMgr->GetOption<int32>("AiPlayerbot.IterationsPerTick", 10);
+    gatherLevelingEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.GatherLevelingEnabled", true);
+    gatherLevelingDurationMinutes = sConfigMgr->GetOption<int32>("AiPlayerbot.GatherLevelingDurationMinutes", 30);
+    gatherLevelingSearchRadius = sConfigMgr->GetOption<float>("AiPlayerbot.GatherLevelingSearchRadius", 100.0f);
 
     allowAccountBots = sConfigMgr->GetOption<bool>("AiPlayerbot.AllowAccountBots", true);
     allowGuildBots = sConfigMgr->GetOption<bool>("AiPlayerbot.AllowGuildBots", true);

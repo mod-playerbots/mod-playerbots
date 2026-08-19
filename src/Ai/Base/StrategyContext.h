@@ -22,6 +22,7 @@
 #include "FleeStrategy.h"
 #include "FocusTargetStrategy.h"
 #include "FollowMasterStrategy.h"
+#include "GatheringLevelingStrategy.h"
 #include "GrindingStrategy.h"
 #include "GroupStrategy.h"
 #include "GuardStrategy.h"
@@ -63,6 +64,7 @@ public:
         creators["racials"] = &StrategyContext::racials;
         creators["loot"] = &StrategyContext::loot;
         creators["gather"] = &StrategyContext::gather;
+        creators["gather leveling"] = &StrategyContext::gather_leveling;
         creators["emote"] = &StrategyContext::emote;
         creators["passive"] = &StrategyContext::passive;
         creators["aggressive"] = &StrategyContext::aggressive;
@@ -150,6 +152,7 @@ private:
     static Strategy* racials(PlayerbotAI* botAI) { return new RacialsStrategy(botAI); }
     static Strategy* loot(PlayerbotAI* botAI) { return new LootNonCombatStrategy(botAI); }
     static Strategy* gather(PlayerbotAI* botAI) { return new GatherStrategy(botAI); }
+    static Strategy* gather_leveling(PlayerbotAI* botAI) { return new GatheringLevelingStrategy(botAI); }
     static Strategy* emote(PlayerbotAI* botAI) { return new EmoteStrategy(botAI); }
     static Strategy* passive(PlayerbotAI* botAI) { return new PassiveStrategy(botAI); }
     static Strategy* aggressive(PlayerbotAI* botAI) { return new AggressiveStrategy(botAI); }

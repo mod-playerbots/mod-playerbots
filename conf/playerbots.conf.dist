@@ -683,6 +683,25 @@ AiPlayerbot.FishingDistance = 40.0
 # Distance from water (in yards) beyond which a bot will remove the 'master fishing' strategy
 AiPlayerbot.EndFishingWithMaster = 30.0
 
+####################################################################################################
+# GATHER LEVELING
+#
+
+# Enable the 'gather leveling' behaviour: bots proactively level their collecting
+# profession (mining / herbalism / skinning) by visiting trainers and roaming zones
+# to harvest nodes. Every bot is assigned a random collecting profession on creation.
+# Default: 1 (enabled)
+AiPlayerbot.GatherLevelingEnabled = 1
+
+# Max minutes the behaviour runs before the bot stops levelling its profession,
+# even if it is not maxed yet.
+# Default: 30
+AiPlayerbot.GatherLevelingDurationMinutes = 30
+
+# Radius (yards) within which a bot searches for a relevant profession trainer.
+# Default: 100
+AiPlayerbot.GatherLevelingSearchRadius = 100.0
+
 #
 #
 ####################################################################################################

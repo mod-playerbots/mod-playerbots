@@ -313,6 +313,10 @@ public:
 
     uint32 iterationsPerTick;
 
+    bool gatherLevelingEnabled;
+    uint32 gatherLevelingDurationMinutes;
+    float gatherLevelingSearchRadius;
+
     std::mutex m_logMtx;
     bool enableAutoTradeOnItemMention;
     std::vector<std::string> tradeActionExcludedPrefixes;
