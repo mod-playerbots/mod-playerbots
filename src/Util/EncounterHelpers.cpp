@@ -10,6 +10,7 @@
 #include "DruidActions.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
+#include "GenericSpellActions.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "HunterActions.h"
@@ -287,58 +288,86 @@ bool IsDpsCooldownAction(Player* bot, Action* action)
     if (dynamic_cast<UseTrinketAction*>(action))
         return true;
 
+    bool isClassCooldown = false;
     switch (bot->getClass())
     {
         case CLASS_DEATH_KNIGHT:
-            return dynamic_cast<CastSummonGargoyleAction*>(action) ||
+            isClassCooldown = dynamic_cast<CastSummonGargoyleAction*>(action) ||
                 dynamic_cast<CastDeathchillAction*>(action) ||
                 dynamic_cast<CastEmpowerRuneWeaponAction*>(action) ||
                 dynamic_cast<CastArmyOfTheDeadAction*>(action);
+            break;
 
         case CLASS_DRUID:
-            return dynamic_cast<CastStarfallAction*>(action) ||
+            isClassCooldown = dynamic_cast<CastStarfallAction*>(action) ||
                 dynamic_cast<CastForceOfNatureAction*>(action) ||
                 dynamic_cast<CastBerserkAction*>(action);
+            break;
 
         case CLASS_HUNTER:
-            return dynamic_cast<CastKillCommandAction*>(action) ||
+            isClassCooldown = dynamic_cast<CastKillCommandAction*>(action) ||
                 dynamic_cast<CastRapidFireAction*>(action) ||
                 dynamic_cast<CastReadinessAction*>(action) ||
                 dynamic_cast<CastBestialWrathAction*>(action);
+            break;
 
         case CLASS_MAGE:
-            return dynamic_cast<CastArcanePowerAction*>(action) ||
+            isClassCooldown = dynamic_cast<CastArcanePowerAction*>(action) ||
                 dynamic_cast<CastCombustionAction*>(action) ||
                 dynamic_cast<CastIcyVeinsAction*>(action) ||
                 dynamic_cast<CastMirrorImageAction*>(action) ||
                 dynamic_cast<CastColdSnapAction*>(action) ||
                 dynamic_cast<CastPresenceOfMindAction*>(action);
+            break;
 
         case CLASS_SHAMAN:
-            return dynamic_cast<CastElementalMasteryAction*>(action) ||
+            isClassCooldown = dynamic_cast<CastElementalMasteryAction*>(action) ||
                 dynamic_cast<CastFeralSpiritAction*>(action) ||
                 dynamic_cast<CastFireElementalTotemAction*>(action) ||
                 dynamic_cast<CastFireElementalTotemMeleeAction*>(action);
+            break;
 
         case CLASS_PALADIN:
-            return dynamic_cast<CastAvengingWrathAction*>(action);
+            isClassCooldown = dynamic_cast<CastAvengingWrathAction*>(action);
+            break;
 
         case CLASS_ROGUE:
-            return dynamic_cast<CastKillingSpreeAction*>(action) ||
+            isClassCooldown = dynamic_cast<CastKillingSpreeAction*>(action) ||
                 dynamic_cast<CastBladeFlurryAction*>(action) ||
                 dynamic_cast<CastAdrenalineRushAction*>(action) ||
                 dynamic_cast<CastColdBloodAction*>(action);
+            break;
 
         case CLASS_WARLOCK:
-            return dynamic_cast<CastMetamorphosisAction*>(action);
+            isClassCooldown = dynamic_cast<CastMetamorphosisAction*>(action);
+            break;
 
         case CLASS_WARRIOR:
-            return dynamic_cast<CastDeathWishAction*>(action) ||
+            isClassCooldown = dynamic_cast<CastDeathWishAction*>(action) ||
                 dynamic_cast<CastBladestormAction*>(action) ||
                 dynamic_cast<CastRecklessnessAction*>(action);
+            break;
 
         default:
-            return false; // Priest =(
+            break; // Priest =(
+    }
+
+    if (isClassCooldown)
+        return true;
+
+    switch (bot->getRace())
+    {
+        case RACE_BLOODELF:
+            return dynamic_cast<CastArcaneTorrentAction*>(action);
+
+        case RACE_ORC:
+            return dynamic_cast<CastBloodFuryAction*>(action);
+
+        case RACE_TROLL:
+            return dynamic_cast<CastBerserkingAction*>(action);
+
+        default:
+            return false;
     }
 }
 
