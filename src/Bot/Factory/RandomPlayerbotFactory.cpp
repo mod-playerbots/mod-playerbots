@@ -352,7 +352,7 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
         {
             Field* fields = typeCheck->Fetch();
             uint8 accountType = fields[0].Get<uint8>();
-            uint32 count = fields[1].Get<uint32>();
+            uint32 count = static_cast<uint32>(fields[1].Get<uint64>());
 
             if (accountType == 0) existingUnassignedAccounts = count;
             else if (accountType == 1) existingRndBotAccounts = count;

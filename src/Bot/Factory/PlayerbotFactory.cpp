@@ -2420,7 +2420,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
             bool isTrinketSlot = (slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2);
             calculator.SetExcludeResilience(isTrinketSlot);
 
-            if (Item* oldItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
                 bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
 
             std::vector<std::pair<uint32, int32>>& ids = items[slot];
