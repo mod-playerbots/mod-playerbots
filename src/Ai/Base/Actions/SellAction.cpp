@@ -10,6 +10,7 @@
 #include "ItemUsageValue.h"
 #include "ItemVisitors.h"
 #include "Playerbots.h"
+#include "PlayerbotAIConfig.h"
 
 class SellItemsVisitor : public IterateItemsVisitor
 {
@@ -33,8 +34,16 @@ public:
 
     bool Visit(Item* item) override
     {
-        if (item->GetTemplate()->Quality != ITEM_QUALITY_POOR)
+        ItemTemplate const* itemTemplate = item->GetTemplate();
+
+        bool isGrayItem = itemTemplate->Quality == ITEM_QUALITY_POOR;
+        bool isWhiteEquipment = itemTemplate->Quality == ITEM_QUALITY_NORMAL && (itemTemplate->Class == ITEM_CLASS_ARMOR);
+        //would like to consider Weapons too but how to check that it isn't mining pickaxe, skinning knife, fishing rods...
+
+        if (!isGrayItem && !(sPlayerbotAIConfig.sellNormalQualityEquipment && isWhiteEquipment))
+        {
             return true;
+        }
 
         return SellItemsVisitor::Visit(item);
     }
