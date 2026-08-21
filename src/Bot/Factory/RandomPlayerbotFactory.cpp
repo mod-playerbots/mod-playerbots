@@ -951,7 +951,6 @@ void RandomPlayerbotFactory::CreateBotArenaTeam(Player* bot, ArenaType type)
         return;
     }
 
-    arenateam->SetCaptain(bot->GetGUID());
     arenateam->SetRatingForAll(
         urand(sPlayerbotAIConfig.randomBotArenaTeamMinRating, sPlayerbotAIConfig.randomBotArenaTeamMaxRating));
 
