@@ -20,6 +20,7 @@
 #include <ctime>
 #include <unordered_set>
 
+using ai::buff::BuffBelowRefreshTarget;
 using ai::buff::MakeAuraQualifierForBuff;
 using ai::spell::HasSpellOrCategoryCooldown;
 
@@ -268,10 +269,7 @@ bool CastAuraSpellAction::isUseful()
         return false;
 
     Aura* aura = botAI->GetAura(spell, GetTarget(), isOwner, checkDuration);
-    if (!aura || (beforeDuration && uint32(aura->GetDuration()) < beforeDuration))
-        return true;
-
-    return false;
+    return BuffBelowRefreshTarget(botAI, aura, beforeDuration);
 }
 
 bool CastBuffSpellAction::isUseful()
@@ -281,11 +279,13 @@ bool CastBuffSpellAction::isUseful()
         return false;
 
     Aura* aura = botAI->GetAura(spell, target, isOwner, checkDuration);
-    return !aura || (beforeDuration && uint32(aura->GetDuration()) < beforeDuration);
+    return BuffBelowRefreshTarget(botAI, aura, beforeDuration);
 }
 
 bool CastBuffSpellAction::Execute(Event /*event*/)
 {
+    botAI->forceRebuff.NoteBuffWork();
+
     return botAI->CastSpell(spell, GetTarget());
 }
 
@@ -298,19 +298,19 @@ bool GroupBuffSpellAction::isUseful()
     if (ai::buff::IsGroupVariantEnabled(bot, spell))
     {
         std::string const groupVariant = ai::buff::GroupVariantFor(spell);
-        if (!groupVariant.empty() && botAI->HasAura(groupVariant, target, false, isOwner, -1, checkDuration))
+        if (!groupVariant.empty() && !BuffBelowRefreshTarget(
+                botAI, botAI->GetAura(groupVariant, target, isOwner, checkDuration), beforeDuration))
             return false;
     }
 
     Aura* aura = botAI->GetAura(spell, target, isOwner, checkDuration);
-    if (!aura || (beforeDuration && uint32(aura->GetDuration()) < beforeDuration))
-        return true;
-
-    return false;
+    return BuffBelowRefreshTarget(botAI, aura, beforeDuration);
 }
 
 bool GroupBuffSpellAction::Execute(Event /*event*/)
 {
+    botAI->forceRebuff.NoteBuffWork();
+
     std::string missingReagentGroupName;
     std::string const castName = ai::buff::UpgradeToGroupIfAppropriate(
         bot, botAI, spell, &missingReagentGroupName);
