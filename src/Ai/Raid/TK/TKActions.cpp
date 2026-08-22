@@ -113,7 +113,7 @@ bool AlarMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!alar)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return false;
 
@@ -827,7 +827,7 @@ Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsT
 
 bool HighAstromancerSolarianCastFearWardOnMainTankAction::Execute(Event /*event*/)
 {
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank || mainTank->HasAura(Id(TkSpells::SPELL_FEAR_WARD)))
         return false;
 
@@ -897,7 +897,7 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
     else if (hunterIndex == 1)
     {
         advisorTarget = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-        tankTarget = GetGroupAssistTank(botAI, bot, 0);
+        tankTarget = GetGroupAssistTank(bot, 0);
     }
 
     if (!advisorTarget || advisorTarget->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
@@ -961,7 +961,7 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderCastFearWardOnSanguinarTankAction::Execute(Event /*event*/)
 {
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank || mainTank->HasAura(Id(TkSpells::SPELL_FEAR_WARD)))
         return false;
 

@@ -304,8 +304,8 @@ bool IsPrimaryEmberTank(Player* bot)
 Player* GetPhase2SecondEmberTank(Player* bot)
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* mainTank = GetGroupMainTank(bot);
+    Player* assistTank = GetGroupAssistTank(bot, 0);
 
     if (!mainTank || !assistTank)
         return nullptr;
