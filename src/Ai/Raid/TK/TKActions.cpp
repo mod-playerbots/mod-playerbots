@@ -6,6 +6,7 @@
 
 #include "TKActions.h"
 #include "AiFactory.h"
+#include "EncounterHelpers.h"
 #include "EquipAction.h"
 #include "ItemPackets.h"
 #include "LootAction.h"
@@ -14,7 +15,6 @@
 #include "MoveSpline.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "StatsWeightCalculator.h"
 #include "TKHelpers.h"
 #include "TKKaelthasBossAI.h"
@@ -27,6 +27,7 @@
 #include <list>
 
 using namespace TkHelpers;
+using namespace EncounterHelpers;
 
 // General
 
