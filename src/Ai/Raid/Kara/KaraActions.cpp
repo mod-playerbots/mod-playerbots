@@ -5,10 +5,10 @@
  */
 
 #include "KaraActions.h"
+#include "EncounterHelpers.h"
 #include "KaraHelpers.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -19,6 +19,7 @@
 #include <string>
 
 using namespace KaraHelpers;
+using namespace EncounterHelpers;
 
 // General
 
@@ -105,7 +106,7 @@ bool KarazhanCastFearProtectionSpellAction::Execute(Event /*event*/)
 
 bool KarazhanCastFearProtectionSpellAction::CastFearWardOnMainTank()
 {
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank || mainTank->HasAura(Id(KaraSpells::SPELL_FEAR_WARD)))
         return false;
 

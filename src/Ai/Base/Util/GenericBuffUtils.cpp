@@ -11,6 +11,7 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
+#include "SpellAuras.h"
 #include "SpellMgr.h"
 #include "Unit.h"
 #include "Value.h"
@@ -32,6 +33,15 @@ namespace ai::buff
         }
     }
 
+    bool BuffBelowRefreshTarget(PlayerbotAI* botAI, Aura* aura, uint32 baseBeforeDuration)
+    {
+        if (!aura)
+            return true;
+
+        return botAI->forceRebuff.BuffBelowRefreshTarget(
+            aura->GetDuration(), aura->GetMaxDuration(), baseBeforeDuration);
+    }
+
     static bool HasEnoughSameMapMissingPlayersForGroupVariant(
         Player* bot, PlayerbotAI* botAI, std::string const& baseName,
         std::string const& groupName, uint32 requiredCount = 3)
@@ -50,7 +60,8 @@ namespace ai::buff
                 continue;
             }
 
-            if (botAI->HasAura(baseName, member) || botAI->HasAura(groupName, member))
+            if (!BuffBelowRefreshTarget(botAI, botAI->GetAura(baseName, member), 0) ||
+                !BuffBelowRefreshTarget(botAI, botAI->GetAura(groupName, member), 0))
                 continue;
 
             if (++missingCount >= requiredCount)
