@@ -1666,8 +1666,7 @@ AiPlayerbot.RandomBotArenaTeam5v5Count = 5
 AiPlayerbot.RandomBotArenaTeamMaxRating = 2000
 AiPlayerbot.RandomBotArenaTeamMinRating = 1000
 
-# Delete all randombot (and any addclass bot) arena teams.
-# New teams are created immediately according to randombot arena team count.
+# Delete all randombot arena teams
 AiPlayerbot.DeleteRandomBotArenaTeams = 0
 
 # PvP Restricted Zones (bots will not initiate PvP or defend themselves if attacked)

@@ -4769,37 +4769,30 @@ void PlayerbotFactory::InitArenaTeam()
     if (!sPlayerbotAIConfig.IsInRandomAccountList(bot->GetSession()->GetAccountId()))
         return;
 
-    // Currently the teams are only remade after a server restart and if deleteRandomBotArenaTeams = 1, this
-    // is because randomBotArenaTeams is only empty on server restart.
-    // A manual reinitialization (.playerbots rndbot init) is also required after the teams have been deleted.
+    // Currently the teams are only remade after a server restart and if deleteRandomBotArenaTeams = 1
+    // This is because randomBotArenaTeams is only empty on server restart.
+    // A manual reinitalization (.playerbots rndbot init) is also required after the teams have been deleted.
     if (sPlayerbotAIConfig.randomBotArenaTeams.empty())
     {
         if (sPlayerbotAIConfig.deleteRandomBotArenaTeams)
         {
-            LOG_INFO("playerbots", "Deleting randombot arena teams...");
+            LOG_INFO("playerbots", "Deleting random bot arena teams...");
 
-            // Disband() in ArenaTeam.cpp erases the team from ArenaTeamStore, invalidating the loop
-            // iterator, so the ids are collected before any team is disbanded.
-            std::vector<uint32> teamsToDisband;
-            for (auto const& [teamId, arenateam] : sArenaTeamMgr->GetArenaTeams())
+            for (auto it = sArenaTeamMgr->GetArenaTeams().begin(); it != sArenaTeamMgr->GetArenaTeams().end(); ++it)
             {
-                ObjectGuid captain = arenateam->GetCaptain();
-                if (!captain || !captain.IsPlayer())
-                    continue;
-
-                // The captain's account is checked instead of the 'add' event or anything else that depends on the
-                // bot being online.
-                if (sPlayerbotAIConfig.IsInRandomAccountList(sCharacterCache->GetCharacterAccountIdByGuid(captain)))
-                    teamsToDisband.push_back(teamId);
+                ArenaTeam* arenateam = it->second;
+                if (arenateam->GetCaptain() && arenateam->GetCaptain().IsPlayer())
+                {
+                    Player* bot = ObjectAccessor::FindPlayer(arenateam->GetCaptain());
+                    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+                    if (!botAI || IsSelfBot(bot))
+                        continue;
+                    else
+                        arenateam->Disband(nullptr);
+                }
             }
 
-            for (uint32 teamId : teamsToDisband)
-            {
-                if (ArenaTeam* arenateam = sArenaTeamMgr->GetArenaTeamById(teamId))
-                    arenateam->Disband(nullptr);
-            }
-
-            LOG_INFO("playerbots", "Randombot arena teams deleted");
+            LOG_INFO("playerbots", "Random bot arena teams deleted");
         }
 
         RandomPlayerbotFactory::CreateRandomArenaTeams(ARENA_TYPE_2v2, sPlayerbotAIConfig.randomBotArenaTeam2v2Count);
@@ -4816,7 +4809,7 @@ void PlayerbotFactory::InitArenaTeam()
 
          if (arenateams.empty())
          {
-             LOG_ERROR("playerbots", "No randombot arena team available");
+             LOG_ERROR("playerbots", "No random arena team available");
              return;
          }
 
