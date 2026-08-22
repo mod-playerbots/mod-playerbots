@@ -5,11 +5,12 @@
  */
 
 #include "SethTriggers.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "SethData.h"
 
 using namespace SethData;
+using namespace EncounterHelpers;
 
 bool TimeLostControllerDropsCharmingTotemTrigger::IsActive()
 {

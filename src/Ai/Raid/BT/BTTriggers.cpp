@@ -8,11 +8,12 @@
 #include "AiFactory.h"
 #include "BTActions.h"
 #include "BTHelpers.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "SharedDefines.h"
 
 using namespace BlackTempleHelpers;
+using namespace EncounterHelpers;
 
 // General
 
