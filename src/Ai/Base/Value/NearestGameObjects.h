@@ -45,7 +45,7 @@ protected:
 
 private:
     float range;
-    bool ignoreLos;
+    [[maybe_unused]] bool ignoreLos;  // unused while the LOS filter in Calculate() stays commented out
 };
 
 class NearestTrapWithDamageValue : public ObjectGuidListCalculatedValue

@@ -18,6 +18,7 @@
 #include "PlayerbotOperation.h"
 #include "PlayerbotRepository.h"
 #include "Playerbots.h"
+#include "RandomPlayerbotFactory.h"
 #include "RandomPlayerbotMgr.h"
 #include "UseMeetingStoneAction.h"
 #include "WorldSession.h"
@@ -521,6 +522,31 @@ public:
 private:
     ObjectGuid m_botGuid;
     uint32 m_masterAccountId = 0;
+};
+
+class ArenaTeamAssignOperation : public PlayerbotOperation
+{
+public:
+    explicit ArenaTeamAssignOperation(ObjectGuid botGuid) : m_botGuid(botGuid) {}
+
+    bool Execute() override
+    {
+        Player* bot = ObjectAccessor::FindPlayer(m_botGuid);
+        if (!bot)
+            return false;
+
+        RandomPlayerbotFactory::AssignBotToArenaTeamInternal(bot);
+        return true;
+    }
+
+    ObjectGuid GetBotGuid() const override { return m_botGuid; }
+
+    std::string GetName() const override { return "ArenaTeamAssign"; }
+
+    bool IsValid() const override { return ObjectAccessor::FindPlayer(m_botGuid) != nullptr; }
+
+private:
+    ObjectGuid m_botGuid;
 };
 
 #endif

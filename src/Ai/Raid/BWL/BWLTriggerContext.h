@@ -25,6 +25,11 @@ public:
         creators["bwl vaelastrasz positioning"] = &RaidBwlTriggerContext::bwl_vaelastrasz_positioning;
         creators["bwl vaelastrasz burning adrenaline"] = &RaidBwlTriggerContext::bwl_vaelastrasz_burning_adrenaline;
 
+        creators["bwl broodlord fire resistance"] = &RaidBwlTriggerContext::bwl_broodlord_fire_resistance_trigger;
+
+        creators["bwl firemaw fire resistance"] = &RaidBwlTriggerContext::bwl_firemaw_fire_resistance_trigger;
+        creators["bwl flamegor fire resistance"] = &RaidBwlTriggerContext::bwl_flamegor_fire_resistance_trigger;
+
         creators["bwl affliction bronze"] = &RaidBwlTriggerContext::bwl_affliction_bronze;
         creators["bwl wild magic"] = &RaidBwlTriggerContext::bwl_wild_magic;
         creators["bwl nefarian fear ward"] = &RaidBwlTriggerContext::bwl_nefarian_fear_ward;
@@ -39,6 +44,9 @@ private:
     static Trigger* bwl_vaelastrasz_fire_resistance_trigger(PlayerbotAI* ai) { return new BossFireResistanceTrigger(ai, "vaelastrasz the corrupt"); }
     static Trigger* bwl_vaelastrasz_positioning(PlayerbotAI* ai) { return new BwlVaelastraszPositioningTrigger(ai); }
     static Trigger* bwl_vaelastrasz_burning_adrenaline(PlayerbotAI* ai) { return new BwlVaelastraszBurningAdrenalineTrigger(ai); }
+    static Trigger* bwl_broodlord_fire_resistance_trigger(PlayerbotAI* ai) { return new BossFireResistanceTrigger(ai, "broodlord lashlayer"); }
+    static Trigger* bwl_firemaw_fire_resistance_trigger(PlayerbotAI* ai) { return new BossFireResistanceTrigger(ai, "firemaw"); }
+    static Trigger* bwl_flamegor_fire_resistance_trigger(PlayerbotAI* ai) { return new BossFireResistanceTrigger(ai, "flamegor"); }
     static Trigger* bwl_affliction_bronze(PlayerbotAI* ai) { return new BwlAfflictionBronzeTrigger(ai); }
     static Trigger* bwl_wild_magic(PlayerbotAI* ai) { return new BwlWildMagicTrigger(ai); }
     static Trigger* bwl_nefarian_fear_ward(PlayerbotAI* ai) { return new BwlNefarianFearWardTrigger(ai); }

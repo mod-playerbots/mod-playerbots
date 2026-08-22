@@ -4,12 +4,29 @@
  * or (at your option) any later version.
  */
 
-#include "RaidBossHelpers.h"
+#include "EncounterHelpers.h"
 #include "CellImpl.h"
+#include "DKActions.h"
+#include "DruidActions.h"
+#include "DruidBearActions.h"
+#include "DruidCatActions.h"
+#include "GenericSpellActions.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "HunterActions.h"
+#include "MageActions.h"
+#include "PaladinActions.h"
 #include "Playerbots.h"
+#include "RogueActions.h"
 #include "RtiTargetValue.h"
+#include "ShamanActions.h"
+#include "WarlockActions.h"
+#include "WarriorActions.h"
+#include <list>
+
+namespace EncounterHelpers
+
+{
 
 // Functions to mark targets with raid target icons
 // Note that these functions do not allow the player to change the icon during the encounter
@@ -88,20 +105,14 @@ bool ClearTargetIcon(Player* bot, uint8 iconId)
     return false;
 }
 
-// For bots to set their raid target icon to the specified icon on the specified target
-void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
+// For bots to set their raid target icon to the specified icon
+void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName)
 {
-    if (!target)
-        return;
+    Value<std::string>* rtiValue =
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti");
 
-    std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-
-    if (currentRti != rtiName || currentTarget != target)
-    {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-    }
+    if (rtiValue->Get() != rtiName)
+        rtiValue->Set(rtiName);
 }
 
 // Return the first alive bot in the specified instance map for purposes of assigning
@@ -128,13 +139,13 @@ bool IsMechanicTrackerBot(Player* bot, uint32 mapId)
 }
 
 // Requires the main tank to be alive
-Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot)
+Player* GetGroupMainTank(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
         return nullptr;
 
-    ObjectGuid const mainTankGuid = botAI->GetMainTankGuid(group);
+    ObjectGuid const mainTankGuid = PlayerbotAI::GetMainTankGuid(group);
     if (mainTankGuid.IsEmpty())
         return nullptr;
 
@@ -149,13 +160,13 @@ Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot)
 }
 
 // Returns the alive assist tank of the specified index (0 = first, 1 = second, etc.)
-Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index)
+Player* GetGroupAssistTank(Player* bot, uint8 index)
 {
     Group* group = bot->GetGroup();
     if (!group)
         return nullptr;
 
-    ObjectGuid const mainTankGuid = botAI->GetMainTankGuid(group);
+    ObjectGuid const mainTankGuid = PlayerbotAI::GetMainTankGuid(group);
     if (mainTankGuid.IsEmpty())
         return nullptr;
 
@@ -165,7 +176,7 @@ Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !botAI->IsTank(member) ||
+        if (!member || !member->IsAlive() || !PlayerbotAI::IsTank(member) ||
             member->GetGUID() == mainTankGuid)
         {
             continue;
@@ -259,4 +270,163 @@ std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius,
     }
 
     return dynObjs;
+}
+
+// This function is primarily for use in multipliers during encounters where it is desirable
+// for bots to save cooldowns for particular phases (or for a bit after the pull)
+bool IsDpsCooldownAction(Player* bot, Action* action)
+{
+    if (bot->getClass() == CLASS_SHAMAN && // Before dps gate to capture Resto
+        (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action)))
+    {
+        return true;
+    }
+
+    if (!PlayerbotAI::IsDps(bot))
+        return false;
+
+    if (dynamic_cast<UseTrinketAction*>(action))
+        return true;
+
+    bool isClassCooldown = false;
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT:
+            isClassCooldown = dynamic_cast<CastSummonGargoyleAction*>(action) ||
+                dynamic_cast<CastDeathchillAction*>(action) ||
+                dynamic_cast<CastEmpowerRuneWeaponAction*>(action) ||
+                dynamic_cast<CastArmyOfTheDeadAction*>(action);
+            break;
+
+        case CLASS_DRUID:
+            isClassCooldown = dynamic_cast<CastStarfallAction*>(action) ||
+                dynamic_cast<CastForceOfNatureAction*>(action) ||
+                dynamic_cast<CastBerserkAction*>(action);
+            break;
+
+        case CLASS_HUNTER:
+            isClassCooldown = dynamic_cast<CastKillCommandAction*>(action) ||
+                dynamic_cast<CastRapidFireAction*>(action) ||
+                dynamic_cast<CastReadinessAction*>(action) ||
+                dynamic_cast<CastBestialWrathAction*>(action);
+            break;
+
+        case CLASS_MAGE:
+            isClassCooldown = dynamic_cast<CastArcanePowerAction*>(action) ||
+                dynamic_cast<CastCombustionAction*>(action) ||
+                dynamic_cast<CastIcyVeinsAction*>(action) ||
+                dynamic_cast<CastMirrorImageAction*>(action) ||
+                dynamic_cast<CastColdSnapAction*>(action) ||
+                dynamic_cast<CastPresenceOfMindAction*>(action);
+            break;
+
+        case CLASS_SHAMAN:
+            isClassCooldown = dynamic_cast<CastElementalMasteryAction*>(action) ||
+                dynamic_cast<CastFeralSpiritAction*>(action) ||
+                dynamic_cast<CastFireElementalTotemAction*>(action) ||
+                dynamic_cast<CastFireElementalTotemMeleeAction*>(action);
+            break;
+
+        case CLASS_PALADIN:
+            isClassCooldown = dynamic_cast<CastAvengingWrathAction*>(action);
+            break;
+
+        case CLASS_ROGUE:
+            isClassCooldown = dynamic_cast<CastKillingSpreeAction*>(action) ||
+                dynamic_cast<CastBladeFlurryAction*>(action) ||
+                dynamic_cast<CastAdrenalineRushAction*>(action) ||
+                dynamic_cast<CastColdBloodAction*>(action);
+            break;
+
+        case CLASS_WARLOCK:
+            isClassCooldown = dynamic_cast<CastMetamorphosisAction*>(action);
+            break;
+
+        case CLASS_WARRIOR:
+            isClassCooldown = dynamic_cast<CastDeathWishAction*>(action) ||
+                dynamic_cast<CastBladestormAction*>(action) ||
+                dynamic_cast<CastRecklessnessAction*>(action);
+            break;
+
+        default:
+            break; // Priest =(
+    }
+
+    if (isClassCooldown)
+        return true;
+
+    switch (bot->getRace())
+    {
+        case RACE_BLOODELF:
+            return dynamic_cast<CastArcaneTorrentAction*>(action);
+
+        case RACE_ORC:
+            return dynamic_cast<CastBloodFuryAction*>(action);
+
+        case RACE_TROLL:
+            return dynamic_cast<CastBerserkingAction*>(action);
+
+        default:
+            return false;
+    }
+}
+
+bool IsTauntAction(Player* bot, Action* action)
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT:
+            return dynamic_cast<CastDarkCommandAction*>(action) ||
+                dynamic_cast<CastDeathGripAction*>(action);
+
+        case CLASS_DRUID:
+            return dynamic_cast<CastGrowlAction*>(action) ||
+                dynamic_cast<CastChallengingRoarAction*>(action);
+
+        case CLASS_PALADIN:
+            return dynamic_cast<CastHandOfReckoningAction*>(action) ||
+                dynamic_cast<CastRighteousDefenseAction*>(action);
+
+        case CLASS_WARRIOR:
+            return dynamic_cast<CastTauntAction*>(action) ||
+                dynamic_cast<CastChallengingShoutAction*>(action);
+
+        default:
+            return false;
+    }
+}
+
+// These abilities can be particularly problematic on the pull for a council-type boss
+bool IsAoeThreatAction(Player* bot, Action* action)
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT:
+            return dynamic_cast<CastDeathAndDecayAction*>(action) ||
+                dynamic_cast<CastPestilenceAction*>(action) ||
+                dynamic_cast<CastBloodBoilAction*>(action);
+
+        case CLASS_DRUID:
+            return dynamic_cast<CastSwipeBearAction*>(action);
+
+        case CLASS_PALADIN:
+            return dynamic_cast<CastAvengersShieldAction*>(action) ||
+                dynamic_cast<CastConsecrationAction*>(action);
+
+        case CLASS_WARRIOR:
+            return dynamic_cast<CastThunderClapAction*>(action) ||
+                dynamic_cast<CastShockwaveAction*>(action) ||
+                dynamic_cast<CastCleaveAction*>(action);
+
+        default:
+            return false;
+    }
+}
+
 }

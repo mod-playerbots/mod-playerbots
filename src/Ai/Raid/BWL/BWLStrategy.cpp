@@ -28,6 +28,14 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("bwl vaelastrasz burning adrenaline", {
         NextAction("bwl vaelastrasz move away", ACTION_RAID + 5) }));
 
+    triggers.push_back(new TriggerNode("bwl broodlord fire resistance", {
+        NextAction("bwl broodlord fire resistance", ACTION_RAID) }));
+
+    triggers.push_back(new TriggerNode("bwl firemaw fire resistance", {
+        NextAction("bwl firemaw fire resistance", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("bwl flamegor fire resistance", {
+        NextAction("bwl flamegor fire resistance", ACTION_RAID) }));
+
     triggers.push_back(new TriggerNode("bwl affliction bronze", {
         NextAction("bwl use hourglass sand", ACTION_RAID) }));
 

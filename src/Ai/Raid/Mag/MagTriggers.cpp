@@ -5,11 +5,12 @@
  */
 
 #include "MagTriggers.h"
+#include "EncounterHelpers.h"
 #include "MagHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 
 using namespace MagtheridonHelpers;
+using namespace EncounterHelpers;
 
 bool MagtheridonFirstThreeChannelersEngagedByMainTankTrigger::IsActive()
 {

@@ -6,12 +6,13 @@
 
 #include "GruulActions.h"
 #include "CreatureAI.h"
+#include "EncounterHelpers.h"
 #include "GruulHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "Unit.h"
 
 using namespace GruulsLairHelpers;
+using namespace EncounterHelpers;
 
 // High King Maulgar Actions
 
@@ -25,7 +26,7 @@ bool HighKingMaulgarMainTankAttackMaulgarAction::Execute(Event /*event*/)
     if (MarkTargetWithSquare(bot, maulgar))
         return true;
 
-    SetRtiTarget(botAI, "square", maulgar);
+    SetRtiTarget(botAI, "square");
 
     if (AI_VALUE(Unit*, "current target") != maulgar)
         return Attack(maulgar);
@@ -62,7 +63,7 @@ bool HighKingMaulgarFirstAssistTankAttackOlmAction::Execute(Event /*event*/)
     if (MarkTargetWithCircle(bot, olm))
         return true;
 
-    SetRtiTarget(botAI, "circle", olm);
+    SetRtiTarget(botAI, "circle");
 
     if (AI_VALUE(Unit*, "current target") != olm)
         return Attack(olm);
@@ -99,7 +100,7 @@ bool HighKingMaulgarSecondAssistTankAttackBlindeyeAction::Execute(Event /*event*
     if (MarkTargetWithStar(bot, blindeye))
         return true;
 
-    SetRtiTarget(botAI, "star", blindeye);
+    SetRtiTarget(botAI, "star");
 
     if (AI_VALUE(Unit*, "current target") != blindeye)
         return Attack(blindeye);
@@ -136,7 +137,7 @@ bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event /*event*/)
     if (MarkTargetWithTriangle(bot, krosh))
         return true;
 
-    SetRtiTarget(botAI, "triangle", krosh);
+    SetRtiTarget(botAI, "triangle");
 
     if (krosh->HasAura(static_cast<uint32>(GruulsLairSpells::SPELL_SPELL_SHIELD)) &&
         botAI->CanCastSpell("spellsteal", krosh))
@@ -194,7 +195,7 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event /*event*/)
     if (MarkTargetWithDiamond(bot, kiggler))
         return true;
 
-    SetRtiTarget(botAI, "diamond", kiggler);
+    SetRtiTarget(botAI, "diamond");
 
     if (AI_VALUE(Unit*, "current target") != kiggler)
         return Attack(kiggler);
@@ -222,7 +223,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event /*event*/)
         if (MarkTargetWithStar(bot, blindeye))
             return true;
 
-        SetRtiTarget(botAI, "star", blindeye);
+        SetRtiTarget(botAI, "star");
 
         if (AI_VALUE(Unit*, "current target") != blindeye)
             return Attack(blindeye);
@@ -236,7 +237,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event /*event*/)
         if (MarkTargetWithCircle(bot, olm))
             return true;
 
-        SetRtiTarget(botAI, "circle", olm);
+        SetRtiTarget(botAI, "circle");
 
         if (AI_VALUE(Unit*, "current target") != olm)
             return Attack(olm);
@@ -251,7 +252,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event /*event*/)
         if (MarkTargetWithTriangle(bot, krosh))
             return true;
 
-        SetRtiTarget(botAI, "triangle", krosh);
+        SetRtiTarget(botAI, "triangle");
 
         if (AI_VALUE(Unit*, "current target") != krosh)
             return Attack(krosh);
@@ -265,7 +266,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event /*event*/)
         if (MarkTargetWithDiamond(bot, kiggler))
             return true;
 
-        SetRtiTarget(botAI, "diamond", kiggler);
+        SetRtiTarget(botAI, "diamond");
 
         if (AI_VALUE(Unit*, "current target") != kiggler)
             return Attack(kiggler);
@@ -279,7 +280,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event /*event*/)
         if (MarkTargetWithSquare(bot, maulgar))
             return true;
 
-        SetRtiTarget(botAI, "square", maulgar);
+        SetRtiTarget(botAI, "square");
 
         if (AI_VALUE(Unit*, "current target") != maulgar)
             return Attack(maulgar);
@@ -420,14 +421,14 @@ bool HighKingMaulgarMisdirectOgresToTanksAction::Execute(Event /*event*/)
     if (hunterIndex == 0)
     {
         ogreTarget = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-        tankTarget = GetGroupAssistTank(botAI, bot, 1);
+        tankTarget = GetGroupAssistTank(bot, 1);
     }
     else if (hunterIndex == 1)
     {
         ogreTarget = AI_VALUE2(Unit*, "find target", "olm the summoner");
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            if (Player* member = GetGroupAssistTank(botAI, bot, 0))
+            if (Player* member = GetGroupAssistTank(bot, 0))
             {
                 tankTarget = member;
                 break;

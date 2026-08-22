@@ -5,12 +5,13 @@
  */
 
 #include "ZATriggers.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "ZAActions.h"
 #include "ZAHelpers.h"
 
 using namespace ZulAmanHelpers;
+using namespace EncounterHelpers;
 
 // Trash
 

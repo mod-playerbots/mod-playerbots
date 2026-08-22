@@ -8,66 +8,51 @@
 #include "BTActions.h"
 #include "BTHelpers.h"
 #include "ChooseTargetActions.h"
-#include "DKActions.h"
-#include "DruidActions.h"
-#include "DruidBearActions.h"
 #include "DruidShapeshiftActions.h"
+#include "EncounterHelpers.h"
 #include "FollowActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
-#include "PaladinActions.h"
 #include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
-#include "WarlockActions.h"
-#include "WarriorActions.h"
 #include "WipeAction.h"
+#include <array>
+#include <ctime>
 
 using namespace BlackTempleHelpers;
+using namespace EncounterHelpers;
 
-static bool IsDpsCooldownAction(Action* action)
+// General
+
+// Illidan is handled separately
+float BlackTempleDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {
-    return dynamic_cast<CastHeroismAction*>(action) ||
-           dynamic_cast<CastBloodlustAction*>(action) ||
-           dynamic_cast<CastMetamorphosisAction*>(action) ||
-           dynamic_cast<CastAdrenalineRushAction*>(action) ||
-           dynamic_cast<CastBladeFlurryAction*>(action) ||
-           dynamic_cast<CastIcyVeinsAction*>(action) ||
-           dynamic_cast<CastColdSnapAction*>(action) ||
-           dynamic_cast<CastArcanePowerAction*>(action) ||
-           dynamic_cast<CastPresenceOfMindAction*>(action) ||
-           dynamic_cast<CastCombustionAction*>(action) ||
-           dynamic_cast<CastRapidFireAction*>(action) ||
-           dynamic_cast<CastReadinessAction*>(action) ||
-           dynamic_cast<CastAvengingWrathAction*>(action) ||
-           dynamic_cast<CastElementalMasteryAction*>(action) ||
-           dynamic_cast<CastFeralSpiritAction*>(action) ||
-           dynamic_cast<CastFireElementalTotemAction*>(action) ||
-           dynamic_cast<CastFireElementalTotemMeleeAction*>(action) ||
-           dynamic_cast<CastForceOfNatureAction*>(action) ||
-           dynamic_cast<CastArmyOfTheDeadAction*>(action) ||
-           dynamic_cast<CastSummonGargoyleAction*>(action) ||
-           dynamic_cast<CastBerserkingAction*>(action) ||
-           dynamic_cast<CastBloodFuryAction*>(action);
-}
-
-// High Warlord Naj'entus
-
-float HighWarlordNajentusDelayDpsCooldownsMultiplier::GetValue(Action* action)
-{
-    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
-    if (!najentus || najentus->GetHealthPct() < 95.0f)
+    if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
-    if (IsDpsCooldownAction(action) ||
-        (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
+    static constexpr std::array BlackTempleBosses = {
+        "gathios the shatterer", "mother shahraz", "essence of suffering", "gurtogg bloodboil",
+        "teron gorefiend", "supremus", "high warlord naj'entus" };
+
+    Unit* boss = nullptr;
+    for (const char* name : BlackTempleBosses)
     {
-        return 0.0f;
+        if (Unit* candidate = AI_VALUE2(Unit*, "find target", name))
+        {
+            boss = candidate;
+            break;
+        }
     }
+
+    if (boss && boss->GetHealthPct() > 95.0f)
+        return 0.0f;
 
     return 1.0f;
 }
+
+// High Warlord Naj'entus
 
 float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
@@ -84,21 +69,6 @@ float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValue(Action* 
 }
 
 // Supremus
-
-float SupremusDelayDpsCooldownsMultiplier::GetValue(Action* action)
-{
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    if (!supremus || supremus->GetHealthPct() < 95.0f)
-        return 1.0f;
-
-    if (IsDpsCooldownAction(action) ||
-        (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
-}
 
 float SupremusFocusOnAvoidanceInPhase2Multiplier::GetValue(Action* action)
 {
@@ -134,21 +104,6 @@ float SupremusHitboxIsBuggedMultiplier::GetValue(Action* action)
 }
 
 // Teron Gorefiend
-
-float TeronGorefiendDelayDpsCooldownsMultiplier::GetValue(Action* action)
-{
-    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
-    if (!gorefiend || gorefiend->GetHealthPct() < 95.0f)
-        return 1.0f;
-
-    if (IsDpsCooldownAction(action) ||
-        (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
-}
 
 float TeronGorefiendControlMovementMultiplier::GetValue(Action* action)
 {
@@ -230,21 +185,6 @@ float TeronGorefiendDisableAttackingConstructsMultiplier::GetValue(Action* actio
 
 // Gurtogg Bloodboil
 
-float GurtoggBloodboilDelayDpsCooldownsMultiplier::GetValue(Action* action)
-{
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (!gurtogg || gurtogg->GetHealthPct() < 95.0f)
-        return 1.0f;
-
-    if (IsDpsCooldownAction(action) ||
-        (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
-}
-
 float GurtoggBloodboilControlMovementMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
@@ -276,21 +216,6 @@ float GurtoggBloodboilControlMovementMultiplier::GetValue(Action* action)
 
 // Reliquary of Souls
 
-float ReliquaryOfSoulsDelayDpsCooldownsMultiplier::GetValue(Action* action)
-{
-    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
-    if (!suffering || suffering->GetHealthPct() < 95.0f)
-        return 1.0f;
-
-    if (IsDpsCooldownAction(action) ||
-        (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
-}
-
 float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "essence of suffering"))
@@ -314,21 +239,6 @@ float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValue(Action* action)
 }
 
 // Mother Shahraz
-
-float MotherShahrazDelayDpsCooldownsMultiplier::GetValue(Action* action)
-{
-    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
-    if (!shahraz || shahraz->GetHealthPct() < 90.0f)
-        return 1.0f;
-
-    if (IsDpsCooldownAction(action) ||
-        (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
-}
 
 float MotherShahrazControlMovementMultiplier::GetValue(Action* action)
 {
@@ -371,47 +281,22 @@ float MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier::GetValue(Action
 
 // Illidari Council
 
-float IllidariCouncilDelayDpsCooldownsMultiplier::GetValue(Action* action)
-{
-    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
-    if (!gathios || gathios->GetHealthPct() < 90.0f)
-        return 1.0f;
-
-    if (IsDpsCooldownAction(action) ||
-        (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
-}
-
 float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot) ||
-        !AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    if (!dynamic_cast<TankAssistAction*>(action) &&
+        !IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action))
     {
         return 1.0f;
     }
 
-    if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
+    if (AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
         return 0.0f;
-
-    if (dynamic_cast<CastTauntAction*>(action) ||
-        dynamic_cast<CastChallengingShoutAction*>(action) ||
-        dynamic_cast<CastShockwaveAction*>(action) ||
-        dynamic_cast<CastCleaveAction*>(action) ||
-        dynamic_cast<CastGrowlAction*>(action) ||
-        dynamic_cast<CastSwipeBearAction*>(action) ||
-        dynamic_cast<CastChallengingRoarAction*>(action) ||
-        dynamic_cast<CastHandOfReckoningAction*>(action) ||
-        dynamic_cast<CastRighteousDefenseAction*>(action) ||
-        dynamic_cast<CastDarkCommandAction*>(action) ||
-        dynamic_cast<CastDeathAndDecayAction*>(action) ||
-        dynamic_cast<CastBloodBoilAction*>(action))
-    {
-        return 0.0f;
-    }
 
     return 1.0f;
 }
@@ -546,27 +431,27 @@ float IllidariCouncilWaitForDpsMultiplier::GetValue(Action* action)
 
 float IllidanStormrageDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {
+    if (!IsDpsCooldownAction(bot, action))
+        return 1.0f;
+
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
         return 1.0f;
 
-    if (illidan->GetHealthPct() > 62.0f &&
+    if (illidan->GetHealthPct() <= 62.0f)
+        return 1.0f;
+
+    if (bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastHeroismAction*>(action) ||
          dynamic_cast<CastBloodlustAction*>(action)))
     {
         return 0.0f;
     }
 
-    if (illidan->GetHealthPct() <= 62.0f || illidan->GetHealthPct() > 95.0f)
+    if (illidan->GetHealthPct() > 95.0f)
         return 1.0f;
 
-    if (IsDpsCooldownAction(action) ||
-        (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
+    return 0.0f;
 }
 
 float IllidanStormrageControlTankActionsMultiplier::GetValue(Action* action)
@@ -616,7 +501,7 @@ float IllidanStormrageControlTankActionsMultiplier::GetValue(Action* action)
 
 float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action)
 {
-    if (bot->GetVictim() == nullptr)
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");

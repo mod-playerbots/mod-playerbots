@@ -4,11 +4,22 @@
  * or (at your option) any later version.
  */
 
-#ifndef PLAYERBOTS_RAIDBOSSHELPERS_H
-#define PLAYERBOTS_RAIDBOSSHELPERS_H
+#ifndef PLAYERBOTS_ENCOUNTERHELPERS_H
+#define PLAYERBOTS_ENCOUNTERHELPERS_H
 
-#include "AiObject.h"
-#include "Unit.h"
+#include "Common.h"
+#include "Position.h"
+#include <string>
+#include <vector>
+
+class Action;
+class Player;
+class PlayerbotAI;
+class Unit;
+
+namespace EncounterHelpers
+
+{
 
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
 bool MarkTargetWithSkull(Player* bot, Unit* target);
@@ -20,12 +31,17 @@ bool MarkTargetWithTriangle(Player* bot, Unit* target);
 bool MarkTargetWithCross(Player* bot, Unit* target);
 bool MarkTargetWithMoon(Player* bot, Unit* target);
 bool ClearTargetIcon(Player* bot, uint8 iconId);
-void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
+void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName);
 bool IsMechanicTrackerBot(Player* bot, uint32 mapId);
-Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot);
-Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index);
+Player* GetGroupMainTank(Player* bot);
+Player* GetGroupAssistTank(Player* bot, uint8 index);
 Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
 Player* GetNearestPlayerInRadius(Player* bot, float radius);
 std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId);
+bool IsDpsCooldownAction(Player* bot, Action* action);
+bool IsTauntAction(Player* bot, Action* action);
+bool IsAoeThreatAction(Player* bot, Action* action);
+
+}
 
 #endif

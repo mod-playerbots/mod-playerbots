@@ -8,6 +8,7 @@
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidBearActions.h"
+#include "EncounterHelpers.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
@@ -15,7 +16,6 @@
 #include "PaladinActions.h"
 #include "Playerbots.h"
 #include "PriestActions.h"
-#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
@@ -25,6 +25,7 @@
 #include "ZAHelpers.h"
 
 using namespace ZulAmanHelpers;
+using namespace EncounterHelpers;
 
 // Akil'zon <Eagle Avatar>
 

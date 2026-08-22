@@ -7,14 +7,15 @@
 #include "SSCTriggers.h"
 #include "AiFactory.h"
 #include "Corpse.h"
+#include "EncounterHelpers.h"
 #include "LootObjectStack.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "SSCActions.h"
 #include "SSCHelpers.h"
 
 using namespace SerpentShrineCavernHelpers;
+using namespace EncounterHelpers;
 
 // General
 bool SerpentShrineCavernBotIsNotInCombatTrigger::IsActive()
@@ -150,9 +151,9 @@ bool TheLurkerBelowBossIsSubmergedTrigger::IsActive()
     if (!lurker || lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
+    Player* mainTank = GetGroupMainTank(bot);
+    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
+    Player* secondAssistTank = GetGroupAssistTank(bot, 1);
 
     if (!mainTank || !firstAssistTank || !secondAssistTank)
         return false;

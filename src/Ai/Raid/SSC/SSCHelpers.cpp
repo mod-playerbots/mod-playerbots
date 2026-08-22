@@ -9,7 +9,6 @@
 #include "Creature.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 
 namespace SerpentShrineCavernHelpers
 {

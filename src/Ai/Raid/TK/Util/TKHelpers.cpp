@@ -5,10 +5,12 @@
  */
 
 #include "TKHelpers.h"
+#include "EncounterHelpers.h"
 #include "LootObjectStack.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "TKActions.h"
+
+using namespace EncounterHelpers;
 
 namespace TempestKeepHelpers
 {
@@ -288,10 +290,10 @@ std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(PlayerbotAI* botAI)
     return { firstEmber, secondEmber };
 }
 
-Player* GetSecondEmberTank(PlayerbotAI* botAI)
+Player* GetSecondEmberTank(Player* bot)
 {
-    Player* mainTank = GetGroupMainTank(botAI, botAI->GetBot());
-    Player* assistTank = GetGroupAssistTank(botAI, botAI->GetBot(), 0);
+    Player* mainTank = GetGroupMainTank(bot);
+    Player* assistTank = GetGroupAssistTank(bot, 0);
 
     bool mainTankHasMelt = mainTank && mainTank->HasAura(SPELL_MELT_ARMOR);
     bool assistTankHasMelt = assistTank && assistTank->HasAura(SPELL_MELT_ARMOR);

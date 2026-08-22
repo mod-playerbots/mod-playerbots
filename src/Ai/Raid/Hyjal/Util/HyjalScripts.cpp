@@ -6,16 +6,17 @@
 
 #include "AllCreatureScript.h"
 #include "DynamicObjectScript.h"
+#include "EncounterHelpers.h"
 #include "HyjalHelpers.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "Timer.h"
 
 using namespace HyjalSummitHelpers;
+using namespace EncounterHelpers;
 
 static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
 {
@@ -40,7 +41,7 @@ static bool ShouldInterruptForArchimondeAirBurst(PlayerbotAI* botAI, Player* bot
     if (!target)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank || bot == mainTank)
         return false;
 

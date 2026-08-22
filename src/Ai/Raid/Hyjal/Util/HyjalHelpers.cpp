@@ -5,10 +5,12 @@
  */
 
 #include "HyjalHelpers.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "Timer.h"
 #include <algorithm>
+
+using namespace EncounterHelpers;
 
 namespace HyjalSummitHelpers
 {
@@ -165,7 +167,7 @@ std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
 
 TankPositionState GetKazrogalTankPositionState(PlayerbotAI* botAI, Player* bot)
 {
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return TankPositionState::Unknown;
 
@@ -206,7 +208,7 @@ RainOfFireData* GetActiveAzgalorRainOfFire(uint32 instanceId)
 
 TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot)
 {
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return TankPositionState::Unknown;
 
