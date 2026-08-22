@@ -172,8 +172,9 @@ AiPlayerbot.RandomBotGuildCount = 20
 # Maximum number of members in randombot guilds (minimum is hardcoded to 10)
 AiPlayerbot.RandomBotGuildSizeMax = 15
 
-# Delete all randombot (and any addclass bot) guilds.
-# New guilds are created as bots initialize, according to RandomBotGuildCount.
+# Delete all randombot (and any addclass bot) guilds on startup. While enabled,
+# no new randombot guilds are created or joined. Set back to 0 and restart the
+# server to resume normal random bot guild assignment.
 AiPlayerbot.DeleteRandomBotGuilds = 0
 
 # Randombots will invite players to groups/raids/guilds
