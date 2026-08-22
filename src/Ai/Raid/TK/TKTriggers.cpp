@@ -5,14 +5,15 @@
  */
 
 #include "TKTriggers.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "TKActions.h"
 #include "TKHelpers.h"
 #include "TKKaelthasBossAI.h"
 #include <array>
 
 using namespace TkHelpers;
+using namespace EncounterHelpers;
 
 // General
 bool TempestKeepBotIsNotInCombatTrigger::IsActive()

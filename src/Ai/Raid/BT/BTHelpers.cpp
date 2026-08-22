@@ -5,8 +5,10 @@
  */
 
 #include "BTHelpers.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
+
+using namespace EncounterHelpers;
 
 namespace BlackTempleHelpers
 {
@@ -104,7 +106,7 @@ std::unordered_map<ObjectGuid, TankPositionState> shahrazTankStep;
 
 TankPositionState GetShahrazTankPositionState(PlayerbotAI* botAI, Player* bot)
 {
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return TankPositionState::Unknown;
 
