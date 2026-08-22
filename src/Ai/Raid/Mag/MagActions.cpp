@@ -6,13 +6,14 @@
 
 #include "MagActions.h"
 #include "Creature.h"
+#include "EncounterHelpers.h"
 #include "MagHelpers.h"
 #include "ObjectAccessor.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 
 using namespace MagtheridonHelpers;
+using namespace EncounterHelpers;
 
 bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*/)
 {
@@ -23,7 +24,7 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
         if (MarkTargetWithSquare(bot, channelerSquare))
             return true;
 
-        SetRtiTarget(botAI, "square", channelerSquare);
+        SetRtiTarget(botAI, "square");
     }
     else if (Creature* channelerStar = GetChanneler(bot, WEST_CHANNELER))
     {
@@ -31,7 +32,7 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
         if (MarkTargetWithStar(bot, channelerStar))
             return true;
 
-        SetRtiTarget(botAI, "star", channelerStar);
+        SetRtiTarget(botAI, "star");
     }
     else if (Creature* channelerCircle = GetChanneler(bot, EAST_CHANNELER))
     {
@@ -39,7 +40,7 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
         if (MarkTargetWithCircle(bot, channelerCircle))
             return true;
 
-        SetRtiTarget(botAI, "circle", channelerCircle);
+        SetRtiTarget(botAI, "circle");
     }
 
     if (channelerTarget && AI_VALUE(Unit*, "current target") != channelerTarget)
@@ -72,7 +73,7 @@ bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event /*event*/)
     if (MarkTargetWithDiamond(bot, channelerDiamond))
         return true;
 
-    SetRtiTarget(botAI, "diamond", channelerDiamond);
+    SetRtiTarget(botAI, "diamond");
 
     if (AI_VALUE(Unit*, "current target") != channelerDiamond)
         return Attack(channelerDiamond);
@@ -108,7 +109,7 @@ bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event /*event*/
     if (MarkTargetWithTriangle(bot, channelerTriangle))
         return true;
 
-    SetRtiTarget(botAI, "triangle", channelerTriangle);
+    SetRtiTarget(botAI, "triangle");
 
     if (AI_VALUE(Unit*, "current target") != channelerTriangle)
         return Attack(channelerTriangle);
@@ -163,7 +164,7 @@ bool MagtheridonMisdirectHellfireChannelersToMainTankAction::Execute(Event /*eve
         }
     }
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
 
     Creature* targetChanneler = nullptr;
     if (hunterIndex == 0)
@@ -194,7 +195,7 @@ bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
         if (MarkTargetWithSquare(bot, channelerSquare))
             return true;
 
-        SetRtiTarget(botAI, "square", channelerSquare);
+        SetRtiTarget(botAI, "square");
 
         if (AI_VALUE(Unit*, "current target") != channelerSquare)
             return Attack(channelerSquare);
@@ -204,7 +205,7 @@ bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
         if (MarkTargetWithStar(bot, channelerStar))
             return true;
 
-        SetRtiTarget(botAI, "star", channelerStar);
+        SetRtiTarget(botAI, "star");
 
         if (AI_VALUE(Unit*, "current target") != channelerStar)
             return Attack(channelerStar);
@@ -214,7 +215,7 @@ bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
         if (MarkTargetWithCircle(bot, channelerCircle))
             return true;
 
-        SetRtiTarget(botAI, "circle", channelerCircle);
+        SetRtiTarget(botAI, "circle");
 
         if (AI_VALUE(Unit*, "current target") != channelerCircle)
             return Attack(channelerCircle);
@@ -224,7 +225,7 @@ bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
         if (MarkTargetWithDiamond(bot, channelerDiamond))
             return true;
 
-        SetRtiTarget(botAI, "diamond", channelerDiamond);
+        SetRtiTarget(botAI, "diamond");
 
         if (AI_VALUE(Unit*, "current target") != channelerDiamond)
             return Attack(channelerDiamond);
@@ -234,14 +235,14 @@ bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
         if (MarkTargetWithTriangle(bot, channelerTriangle))
             return true;
 
-        SetRtiTarget(botAI, "triangle", channelerTriangle);
+        SetRtiTarget(botAI, "triangle");
 
         if (AI_VALUE(Unit*, "current target") != channelerTriangle)
             return Attack(channelerTriangle);
     }
     else if (Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon"))
     {
-        SetRtiTarget(botAI, "cross", magtheridon);
+        SetRtiTarget(botAI, "cross");
 
         if (AI_VALUE(Unit*, "current target") != magtheridon)
             return Attack(magtheridon);
@@ -326,7 +327,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
     if (MarkTargetWithCross(bot, magtheridon))
         return true;
 
-    SetRtiTarget(botAI, "cross", magtheridon);
+    SetRtiTarget(botAI, "cross");
 
     if (AI_VALUE(Unit*, "current target") != magtheridon)
         return Attack(magtheridon);
