@@ -5,12 +5,13 @@
  */
 
 #include "KaraTriggers.h"
+#include "EncounterHelpers.h"
 #include "KaraActions.h"
 #include "KaraHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 
 using namespace KaraHelpers;
+using namespace EncounterHelpers;
 
 // General
 

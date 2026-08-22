@@ -8,7 +8,7 @@
 #define PLAYERBOTS_TBCDUNGEONACTIONCONTEXT_H
 
 #include "ACActionContext.h"
-#include "SethActionContext.h"
 #include "MechActionContext.h"
+#include "SethActionContext.h"
 
 #endif
