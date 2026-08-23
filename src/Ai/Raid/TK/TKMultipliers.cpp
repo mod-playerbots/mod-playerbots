@@ -6,107 +6,29 @@
 
 #include "TKMultipliers.h"
 #include "ChooseTargetActions.h"
-#include "DKActions.h"
-#include "DruidActions.h"
-#include "DruidBearActions.h"
-#include "DruidCatActions.h"
+#include "EncounterHelpers.h"
 #include "EquipAction.h"
 #include "FollowActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
-#include "PaladinActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "TKActions.h"
 #include "TKHelpers.h"
-#include "TKKaelthasBossAI.h"
 #include "WarlockActions.h"
-#include "WarriorActions.h"
-#include <ctime>
 
-namespace
-{
-
-bool IsSingleTargetTauntAction(Action* action)
-{
-    return dynamic_cast<CastTauntAction*>(action) ||
-        dynamic_cast<CastGrowlAction*>(action) ||
-        dynamic_cast<CastHandOfReckoningAction*>(action) ||
-        dynamic_cast<CastDarkCommandAction*>(action) ||
-        dynamic_cast<CastDeathGripAction*>(action);
-}
-
-bool IsDpsCooldownAction(Player* bot, Action* action)
-{
-    if (bot->getClass() == CLASS_DEATH_KNIGHT)
-    {
-        return dynamic_cast<CastSummonGargoyleAction*>(action) ||
-            dynamic_cast<CastDeathchillAction*>(action) ||
-            dynamic_cast<CastEmpowerRuneWeaponAction*>(action) ||
-            dynamic_cast<CastArmyOfTheDeadAction*>(action);
-    }
-    else if (bot->getClass() == CLASS_DRUID)
-    {
-        return dynamic_cast<CastStarfallAction*>(action) ||
-            dynamic_cast<CastForceOfNatureAction*>(action) ||
-            dynamic_cast<CastBerserkAction*>(action);
-    }
-    else if (bot->getClass() == CLASS_HUNTER)
-    {
-        return dynamic_cast<CastKillCommandAction*>(action) ||
-            dynamic_cast<CastRapidFireAction*>(action) ||
-            dynamic_cast<CastReadinessAction*>(action) ||
-            dynamic_cast<CastBestialWrathAction*>(action);
-    }
-    else if (bot->getClass() == CLASS_MAGE)
-    {
-        return dynamic_cast<CastArcanePowerAction*>(action) ||
-            dynamic_cast<CastCombustionAction*>(action) ||
-            dynamic_cast<CastIcyVeinsAction*>(action) ||
-            dynamic_cast<CastMirrorImageAction*>(action) ||
-            dynamic_cast<CastColdSnapAction*>(action) ||
-            dynamic_cast<CastPresenceOfMindAction*>(action);
-    }
-    else if (bot->getClass() == CLASS_SHAMAN)
-    {
-        return dynamic_cast<CastElementalMasteryAction*>(action) ||
-            dynamic_cast<CastFeralSpiritAction*>(action) ||
-            dynamic_cast<CastFireElementalTotemAction*>(action) ||
-            dynamic_cast<CastFireElementalTotemMeleeAction*>(action);
-    }
-    else if (bot->getClass() == CLASS_PALADIN)
-    {
-        return dynamic_cast<CastAvengingWrathAction*>(action);
-    }
-    else if (bot->getClass() == CLASS_ROGUE)
-    {
-        return dynamic_cast<CastKillingSpreeAction*>(action) ||
-            dynamic_cast<CastBladeFlurryAction*>(action) ||
-            dynamic_cast<CastAdrenalineRushAction*>(action) ||
-            dynamic_cast<CastColdBloodAction*>(action);
-    }
-    else if (bot->getClass() == CLASS_WARLOCK)
-    {
-        return dynamic_cast<CastMetamorphosisAction*>(action);
-    }
-    else if (bot->getClass() == CLASS_WARRIOR)
-    {
-        return dynamic_cast<CastDeathWishAction*>(action) ||
-            dynamic_cast<CastBladestormAction*>(action) ||
-            dynamic_cast<CastRecklessnessAction*>(action);
-    }
-
-    return false; // Priest =(
-}
-
-}
+using namespace TkHelpers;
+using namespace EncounterHelpers;
 
 // Al'ar <Phoenix God>
 
 float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     bool const isBlockedMovement =
         dynamic_cast<TankFaceAction*>(action) ||
         dynamic_cast<CastKillingSpreeAction*>(action) ||
@@ -118,28 +40,30 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
+    if (!alar || IsAlarInPhase2(alar->GetInstanceId()))
         return 1.0f;
 
     if (isBlockedMovement)
         return 0.0f;
 
-    int8 const currentLocationIndex = GetAlarCurrentLocationIndex(alar);
-    if (currentLocationIndex < PLATFORM_0_IDX || currentLocationIndex > PLATFORM_3_IDX)
-        return 0.0f;
+    if (PlayerbotAI::IsTank(bot))
+        return 1.0f;
 
-    return 1.0f;
+    // Block Charge, etc. for non-tanks when not at a platform
+    int8 const currentLocationIndex = GetAlarCurrentLocationIndex(alar);
+    return currentLocationIndex < PLATFORM_0_IDX ||
+        currentLocationIndex > PLATFORM_3_IDX ? 0.0f : 1.0f;
 }
 
 float AlarControlMovementMultiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<TankFaceAction*>(action) || dynamic_cast<SetBehindTargetAction*>(action))
-        return 1.0f;
-
     bool const isDisperseOrFlee =
         dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action);
 
     if (!isDisperseOrFlee && !dynamic_cast<FollowAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<TankFaceAction*>(action) || dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
@@ -149,14 +73,11 @@ float AlarControlMovementMultiplier::GetValue(Action* action)
     if (isDisperseOrFlee)
         return 0.0f;
 
-    if (!IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
+    if (!IsAlarInPhase2(alar->GetInstanceId()))
         return 1.0f;
 
     // Enable FollowAction only in non-combat engine in Phase 2
-    if (botAI->GetState() == BOT_STATE_COMBAT)
-        return 0.0f;
-
-    return 1.0f;
+    return botAI->GetState() == BOT_STATE_COMBAT ? 0.0f : 1.0f;
 }
 
 float AlarDisableAutomaticTargetingMultiplier::GetValue(Action* action)
@@ -167,14 +88,17 @@ float AlarDisableAutomaticTargetingMultiplier::GetValue(Action* action)
     if (!dynamic_cast<TankAssistAction*>(action) && !dynamic_cast<DpsAssistAction*>(action))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "al'ar"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "al'ar") ? 0.0f : 1.0f;
 }
 
 float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
 {
+    if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    if (!dynamic_cast<MovementAction*>(action))
+        return 1.0f;
+
     if (dynamic_cast<AlarMoveAwayFromRebirthAction*>(action))
         return 1.0f;
 
@@ -182,29 +106,24 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
     if (dynamic_cast<AlarJumpFromPlatformAction*>(action))
         return 1.0f;
 
-    if (!dynamic_cast<MovementAction*>(action))
-        return 1.0f;
-
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
+    if (!alar || IsAlarInPhase2(alar->GetInstanceId()))
         return 1.0f;
 
     Creature* alarCreature = alar->ToCreature();
     if (alarCreature && alarCreature->GetReactState() == REACT_PASSIVE)
         return 0.0f;
 
-    if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
-        return 1.0f;
-
-    if (alar->GetHealthPct() <= 5.0f) // Melee dps activate logic for the P2 transition at 5% HP
-        return 0.0f;
-
-    return 1.0f;
+    constexpr float phase1AlmostEndedHpThreshold = 5.0f;
+    return alar->GetHealthPct() <= phase1AlmostEndedHpThreshold ? 0.0f : 1.0f;
 }
 
 float AlarControlTauntingMultiplier::GetValue(Action* action)
 {
-    if (!IsSingleTargetTauntAction(action))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!IsTauntAction(bot, action))
         return 1.0f;
 
     bool const isFirstAlarTank = IsFirstAlarTank(bot);
@@ -219,7 +138,7 @@ float AlarControlTauntingMultiplier::GetValue(Action* action)
     if (bot->HasAura(Id(TkSpells::SPELL_MELT_ARMOR)) && AI_VALUE(Unit*, "current target") == alar)
         return 0.0f;
 
-    if (IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
+    if (IsAlarInPhase2(alar->GetInstanceId()))
         return 1.0f;
 
     int8 platformIndex = GetAlarPlatformIndex(alar);
@@ -241,42 +160,39 @@ float AlarControlTauntingMultiplier::GetValue(Action* action)
 
 float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<SetBehindTargetAction*>(action))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "void reaver"))
-        return 0.0f;
+    if (dynamic_cast<SetBehindTargetAction*>(action))
+        return 1.0f;
 
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "void reaver") ? 0.0f : 1.0f;
 }
 
 // High Astromancer Solarian
 
 float HighAstromancerSolarianWrathStayAwayMultiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<HighAstromancerSolarianMoveAwayFromGroupAction*>(action))
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 1.0f;
     }
 
-    if (!dynamic_cast<CastReachTargetSpellAction*>(action) &&
-        !dynamic_cast<MovementAction*>(action))
-    {
+    if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
-    }
+
+    if (dynamic_cast<HighAstromancerSolarianMoveAwayFromGroupAction*>(action))
+        return 1.0f;
 
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     if (!astromancer || astromancer->HasAura(Id(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
         return 1.0f;
 
-    if (HasWrathOfTheAstromancer(bot))
-        return 0.0f;
-
-    return 1.0f;
+    return HasWrathOfTheAstromancer(bot) ? 0.0f : 1.0f;
 }
 
 float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValue(Action* action)
@@ -284,10 +200,10 @@ float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValue(Action* a
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<TankAssistAction*>(action) && !dynamic_cast<DpsAssistAction*>(action))
+    if (!PlayerbotAI::IsMelee(bot))
         return 1.0f;
 
-    if (!PlayerbotAI::IsMelee(bot))
+    if (!dynamic_cast<TankAssistAction*>(action) && !dynamic_cast<DpsAssistAction*>(action))
         return 1.0f;
 
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
@@ -299,42 +215,35 @@ float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValue(Action* a
         Creature* astromancerCreature = astromancer->ToCreature();
         if (astromancerCreature && astromancerCreature->GetReactState() != REACT_PASSIVE)
             return 0.0f;
-    }
-    else if (AI_VALUE2(Unit*, "find target", "solarium priest"))
-    {
-        return 0.0f;
+
+        return 1.0f;
     }
 
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "solarium priest") ? 0.0f : 1.0f;
 }
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
 float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<KaelthasSunstriderMisdirectAdvisorsToTanksAction*>(action))
+    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
     if (dynamic_cast<CastHealingSpellAction*>(action))
-        return 1.0f;
-
-    if (!dynamic_cast<AttackAction*>(action) && !dynamic_cast<CastSpellAction*>(action))
         return 1.0f;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI || kaelAI->GetPhase() != PHASE_SINGLE_ADVISOR)
+    if (GetKaelthasPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
         return 1.0f;
 
-    time_t const now = std::time(nullptr);
-    constexpr uint8 dpsWaitSeconds = 10;
+    constexpr uint32 dpsWaitMs = 10 * IN_MILLISECONDS;
 
-    auto it = advisorDpsWaitTimer.find(kaelthas->GetMap()->GetInstanceId());
-    if (it != advisorDpsWaitTimer.end() && it->second != -1 &&
-        (now - it->second) >= dpsWaitSeconds)
+    auto it = advisorDpsWaitTimer.find(kaelthas->GetInstanceId());
+    if (it != advisorDpsWaitTimer.end() && it->second != ADVISOR_DPS_WAIT_NOT_STARTED &&
+        getMSTimeDiff(it->second, getMSTime()) >= dpsWaitMs)
     {
         return 1.0f;
     }
@@ -349,9 +258,9 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
             !IsFeigningDeath(advisor);
     };
 
-    bool isMainTank = PlayerbotAI::IsMainTank(bot);
-    bool isFirstAssistTank = PlayerbotAI::IsAssistTankOfIndex(bot, 0, false);
-    bool isWarlockTank = GetCapernianTank(bot) == bot;
+    bool const isMainTank = PlayerbotAI::IsMainTank(bot);
+    bool const isFirstAssistTank = PlayerbotAI::IsAssistTankOfIndex(bot, 0, false);
+    bool const isWarlockTank = bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot;
 
     if ((isAdvisorActive(sanguinar) && isMainTank) ||
         (isAdvisorActive(telonicus) && isFirstAssistTank) ||
@@ -365,43 +274,40 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
         (isAdvisorActive(telonicus) && !isFirstAssistTank) ||
         (isAdvisorActive(capernian) && !isMainTank && !isWarlockTank);
 
-    if (shouldHoldDps)
-        return 0.0f;
-
-    return 1.0f;
+    return shouldHoldDps ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderKiteThaladredMultiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<KaelthasSunstriderKiteThaladredAction*>(action))
-        return 1.0f;
-
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 1.0f;
     }
 
+    if (dynamic_cast<KaelthasSunstriderKiteThaladredAction*>(action))
+        return 1.0f;
+
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI)
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    if (phase == PHASE_NONE)
         return 1.0f;
 
-    if (PlayerbotAI::IsTank(bot) && kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
+    if (PlayerbotAI::IsTank(bot) && phase == PHASE_ALL_ADVISORS)
         return 1.0f;
 
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    if (thaladred && thaladred->GetVictim() == bot)
-        return 0.0f;
-
-    return 1.0f;
+    return thaladred && thaladred->GetVictim() == bot ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
@@ -412,76 +318,81 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (kaelAI && kaelAI->GetPhase() != PHASE_FINAL)
-        return 0.0f;
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    return phase != PHASE_NONE && phase != PHASE_FINAL ? 0.0f : 1.0f;
+}
 
-    return 1.0f;
+// This multiplier is not needed right now because Soulshatter is cast only when there are
+// multiple enemies. That's probably not the right approach and should be fixed, so this
+// multiplier remains in place in anticipation of a future correction to Soulshatter usage.
+float KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier::GetValue(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (bot->getClass() != CLASS_WARLOCK)
+        return 1.0f;
+
+    if (!dynamic_cast<CastSoulshatterAction*>(action))
+        return 1.0f;
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return 1.0f;
+
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    if (phase != PHASE_SINGLE_ADVISOR && phase != PHASE_ALL_ADVISORS)
+        return 1.0f;
+
+    return GetCapernianTank(bot) == bot ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction*>(action))
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 1.0f;
     }
 
-    if (!dynamic_cast<CastReachTargetSpellAction*>(action) &&
-        !dynamic_cast<MovementAction*>(action))
-    {
+    if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
-    }
+
+    if (dynamic_cast<KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction*>(action))
+        return 1.0f;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI || kaelAI->GetPhase() != PHASE_SINGLE_ADVISOR)
+    if (GetKaelthasPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
         return 1.0f;
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-        !IsFeigningDeath(capernian))
-    {
-        return 0.0f;
-    }
+    if (!capernian)
+        return 1.0f;
 
-    return 1.0f;
+    return !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+        !IsFeigningDeath(capernian) ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
 {
-    if (!PlayerbotAI::IsMainTank(bot))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     // Try to keep main tank from grabbing aggro on any weapon other than the axe
-    if (!IsSingleTargetTauntAction(action) &&
-        !dynamic_cast<CastChallengingShoutAction*>(action) &&
-        !dynamic_cast<CastThunderClapAction*>(action) &&
-        !dynamic_cast<CastShockwaveAction*>(action) &&
-        !dynamic_cast<CastCleaveAction*>(action) &&
-        !dynamic_cast<CastSwipeBearAction*>(action) &&
-        !dynamic_cast<CastChallengingRoarAction*>(action) &&
-        !dynamic_cast<CastAvengersShieldAction*>(action) &&
-        !dynamic_cast<CastConsecrationAction*>(action) &&
-        !dynamic_cast<CastDeathAndDecayAction*>(action) &&
-        !dynamic_cast<CastPestilenceAction*>(action) &&
-        !dynamic_cast<CastBloodBoilAction*>(action))
-    {
+    if (!IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action))
         return 1.0f;
-    }
+
+    if (!PlayerbotAI::IsMainTank(bot))
+        return 1.0f;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (kaelAI && kaelAI->GetPhase() == PHASE_WEAPONS)
-        return 0.0f;
-
-    return 1.0f;
+    return GetKaelthasPhase(kaelthas) == PHASE_WEAPONS ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderSuppressEquipUpgradeMultiplier::GetValue(Action* action)
@@ -492,10 +403,7 @@ float KaelthasSunstriderSuppressEquipUpgradeMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "kael'thas sunstrider") ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* action)
@@ -512,8 +420,8 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* act
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI)
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    if (phase == PHASE_NONE)
         return 1.0f;
 
     if (isDpsAssist)
@@ -523,43 +431,36 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* act
     if (PlayerbotAI::IsMainTank(bot))
         return 0.0f;
 
-    if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
-        kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
+    return phase == PHASE_SINGLE_ADVISOR || phase == PHASE_ALL_ADVISORS ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderDisableDisperseMultiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<SetBehindTargetAction*>(action))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
-        return 0.0f;
+    if (dynamic_cast<SetBehindTargetAction*>(action))
+        return 1.0f;
 
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "kael'thas sunstrider") ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<KaelthasSunstriderHandleAdvisorRolesInPhase3Action*>(action))
+    if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
-    if (!dynamic_cast<MovementAction*>(action))
+    if (dynamic_cast<KaelthasSunstriderHandleAdvisorRolesInPhase3Action*>(action))
         return 1.0f;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI || kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
+    if (GetKaelthasPhase(kaelthas) != PHASE_ALL_ADVISORS)
         return 1.0f;
 
     // Proxy for revival/Kael talk phase (could pick any advisor here)
@@ -581,31 +482,28 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
 // Bloodlust/Heroism and other major cooldowns should be saved until Phase 3
 float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
 {
-    bool const isLustAction = bot->getClass() == CLASS_SHAMAN &&
-        (dynamic_cast<CastBloodlustAction*>(action) ||
-         dynamic_cast<CastHeroismAction*>(action));
-
-    if (!isLustAction && !IsDpsCooldownAction(bot, action) &&
-        !(dynamic_cast<UseTrinketAction*>(action) && PlayerbotAI::IsDps(bot)))
-    {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
-    }
+
+    if (!IsDpsCooldownAction(bot, action))
+        return 1.0f;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI)
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    if (phase == PHASE_NONE)
         return 1.0f;
 
-    if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR || kaelAI->GetPhase() == PHASE_TRANSITION)
+    bool const isLustAction = bot->getClass() == CLASS_SHAMAN &&
+        (dynamic_cast<CastBloodlustAction*>(action) ||
+         dynamic_cast<CastHeroismAction*>(action));
+
+    if (isLustAction && phase == PHASE_WEAPONS)
         return 0.0f;
 
-    if (isLustAction && kaelAI->GetPhase() == PHASE_WEAPONS)
-        return 0.0f;
-
-    return 1.0f;
+    return phase == PHASE_SINGLE_ADVISOR || phase == PHASE_TRANSITION ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValue(Action* action)
@@ -613,17 +511,14 @@ float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValue(Action*
     if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
         return 1.0f;
 
-    if (dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<AttackAction*>(action) && PlayerbotAI::IsRanged(bot))
-        return 1.0f;
-
-    if (dynamic_cast<MovementAction*>(action) ||
-        dynamic_cast<CastReachTargetSpellAction*>(action))
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
-        return 0.0f;
+        return 1.0f;
     }
 
-    return 1.0f;
+    if (PlayerbotAI::IsRanged(bot) && dynamic_cast<AttackAction*>(action))
+        return 1.0f;
+
+    return dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action) ? 1.0f : 0.0f;
 }

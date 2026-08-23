@@ -16,16 +16,6 @@ enum KTYells
 {
 };
 
-enum KTPhases
-{
-    PHASE_NONE                          = 0,
-    PHASE_SINGLE_ADVISOR                = 1,
-    PHASE_WEAPONS                       = 2,
-    PHASE_TRANSITION                    = 3,
-    PHASE_ALL_ADVISORS                  = 4,
-    PHASE_FINAL                         = 5
-};
-
 enum KTActions
 {
 };

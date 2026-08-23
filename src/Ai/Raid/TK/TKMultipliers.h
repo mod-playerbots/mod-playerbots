@@ -105,6 +105,14 @@ public:
     float GetValue(Action* action) override;
 };
 
+class KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kael'thas sunstrider disable warlock tank soulshatter") {}
+    float GetValue(Action* action) override;
+};
+
 class KaelthasSunstriderKeepDistanceFromCapernianMultiplier : public Multiplier
 {
 public:

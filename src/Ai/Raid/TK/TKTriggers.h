@@ -34,8 +34,7 @@ public:
 class AlarPullingBossTrigger : public Trigger
 {
 public:
-    AlarPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "al'ar pulling boss") {}
+    AlarPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "al'ar pulling boss") {}
     bool IsActive() override;
 };
 
@@ -181,11 +180,11 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderSanguinarEngagedByMainTankTrigger : public Trigger
+class KaelthasSunstriderSanguinarOrTelonicusIsActiveTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderSanguinarEngagedByMainTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kael'thas sunstrider sanguinar engaged by main tank") {}
+    KaelthasSunstriderSanguinarOrTelonicusIsActiveTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kael'thas sunstrider sanguinar or telonicus is active") {}
     bool IsActive() override;
 };
 
@@ -197,27 +196,19 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger : public Trigger
+class KaelthasSunstriderCapernianShouldBeTankedByWarlockTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kael'thas sunstrider capernian should be tanked by a warlock") {}
+    KaelthasSunstriderCapernianShouldBeTankedByWarlockTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kael'thas sunstrider capernian should be tanked by warlock") {}
     bool IsActive() override;
 };
 
-class KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger : public Trigger
+class KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kael'thas sunstrider capernian casts arcane burst and conflagration") {}
-    bool IsActive() override;
-};
-
-class KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger : public Trigger
-{
-public:
-    KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kael'thas sunstrider telonicus engaged by first assist tank") {}
+    KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kael'thas sunstrider capernian blows up near and far") {}
     bool IsActive() override;
 };
 
@@ -261,11 +252,11 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger : public Trigger
+class KaelthasSunstriderLegendaryWeaponsAreDeadTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kael'thas sunstrider legendary weapons are dead and lootable") {}
+    KaelthasSunstriderLegendaryWeaponsAreDeadTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kael'thas sunstrider legendary weapons are dead") {}
     bool IsActive() override;
 };
 

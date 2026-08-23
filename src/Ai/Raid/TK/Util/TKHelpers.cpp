@@ -9,6 +9,7 @@
 #include "LootObjectStack.h"
 #include "Playerbots.h"
 #include "TKActions.h"
+#include "TKKaelthasBossAI.h"
 #include <limits>
 #include <list>
 
@@ -176,6 +177,7 @@ bool IsPathSafeFromHazards(
 std::unordered_map<uint32, bool> lastRebirthState;
 std::unordered_map<uint32, bool> isAlarInPhase2;
 
+// Entry into phase 2 is measured as the moment that Rebirth (34342) finishes casting.
 bool IsAlarInPhase2(uint32 instanceId)
 {
     auto const it = isAlarInPhase2.find(instanceId);
@@ -280,14 +282,14 @@ void GetClosestPlatformAndGround(Position botPos, int8& closestPlatform, Positio
     ground = ALAR_GROUND_POSITIONS[closestPlatform];
 }
 
-// Main tank rotates between W (where Al'ar initially lands) and NE platforms in Phase 1
-// and starts on Al'ar in Phase 2
+// Main tank rotates between W (where Al'ar initially lands) and NE platforms in phase 1
+// and starts on Al'ar in phase 2
 bool IsFirstAlarTank(Player* bot)
 {
     return PlayerbotAI::IsMainTank(bot);
 }
 
-// First assist tank rotates between NW and E platforms in Phase 1
+// First assist tank rotates between NW and E platforms in phase 1
 bool IsSecondAlarTank(Player* bot)
 {
     return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
@@ -299,11 +301,11 @@ bool IsPrimaryEmberTank(Player* bot)
     return PlayerbotAI::IsAssistTankOfIndex(bot, 1, false);
 }
 
-// When Al'ar melts the armor of whoever is tanking it, the other tank taunts, and the melted tank
-// picks up the 2nd Ember (the 2nd AT, who tanked Embers in phase 1, picks up the 1st Ember).
-Player* GetPhase2SecondEmberTank(Player* bot)
+// The secondary Ember Tank is needed only during phase 2, and it is initially the first assist
+// tank (i.e., the SecondAlarTank). When Al'ar melts the armor of the main tank, then the main
+// tank becomes the secondary Ember tank. The two tanks swap from then on.
+Player* GetSecondaryEmberTank(Player* bot)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Player* mainTank = GetGroupMainTank(bot);
     Player* assistTank = GetGroupAssistTank(bot, 0);
 
@@ -321,6 +323,7 @@ Player* GetPhase2SecondEmberTank(Player* bot)
 std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
 
 // High Astromancer Solarian
+
 bool HasWrathOfTheAstromancer(Player* bot)
 {
     return bot->HasAura(Id(TkSpells::SPELL_WRATH_OF_THE_ASTROMANCER));
@@ -328,7 +331,22 @@ bool HasWrathOfTheAstromancer(Player* bot)
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
-std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
+std::unordered_map<uint32, uint32> advisorDpsWaitTimer;
+
+uint32 GetKaelthasPhase(Unit* kaelthas)
+{
+    if (!kaelthas)
+        return PHASE_NONE;
+
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    return kaelAI ? kaelAI->GetPhase() : PHASE_NONE;
+}
+
+Creature* GetPhoenixEgg(Player* bot)
+{
+    constexpr float searchRadius = 75.0f;
+    return bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true);
+}
 
 // (1) First priority is an assistant Warlock (real player or bot)
 // (2) If no assistant Warlock, then look for any Warlock bot
@@ -359,7 +377,8 @@ Player* GetCapernianTank(Player* bot)
     return fallbackWarlock;
 }
 
-// One Hunter will start on Sanguinar in Phase 3 with melee to apply Armor Disruption
+// One Hunter will start on Sanguinar in phase 3 (with melee) to apply Armor Disruption from the
+// Netherstrand Longbow.
 // (1) First priority is an assistant Hunter (real player or bot)
 // (2) If no assistant Hunter, then look for any Hunter bot
 bool IsSanguinarDebuffHunter(Player* bot)
@@ -392,32 +411,54 @@ bool IsSanguinarDebuffHunter(Player* bot)
     return fallbackHunter == bot;
 }
 
+// The ironically named "Permanent Feign Death" is the aura that advisors have when they are
+// "killed" in phase 1 until they are "resurrected" in phase 3.
 bool IsFeigningDeath(Unit* advisor)
 {
     return advisor && advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
 }
 
-bool IsAnyLegendaryWeaponDead(Player* bot)
+GuidVector FindDeadLegendaryWeaponGuids(Player* bot)
 {
-    static constexpr std::array weaponEntries = {
-        TkNpcs::NPC_STAFF_OF_DISINTEGRATION,
-        TkNpcs::NPC_COSMIC_INFUSER,
-        TkNpcs::NPC_INFINITY_BLADES,
-        TkNpcs::NPC_WARP_SLICER,
-        TkNpcs::NPC_PHASESHIFT_BULWARK,
-        TkNpcs::NPC_NETHERSTRAND_LONGBOW,
-        TkNpcs::NPC_DEVASTATION,
+    static std::vector<uint32> const weaponEntries = {
+        Id(TkNpcs::NPC_STAFF_OF_DISINTEGRATION),
+        Id(TkNpcs::NPC_COSMIC_INFUSER),
+        Id(TkNpcs::NPC_INFINITY_BLADES),
+        Id(TkNpcs::NPC_WARP_SLICER),
+        Id(TkNpcs::NPC_PHASESHIFT_BULWARK),
+        Id(TkNpcs::NPC_NETHERSTRAND_LONGBOW),
+        Id(TkNpcs::NPC_DEVASTATION),
     };
 
-    constexpr float searchRadius = 100.0f;
+    std::list<Creature*> weapons;
+    bot->GetCreatureListWithEntryInGrid(weapons, weaponEntries, KAELTHAS_ROOM_SEARCH_DISTANCE);
 
-    for (TkNpcs entry : weaponEntries)
+    GuidVector guids;
+    guids.reserve(weapons.size());
+    for (Creature* weapon : weapons)
     {
-        if (bot->FindNearestCreature(static_cast<uint32>(entry), searchRadius, false))
-            return true;
+        if (weapon && !weapon->IsAlive())
+            guids.push_back(weapon->GetGUID());
     }
 
-    return false;
+    return guids;
+}
+
+GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI)
+{
+    return botAI->GetAiObjectContext()->GetValue<GuidVector>("tk dead legendary weapons")->RefGet();
+}
+
+Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry)
+{
+    for (ObjectGuid const guid : GetDeadLegendaryWeaponGuids(botAI))
+    {
+        Creature* weapon = botAI->GetCreature(guid);
+        if (weapon && weapon->GetEntry() == weaponEntry)
+            return weapon;
+    }
+
+    return nullptr;
 }
 
 bool HasEquippableItemForSlot(Player* bot, uint8 slot)
@@ -426,8 +467,8 @@ bool HasEquippableItemForSlot(Player* bot, uint8 slot)
     {
         uint8 bag = (i == 0) ? INVENTORY_SLOT_BAG_0 : (INVENTORY_SLOT_BAG_START + i - 1);
         uint8 startSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_START : 0;
-        uint8 endSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_END :
-            (bot->GetBagByPos(bag) ? bot->GetBagByPos(bag)->GetBagSize() : 0);
+        uint8 endSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_END
+            : (bot->GetBagByPos(bag) ? bot->GetBagByPos(bag)->GetBagSize() : 0);
 
         for (uint8 bagSlot = startSlot; bagSlot < endSlot; ++bagSlot)
         {
