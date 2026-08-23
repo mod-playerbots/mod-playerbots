@@ -254,7 +254,7 @@ bool PetitionTurnInAction::Execute(Event /*event*/)
             st = urand(0, 180);
             EmblemInfo emblemInfo(st, cl, br, bc, bg);
 
-            guild->HandleSetEmblem(emblemInfo); // official core handling
+            guild->HandleSetEmblem(bot->GetSession(), emblemInfo); // official core handling
 
             // LANG_GUILD_VETERAN -> can invite
             guild->HandleSetRankInfo(2, GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK | GR_RIGHT_INVITE);
