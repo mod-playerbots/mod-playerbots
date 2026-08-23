@@ -45,6 +45,9 @@ struct GameObjectData;
 
 enum StrategyType : uint32;
 
+// Vehicle.dbc flag for rooted vehicles such as cannons; core's VehicleFlags omits it.
+constexpr uint32 VEHICLE_FLAG_FIXED_POSITION = 0x00200000;
+
 enum HealingItemId
 {
     HEALTHSTONE = 5512,
