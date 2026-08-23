@@ -43,12 +43,6 @@ public:
 
     void OnDatabaseWarnAboutSyncQueries(bool apply) override { PlayerbotsDatabase.WarnAboutSyncQueries(apply); }
 
-    void OnDatabaseSelectIndexLogout(Player* player, uint32& statementIndex, uint32& statementParam) override
-    {
-        statementIndex = CHAR_UPD_CHAR_OFFLINE;
-        statementParam = player->GetGUID().GetCounter();
-    }
-
     void OnDatabaseGetDBRevision(std::string& revision) override
     {
         if (QueryResult resultPlayerbot =
