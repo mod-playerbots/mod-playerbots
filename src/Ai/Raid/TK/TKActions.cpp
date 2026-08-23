@@ -299,7 +299,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
     Unit* ember = nullptr;
     if (IsPrimaryEmberTank(bot))
         ember = firstEmber;
-    else if (GetPhase2SecondEmberTank(bot) == bot)
+    else if (GetSecondaryEmberTank(bot) == bot)
         ember = secondEmber;
 
     if (!ember)
@@ -461,7 +461,7 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
     if (!alar)
         return false;
 
-    if (GetPhase2SecondEmberTank(bot) == bot)
+    if (GetSecondaryEmberTank(bot) == bot)
         return false;
 
     if (AI_VALUE(Unit*, "current target") != alar)

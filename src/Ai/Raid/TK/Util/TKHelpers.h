@@ -195,7 +195,7 @@ void GetClosestPlatformAndGround(Position const botPos, int8& closestPlatform, P
 bool IsPrimaryEmberTank(Player* bot);
 bool IsFirstAlarTank(Player* bot);
 bool IsSecondAlarTank(Player* bot);
-Player* GetPhase2SecondEmberTank(Player* bot);
+Player* GetSecondaryEmberTank(Player* bot);
 
 // Void Reaver
 
