@@ -36,6 +36,7 @@
 #include "StatsWeightCalculator.h"
 #include "World.h"
 #include <array>
+#include <unordered_set>
 #include <utility>
 
 #include <array>
@@ -110,6 +111,29 @@ constexpr uint32 SPELL_IMPROVED_HOWL_OF_TERROR = 30057;
 constexpr uint32 SPELL_NEMESIS = 63123;
 constexpr uint32 SPELL_INTENSITY = 18136;
 constexpr uint32 SPELL_NETHER_PROTECTION = 30302;
+
+// Some creature_template rows are Blizzard developer leftovers or placeholders that carry the tameable
+// flag but have no spawn in the world - e.g. 5596 "Twain Test Prop", a wolf family beast wearing a
+// dragon whelp model. No player can ever tame those, so bots should not end up with them either.
+bool HasCreatureSpawnRow(uint32 entry)
+{
+    static std::unordered_set<uint32> const spawnedEntries = []  // built once, at first use
+    {
+        std::unordered_set<uint32> entries;
+        for (auto const& itr : sObjectMgr->GetAllCreatureData())
+        {
+            CreatureData const& data = itr.second;
+            entries.insert(data.id);
+            if (data.id2)
+                entries.insert(data.id2);
+            if (data.id3)
+                entries.insert(data.id3);
+        }
+        return entries;
+    }();
+
+    return spawnedEntries.find(entry) != spawnedEntries.end();
+}
 }
 
 bool PlayerbotFactory::IsPrimaryTradeSkill(uint16 skillId)
@@ -1304,6 +1328,9 @@ void PlayerbotFactory::InitPet()
         for (CreatureTemplateContainer::const_iterator itr = creatures->begin(); itr != creatures->end(); ++itr)
         {
             if (!itr->second.IsTameable(bot->CanTameExoticPets()))
+                continue;
+
+            if (!HasCreatureSpawnRow(itr->first))
                 continue;
 
             if (itr->second.minlevel > bot->GetLevel())
