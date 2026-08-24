@@ -14,7 +14,6 @@ public:
     {
         creators["feral charge - bear"] = &feral_charge_bear;
         creators["dire bear form"] = &dire_bear_form;
-        creators["taunt spell"] = &growl;
         creators["maul"] = &maul;
         creators["bash"] = &bash;
         creators["swipe (bear)"] = &swipe_bear;
@@ -47,16 +46,6 @@ private:
     {
         return new ActionNode(
             "maul",
-            /*P*/ {},
-            /*A*/ { NextAction("melee") },
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* growl([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "growl",
             /*P*/ {},
             /*A*/ { NextAction("melee") },
             /*C*/ {}

@@ -62,7 +62,7 @@ bool BwlEbonrocShadowTrigger::IsActive()
         return false;
 
     Unit* ebonroc = AI_VALUE2(Unit*, "find target", "ebonroc");
-    if (!ebonroc || !ebonroc->IsInCombat())
+    if (!ebonroc)
         return false;
 
     Unit* victim = ebonroc->GetVictim();
@@ -93,7 +93,7 @@ bool BwlNefarianFearWardTrigger::IsActive()
         return false;
 
     Unit* nefarian = AI_VALUE2(Unit*, "find target", "nefarian");
-    if (!nefarian || !nefarian->IsInCombat())
+    if (!nefarian)
         return false;
 
     Unit* victim = nefarian->GetVictim();
