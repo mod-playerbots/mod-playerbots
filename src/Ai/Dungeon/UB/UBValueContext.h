@@ -26,16 +26,21 @@ public:
 protected:
     GuidVector Calculate() override
     {
+        if (!_scanning && !bot->IsInCombat())
+            return {};
+
+        Unit* boss = UnderbogHungarfen::HungarfenTarget(context);
+
         if (!_scanning)
         {
-            if (!bot->IsInCombat() || UnderbogHungarfen::HungarfenGone(bot, _hungarfen))
+            if (!boss)
                 return {};
 
             _scanning = true;
-            _deadSince = 0;
+            _skipped = 0;
+            _sawMushrooms = false;
         }
 
-        Unit* boss = UnderbogHungarfen::HungarfenTarget(context);
         if (boss)
         {
             _hungarfen = boss->GetGUID();
