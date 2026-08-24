@@ -5,7 +5,6 @@
  */
 
 #include "MarkRtiStrategy.h"
-
 #include "Playerbots.h"
 
 void MarkRtiStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

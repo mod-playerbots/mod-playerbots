@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_WAITFORATTACKTRIGGERS_H
 #define PLAYERBOTS_WAITFORATTACKTRIGGERS_H
 
-#include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "Trigger.h"

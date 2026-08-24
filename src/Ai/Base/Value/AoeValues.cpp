@@ -5,7 +5,6 @@
  */
 
 #include "AoeValues.h"
-
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "SpellAuraEffects.h"

@@ -5,14 +5,12 @@
  */
 
 #include "PetsAction.h"
-
 #include "CharmInfo.h"
 #include "Creature.h"
 #include "CreatureAI.h"
 #include "Pet.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
-#include "SharedDefines.h"
 
 bool PetsAction::Execute(Event event)
 {

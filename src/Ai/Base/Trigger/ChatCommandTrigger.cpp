@@ -5,7 +5,6 @@
  */
 
 #include "ChatCommandTrigger.h"
-
 #include "Playerbots.h"
 
 ChatCommandTrigger::ChatCommandTrigger(PlayerbotAI* botAI, std::string const command)

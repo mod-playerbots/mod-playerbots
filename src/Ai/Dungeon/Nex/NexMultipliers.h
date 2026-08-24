@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_NEXMULTIPLIERS_H
 #define PLAYERBOTS_NEXMULTIPLIERS_H
 
@@ -9,7 +15,7 @@ class FactionCommanderMultiplier : public Multiplier
         FactionCommanderMultiplier(PlayerbotAI* ai) : Multiplier(ai, "faction commander") {}
 
     public:
-        virtual float GetValue(Action* action);
+        float GetValue(Action* action) override;
 };
 
 class TelestraMultiplier : public Multiplier
@@ -18,7 +24,7 @@ class TelestraMultiplier : public Multiplier
         TelestraMultiplier(PlayerbotAI* ai) : Multiplier(ai, "grand magus telestra") {}
 
     public:
-        virtual float GetValue(Action* action);
+        float GetValue(Action* action) override;
 };
 
 class AnomalusMultiplier : public Multiplier
@@ -27,7 +33,7 @@ class AnomalusMultiplier : public Multiplier
         AnomalusMultiplier(PlayerbotAI* ai) : Multiplier(ai, "anomalus") {}
 
     public:
-        virtual float GetValue(Action* action);
+        float GetValue(Action* action) override;
 };
 
 class OrmorokMultiplier : public Multiplier
@@ -36,7 +42,7 @@ class OrmorokMultiplier : public Multiplier
         OrmorokMultiplier(PlayerbotAI* ai) : Multiplier(ai, "ormorok the tree-shaper") {}
 
     public:
-        virtual float GetValue(Action* action);
+        float GetValue(Action* action) override;
 };
 
 #endif

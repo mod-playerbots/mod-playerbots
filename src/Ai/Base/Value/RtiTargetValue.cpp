@@ -5,7 +5,6 @@
  */
 
 #include "RtiTargetValue.h"
-
 #include "AttackersValue.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"

@@ -5,7 +5,6 @@
  */
 
 #include "AttackAction.h"
-
 #include "CreatureAI.h"
 #include "Event.h"
 #include "LastMovementValue.h"
@@ -14,7 +13,6 @@
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "SharedDefines.h"
 #include "Unit.h"
 #include "WaitForAttackStrategy.h"
 

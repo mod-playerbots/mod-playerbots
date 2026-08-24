@@ -7,11 +7,10 @@
 #ifndef PLAYERBOTS_PLACEHOLDERHELPER_H
 #define PLAYERBOTS_PLACEHOLDERHELPER_H
 
-#include <map>
-
 #include "Common.h"
 #include "Player.h"
 #include "PlayerbotDungeonRepository.h"
+#include <map>
 
 typedef std::map<std::string, std::string> PlaceholderMap;
 

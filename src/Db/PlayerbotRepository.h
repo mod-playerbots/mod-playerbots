@@ -7,11 +7,10 @@
 #ifndef PLAYERBOTS_PLAYERBOTREPOSITORY_H
 #define PLAYERBOTS_PLAYERBOTREPOSITORY_H
 
+#include "PlayerbotAI.h"
 #include <cstdint>
 #include <string>
 #include <vector>
-
-#include "PlayerbotAI.h"
 
 class PlayerbotRepository
 {

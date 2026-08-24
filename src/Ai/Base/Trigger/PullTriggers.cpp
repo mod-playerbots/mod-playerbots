@@ -4,12 +4,20 @@
  * or (at your option) any later version.
  */
 
-#include "PullTriggers.h"
+/*
+ * Ported from the CMaNGOS playerbots project (https://github.com/cmangos/playerbots), GPL v2,
+ * with modifications for AzerothCore.
+ * Original authors:
+ *   David Parra Ausina (davidonete/Flekz) <davidparraausina@gmail.com> - original author
+ *   Sebastiaan Keek (mostlikely4r) <sebastiaan.keek@gmail.com>
+ *   Cyberium <cyberium@users.noreply.github.com>
+ */
 
-#include "PositionValue.h"
+#include "PullTriggers.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "PositionValue.h"
 #include "PullStrategy.h"
 
 bool PullStartTrigger::IsActive()

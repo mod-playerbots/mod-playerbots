@@ -5,19 +5,21 @@
  */
 
 #include "HyjalTriggers.h"
-#include "HyjalHelpers.h"
-#include "HyjalActions.h"
 #include "AiFactory.h"
+#include "EncounterHelpers.h"
+#include "HyjalActions.h"
+#include "HyjalHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 
 using namespace HyjalSummitHelpers;
+using namespace EncounterHelpers;
 
 // General
 
 bool HyjalSummitBotIsNotInCombatTrigger::IsActive()
 {
-    return !bot->IsInCombat() && bot->GetMapId() == HYJAL_SUMMIT_MAP_ID;
+    return bot->GetMapId() == HYJAL_SUMMIT_MAP_ID &&
+           !AI_VALUE2(bool, "combat", "self target");
 }
 
 // Rage Winterchill
@@ -225,7 +227,7 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
     if (!azgalor || azgalor->GetVictim() == bot)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank || !GET_PLAYERBOT_AI(mainTank) || botAI->IsMainTank(bot))
         return false;
 
@@ -277,7 +279,7 @@ bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
     if (botAI->IsAssistTankOfIndex(bot, 1, true))
     {
         // Trigger for second assist tank only if first assist tank has Doom
-        Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+        Player* firstAssistTank = GetGroupAssistTank(bot, 0);
         if (firstAssistTank &&
             !firstAssistTank->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
             return false;

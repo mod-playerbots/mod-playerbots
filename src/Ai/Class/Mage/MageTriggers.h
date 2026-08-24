@@ -9,9 +9,9 @@
 
 #include "CureTriggers.h"
 #include "GenericTriggers.h"
+#include "Playerbots.h"
 #include "SharedDefines.h"
 #include "Trigger.h"
-#include "Playerbots.h"
 #include <unordered_set>
 
 // Buff and Out of Combat Triggers

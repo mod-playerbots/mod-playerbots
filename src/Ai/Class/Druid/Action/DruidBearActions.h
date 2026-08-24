@@ -44,12 +44,6 @@ public:
     CastBashAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "bash") {}
 };
 
-class CastSwipeAction : public CastMeleeSpellAction
-{
-public:
-    CastSwipeAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "swipe") {}
-};
-
 class CastDemoralizingRoarAction : public CastMeleeDebuffSpellAction
 {
 public:

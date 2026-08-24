@@ -5,7 +5,6 @@
  */
 
 #include "WhoAction.h"
-
 #include "AiFactory.h"
 #include "Event.h"
 #include "ItemVisitors.h"

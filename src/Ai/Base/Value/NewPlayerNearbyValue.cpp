@@ -5,7 +5,6 @@
  */
 
 #include "NewPlayerNearbyValue.h"
-
 #include "Playerbots.h"
 
 ObjectGuid NewPlayerNearbyValue::Calculate()

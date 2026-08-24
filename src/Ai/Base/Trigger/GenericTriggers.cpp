@@ -5,14 +5,14 @@
  */
 
 #include "GenericTriggers.h"
-
-#include <string>
-
-#include "GenericBuffUtils.h"
+#include "Corpse.h"
 #include "CreatureAI.h"
+#include "GenericBuffUtils.h"
 #include "ItemVisitors.h"
 #include "LastSpellCastValue.h"
 #include "ObjectGuid.h"
+#include "Player.h"
+#include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
@@ -20,9 +20,7 @@
 #include "TemporarySummon.h"
 #include "ThreatManager.h"
 #include "Timer.h"
-#include "PlayerbotAI.h"
-#include "Player.h"
-#include "Corpse.h"
+#include <string>
 
 bool LowManaTrigger::IsActive()
 {
@@ -165,10 +163,7 @@ bool BuffTrigger::IsActive()
         return false;
 
     Aura* aura = botAI->GetAura(spell, target, checkIsOwner, checkDuration);
-    if (!aura || (beforeDuration && uint32(aura->GetDuration()) < beforeDuration))
-        return true;
-
-    return false;
+    return ai::buff::BuffBelowRefreshTarget(botAI, aura, beforeDuration);
 }
 
 Value<Unit*>* BuffOnPartyTrigger::GetTargetValue()
@@ -579,7 +574,23 @@ bool IsNotFacingTargetTrigger::IsActive()
 
 bool HasCcTargetTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "cc target", getName()) && !AI_VALUE2(Unit*, "current cc target", getName());
+    Unit* rtiCcTarget = nullptr;
+    if (botAI->IsInNonRaidDungeon())
+    {
+        rtiCcTarget = AI_VALUE(Unit*, "rti cc target");
+        if (!rtiCcTarget)
+            return false;
+    }
+
+    return IsCcTargetFree(AI_VALUE2(Unit*, "cc target", getName()), rtiCcTarget);
+}
+
+bool HasCcTargetTrigger::IsCcTargetFree(Unit* ccTarget, Unit* rtiCcTarget)
+{
+    if (!ccTarget || (rtiCcTarget && ccTarget != rtiCcTarget))
+        return false;
+
+    return !AI_VALUE2(Unit*, "current cc target", getName());
 }
 
 bool NoMovementTrigger::IsActive() { return !AI_VALUE2(bool, "moving", "self target"); }
@@ -751,4 +762,9 @@ bool NewPetTrigger::IsActive()
     }
 
     return false;
+}
+
+bool ForceRebuffPendingTrigger::IsActive()
+{
+    return botAI->forceRebuff.IsPending();
 }

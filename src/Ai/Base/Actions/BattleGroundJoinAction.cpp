@@ -5,7 +5,6 @@
  */
 
 #include "BattleGroundJoinAction.h"
-
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
 #include "BattlegroundMgr.h"
@@ -91,7 +90,7 @@ bool BGJoinAction::gatherArenaTeam(ArenaType type)
             if (!memberBotAI)
                 continue;
 
-            if (member->GetGroup() && memberBotAI->HasRealPlayerMaster())
+            if (member->GetGroup() && memberBotAI->HasGameClientMaster())
                 continue;
 
             if (!sPlayerbotAIConfig.IsInRandomAccountList(member->GetSession()->GetAccountId()))
@@ -332,7 +331,7 @@ bool BGJoinAction::isUseful()
         return false;
 
     // do not try if with player master
-    if (GET_PLAYERBOT_AI(bot)->HasActivePlayerMaster())
+    if (IsRealPlayer(GET_PLAYERBOT_AI(bot)->GetMaster()))
         return false;
 
     // do not try if in group, if in group only leader can queue

@@ -1,10 +1,16 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "GDMultipliers.h"
-#include "GDActions.h"
-#include "GenericSpellActions.h"
-#include "ChooseTargetActions.h"
-#include "MovementActions.h"
-#include "GDTriggers.h"
 #include "Action.h"
+#include "ChooseTargetActions.h"
+#include "GDActions.h"
+#include "GDTriggers.h"
+#include "GenericSpellActions.h"
+#include "MovementActions.h"
 
 float SladranMultiplier::GetValue(Action* action)
 {

@@ -1,8 +1,12 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "NewRpgInfo.h"
-
-#include <cmath>
-
 #include "Timer.h"
+#include <cmath>
 
 void NewRpgInfo::ChangeToGoGrind(WorldPosition pos)
 {
@@ -85,6 +89,20 @@ void NewRpgInfo::SetMoveFarTo(WorldPosition pos)
     stuckTs = 0;
     stuckAttempts = 0;
     moveFarPos = pos;
+}
+
+NewRpgStatus NewRpgInfo::StatusFromString(std::string const& name)
+{
+    if (name == "idle")           return RPG_IDLE;
+    if (name == "rest")           return RPG_REST;
+    if (name == "wander random")  return RPG_WANDER_RANDOM;
+    if (name == "wander npc")     return RPG_WANDER_NPC;
+    if (name == "go grind")       return RPG_GO_GRIND;
+    if (name == "go camp")        return RPG_GO_CAMP;
+    if (name == "do quest")       return RPG_DO_QUEST;
+    if (name == "travel flight")  return RPG_TRAVEL_FLIGHT;
+    if (name == "outdoor pvp")    return RPG_OUTDOOR_PVP;
+    return RPG_STATUS_END;
 }
 
 NewRpgStatus NewRpgInfo::GetStatus()

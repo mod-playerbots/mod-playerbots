@@ -5,18 +5,16 @@
  */
 
 #include "TellPvpStatsAction.h"
-
-#include <map>
-
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
 #include "Event.h"
+#include "Language.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
-#include "Language.h"
+#include <map>
 
 namespace
 {

@@ -7,15 +7,14 @@
 #ifndef PLAYERBOTS_BTHELPERS_H
 #define PLAYERBOTS_BTHELPERS_H
 
+#include "Common.h"
+#include "ObjectGuid.h"
+#include "Position.h"
 #include <array>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-#include "Common.h"
-#include "ObjectGuid.h"
-#include "Position.h"
 
 class GameObject;
 class Player;

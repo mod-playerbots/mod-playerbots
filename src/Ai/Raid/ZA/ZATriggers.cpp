@@ -5,12 +5,13 @@
  */
 
 #include "ZATriggers.h"
-#include "ZAHelpers.h"
-#include "ZAActions.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
+#include "ZAActions.h"
+#include "ZAHelpers.h"
 
 using namespace ZulAmanHelpers;
+using namespace EncounterHelpers;
 
 // Trash
 
@@ -66,7 +67,7 @@ bool AkilzonElectricalStormIncomingTrigger::IsActive()
 
 bool AkilzonBotsNeedToPrepareForElectricalStormTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, ZULAMAN_MAP_ID);
+    return IsMechanicTrackerBot(bot, ZULAMAN_MAP_ID);
 }
 
 // Nalorakk <Bear Avatar>

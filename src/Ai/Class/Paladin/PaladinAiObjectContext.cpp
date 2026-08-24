@@ -5,15 +5,14 @@
  */
 
 #include "PaladinAiObjectContext.h"
-
 #include "DpsPaladinStrategy.h"
 #include "GenericPaladinNonCombatStrategy.h"
-#include "PaladinGreaterBlessingAction.h"
 #include "HealPaladinStrategy.h"
 #include "NamedObjectContext.h"
 #include "OffhealRetPaladinStrategy.h"
 #include "PaladinActions.h"
 #include "PaladinBuffStrategies.h"
+#include "PaladinGreaterBlessingAction.h"
 #include "PaladinPullStrategy.h"
 #include "PaladinTriggers.h"
 #include "Playerbots.h"

@@ -4,15 +4,23 @@
  * or (at your option) any later version.
  */
 
+/*
+ * Ported from the CMaNGOS playerbots project (https://github.com/cmangos/playerbots), GPL v2,
+ * with modifications for AzerothCore.
+ * Original authors:
+ *   ike3 <ike@email.org> - original author
+ *   Sebastiaan Keek (mostlikely4r) <sebastiaan.keek@gmail.com>
+ */
+
 #ifndef PLAYERBOTS_PERFMONITOR_H
 #define PLAYERBOTS_PERFMONITOR_H
 
 #include <chrono>
+#include <cstdint>
 #include <ctime>
 #include <map>
 #include <mutex>
 #include <vector>
-#include <cstdint>
 
 typedef std::vector<std::string> PerformanceStack;
 

@@ -7,14 +7,6 @@
 #ifndef PLAYERBOTS_RSA_H
 #define PLAYERBOTS_RSA_H
 
-#include <algorithm>
-#include <cmath>
-#include <limits>
-#include <list>
-#include <set>
-#include <utility>
-#include <vector>
-
 #include "AttackAction.h"
 #include "MovementActions.h"
 #include "PlayerbotAI.h"
@@ -27,6 +19,13 @@
 #include "ThreatManager.h"
 #include "Timer.h"
 #include "Vehicle.h"
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <list>
+#include <set>
+#include <utility>
+#include <vector>
 
 inline const Position RS_SAVIANA_TANK_POSITION = Position(3152.36f, 619.4369f, 78.645874f);
 inline const Position RS_ZARITHRIAN_TANK_POSITION = Position(3049.7f, 528.125f, 89.5219f);

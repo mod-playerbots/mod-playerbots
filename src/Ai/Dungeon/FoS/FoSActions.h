@@ -1,11 +1,17 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_FOSACTIONS_H
 #define PLAYERBOTS_FOSACTIONS_H
 
 #include "Action.h"
 #include "AttackAction.h"
+#include "FoSTriggers.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
-#include "FoSTriggers.h"
 
 const Position BRONJAHM_TANK_POSITION = Position(5297.920f, 2506.698f, 686.068f);
 

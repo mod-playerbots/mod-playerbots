@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_MCACTIONS_H
 #define PLAYERBOTS_MCACTIONS_H
 
@@ -26,6 +32,22 @@ class McShazzrahMoveAwayAction : public MovementAction
 {
 public:
     McShazzrahMoveAwayAction(PlayerbotAI* botAI, std::string const name = "mc shazzrah move away")
+        : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class McMoveFromLavaAction : public MovementAction
+{
+public:
+    McMoveFromLavaAction(PlayerbotAI* botAI, std::string const name = "mc move from lava")
+        : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class McGolemaggBackOffAction : public MovementAction
+{
+public:
+    McGolemaggBackOffAction(PlayerbotAI* botAI, std::string const name = "mc golemagg back off")
         : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
@@ -61,6 +83,14 @@ class McGolemaggAssistTankAttackCoreRagerAction : public McGolemaggTankAction
 public:
     McGolemaggAssistTankAttackCoreRagerAction(PlayerbotAI* botAI, std::string const name = "mc golemagg assist tank attack core rager")
         : McGolemaggTankAction(botAI, name) {};
+    bool Execute(Event event) override;
+};
+
+class McGolemaggHealerPositionAction : public MovementAction
+{
+public:
+    McGolemaggHealerPositionAction(PlayerbotAI* botAI, std::string const name = "mc golemagg healer position")
+        : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
