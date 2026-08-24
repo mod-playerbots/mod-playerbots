@@ -46,8 +46,7 @@ bool ShirrakTankPositionBossAction::Execute(Event /*event*/)
 
 bool ShirrakFleeFocusFireAction::Execute(Event /*event*/)
 {
-    Creature* flare = bot->FindNearestCreature(
-        static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), FLARE_SEARCH_RADIUS, true);
+    Creature* flare = bot->FindNearestCreature(NPC_FOCUS_FIRE, FLARE_SEARCH_RADIUS, true);
     if (!flare)
         return false;
 
