@@ -435,9 +435,9 @@ public:
     static bool IsBotMainTank(Player* player);
     static uint32 GetGroupTankNum(Player* player);
     static bool IsAssistTank(Player* player);
-    static bool IsAssistTankOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers = false);
-    static bool IsAssistHealOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers = false);
-    static bool IsAssistRangedDpsOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers = false);
+    static bool IsAssistTankOfIndex(Player* player, uint8 index, bool indexLivingOnly = false);
+    static bool IsAssistHealOfIndex(Player* player, uint8 index, bool indexLivingOnly = false);
+    static bool IsAssistRangedDpsOfIndex(Player* player, uint8 index, bool indexLivingOnly = false);
     bool HasAggro(Unit* unit);
     bool IsMovementImpaired(Unit* unit);
     static int32 GetAssistTankIndex(Player* player);

@@ -1956,14 +1956,20 @@ bool PlayerbotAI::IsCombo(Player* player)
            (player->getClass() == CLASS_DRUID && player->HasAura(768));  // cat druid
 }
 
-bool PlayerbotAI::IsRangedDps(Player* player, bool bySpec) { return IsRanged(player, bySpec) && IsDps(player, bySpec); }
+bool PlayerbotAI::IsRangedDps(Player* player, bool bySpec)
+{
+    return IsRanged(player, bySpec) && IsDps(player, bySpec);
+}
 
-bool PlayerbotAI::IsAssistHealOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers)
+// If true, indexLivingOnly excludes dead group members from the index, meaning living members shift
+// up to fill the gap. Example: if assist heal 0 dies, then assist heal 1 becomes assist heal 0.
+// By default, it is false, meaning roles remain stable across deaths.
+bool PlayerbotAI::IsAssistHealOfIndex(Player* player, uint8 index, bool indexLivingOnly)
 {
     if (!IsHeal(player))
         return false;
 
-    if (ignoreDeadPlayers && !player->IsAlive())
+    if (indexLivingOnly && !player->IsAlive())
         return false;
 
     Group* group = player->GetGroup();
@@ -1978,7 +1984,7 @@ bool PlayerbotAI::IsAssistHealOfIndex(Player* player, uint8 index, bool ignoreDe
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || (ignoreDeadPlayers && !member->IsAlive()) || !IsHeal(member))
+        if (!member || (indexLivingOnly && !member->IsAlive()) || !IsHeal(member))
             continue;
 
         bool isAssistant = group->IsAssistant(member->GetGUID());
@@ -2008,12 +2014,15 @@ bool PlayerbotAI::IsAssistHealOfIndex(Player* player, uint8 index, bool ignoreDe
     return playerIndex == index;
 }
 
-bool PlayerbotAI::IsAssistRangedDpsOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers)
+// If true, indexLivingOnly excludes dead group members from the index, meaning living members shift
+// up to fill the gap. Example: if assist ranged dps 0 dies, then assist ranged dps 1 becomes assist
+// ranged dps 0. By default, it is false, meaning roles remain stable across deaths.
+bool PlayerbotAI::IsAssistRangedDpsOfIndex(Player* player, uint8 index, bool indexLivingOnly)
 {
     if (!IsRangedDps(player))
         return false;
 
-    if (ignoreDeadPlayers && !player->IsAlive())
+    if (indexLivingOnly && !player->IsAlive())
         return false;
 
     Group* group = player->GetGroup();
@@ -2028,7 +2037,7 @@ bool PlayerbotAI::IsAssistRangedDpsOfIndex(Player* player, uint8 index, bool ign
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || (ignoreDeadPlayers && !member->IsAlive()) || !IsRangedDps(member))
+        if (!member || (indexLivingOnly && !member->IsAlive()) || !IsRangedDps(member))
             continue;
 
         bool isAssistant = group->IsAssistant(member->GetGUID());
@@ -2520,7 +2529,10 @@ bool PlayerbotAI::IsAssistTank(Player* player)
     return player->GetGUID() != GetMainTankGuid(group);
 }
 
-bool PlayerbotAI::IsAssistTankOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers)
+// If true, indexLivingOnly excludes dead group members from the index, meaning living members shift
+// up to fill the gap. Example: if assist tank 0 dies, then assist tank 1 becomes assist tank 0.
+// By default, it is false, meaning roles remain stable across deaths.
+bool PlayerbotAI::IsAssistTankOfIndex(Player* player, uint8 index, bool indexLivingOnly)
 {
     if (!IsTank(player))
         return false;
@@ -2534,7 +2546,7 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, uint8 index, bool ignoreDe
     if (player->GetGUID() == mainTankGuid)
         return false;
 
-    if (ignoreDeadPlayers && !player->IsAlive())
+    if (indexLivingOnly && !player->IsAlive())
         return false;
 
     uint8 totalAssistants = 0;
@@ -2545,7 +2557,7 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, uint8 index, bool ignoreDe
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || (ignoreDeadPlayers && !member->IsAlive()) || !IsTank(member) ||
+        if (!member || (indexLivingOnly && !member->IsAlive()) || !IsTank(member) ||
             member->GetGUID() == mainTankGuid)
         {
             continue;
