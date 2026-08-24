@@ -140,6 +140,7 @@ public:
     bool isOverworld();
     bool isInWater();
     bool isUnderWater();
+    bool isDarkWater();
     // Snap Z to the water surface (level + 0.5y). Returns false if the
     // point isn't in/under water or the water level can't be sampled.
     bool setAtWaterSurface();

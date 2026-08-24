@@ -272,6 +272,19 @@ bool WorldPosition::isUnderWater()
                     : false;
 };
 
+bool WorldPosition::isDarkWater()
+{
+    Map* map = getMap();
+    if (!map)
+        return false;
+
+    LiquidData const& liquidData = map->GetLiquidData(PHASEMASK_NORMAL, GetPositionX(), GetPositionY(),
+                                                      GetPositionZ(), DEFAULT_COLLISION_HEIGHT,
+                                                      MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN);
+
+    return (liquidData.Flags & MAP_LIQUID_TYPE_DARK_WATER) != 0;
+};
+
 bool WorldPosition::setAtWaterSurface()
 {
     if (!isInWater() && !isUnderWater())

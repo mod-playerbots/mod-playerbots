@@ -789,6 +789,9 @@ bool TravelPath::IsPathCheating(std::vector<WorldPosition> const& path, float en
                 return true;
         }
     }
+    for (WorldPosition point : path)
+        if (point.isDarkWater())
+            return true;
 
     return false;
 }
