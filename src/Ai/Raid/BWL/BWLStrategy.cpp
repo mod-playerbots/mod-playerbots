@@ -59,4 +59,5 @@ void RaidBwlStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new RazorgoreTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszBurningAdrenalineMultiplier(botAI));
+    multipliers.push_back(new EbonrocShadowMultiplier(botAI));
 }

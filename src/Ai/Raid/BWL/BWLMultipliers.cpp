@@ -8,12 +8,14 @@
 #include "BWLActions.h"
 #include "BWLHelpers.h"
 #include "ChooseTargetActions.h"
+#include "EncounterHelpers.h"
 #include "GenericActions.h"
 #include "HunterActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
 
 using namespace BlackwingLairHelpers;
+using namespace EncounterHelpers;
 
 static constexpr float VAELASTRASZ_BA_SAFE_DISTANCE = 20.0f;
 static constexpr float VAELASTRASZ_BA_BOSS_DISTANCE = 30.0f;
@@ -85,6 +87,25 @@ float VaelastraszBurningAdrenalineMultiplier::GetValue(Action* action)
         if (dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
     }
+
+    return 1.0f;
+}
+
+float EbonrocShadowMultiplier::GetValue(Action* action)
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    Unit* ebonroc = AI_VALUE2(Unit*, "find target", "ebonroc");
+    if (!ebonroc || !ebonroc->IsAlive())
+        return 1.0f;
+
+    if (!bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_SHADOW_OF_EBONROC)))
+        return 1.0f;
+
+    // Explicit main tank must not taunt back after the other tank takes over.
+    if (IsTauntAction(bot, action))
+        return 0.0f;
 
     return 1.0f;
 }
