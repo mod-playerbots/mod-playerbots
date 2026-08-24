@@ -606,19 +606,12 @@ void RandomBotLevelMgr::RunLevelBracketsDistribution()
             uint32 totalCombinedReal = totalAllianceReal + totalHordeReal;
             for (uint8 i = 0; i < _numRanges; ++i)
             {
-                if (IsDisabledBracket(sPlayerbotAIConfig.levelBracketsAlliance, i) &&
-                    IsDisabledBracket(sPlayerbotAIConfig.levelBracketsHorde, i))
-                {
-                    allianceWeights[i] = 0.0f;
-                    hordeWeights[i] = 0.0f;
-                    continue;
-                }
-
                 int combinedReal = allianceRealCounts[i] + hordeRealCounts[i];
                 float weight = baseline + sPlayerbotAIConfig.levelBracketsRealPlayerWeight *
                     (totalCombinedReal > 0 ? (1.0f / float(totalCombinedReal)) : 1.0f) * std::log(1 + combinedReal);
-                allianceWeights[i] = weight;
-                hordeWeights[i] = weight;
+
+                allianceWeights[i] = IsDisabledBracket(sPlayerbotAIConfig.levelBracketsAlliance, i) ? 0.0f : weight;
+                hordeWeights[i] = IsDisabledBracket(sPlayerbotAIConfig.levelBracketsHorde, i) ? 0.0f : weight;
             }
         }
         else
