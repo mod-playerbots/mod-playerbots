@@ -327,7 +327,6 @@ bool DebugAction::Execute(Event event)
             float dist = i / 60 * 30;
 
             WorldPosition botPos(bot);
-            WorldPosition botPos1 = botPos;
 
             botPos.setX(botPos.GetPositionX() + cos(ang) * dist);
             botPos.setY(botPos.GetPositionY() + sin(ang) * dist);
@@ -354,7 +353,6 @@ bool DebugAction::Execute(Event event)
             float dist = i / 60 * 30;
 
             WorldPosition botPos(bot);
-            WorldPosition botPos1 = botPos;
 
             botPos.setX(botPos.GetPositionX() + cos(ang) * dist);
             botPos.setY(botPos.GetPositionY() + sin(ang) * dist);
@@ -385,7 +383,6 @@ bool DebugAction::Execute(Event event)
             float dist = i / 60 * 30;
 
             WorldPosition botPos(bot);
-            WorldPosition botPos1 = botPos;
 
             botPos.setX(botPos.GetPositionX() + cos(ang) * dist);
             botPos.setY(botPos.GetPositionY() + sin(ang) * dist);

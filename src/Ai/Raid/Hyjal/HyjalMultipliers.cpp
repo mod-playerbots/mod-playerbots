@@ -270,7 +270,7 @@ float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
     if (!mainTank || !GET_PLAYERBOT_AI(mainTank))
         return 1.0f;
 
-    TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
+    TankPositionState tankState = GetAzgalorTankPositionState(bot);
     if ((tankState == TankPositionState::Unknown ||
          tankState == TankPositionState::MovingToTransition) &&
          dynamic_cast<MovementAction*>(action) &&
