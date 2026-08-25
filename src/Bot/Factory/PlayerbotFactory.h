@@ -172,7 +172,6 @@ private:
     static std::vector<WeightedProfessionPair> GetClassProfessionPairs(Player* bot);
     static std::vector<WeightedProfessionPair> GetRandomProfessionPairs();
     static std::pair<uint16, uint16> ChooseProfessionPair(std::vector<WeightedProfessionPair> const& professionPairs);
-    static bool HasProfessionPair(std::vector<WeightedProfessionPair> const& professionPairs,
                                   uint16 firstSkill, uint16 secondSkill);
     static uint16 ChooseComplementaryProfession(
         std::vector<WeightedProfessionPair> const& professionPairs, uint16 existingSkill);
