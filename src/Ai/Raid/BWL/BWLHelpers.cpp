@@ -6,7 +6,11 @@
 
 #include "BWLHelpers.h"
 #include "AiObjectContext.h"
+#include "Creature.h"
 #include "Group.h"
+
+#include <algorithm>
+#include <vector>
 
 namespace BlackwingLairHelpers
 {
@@ -56,5 +60,75 @@ namespace BlackwingLairHelpers
         }
 
         return false;
+    }
+
+    Creature* FindNearestInCombat(const Player* bot, BlackwingLairNPCs entry, float range)
+    {
+        std::list<Creature*> creatures;
+        bot->GetCreatureListWithEntryInGrid(creatures, static_cast<uint32>(entry), range);
+
+        Creature* nearest = nullptr;
+        float nearestDist = range;
+        for (Creature* creature : creatures)
+        {
+            if (!creature->IsAlive() || !creature->IsInCombat())
+                continue;
+
+            float dist = bot->GetDistance2d(creature);
+            if (dist < nearestDist)
+            {
+                nearestDist = dist;
+                nearest = creature;
+            }
+        }
+        return nearest;
+    }
+
+    // Melee split as evenly as possible across the live warlocks instead of
+    // piling the nearest. A bot claims a warlock by its ordinal among the
+    // group's alive dps, both lists GUID-ordered, so every bot derives the
+    // same split without shared state.
+    Creature* FindAssignedWarlock(Player* bot, float range)
+    {
+        std::list<Creature*> creatures;
+        bot->GetCreatureListWithEntryInGrid(creatures,
+            static_cast<uint32>(BlackwingLairNPCs::NPC_BLACKWING_WARLOCK), range);
+
+        std::vector<Creature*> warlocks;
+        for (Creature* creature : creatures)
+            if (creature->IsAlive() && creature->IsInCombat())
+                warlocks.push_back(creature);
+
+        if (warlocks.empty())
+            return nullptr;
+
+        std::sort(warlocks.begin(), warlocks.end(),
+            [](Creature const* a, Creature const* b) { return a->GetGUID() < b->GetGUID(); });
+
+        uint32 ordinal = 0;
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+            {
+                Player* member = gref->GetSource();
+                if (!member || member == bot || !member->IsAlive() || member->GetMapId() != bot->GetMapId())
+                    continue;
+                if (!PlayerbotAI::IsDps(member) || !(member->GetGUID() < bot->GetGUID()))
+                    continue;
+                ++ordinal;
+            }
+        }
+
+        return warlocks[ordinal % warlocks.size()];
+    }
+
+    // Steady-state fast path shared by the warlock pack trigger, action and
+    // multiplier: the bot's own target proving a live warlock is in the fight
+    // makes their grid searches redundant.
+    bool IsTargetingLiveWarlock(PlayerbotAI* botAI)
+    {
+        Unit* current = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+        return current && current->IsAlive() && current->IsInCombat() &&
+               current->GetEntry() == static_cast<uint32>(BlackwingLairNPCs::NPC_BLACKWING_WARLOCK);
     }
 }

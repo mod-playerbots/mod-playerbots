@@ -87,6 +87,33 @@ bool BwlNefarianFearWardTrigger::IsActive()
 
 // Trash
 
+static constexpr float BWL_TRASH_SEARCH_RANGE = 35.0f;
+
+bool BwlWarlockPackAnchorTrigger::IsActive()
+{
+    // Each warlock's Demon Portal (22372) keeps summoning Enraged Felguards,
+    // and its death despawns its portals, so every dps burns a warlock whenever
+    // one is alive - not the technicians and not the summoned felguards.
+    if (!bot->IsInCombat() || !PlayerbotAI::IsDps(bot))
+        return false;
+
+    if (IsTargetingLiveWarlock(botAI))
+        return true;
+
+    return FindNearestInCombat(bot, BlackwingLairNPCs::NPC_BLACKWING_WARLOCK, BWL_TRASH_SEARCH_RANGE) != nullptr;
+}
+
+bool BwlTechnicianSpreadTrigger::IsActive()
+{
+    // Bomb (22334) is thrown at random raiders; a clumped raid multiplies
+    // every bomb. Melee share their target's reach, so only ranged/healers
+    // spread.
+    if (!bot->IsInCombat() || !PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
+        return false;
+
+    return FindNearestInCombat(bot, BlackwingLairNPCs::NPC_BLACKWING_TECHNICIAN, BWL_TRASH_SEARCH_RANGE) != nullptr;
+}
+
 bool BwlDeathTalonWyrmguardTankTrigger::IsActive()
 {
     return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "death talon wyrmguard");

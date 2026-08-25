@@ -33,4 +33,12 @@ public:
     float GetValue(Action* action) override;
 };
 
+class WarlockPackFocusMultiplier : public Multiplier
+{
+public:
+    WarlockPackFocusMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "warlock pack focus multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 #endif

@@ -70,6 +70,20 @@ public:
 
 // Trash
 
+class BwlWarlockPackAnchorTrigger : public Trigger
+{
+public:
+    BwlWarlockPackAnchorTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl warlock pack anchor") {}
+    bool IsActive() override;
+};
+
+class BwlTechnicianSpreadTrigger : public Trigger
+{
+public:
+    BwlTechnicianSpreadTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl technician spread") {}
+    bool IsActive() override;
+};
+
 class BwlDeathTalonWyrmguardTankTrigger : public Trigger
 {
 public:
