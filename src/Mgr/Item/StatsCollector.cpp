@@ -701,6 +701,7 @@ void StatsCollector::HandleApplyAura(const SpellEffectInfo& effectInfo, float mu
                     }
                 }
             }
+            break;
         }
         case SPELL_AURA_MOD_POWER_REGEN:
         {
@@ -709,6 +710,7 @@ void StatsCollector::HandleApplyAura(const SpellEffectInfo& effectInfo, float mu
             {
                 case POWER_MANA:
                     stats[STATS_TYPE_MANA_REGENERATION] += val * multiplier;
+                    break;
                 default:
                     break;
             }
