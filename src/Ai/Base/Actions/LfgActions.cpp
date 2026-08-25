@@ -274,6 +274,15 @@ bool LfgLeaveAction::Execute(Event /*event*/)
     if (sLFGMgr->GetState(bot->GetGUID()) > LFG_STATE_QUEUED)
         return false;
 
+    // Don't drop a queue we deliberately joined. The "seldom" tick (RandomTrigger, ~300s)
+    // otherwise pulls random bots straight back out, so LFGQueue::CheckCompatibility never
+    // sees a role-complete pool that holds still long enough to form a group. Turning
+    // RandomBotJoinLfg off still lets whoever is mid-queue fall through and leave.
+    // Config bool is tested first so the O(currentBots) IsRandomBot() scan is skipped
+    // whenever the feature is disabled.
+    if (sPlayerbotAIConfig.randomBotJoinLfg && RandomPlayerbotMgr::instance().IsRandomBot(bot))
+        return false;
+
     WorldPacket* packet = new WorldPacket(CMSG_LFG_LEAVE);
     bot->GetSession()->QueuePacket(packet);
     // sLFGMgr->LeaveLfg(bot->GetGUID());

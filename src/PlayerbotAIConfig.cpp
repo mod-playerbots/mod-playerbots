@@ -161,6 +161,8 @@ bool PlayerbotAIConfig::Initialize()
     tellWhenMissingBuffReagents = sConfigMgr->GetOption<bool>("AiPlayerbot.TellWhenMissingBuffReagents", true);
     missingBuffReagentMessageCooldown = sConfigMgr->GetOption<uint32>(
         "AiPlayerbot.MissingBuffReagentMessageCooldown", 300);
+    forceRebuffOnReadyCheck = sConfigMgr->GetOption<bool>("AiPlayerbot.ForceRebuffOnReadyCheck", false);
+    forceRebuffMarginSecs = std::min(sConfigMgr->GetOption<uint32>("AiPlayerbot.ForceRebuffMarginSecs", 60), 3600u);
     autoAvoidAoe = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoAvoidAoe", true);
     maxAoeAvoidRadius = sConfigMgr->GetOption<float>("AiPlayerbot.MaxAoeAvoidRadius", 15.0f);
     LoadSet<std::set<uint32>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.AoeAvoidSpellWhitelist", "50759,57491,13810,29946"),
@@ -762,6 +764,7 @@ bool PlayerbotAIConfig::Initialize()
     }
 
     PlayerbotGuildMgr::instance().Init();
+    sRandomPlayerbotMgr.InitArenaTeams();
     sRandomItemMgr.Init();
     sRandomItemMgr.InitAfterAhBot();
     sBisListMgr->LoadAll();
