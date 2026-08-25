@@ -21,6 +21,7 @@ jobs:
 
     env:
       CXXFLAGS: "-Wall -Wextra -Winit-self -Woverloaded-virtual -Werror -Wno-error=deprecated-declarations"
+      MAKEFLAGS: "-k"
     steps:
       - name: Checkout AzerothCore
         uses: actions/checkout@v4
