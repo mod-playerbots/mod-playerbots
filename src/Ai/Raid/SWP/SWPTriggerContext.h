@@ -16,8 +16,8 @@ public:
     RaidSunwellTriggerContext()
     {
         // General
-        creators["sunwell plateau bot is not in combat"] =
-            &RaidSunwellTriggerContext::sunwell_plateau_bot_is_not_in_combat;
+        creators["sunwell plateau no encounter in progress"] =
+            &RaidSunwellTriggerContext::sunwell_plateau_no_encounter_in_progress;
 
         creators["sunwell plateau bot has protective aura"] =
             &RaidSunwellTriggerContext::sunwell_plateau_bot_has_protective_aura;
@@ -33,8 +33,11 @@ public:
         creators["kalecgos should communicate boss health"] =
             &RaidSunwellTriggerContext::kalecgos_should_communicate_boss_health;
 
-        creators["kalecgos boss engaged by tank"] =
-            &RaidSunwellTriggerContext::kalecgos_boss_engaged_by_tank;
+        creators["kalecgos pulling boss"] =
+            &RaidSunwellTriggerContext::kalecgos_pulling_boss;
+
+        creators["kalecgos boss requires tank rotation"] =
+            &RaidSunwellTriggerContext::kalecgos_boss_requires_tank_rotation;
 
         creators["kalecgos spectral rift is open"] =
             &RaidSunwellTriggerContext::kalecgos_spectral_rift_is_open;
@@ -58,11 +61,11 @@ public:
         creators["brutallus boss engaged by tanks"] =
             &RaidSunwellTriggerContext::brutallus_boss_engaged_by_tanks;
 
-        creators["brutallus boss engaged by melee"] =
-            &RaidSunwellTriggerContext::brutallus_boss_engaged_by_melee;
+        creators["brutallus melee should stand in place"] =
+            &RaidSunwellTriggerContext::brutallus_melee_should_stand_in_place;
 
-        creators["brutallus boss engaged by ranged"] =
-            &RaidSunwellTriggerContext::brutallus_boss_engaged_by_ranged;
+        creators["brutallus ranged should soak meteor slash"] =
+            &RaidSunwellTriggerContext::brutallus_ranged_should_soak_meteor_slash;
 
         creators["brutallus bot is burning"] =
             &RaidSunwellTriggerContext::brutallus_bot_is_burning;
@@ -74,11 +77,11 @@ public:
         creators["felmyst boss engaged by main tank on ground"] =
             &RaidSunwellTriggerContext::felmyst_boss_engaged_by_main_tank_on_ground;
 
-        creators["felmyst boss engaged by ranged on ground"] =
-            &RaidSunwellTriggerContext::felmyst_boss_engaged_by_ranged_on_ground;
+        creators["felmyst ranged should split in three"] =
+            &RaidSunwellTriggerContext::felmyst_ranged_should_split_in_three;
 
-        creators["felmyst boss engaged by melee on ground"] =
-            &RaidSunwellTriggerContext::felmyst_boss_engaged_by_melee_on_ground;
+        creators["felmyst melee should stay together"] =
+            &RaidSunwellTriggerContext::felmyst_melee_should_stay_together;
 
         creators["felmyst bot is encapsulated"] =
             &RaidSunwellTriggerContext::felmyst_bot_is_encapsulated;
@@ -117,8 +120,8 @@ public:
         creators["eredar twins sacrolash engaged by two tanks"] =
             &RaidSunwellTriggerContext::eredar_twins_sacrolash_engaged_by_two_tanks;
 
-        creators["eredar twins alythess engaged by first assist tank"] =
-            &RaidSunwellTriggerContext::eredar_twins_alythess_engaged_by_first_assist_tank;
+        creators["eredar twins alythess casts blaze on tank"] =
+            &RaidSunwellTriggerContext::eredar_twins_alythess_casts_blaze_on_tank;
 
         creators["eredar twins bosses engaged by ranged"] =
             &RaidSunwellTriggerContext::eredar_twins_bosses_engaged_by_ranged;
@@ -218,8 +221,8 @@ public:
 
 private:
     // General
-    static Trigger* sunwell_plateau_bot_is_not_in_combat(PlayerbotAI* botAI) {
-        return new SunwellPlateauBotIsNotInCombatTrigger(botAI);
+    static Trigger* sunwell_plateau_no_encounter_in_progress(PlayerbotAI* botAI) {
+        return new SunwellPlateauNoEncounterInProgressTrigger(botAI);
     }
     static Trigger* sunwell_plateau_bot_has_protective_aura(PlayerbotAI* botAI) {
         return new SunwellPlateauBotHasProtectiveAuraTrigger(botAI);
@@ -234,11 +237,14 @@ private:
     }
 
     // Kalecgos
+    static Trigger* kalecgos_pulling_boss(PlayerbotAI* botAI) {
+        return new KalecgosPullingBossTrigger(botAI);
+    }
     static Trigger* kalecgos_should_communicate_boss_health(PlayerbotAI* botAI) {
         return new KalecgosShouldCommunicateBossHealthTrigger(botAI);
     }
-    static Trigger* kalecgos_boss_engaged_by_tank(PlayerbotAI* botAI) {
-        return new KalecgosBossEngagedByTankTrigger(botAI);
+    static Trigger* kalecgos_boss_requires_tank_rotation(PlayerbotAI* botAI) {
+        return new KalecgosBossRequiresTankRotationTrigger(botAI);
     }
     static Trigger* kalecgos_spectral_rift_is_open(PlayerbotAI* botAI) {
         return new KalecgosSpectralRiftIsOpenTrigger(botAI);
@@ -263,11 +269,11 @@ private:
     static Trigger* brutallus_boss_engaged_by_tanks(PlayerbotAI* botAI) {
         return new BrutallusBossEngagedByTanksTrigger(botAI);
     }
-    static Trigger* brutallus_boss_engaged_by_melee(PlayerbotAI* botAI) {
-        return new BrutallusBossEngagedByMeleeTrigger(botAI);
+    static Trigger* brutallus_melee_should_stand_in_place(PlayerbotAI* botAI) {
+        return new BrutallusMeleeShouldStandInPlaceTrigger(botAI);
     }
-    static Trigger* brutallus_boss_engaged_by_ranged(PlayerbotAI* botAI) {
-        return new BrutallusBossEngagedByRangedTrigger(botAI);
+    static Trigger* brutallus_ranged_should_soak_meteor_slash(PlayerbotAI* botAI) {
+        return new BrutallusRangedShouldSoakMeteorSlashTrigger(botAI);
     }
     static Trigger* brutallus_bot_is_burning(PlayerbotAI* botAI) {
         return new BrutallusBotIsBurningTrigger(botAI);
@@ -280,11 +286,11 @@ private:
     static Trigger* felmyst_boss_engaged_by_main_tank_on_ground(PlayerbotAI* botAI) {
         return new FelmystBossEngagedByMainTankOnGroundTrigger(botAI);
     }
-    static Trigger* felmyst_boss_engaged_by_ranged_on_ground(PlayerbotAI* botAI) {
-        return new FelmystBossEngagedByRangedOnGroundTrigger(botAI);
+    static Trigger* felmyst_ranged_should_split_in_three(PlayerbotAI* botAI) {
+        return new FelmystRangedShouldSplitInThreeTrigger(botAI);
     }
-    static Trigger* felmyst_boss_engaged_by_melee_on_ground(PlayerbotAI* botAI) {
-        return new FelmystBossEngagedByMeleeOnGroundTrigger(botAI);
+    static Trigger* felmyst_melee_should_stay_together(PlayerbotAI* botAI) {
+        return new FelmystMeleeShouldStayTogetherTrigger(botAI);
     }
     static Trigger* felmyst_bot_is_encapsulated(PlayerbotAI* botAI) {
         return new FelmystBotIsEncapsulatedTrigger(botAI);
@@ -324,8 +330,8 @@ private:
     static Trigger* eredar_twins_sacrolash_engaged_by_two_tanks(PlayerbotAI* botAI) {
         return new EredarTwinsSacrolashEngagedByTwoTanksTrigger(botAI);
     }
-    static Trigger* eredar_twins_alythess_engaged_by_first_assist_tank(PlayerbotAI* botAI) {
-        return new EredarTwinsAlythessEngagedByFirstAssistTankTrigger(botAI);
+    static Trigger* eredar_twins_alythess_casts_blaze_on_tank(PlayerbotAI* botAI) {
+        return new EredarTwinsAlythessCastsBlazeOnTankTrigger(botAI);
     }
     static Trigger* eredar_twins_bosses_engaged_by_ranged(PlayerbotAI* botAI) {
         return new EredarTwinsBossesEngagedByRangedTrigger(botAI);

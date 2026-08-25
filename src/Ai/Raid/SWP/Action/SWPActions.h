@@ -10,9 +10,20 @@
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+#include "ObjectGuid.h"
 #include "Position.h"
 #include <limits>
+#include <string>
 #include <vector>
+
+class Creature;
+
+namespace SwpHelpers
+{
+
+ObjectGuid FindSwpVolatileFiendGuid(Player* bot);
+
+}
 
 // General
 
@@ -50,6 +61,18 @@ public:
     bool Execute(Event event) override;
 };
 
+class SunwellPlateauMisdirectBossToMainTankAction : public Action
+{
+public:
+    SunwellPlateauMisdirectBossToMainTankAction(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : Action(botAI, name), _bossName(bossName) {}
+    bool Execute(Event event) override;
+
+private:
+    std::string const _bossName;
+};
+
 // Kalecgos
 
 class KalecgosAnnounceBossHealthAction : public Action
@@ -60,11 +83,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KalecgosTankPositionBossAction : public AttackAction
+class KalecgosSurfaceTankPositionDragonAction : public AttackAction
 {
 public:
-    KalecgosTankPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kalecgos tank position boss") {}
+    KalecgosSurfaceTankPositionDragonAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "kalecgos surface tank position dragon") {}
     bool Execute(Event event) override;
 };
 
@@ -123,19 +146,11 @@ public:
 
 // Brutallus
 
-class BrutallusMisdirectBossToMainTankAction : public AttackAction
+class BrutallusTanksPositionAndSwapAction : public AttackAction
 {
 public:
-    BrutallusMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "brutallus misdirect boss to main tank") {}
-    bool Execute(Event event) override;
-};
-
-class BrutallusTanksHandleBossAction : public AttackAction
-{
-public:
-    BrutallusTanksHandleBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "brutallus tanks handle boss") {}
+    BrutallusTanksPositionAndSwapAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "brutallus tanks position and swap") {}
     bool Execute(Event event) override;
     bool ResetInitialPositionReached()
     {
@@ -149,11 +164,11 @@ private:
     bool _mainTankInitialPositionReached = false;
 };
 
-class BrutallusPositionMeleeAction : public MovementAction
+class BrutallusPositionMeleeAtRearCenterAction : public MovementAction
 {
 public:
-    BrutallusPositionMeleeAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "brutallus position melee") {}
+    BrutallusPositionMeleeAtRearCenterAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "brutallus position melee at rear center") {}
     bool Execute(Event event) override;
 
 private:
@@ -162,11 +177,11 @@ private:
         uint8 meleeIndex, Position& position);
 };
 
-class BrutallusPositionRangedAction : public MovementAction
+class BrutallusPositionRangedInTwoGroupsAction : public MovementAction
 {
 public:
-    BrutallusPositionRangedAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "brutallus position ranged") {}
+    BrutallusPositionRangedInTwoGroupsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "brutallus position ranged in two groups") {}
     bool Execute(Event event) override;
 };
 
@@ -183,14 +198,6 @@ private:
 
 // Felmyst
 
-class FelmystMisdirectBossToMainTankAction : public AttackAction
-{
-public:
-    FelmystMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "felmyst misdirect boss to main tank") {}
-    bool Execute(Event event) override;
-};
-
 class FelmystMainTankPositionBossOnGroundAction : public AttackAction
 {
 public:
@@ -199,19 +206,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class FelmystPositionRangedOnGroundAction : public MovementAction
+class FelmystRangedStackInThreeGroupsAction : public MovementAction
 {
 public:
-    FelmystPositionRangedOnGroundAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "felmyst position ranged on ground") {}
+    FelmystRangedStackInThreeGroupsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "felmyst ranged stack in three groups") {}
     bool Execute(Event event) override;
 };
 
-class FelmystPositionMeleeOnGroundAction : public MovementAction
+class FelmystMeleeStackBehindBossAction : public MovementAction
 {
 public:
-    FelmystPositionMeleeOnGroundAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "felmyst position melee on ground") {}
+    FelmystMeleeStackBehindBossAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "felmyst melee stack behind boss") {}
     bool Execute(Event event) override;
 };
 
@@ -310,11 +317,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class EredarTwinsMisdirectBossesToTanksAction : public AttackAction
+class EredarTwinsMisdirectBossesToTanksAction : public Action
 {
 public:
     EredarTwinsMisdirectBossesToTanksAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "eredar twins misdirect bosses to tanks") {}
+        : Action(botAI, "eredar twins misdirect bosses to tanks") {}
     bool Execute(Event event) override;
 };
 
@@ -394,11 +401,11 @@ public:
 
 // M'uru
 
-class MuruMisdirectEnemiesToTanksAction : public AttackAction
+class MuruMisdirectEnemiesToTanksAction : public Action
 {
 public:
     MuruMisdirectEnemiesToTanksAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "m'uru misdirect enemies to tanks") {}
+        : Action(botAI, "m'uru misdirect enemies to tanks") {}
     bool Execute(Event event) override;
 };
 
@@ -422,17 +429,15 @@ private:
     bool TryGetEntropiusInitialRangedPosition(Position& position) const;
 };
 
-class MuruSetDpsPriorityAction : public AttackAction
+class MuruAssignDpsPriorityAction : public AttackAction
 {
 public:
-    MuruSetDpsPriorityAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "m'uru set dps priority") {}
+    MuruAssignDpsPriorityAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "m'uru assign dps priority") {}
     bool Execute(Event event) override;
 
 private:
-    Unit* ResolveMuruDpsTarget(Unit*& currentTarget);
-    Unit* SelectMuruEncounterTarget(
-        Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates) const;
+    Unit* ResolveMuruDpsTarget(Unit* currentTarget);
 };
 
 class MuruKillDarkFiendsWithDispelAction : public Action
@@ -470,11 +475,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class MuruFleeTheDarknessAction : public MovementAction
+class MuruMeleeFleeTheDarknessAction : public MovementAction
 {
 public:
-    MuruFleeTheDarknessAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "m'uru flee the darkness") {}
+    MuruMeleeFleeTheDarknessAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "m'uru melee flee the darkness") {}
     bool Execute(Event event) override;
 };
 
@@ -510,25 +515,25 @@ public:
     bool Execute(Event event) override;
 };
 
-class MuruWarlockEnslaveVoidSpawnAction : public MovementAction
+class MuruWarlockEnslaveVoidSpawnAction : public Action
 {
 public:
     MuruWarlockEnslaveVoidSpawnAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "m'uru warlock enslave void spawn") {}
+        : Action(botAI, "m'uru warlock enslave void spawn") {}
     bool Execute(Event event) override;
 };
 
 class MuruEnslavedVoidSpawnAttackAction : public Action
 {
 public:
-    MuruEnslavedVoidSpawnAttackAction(
-        PlayerbotAI* botAI, std::string const name = "m'uru enslaved void spawn attack")
+    // Abstract: only the derived names are registered, so there is no default to fall back on
+    MuruEnslavedVoidSpawnAttackAction(PlayerbotAI* botAI, std::string const name)
         : Action(botAI, name) {}
 
 protected:
     Unit* GetControlledVoidSpawn() const;
     bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target) const;
-    Unit* GetVoidSpawnVolleyPriorityTarget() const;
+    Unit* GetVoidSpawnVolleyPriorityTarget(Unit* voidSpawn) const;
 };
 
 class MuruEnslavedVoidSpawnCastShadowBoltVolleyAction : public MuruEnslavedVoidSpawnAttackAction
@@ -581,6 +586,9 @@ public:
     KiljaedenPositionTanksAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "kil'jaeden position tanks") {}
     bool Execute(Event event) override;
+
+private:
+    bool PickUpSinisterReflections(Creature* reflection);
 };
 
 class KiljaedenPositionMeleeAction : public MovementAction
@@ -642,8 +650,7 @@ public:
 class KiljaedenControlDragonAction : public Action
 {
 public:
-    KiljaedenControlDragonAction(PlayerbotAI* botAI)
-        : Action(botAI, "kil'jaeden control dragon") {}
+    KiljaedenControlDragonAction(PlayerbotAI* botAI) : Action(botAI, "kil'jaeden control dragon") {}
     bool Execute(Event event) override;
 
 private:

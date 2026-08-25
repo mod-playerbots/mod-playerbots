@@ -254,8 +254,7 @@ public:
 class MuruDelayCooldownsMultiplier : public Multiplier
 {
 public:
-    MuruDelayCooldownsMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "m'uru delay cooldowns") {}
+    MuruDelayCooldownsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "m'uru delay cooldowns") {}
     float GetValue(Action* action) override;
 };
 
