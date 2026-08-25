@@ -32,12 +32,9 @@ bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
     uint32 const instanceId = bot->GetInstanceId();
 
     bool reset = false;
-    // Al'ar
     reset |= isAlarInPhase2.erase(instanceId) > 0;
     reset |= lastRebirthState.erase(instanceId) > 0;
-    // Void Reaver
     reset |= voidReaverArcaneOrbs.erase(instanceId) > 0;
-    // Kael'thas Sunstrider
     reset |= advisorDpsWaitTimer.erase(instanceId) > 0;
 
     return reset;
