@@ -81,10 +81,10 @@ public:
 
     void SaveToDB();
 
-    void HandleSetSecurityKeyCommand(Player* player, const std::string& key);
-    void HandleLinkAccountCommand(Player* player, const std::string& accountName, const std::string& key);
+    void HandleSetSecurityKeyCommand(Player* player, std::string const& key);
+    void HandleLinkAccountCommand(Player* player, std::string const& accountName, std::string const& key);
     void HandleViewLinkedAccountsCommand(Player* player);
-    void HandleUnlinkAccountCommand(Player* player, const std::string& accountName);
+    void HandleUnlinkAccountCommand(Player* player, std::string const& accountName);
 
 protected:
     void OnBotLoginInternal(Player* const bot) override;
@@ -115,8 +115,8 @@ private:
     PlayerbotsMgr() = default;
     ~PlayerbotsMgr() = default;
 
-    PlayerbotsMgr(const PlayerbotsMgr&) = delete;
-    PlayerbotsMgr& operator=(const PlayerbotsMgr&) = delete;
+    PlayerbotsMgr(PlayerbotsMgr const&) = delete;
+    PlayerbotsMgr& operator=(PlayerbotsMgr const&) = delete;
 
     PlayerbotsMgr(PlayerbotsMgr&&) = delete;
     PlayerbotsMgr& operator=(PlayerbotsMgr&&) = delete;

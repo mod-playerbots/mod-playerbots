@@ -66,7 +66,7 @@ public:
     McGolemaggTankAction(PlayerbotAI* botAI, std::string const name)
         : AttackAction(botAI, name) {}
 protected:
-    bool MoveUnitToPosition(Unit* target, const Position& tankPosition, float maxDistance, float stepDistance = 3.0f);
+    bool MoveUnitToPosition(Unit* target, Position const& tankPosition, float maxDistance, float stepDistance = 3.0f);
     bool FindCoreRagers(Unit*& coreRager1, Unit*& coreRager2) const;
 };
 

@@ -541,7 +541,7 @@ void PlayerbotFactory::BuildCcBreakTrinketCache()
         tmp.push_back({f[0].Get<uint32>(), f[1].Get<uint16>()});
     } while (result->NextRow());
 
-    std::sort(tmp.begin(), tmp.end(), [](const CcItem& a, const CcItem& b) {
+    std::sort(tmp.begin(), tmp.end(), [](CcItem const& a, CcItem const& b) {
         return a.itemLevel > b.itemLevel;
     });
     for (auto& c : tmp)
@@ -4870,13 +4870,13 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool /*destroyOld*/)
     uint8 jewelersCount = 0;
     int requiredActive = 2;
     std::vector<uint32> availableGems;
-    for (const uint32& enchantGem : enchantGemIdCache)
+    for (uint32 const& enchantGem : enchantGemIdCache)
     {
         ItemTemplate const* gemTemplate = sObjectMgr->GetItemTemplate(enchantGem);
         if (!gemTemplate)
             continue;
 
-        const GemPropertiesEntry* gemProperties = sGemPropertiesStore.LookupEntry(gemTemplate->GemProperties);
+        GemPropertiesEntry const* gemProperties = sGemPropertiesStore.LookupEntry(gemTemplate->GemProperties);
         if (!gemProperties)
             continue;
 
@@ -4925,7 +4925,7 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool /*destroyOld*/)
             continue;
         int32 bestEnchantId = -1;
         float bestScore = 0;
-        for (const uint32& enchantSpell : enchantSpellIdCache)
+        for (uint32 const& enchantSpell : enchantSpellIdCache)
         {
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(enchantSpell);
             if (!spellInfo)
@@ -5005,7 +5005,7 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool /*destroyOld*/)
                 if (isJewelersGem && jewelersCount >= 3)
                     continue;
 
-                const GemPropertiesEntry* gemProperties = sGemPropertiesStore.LookupEntry(gemTemplate->GemProperties);
+                GemPropertiesEntry const* gemProperties = sGemPropertiesStore.LookupEntry(gemTemplate->GemProperties);
                 if (!gemProperties)
                     continue;
 

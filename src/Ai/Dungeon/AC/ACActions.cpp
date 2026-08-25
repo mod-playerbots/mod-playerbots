@@ -28,7 +28,7 @@ bool ShirrakTankPositionBossAction::Execute(Event /*event*/)
     if (shirrak->GetVictim() == bot && bot->IsWithinMeleeRange(shirrak) &&
         bot->GetHealthPct()>30.0f)
     {
-        const Position& position = SHIRRAK_TANK_POSITION;
+        Position const& position = SHIRRAK_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
                                                    position.GetPositionY());
         if (distToPosition > 6.0f)

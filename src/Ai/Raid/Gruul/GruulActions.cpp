@@ -33,7 +33,7 @@ bool HighKingMaulgarMainTankAttackMaulgarAction::Execute(Event /*event*/)
 
     if (maulgar->GetVictim() == bot)
     {
-        const Position& position = MAULGAR_TANK_POSITION;
+        Position const& position = MAULGAR_TANK_POSITION;
         const float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -70,7 +70,7 @@ bool HighKingMaulgarFirstAssistTankAttackOlmAction::Execute(Event /*event*/)
 
     if (olm->GetVictim() == bot)
     {
-        const Position& position = OLM_TANK_POSITION;
+        Position const& position = OLM_TANK_POSITION;
         const float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -107,7 +107,7 @@ bool HighKingMaulgarSecondAssistTankAttackBlindeyeAction::Execute(Event /*event*
 
     if (blindeye->GetVictim() == bot)
     {
-        const Position& position = BLINDEYE_TANK_POSITION;
+        Position const& position = BLINDEYE_TANK_POSITION;
         const float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -156,7 +156,7 @@ bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event /*event*/)
 
     if (krosh->GetVictim() == bot)
     {
-        const Position& position = KROSH_TANK_POSITION;
+        Position const& position = KROSH_TANK_POSITION;
         const float distanceKroshToPosition =
             krosh->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
         constexpr float minDistance = 17.0f;
@@ -489,7 +489,7 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
 
     if (gruul->GetVictim() == bot)
     {
-        const Position& position = GRUUL_TANK_POSITION;
+        Position const& position = GRUUL_TANK_POSITION;
         const float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -546,7 +546,7 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
         }
     }
 
-    const Position& position = GRUUL_TANK_POSITION;
+    Position const& position = GRUUL_TANK_POSITION;
 
     if (_initialPosition.GetPositionX() == 0.0f && _initialPosition.GetPositionY() == 0.0f)
     {

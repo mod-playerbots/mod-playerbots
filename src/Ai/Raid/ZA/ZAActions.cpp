@@ -64,7 +64,7 @@ bool AkilzonTanksPositionBossAction::Execute(Event /*event*/)
 
     if (akilzon->GetVictim() == bot)
     {
-        const Position& position = AKILZON_TANK_POSITION;
+        Position const& position = AKILZON_TANK_POSITION;
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -178,7 +178,7 @@ bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(Unit* nalorakk)
             return botAI->DoSpecificAction("taunt spell", Event(), true);
     }
 
-    const Position& position = NALORAKK_TANK_POSITION;
+    Position const& position = NALORAKK_TANK_POSITION;
     float distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -208,7 +208,7 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(Unit* nalo
             return botAI->DoSpecificAction("taunt spell", Event(), true);
     }
 
-    const Position& position = NALORAKK_TANK_POSITION;
+    Position const& position = NALORAKK_TANK_POSITION;
     float distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -270,7 +270,7 @@ bool JanalaiTanksPositionBossAction::Execute(Event /*event*/)
 
     if (janalai->GetVictim() == bot)
     {
-        const Position& position = JANALAI_TANK_POSITION;
+        Position const& position = JANALAI_TANK_POSITION;
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -354,7 +354,7 @@ bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
     if (!inDanger)
         return false;
 
-    const Position& janalaiCenter = JANALAI_TANK_POSITION;
+    Position const& janalaiCenter = JANALAI_TANK_POSITION;
     constexpr float safeZoneRadius = 17.0f;
 
     Position safestPos =
@@ -418,7 +418,7 @@ bool HalazziMainTankPositionBossAction::Execute(Event /*event*/)
 
     if (halazzi->GetVictim() == bot)
     {
-        const Position& position = HALAZZI_TANK_POSITION;
+        Position const& position = HALAZZI_TANK_POSITION;
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -470,7 +470,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event /*event*/)
     if (!targetFound)
         return false;
 
-    const Position& position = HALAZZI_TANK_POSITION;
+    Position const& position = HALAZZI_TANK_POSITION;
     float distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -672,7 +672,7 @@ bool ZuljinTanksPositionBossAction::Execute(Event /*event*/)
 
     if (zuljin->GetVictim() == bot)
     {
-        const Position& position = ZULJIN_TANK_POSITION;
+        Position const& position = ZULJIN_TANK_POSITION;
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -731,7 +731,7 @@ bool ZuljinAvoidCyclonesAction::Execute(Event /*event*/)
     if (!inDanger)
         return false;
 
-    const Position& zuljinCenter = ZULJIN_TANK_POSITION;
+    Position const& zuljinCenter = ZULJIN_TANK_POSITION;
     constexpr float safeZoneRadius = 30.0f;
 
     Position safestPos =

@@ -2551,7 +2551,7 @@ std::unordered_map<uint32, uint32> TravelNodeMap::BFS(uint32 fromNode)
 }
 
 std::vector<uint32> TravelNodeMap::BuildPath(uint32 fromNode, uint32 toNode,
-                                              const std::unordered_map<uint32, uint32>& parentMap)
+                                              std::unordered_map<uint32, uint32> const& parentMap)
 {
     if (!parentMap.count(toNode))
         return {}; // unreachable
