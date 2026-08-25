@@ -47,7 +47,6 @@ private:
 
     Player* bot;
     float maxAllowedDistance;
-    [[maybe_unused]] float followAngle;  // unused - whipowill
     bool forceMaxDistance;
     WorldPosition startPosition;
 };

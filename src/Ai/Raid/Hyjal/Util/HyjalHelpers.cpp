@@ -165,7 +165,7 @@ const Position KAZROGAL_TANK_FINAL_POSITION =      { 5511.514f, -2662.466f, 1480
 std::unordered_map<ObjectGuid, TankPositionState> kazrogalTankStep;
 std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
 
-TankPositionState GetKazrogalTankPositionState(PlayerbotAI* botAI, Player* bot)
+TankPositionState GetKazrogalTankPositionState(Player* bot)
 {
     Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
@@ -206,7 +206,7 @@ RainOfFireData* GetActiveAzgalorRainOfFire(uint32 instanceId)
     return &instanceIt->second;
 }
 
-TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot)
+TankPositionState GetAzgalorTankPositionState(Player* bot)
 {
     Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)

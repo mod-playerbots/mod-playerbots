@@ -381,7 +381,7 @@ WorldPosition WorldPosition::firstOutRange(std::vector<WorldPosition> list, floa
 // Returns true if (on the x-y plane) the position is inside the three points.
 bool WorldPosition::isInside(WorldPosition* p1, WorldPosition* p2, WorldPosition* p3)
 {
-    if (GetMapId() != p1->GetMapId() != p2->GetMapId() != p3->GetMapId())
+    if (GetMapId() != p1->GetMapId() || GetMapId() != p2->GetMapId() || GetMapId() != p3->GetMapId())
         return false;
 
     float d1, d2, d3;
@@ -3619,7 +3619,8 @@ void TravelMgr::LoadQuestTravelTable()
                                 max[tb] = tcl->second.second;
                             }
 
-                            if (a[0] && a[1] && a[2] && min[0] == min[1] == min[2] && max[0] == max[1] == max[2])
+                            if (a[0] && a[1] && a[2] && min[0] == min[1] && min[1] == min[2] && max[0] == max[1] &&
+                                max[1] == max[2])
                             {
                                 if (min[0] != 1 || max[0] != MAX_LEVEL - 1)
                                     out << classes[cls] << "(" << min[0] << "-" << max[0] << ")";

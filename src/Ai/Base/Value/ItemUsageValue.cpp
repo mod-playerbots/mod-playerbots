@@ -357,9 +357,9 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
                             return ITEM_USAGE_REPLACE;
                         else
                             return ITEM_USAGE_BAD_EQUIP;
-
-                        break;
                     }
+                    // A lower-subclass armor piece is handled by the default case below.
+                    [[fallthrough]];
                 default:
                 {
                     if (itemIsBroken && !oldItemIsBroken)

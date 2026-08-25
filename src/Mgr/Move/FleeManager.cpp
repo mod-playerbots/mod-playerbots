@@ -8,11 +8,10 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
-FleeManager::FleeManager(Player* bot, float maxAllowedDistance, float followAngle, bool forceMaxDistance,
+FleeManager::FleeManager(Player* bot, float maxAllowedDistance, float /*followAngle*/, bool forceMaxDistance,
                          WorldPosition startPosition)
     : bot(bot),
       maxAllowedDistance(maxAllowedDistance),
-      followAngle(followAngle),
       forceMaxDistance(forceMaxDistance),
       startPosition(startPosition ? startPosition : WorldPosition(bot))
 {

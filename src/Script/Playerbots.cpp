@@ -168,6 +168,8 @@ public:
         }
     }
 
+    using PlayerScript::OnPlayerCanUseChat;  // keep the base overloads visible
+
     bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Player* receiver) override
     {
         if (type != CHAT_MSG_WHISPER)
