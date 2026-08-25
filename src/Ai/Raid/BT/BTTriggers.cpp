@@ -422,7 +422,7 @@ bool MotherShahrazTanksArePositioningBossTrigger::IsActive()
     if (!shahraz || shahraz->GetHealthPct() < 90.0f)
         return false;
 
-    TankPositionState tankState = GetShahrazTankPositionState(botAI, bot);
+    TankPositionState tankState = GetShahrazTankPositionState(bot);
     return tankState != TankPositionState::Positioned;
 }
 
