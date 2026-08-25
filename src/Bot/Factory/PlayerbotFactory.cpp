@@ -362,18 +362,6 @@ std::pair<uint16, uint16> PlayerbotFactory::ChooseProfessionPair(
     return {fallback.firstSkill, fallback.secondSkill};
 }
 
-bool PlayerbotFactory::HasProfessionPair(std::vector<WeightedProfessionPair> const& professionPairs,
-                                         uint16 firstSkill, uint16 secondSkill)
-{
-    for (WeightedProfessionPair const& pair : professionPairs)
-    {
-        if (pair.firstSkill == firstSkill && pair.secondSkill == secondSkill)
-            return true;
-    }
-
-    return false;
-}
-
 uint16 PlayerbotFactory::ChooseSingleProfession(std::vector<WeightedProfessionPair> const& professionPairs)
 {
     std::vector<std::pair<uint16, uint32>> gatheringSkills;
