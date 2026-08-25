@@ -9,9 +9,8 @@
 
 #include "ObjectGuid.h"
 #include "Position.h"
-#include "SWPData.h"
+#include "SWPSharedConstants.h"
 #include <array>
-#include <ctime>
 #include <limits>
 #include <unordered_map>
 #include <vector>
@@ -86,7 +85,6 @@ struct IncomingEncapsulateState
 
 struct FelmystEncounterState
 {
-    std::unordered_map<ObjectGuid, uint8> rangedAssignments;
     IncomingEncapsulateState incomingEncapsulate;
     bool encapsulateOccurredThisGroundPhase = false;
     std::unordered_map<ObjectGuid, uint8> demonicVaporRegionIndices;
@@ -94,10 +92,12 @@ struct FelmystEncounterState
     uint8 demonicVaporFirstRegionIndex = 0;
     FogOfCorruptionState fogOfCorruption;
     FogPassState fogPass;
-    time_t landingDpsWaitTimer = 0;
-    time_t landingTouchdownTimer = 0;
+    uint32 landingDpsWaitStartMs = 0;
+    uint32 landingTouchdownMs = 0;
     ObjectGuid flightLeaderGuid = ObjectGuid::Empty;
 };
+
+extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
 
 struct FogSafeThreshold
 {
@@ -107,6 +107,9 @@ struct FogSafeThreshold
 
 inline constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
 inline constexpr float FELMYST_LOCATION_MATCH_DISTANCE = 2.0f;
+
+// How close ranged have to be before a charmed player is worth committing to
+inline constexpr float FELMYST_CHARMED_TARGET_RANGE = 30.0f;
 
 struct DemonicVaporAnchor
 {
@@ -124,6 +127,9 @@ inline Position const FOG_RIGHT_SIDE = { 1458.556f, 502.200f, 59.900f, 1.606f };
 inline Position const LEFT_LANDING_POSITION =   { 1476.770f, 665.094f, 20.642f };
 inline Position const RIGHT_LANDING_POSITION =  { 1469.930f, 557.009f, 22.632f };
 inline Position const CENTER_GROUND_REFERENCE = { 1473.350f, 611.052f, 21.637f };
+
+inline Position const FOG_CRATE_STUCK_POSITION =    { 1484.443f, 591.337f, 23.391f };
+inline Position const FOG_CRATE_TELEPORT_POSITION = { 1482.181f, 591.253f, 24.545f };
 
 inline std::array const TANK_POSITIONS = {
     Position{ 1460.145f, 598.290f, 21.869f },
@@ -143,6 +149,7 @@ inline std::array const FOG_RIGHT_LANES = {
     Position{ 1441.640f, 520.520f, 50.083f, 1.449f },
 };
 
+// Note that WoW coordinates are rotated 90° from real-life coordinates
 inline std::array const FOG_SAFE_THRESHOLDS = {
     FogSafeThreshold{ // Top lane safe threshold (west→east: safe = south)
         Position{ 1470.122f, 660.345f, 20.462f },
@@ -161,30 +168,34 @@ inline std::array const FOG_SAFE_THRESHOLDS = {
     }
 };
 
-// Use the fog-lane X bands projected onto each grounded side landing.
+inline float const LEFT_LANDING_Y = LEFT_LANDING_POSITION.GetPositionY();
+inline float const LEFT_LANDING_Z = LEFT_LANDING_POSITION.GetPositionZ();
+inline float const RIGHT_LANDING_Y = RIGHT_LANDING_POSITION.GetPositionY();
+inline float const RIGHT_LANDING_Z = RIGHT_LANDING_POSITION.GetPositionZ();
+
 inline std::array const DEMONIC_VAPOR_KITE_ANCHORS = {
     DemonicVaporAnchor{
-        Position{ 1492.820f, RIGHT_LANDING_POSITION.GetPositionY(), RIGHT_LANDING_POSITION.GetPositionZ() },
+        Position{ 1492.820f, RIGHT_LANDING_Y, RIGHT_LANDING_Z },
         FogLane::Top, DEMONIC_VAPOR_RIGHT_SIDE,
     },
     DemonicVaporAnchor{
-        Position{ 1494.745f, LEFT_LANDING_POSITION.GetPositionY(), LEFT_LANDING_POSITION.GetPositionZ() },
+        Position{ 1494.745f, LEFT_LANDING_Y, LEFT_LANDING_Z },
         FogLane::Top, DEMONIC_VAPOR_LEFT_SIDE,
     },
     DemonicVaporAnchor{
-        Position{ 1466.732f, RIGHT_LANDING_POSITION.GetPositionY(), RIGHT_LANDING_POSITION.GetPositionZ() },
+        Position{ 1466.732f, RIGHT_LANDING_Y, RIGHT_LANDING_Z },
         FogLane::Middle, DEMONIC_VAPOR_RIGHT_SIDE,
     },
     DemonicVaporAnchor{
-        Position{ 1469.923f, LEFT_LANDING_POSITION.GetPositionY(), LEFT_LANDING_POSITION.GetPositionZ() },
+        Position{ 1469.923f, LEFT_LANDING_Y, LEFT_LANDING_Z },
         FogLane::Middle, DEMONIC_VAPOR_LEFT_SIDE,
     },
     DemonicVaporAnchor{
-        Position{ 1441.640f, RIGHT_LANDING_POSITION.GetPositionY(), RIGHT_LANDING_POSITION.GetPositionZ() },
+        Position{ 1441.640f, RIGHT_LANDING_Y, RIGHT_LANDING_Z },
         FogLane::Bottom, DEMONIC_VAPOR_RIGHT_SIDE,
     },
     DemonicVaporAnchor{
-        Position{ 1446.515f, LEFT_LANDING_POSITION.GetPositionY(), LEFT_LANDING_POSITION.GetPositionZ() },
+        Position{ 1446.515f, LEFT_LANDING_Y, LEFT_LANDING_Z },
         FogLane::Bottom, DEMONIC_VAPOR_LEFT_SIDE,
     }
 };
@@ -195,14 +206,11 @@ inline std::array const DEMONIC_VAPOR_LANE_REFERENCES = {
     Position{ 1444.078f, 611.019f, 50.084f },
 };
 
-extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
-
 Position const& GetFelmystMainTankGroundPosition(Player* bot);
 bool TryGetFelmystGroundStackPosition(
     Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position);
 FelmystGroundStack GetClosestFelmystGroundStack(Player* bot, Unit* felmyst, Unit* unit);
 float GetFelmystFrontAngle(Player* bot, Unit* felmyst);
-void EnsureFelmystRangedAssignments(Player* bot);
 bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position);
 Creature* GetFelmystDemonicVaporSummonedByBot(Player* bot);
 bool IsFelmystDemonicVaporHeadNearBot(Player* bot);
@@ -215,6 +223,8 @@ bool TryGetFelmystFogSafeDestination(
 bool IsFelmystLanding(Unit* felmyst);
 bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
 bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane);
+bool IsFelmystFogMovementSuppressed(Unit* felmyst);
+bool IsFelmystFogActiveForBot(Player* bot, Unit* felmyst);
 bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FogOfCorruptionState& state);
 bool TryGetActiveFogOfCorruptionState(Player* bot, Unit* felmyst, FogOfCorruptionState& state);
 void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs = 3000);

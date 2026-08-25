@@ -5,39 +5,17 @@
  */
 
 #include "SWPActions.h"
-#include "SWPEncounter_Brut.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
-#include "SWPData.h"
+#include "SWPEncounter_Brut.h"
+#include "SWPSharedConstants.h"
 #include <algorithm>
-#include <array>
 #include <cmath>
 
 using namespace SwpHelpers;
+using namespace EncounterHelpers;
 
-bool BrutallusMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
-    if (!brutallus)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", brutallus))
-    {
-        return botAI->CastSpell("steady shot", brutallus);
-    }
-
-    return false;
-}
-
-bool BrutallusTanksHandleBossAction::Execute(Event event)
+bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
 {
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
@@ -46,9 +24,11 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
     if (AI_VALUE(Unit*, "current target") != brutallus)
         return Attack(brutallus);
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* mainTank = GetGroupMainTank(bot);
+    Player* assistTank = GetGroupAssistTank(bot, 0);
 
+    // If either tank is dead, just bail and fall back to standard tank logic. You're screwed
+    // anyway unless Brutallus is almost dead.
     if (!mainTank || !assistTank)
         return false;
 
@@ -58,51 +38,51 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
     if (mainTank == bot)
     {
         if (brutallus->GetVictim() != bot && !mainTankAura &&
-            ((assistTankAura && assistTankAura->GetStackAmount() >= 3) || !assistTankAura))
+            ((assistTankAura && assistTankAura->GetStackAmount() >= METEOR_SLASH_SWAP_STACKS) ||
+             !assistTankAura))
         {
             return botAI->DoSpecificAction("taunt spell", event, true);
         }
+
+        if (_mainTankInitialPositionReached)
+            return false;
 
         Position const& position = BRUTALLUS_MAIN_TANK_POSITION;
         float const distToPosition = bot->GetExactDist2d(position);
 
-        if (_mainTankInitialPositionReached == false && distToPosition <= 2.0f)
+        if (distToPosition <= 2.0f)
         {
             _mainTankInitialPositionReached = true;
+            return false;
         }
-        else if (_mainTankInitialPositionReached == false)
-        {
-            if (!bot->IsWithinMeleeRange(brutallus))
-                return false;
 
-            float const posX = position.GetPositionX();
-            float const posY = position.GetPositionY();
-            float const botX = bot->GetPositionX();
-            float const botY = bot->GetPositionY();
-            float const toPosX = posX - botX;
-            float const toPosY = posY - botY;
+        if (!bot->IsWithinMeleeRange(brutallus))
+            return false;
 
-            float const moveDist = std::min(2.25f, distToPosition);
-            float const moveX = botX + (toPosX / distToPosition) * moveDist;
-            float const moveY = botY + (toPosY / distToPosition) * moveDist;
+        float const posX = position.GetPositionX();
+        float const posY = position.GetPositionY();
+        float const botX = bot->GetPositionX();
+        float const botY = bot->GetPositionY();
+        float const toPosX = posX - botX;
+        float const toPosY = posY - botY;
 
-            return MoveTo(
-                SWP_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-                false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
+        float const moveDist = std::min(2.25f, distToPosition);
+        float const moveX = botX + (toPosX / distToPosition) * moveDist;
+        float const moveY = botY + (toPosY / distToPosition) * moveDist;
+
+        return MoveTo(
+            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, true);
     }
     else if (assistTank == bot)
     {
         if (brutallus->GetVictim() != bot && !assistTankAura &&
-            mainTankAura && mainTankAura->GetStackAmount() >= 3)
+            mainTankAura && mainTankAura->GetStackAmount() >= METEOR_SLASH_SWAP_STACKS)
         {
             return botAI->DoSpecificAction("taunt spell", event, true);
         }
 
-        float const mainTankAngle = Position::NormalizeOrientation(std::atan2(
-            mainTank->GetPositionY() - brutallus->GetPositionY(),
-            mainTank->GetPositionX() - brutallus->GetPositionX()));
-
+        float const mainTankAngle = GetBrutallusMainTankAngle(brutallus, mainTank);
         float const assistTankAngle = Position::NormalizeOrientation(
             mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
 
@@ -112,22 +92,21 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
             return false;
 
         return MoveTo(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-            position.GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
 }
 
-bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
+bool BrutallusPositionMeleeAtRearCenterAction::Execute(Event /*event*/)
 {
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* mainTank = GetGroupMainTank(bot);
+    Player* assistTank = GetGroupAssistTank(bot, 0);
 
     uint8 meleeIndex = 0;
     if (!TryGetBrutallusAssignedPositionIndex(bot, meleeIndex))
@@ -142,36 +121,19 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
 
     return MoveTo(
         SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
+bool BrutallusPositionMeleeAtRearCenterAction::TryGetBrutallusMeleePosition(
     Unit* brutallus, Player* mainTank, Player* assistTank, uint8 meleeIndex, Position& position)
 {
-    struct BrutallusMeleeRingLayout
-    {
-        float radius;
-        uint8 slotCount;
-    };
-
-    static constexpr std::array meleeRingLayouts = {
-        BrutallusMeleeRingLayout{ BRUTALLUS_INNERMOST_MELEE_RADIUS, BRUTALLUS_INNERMOST_MELEE_POSITIONS },
-        BrutallusMeleeRingLayout{ BRUTALLUS_INNER_MELEE_RADIUS, BRUTALLUS_INNER_MELEE_POSITIONS },
-        BrutallusMeleeRingLayout{ BRUTALLUS_OUTER_MELEE_RADIUS, BRUTALLUS_OUTER_MELEE_POSITIONS },
-        BrutallusMeleeRingLayout{ BRUTALLUS_OUTERMOST_MELEE_RADIUS, BRUTALLUS_OUTERMOST_MELEE_POSITIONS },
-    };
-
-    uint8 totalMeleeSlots = 0;
-    for (auto const& meleeRingLayout : meleeRingLayouts)
-        totalMeleeSlots += meleeRingLayout.slotCount;
-
-    if (meleeIndex >= totalMeleeSlots)
+    if (meleeIndex >= BRUTALLUS_TOTAL_MELEE_POSITIONS)
         return false;
 
     float meleeRadius = 0.0f;
     uint8 localMeleeIndex = meleeIndex;
     uint8 maxMeleeSlots = 0;
-    for (auto const& meleeRingLayout : meleeRingLayouts)
+    for (auto const& meleeRingLayout : BRUTALLUS_MELEE_RING_LAYOUTS)
     {
         if (localMeleeIndex < meleeRingLayout.slotCount)
         {
@@ -183,11 +145,7 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
         localMeleeIndex -= meleeRingLayout.slotCount;
     }
 
-    if (!maxMeleeSlots)
-        return false;
-
-    float const mainTankAngle =
-        GetBrutallusTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
+    float const mainTankAngle = GetBrutallusMainTankAngle(brutallus, mainTank);
 
     float midpointAngle;
     if (!mainTank || !assistTank)
@@ -197,9 +155,8 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
     }
     else
     {
-        float const assistTankAngle = GetBrutallusTankAngle(
-            brutallus, assistTank, Position::NormalizeOrientation(
-                mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET));
+        float const assistTankAngle =
+            GetBrutallusAssistTankAngle(brutallus, assistTank, mainTankAngle);
 
         float const midpointX =
             (mainTank->GetPositionX() + assistTank->GetPositionX()) / 2.0f;
@@ -233,29 +190,31 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
     return true;
 }
 
-bool BrutallusPositionRangedAction::Execute(Event /*event*/)
+bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
 {
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* mainTank = GetGroupMainTank(bot);
+    Player* assistTank = GetGroupAssistTank(bot, 0);
 
     ObjectGuid const guid = bot->GetGUID();
     uint8 rangedIndex = 0;
     if (!TryGetBrutallusAssignedPositionIndex(bot, rangedIndex))
         return false;
 
-    auto const burnStateItr = brutallusRangedBurnStates.find(guid);
+    auto& burnStates = brutallusEncounterStates[bot->GetInstanceId()].rangedBurnStates;
+
+    auto const burnStateItr = burnStates.find(guid);
     BrutallusRangedBurnState burnState = BrutallusRangedBurnState::None;
-    if (burnStateItr != brutallusRangedBurnStates.end())
+    if (burnStateItr != burnStates.end())
         burnState = burnStateItr->second;
 
     if (burnState == BrutallusRangedBurnState::MovingToInnerLane)
     {
         ReleaseBrutallusBurnPad(bot);
-        brutallusRangedBurnStates.erase(guid);
+        burnStates.erase(guid);
         burnState = BrutallusRangedBurnState::None;
     }
     else if (burnState == BrutallusRangedBurnState::TraversingInnerLane ||
@@ -263,7 +222,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         burnState == BrutallusRangedBurnState::AtBurnPosition)
     {
         burnState = BrutallusRangedBurnState::MovingToOuterLane;
-        brutallusRangedBurnStates[guid] = burnState;
+        burnStates[guid] = burnState;
     }
 
     if (burnState == BrutallusRangedBurnState::MovingToOuterLane)
@@ -275,16 +234,15 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         Position const position = GetBrutallusPositionAtAngle(
             bot, brutallus, currentAngle, BRUTALLUS_OUTER_LANE_RADIUS);
 
-        if (bot->GetExactDist2d(position) > 1.0f)
+        if (bot->GetExactDist2d(position) <= 1.0f)
         {
-            return MoveTo(
-                SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                position.GetPositionZ(), false, false, false, true,
-                MovementPriority::MOVEMENT_COMBAT, true, false);
+            burnStates[guid] = BrutallusRangedBurnState::TraversingOuterLane;
+            return false;
         }
 
-        brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::TraversingOuterLane;
-        return false;
+        return MoveTo(
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     if (burnState == BrutallusRangedBurnState::TraversingOuterLane)
@@ -306,18 +264,15 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(position) > 1.0f)
-        {
-            return MoveTo(
-                SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                position.GetPositionZ(), false, false, false, true,
-                MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-
         if (bot->GetExactDist2d(returnTargetPosition) <= 1.0f)
-            brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::ReturningToNormalPosition;
+            burnStates[guid] = BrutallusRangedBurnState::ReturningToNormalPosition;
 
-        return false;
+        if (bot->GetExactDist2d(position) <= 1.0f)
+            return false;
+
+        return MoveTo(
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     if (burnState == BrutallusRangedBurnState::ReturningToNormalPosition)
@@ -330,17 +285,16 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(position) > 1.0f)
+        if (bot->GetExactDist2d(position) <= 1.0f)
         {
-            return MoveTo(
-                SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                position.GetPositionZ(), false, false, false, true,
-                MovementPriority::MOVEMENT_COMBAT, true, false);
+            ReleaseBrutallusBurnPad(bot);
+            burnStates.erase(guid);
+            return false;
         }
 
-        ReleaseBrutallusBurnPad(bot);
-        brutallusRangedBurnStates.erase(guid);
-        return false;
+        return MoveTo(
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     Position position;
@@ -351,12 +305,12 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetExactDist2d(position) < 0.5f)
+    if (bot->GetExactDist2d(position) <= 0.5f)
         return false;
 
     return MoveTo(
         SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool BrutallusHandleBurnAction::Execute(Event /*event*/)
@@ -372,16 +326,18 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         return false;
 
     ObjectGuid const guid = bot->GetGUID();
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* mainTank = GetGroupMainTank(bot);
+    Player* assistTank = GetGroupAssistTank(bot, 0);
     uint8 rangedIndex = 0;
 
     if (!TryGetBrutallusAssignedPositionIndex(bot, rangedIndex))
         return false;
 
-    auto const burnStateItr = brutallusRangedBurnStates.find(guid);
+    auto& burnStates = brutallusEncounterStates[bot->GetInstanceId()].rangedBurnStates;
+
+    auto const burnStateItr = burnStates.find(guid);
     BrutallusRangedBurnState burnState = BrutallusRangedBurnState::None;
-    if (burnStateItr != brutallusRangedBurnStates.end())
+    if (burnStateItr != burnStates.end())
         burnState = burnStateItr->second;
 
     if (burnState == BrutallusRangedBurnState::MovingToOuterLane ||
@@ -389,35 +345,34 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         burnState == BrutallusRangedBurnState::ReturningToNormalPosition)
     {
         burnState = BrutallusRangedBurnState::MovingToInnerLane;
-        brutallusRangedBurnStates[guid] = burnState;
+        burnStates[guid] = burnState;
     }
 
     if (burnState == BrutallusRangedBurnState::None)
     {
         burnState = BrutallusRangedBurnState::MovingToInnerLane;
-        brutallusRangedBurnStates[guid] = burnState;
+        burnStates[guid] = burnState;
     }
 
     if (burnState == BrutallusRangedBurnState::MovingToInnerLane)
     {
-        Position stepPosition;
+        Position position;
         if (!TryGetBrutallusRangedPosition(
                 bot, brutallus, mainTank, assistTank, rangedIndex,
-                BRUTALLUS_INNER_LANE_RADIUS, stepPosition))
+                BRUTALLUS_INNER_LANE_RADIUS, position))
         {
             return false;
         }
 
-        if (bot->GetExactDist2d(stepPosition) > 1.0f)
+        if (bot->GetExactDist2d(position) <= 1.0f)
         {
-            return MoveTo(
-                SWP_MAP_ID, stepPosition.GetPositionX(), stepPosition.GetPositionY(),
-                stepPosition.GetPositionZ(), false, false, false, true,
-                MovementPriority::MOVEMENT_COMBAT, true, false);
+            burnStates[guid] = BrutallusRangedBurnState::TraversingInnerLane;
+            return false;
         }
 
-        brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::TraversingInnerLane;
-        return false;
+        return MoveTo(
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     if (burnState == BrutallusRangedBurnState::TraversingInnerLane)
@@ -439,18 +394,15 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(position) > 1.0f)
-        {
-            return MoveTo(
-                SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                position.GetPositionZ(), false, false, false, true,
-                MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-
         if (bot->GetExactDist2d(padIngressPosition) <= 1.0f)
-            brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::MovingToBurnPosition;
+            burnStates[guid] = BrutallusRangedBurnState::MovingToBurnPosition;
 
-        return false;
+        if (bot->GetExactDist2d(position) <= 1.0f)
+            return false;
+
+        return MoveTo(
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     Position position;
@@ -460,16 +412,15 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetExactDist2d(position) > 1.0f)
+    if (bot->GetExactDist2d(position) <= 1.0f)
     {
-        return MoveTo(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-            false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
+        burnStates[guid] = BrutallusRangedBurnState::AtBurnPosition;
+        return false;
     }
 
-    brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::AtBurnPosition;
-
-    return false;
+    return MoveTo(
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool BrutallusHandleBurnAction::RemoveBurnWithCooldown()
@@ -477,16 +428,16 @@ bool BrutallusHandleBurnAction::RemoveBurnWithCooldown()
     switch (bot->getClass())
     {
         case CLASS_MAGE:
-            return botAI->CanCastSpell("ice block", bot) &&
-                botAI->CastSpell("ice block", bot);
+            return botAI->CanCastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot) &&
+                botAI->CastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot);
 
         case CLASS_PALADIN:
-            return botAI->CanCastSpell("divine shield", bot) &&
-                botAI->CastSpell("divine shield", bot);
+            return botAI->CanCastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot) &&
+                botAI->CastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot);
 
         case CLASS_ROGUE:
-            return botAI->CanCastSpell("cloak of shadows", bot) &&
-                botAI->CastSpell("cloak of shadows", bot);
+            return botAI->CanCastSpell(Id(SwpSpells::SPELL_CLOAK_OF_SHADOWS), bot) &&
+                botAI->CastSpell(Id(SwpSpells::SPELL_CLOAK_OF_SHADOWS), bot);
 
         default:
             return false;

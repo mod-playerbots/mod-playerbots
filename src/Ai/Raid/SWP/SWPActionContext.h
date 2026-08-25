@@ -33,8 +33,11 @@ public:
         creators["kalecgos announce boss health"] =
             &RaidSunwellActionContext::kalecgos_announce_boss_health;
 
-        creators["kalecgos tank position boss"] =
-            &RaidSunwellActionContext::kalecgos_tank_position_boss;
+        creators["kalecgos misdirect boss to main tank"] =
+            &RaidSunwellActionContext::kalecgos_misdirect_boss_to_main_tank;
+
+        creators["kalecgos surface tank position dragon"] =
+            &RaidSunwellActionContext::kalecgos_surface_tank_position_dragon;
 
         creators["kalecgos enter spectral rift"] =
             &RaidSunwellActionContext::kalecgos_enter_spectral_rift;
@@ -55,14 +58,14 @@ public:
         creators["brutallus misdirect boss to main tank"] =
             &RaidSunwellActionContext::brutallus_misdirect_boss_to_main_tank;
 
-        creators["brutallus tanks handle boss"] =
-            &RaidSunwellActionContext::brutallus_tanks_handle_boss;
+        creators["brutallus tanks position and swap"] =
+            &RaidSunwellActionContext::brutallus_tanks_position_and_swap;
 
-        creators["brutallus position melee"] =
-            &RaidSunwellActionContext::brutallus_position_melee;
+        creators["brutallus position melee at rear center"] =
+            &RaidSunwellActionContext::brutallus_position_melee_at_rear_center;
 
-        creators["brutallus position ranged"] =
-            &RaidSunwellActionContext::brutallus_position_ranged;
+        creators["brutallus position ranged in two groups"] =
+            &RaidSunwellActionContext::brutallus_position_ranged_in_two_groups;
 
         creators["brutallus handle burn"] =
             &RaidSunwellActionContext::brutallus_handle_burn;
@@ -74,11 +77,11 @@ public:
         creators["felmyst main tank position boss on ground"] =
             &RaidSunwellActionContext::felmyst_main_tank_position_boss_on_ground;
 
-        creators["felmyst position ranged on ground"] =
-            &RaidSunwellActionContext::felmyst_position_ranged_on_ground;
+        creators["felmyst ranged stack in three groups"] =
+            &RaidSunwellActionContext::felmyst_ranged_stack_in_three_groups;
 
-        creators["felmyst position melee on ground"] =
-            &RaidSunwellActionContext::felmyst_position_melee_on_ground;
+        creators["felmyst melee stack behind boss"] =
+            &RaidSunwellActionContext::felmyst_melee_stack_behind_boss;
 
         creators["felmyst remove encapsulate"] =
             &RaidSunwellActionContext::felmyst_remove_encapsulate;
@@ -148,8 +151,8 @@ public:
         creators["m'uru position ranged"] =
             &RaidSunwellActionContext::muru_position_ranged;
 
-        creators["m'uru set dps priority"] =
-            &RaidSunwellActionContext::muru_set_dps_priority;
+        creators["m'uru assign dps priority"] =
+            &RaidSunwellActionContext::muru_assign_dps_priority;
 
         creators["m'uru kill dark fiends with dispel"] =
             &RaidSunwellActionContext::muru_kill_dark_fiends_with_dispel;
@@ -163,13 +166,13 @@ public:
         creators["m'uru second assist tank guard ranged"] =
             &RaidSunwellActionContext::muru_second_assist_tank_guard_ranged;
 
-        creators["m'uru flee the darkness"] =
-            &RaidSunwellActionContext::muru_flee_the_darkness;
+        creators["m'uru melee flee the darkness"] =
+            &RaidSunwellActionContext::muru_melee_flee_the_darkness;
 
         creators["m'uru flee from singularity"] =
             &RaidSunwellActionContext::muru_flee_from_singularity;
 
-        creators["m'uru cast stun on shadowsword berseker"] =
+        creators["m'uru cast stun on shadowsword berserker"] =
             &RaidSunwellActionContext::muru_cast_stun_on_shadowsword_berserker;
 
         creators["m'uru interrupt fel fireball"] =
@@ -237,11 +240,15 @@ private:
     }
 
     // Kalecgos
+    static Action* kalecgos_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
+        return new SunwellPlateauMisdirectBossToMainTankAction(
+            botAI, "kalecgos misdirect boss to main tank", "kalecgos");
+    }
     static Action* kalecgos_announce_boss_health(PlayerbotAI* botAI) {
         return new KalecgosAnnounceBossHealthAction(botAI);
     }
-    static Action* kalecgos_tank_position_boss(PlayerbotAI* botAI) {
-        return new KalecgosTankPositionBossAction(botAI);
+    static Action* kalecgos_surface_tank_position_dragon(PlayerbotAI* botAI) {
+        return new KalecgosSurfaceTankPositionDragonAction(botAI);
     }
     static Action* kalecgos_enter_spectral_rift(PlayerbotAI* botAI) {
         return new KalecgosEnterSpectralRiftAction(botAI);
@@ -261,16 +268,17 @@ private:
 
     // Brutallus
     static Action* brutallus_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new BrutallusMisdirectBossToMainTankAction(botAI);
+        return new SunwellPlateauMisdirectBossToMainTankAction(
+            botAI, "brutallus misdirect boss to main tank", "brutallus");
     }
-    static Action* brutallus_tanks_handle_boss(PlayerbotAI* botAI) {
-        return new BrutallusTanksHandleBossAction(botAI);
+    static Action* brutallus_tanks_position_and_swap(PlayerbotAI* botAI) {
+        return new BrutallusTanksPositionAndSwapAction(botAI);
     }
-    static Action* brutallus_position_melee(PlayerbotAI* botAI) {
-        return new BrutallusPositionMeleeAction(botAI);
+    static Action* brutallus_position_melee_at_rear_center(PlayerbotAI* botAI) {
+        return new BrutallusPositionMeleeAtRearCenterAction(botAI);
     }
-    static Action* brutallus_position_ranged(PlayerbotAI* botAI) {
-        return new BrutallusPositionRangedAction(botAI);
+    static Action* brutallus_position_ranged_in_two_groups(PlayerbotAI* botAI) {
+        return new BrutallusPositionRangedInTwoGroupsAction(botAI);
     }
     static Action* brutallus_handle_burn(PlayerbotAI* botAI) {
         return new BrutallusHandleBurnAction(botAI);
@@ -278,16 +286,17 @@ private:
 
     // Felmyst
     static Action* felmyst_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new FelmystMisdirectBossToMainTankAction(botAI);
+        return new SunwellPlateauMisdirectBossToMainTankAction(
+            botAI, "felmyst misdirect boss to main tank", "felmyst");
     }
     static Action* felmyst_main_tank_position_boss_on_ground(PlayerbotAI* botAI) {
         return new FelmystMainTankPositionBossOnGroundAction(botAI);
     }
-    static Action* felmyst_position_ranged_on_ground(PlayerbotAI* botAI) {
-        return new FelmystPositionRangedOnGroundAction(botAI);
+    static Action* felmyst_ranged_stack_in_three_groups(PlayerbotAI* botAI) {
+        return new FelmystRangedStackInThreeGroupsAction(botAI);
     }
-    static Action* felmyst_position_melee_on_ground(PlayerbotAI* botAI) {
-        return new FelmystPositionMeleeOnGroundAction(botAI);
+    static Action* felmyst_melee_stack_behind_boss(PlayerbotAI* botAI) {
+        return new FelmystMeleeStackBehindBossAction(botAI);
     }
     static Action* felmyst_remove_encapsulate(PlayerbotAI* botAI) {
         return new FelmystRemoveEncapsulateAction(botAI);
@@ -359,8 +368,8 @@ private:
     static Action* muru_position_ranged(PlayerbotAI* botAI) {
         return new MuruPositionRangedAction(botAI);
     }
-    static Action* muru_set_dps_priority(PlayerbotAI* botAI) {
-        return new MuruSetDpsPriorityAction(botAI);
+    static Action* muru_assign_dps_priority(PlayerbotAI* botAI) {
+        return new MuruAssignDpsPriorityAction(botAI);
     }
     static Action* muru_kill_dark_fiends_with_dispel(PlayerbotAI* botAI) {
         return new MuruKillDarkFiendsWithDispelAction(botAI);
@@ -374,8 +383,8 @@ private:
     static Action* muru_second_assist_tank_guard_ranged(PlayerbotAI* botAI) {
         return new MuruSecondAssistTankGuardRangedAction(botAI);
     }
-    static Action* muru_flee_the_darkness(PlayerbotAI* botAI) {
-        return new MuruFleeTheDarknessAction(botAI);
+    static Action* muru_melee_flee_the_darkness(PlayerbotAI* botAI) {
+        return new MuruMeleeFleeTheDarknessAction(botAI);
     }
     static Action* muru_flee_from_singularity(PlayerbotAI* botAI) {
         return new MuruFleeFromSingularityAction(botAI);

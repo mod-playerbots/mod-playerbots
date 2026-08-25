@@ -5,40 +5,17 @@
  */
 
 #include "SWPActions.h"
-#include "SWPEncounter_Felmyst.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
-#include "RaidBossHelpers.h"
-#include "RtiTargetValue.h"
-#include "SWPData.h"
+#include "SWPEncounter_Felmyst.h"
+#include "SWPSharedConstants.h"
 #include "Timer.h"
 #include <cmath>
-#include <ctime>
 #include <string>
 
 using namespace SwpHelpers;
-
-bool FelmystMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", felmyst))
-    {
-        return botAI->CastSpell("steady shot", felmyst);
-    }
-
-    return false;
-}
+using namespace EncounterHelpers;
 
 bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
 {
@@ -79,11 +56,11 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
-bool FelmystPositionRangedOnGroundAction::Execute(Event /*event*/)
+bool FelmystRangedStackInThreeGroupsAction::Execute(Event /*event*/)
 {
     ClearFelmystDemonicVaporKiteState(bot);
 
@@ -100,7 +77,7 @@ bool FelmystPositionRangedOnGroundAction::Execute(Event /*event*/)
         FELMYST_RANGED_GROUP_RADIUS, MovementPriority::MOVEMENT_COMBAT);
 }
 
-bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
+bool FelmystMeleeStackBehindBossAction::Execute(Event /*event*/)
 {
     ClearFelmystDemonicVaporKiteState(bot);
 
@@ -123,9 +100,13 @@ bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
 bool FelmystRemoveEncapsulateAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_MAGE)
-        return botAI->CanCastSpell("ice block", bot) && botAI->CastSpell("ice block", bot);
-    else
-        return botAI->CanCastSpell("divine shield", bot) && botAI->CastSpell("divine shield", bot);
+    {
+        return botAI->CanCastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot) &&
+            botAI->CastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot);
+    }
+
+    return botAI->CanCastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot) &&
+        botAI->CastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot);
 }
 
 bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
@@ -306,7 +287,7 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor(bool unrestricted)
     if (!foundSafe)
         return false;
 
-    botAI->InterruptSpell();
+    bot->CastStop();
     return MoveTo(
         SWP_MAP_ID, bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
@@ -331,7 +312,7 @@ bool FelmystAvoidDemonicVaporAction::MoveToFlightLeader(Player* leader)
     float const toPosY = leaderY - botY;
     float const toPosZ = leaderZ - botZ;
 
-    botAI->InterruptSpell();
+    bot->CastStop();
 
     // 1) Try exact leader position
     if (MoveTo(
@@ -391,7 +372,7 @@ bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToDestination) * moveDist;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, destination.GetPositionZ(), false, false,
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -453,6 +434,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
         return true;
     }
 
+    bot->CastStop();
     return MoveTo(
         SWP_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
         destination.GetPositionZ(), false, false, false, false,
@@ -463,17 +445,14 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
     Position const& destination)
 {
     constexpr float collisionCheckDist = 2.0f;
-    Position const stuckCratePosition = { 1484.443f, 591.337f, 23.391f };
-
-    if (bot->GetExactDist2d(stuckCratePosition) > collisionCheckDist)
+    if (bot->GetExactDist2d(FOG_CRATE_STUCK_POSITION) > collisionCheckDist)
     {
         _fogCrateStuckSampleMs = 0;
         return false;
     }
 
     uint32 const now = getMSTime();
-    float const distToDestination = bot->GetExactDist(
-        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
+    float const distToDestination = bot->GetExactDist(destination);
 
     if (!_fogCrateStuckSampleMs || _fogCrateStuckDestination.GetExactDist(destination) >
         FELMYST_LOCATION_MATCH_DISTANCE)
@@ -496,19 +475,21 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
     if (getMSTimeDiff(_fogCrateStuckSampleMs, now) < stuckTimeoutMs)
         return false;
 
-    Position const onCratePosition = { 1482.181f, 591.253f, 24.545f };
+    Position const& onCratePosition = FOG_CRATE_TELEPORT_POSITION;
 
     _fogCrateStuckSampleMs = 0;
-    botAI->InterruptSpell();
-    return bot->TeleportTo(
-        SWP_MAP_ID, onCratePosition.GetPositionX(),onCratePosition.GetPositionY(),
+    bot->CastStop();
+    bot->NearTeleportTo(
+        onCratePosition.GetPositionX(), onCratePosition.GetPositionY(),
         onCratePosition.GetPositionZ(), bot->GetOrientation());
+    return true;
 }
 
 bool FelmystMeleeClearTargetAction::Execute(Event /*event*/)
 {
-    botAI->InterruptSpell();
     bot->AttackStop();
+    bot->InterruptSpell(CURRENT_MELEE_SPELL);
+    bot->CastStop();
     context->GetValue<Unit*>("current target")->Set(nullptr);
     bot->SetSelection(ObjectGuid());
     return true;
@@ -521,10 +502,10 @@ bool FelmystKillCharmedPlayerAction::Execute(Event /*event*/)
         return false;
 
     Player* charmedPlayer = GetFelmystCharmedTarget(bot, felmyst);
-    if (!charmedPlayer || AI_VALUE(Unit*, "current target") == charmedPlayer)
+    if (!charmedPlayer)
         return false;
 
-    return Attack(charmedPlayer);
+    return AI_VALUE(Unit*, "current target") != charmedPlayer && Attack(charmedPlayer);
 }
 
 bool FelmystManageLandingDpsTimerAction::Execute(Event /*event*/)
@@ -533,42 +514,41 @@ bool FelmystManageLandingDpsTimerAction::Execute(Event /*event*/)
     if (!felmyst)
         return false;
 
-    uint32 const instanceId = felmyst->GetMap()->GetInstanceId();
+    uint32 const instanceId = felmyst->GetInstanceId();
     auto& state = felmystEncounterStates[instanceId];
 
     if (felmyst->IsFlying() && IsFelmystLanding(felmyst))
     {
-        if (state.landingDpsWaitTimer)
+        if (state.landingDpsWaitStartMs)
             return false;
 
-        state.landingDpsWaitTimer = std::time(nullptr);
-        state.landingTouchdownTimer = 0;
+        state.landingDpsWaitStartMs = getMSTime();
+        state.landingTouchdownMs = 0;
         return true;
     }
 
     if (felmyst->IsFlying())
     {
-        state.landingDpsWaitTimer = 0;
-        state.landingTouchdownTimer = 0;
+        state.landingDpsWaitStartMs = 0;
+        state.landingTouchdownMs = 0;
         return true;
     }
 
     // Grounded
-    if (!state.landingDpsWaitTimer)
+    if (!state.landingDpsWaitStartMs)
         return false;
 
-    if (!state.landingTouchdownTimer)
+    if (!state.landingTouchdownMs)
     {
-        state.landingTouchdownTimer = std::time(nullptr);
+        state.landingTouchdownMs = getMSTime();
         return true;
     }
 
-    time_t const now = std::time(nullptr);
-    constexpr uint8 groundedDpsWaitSeconds = 3;
-    if ((now - state.landingTouchdownTimer) < groundedDpsWaitSeconds)
+    constexpr uint32 groundedDpsWaitMs = 3000;
+    if (GetMSTimeDiffToNow(state.landingTouchdownMs) < groundedDpsWaitMs)
         return false;
 
-    state.landingDpsWaitTimer = 0;
-    state.landingTouchdownTimer = 0;
+    state.landingDpsWaitStartMs = 0;
+    state.landingTouchdownMs = 0;
     return true;
 }

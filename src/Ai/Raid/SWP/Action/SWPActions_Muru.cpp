@@ -5,66 +5,97 @@
  */
 
 #include "SWPActions.h"
-#include "SWPEncounter_Muru.h"
 #include "CharmInfo.h"
 #include "CreatureAI.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
-#include "SWPData.h"
-#include "TargetValue.h"
+#include "SWPEncounter_Muru.h"
+#include "SWPSharedConstants.h"
 #include <array>
 #include <cmath>
 #include <list>
 #include <vector>
 
 using namespace SwpHelpers;
+using namespace EncounterHelpers;
+
+namespace
+{
+
+Unit* SelectNearestByEntry(
+    Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates, Position const& origin)
+{
+    Unit* selected = nullptr;
+    if (currentTarget && currentTarget->IsAlive() && currentTarget->GetEntry() == entry)
+        selected = currentTarget;
+
+    for (Unit* candidate : candidates)
+    {
+        if (!candidate || selected == candidate)
+            continue;
+
+        if (!selected)
+        {
+            selected = candidate;
+            continue;
+        }
+
+        if (candidate->GetExactDist2d(origin) + MURU_TARGET_SWITCH_MARGIN <
+            selected->GetExactDist2d(origin))
+        {
+            selected = candidate;
+        }
+    }
+
+    return selected;
+}
+
+} // end anonymous namespace
 
 bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
 {
-    Unit* targetEnemy = nullptr;
-    Unit* targetTank = nullptr;
+    Unit* enemy = nullptr;
+    Unit* tank = nullptr;
 
-    if (Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel"))
+    Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+
+    if (voidSentinel && voidSentinel->GetHealthPct() > MURU_MISDIRECT_MIN_TARGET_HP_PERCENT)
     {
-        targetEnemy = voidSentinel;
-        if (Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0))
-            targetTank = firstAssistTank;
+        enemy = voidSentinel;
+        tank = GetGroupAssistTank(bot, 0);
     }
-    else if (Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius"))
+    else if (entropius && entropius->GetHealthPct() > MURU_MISDIRECT_MIN_TARGET_HP_PERCENT)
     {
-        targetEnemy = entropius;
-        if (Player* mainTank = GetGroupMainTank(botAI, bot))
-            targetTank = mainTank;
+        enemy = entropius;
+        tank = GetGroupMainTank(bot);
     }
 
-    if (!targetEnemy || !targetTank)
+    if (!enemy || !tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", targetTank))
-        return botAI->CastSpell("misdirection", targetTank);
+    if (botAI->CanCastSpell("misdirection", tank))
+        return botAI->CastSpell("misdirection", tank);
 
-    if (bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", targetEnemy))
-    {
-        return botAI->CastSpell("steady shot", targetEnemy);
-    }
+    if (!bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)))
+        return false;
 
-    return false;
+    return botAI->CanCastSpell("steady shot", enemy) && botAI->CastSpell("steady shot", enemy);
 }
 
 bool MuruMainTankPickUpEntropiusAction::Execute(Event /*event*/)
 {
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
-    if (!entropius || AI_VALUE(Unit*, "current target") == entropius)
+    if (!entropius)
         return false;
 
-    return Attack(entropius);
+    return AI_VALUE(Unit*, "current target") != entropius && Attack(entropius);
 }
 
 bool MuruPositionRangedAction::Execute(Event /*event*/)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (muru && muru->GetHealth() > 1)
+    if (IsMuruPhaseActive(muru))
     {
         _entropiusRangedPositionReached = false;
 
@@ -75,17 +106,14 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
             position.GetPositionZ(), rangedGroupRadius, MovementPriority::MOVEMENT_COMBAT);
     }
 
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    if (TryGetMuruDarknessActiveState(bot, muru))
+        return false;
+
     MuruEncounterTargets targets;
-    targets.muru = muru;
-    targets.entropius = entropius;
     GatherMuruEncounterTargets(botAI, targets);
 
     bool const hasActiveAdds =
         !targets.voidSentinels.empty() || !targets.furyMages.empty() || !targets.berserkers.empty();
-
-    if (TryGetMuruDarknessActiveState(bot, muru))
-        return false;
 
     if (!hasActiveAdds && !_entropiusRangedPositionReached)
     {
@@ -154,9 +182,9 @@ bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(
     return true;
 }
 
-bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
+bool MuruAssignDpsPriorityAction::Execute(Event /*event*/)
 {
-    Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
+    Unit* currentTarget = AI_VALUE(Unit*, "current target");
     Unit* target = ResolveMuruDpsTarget(currentTarget);
     if (!target)
         return false;
@@ -182,13 +210,10 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     else
         needsAttack = currentTarget != target;
 
-    if (needsAttack)
-        return Attack(target);
-
-    return false;
+    return needsAttack && Attack(target);
 }
 
-Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
+Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit* currentTarget)
 {
     bool const isShadowPriest =
         bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("shadow", BOT_STATE_COMBAT);
@@ -205,20 +230,21 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
     if (muru && currentTarget == muru)
         context->GetValue<bool>("neglect threat")->Set(true);
 
-    bool const isMuruPhase = muru && muru->GetHealth() > 1;
+    bool const isMuruPhase = IsMuruPhaseActive(muru);
     bool const darknessActive = isMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
 
-    Unit* voidSentinel = SelectMuruEncounterTarget(
-        currentTarget, Id(SwpNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
-    Unit* voidSpawn = SelectMuruEncounterTarget(
-        currentTarget, Id(SwpNpcs::NPC_VOID_SPAWN), targets.voidSpawns);
-    Unit* furyMage = SelectMuruEncounterTarget(
-        currentTarget, Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages);
-    Unit* berserker = SelectMuruEncounterTarget(
-        currentTarget, Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
+    Position const& origin = MURU_STACK_POSITION;
+    Unit* voidSentinel = SelectNearestByEntry(
+        currentTarget, Id(SwpNpcs::NPC_VOID_SENTINEL), targets.voidSentinels, origin);
+    Unit* voidSpawn = SelectNearestByEntry(
+        currentTarget, Id(SwpNpcs::NPC_VOID_SPAWN), targets.voidSpawns, origin);
+    Unit* furyMage = SelectNearestByEntry(
+        currentTarget, Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages, origin);
+    Unit* berserker = SelectNearestByEntry(
+        currentTarget, Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers, origin);
 
     Player* voidSentinelVictim = nullptr;
-    if (voidSentinel && voidSentinel->IsAlive())
+    if (voidSentinel)
     {
         if (Unit* victim = voidSentinel->GetVictim())
             voidSentinelVictim = victim->ToPlayer();
@@ -235,9 +261,11 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
         switch (unit->GetEntry())
         {
             case Id(SwpNpcs::NPC_MURU):
-                if (darknessActive && !isOtherRanged && !isShadowPriest)
+                if (!isMuruPhase)
                     return false;
-                return unit->GetHealth() > 1;
+
+                // Shadow Priests stay on M'uru through all of phase 1
+                return isOtherRanged || isShadowPriest || !darknessActive;
 
             case Id(SwpNpcs::NPC_ENTROPIUS):
                 return true;
@@ -322,9 +350,11 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
 
     if (stickyTarget)
     {
+        // A disallowed sticky target indexes past the end, where it would otherwise tie with an
+        // equally absent desired target and win the comparison
         size_t const currentPriority = getPriorityIndex(stickyTarget);
         size_t const desiredPriority = getPriorityIndex(target);
-        if (currentPriority <= desiredPriority)
+        if (currentPriority < priorityTargets.size() && currentPriority <= desiredPriority)
             target = stickyTarget;
     }
 
@@ -334,42 +364,6 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
     return target;
 }
 
-Unit* MuruSetDpsPriorityAction::SelectMuruEncounterTarget(
-    Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates) const
-{
-    Unit* selected = nullptr;
-    if (currentTarget && currentTarget->IsAlive() && currentTarget->GetEntry() == entry)
-        selected = currentTarget;
-
-    constexpr float targetSwitchDistance = 10.0f;
-    auto const getDistanceFromStack = [](Unit* unit)
-    {
-        return unit->GetExactDist2d(MURU_STACK_POSITION);
-    };
-
-    for (Unit* candidate : candidates)
-    {
-        if (!candidate)
-            continue;
-
-        if (!selected)
-        {
-            selected = candidate;
-            continue;
-        }
-
-        if (selected == candidate)
-            continue;
-
-        float const currentDistance = getDistanceFromStack(selected);
-        float const candidateDistance = getDistanceFromStack(candidate);
-        if (candidateDistance + targetSwitchDistance < currentDistance)
-            selected = candidate;
-    }
-
-    return selected;
-}
-
 bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
@@ -377,7 +371,7 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
     if (!muru && !entropius)
         return false;
 
-    bool const isMuruPhase = muru && muru->GetHealth() > 1;
+    bool const isMuruPhase = IsMuruPhaseActive(muru);
 
     Creature* darkFiendNearMuru = nullptr;
     constexpr float searchRadius = 50.0f;
@@ -390,7 +384,7 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
         for (Creature* creature : darkFiends)
         {
             if (creature && creature->IsAlive() &&
-                creature->GetExactDist2d(muru) <= massDispelRange)
+                creature->GetExactDist2d(muru) < massDispelRange)
             {
                 darkFiendNearMuru = creature;
                 break;
@@ -435,41 +429,44 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
 
 bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
 {
-    Unit* hazard = nullptr;
+    // Whatever the bot was casting matters less than being somewhere else; the core would cancel it
+    // once the move takes hold anyway, this just makes it immediate
+    bot->CastStop();
+
+    if (Creature* voidZone = FindMuruVoidZoneToAvoid(botAI))
+    {
+        float const distFromVoidZone = bot->GetDistance2d(voidZone);
+        return MoveAway(voidZone, MURU_VOID_ZONE_SAFE_DISTANCE - distFromVoidZone);
+    }
+
+    // Only the fiend's own victim gains anything by moving, so anyone else it happens to threaten
+    // is left alone
     Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
-    constexpr float searchRadius = 20.0f;
-    Creature* darkness = bot->FindNearestCreature(
-        Id(SwpNpcs::NPC_DARKNESS), searchRadius, true);
-
-    if (darkFiend)
-        hazard = darkFiend;
-    else if (darkness)
-        hazard = darkness;
-    else
+    if (!darkFiend || darkFiend->GetVictim() != bot)
         return false;
 
-    constexpr float safeDistance = 15.0f;
-    float const distFromHazard = bot->GetDistance2d(hazard);
-    if (distFromHazard > safeDistance)
+    float const distFromFiend = bot->GetDistance2d(darkFiend);
+    if (distFromFiend > MURU_DARK_FIEND_SAFE_DISTANCE)
         return false;
 
-    return MoveAway(hazard, safeDistance - distFromHazard);
+    return MoveAway(darkFiend, MURU_DARK_FIEND_SAFE_DISTANCE - distFromFiend);
 }
 
 bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
 {
     Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
-    Position const& waitPosition = MURU_STACK_POSITION;
-    if (!voidSentinel && bot->GetExactDist2d(waitPosition) > 3.0f)
+    if (!voidSentinel)
     {
+        Position const& waitPosition = MURU_STACK_POSITION;
+        constexpr float arrivalDistance = 3.0f;
+        if (bot->GetExactDist2d(waitPosition) <= arrivalDistance)
+            return false;
+
         return MoveTo(
             SWP_MAP_ID, waitPosition.GetPositionX(), waitPosition.GetPositionY(),
             waitPosition.GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_COMBAT, true, false);
     }
-
-    if (!voidSentinel)
-        return false;
 
     if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
         AI_VALUE(Unit*, "current target") != voidSentinel)
@@ -503,8 +500,8 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 Position const& MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentinelTankPosition(
@@ -539,7 +536,7 @@ bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
+bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     if (!muru)
@@ -548,25 +545,18 @@ bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
     Position const& entrancePosition = MURU_ENTRANCE_POSITION;
     Position const& stackPosition = MURU_STACK_POSITION;
 
-    constexpr float targetDistThreshold = 20.0f;
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
-    if (currentTarget && muru->GetExactDist2d(currentTarget) > targetDistThreshold)
+    if (currentTarget && muru->GetExactDist2d(currentTarget) > MURU_DARKNESS_SAFE_DISTANCE)
     {
         Position const& refPosition = PlayerbotAI::IsAssistTankOfIndex(bot, 1, true) ?
             entrancePosition : stackPosition;
-        if (currentTarget->GetExactDist2d(refPosition) <= targetDistThreshold)
+        if (currentTarget->GetExactDist2d(refPosition) <= MURU_HOLDING_POSITION_RADIUS)
             return false;
     }
 
-    MuruEncounterTargets targets;
-    GatherMuruEncounterTargets(botAI, targets);
-    bool const isTankingVoidSentinel = std::any_of(
-        targets.voidSentinels.begin(), targets.voidSentinels.end(),
-        [this](Unit* voidSentinel) { return voidSentinel && voidSentinel->GetVictim() == bot; });
-
     if (PlayerbotAI::IsTank(bot))
     {
-        if (isTankingVoidSentinel)
+        if (IsTankingMuruVoidSentinel(botAI))
             return false;
 
         if (!PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
@@ -581,20 +571,17 @@ bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
                 holdingPosition.GetPositionZ(), arrivalDistance, MovementPriority::MOVEMENT_FORCED);
         }
 
-        constexpr float safeDistanceFromMuru = 20.0f;
         constexpr uint32 minInterval = 0;
-        if (bot->GetExactDist2d(muru) > safeDistanceFromMuru)
+        if (bot->GetExactDist2d(muru) > MURU_DARKNESS_SAFE_DISTANCE)
             return false;
 
-        return FleePosition(muru->GetPosition(), safeDistanceFromMuru, minInterval);
+        return FleePosition(muru->GetPosition(), MURU_DARKNESS_SAFE_DISTANCE, minInterval);
     }
-    else
-    {
-        constexpr float stackArrivalDistance = 3.0f;
-        return MoveInside(
-            SWP_MAP_ID, stackPosition.GetPositionX(), stackPosition.GetPositionY(),
-            stackPosition.GetPositionZ(), stackArrivalDistance, MovementPriority::MOVEMENT_FORCED);
-    }
+
+    constexpr float stackArrivalDistance = 3.0f;
+    return MoveInside(
+        SWP_MAP_ID, stackPosition.GetPositionX(), stackPosition.GetPositionY(),
+        stackPosition.GetPositionZ(), stackArrivalDistance, MovementPriority::MOVEMENT_FORCED);
 }
 
 bool MuruFleeFromSingularityAction::Execute(Event /*event*/)
@@ -603,10 +590,8 @@ bool MuruFleeFromSingularityAction::Execute(Event /*event*/)
     if (!entropius)
         return false;
 
-    constexpr float searchRadius = 30.0f;
-    Creature* singularity = bot->FindNearestCreature(
-        Id(SwpNpcs::NPC_SINGULARITY), searchRadius, true);
-    if (!singularity)
+    Creature* singularity = botAI->GetCreature(AI_VALUE(ObjectGuid, "muru singularity"));
+    if (!singularity || !singularity->IsAlive())
         return false;
 
     float const safeDistance = entropius->GetVictim() == bot ? 20.0f : 15.0f;
@@ -619,8 +604,8 @@ bool MuruFleeFromSingularityAction::Execute(Event /*event*/)
 
 bool MuruCastStunOnShadowswordBerserkerAction::Execute(Event /*event*/)
 {
-    Unit* berserker = AI_VALUE2(Unit*, "find target", "shadowsword berserker");
-    if (!berserker || berserker->HasUnitState(UNIT_STATE_STUNNED))
+    Unit* berserker = FindMuruBerserkerToStun(botAI);
+    if (!berserker)
         return false;
 
     auto const castStun = [&](const char* spell)
@@ -643,16 +628,18 @@ bool MuruCastStunOnShadowswordBerserkerAction::Execute(Event /*event*/)
             return castStun("shadowfury");
 
         case CLASS_WARRIOR:
-            return castStun("concussion blow") || castStun("revenge stun") || castStun("shockwave");
+            return castStun("concussion blow") || castStun("shockwave");
 
         default:
-            return bot->getRace() == RACE_TAUREN && castStun("war stomp");
+            // Selection only yields a berserker here for tauren, the one race outside the cases
+            // above that brings a stun
+            return castStun("war stomp");
     }
 }
 
 bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
 {
-    Unit* furyMage = AI_VALUE2(Unit*, "find target", "shadowsword fury mage");
+    Unit* furyMage = FindMuruFuryMageToInterrupt(botAI);
     if (!furyMage)
         return false;
 
@@ -672,23 +659,32 @@ bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
         case CLASS_MAGE:
             return castInterrupt("counterspell");
 
+        case CLASS_PALADIN:
+            return castInterrupt("avenger's shield");
+
+        case CLASS_PRIEST:
+            return castInterrupt("silence");
+
         case CLASS_ROGUE:
             return castInterrupt("kick");
 
         case CLASS_SHAMAN:
             return castInterrupt("wind shear");
 
+        case CLASS_WARLOCK:
+            return castInterrupt("spell lock");
+
         case CLASS_WARRIOR:
             return castInterrupt("pummel") || castInterrupt("shield bash");
 
         default:
-            return bot->getRace() == RACE_BLOODELF && castInterrupt("arcane torrent");
+            return false;
     }
 }
 
 bool MuruCastSpellStealOnSpellFuryAction::Execute(Event /*event*/)
 {
-    Unit* furyMage = AI_VALUE2(Unit*, "find target", "shadowsword fury mage");
+    Unit* furyMage = FindMuruFuryMageToSpellsteal(botAI);
     return furyMage &&
         botAI->CanCastSpell(Id(SwpSpells::SPELL_SPELLSTEAL), furyMage) &&
         botAI->CastSpell(Id(SwpSpells::SPELL_SPELLSTEAL), furyMage);
@@ -696,18 +692,9 @@ bool MuruCastSpellStealOnSpellFuryAction::Execute(Event /*event*/)
 
 bool MuruWarlockEnslaveVoidSpawnAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() != CLASS_WARLOCK || bot->GetCharm())
-        return false;
-
-    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru)
-        return false;
-
-    Creature* voidSpawn = FindAvailableVoidSpawnForEnslave(bot);
-    if (!voidSpawn)
-        return false;
-
-    return botAI->CanCastSpell("enslave demon", voidSpawn) &&
+    Creature* voidSpawn = FindAvailableVoidSpawnForEnslave(botAI);
+    return voidSpawn &&
+        botAI->CanCastSpell("enslave demon", voidSpawn) &&
         botAI->CastSpell("enslave demon", voidSpawn);
 }
 
@@ -757,20 +744,17 @@ bool MuruEnslavedVoidSpawnAttackAction::CommandControlledCreatureToAttack(
 
 bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() != CLASS_WARLOCK)
-        return false;
-
     Unit* voidSpawn = GetControlledVoidSpawn();
     if (!voidSpawn)
         return false;
 
-    Unit* target = GetVoidSpawnVolleyPriorityTarget();
+    Unit* target = GetVoidSpawnVolleyPriorityTarget(voidSpawn);
     if (!target)
         return false;
 
     bool const commandedAttack = CommandControlledCreatureToAttack(voidSpawn, target);
 
-    if (voidSpawn->GetExactDist2d(target) > sPlayerbotAIConfig.spellDistance)
+    if (voidSpawn->GetDistance(target) > MURU_SHADOW_BOLT_VOLLEY_RADIUS)
         return commandedAttack;
 
     constexpr uint32 volleySpellId = Id(SwpSpells::SPELL_SHADOW_BOLT_VOLLEY);
@@ -782,55 +766,25 @@ bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
     voidSpawn->AddSpellCooldown(volleySpellId, 0, globalCooldown);
     return true;
 }
-
-Unit* MuruEnslavedVoidSpawnAttackAction::GetVoidSpawnVolleyPriorityTarget() const
+Unit* MuruEnslavedVoidSpawnAttackAction::GetVoidSpawnVolleyPriorityTarget(Unit* voidSpawn) const
 {
     MuruEncounterTargets targets;
     GatherMuruEncounterTargets(botAI, targets);
 
-    Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
-    constexpr float targetSwitchDistance = 10.0f;
-    auto const chooseNearestTarget = [&](Unit*& current, Unit* candidate)
-    {
-        if (!candidate)
-            return;
+    // Measured from the spawn, not from the warlock: Shadow Bolt Volley is centred on its caster,
+    // so a target the warlock is closest to is not necessarily one the spawn can cover
+    Position const& origin = voidSpawn->GetPosition();
+    Unit* currentTarget = AI_VALUE(Unit*, "current target");
 
-        if (!current)
-        {
-            current = candidate;
-            return;
-        }
-
-        if (current == candidate)
-            return;
-
-        float const currentDistance = bot->GetExactDist2d(current);
-        float const candidateDistance = bot->GetExactDist2d(candidate);
-        if (candidateDistance + targetSwitchDistance < currentDistance)
-            current = candidate;
-    };
-
-    auto const selectEncounterTarget = [&](uint32 entry, std::vector<Unit*> const& candidates)
-    {
-        Unit* selected = nullptr;
-        if (currentTarget && currentTarget->IsAlive() && currentTarget->GetEntry() == entry)
-            selected = currentTarget;
-
-        for (Unit* candidate : candidates)
-            chooseNearestTarget(selected, candidate);
-
-        return selected;
-    };
-
-    Unit* furyMage = selectEncounterTarget(
-        Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages);
-    Unit* berserker = selectEncounterTarget(
-        Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
-    Unit* voidSentinel = selectEncounterTarget(
-        Id(SwpNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
+    Unit* furyMage = SelectNearestByEntry(
+        currentTarget, Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages, origin);
+    Unit* berserker = SelectNearestByEntry(
+        currentTarget, Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers, origin);
+    Unit* voidSentinel = SelectNearestByEntry(
+        currentTarget, Id(SwpNpcs::NPC_VOID_SENTINEL), targets.voidSentinels, origin);
 
     Unit* validMuru = targets.muru;
-    if (!validMuru || validMuru->GetHealth() <= 1 || TryGetMuruDarknessActiveState(bot, validMuru))
+    if (!IsMuruPhaseActive(validMuru) || TryGetMuruDarknessActiveState(bot, validMuru))
         validMuru = nullptr;
 
     std::array<Unit*, 5> priorities = {
@@ -838,7 +792,7 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetVoidSpawnVolleyPriorityTarget() cons
 
     for (Unit* target : priorities)
     {
-        if (target && target->IsAlive())
+        if (target)
             return target;
     }
 

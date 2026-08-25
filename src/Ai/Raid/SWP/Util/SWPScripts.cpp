@@ -9,19 +9,20 @@
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
-#include "SWPData.h"
-#include "SWPEncounter_Brut.h"
+#include "SWPSharedConstants.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
-#include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
-#include <unordered_set>
+#include <list>
 #include <vector>
 
 using namespace SwpHelpers;
 
-static PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
+namespace
+{
+
+PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
 {
     if (!referencePlayer)
         return nullptr;
@@ -52,7 +53,7 @@ static PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
     return nullptr;
 }
 
-static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
+Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
 {
     if (!spell || !caster)
         return nullptr;
@@ -73,8 +74,7 @@ static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
     return nullptr;
 }
 
-static void RequestInterruptForBotsNeedingFelmystFogMovement(
-    Unit* contextUnit, Player* groupReference)
+void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, Player* groupReference)
 {
     if (!contextUnit)
         return;
@@ -111,7 +111,7 @@ static void RequestInterruptForBotsNeedingFelmystFogMovement(
     }
 }
 
-static void RequestInterruptForBotsWithDelayedFelmystEncapsulate(Creature* felmyst)
+void RequestInterruptForBotsWithDelayedFelmystEncapsulate(Creature* felmyst)
 {
     if (!felmyst || felmyst->IsFlying())
         return;
@@ -148,7 +148,7 @@ static void RequestInterruptForBotsWithDelayedFelmystEncapsulate(Creature* felmy
     }
 }
 
-static void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
+void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
 {
     if (!alythess)
         return;
@@ -178,10 +178,12 @@ static void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
     }
 }
 
-class KalecgosSpellListenerScript : public AllSpellScript
+}
+
+class KalecgosPortalSpellListenerScript : public AllSpellScript
 {
 public:
-    KalecgosSpellListenerScript() : AllSpellScript("KalecgosSpellListenerScript") {}
+    KalecgosPortalSpellListenerScript() : AllSpellScript("KalecgosPortalSpellListenerScript") {}
 
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
@@ -311,35 +313,55 @@ public:
     }
 };
 
-class KiljaedenSpellListenerScript : public AllSpellScript
+class KiljaedenDarknessSpellListenerScript : public AllSpellScript
 {
 public:
-    KiljaedenSpellListenerScript() : AllSpellScript("KiljaedenSpellListenerScript") {}
+    KiljaedenDarknessSpellListenerScript()
+        : AllSpellScript("KiljaedenDarknessSpellListenerScript") {}
 
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (spellInfo->Id == Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
-        {
-            Map::PlayerList const& players = caster->GetMap()->GetPlayers();
-            for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
-            {
-                Player* player = it->GetSource();
-                if (!player || !player->IsAlive() || HasKiljaedenDragonAura(player))
-                    continue;
-
-                PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-                if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-                    continue;
-
-                if (PAI_VALUE2(Unit*, "find target", "kil'jaeden") != caster)
-                    continue;
-
-                botAI->RequestSpellInterrupt();
-            }
-
+        if (spellInfo->Id != Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
             return;
+
+        Map::PlayerList const& players = caster->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+        {
+            Player* player = it->GetSource();
+            if (!player || !player->IsAlive() || HasKiljaedenDragonAura(player))
+                continue;
+
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+            if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+                continue;
+
+            if (PAI_VALUE2(Unit*, "find target", "kil'jaeden") != caster)
+                continue;
+
+            botAI->RequestSpellInterrupt();
         }
+    }
+};
+
+class MuruVoidZoneSpellListenerScript : public AllSpellScript
+{
+public:
+    MuruVoidZoneSpellListenerScript() : AllSpellScript("MuruVoidZoneSpellListenerScript") {}
+
+    void OnSpellCast(
+        Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    {
+        if (spellInfo->Id != Id(SwpSpells::SPELL_ENTROPIUS_DARKNESS))
+            return;
+
+        Player* target = GetFirstPlayerSpellTarget(spell, caster);
+        if (!target)
+            return;
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
+        if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+            botAI->RequestSpellInterrupt();
     }
 };
 
@@ -370,15 +392,18 @@ public:
     }
 };
 
-class KiljaedenArmageddonTargetTrackerScript : public AllCreatureScript
+class KiljaedenArmageddonTargetCreatureScript : public AllCreatureScript
 {
 public:
-    KiljaedenArmageddonTargetTrackerScript()
-        : AllCreatureScript("KiljaedenArmageddonTargetTrackerScript") {}
+    KiljaedenArmageddonTargetCreatureScript()
+        : AllCreatureScript("KiljaedenArmageddonTargetCreatureScript") {}
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
         if (!creature || creature->GetEntry() != Id(SwpNpcs::NPC_ARMAGEDDON_TARGET))
+            return;
+
+        if (kiljaedenTrackedArmageddonTargets.count(creature->GetGUID()))
             return;
 
         bool hasSunwellStrategy = false;
@@ -402,11 +427,10 @@ public:
             }
         }
 
-        if (!hasSunwellStrategy ||
-            !kiljaedenTrackedArmageddonTargets.insert(creature->GetGUID()).second)
-        {
+        if (!hasSunwellStrategy)
             return;
-        }
+
+        kiljaedenTrackedArmageddonTargets.insert(creature->GetGUID());
 
         AddKiljaedenArmageddon(
             creature->GetInstanceId(), creature->GetPosition(),
@@ -427,10 +451,11 @@ public:
 
 void AddSC_SunwellPlateauBotScripts()
 {
-    new KalecgosSpellListenerScript();
+    new KalecgosPortalSpellListenerScript();
     new FelmystSpellListenerScript();
     new EredarTwinsSpellListenerScript();
-    new KiljaedenSpellListenerScript();
+    new MuruVoidZoneSpellListenerScript();
+    new KiljaedenDarknessSpellListenerScript();
     new SunwellBossUpdateScript();
-    new KiljaedenArmageddonTargetTrackerScript();
+    new KiljaedenArmageddonTargetCreatureScript();
 }

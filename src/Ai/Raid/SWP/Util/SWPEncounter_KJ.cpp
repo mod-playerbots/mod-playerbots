@@ -127,6 +127,16 @@ float GetNearestArmageddonDistance(
     return nearestDistance;
 }
 
+bool ShouldRebuildKiljaedenAssignments(uint32& lastRebuildMs, uint32 intervalMs)
+{
+    uint32 const now = getMSTime();
+    if (lastRebuildMs && getMSTimeDiff(lastRebuildMs, now) < intervalMs)
+        return false;
+
+    lastRebuildMs = now;
+    return true;
+}
+
 } // end anonymous namespace
 
 std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
@@ -231,7 +241,14 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
     if (!group)
         return;
 
-    auto& assignments = kiljaedenEncounterStates[bot->GetInstanceId()].rangedAssignments;
+    KiljaedenEncounterState& state = kiljaedenEncounterStates[bot->GetInstanceId()];
+    if (!ShouldRebuildKiljaedenAssignments(
+            state.rangedAssignmentRebuildMs, KILJAEDEN_RANGED_ASSIGNMENT_REBUILD_INTERVAL_MS))
+    {
+        return;
+    }
+
+    auto& assignments = state.rangedAssignments;
 
     std::vector<ObjectGuid> invalidAssignments;
     for (auto const& assignment : assignments)
@@ -328,36 +345,35 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
     uint32 const instanceId = bot->GetInstanceId();
     PruneExpiredKiljaedenArmageddons(instanceId);
 
-    auto const armageddonItr = kiljaedenEncounterStates.find(instanceId);
-    if (armageddonItr == kiljaedenEncounterStates.end() ||
-        armageddonItr->second.armageddons.empty())
-    {
-        kiljaedenEncounterStates[instanceId].rangedArmageddonAssignments.clear();
+    auto const stateItr = kiljaedenEncounterStates.find(instanceId);
+    if (stateItr == kiljaedenEncounterStates.end())
         return;
-    }
+
+    KiljaedenEncounterState& state = stateItr->second;
 
     Group* group = bot->GetGroup();
-    if (!group)
+    if (state.armageddons.empty() || !group)
     {
-        kiljaedenEncounterStates[instanceId].rangedArmageddonAssignments.clear();
+        state.rangedArmageddonAssignments.clear();
         return;
     }
 
-    auto const canonicalItr = kiljaedenEncounterStates.find(instanceId);
-    if (canonicalItr == kiljaedenEncounterStates.end())
+    // For bots to return to their normal positions once Armageddons stop.
+    if (!ShouldRebuildKiljaedenAssignments(
+            state.rangedArmageddonRebuildMs,
+            KILJAEDEN_ARMAGEDDON_ASSIGNMENT_REBUILD_INTERVAL_MS))
     {
-        kiljaedenEncounterStates[instanceId].rangedArmageddonAssignments.clear();
         return;
     }
 
-    auto const& armageddons = armageddonItr->second.armageddons;
-    auto const& canonicalAssignments = canonicalItr->second.rangedAssignments;
+    auto const& armageddons = state.armageddons;
+    auto const& canonicalAssignments = state.rangedAssignments;
 
     std::vector<KiljaedenRangedBotAssignment> rangedBots;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || GET_PLAYERBOT_AI(member) ||
+        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsRanged(member))
         {
             continue;
@@ -399,7 +415,7 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
     }
 
     std::array<uint8, KILJAEDEN_TOTAL_RANGED_SLOT_COUNT> plannedOccupancy = {};
-    auto& tempAssignments = kiljaedenEncounterStates[instanceId].rangedArmageddonAssignments;
+    auto& tempAssignments = state.rangedArmageddonAssignments;
     tempAssignments.clear();
 
     auto const getCandidateScore =
@@ -465,8 +481,11 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
         for (uint8 candidateSlotIndex = 0;
              candidateSlotIndex < KILJAEDEN_TOTAL_RANGED_SLOT_COUNT; ++candidateSlotIndex)
         {
-            if (!safeSlots[candidateSlotIndex] || plannedOccupancy[candidateSlotIndex] >= 2)
+            if (!safeSlots[candidateSlotIndex] ||
+                plannedOccupancy[candidateSlotIndex] >= KILJAEDEN_MAX_BOTS_PER_RANGED_SLOT)
+            {
                 continue;
+            }
 
             const CandidateSlotScore candidate = getCandidateScore(rangedBot, candidateSlotIndex);
             if (!shouldTakeCandidate(candidate, bestCandidate, bestFound))
@@ -480,15 +499,29 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
         if (bestFound)
             ++plannedOccupancy[bestCandidate.slotIndex];
     }
-
-    if (tempAssignments.empty())
-        kiljaedenEncounterStates[instanceId].rangedArmageddonAssignments.clear();
 }
 
 bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden)
 {
     return kiljaeden && kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
         kiljaeden->FindCurrentSpellBySpellId(Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
+}
+
+GuidVector FindKiljaedenDragonOrbGuids(Player* bot)
+{
+    GuidVector guids;
+    guids.reserve(KILJAEDEN_DRAGON_ORB_ENTRIES.size());
+
+    for (uint32 const orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
+    {
+        if (GameObject* orb =
+                bot->FindNearestGameObject(orbEntry, KILJAEDEN_DRAGON_ORB_SEARCH_RADIUS, true))
+        {
+            guids.push_back(orb->GetGUID());
+        }
+    }
+
+    return guids;
 }
 
 Player* GetKiljaedenDragonOrbUser(Player* bot)
@@ -519,9 +552,8 @@ bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
     if (stateItr == kiljaedenEncounterStates.end() || !stateItr->second.dragonOrbAnnouncementMs)
         return false;
 
-    constexpr uint32 announcementResetDelayMs = 10000;
     if (getMSTimeDiff(stateItr->second.dragonOrbAnnouncementMs, getMSTime()) <
-        announcementResetDelayMs)
+        KILJAEDEN_ORB_ANNOUNCEMENT_RESET_MS)
     {
         return false;
     }
@@ -575,8 +607,6 @@ Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 s
     if (!group)
         return nullptr;
 
-    constexpr uint8 minClusterSize = 3;
-    constexpr float clusterRadius = 6.0f;
 
     Player* bestTarget = nullptr;
     uint32 bestClusterSize = 0;
@@ -596,7 +626,7 @@ Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 s
         {
             Player* other = otherRef->GetSource();
             if (!IsDragonGroupTarget(bot, other) ||
-                candidate->GetExactDist2d(other) > clusterRadius)
+                candidate->GetExactDist2d(other) > KILJAEDEN_DRAGON_CLUSTER_RADIUS)
             {
                 continue;
             }
@@ -606,7 +636,7 @@ Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 s
                 ++clusterSize;
         }
 
-        if (clusterSize < minClusterSize)
+        if (clusterSize < KILJAEDEN_DRAGON_MIN_CLUSTER_SIZE)
             continue;
 
         float const distanceToDragon = dragon->GetExactDist2d(candidate);
@@ -651,11 +681,8 @@ Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spell
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == bot || !member->IsAlive() || member->GetMapId() != SWP_MAP_ID ||
-            HasAuraFromDragon(member, spellId))
-        {
+        if (!IsDragonGroupTarget(bot, member) || HasAuraFromDragon(member, spellId))
             continue;
-        }
 
         float const distance = dragon->GetExactDist2d(member);
         if (!closestTarget || distance < closestDistance)
@@ -666,6 +693,63 @@ Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spell
     }
 
     return closestTarget;
+}
+
+bool HasAtLeastThreeBotTanks(
+    Player* bot, Player** outMainTank, Player** outFirstAssist, Player** outSecondAssist)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    ObjectGuid const mainTankGuid = PlayerbotAI::GetMainTankGuid(group);
+    if (mainTankGuid.IsEmpty())
+        return false;
+
+    bool hasMainBotTank = false;
+    Player* mainTankPtr = nullptr;
+    std::vector<Player*> assistantTanks;
+    std::vector<Player*> nonAssistantTanks;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !PlayerbotAI::IsTank(member))
+            continue;
+
+        if (member->GetGUID() == mainTankGuid)
+        {
+            hasMainBotTank = GET_PLAYERBOT_AI(member) != nullptr;
+            mainTankPtr = member;
+            continue;
+        }
+
+        if (!GET_PLAYERBOT_AI(member))
+            continue;
+
+        if (group->IsAssistant(member->GetGUID()))
+            assistantTanks.push_back(member);
+        else
+            nonAssistantTanks.push_back(member);
+    }
+
+    if (outFirstAssist || outSecondAssist)
+    {
+        std::vector<Player*> ordered;
+        ordered.reserve(assistantTanks.size() + nonAssistantTanks.size());
+        ordered.insert(ordered.end(), assistantTanks.begin(), assistantTanks.end());
+        ordered.insert(ordered.end(), nonAssistantTanks.begin(), nonAssistantTanks.end());
+
+        if (outFirstAssist)
+            *outFirstAssist = ordered.size() >= 1 ? ordered[0] : nullptr;
+        if (outSecondAssist)
+            *outSecondAssist = ordered.size() >= 2 ? ordered[1] : nullptr;
+    }
+
+    if (outMainTank)
+        *outMainTank = hasMainBotTank ? mainTankPtr : nullptr;
+
+    return hasMainBotTank && (assistantTanks.size() + nonAssistantTanks.size()) >= 2;
 }
 
 }

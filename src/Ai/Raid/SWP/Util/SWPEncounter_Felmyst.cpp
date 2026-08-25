@@ -5,12 +5,15 @@
  */
 
 #include "SWPEncounter_Felmyst.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
+#include "SWPSharedConstants.h"
 #include <algorithm>
 #include <cmath>
 #include <list>
 #include <vector>
+
+using namespace EncounterHelpers;
 
 namespace SwpHelpers
 {
@@ -36,7 +39,7 @@ void ResetDemonicVaporFlightState(uint32 instanceId)
 void ResetDemonicVaporFlightStateIfGrounded(Player* bot)
 {
     constexpr float searchRadius = 250.0f;
-    Creature* felmyst = bot->FindNearestCreature(Id(SwpNpcs::NPC_FELMYST), searchRadius, true);
+    Creature* felmyst = bot->FindNearestCreature(Id(SwpNpcs::NPC_FELMYST), searchRadius);
     if (!felmyst || !felmyst->IsFlying())
         ResetDemonicVaporFlightState(bot->GetInstanceId());
 }
@@ -502,15 +505,13 @@ bool TryGetFelmystDemonicVaporStepDestination(
         return false;
     }
 
-    if (bot->GetExactDist2d(destination) <= 0.01f)
+    if (bot->GetExactDist2d(destinationX, destinationY) <= 0.01f)
         return false;
 
     destination = Position(destinationX, destinationY, destinationZ, bot->GetOrientation());
 
     return true;
 }
-
-} // end anonymous namespace
 
 Position ClosestPointOnSegment(Position const& p, Position const& segA, Position const& segB)
 {
@@ -527,6 +528,8 @@ Position ClosestPointOnSegment(Position const& p, Position const& segA, Position
     return Position(
         segA.GetPositionX() + t * abX, segA.GetPositionY() + t * abY, segA.GetPositionZ());
 }
+
+} // end anonymous namespace
 
 std::vector<Creature*> GetDemonicVaporHazards(Player* bot)
 {
@@ -570,29 +573,13 @@ bool TryGetFelmystFogSafeDestination(
     Position const projectFrom = referencePoint ? *referencePoint :
         Position(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
 
-    // Third-pass: use the threshold matching the completed lane directly.
-    // Active fog: pick the closest non-danger threshold.
-    uint8 bestThresholdIndex = dangerIndex;
-    Position bestProjection;
+    // During active fog, the bot takes the shortest route to a safe spot in another lane.
+    // After the third pass, the caller passes Felmyst's position instead so bots run parallel to
+    // the lands to the end that Felmyst is at in preparation for her landing.
+    Position const bestProjection = ClosestPointOnSegment(
+        projectFrom, FOG_SAFE_THRESHOLDS[dangerIndex].a, FOG_SAFE_THRESHOLDS[dangerIndex].b);
 
-    if (referencePoint)
-    {
-        // Use the exact threshold for the completed sweep lane.
-        bestThresholdIndex = dangerIndex;
-        bestProjection = ClosestPointOnSegment(
-            projectFrom, FOG_SAFE_THRESHOLDS[dangerIndex].a, FOG_SAFE_THRESHOLDS[dangerIndex].b);
-    }
-    else
-    {
-        // Active fog: use the threshold matching the danger lane — its safe
-        // side points away from the fog corridor. Other thresholds may still
-        // be inside the fog range and offer no escape.
-        bestThresholdIndex = dangerIndex;
-        bestProjection = ClosestPointOnSegment(
-            projectFrom, FOG_SAFE_THRESHOLDS[dangerIndex].a, FOG_SAFE_THRESHOLDS[dangerIndex].b);
-    }
-
-    FogSafeThreshold const& threshold = FOG_SAFE_THRESHOLDS[bestThresholdIndex];
+    FogSafeThreshold const& threshold = FOG_SAFE_THRESHOLDS[dangerIndex];
 
     // Offset past the threshold toward the safe side.
     // For west→east segments: north = +X, south = -X.
@@ -724,7 +711,7 @@ float GetFelmystFrontAngle(Player* bot, Unit* felmyst)
     float frontX = defaultTankPosition.GetPositionX();
     float frontY = defaultTankPosition.GetPositionY();
 
-    Player* mainTank = GetGroupMainTank(GET_PLAYERBOT_AI(bot), bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (mainTank && mainTank->IsAlive() && mainTank->GetMapId() == felmyst->GetMapId())
     {
         frontX = mainTank->GetPositionX();
@@ -739,69 +726,35 @@ float GetFelmystFrontAngle(Player* bot, Unit* felmyst)
     return std::atan2(frontY - felmyst->GetPositionY(), frontX - felmyst->GetPositionX());
 }
 
-void EnsureFelmystRangedAssignments(Player* bot)
+bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position)
 {
+    if (!felmyst || bot->GetMapId() != SWP_MAP_ID || !PlayerbotAI::IsRanged(bot))
+        return false;
+
     Group* group = bot->GetGroup();
     if (!group)
-        return;
+        return false;
 
-    auto& assignments = felmystEncounterStates[bot->GetInstanceId()].rangedAssignments;
-    std::vector<Player*> healers;
-    std::vector<Player*> rangedDamage;
-
-    assignments.clear();
+    bool const botIsHealer = PlayerbotAI::IsHeal(bot);
+    ObjectGuid const botGuid = bot->GetGUID();
+    uint32 stackIndex = 0;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !PlayerbotAI::IsRanged(member))
+        if (!member || member->GetMapId() != SWP_MAP_ID || !PlayerbotAI::IsRanged(member))
             continue;
 
-        if (PlayerbotAI::IsHeal(member))
-            healers.push_back(member);
-        else
-            rangedDamage.push_back(member);
+        if (PlayerbotAI::IsHeal(member) == botIsHealer && member->GetGUID() < botGuid)
+            ++stackIndex;
     }
 
-    auto const sortByGuid = [](std::vector<Player*>& members)
-    {
-        std::sort(members.begin(), members.end(),
-            [](Player* left, Player* right) { return left->GetGUID() < right->GetGUID(); });
-    };
+    // Healers spread across all three stacks; ranged dps alternates between the two sides
+    FelmystGroundStack const stack = botIsHealer ?
+        static_cast<FelmystGroundStack>(stackIndex % 3) :
+        (stackIndex % 2 == 0 ? FelmystGroundStack::Left : FelmystGroundStack::Right);
 
-    sortByGuid(healers);
-    sortByGuid(rangedDamage);
-
-    for (uint32 index = 0; index < healers.size(); ++index)
-    {
-        auto const stack = static_cast<FelmystGroundStack>(index % 3);
-        assignments[healers[index]->GetGUID()] = static_cast<uint8>(stack);
-    }
-
-    for (uint32 index = 0; index < rangedDamage.size(); ++index)
-    {
-        auto const stack = index % 2 == 0 ? FelmystGroundStack::Left : FelmystGroundStack::Right;
-        assignments[rangedDamage[index]->GetGUID()] = static_cast<uint8>(stack);
-    }
-}
-
-bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position)
-{
-    if (!felmyst)
-        return false;
-
-    EnsureFelmystRangedAssignments(bot);
-
-    auto const instanceItr = felmystEncounterStates.find(bot->GetInstanceId());
-    if (instanceItr == felmystEncounterStates.end())
-        return false;
-
-    auto const assignmentItr = instanceItr->second.rangedAssignments.find(bot->GetGUID());
-    if (assignmentItr == instanceItr->second.rangedAssignments.end())
-        return false;
-
-    return TryGetFelmystGroundStackPosition(
-        bot, felmyst, static_cast<FelmystGroundStack>(assignmentItr->second), position);
+    return TryGetFelmystGroundStackPosition(bot, felmyst, stack, position);
 }
 
 Creature* GetFelmystDemonicVaporSummonedByBot(Player* bot)
@@ -838,29 +791,26 @@ bool IsFelmystLanding(Unit* felmyst)
     return IsNearLandingPosition(destination);
 }
 
-bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane)
+namespace
 {
-    lane = FogLane::None;
 
+// A pass is recognized by watching Felmyst's flight destination change from one poll to the next,
+// so this has to run on every poll while she is airborne or a transition is missed entirely.
+// Callers wanting the window itself go through TryGetFelmystPostThirdPassWindow; callers that only
+// need the tracker kept current call this. Returns nullptr when the tracker has just been reset.
+FogPassState const* AdvanceFelmystFogPassTracker(Unit* felmyst)
+{
     if (!felmyst)
-        return false;
+        return nullptr;
 
     uint32 const instanceId = felmyst->GetInstanceId();
-    if (!felmyst->IsFlying())
+    if (!felmyst->IsFlying() || IsFelmystLanding(felmyst))
     {
         felmystEncounterStates[instanceId].fogPass = FogPassState{};
-        return false;
-    }
-
-    if (IsFelmystLanding(felmyst))
-    {
-        felmystEncounterStates[instanceId].fogPass = FogPassState{};
-        return false;
+        return nullptr;
     }
 
     FogPassState& tracker = felmystEncounterStates[instanceId].fogPass;
-    uint32 const now = getMSTime();
-    constexpr uint32 thirdPassWindowMs = 10000;
 
     const FogLocation currentLocation = GetCurrentFogLocation(felmyst);
     const FogLane currentLane = GetFogLaneFromLocation(currentLocation);
@@ -887,24 +837,77 @@ bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane)
             previousDestinationLane == tracker.armedSweepLane &&
             IsFogSideLocation(destinationLocation))
         {
+            constexpr uint32 thirdPassWindowMs = 10000;
+
             ++tracker.completedPassCount;
             tracker.lastCompletedLane = tracker.armedSweepLane;
             tracker.armedSweepLane = FogLane::None;
             if (tracker.completedPassCount >= 3)
-                tracker.thirdPassWindowExpireMs = now + thirdPassWindowMs;
+                tracker.thirdPassWindowExpireMs = getMSTime() + thirdPassWindowMs;
         }
 
         tracker.lastDestinationLocation = destinationLocation;
     }
 
-    if (tracker.completedPassCount >= 3 && tracker.thirdPassWindowExpireMs > now &&
-        tracker.lastCompletedLane != FogLane::None)
+    return &tracker;
+}
+
+bool IsPostThirdPassWindowOpen(FogPassState const& tracker)
+{
+    return tracker.completedPassCount >= 3 && tracker.lastCompletedLane != FogLane::None &&
+        tracker.thirdPassWindowExpireMs > getMSTime();
+}
+
+// Shared opening of the two read-only fog queries below. Returns nothing while she is grounded,
+// since every fog stage they test only means anything mid-flight, and reads the record rather
+// than indexing it so a query cannot create one.
+FelmystEncounterState const* GetFelmystAirborneState(Unit* felmyst)
+{
+    if (!felmyst || !felmyst->IsFlying())
+        return nullptr;
+
+    auto const stateItr = felmystEncounterStates.find(felmyst->GetInstanceId());
+    return stateItr != felmystEncounterStates.end() ? &stateItr->second : nullptr;
+}
+
+} // end anonymous namespace
+
+bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane)
+{
+    lane = FogLane::None;
+
+    FogPassState const* tracker = AdvanceFelmystFogPassTracker(felmyst);
+    if (!tracker || !IsPostThirdPassWindowOpen(*tracker))
+        return false;
+
+    lane = tracker->lastCompletedLane;
+    return true;
+}
+
+bool IsFelmystFogActiveForBot(Player* bot, Unit* felmyst)
+{
+    FelmystEncounterState const* state = GetFelmystAirborneState(felmyst);
+    if (!state)
+        return false;
+
+    FogOfCorruptionState const& fog = state->fogOfCorruption;
+    if (fog.phase == FogPhase::None || fog.phase == FogPhase::Recovery ||
+        fog.lane == FogLane::None)
     {
-        lane = tracker.lastCompletedLane;
-        return true;
+        return false;
     }
 
-    return false;
+    return !IsPastFogThreshold(bot, fog.lane);
+}
+
+bool IsFelmystFogMovementSuppressed(Unit* felmyst)
+{
+    FelmystEncounterState const* state = GetFelmystAirborneState(felmyst);
+    if (!state)
+        return false;
+
+    return state->fogOfCorruption.phase != FogPhase::None ||
+        IsPostThirdPassWindowOpen(state->fogPass);
 }
 
 bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst)
@@ -913,7 +916,7 @@ bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst)
         return false;
 
     // HP threshold to preserve melee targeting during the initial airborne pull
-    if (felmyst->GetHealthPct() > 90.0f)
+    if (felmyst->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT)
         return false;
 
     Position destination;
@@ -1040,8 +1043,7 @@ bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FogOfCorruptionState&
         return false;
     }
 
-    FogLane ignoredPostThirdPassLane = FogLane::None;
-    TryGetFelmystPostThirdPassWindow(felmyst, ignoredPostThirdPassLane);
+    AdvanceFelmystFogPassTracker(felmyst);
 
     FogOfCorruptionState& tracker = felmystEncounterStates[instanceId].fogOfCorruption;
     bool const hasTracker = tracker.phase != FogPhase::None;
@@ -1251,8 +1253,8 @@ Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
     return lowestHpTarget;
 }
 
-// Bots will follow this player during the vapor phase. Return the first eligible assistant,
-// if no eligible assistant is found, return the first eligible bot in the group.
+// Bots will follow this player during the vapor phase. Return the first eligible assistant, and
+// if no eligible assistant is found, return the first eligible bot.
 Player* GetFelmystFlightLeader(Player* player)
 {
     Group* group = player->GetGroup();
@@ -1267,9 +1269,9 @@ Player* GetFelmystFlightLeader(Player* player)
             !GetFelmystDemonicVaporSummonedByBot(member);
     };
 
-    // Keep the then-current flight leader if still eligible to maintain consistency (e.g., if
-    // the leader is targeted by vapor, a new leader is assigned, and we should not switch
-    // back to the original after the vapor head is gone, or chaos will ensue).
+    // Keep the then-current flight leader if still eligible to maintain consistency. Notably, if
+    // the leader is targeted by vapor and a new leader is assigned, we should not switch back to
+    // the original leader after the vapor head is gone, as they will be clear across the map.
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();

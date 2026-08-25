@@ -11,11 +11,11 @@
 
 // General
 
-class SunwellPlateauBotIsNotInCombatTrigger : public Trigger
+class SunwellPlateauNoEncounterInProgressTrigger : public Trigger
 {
 public:
-    SunwellPlateauBotIsNotInCombatTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "sunwell plateau bot is not in combat") {}
+    SunwellPlateauNoEncounterInProgressTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "sunwell plateau no encounter in progress") {}
     bool IsActive() override;
 };
 
@@ -55,11 +55,18 @@ public:
     bool IsActive() override;
 };
 
-class KalecgosBossEngagedByTankTrigger : public Trigger
+class KalecgosPullingBossTrigger : public Trigger
 {
 public:
-    KalecgosBossEngagedByTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kalecgos boss engaged by tank") {}
+    KalecgosPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kalecgos pulling boss") {}
+    bool IsActive() override;
+};
+
+class KalecgosBossRequiresTankRotationTrigger : public Trigger
+{
+public:
+    KalecgosBossRequiresTankRotationTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kalecgos boss requires tank rotation") {}
     bool IsActive() override;
 };
 
@@ -108,8 +115,7 @@ public:
 class BrutallusPullingBossTrigger : public Trigger
 {
 public:
-    BrutallusPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "brutallus pulling boss") {}
+    BrutallusPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "brutallus pulling boss") {}
     bool IsActive() override;
 };
 
@@ -121,27 +127,26 @@ public:
     bool IsActive() override;
 };
 
-class BrutallusBossEngagedByMeleeTrigger : public Trigger
+class BrutallusMeleeShouldStandInPlaceTrigger : public Trigger
 {
 public:
-    BrutallusBossEngagedByMeleeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "brutallus boss engaged by melee") {}
+    BrutallusMeleeShouldStandInPlaceTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "brutallus melee should stand in place") {}
     bool IsActive() override;
 };
 
-class BrutallusBossEngagedByRangedTrigger : public Trigger
+class BrutallusRangedShouldSoakMeteorSlashTrigger : public Trigger
 {
 public:
-    BrutallusBossEngagedByRangedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "brutallus boss engaged by ranged") {}
+    BrutallusRangedShouldSoakMeteorSlashTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "brutallus ranged should soak meteor slash") {}
     bool IsActive() override;
 };
 
 class BrutallusBotIsBurningTrigger : public Trigger
 {
 public:
-    BrutallusBotIsBurningTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "brutallus bot is burning") {}
+    BrutallusBotIsBurningTrigger(PlayerbotAI* botAI) : Trigger(botAI, "brutallus bot is burning") {}
     bool IsActive() override;
 };
 
@@ -150,8 +155,7 @@ public:
 class FelmystPullingBossTrigger : public Trigger
 {
 public:
-    FelmystPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "felmyst pulling boss") {}
+    FelmystPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "felmyst pulling boss") {}
     bool IsActive() override;
 };
 
@@ -163,19 +167,19 @@ public:
     bool IsActive() override;
 };
 
-class FelmystBossEngagedByRangedOnGroundTrigger : public Trigger
+class FelmystRangedShouldSplitInThreeTrigger : public Trigger
 {
 public:
-    FelmystBossEngagedByRangedOnGroundTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "felmyst boss engaged by ranged on ground") {}
+    FelmystRangedShouldSplitInThreeTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "felmyst ranged should split in three") {}
     bool IsActive() override;
 };
 
-class FelmystBossEngagedByMeleeOnGroundTrigger : public Trigger
+class FelmystMeleeShouldStayTogetherTrigger : public Trigger
 {
 public:
-    FelmystBossEngagedByMeleeOnGroundTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "felmyst boss engaged by melee on ground") {}
+    FelmystMeleeShouldStayTogetherTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "felmyst melee should stay together") {}
     bool IsActive() override;
 };
 
@@ -277,11 +281,11 @@ public:
     bool IsActive() override;
 };
 
-class EredarTwinsAlythessEngagedByFirstAssistTankTrigger : public Trigger
+class EredarTwinsAlythessCastsBlazeOnTankTrigger : public Trigger
 {
 public:
-    EredarTwinsAlythessEngagedByFirstAssistTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "eredar twins alythess engaged by first assist tank") {}
+    EredarTwinsAlythessCastsBlazeOnTankTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "eredar twins alythess casts blaze on tank") {}
     bool IsActive() override;
 };
 
@@ -402,8 +406,7 @@ public:
 class MuruDarknessIsComingTrigger : public Trigger
 {
 public:
-    MuruDarknessIsComingTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "m'uru darkness is coming") {}
+    MuruDarknessIsComingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "m'uru darkness is coming") {}
     bool IsActive() override;
 };
 

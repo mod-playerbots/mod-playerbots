@@ -11,8 +11,8 @@
 #include "GridNotifiersImpl.h"
 #include "NearestGameObjects.h"
 #include "Playerbots.h"
-#include "Spell.h"
 #include "ThreatManager.h"
+#include "Timer.h"
 #include <list>
 
 namespace SwpHelpers
@@ -24,6 +24,12 @@ namespace
 {
 
 std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
+
+std::vector<Position> const& GetCachedBlazePositions(PlayerbotAI* botAI)
+{
+    return botAI->GetAiObjectContext()
+        ->GetValue<std::vector<Position>>("eredar twins blaze")->RefGet();
+}
 
 // Adjusted positions are to address the occasional bug (?) where Alythess moves
 Position GetAdjustedPosition(Unit* alythess, Position const& basePosition)
@@ -52,7 +58,7 @@ std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
 
 std::unordered_map<uint32, EredarTwinsBlazeTargetState> eredarTwinsBlazeTargetStates;
 
-std::unordered_map<uint32, time_t> eredarTwinsDpsHoldTimer;
+std::unordered_map<uint32, uint32> eredarTwinsDpsHoldStartMs;
 
 Position GetAlythessTankPosition(Unit* alythess, uint8 index)
 {
@@ -93,7 +99,7 @@ bool ShouldHoldTwinThreat(
     bool foundTwinTankThreat = false;
     bool foundBotThreat = false;
 
-    auto const threatList = boss->GetThreatMgr().GetSortedThreatList();
+    auto const threatList = boss->GetThreatMgr().GetUnsortedThreatList();
     for (auto itr = threatList.begin(); itr != threatList.end(); ++itr)
     {
         ThreatReference const* threatRef = *itr;
@@ -130,22 +136,29 @@ bool ShouldHoldTwinThreat(
     return botThreat >= twinTankThreat * threatHoldRatio;
 }
 
-bool IsAlythessTankPositionSafe(Player* bot, Position const& position)
+std::vector<Position> FindEredarTwinsBlazePositions(Player* bot)
 {
-    constexpr float blazeDangerRadius = 4.5f;
-    constexpr float blazeSearchRadius = 30.0f;
+    std::list<GameObject*> nearbyObjects;
+    AnyGameObjectInObjectRangeCheck check(bot, EREDAR_TWINS_BLAZE_SEARCH_RADIUS);
+    Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(
+        bot, nearbyObjects, check);
+    Cell::VisitObjects(bot, searcher, EREDAR_TWINS_BLAZE_SEARCH_RADIUS);
 
-    std::list<GameObject*> targets;
-    AnyGameObjectInObjectRangeCheck u_check(bot, blazeSearchRadius);
-    Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, blazeSearchRadius);
-
-    for (GameObject* go : targets)
+    std::vector<Position> positions;
+    for (GameObject* nearbyObject : nearbyObjects)
     {
-        if (!go || go->GetEntry() != Id(SwpObjects::GO_BLAZE))
-            continue;
+        if (nearbyObject && nearbyObject->GetEntry() == Id(SwpObjects::GO_BLAZE))
+            positions.push_back(nearbyObject->GetPosition());
+    }
 
-        if (go->GetExactDist2d(position) <= blazeDangerRadius)
+    return positions;
+}
+
+bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position)
+{
+    for (Position const& blaze : GetCachedBlazePositions(botAI))
+    {
+        if (blaze.GetExactDist2d(position) <= EREDAR_TWINS_BLAZE_DANGER_RADIUS)
             return false;
     }
 
@@ -158,10 +171,9 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
         return false;
 
     ObjectGuid const botGuid = bot->GetGUID();
-    constexpr float blazeObjectRadius = 5.0f;
 
     GameObject* blazeObject = bot->FindNearestGameObject(
-        Id(SwpObjects::GO_BLAZE), blazeObjectRadius);
+        Id(SwpObjects::GO_BLAZE), EREDAR_TWINS_BLAZE_UNDERFOOT_RADIUS);
 
     if (!blazeObject)
     {
@@ -178,6 +190,11 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
     return true;
 }
 
+void RecordEredarTwinsDpsHoldStart(Player* bot)
+{
+    eredarTwinsDpsHoldStartMs.try_emplace(bot->GetInstanceId(), getMSTime());
+}
+
 void RecordIncomingEredarTwinsConflagrationTarget(Player* target)
 {
     if (!target)
@@ -187,13 +204,11 @@ void RecordIncomingEredarTwinsConflagrationTarget(Player* target)
     EredarTwinsIncomingConflagrationState& state =
         eredarTwinsIncomingConflagrationStates[target->GetInstanceId()];
 
-    constexpr uint32 conflagrationDelayMs = 300;
     if (state.targetGuid != target->GetGUID())
-        state.delayMs = now + conflagrationDelayMs;
+        state.delayMs = now + EREDAR_TWINS_CONFLAGRATION_DELAY_MS;
 
-    constexpr uint32 durationMs = 2000;
     state.targetGuid = target->GetGUID();
-    state.expireMs = now + durationMs;
+    state.expireMs = now + EREDAR_TWINS_CONFLAGRATION_WINDOW_MS;
 }
 
 Player* GetEredarTwinsConflagrationTarget(Player* bot)
@@ -234,11 +249,9 @@ void RecordEredarTwinsBlazeTarget(Player* target)
     if (!target)
         return;
 
-    constexpr uint32 durationMs = 2000;
-    uint32 const now = getMSTime();
     EredarTwinsBlazeTargetState& state = eredarTwinsBlazeTargetStates[target->GetInstanceId()];
     state.targetGuid = target->GetGUID();
-    state.expireMs = now + durationMs;
+    state.startMs = getMSTime();
 }
 
 Player* GetEredarTwinsBlazeTarget(Player* bot)
@@ -248,7 +261,7 @@ Player* GetEredarTwinsBlazeTarget(Player* bot)
         return nullptr;
 
     EredarTwinsBlazeTargetState const& state = itr->second;
-    if (state.expireMs <= getMSTime())
+    if (GetMSTimeDiffToNow(state.startMs) >= EREDAR_TWINS_BLAZE_TARGET_WINDOW_MS)
     {
         eredarTwinsBlazeTargetStates.erase(itr);
         return nullptr;
