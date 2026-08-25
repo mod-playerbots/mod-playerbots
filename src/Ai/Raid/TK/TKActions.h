@@ -26,6 +26,28 @@ public:
     bool Execute(Event event) override;
 };
 
+class TempestKeepClearStaleFallingFlagAction : public Action
+{
+public:
+    TempestKeepClearStaleFallingFlagAction(PlayerbotAI* botAI)
+        : Action(botAI, "tempest keep clear stale falling flag") {}
+    bool Execute(Event event) override;
+};
+
+// For Void Reaver, Sanguinar, Telonicus, and Kael'thas.
+class TempestKeepTankPositionAction : public AttackAction
+{
+public:
+    TempestKeepTankPositionAction(PlayerbotAI* botAI, std::string const name)
+        : AttackAction(botAI, name) {}
+
+protected:
+    // shouldAttack is false for a tank that is not assigned to the target but that is included
+    // in the action solely to reposition if it ends up with aggro.
+    bool MoveToTankPosition(
+        Unit* target, Position const& position, float tolerance, bool shouldAttack = true);
+};
+
 class TempestKeepCastFearWardOnMainTankAction : public Action
 {
 public:
@@ -132,6 +154,11 @@ public:
 private:
     bool AvoidFlamePatch();
     bool HandleDiveBomb(Unit* alar);
+    std::vector<Unit*> GetFlamePatches(float searchRadius);
+    Position FindSafestNearbyPosition(
+        std::vector<Unit*> const& flamePatches, float hazardRadius);
+    bool IsPathSafe(
+        Position const& end, std::vector<Unit*> const& flamePatches, float hazardRadius);
 };
 
 class AlarManagePhaseTrackerAction : public Action
@@ -144,11 +171,11 @@ public:
 
 // Void Reaver
 
-class VoidReaverTanksPositionBossAction : public AttackAction
+class VoidReaverTanksPositionBossAction : public TempestKeepTankPositionAction
 {
 public:
     VoidReaverTanksPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "void reaver tanks position boss") {}
+        : TempestKeepTankPositionAction(botAI, "void reaver tanks position boss") {}
     bool Execute(Event event) override;
 };
 
@@ -160,11 +187,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class VoidReaverKeepRangedInGoldilocksZoneAction : public MovementAction
+class VoidReaverRangedBackOffAndSpreadAction : public MovementAction
 {
 public:
-    VoidReaverKeepRangedInGoldilocksZoneAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "void reaver keep ranged in goldilocks zone") {}
+    VoidReaverRangedBackOffAndSpreadAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "void reaver ranged back off and spread") {}
     bool Execute(Event event) override;
 };
 
@@ -225,11 +252,12 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderMeleeTanksPositionAdvisorsAction : public AttackAction
+class KaelthasSunstriderMeleeTanksPositionAdvisorsAction : public TempestKeepTankPositionAction
 {
 public:
     KaelthasSunstriderMeleeTanksPositionAdvisorsAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kael'thas sunstrider melee tanks position advisors") {}
+        : TempestKeepTankPositionAction(
+              botAI, "kael'thas sunstrider melee tanks position advisors") {}
     bool Execute(Event event) override;
 };
 
@@ -340,11 +368,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderMainTankPositionBossAction : public AttackAction
+class KaelthasSunstriderMainTankPositionBossAction : public TempestKeepTankPositionAction
 {
 public:
     KaelthasSunstriderMainTankPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kael'thas sunstrider main tank position boss") {}
+        : TempestKeepTankPositionAction(botAI, "kael'thas sunstrider main tank position boss") {}
     bool Execute(Event event) override;
 };
 

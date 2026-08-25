@@ -16,12 +16,15 @@ public:
     RaidTempestKeepTriggerContext()
     {
         // General
-        creators["tempest keep bot is not in combat"] =
-            &RaidTempestKeepTriggerContext::tempest_keep_bot_is_not_in_combat;
+        creators["tempest keep no encounter in progress"] =
+            &RaidTempestKeepTriggerContext::tempest_keep_no_encounter_in_progress;
+
+        creators["tempest keep bot is stuck falling"] =
+            &RaidTempestKeepTriggerContext::tempest_keep_bot_is_stuck_falling;
 
         // Trash
-        creators["crimson hand centurion casts arcane volley"] =
-            &RaidTempestKeepTriggerContext::crimson_hand_centurion_casts_arcane_volley;
+        creators["crimson hand centurion casts arcane flurry"] =
+            &RaidTempestKeepTriggerContext::crimson_hand_centurion_casts_arcane_flurry;
 
         // Al'ar <Phoenix God>
         creators["al'ar pulling boss"] =
@@ -30,11 +33,11 @@ public:
         creators["al'ar boss is flying between platforms"] =
             &RaidTempestKeepTriggerContext::alar_boss_is_flying_between_platforms;
 
-        creators["al'ar embers of al'ar explode upon death"] =
-            &RaidTempestKeepTriggerContext::alar_embers_of_alar_explode_upon_death;
+        creators["al'ar embers explode upon death"] =
+            &RaidTempestKeepTriggerContext::alar_embers_explode_upon_death;
 
-        creators["al'ar killing embers of al'ar damages boss"] =
-            &RaidTempestKeepTriggerContext::alar_killing_embers_of_alar_damages_boss;
+        creators["al'ar killing embers damages boss"] =
+            &RaidTempestKeepTriggerContext::alar_killing_embers_damages_boss;
 
         creators["al'ar incoming flame quills"] =
             &RaidTempestKeepTriggerContext::alar_incoming_flame_quills;
@@ -42,18 +45,18 @@ public:
         creators["al'ar rising from the ashes"] =
             &RaidTempestKeepTriggerContext::alar_rising_from_the_ashes;
 
-        creators["al'ar everything is on fire in phase 2"] =
-            &RaidTempestKeepTriggerContext::alar_everything_is_on_fire_in_phase_2;
+        creators["al'ar is in phase 2"] =
+            &RaidTempestKeepTriggerContext::alar_is_in_phase_2;
 
         creators["al'ar should manage phase tracker"] =
             &RaidTempestKeepTriggerContext::alar_should_manage_phase_tracker;
 
         // Void Reaver
-        creators["void reaver boss casts pounding"] =
-            &RaidTempestKeepTriggerContext::void_reaver_boss_casts_pounding;
+        creators["void reaver should be tanked"] =
+            &RaidTempestKeepTriggerContext::void_reaver_should_be_tanked;
 
-        creators["void reaver knock away reduces tank aggro"] =
-            &RaidTempestKeepTriggerContext::void_reaver_knock_away_reduces_tank_aggro;
+        creators["void reaver knock away pulls aggro to non-tanks"] =
+            &RaidTempestKeepTriggerContext::void_reaver_knock_away_pulls_aggro_to_non_tanks;
 
         creators["void reaver ranged should stand back"] =
             &RaidTempestKeepTriggerContext::void_reaver_ranged_should_stand_back;
@@ -62,8 +65,8 @@ public:
             &RaidTempestKeepTriggerContext::void_reaver_arcane_orb_is_incoming;
 
         // High Astromancer Solarian
-        creators["high astromancer solarian engaged by main tank"] =
-            &RaidTempestKeepTriggerContext::high_astromancer_solarian_engaged_by_main_tank;
+        creators["high astromancer solarian should be tanked"] =
+            &RaidTempestKeepTriggerContext::high_astromancer_solarian_should_be_tanked;
 
         creators["high astromancer solarian bot has wrath of the astromancer"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_bot_has_wrath_of_the_astromancer;
@@ -81,8 +84,9 @@ public:
         creators["kael'thas sunstrider pulling tankable advisors"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_pulling_tankable_advisors;
 
-        creators["kael'thas sunstrider sanguinar or telonicus is active"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_or_telonicus_is_active;
+        creators["kael'thas sunstrider sanguinar or telonicus should be tanked"] =
+            &RaidTempestKeepTriggerContext::
+                kaelthas_sunstrider_sanguinar_or_telonicus_should_be_tanked;
 
         creators["kael'thas sunstrider sanguinar casts bellowing roar"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_casts_bellowing_roar;
@@ -93,8 +97,8 @@ public:
         creators["kael'thas sunstrider capernian blows up near and far"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_blows_up_near_and_far;
 
-        creators["kael'thas sunstrider bots have specific roles in phase 3"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_bots_have_specific_roles_in_phase_3;
+        creators["kael'thas sunstrider bots should hold phase 3 positions"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_bots_should_hold_phase_3_positions;
 
         creators["kael'thas sunstrider determining advisor kill order"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_determining_advisor_kill_order;
@@ -132,13 +136,16 @@ public:
 
 private:
     // General
-    static Trigger* tempest_keep_bot_is_not_in_combat(PlayerbotAI* botAI) {
-        return new TempestKeepBotIsNotInCombatTrigger(botAI);
+    static Trigger* tempest_keep_no_encounter_in_progress(PlayerbotAI* botAI) {
+        return new TempestKeepNoEncounterInProgressTrigger(botAI);
+    }
+    static Trigger* tempest_keep_bot_is_stuck_falling(PlayerbotAI* botAI) {
+        return new TempestKeepBotIsStuckFallingTrigger(botAI);
     }
 
     // Trash
-    static Trigger* crimson_hand_centurion_casts_arcane_volley(PlayerbotAI* botAI) {
-        return new CrimsonHandCenturionCastsArcaneVolleyTrigger(botAI);
+    static Trigger* crimson_hand_centurion_casts_arcane_flurry(PlayerbotAI* botAI) {
+        return new CrimsonHandCenturionCastsArcaneFlurryTrigger(botAI);
     }
 
     // Al'ar <Phoenix God>
@@ -148,11 +155,11 @@ private:
     static Trigger* alar_boss_is_flying_between_platforms(PlayerbotAI* botAI) {
         return new AlarBossIsFlyingBetweenPlatformsTrigger(botAI);
     }
-    static Trigger* alar_embers_of_alar_explode_upon_death(PlayerbotAI* botAI) {
-        return new AlarEmbersOfAlarExplodeUponDeathTrigger(botAI);
+    static Trigger* alar_embers_explode_upon_death(PlayerbotAI* botAI) {
+        return new AlarEmbersExplodeUponDeathTrigger(botAI);
     }
-    static Trigger* alar_killing_embers_of_alar_damages_boss(PlayerbotAI* botAI) {
-        return new AlarKillingEmbersOfAlarDamagesBossTrigger(botAI);
+    static Trigger* alar_killing_embers_damages_boss(PlayerbotAI* botAI) {
+        return new AlarKillingEmbersDamagesBossTrigger(botAI);
     }
     static Trigger* alar_incoming_flame_quills(PlayerbotAI* botAI) {
         return new AlarIncomingFlameQuillsTrigger(botAI);
@@ -160,19 +167,19 @@ private:
     static Trigger* alar_rising_from_the_ashes(PlayerbotAI* botAI) {
         return new AlarRisingFromTheAshesTrigger(botAI);
     }
-    static Trigger* alar_everything_is_on_fire_in_phase_2(PlayerbotAI* botAI) {
-        return new AlarEverythingIsOnFireInPhase2Trigger(botAI);
+    static Trigger* alar_is_in_phase_2(PlayerbotAI* botAI) {
+        return new AlarIsInPhase2Trigger(botAI);
     }
     static Trigger* alar_should_manage_phase_tracker(PlayerbotAI* botAI) {
         return new AlarShouldManagePhaseTrackerTrigger(botAI);
     }
 
     // Void Reaver
-    static Trigger* void_reaver_boss_casts_pounding(PlayerbotAI* botAI) {
-        return new VoidReaverBossCastsPoundingTrigger(botAI);
+    static Trigger* void_reaver_should_be_tanked(PlayerbotAI* botAI) {
+        return new VoidReaverShouldBeTankedTrigger(botAI);
     }
-    static Trigger* void_reaver_knock_away_reduces_tank_aggro(PlayerbotAI* botAI) {
-        return new VoidReaverKnockAwayReducesTankAggroTrigger(botAI);
+    static Trigger* void_reaver_knock_away_pulls_aggro_to_non_tanks(PlayerbotAI* botAI) {
+        return new VoidReaverKnockAwayPullsAggroToNonTanksTrigger(botAI);
     }
     static Trigger* void_reaver_ranged_should_stand_back(PlayerbotAI* botAI) {
         return new VoidReaverRangedShouldStandBackTrigger(botAI);
@@ -182,8 +189,8 @@ private:
     }
 
     // High Astromancer Solarian
-    static Trigger* high_astromancer_solarian_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianEngagedByMainTankTrigger(botAI);
+    static Trigger* high_astromancer_solarian_should_be_tanked(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianShouldBeTankedTrigger(botAI);
     }
     static Trigger* high_astromancer_solarian_bot_has_wrath_of_the_astromancer(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(botAI);
@@ -202,8 +209,9 @@ private:
     static Trigger* kaelthas_sunstrider_pulling_tankable_advisors(PlayerbotAI* botAI) {
         return new KaelthasSunstriderPullingTankableAdvisorsTrigger(botAI);
     }
-    static Trigger* kaelthas_sunstrider_sanguinar_or_telonicus_is_active(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderSanguinarOrTelonicusIsActiveTrigger(botAI);
+    static Trigger* kaelthas_sunstrider_sanguinar_or_telonicus_should_be_tanked(
+        PlayerbotAI* botAI) {
+        return new KaelthasSunstriderSanguinarOrTelonicusShouldBeTankedTrigger(botAI);
     }
     static Trigger* kaelthas_sunstrider_sanguinar_casts_bellowing_roar(PlayerbotAI* botAI) {
         return new KaelthasSunstriderSanguinarCastsBellowingRoarTrigger(botAI);
@@ -214,8 +222,8 @@ private:
     static Trigger* kaelthas_sunstrider_capernian_blows_up_near_and_far(PlayerbotAI* botAI) {
         return new KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger(botAI);
     }
-    static Trigger* kaelthas_sunstrider_bots_have_specific_roles_in_phase_3(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger(botAI);
+    static Trigger* kaelthas_sunstrider_bots_should_hold_phase_3_positions(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderBotsShouldHoldPhase3PositionsTrigger(botAI);
     }
     static Trigger* kaelthas_sunstrider_determining_advisor_kill_order(PlayerbotAI* botAI) {
         return new KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(botAI);

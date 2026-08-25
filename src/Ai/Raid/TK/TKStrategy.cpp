@@ -5,19 +5,20 @@
  */
 
 #include "TKStrategy.h"
-#include "AiObjectContext.h"
 #include "Playerbots.h"
-#include "TKHelpers.h"
 #include "TKMultipliers.h"
 
 void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
-    triggers.push_back(new TriggerNode("tempest keep bot is not in combat", {
+    triggers.push_back(new TriggerNode("tempest keep no encounter in progress", {
         NextAction("tempest keep reset encounter states", ACTION_EMERGENCY + 10) }));
 
+    triggers.push_back(new TriggerNode("tempest keep bot is stuck falling", {
+        NextAction("tempest keep clear stale falling flag", ACTION_EMERGENCY + 10) }));
+
     // Trash
-    triggers.push_back(new TriggerNode("crimson hand centurion casts arcane volley", {
+    triggers.push_back(new TriggerNode("crimson hand centurion casts arcane flurry", {
         NextAction("crimson hand centurion cast polymorph", ACTION_RAID) }));
 
     // Al'ar <Phoenix God>
@@ -29,10 +30,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("al'ar melee dps move between platforms", ACTION_RAID),
         NextAction("al'ar ranged and ember tank move under platforms", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode("al'ar embers of al'ar explode upon death", {
+    triggers.push_back(new TriggerNode("al'ar embers explode upon death", {
         NextAction("al'ar assist tanks pick up embers", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("al'ar killing embers of al'ar damages boss", {
+    triggers.push_back(new TriggerNode("al'ar killing embers damages boss", {
         NextAction("al'ar ranged dps prioritize embers", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("al'ar incoming flame quills", {
@@ -41,7 +42,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("al'ar rising from the ashes", {
         NextAction("al'ar move away from rebirth", ACTION_EMERGENCY + 7) }));
 
-    triggers.push_back(new TriggerNode("al'ar everything is on fire in phase 2", {
+    triggers.push_back(new TriggerNode("al'ar is in phase 2", {
         NextAction("al'ar swap tanks on boss", ACTION_EMERGENCY + 2),
         NextAction("al'ar avoid flame patches and dive bombs", ACTION_EMERGENCY + 1) }));
 
@@ -49,20 +50,20 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("al'ar manage phase tracker", ACTION_EMERGENCY + 10) }));
 
     // Void Reaver
-    triggers.push_back(new TriggerNode("void reaver boss casts pounding", {
+    triggers.push_back(new TriggerNode("void reaver should be tanked", {
         NextAction("void reaver tanks position boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("void reaver knock away reduces tank aggro", {
+    triggers.push_back(new TriggerNode("void reaver knock away pulls aggro to non-tanks", {
         NextAction("void reaver use aggro dump ability", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("void reaver ranged should stand back", {
-        NextAction("void reaver keep ranged in goldilocks zone", ACTION_RAID) }));
+        NextAction("void reaver ranged back off and spread", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("void reaver arcane orb is incoming", {
         NextAction("void reaver avoid arcane orb", ACTION_EMERGENCY + 1) }));
 
     // High Astromancer Solarian
-    triggers.push_back(new TriggerNode("high astromancer solarian engaged by main tank", {
+    triggers.push_back(new TriggerNode("high astromancer solarian should be tanked", {
         NextAction("high astromancer solarian main tank pick up boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("high astromancer solarian bot has wrath of the astromancer", {
@@ -81,7 +82,8 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider pulling tankable advisors", {
         NextAction("kael'thas sunstrider misdirect advisors to tanks", ACTION_EMERGENCY + 2) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider sanguinar or telonicus is active", {
+    triggers.push_back(new TriggerNode(
+        "kael'thas sunstrider sanguinar or telonicus should be tanked", {
         NextAction("kael'thas sunstrider melee tanks position advisors", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider sanguinar casts bellowing roar", {
@@ -93,7 +95,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider capernian blows up near and far", {
         NextAction("kael'thas sunstrider spread and move away from capernian", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider bots have specific roles in phase 3", {
+    triggers.push_back(new TriggerNode("kael'thas sunstrider bots should hold phase 3 positions", {
         NextAction("kael'thas sunstrider handle advisor roles in phase 3", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider determining advisor kill order", {
@@ -134,7 +136,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // Alar <Phoenix God>
-    multipliers.push_back(new AlarMoveBetweenPlatformsMultiplier(botAI));
+    multipliers.push_back(new AlarSuppressGapClosersMultiplier(botAI));
     multipliers.push_back(new AlarControlMovementMultiplier(botAI));
     multipliers.push_back(new AlarDisableAutomaticTargetingMultiplier(botAI));
     multipliers.push_back(new AlarStayAwayFromRebirthMultiplier(botAI));
@@ -162,50 +164,15 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier(botAI));
 }
 
-namespace
-{
-
-using namespace TkHelpers;
-
-void AppendKaelthasDevastationExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
-{
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
-        return;
-
-    uint32 const phase = GetKaelthasPhase(kaelthas);
-    if (phase != PHASE_NONE && (phase < PHASE_WEAPONS || phase > PHASE_ALL_ADVISORS))
-        return;
-
-    constexpr float searchRadius = 75.0f;
-    if (Creature* axe = botAI->GetBot()->FindNearestCreature(
-            Id(TkNpcs::NPC_DEVASTATION), searchRadius))
-    {
-        exclusions.insert(axe->GetGUID());
-    }
-}
-
-void AppendEmberOfAlarExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
-{
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->GetEntry() == Id(TkNpcs::NPC_EMBER_OF_ALAR))
-            exclusions.insert(unit->GetGUID());
-    }
-}
-
-} // end anonymous namespace
-
+// Used only to exclude melee dps from Kael'thas Phoenixes
 void RaidTempestKeepStrategy::AppendTargetExclusions(
     GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
     Player* bot = botAI->GetBot();
-    if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
+    if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
         return;
 
-    AppendKaelthasDevastationExclusions(botAI, exclusions);
-    AppendEmberOfAlarExclusions(botAI, exclusions);
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    if (Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix"))
+        exclusions.insert(phoenix->GetGUID());
 }

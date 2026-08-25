@@ -11,11 +11,11 @@
 
 // Al'ar <Phoenix God>
 
-class AlarMoveBetweenPlatformsMultiplier : public Multiplier
+class AlarSuppressGapClosersMultiplier : public Multiplier
 {
 public:
-    AlarMoveBetweenPlatformsMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "al'ar move between platforms") {}
+    AlarSuppressGapClosersMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "al'ar suppress gap closers") {}
     float GetValue(Action* action) override;
 };
 
@@ -93,7 +93,7 @@ class KaelthasSunstriderKiteThaladredMultiplier : public Multiplier
 {
 public:
     KaelthasSunstriderKiteThaladredMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "kael'thas sunstrider kite thaladred") {}
+        : Multiplier(botAI, "kael'thas sunstrider kiting thaladred") {}
     float GetValue(Action* action) override;
 };
 
