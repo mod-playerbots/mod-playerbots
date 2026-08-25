@@ -5,7 +5,6 @@
  */
 
 #include "ItemForSpellValue.h"
-
 #include "Playerbots.h"
 
 #ifndef WIN32

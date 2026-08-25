@@ -5,15 +5,15 @@
  */
 
 #include "BTTriggers.h"
-
 #include "AiFactory.h"
-#include "Playerbots.h"
 #include "BTActions.h"
 #include "BTHelpers.h"
-#include "RaidBossHelpers.h"
+#include "EncounterHelpers.h"
+#include "Playerbots.h"
 #include "SharedDefines.h"
 
 using namespace BlackTempleHelpers;
+using namespace EncounterHelpers;
 
 // General
 

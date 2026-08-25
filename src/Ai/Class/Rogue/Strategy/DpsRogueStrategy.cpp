@@ -5,7 +5,6 @@
  */
 
 #include "DpsRogueStrategy.h"
-
 #include "Playerbots.h"
 
 class DpsRogueStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

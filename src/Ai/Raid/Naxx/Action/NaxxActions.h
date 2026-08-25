@@ -11,9 +11,9 @@
 #include "AttackAction.h"
 #include "GenericActions.h"
 #include "MovementActions.h"
+#include "NaxxBossHelper.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
-#include "NaxxBossHelper.h"
 
 class GrobbulusGoBehindAction : public MovementAction
 {

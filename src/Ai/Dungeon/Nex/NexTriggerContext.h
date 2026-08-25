@@ -8,7 +8,6 @@
 #define PLAYERBOTS_NEXTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
-#include "AiObjectContext.h"
 #include "NexTriggers.h"
 
 class WotlkDungeonNexTriggerContext : public NamedObjectContext<Trigger>

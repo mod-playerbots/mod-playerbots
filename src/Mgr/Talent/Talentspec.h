@@ -7,9 +7,9 @@
 #ifndef PLAYERBOTS_TALENTSPEC_H
 #define PLAYERBOTS_TALENTSPEC_H
 
+#include "Player.h"
 #include <cstdint>
 #include <string>
-#include "Player.h"
 
 struct TalentEntry;
 struct TalentTabEntry;

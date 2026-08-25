@@ -7,10 +7,10 @@
 #ifndef PLAYERBOTS_FOSTRIGGERS_H
 #define PLAYERBOTS_FOSTRIGGERS_H
 
-#include "Trigger.h"
-#include "PlayerbotAIConfig.h"
-#include "GenericTriggers.h"
 #include "DungeonStrategyUtils.h"
+#include "GenericTriggers.h"
+#include "PlayerbotAIConfig.h"
+#include "Trigger.h"
 
 enum ForgeOfSoulsBronjahmIDs
 {

@@ -46,6 +46,7 @@ Authorship is assigned for each commit within the git history, which is stored i
 * Dennis
 * dillyns
 * Dreathean
+* Dustin Hendrickson
 * Engardium
 * EricksOliveira
 * Fiery
@@ -66,6 +67,7 @@ Authorship is assigned for each commit within the git history, which is stored i
 * Jelly
 * Jered
 * Jgoodwin64
+* jimm0thy
 * jublinq
 * Julien MAS
 * kadeshar

@@ -9,10 +9,10 @@
 
 #include "CureTriggers.h"
 #include "GenericTriggers.h"
-#include "SharedDefines.h"
-#include "Trigger.h"
-#include "TotemsShamanStrategy.h"
 #include "PlayerbotAI.h"
+#include "SharedDefines.h"
+#include "TotemsShamanStrategy.h"
+#include "Trigger.h"
 #include <ctime>
 
 class PlayerbotAI;

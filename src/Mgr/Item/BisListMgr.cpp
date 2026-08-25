@@ -5,7 +5,6 @@
  */
 
 #include "BisListMgr.h"
-
 #include "DatabaseEnv.h"
 #include "Field.h"
 #include "Log.h"

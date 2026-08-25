@@ -5,13 +5,13 @@
  */
 
 #include "BWLActions.h"
-
-#include "RtiTargetValue.h"
-#include "Playerbots.h"
 #include "BWLHelpers.h"
-#include "RaidBossHelpers.h"
+#include "EncounterHelpers.h"
+#include "Playerbots.h"
+#include "RtiTargetValue.h"
 
 using namespace BlackwingLairHelpers;
+using namespace EncounterHelpers;
 
 static constexpr float INCREMENTAL_MOVE_STEP_DISTANCE = 3.0f;
 
@@ -118,7 +118,7 @@ bool BwlRazorgoreMarkBossAction::Execute(Event /*event*/)
             if (MarkTargetWithMoon(bot, boss))
                 return true;
 
-            SetRtiTarget(botAI, "moon", boss);
+            SetRtiTarget(botAI, "moon");
 
             if (AI_VALUE(Unit*, "current target") != boss)
                 return Attack(boss);

@@ -5,7 +5,6 @@
  */
 
 #include "GenericRogueNonCombatStrategy.h"
-
 #include "Playerbots.h"
 
 class GenericRogueNonCombatStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

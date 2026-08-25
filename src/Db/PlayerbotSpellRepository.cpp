@@ -4,14 +4,12 @@
  * or (at your option) any later version.
  */
 
-#include "Log.h"
+#include "PlayerbotSpellRepository.h"
 #include "DBCStores.h"
 #include "DatabaseEnv.h"
 #include "Field.h"
-// Required due to poor implementation on AC side
-#include "QueryResult.h"
-
-#include "PlayerbotSpellRepository.h"
+#include "Log.h"
+#include "QueryResult.h"    // Required due to a poor implementation by AC
 
 //  caches the result set
 void PlayerbotSpellRepository::Initialize()

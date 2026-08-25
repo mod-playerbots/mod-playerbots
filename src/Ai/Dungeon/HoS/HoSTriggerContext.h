@@ -7,9 +7,8 @@
 #ifndef PLAYERBOTS_HOSTRIGGERCONTEXT_H
 #define PLAYERBOTS_HOSTRIGGERCONTEXT_H
 
-#include "NamedObjectContext.h"
-#include "AiObjectContext.h"
 #include "HoSTriggers.h"
+#include "NamedObjectContext.h"
 
 class WotlkDungeonHoSTriggerContext : public NamedObjectContext<Trigger>
 {

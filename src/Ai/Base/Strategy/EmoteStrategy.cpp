@@ -5,7 +5,6 @@
  */
 
 #include "EmoteStrategy.h"
-
 #include "Playerbots.h"
 
 void EmoteStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

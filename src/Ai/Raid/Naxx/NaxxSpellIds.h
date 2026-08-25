@@ -7,9 +7,8 @@
 #ifndef PLAYERBOTS_NAXXSPELLIDS_H
 #define PLAYERBOTS_NAXXSPELLIDS_H
 
-#include <initializer_list>
-
 #include "PlayerbotAI.h"
+#include <initializer_list>
 
 // use src/server/scripts/Northrend/Naxxramas/naxxramas.h for CreatureId, NaxxramasSay, NaxxramasEvent, NaxxramasMisc
 namespace NaxxSpellIds

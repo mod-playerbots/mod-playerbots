@@ -5,7 +5,6 @@
  */
 
 #include "AoeHealValues.h"
-
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 

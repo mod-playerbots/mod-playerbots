@@ -7,11 +7,11 @@
 #ifndef PLAYERBOTS_GENERICBUFFUTILS_H
 #define PLAYERBOTS_GENERICBUFFUTILS_H
 
+#include "Common.h"
 #include <string>
 #include <unordered_map>
 
-#include "Common.h"
-
+class Aura;
 class Player;
 class PlayerbotAI;
 class Unit;
@@ -20,6 +20,10 @@ namespace ai::buff
 {
 
 typedef std::unordered_map<std::string, uint32> MissingBuffReagentNoticeMap;
+
+// True when the buff should be (re)cast: topped off toward full duration during an
+// out-of-combat force-rebuff, below baseBeforeDuration ms remaining otherwise.
+bool BuffBelowRefreshTarget(PlayerbotAI* botAI, Aura* aura, uint32 baseBeforeDuration);
 
 bool IsGroupVariantEnabled(Player* bot, std::string const& name);
 

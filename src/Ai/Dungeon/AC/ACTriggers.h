@@ -7,9 +7,9 @@
 #ifndef PLAYERBOTS_ACTRIGGERS_H
 #define PLAYERBOTS_ACTRIGGERS_H
 
-#include "Trigger.h"
-#include "GenericTriggers.h"
 #include "DungeonStrategyUtils.h"
+#include "GenericTriggers.h"
+#include "Trigger.h"
 
 enum class AuchenaiCryptsIDs : uint32
 {

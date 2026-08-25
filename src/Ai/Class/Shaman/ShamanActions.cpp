@@ -5,10 +5,10 @@
  */
 
 #include "ShamanActions.h"
-#include "TotemsShamanStrategy.h"
-#include "Playerbots.h"
-#include "PlayerbotAI.h"
 #include "Action.h"
+#include "PlayerbotAI.h"
+#include "Playerbots.h"
+#include "TotemsShamanStrategy.h"
 
 bool CastTotemAction::isUseful()
 {

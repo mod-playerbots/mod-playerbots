@@ -7,14 +7,13 @@
 #ifndef PLAYERBOTS_ICCSHARED_H
 #define PLAYERBOTS_ICCSHARED_H
 
+#include "Playerbots.h"
+#include "RtiTargetValue.h"
 #include <cmath>
 #include <cstddef>
 #include <initializer_list>
 #include <optional>
 #include <vector>
-
-#include "Playerbots.h"
-#include "RtiTargetValue.h"
 
 class Action;
 

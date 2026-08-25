@@ -5,11 +5,9 @@
  */
 
 #include "NewRpgBaseAction.h"
-
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "Creature.h"
-#include "G3D/Vector2.h"
 #include "GameObject.h"
 #include "GossipDef.h"
 #include "GridTerrainData.h"
@@ -18,10 +16,10 @@
 #include "NewRpgStrategy.h"
 #include "Object.h"
 #include "ObjectAccessor.h"
-#include "OutdoorPvPMgr.h"
 #include "ObjectDefines.h"
 #include "ObjectGuid.h"
 #include "ObjectMgr.h"
+#include "OutdoorPvPMgr.h"
 #include "PathGenerator.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -37,6 +35,7 @@
 #include "StatsWeightCalculator.h"
 #include "Timer.h"
 #include "TravelMgr.h"
+#include "G3D/Vector2.h"
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 {

@@ -5,14 +5,13 @@
  */
 
 #include "ChangeTalentsAction.h"
-
 #include "AiFactory.h"
+#include "AiObjectContext.h"
 #include "ChatHelper.h"
 #include "Event.h"
+#include "Log.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
-#include "AiObjectContext.h"
-#include "Log.h"
 #include "RandomPlayerbotMgr.h"
 
 bool ChangeTalentsAction::Execute(Event event)

@@ -9,10 +9,10 @@
 
 #include "Action.h"
 #include "AttackAction.h"
+#include "CoSTriggers.h"
 #include "GenericSpellActions.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
-#include "CoSTriggers.h"
 
 class ExplodeGhoulSpreadAction : public MovementAction
 {

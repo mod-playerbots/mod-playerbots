@@ -4,10 +4,9 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "PoSTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
+#include "Playerbots.h"
 
 bool IckAndKrickTrigger::IsActive()
 {

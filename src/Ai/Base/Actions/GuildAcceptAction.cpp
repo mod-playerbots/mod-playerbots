@@ -5,7 +5,6 @@
  */
 
 #include "GuildAcceptAction.h"
-
 #include "Event.h"
 #include "GuildPackets.h"
 #include "PlayerbotSecurity.h"

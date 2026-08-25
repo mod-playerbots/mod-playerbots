@@ -7,13 +7,12 @@
 #ifndef PLAYERBOTS_TKHELPERS_H
 #define PLAYERBOTS_TKHELPERS_H
 
-#include <ctime>
-#include <unordered_map>
-#include <vector>
-
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
+#include <ctime>
+#include <unordered_map>
+#include <vector>
 
 namespace TempestKeepHelpers
 {
@@ -134,7 +133,7 @@ namespace TempestKeepHelpers
     void GetClosestPlatformAndGround(
         const Position& botPos, int8& closestPlatform, Position& ground);
     std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(PlayerbotAI* botAI);
-    Player* GetSecondEmberTank(PlayerbotAI* botAI);
+    Player* GetSecondEmberTank(Player* bot);
 
     // Void Reaver
     extern const Position VOID_REAVER_TANK_POSITION;
