@@ -44,12 +44,14 @@ struct KalecgosEncounterState
 extern std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
 
 inline constexpr uint8 KALECGOS_GROUP_COUNT = 4;
-// Rifts remain active for 10s after spawning. There is a 1s delay after a player enters the Rift
-// before the next player can enter.
-inline constexpr uint32 RIFT_ENTRY_WINDOW_MS = 10000;
-inline constexpr float KALECGOS_SPECTRAL_RIFT_SEARCH_RADIUS = 75.0f;
-inline constexpr uint32 KALECGOS_SPECTRAL_RIFT_CACHE_INTERVAL_MS = 200;
-inline constexpr float KALECGOS_SPECTRAL_REALM_Z = -74.5f;
+// Rifts remain active for 10s after spawning.
+inline constexpr uint32 RIFT_ACTIVE_WINDOW_MS = 10000;
+// Used to determine if Exhaustion will expire on a bot before the rift expires. Reduced to account
+// for AI tick delay + potential latency.
+inline constexpr uint32 RIFT_ENTRY_WINDOW_MS = RIFT_ACTIVE_WINDOW_MS - 200;
+inline constexpr float SPECTRAL_RIFT_SEARCH_RADIUS = 75.0f;
+inline constexpr uint32 SPECTRAL_RIFT_CACHE_INTERVAL_MS = 200;
+inline constexpr float SPECTRAL_REALM_Z = -74.5f;
 // Curse of Boundless Agony doubles its tick damage every 5 ticks and, when removed by dispel or
 // expiration, bounces to another player. Hold off on dispelling while damage is low (until 15s).
 inline constexpr uint32 KALECGOS_DISPEL_REMAINING_MS = 15000;

@@ -7,9 +7,9 @@
 #include "SWPEncounter_KJ.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
-#include "Timer.h"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 namespace SwpHelpers
 {
@@ -243,7 +243,7 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
 
     KiljaedenEncounterState& state = kiljaedenEncounterStates[bot->GetInstanceId()];
     if (!ShouldRebuildKiljaedenAssignments(
-            state.rangedAssignmentRebuildMs, KILJAEDEN_RANGED_ASSIGNMENT_REBUILD_INTERVAL_MS))
+            state.rangedAssignmentRebuildMs, RANGED_ASSIGNMENT_REBUILD_INTERVAL_MS))
     {
         return;
     }
@@ -360,8 +360,7 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
 
     // For bots to return to their normal positions once Armageddons stop.
     if (!ShouldRebuildKiljaedenAssignments(
-            state.rangedArmageddonRebuildMs,
-            KILJAEDEN_ARMAGEDDON_ASSIGNMENT_REBUILD_INTERVAL_MS))
+            state.rangedArmageddonRebuildMs, ARMAGEDDON_ASSIGNMENT_REBUILD_INTERVAL_MS))
     {
         return;
     }
@@ -515,7 +514,7 @@ GuidVector FindKiljaedenDragonOrbGuids(Player* bot)
     for (uint32 const orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
     {
         if (GameObject* orb =
-                bot->FindNearestGameObject(orbEntry, KILJAEDEN_DRAGON_ORB_SEARCH_RADIUS, true))
+                bot->FindNearestGameObject(orbEntry, DRAGON_ORB_SEARCH_RADIUS, true))
         {
             guids.push_back(orb->GetGUID());
         }
@@ -553,7 +552,7 @@ bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
         return false;
 
     if (getMSTimeDiff(stateItr->second.dragonOrbAnnouncementMs, getMSTime()) <
-        KILJAEDEN_ORB_ANNOUNCEMENT_RESET_MS)
+        DRAGON_ORB_ANNOUNCEMENT_RESET_MS)
     {
         return false;
     }
@@ -626,7 +625,7 @@ Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 s
         {
             Player* other = otherRef->GetSource();
             if (!IsDragonGroupTarget(bot, other) ||
-                candidate->GetExactDist2d(other) > KILJAEDEN_DRAGON_CLUSTER_RADIUS)
+                candidate->GetExactDist2d(other) > DRAGON_CLUSTER_RADIUS)
             {
                 continue;
             }
@@ -636,7 +635,7 @@ Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 s
                 ++clusterSize;
         }
 
-        if (clusterSize < KILJAEDEN_DRAGON_MIN_CLUSTER_SIZE)
+        if (clusterSize < DRAGON_MIN_CLUSTER_SIZE)
             continue;
 
         float const distanceToDragon = dragon->GetExactDist2d(candidate);

@@ -8,6 +8,8 @@
 #define PLAYERBOTS_SWPSTRATEGY_H
 
 #include "Strategy.h"
+#include <string>
+#include <vector>
 
 class RaidSunwellStrategy : public Strategy
 {

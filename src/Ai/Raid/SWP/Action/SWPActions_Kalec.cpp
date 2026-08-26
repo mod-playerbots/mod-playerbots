@@ -11,7 +11,7 @@
 #include "SWPEncounter_Kalec.h"
 #include "SWPSharedConstants.h"
 #include <algorithm>
-#include <string>
+#include <cmath>
 #include <map>
 
 using namespace SwpHelpers;
@@ -79,7 +79,7 @@ bool KalecgosSurfaceTankPositionDragonAction::Execute(Event event)
     Position const& position = KALECGOS_TANK_POSITION;
     float const distToPosition = bot->GetExactDist2d(position);
 
-    if (distToPosition > 3.0f && bot->IsWithinMeleeRange(kalecgos))
+    if (distToPosition > 3.0f)
     {
         float const posX = position.GetPositionX();
         float const posY = position.GetPositionY();
@@ -90,8 +90,9 @@ bool KalecgosSurfaceTankPositionDragonAction::Execute(Event event)
         float const toPosY = posY - botY;
         float const toBossX = kalecgos->GetPositionX() - botX;
         float const toBossY = kalecgos->GetPositionY() - botY;
+
         bool const backwards = kalecgos->GetVictim() == bot &&
-            (toPosX * toBossX + toPosY * toBossY) < 0.0f;
+            bot->IsWithinMeleeRange(kalecgos) && (toPosX * toBossX + toPosY * toBossY) < 0.0f;
 
         float const maxMoveDist = backwards ? 2.25f : 3.5f;
         float const moveDist = std::min(maxMoveDist, distToPosition);
@@ -99,8 +100,8 @@ bool KalecgosSurfaceTankPositionDragonAction::Execute(Event event)
         float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
         return MoveTo(
-            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-            false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, backwards);
     }
 
     if (GetKalecgosDesignatedTank(bot) == bot && kalecgos->GetVictim() != bot)
@@ -109,6 +110,7 @@ bool KalecgosSurfaceTankPositionDragonAction::Execute(Event event)
     return false;
 }
 
+// FYI, there is a (Blizzlike) delay of 1s after a player clicks a rift before the next can click.
 bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 {
     // Special conditions for tanks only
@@ -131,8 +133,8 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
     float const destY = rift->GetPositionY() + std::sin(angle) * targetDist;
 
     return MoveTo(
-        SWP_MAP_ID, destX, destY, rift->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        SWP_MAP_ID, destX, destY, rift->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool KalecgosEnterSpectralRiftAction::ShouldTankEnter()
@@ -141,13 +143,10 @@ bool KalecgosEnterSpectralRiftAction::ShouldTankEnter()
     if (!kalecgos)
         return false;
 
-    Player* surfaceTank = GetKalecgosDesignatedTank(bot);
-    if (!surfaceTank)
-        return false;
-
     // The current tank cannot enter a portal until the next tank takes over. If the designated
     // tank is still this bot, nobody has taken over yet.
-    if (surfaceTank == bot)
+    Player* surfaceTank = GetKalecgosDesignatedTank(bot);
+    if (!surfaceTank || surfaceTank == bot)
         return false;
 
     Position const& position = KALECGOS_TANK_POSITION;
@@ -235,8 +234,8 @@ bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
 bool KalecgosReturnToSpectralRealmGroundAction::Execute(Event /*event*/)
 {
     bot->NearTeleportTo(
-        bot->GetPositionX(), bot->GetPositionY(), KALECGOS_SPECTRAL_REALM_Z, bot->GetOrientation());
+        bot->GetPositionX(), bot->GetPositionY(), SPECTRAL_REALM_Z, bot->GetOrientation());
 
     constexpr float zTolerance = 1.0f;
-    return std::fabs(bot->GetPositionZ() - KALECGOS_SPECTRAL_REALM_Z) <= zTolerance;
+    return std::fabs(bot->GetPositionZ() - SPECTRAL_REALM_Z) <= zTolerance;
 }

@@ -18,8 +18,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("sunwell plateau no encounter in progress", {
         NextAction("sunwell plateau reset encounter states", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("sunwell plateau bot has protective aura", {
-        NextAction("sunwell plateau remove protective aura", ACTION_EMERGENCY) }));
+    triggers.push_back(new TriggerNode("sunwell plateau bot has aura to remove", {
+        NextAction("sunwell plateau remove aura", ACTION_EMERGENCY) }));
 
     // Trash
     triggers.push_back(new TriggerNode("volatile fiend self destructs when near", {
@@ -44,7 +44,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kalecgos bots take splash damage", {
         NextAction("kalecgos disperse ranged", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kalecgos bot has too many arcane buffet stacks", {
+    triggers.push_back(new TriggerNode("kalecgos too many arcane buffet stacks", {
         NextAction("kalecgos remove arcane buffet", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("kalecgos humanoid kalec tanks sathrovarr", {
@@ -57,7 +57,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("brutallus pulling boss", {
         NextAction("brutallus misdirect boss to main tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("brutallus boss engaged by tanks", {
+    triggers.push_back(new TriggerNode("brutallus requires two tanks", {
         NextAction("brutallus tanks position and swap", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("brutallus melee should stand in place", {
@@ -67,16 +67,16 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("brutallus position ranged in two groups", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("brutallus bot is burning", {
-        NextAction("brutallus handle burn", ACTION_EMERGENCY + 1) }));
+        NextAction("brutallus isolate burn", ACTION_EMERGENCY + 1) }));
 
     // Felmyst
     triggers.push_back(new TriggerNode("felmyst pulling boss", {
         NextAction("felmyst misdirect boss to main tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("felmyst boss engaged by main tank on ground", {
+    triggers.push_back(new TriggerNode("felmyst ground phase should be tanked", {
         NextAction("felmyst main tank position boss on ground", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("felmyst ranged should split in three", {
+    triggers.push_back(new TriggerNode("felmyst ranged should position to dispel and flee", {
         NextAction("felmyst ranged stack in three groups", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("felmyst melee should stay together", {
@@ -100,7 +100,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst fog of corruption is active", {
         NextAction("felmyst move to safe fog lane", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("felmyst melee cannot reach boss", {
+    triggers.push_back(new TriggerNode("felmyst melee cannot reach flying boss", {
         NextAction("felmyst melee clear target", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("felmyst player is charmed by fog", {
@@ -111,34 +111,34 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Eredar Twins
     triggers.push_back(new TriggerNode("eredar twins melee is at balcony", {
-        NextAction("eredar twins melee jump down from balcony", ACTION_EMERGENCY + 1) }));
+        NextAction("eredar twins melee jump from balcony", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("eredar twins pulling bosses", {
         NextAction("eredar twins misdirect bosses to tanks", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("eredar twins sacrolash engaged by two tanks", {
-        NextAction("eredar twins main and second assist tanks position sacrolash", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("eredar twins sacrolash requires two tanks", {
+        NextAction("eredar twins position sacrolash tanks", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("eredar twins alythess casts blaze on tank", {
-        NextAction("eredar twins first assist tank move out of blaze", ACTION_RAID) }));
+        NextAction("eredar twins alythess tank move out of blaze", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("eredar twins bosses engaged by ranged", {
-        NextAction("eredar twins position ranged", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("eredar twins ranged needs los", {
+        NextAction("eredar twins ranged stack at balcony edge", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("eredar twins determining dps priority", {
-        NextAction("eredar twins dps prioritize lady sacrolash", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("eredar twins should focus dps", {
+        NextAction("eredar twins dps prioritize sacrolash", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("eredar twins bot has too many flame touched stacks", {
+    triggers.push_back(new TriggerNode("eredar twins too many flame touched stacks", {
         NextAction("eredar twins remove flame sear", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode("eredar twins only one boss remains", {
+    triggers.push_back(new TriggerNode("eredar twins only alythess remains", {
         NextAction("eredar twins stack in room center", ACTION_RAID + 4) }));
 
-    triggers.push_back(new TriggerNode("eredar twins bot has conflagration", {
-        NextAction("eredar twins conflagrated bot move from group", ACTION_EMERGENCY + 10) }));
+    triggers.push_back(new TriggerNode("eredar twins active conflagration target", {
+        NextAction("eredar twins conflagration target move from group", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("eredar twins sacrolash victim has conflagration", {
-        NextAction("eredar twins move from conflag sacrolash victim", ACTION_EMERGENCY + 10) }));
+        NextAction("eredar twins move away from sacrolash victim", ACTION_EMERGENCY + 10) }));
 
     // M'uru
     triggers.push_back(new TriggerNode("m'uru void sentinel or entropius has appeared", {
@@ -147,8 +147,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru boss transformed into entropius", {
         NextAction("m'uru main tank pick up entropius", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("m'uru bosses engaged by ranged", {
-        NextAction("m'uru position ranged", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("m'uru ranged should stack or spread", {
+        NextAction("m'uru position ranged by phase", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("m'uru void sentinel pulses shadow", {
         NextAction("m'uru tanks move sentinel to safe position", ACTION_RAID + 1) }));
@@ -166,7 +166,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("m'uru melee flee the darkness", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("m'uru berserker is buffed with flurry", {
-        NextAction("m'uru cast stun on shadowsword berserker", ACTION_RAID + 3) }));
+        NextAction("m'uru cast stun on berserker", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("m'uru fury mage casting fel fireball", {
         NextAction("m'uru interrupt fel fireball", ACTION_EMERGENCY + 1) }));
@@ -178,13 +178,13 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("m'uru warlock enslave void spawn", ACTION_RAID + 5) }));
 
     triggers.push_back(new TriggerNode("m'uru warlock has enslaved void spawn", {
-        NextAction("m'uru enslaved void spawn cast shadow bolt volley", ACTION_RAID + 4) }));
+        NextAction("m'uru void spawn cast shadow bolt volley", ACTION_RAID + 4) }));
 
-    triggers.push_back(new TriggerNode("m'uru entropius spawns darkness pools", {
-        NextAction("m'uru don't touch the dark fiend", ACTION_EMERGENCY + 9) }));
+    triggers.push_back(new TriggerNode("m'uru entropius darkness pools spawn dark fiends", {
+        NextAction("m'uru keep distance from dark fiends", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("m'uru the singularity is near", {
-        NextAction("m'uru flee from singularity", ACTION_EMERGENCY + 7) }));
+        NextAction("m'uru escape the singularity", ACTION_EMERGENCY + 7) }));
 
     // Kil'jaeden <The Deceiver>
     triggers.push_back(new TriggerNode("kil'jaeden encounter has begun", {
@@ -192,16 +192,16 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("kil'jaeden hands of the deceiver are active", {
         NextAction("kil'jaeden stun hands of the deceiver", ACTION_EMERGENCY),
-        NextAction("kil'jaeden mark and prioritize hands of the deceiver", ACTION_RAID) }));
+        NextAction("kil'jaeden assign hands of the deceiver", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden boss engaged by tanks", {
-        NextAction("kil'jaeden position tanks", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("kil'jaeden tanks should hold boss and reflections", {
+        NextAction("kil'jaeden position and move tanks", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden boss engaged by melee", {
         NextAction("kil'jaeden position melee", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden boss engaged by ranged", {
-        NextAction("kil'jaeden position ranged", ACTION_RAID) }));
+        NextAction("kil'jaeden position ranged and avoid armageddons", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden bot has fire bloom", {
         NextAction("kil'jaeden remove fire bloom", ACTION_EMERGENCY + 1) }));
@@ -216,7 +216,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kil'jaeden release stale root", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden bot controls dragon", {
-        NextAction("kil'jaeden control dragon", ACTION_RAID + 3) }));
+        NextAction("kil'jaeden dragon buff and protect raid", ACTION_RAID + 3) }));
 }
 
 void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -227,6 +227,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new KalecgosControlMovementMultiplier(botAI));
     multipliers.push_back(new KalecgosRestrictTauntMultiplier(botAI));
     multipliers.push_back(new KalecgosSuppressAssistTankPullThreatMultiplier(botAI));
+    multipliers.push_back(new KalecgosEnterSpectralRiftMultiplier(botAI));
     multipliers.push_back(new KalecgosDelayCooldownsForSathrovarrMultiplier(botAI));
 
     // Brutallus
@@ -252,7 +253,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new EredarTwinsHoldDpsAtStartMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
-    multipliers.push_back(new EredarTwinsNoMovingIntoConflagrationMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsIsolateConflagrationMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDelayCooldownsMultiplier(botAI));
 
     // M'uru

@@ -153,10 +153,10 @@ inline constexpr uint32 SWP_MAP_ID = 580;
 inline constexpr float SWP_PULL_COMPLETE_HP_PERCENT = 95.0f;
 
 // Shared by the trigger and the action so the two cannot drift apart
-inline constexpr float SWP_VOLATILE_FIEND_SEARCH_RADIUS = 25.0f;
+inline constexpr float VOLATILE_FIEND_SEARCH_RADIUS = 25.0f;
 
 // Feeds the "swp volatile fiend" value
-inline constexpr uint32 SWP_VOLATILE_FIEND_CACHE_INTERVAL_MS = 200;
+inline constexpr uint32 VOLATILE_FIEND_CACHE_INTERVAL_MS = 200;
 
 }
 

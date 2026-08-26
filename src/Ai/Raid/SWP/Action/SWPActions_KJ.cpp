@@ -11,9 +11,8 @@
 #include "SWPEncounter_KJ.h"
 #include "SWPSharedConstants.h"
 #include <algorithm>
+#include <cmath>
 #include <map>
-#include <string>
-#include <vector>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -52,7 +51,7 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 
     return botAI->SayToRaid(text);
 }
-bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/)
+bool KiljaedenAssignHandsOfTheDeceiverAction::Execute(Event /*event*/)
 {
     // Fewer than 3 bot tanks makes this a headache so just skip in that case;
     // it's not vital anyway
@@ -87,7 +86,7 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
     return AI_VALUE(Unit*, "current target") != hands.front() && Attack(hands.front());
 }
 
-bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
+bool KiljaedenAssignHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
     std::vector<Unit*> const& hands,
     Player* mainTank, Player* firstAssistTank, Player* secondAssistTank)
 {
@@ -184,8 +183,8 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::ExecuteTankHandAssignme
             continue;
 
         float const distFromTank = bot->GetExactDist2d(otherTank);
-        if (distFromTank < KILJAEDEN_HAND_TANK_SEPARATION)
-            return MoveAway(otherTank, KILJAEDEN_HAND_TANK_SEPARATION - distFromTank, true);
+        if (distFromTank < HAND_TANK_SEPARATION)
+            return MoveAway(otherTank, HAND_TANK_SEPARATION - distFromTank, true);
     }
 
     return false;
@@ -201,7 +200,7 @@ bool KiljaedenStunHandsOfTheDeceiverAction::Execute(Event /*event*/)
     for (ObjectGuid const& targetGuid : targets)
     {
         Unit* target = botAI->GetUnit(targetGuid);
-        if (!target || target->GetHealthPct() <= KILJAEDEN_HAND_STUN_IMMUNE_HP_PERCENT ||
+        if (!target || target->GetHealthPct() <= HAND_STUN_IMMUNE_HP_PERCENT ||
             target->GetEntry() != Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
         {
             continue;
@@ -223,7 +222,7 @@ bool KiljaedenStunHandsOfTheDeceiverAction::Execute(Event /*event*/)
 bool KiljaedenStunHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
 {
     // 80% HP is arbitrary; it's to try to let tanks get some spread before stunning
-    if (hand->GetHealthPct() > KILJAEDEN_HAND_STUN_MAX_HP_PERCENT)
+    if (hand->GetHealthPct() > HAND_STUN_MAX_HP_PERCENT)
         return false;
 
     auto const castSpell = [&](char const* spell)
@@ -289,7 +288,7 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
     }
 }
 
-bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
+bool KiljaedenPositionAndMoveTanksAction::Execute(Event /*event*/)
 {
     if (!PlayerbotAI::IsMainTank(bot))
     {
@@ -318,7 +317,7 @@ bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
 // When Reflections activate after 3s, they begin attack with SMART_ACTION_ATTACK_START, which sets
 // a random victim. Thus, the first landed hit after activation should immediately grab aggro, and
 // we want that to be a tank, so hopefully they can get in range to start attacking before 3s pass.
-bool KiljaedenPositionTanksAction::PickUpSinisterReflections(Creature* reflection)
+bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* reflection)
 {
     if (AI_VALUE(Unit*, "current target") != reflection)
         return Attack(reflection);
@@ -459,7 +458,7 @@ bool KiljaedenPositionMeleeAction::TryAdjustForArmageddon(Position& position)
     return position != Position();
 }
 
-bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
+bool KiljaedenPositionRangedAndAvoidArmageddonsAction::Execute(Event /*event*/)
 {
     Position position;
     if (!TryGetPosition(position))
@@ -476,7 +475,7 @@ bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool KiljaedenPositionRangedAction::TryGetPosition(Position& position) const
+bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetPosition(Position& position) const
 {
     EnsureKiljaedenRangedAssignments(bot);
 
@@ -491,7 +490,7 @@ bool KiljaedenPositionRangedAction::TryGetPosition(Position& position) const
     return TryGetKiljaedenRangedSlotPosition(assignmentItr->second, position);
 }
 
-bool KiljaedenPositionRangedAction::TryAdjustForArmageddon(Position& position)
+bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryAdjustForArmageddon(Position& position)
 {
     EnsureKiljaedenRangedArmageddonAssignments(bot);
     auto const armageddonAssignmentItr =
@@ -544,13 +543,11 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
         Spell* darknessSpell = kiljaeden->FindCurrentSpellBySpellId(
             Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
         if (darknessSpell &&
-            darknessSpell->GetCastTimeRemaining() >= KILJAEDEN_SHIELD_OF_THE_BLUE_CAST_WINDOW_MS)
+            darknessSpell->GetCastTimeRemaining() >= SHIELD_OF_THE_BLUE_CAST_WINDOW_MS)
         {
             float const angle = darknessPosition.GetAngle(bot);
-            destX = darknessPosition.GetPositionX() +
-                std::cos(angle) * KILJAEDEN_FIRE_BLOOM_STANDOFF;
-            destY = darknessPosition.GetPositionY() +
-                std::sin(angle) * KILJAEDEN_FIRE_BLOOM_STANDOFF;
+            destX = darknessPosition.GetPositionX() + std::cos(angle) * FIRE_BLOOM_STANDOFF;
+            destY = darknessPosition.GetPositionY() + std::sin(angle) * FIRE_BLOOM_STANDOFF;
         }
     }
 
@@ -606,7 +603,7 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
         if (!closestInUseOrb)
             return false;
 
-        if (closestInUseOrbDistance <= KILJAEDEN_ORB_IN_USE_HOLD_DISTANCE)
+        if (closestInUseOrbDistance <= DRAGON_ORB_IN_USE_HOLD_DISTANCE)
             return true;
 
         return MoveTo(
@@ -644,7 +641,7 @@ bool KiljaedenReleaseStaleRootAction::Execute(Event /*event*/)
     return true;
 }
 
-bool KiljaedenControlDragonAction::Execute(Event /*event*/)
+bool KiljaedenDragonBuffAndProtectRaidAction::Execute(Event /*event*/)
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden)
@@ -672,7 +669,7 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
     return ExecuteOutsideDarknessOfAThousandSouls(dragon);
 }
 
-bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
+bool KiljaedenDragonBuffAndProtectRaidAction::ExecuteDuringDarknessOfAThousandSouls(
     Unit* kiljaeden, Unit* dragon)
 {
     Spell* darknessSpell = kiljaeden->FindCurrentSpellBySpellId(
@@ -707,7 +704,7 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
     if (dragon->IsNonMeleeSpellCast(false))
         return false;
 
-    if (darknessSpell->GetCastTimeRemaining() < KILJAEDEN_SHIELD_OF_THE_BLUE_CAST_WINDOW_MS)
+    if (darknessSpell->GetCastTimeRemaining() < SHIELD_OF_THE_BLUE_CAST_WINDOW_MS)
         return CastKiljaedenDragonSpell(dragon, Id(SwpSpells::SPELL_SHIELD_OF_THE_BLUE));
     else if (CastKiljaedenDragonSpell(dragon, Id(SwpSpells::SPELL_DRAGON_BREATH_HASTE)))
         return true;
@@ -717,7 +714,7 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
     return false;
 }
 
-bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* dragon)
+bool KiljaedenDragonBuffAndProtectRaidAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* dragon)
 {
     if (dragon->IsNonMeleeSpellCast(false))
         return false;
@@ -765,14 +762,14 @@ bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* 
 
     float const distanceToTarget = dragon->GetExactDist2d(target);
 
-    if (distanceToTarget > KILJAEDEN_DRAGON_BREATH_STANDOFF + KILJAEDEN_DRAGON_STANDOFF_TOLERANCE ||
+    if (distanceToTarget > DRAGON_BREATH_STANDOFF + DRAGON_STANDOFF_TOLERANCE ||
         (distanceToTarget > std::numeric_limits<float>::min() &&
-         distanceToTarget < KILJAEDEN_DRAGON_BREATH_STANDOFF - KILJAEDEN_DRAGON_STANDOFF_TOLERANCE))
+         distanceToTarget < DRAGON_BREATH_STANDOFF - DRAGON_STANDOFF_TOLERANCE))
     {
         float const deltaX = target->GetPositionX() - dragon->GetPositionX();
         float const deltaY = target->GetPositionY() - dragon->GetPositionY();
         float const moveRatio =
-            (distanceToTarget - KILJAEDEN_DRAGON_BREATH_STANDOFF) / distanceToTarget;
+            (distanceToTarget - DRAGON_BREATH_STANDOFF) / distanceToTarget;
         float const moveX = dragon->GetPositionX() + deltaX * moveRatio;
         float const moveY = dragon->GetPositionY() + deltaY * moveRatio;
 

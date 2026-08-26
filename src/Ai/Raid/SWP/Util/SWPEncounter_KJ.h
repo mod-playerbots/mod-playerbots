@@ -64,8 +64,8 @@ inline constexpr float KILJAEDEN_PHASE4_HP_THRESHOLD = 55.0f;
 inline constexpr float KILJAEDEN_PHASE5_HP_THRESHOLD = 25.0f;
 
 // Throttle assigned ranged position rebuilds since they should be stable during the encounter.
-inline constexpr uint32 KILJAEDEN_RANGED_ASSIGNMENT_REBUILD_INTERVAL_MS = 1000;
-inline constexpr uint32 KILJAEDEN_ARMAGEDDON_ASSIGNMENT_REBUILD_INTERVAL_MS = 250;
+inline constexpr uint32 RANGED_ASSIGNMENT_REBUILD_INTERVAL_MS = 1000;
+inline constexpr uint32 ARMAGEDDON_ASSIGNMENT_REBUILD_INTERVAL_MS = 250;
 
 // Ranges used for tank abilities during the manual Sinister Reflection pickup sequence.
 inline constexpr float KILJAEDEN_REFLECTION_RANGED_REACH = 30.0f;
@@ -83,33 +83,33 @@ inline constexpr float KILJAEDEN_SHOCKWAVE_RADIUS = 10.0f;
 // Hands cast Shadow Infusion (45772) at or below 20% health, which makes them permanently immune
 // to both stun and silence. The 80% gate is arbitrary and intended to let the tanks spread the
 // Hands before they are stunned in place (to try to avoid Shadow Bolt Volley coverage).
-inline constexpr float KILJAEDEN_HAND_STUN_IMMUNE_HP_PERCENT = 20.0f;
-inline constexpr float KILJAEDEN_HAND_STUN_MAX_HP_PERCENT = 80.0f;
+inline constexpr float HAND_STUN_IMMUNE_HP_PERCENT = 20.0f;
+inline constexpr float HAND_STUN_MAX_HP_PERCENT = 80.0f;
 
 // How far apart the Hands are kept by tanks
-inline constexpr float KILJAEDEN_HAND_TANK_SEPARATION = 15.0f;
+inline constexpr float HAND_TANK_SEPARATION = 15.0f;
 
 // Shield of the Blue (45848) lasts 5s and Darkness of a Thousand Souls (46605) is an 8s channel, so
 // the dragon casts once <4.5s remain.
 // Bots with Fire Bloom hold clear of the stack until the same point.
-inline constexpr int32 KILJAEDEN_SHIELD_OF_THE_BLUE_CAST_WINDOW_MS = 4500;
-inline constexpr float KILJAEDEN_DRAGON_ORB_SEARCH_RADIUS = 200.0f;
+inline constexpr int32 SHIELD_OF_THE_BLUE_CAST_WINDOW_MS = 4500;
+inline constexpr float DRAGON_ORB_SEARCH_RADIUS = 200.0f;
 
 // The presence of Dragon Orbs is cached, but GO_FLAG_IN_USE and GO_FLAG_NOT_SELECTABLE are not.
-inline constexpr uint32 KILJAEDEN_DRAGON_ORB_CACHE_INTERVAL_MS = 200;
-inline constexpr float KILJAEDEN_ORB_IN_USE_HOLD_DISTANCE = 15.0f;
+inline constexpr uint32 DRAGON_ORB_CACHE_INTERVAL_MS = 200;
+inline constexpr float DRAGON_ORB_IN_USE_HOLD_DISTANCE = 15.0f;
 // Grace after using an Orb before a lingering root is considered stale and is cleared.
-inline constexpr uint32 KILJAEDEN_ORB_USE_GRACE_MS = 2000;
-inline constexpr uint32 KILJAEDEN_ORB_ANNOUNCEMENT_RESET_MS = 10000;
+inline constexpr uint32 DRAGON_ORB_USE_GRACE_MS = 2000;
+inline constexpr uint32 DRAGON_ORB_ANNOUNCEMENT_RESET_MS = 10000;
 // Bots with Fire Bloom hold this far off the Darkness stack until the Shield casts.
-inline constexpr float KILJAEDEN_FIRE_BLOOM_STANDOFF = 15.0f;
+inline constexpr float FIRE_BLOOM_STANDOFF = 15.0f;
 
 // Breath: Haste and Breath: Revitalize are 13-yard cones on allies, so the dragon stops a little
 // under half that from its target and looks for a cluster of roughly the same to cover at once.
-inline constexpr float KILJAEDEN_DRAGON_BREATH_STANDOFF = 6.0f;
-inline constexpr float KILJAEDEN_DRAGON_STANDOFF_TOLERANCE = 1.0f;
-inline constexpr float KILJAEDEN_DRAGON_CLUSTER_RADIUS = 6.0f;
-inline constexpr uint8 KILJAEDEN_DRAGON_MIN_CLUSTER_SIZE = 3;
+inline constexpr float DRAGON_BREATH_STANDOFF = 6.0f;
+inline constexpr float DRAGON_STANDOFF_TOLERANCE = 1.0f;
+inline constexpr float DRAGON_CLUSTER_RADIUS = 6.0f;
+inline constexpr uint8 DRAGON_MIN_CLUSTER_SIZE = 3;
 
 inline constexpr float KILJAEDEN_RANGED_ARC_ORIENTATION = 0.8f;
 inline constexpr float KILJAEDEN_INNER_RANGED_RADIUS = 23.0f;
@@ -120,8 +120,8 @@ inline constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
     KILJAEDEN_INNER_RANGED_SLOT_COUNT + KILJAEDEN_OUTER_RANGED_SLOT_COUNT;
 // Only up to two ranged bots may share a slot when an Armageddon forces a reshuffle.
 inline constexpr uint8 KILJAEDEN_MAX_BOTS_PER_RANGED_SLOT = 2;
-inline constexpr uint32 KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS = 10000;
-inline constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 11.0f;
+inline constexpr uint32 ARMAGEDDON_HAZARD_DURATION_MS = 10000;
+inline constexpr float ARMAGEDDON_SAFE_DISTANCE = 11.0f;
 
 inline Position const KILJAEDEN_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
 inline Position const KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };

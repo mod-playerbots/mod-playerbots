@@ -11,7 +11,6 @@
 #include "Position.h"
 #include "SWPSharedConstants.h"
 #include <array>
-#include <cmath>
 #include <unordered_map>
 
 class Player;
@@ -111,6 +110,7 @@ bool TryGetBrutallusLaneTraversalPosition(
     Player* bot, Unit* brutallus, float targetX, float targetY, float radius,
     float currentX, float currentY, Position& position);
 bool ReleaseBrutallusBurnPad(Player* bot);
+bool HasBrutallusBurn(Player* bot);
 
 }
 

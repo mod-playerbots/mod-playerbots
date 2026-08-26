@@ -19,8 +19,8 @@ public:
         creators["sunwell plateau reset encounter states"] =
             &RaidSunwellActionContext::sunwell_plateau_reset_encounter_states;
 
-        creators["sunwell plateau remove protective aura"] =
-            &RaidSunwellActionContext::sunwell_plateau_remove_protective_aura;
+        creators["sunwell plateau remove aura"] =
+            &RaidSunwellActionContext::sunwell_plateau_remove_aura;
 
         // Trash
         creators["volatile fiend keep enemy away from group"] =
@@ -67,8 +67,8 @@ public:
         creators["brutallus position ranged in two groups"] =
             &RaidSunwellActionContext::brutallus_position_ranged_in_two_groups;
 
-        creators["brutallus handle burn"] =
-            &RaidSunwellActionContext::brutallus_handle_burn;
+        creators["brutallus isolate burn"] =
+            &RaidSunwellActionContext::brutallus_isolate_burn;
 
         // Felmyst
         creators["felmyst misdirect boss to main tank"] =
@@ -111,20 +111,20 @@ public:
             &RaidSunwellActionContext::felmyst_manage_landing_dps_timer;
 
         // Eredar Twins
-        creators["eredar twins melee jump down from balcony"] =
-            &RaidSunwellActionContext::eredar_twins_melee_jump_down_from_balcony;
+        creators["eredar twins melee jump from balcony"] =
+            &RaidSunwellActionContext::eredar_twins_melee_jump_from_balcony;
 
         creators["eredar twins misdirect bosses to tanks"] =
             &RaidSunwellActionContext::eredar_twins_misdirect_bosses_to_tanks;
 
-        creators["eredar twins main and second assist tanks position sacrolash"] =
-            &RaidSunwellActionContext::eredar_twins_main_and_second_assist_tanks_position_sacrolash;
+        creators["eredar twins position sacrolash tanks"] =
+            &RaidSunwellActionContext::eredar_twins_position_sacrolash_tanks;
 
-        creators["eredar twins first assist tank move out of blaze"] =
-            &RaidSunwellActionContext::eredar_twins_first_assist_tank_move_out_of_blaze;
+        creators["eredar twins alythess tank move out of blaze"] =
+            &RaidSunwellActionContext::eredar_twins_alythess_tank_move_out_of_blaze;
 
-        creators["eredar twins position ranged"] =
-            &RaidSunwellActionContext::eredar_twins_position_ranged;
+        creators["eredar twins ranged stack at balcony edge"] =
+            &RaidSunwellActionContext::eredar_twins_ranged_stack_at_balcony_edge;
 
         creators["eredar twins stack in room center"] =
             &RaidSunwellActionContext::eredar_twins_stack_in_room_center;
@@ -132,14 +132,14 @@ public:
         creators["eredar twins remove flame sear"] =
             &RaidSunwellActionContext::eredar_twins_remove_flame_sear;
 
-        creators["eredar twins dps prioritize lady sacrolash"] =
-            &RaidSunwellActionContext::eredar_twins_dps_prioritize_lady_sacrolash;
+        creators["eredar twins dps prioritize sacrolash"] =
+            &RaidSunwellActionContext::eredar_twins_dps_prioritize_sacrolash;
 
-        creators["eredar twins conflagrated bot move from group"] =
-            &RaidSunwellActionContext::eredar_twins_conflagrated_bot_move_from_group;
+        creators["eredar twins conflagration target move from group"] =
+            &RaidSunwellActionContext::eredar_twins_conflagration_target_move_from_group;
 
-        creators["eredar twins move from conflag sacrolash victim"] =
-            &RaidSunwellActionContext::eredar_twins_move_from_conflag_sacrolash_victim;
+        creators["eredar twins move away from sacrolash victim"] =
+            &RaidSunwellActionContext::eredar_twins_move_away_from_sacrolash_victim;
 
         // M'uru
         creators["m'uru misdirect enemies to tanks"] =
@@ -148,8 +148,8 @@ public:
         creators["m'uru main tank pick up entropius"] =
             &RaidSunwellActionContext::muru_main_tank_pick_up_entropius;
 
-        creators["m'uru position ranged"] =
-            &RaidSunwellActionContext::muru_position_ranged;
+        creators["m'uru position ranged by phase"] =
+            &RaidSunwellActionContext::muru_position_ranged_by_phase;
 
         creators["m'uru assign dps priority"] =
             &RaidSunwellActionContext::muru_assign_dps_priority;
@@ -166,8 +166,8 @@ public:
         creators["m'uru melee flee the darkness"] =
             &RaidSunwellActionContext::muru_melee_flee_the_darkness;
 
-        creators["m'uru cast stun on shadowsword berserker"] =
-            &RaidSunwellActionContext::muru_cast_stun_on_shadowsword_berserker;
+        creators["m'uru cast stun on berserker"] =
+            &RaidSunwellActionContext::muru_cast_stun_on_berserker;
 
         creators["m'uru interrupt fel fireball"] =
             &RaidSunwellActionContext::muru_interrupt_fel_fireball;
@@ -178,33 +178,33 @@ public:
         creators["m'uru warlock enslave void spawn"] =
             &RaidSunwellActionContext::muru_warlock_enslave_void_spawn;
 
-        creators["m'uru enslaved void spawn cast shadow bolt volley"] =
-            &RaidSunwellActionContext::muru_enslaved_void_spawn_cast_shadow_bolt_volley;
+        creators["m'uru void spawn cast shadow bolt volley"] =
+            &RaidSunwellActionContext::muru_void_spawn_cast_shadow_bolt_volley;
 
-        creators["m'uru don't touch the dark fiend"] =
-            &RaidSunwellActionContext::muru_dont_touch_the_dark_fiend;
+        creators["m'uru keep distance from dark fiends"] =
+            &RaidSunwellActionContext::muru_keep_distance_from_dark_fiends;
 
-        creators["m'uru flee from singularity"] =
-            &RaidSunwellActionContext::muru_flee_from_singularity;
+        creators["m'uru escape the singularity"] =
+            &RaidSunwellActionContext::muru_escape_the_singularity;
 
         // Kil'jaeden <The Deceiver>
         creators["kil'jaeden announce dragon orb user"] =
             &RaidSunwellActionContext::kiljaeden_announce_dragon_orb_user;
 
-        creators["kil'jaeden mark and prioritize hands of the deceiver"] =
-            &RaidSunwellActionContext::kiljaeden_mark_and_prioritize_hands_of_the_deceiver;
+        creators["kil'jaeden assign hands of the deceiver"] =
+            &RaidSunwellActionContext::kiljaeden_assign_hands_of_the_deceiver;
 
         creators["kil'jaeden stun hands of the deceiver"] =
             &RaidSunwellActionContext::kiljaeden_stun_hands_of_the_deceiver;
 
-        creators["kil'jaeden position tanks"] =
-            &RaidSunwellActionContext::kiljaeden_position_tanks;
+        creators["kil'jaeden position and move tanks"] =
+            &RaidSunwellActionContext::kiljaeden_position_and_move_tanks;
 
         creators["kil'jaeden position melee"] =
             &RaidSunwellActionContext::kiljaeden_position_melee;
 
-        creators["kil'jaeden position ranged"] =
-            &RaidSunwellActionContext::kiljaeden_position_ranged;
+        creators["kil'jaeden position ranged and avoid armageddons"] =
+            &RaidSunwellActionContext::kiljaeden_position_ranged_and_avoid_armageddons;
 
         creators["kil'jaeden remove fire bloom"] =
             &RaidSunwellActionContext::kiljaeden_remove_fire_bloom;
@@ -218,8 +218,8 @@ public:
         creators["kil'jaeden release stale root"] =
             &RaidSunwellActionContext::kiljaeden_release_stale_root;
 
-        creators["kil'jaeden control dragon"] =
-            &RaidSunwellActionContext::kiljaeden_control_dragon;
+        creators["kil'jaeden dragon buff and protect raid"] =
+            &RaidSunwellActionContext::kiljaeden_dragon_buff_and_protect_raid;
     }
 
 private:
@@ -227,8 +227,8 @@ private:
     static Action* sunwell_plateau_reset_encounter_states(PlayerbotAI* botAI) {
         return new SunwellPlateauResetEncounterStatesAction(botAI);
     }
-    static Action* sunwell_plateau_remove_protective_aura(PlayerbotAI* botAI) {
-        return new SunwellPlateauRemoveProtectiveAuraAction(botAI);
+    static Action* sunwell_plateau_remove_aura(PlayerbotAI* botAI) {
+        return new SunwellPlateauRemoveAuraAction(botAI);
     }
 
     // Trash
@@ -280,8 +280,8 @@ private:
     static Action* brutallus_position_ranged_in_two_groups(PlayerbotAI* botAI) {
         return new BrutallusPositionRangedInTwoGroupsAction(botAI);
     }
-    static Action* brutallus_handle_burn(PlayerbotAI* botAI) {
-        return new BrutallusHandleBurnAction(botAI);
+    static Action* brutallus_isolate_burn(PlayerbotAI* botAI) {
+        return new BrutallusIsolateBurnAction(botAI);
     }
 
     // Felmyst
@@ -327,20 +327,20 @@ private:
     }
 
     // Eredar Twins
-    static Action* eredar_twins_melee_jump_down_from_balcony(PlayerbotAI* botAI) {
-        return new EredarTwinsMeleeJumpDownFromBalconyAction(botAI);
+    static Action* eredar_twins_melee_jump_from_balcony(PlayerbotAI* botAI) {
+        return new EredarTwinsMeleeJumpFromBalconyAction(botAI);
     }
     static Action* eredar_twins_misdirect_bosses_to_tanks(PlayerbotAI* botAI) {
         return new EredarTwinsMisdirectBossesToTanksAction(botAI);
     }
-    static Action* eredar_twins_main_and_second_assist_tanks_position_sacrolash(PlayerbotAI* botAI) {
-        return new EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction(botAI);
+    static Action* eredar_twins_position_sacrolash_tanks(PlayerbotAI* botAI) {
+        return new EredarTwinsPositionSacrolashTanksAction(botAI);
     }
-    static Action* eredar_twins_first_assist_tank_move_out_of_blaze(PlayerbotAI* botAI) {
-        return new EredarTwinsFirstAssistTankMoveOutOfBlazeAction(botAI);
+    static Action* eredar_twins_alythess_tank_move_out_of_blaze(PlayerbotAI* botAI) {
+        return new EredarTwinsAlythessTankMoveOutOfBlazeAction(botAI);
     }
-    static Action* eredar_twins_position_ranged(PlayerbotAI* botAI) {
-        return new EredarTwinsPositionRangedAction(botAI);
+    static Action* eredar_twins_ranged_stack_at_balcony_edge(PlayerbotAI* botAI) {
+        return new EredarTwinsRangedStackAtBalconyEdgeAction(botAI);
     }
     static Action* eredar_twins_stack_in_room_center(PlayerbotAI* botAI) {
         return new EredarTwinsStackInRoomCenterAction(botAI);
@@ -348,14 +348,14 @@ private:
     static Action* eredar_twins_remove_flame_sear(PlayerbotAI* botAI) {
         return new EredarTwinsRemoveFlameSearAction(botAI);
     }
-    static Action* eredar_twins_dps_prioritize_lady_sacrolash(PlayerbotAI* botAI) {
-        return new EredarTwinsDpsPrioritizeLadySacrolashAction(botAI);
+    static Action* eredar_twins_dps_prioritize_sacrolash(PlayerbotAI* botAI) {
+        return new EredarTwinsDpsPrioritizeSacrolashAction(botAI);
     }
-    static Action* eredar_twins_conflagrated_bot_move_from_group(PlayerbotAI* botAI) {
-        return new EredarTwinsConflagratedBotMoveFromGroupAction(botAI);
+    static Action* eredar_twins_conflagration_target_move_from_group(PlayerbotAI* botAI) {
+        return new EredarTwinsConflagrationTargetMoveFromGroupAction(botAI);
     }
-    static Action* eredar_twins_move_from_conflag_sacrolash_victim(PlayerbotAI* botAI) {
-        return new EredarTwinsMoveFromConflagSacrolashVictimAction(botAI);
+    static Action* eredar_twins_move_away_from_sacrolash_victim(PlayerbotAI* botAI) {
+        return new EredarTwinsMoveAwayFromSacrolashVictimAction(botAI);
     }
 
     // M'uru
@@ -365,8 +365,8 @@ private:
     static Action* muru_main_tank_pick_up_entropius(PlayerbotAI* botAI) {
         return new MuruMainTankPickUpEntropiusAction(botAI);
     }
-    static Action* muru_position_ranged(PlayerbotAI* botAI) {
-        return new MuruPositionRangedAction(botAI);
+    static Action* muru_position_ranged_by_phase(PlayerbotAI* botAI) {
+        return new MuruPositionRangedByPhaseAction(botAI);
     }
     static Action* muru_assign_dps_priority(PlayerbotAI* botAI) {
         return new MuruAssignDpsPriorityAction(botAI);
@@ -383,8 +383,8 @@ private:
     static Action* muru_melee_flee_the_darkness(PlayerbotAI* botAI) {
         return new MuruMeleeFleeTheDarknessAction(botAI);
     }
-    static Action* muru_cast_stun_on_shadowsword_berserker(PlayerbotAI* botAI) {
-        return new MuruCastStunOnShadowswordBerserkerAction(botAI);
+    static Action* muru_cast_stun_on_berserker(PlayerbotAI* botAI) {
+        return new MuruCastStunOnBerserkerAction(botAI);
     }
     static Action* muru_interrupt_fel_fireball(PlayerbotAI* botAI) {
         return new MuruInterruptFelFireballAction(botAI);
@@ -395,34 +395,34 @@ private:
     static Action* muru_warlock_enslave_void_spawn(PlayerbotAI* botAI) {
         return new MuruWarlockEnslaveVoidSpawnAction(botAI);
     }
-    static Action* muru_enslaved_void_spawn_cast_shadow_bolt_volley(PlayerbotAI* botAI) {
-        return new MuruEnslavedVoidSpawnCastShadowBoltVolleyAction(botAI);
+    static Action* muru_void_spawn_cast_shadow_bolt_volley(PlayerbotAI* botAI) {
+        return new MuruVoidSpawnCastShadowBoltVolleyAction(botAI);
     }
-    static Action* muru_dont_touch_the_dark_fiend(PlayerbotAI* botAI) {
-        return new MuruDontTouchTheDarkFiendAction(botAI);
+    static Action* muru_keep_distance_from_dark_fiends(PlayerbotAI* botAI) {
+        return new MuruKeepDistanceFromDarkFiendsAction(botAI);
     }
-    static Action* muru_flee_from_singularity(PlayerbotAI* botAI) {
-        return new MuruFleeFromSingularityAction(botAI);
+    static Action* muru_escape_the_singularity(PlayerbotAI* botAI) {
+        return new MuruEscapeTheSingularityAction(botAI);
     }
 
     // Kil'jaeden <The Deceiver>
     static Action* kiljaeden_announce_dragon_orb_user(PlayerbotAI* botAI) {
         return new KiljaedenAnnounceDragonOrbUserAction(botAI);
     }
-    static Action* kiljaeden_mark_and_prioritize_hands_of_the_deceiver(PlayerbotAI* botAI) {
-        return new KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction(botAI);
+    static Action* kiljaeden_assign_hands_of_the_deceiver(PlayerbotAI* botAI) {
+        return new KiljaedenAssignHandsOfTheDeceiverAction(botAI);
     }
     static Action* kiljaeden_stun_hands_of_the_deceiver(PlayerbotAI* botAI) {
         return new KiljaedenStunHandsOfTheDeceiverAction(botAI);
     }
-    static Action* kiljaeden_position_tanks(PlayerbotAI* botAI) {
-        return new KiljaedenPositionTanksAction(botAI);
+    static Action* kiljaeden_position_and_move_tanks(PlayerbotAI* botAI) {
+        return new KiljaedenPositionAndMoveTanksAction(botAI);
     }
     static Action* kiljaeden_position_melee(PlayerbotAI* botAI) {
         return new KiljaedenPositionMeleeAction(botAI);
     }
-    static Action* kiljaeden_position_ranged(PlayerbotAI* botAI) {
-        return new KiljaedenPositionRangedAction(botAI);
+    static Action* kiljaeden_position_ranged_and_avoid_armageddons(PlayerbotAI* botAI) {
+        return new KiljaedenPositionRangedAndAvoidArmageddonsAction(botAI);
     }
     static Action* kiljaeden_remove_fire_bloom(PlayerbotAI* botAI) {
         return new KiljaedenRemoveFireBloomAction(botAI);
@@ -436,8 +436,8 @@ private:
     static Action* kiljaeden_release_stale_root(PlayerbotAI* botAI) {
         return new KiljaedenReleaseStaleRootAction(botAI);
     }
-    static Action* kiljaeden_control_dragon(PlayerbotAI* botAI) {
-        return new KiljaedenControlDragonAction(botAI);
+    static Action* kiljaeden_dragon_buff_and_protect_raid(PlayerbotAI* botAI) {
+        return new KiljaedenDragonBuffAndProtectRaidAction(botAI);
     }
 };
 

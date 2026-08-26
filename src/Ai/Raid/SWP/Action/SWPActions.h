@@ -18,13 +18,6 @@
 
 class Creature;
 
-namespace SwpHelpers
-{
-
-ObjectGuid FindSwpVolatileFiendGuid(Player* bot);
-
-}
-
 // General
 
 class SunwellPlateauResetEncounterStatesAction : public Action
@@ -35,15 +28,22 @@ public:
     bool Execute(Event event) override;
 };
 
-class SunwellPlateauRemoveProtectiveAuraAction : public Action
+class SunwellPlateauRemoveAuraAction : public Action
 {
 public:
-    SunwellPlateauRemoveProtectiveAuraAction(PlayerbotAI* botAI)
-        : Action(botAI, "sunwell plateau remove protective aura") {}
+    SunwellPlateauRemoveAuraAction(PlayerbotAI* botAI)
+        : Action(botAI, "sunwell plateau remove aura") {}
     bool Execute(Event event) override;
 };
 
 // Trash
+
+namespace SwpHelpers
+{
+
+ObjectGuid FindSwpVolatileFiendGuid(Player* bot);
+
+}
 
 class VolatileFiendKeepEnemyAwayFromGroupAction : public AttackAction
 {
@@ -185,11 +185,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class BrutallusHandleBurnAction : public MovementAction
+class BrutallusIsolateBurnAction : public MovementAction
 {
 public:
-    BrutallusHandleBurnAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "brutallus handle burn") {}
+    BrutallusIsolateBurnAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "brutallus isolate burn") {}
     bool Execute(Event event) override;
 
 private:
@@ -309,11 +309,11 @@ public:
 
 // Eredar Twins
 
-class EredarTwinsMeleeJumpDownFromBalconyAction : public MovementAction
+class EredarTwinsMeleeJumpFromBalconyAction : public MovementAction
 {
 public:
-    EredarTwinsMeleeJumpDownFromBalconyAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "eredar twins melee jump down from balcony") {}
+    EredarTwinsMeleeJumpFromBalconyAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "eredar twins melee jump from balcony") {}
     bool Execute(Event event) override;
 };
 
@@ -325,19 +325,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction : public AttackAction
+class EredarTwinsPositionSacrolashTanksAction : public AttackAction
 {
 public:
-    EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "eredar twins main and second assist tanks position sacrolash") {}
+    EredarTwinsPositionSacrolashTanksAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "eredar twins position sacrolash tanks") {}
     bool Execute(Event event) override;
 };
 
-class EredarTwinsFirstAssistTankMoveOutOfBlazeAction : public AttackAction
+class EredarTwinsAlythessTankMoveOutOfBlazeAction : public AttackAction
 {
 public:
-    EredarTwinsFirstAssistTankMoveOutOfBlazeAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "eredar twins first assist tank move out of blaze") {}
+    EredarTwinsAlythessTankMoveOutOfBlazeAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "eredar twins alythess tank move out of blaze") {}
     bool Execute(Event event) override;
     bool ResetAlythessTankStep()
     {
@@ -351,11 +351,11 @@ private:
     uint8 _alythessTankStep = 0;
 };
 
-class EredarTwinsPositionRangedAction : public MovementAction
+class EredarTwinsRangedStackAtBalconyEdgeAction : public MovementAction
 {
 public:
-    EredarTwinsPositionRangedAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "eredar twins position ranged") {}
+    EredarTwinsRangedStackAtBalconyEdgeAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "eredar twins ranged stack at balcony edge") {}
     bool Execute(Event event) override;
 };
 
@@ -375,27 +375,27 @@ public:
     bool Execute(Event event) override;
 };
 
-class EredarTwinsDpsPrioritizeLadySacrolashAction : public AttackAction
+class EredarTwinsDpsPrioritizeSacrolashAction : public AttackAction
 {
 public:
-    EredarTwinsDpsPrioritizeLadySacrolashAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "eredar twins dps prioritize lady sacrolash") {}
+    EredarTwinsDpsPrioritizeSacrolashAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "eredar twins dps prioritize sacrolash") {}
     bool Execute(Event event) override;
 };
 
-class EredarTwinsConflagratedBotMoveFromGroupAction : public MovementAction
+class EredarTwinsConflagrationTargetMoveFromGroupAction : public MovementAction
 {
 public:
-    EredarTwinsConflagratedBotMoveFromGroupAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "eredar twins conflagrated bot move from group") {}
+    EredarTwinsConflagrationTargetMoveFromGroupAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "eredar twins conflagration target move from group") {}
     bool Execute(Event event) override;
 };
 
-class EredarTwinsMoveFromConflagSacrolashVictimAction : public MovementAction
+class EredarTwinsMoveAwayFromSacrolashVictimAction : public MovementAction
 {
 public:
-    EredarTwinsMoveFromConflagSacrolashVictimAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "eredar twins move from conflag sacrolash victim") {}
+    EredarTwinsMoveAwayFromSacrolashVictimAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "eredar twins move away from sacrolash victim") {}
     bool Execute(Event event) override;
 };
 
@@ -417,11 +417,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class MuruPositionRangedAction : public MovementAction
+class MuruPositionRangedByPhaseAction : public MovementAction
 {
 public:
-    MuruPositionRangedAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "m'uru position ranged") {}
+    MuruPositionRangedByPhaseAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "m'uru position ranged by phase") {}
     bool Execute(Event event) override;
 
 private:
@@ -475,11 +475,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class MuruCastStunOnShadowswordBerserkerAction : public Action
+class MuruCastStunOnBerserkerAction : public Action
 {
 public:
-    MuruCastStunOnShadowswordBerserkerAction(PlayerbotAI* botAI)
-        : Action(botAI, "m'uru cast stun on shadowsword berserker") {}
+    MuruCastStunOnBerserkerAction(PlayerbotAI* botAI)
+        : Action(botAI, "m'uru cast stun on berserker") {}
     bool Execute(Event event) override;
 };
 
@@ -519,28 +519,28 @@ protected:
     Unit* GetVoidSpawnVolleyPriorityTarget(Unit* voidSpawn) const;
 };
 
-class MuruEnslavedVoidSpawnCastShadowBoltVolleyAction : public MuruEnslavedVoidSpawnAttackAction
+class MuruVoidSpawnCastShadowBoltVolleyAction : public MuruEnslavedVoidSpawnAttackAction
 {
 public:
-    MuruEnslavedVoidSpawnCastShadowBoltVolleyAction(PlayerbotAI* botAI)
+    MuruVoidSpawnCastShadowBoltVolleyAction(PlayerbotAI* botAI)
         : MuruEnslavedVoidSpawnAttackAction(
-            botAI, "m'uru enslaved void spawn cast shadow bolt volley") {}
+            botAI, "m'uru void spawn cast shadow bolt volley") {}
     bool Execute(Event event) override;
 };
 
-class MuruDontTouchTheDarkFiendAction : public MovementAction
+class MuruKeepDistanceFromDarkFiendsAction : public MovementAction
 {
 public:
-    MuruDontTouchTheDarkFiendAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "m'uru don't touch the dark fiend") {}
+    MuruKeepDistanceFromDarkFiendsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "m'uru keep distance from dark fiends") {}
     bool Execute(Event event) override;
 };
 
-class MuruFleeFromSingularityAction : public MovementAction
+class MuruEscapeTheSingularityAction : public MovementAction
 {
 public:
-    MuruFleeFromSingularityAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "m'uru flee from singularity") {}
+    MuruEscapeTheSingularityAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "m'uru escape the singularity") {}
     bool Execute(Event event) override;
 };
 
@@ -555,11 +555,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction : public AttackAction
+class KiljaedenAssignHandsOfTheDeceiverAction : public AttackAction
 {
 public:
-    KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kil'jaeden mark and prioritize hands of the deceiver") {}
+    KiljaedenAssignHandsOfTheDeceiverAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "kil'jaeden assign hands of the deceiver") {}
     bool Execute(Event event) override;
 
 private:
@@ -580,11 +580,11 @@ private:
     bool CastSilenceOnHand(Unit* hand);
 };
 
-class KiljaedenPositionTanksAction : public AttackAction
+class KiljaedenPositionAndMoveTanksAction : public AttackAction
 {
 public:
-    KiljaedenPositionTanksAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kil'jaeden position tanks") {}
+    KiljaedenPositionAndMoveTanksAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "kil'jaeden position and move tanks") {}
     bool Execute(Event event) override;
 
 private:
@@ -603,11 +603,11 @@ private:
     bool TryAdjustForArmageddon(Position& position);
 };
 
-class KiljaedenPositionRangedAction : public MovementAction
+class KiljaedenPositionRangedAndAvoidArmageddonsAction : public MovementAction
 {
 public:
-    KiljaedenPositionRangedAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "kil'jaeden position ranged") {}
+    KiljaedenPositionRangedAndAvoidArmageddonsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "kil'jaeden position ranged and avoid armageddons") {}
     bool Execute(Event event) override;
 
 private:
@@ -647,10 +647,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KiljaedenControlDragonAction : public Action
+class KiljaedenDragonBuffAndProtectRaidAction : public Action
 {
 public:
-    KiljaedenControlDragonAction(PlayerbotAI* botAI) : Action(botAI, "kil'jaeden control dragon") {}
+    KiljaedenDragonBuffAndProtectRaidAction(PlayerbotAI* botAI)
+        : Action(botAI, "kil'jaeden dragon buff and protect raid") {}
     bool Execute(Event event) override;
 
 private:

@@ -51,6 +51,14 @@ public:
     float GetValue(Action* action) override;
 };
 
+class KalecgosEnterSpectralRiftMultiplier : public Multiplier
+{
+public:
+    KalecgosEnterSpectralRiftMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kalecgos enter spectral rift") {}
+    float GetValue(Action* action) override;
+};
+
 class KalecgosDelayCooldownsForSathrovarrMultiplier : public Multiplier
 {
 public:
@@ -209,11 +217,11 @@ public:
     float GetValue(Action* action) override;
 };
 
-class EredarTwinsNoMovingIntoConflagrationMultiplier : public Multiplier
+class EredarTwinsIsolateConflagrationMultiplier : public Multiplier
 {
 public:
-    EredarTwinsNoMovingIntoConflagrationMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "eredar twins no moving into conflagration") {}
+    EredarTwinsIsolateConflagrationMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "eredar twins isolate conflagration") {}
     float GetValue(Action* action) override;
 };
 
@@ -296,7 +304,7 @@ class KiljaedenControlDragonMultiplier : public Multiplier
 {
 public:
     KiljaedenControlDragonMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "kil'jaeden control dragon") {}
+        : Multiplier(botAI, "kil'jaeden dragon buff and protect raid") {}
     float GetValue(Action* action) override;
 };
 
