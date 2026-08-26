@@ -224,8 +224,8 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
         // (2) Nobody has claimed the creature, so ask who it is attacking. If it is not attacking
         //     anything, or if it is attacking (a) something with no player behind it (e.g., a
         //     critter), (b) the bot, (c) the bot's master, or (d) a member of the bot's raid/group,
-        //     then the victim is considered to belong to the bot and may be attacked. A charm is
-        //     treated the same as whoever owns it, so (b) through (d) cover pets and totems too.
+        //     then the victim is considered to belong to the bot and may be attacked. Clauses (b)
+        //     through (d) also include a player's pets, guardians, totems, and charms.
         if (!c->hasLootRecipient())
         {
             Unit* victim = c->GetVictim();
