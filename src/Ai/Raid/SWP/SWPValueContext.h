@@ -54,7 +54,7 @@ class MuruVoidZonesValue : public CalculatedValue<GuidVector>
 public:
     MuruVoidZonesValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-              botAI, "muru void zones", SwpHelpers::MURU_VOID_ZONE_CACHE_INTERVAL_MS) {}
+              botAI, "muru void zones", SwpHelpers::VOID_ZONE_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return SwpHelpers::FindMuruVoidZoneGuids(bot); }
@@ -65,7 +65,7 @@ class SwpVolatileFiendValue : public CalculatedValue<ObjectGuid>
 public:
     SwpVolatileFiendValue(PlayerbotAI* botAI)
         : CalculatedValue<ObjectGuid>(
-              botAI, "swp volatile fiend", SwpHelpers::SWP_VOLATILE_FIEND_CACHE_INTERVAL_MS) {}
+              botAI, "swp volatile fiend", SwpHelpers::VOLATILE_FIEND_CACHE_INTERVAL_MS) {}
 
 protected:
     ObjectGuid Calculate() override { return SwpHelpers::FindSwpVolatileFiendGuid(bot); }
@@ -76,8 +76,7 @@ class KalecgosSpectralRiftValue : public CalculatedValue<ObjectGuid>
 public:
     KalecgosSpectralRiftValue(PlayerbotAI* botAI)
         : CalculatedValue<ObjectGuid>(
-              botAI, "kalecgos spectral rift",
-              SwpHelpers::KALECGOS_SPECTRAL_RIFT_CACHE_INTERVAL_MS) {}
+              botAI, "kalecgos spectral rift", SwpHelpers::SPECTRAL_RIFT_CACHE_INTERVAL_MS) {}
 
 protected:
     ObjectGuid Calculate() override { return SwpHelpers::FindKalecgosSpectralRiftGuid(bot); }
@@ -88,7 +87,7 @@ class MuruSingularityValue : public CalculatedValue<ObjectGuid>
 public:
     MuruSingularityValue(PlayerbotAI* botAI)
         : CalculatedValue<ObjectGuid>(
-              botAI, "muru singularity", SwpHelpers::MURU_SINGULARITY_CACHE_INTERVAL_MS) {}
+              botAI, "muru singularity", SwpHelpers::SINGULARITY_CACHE_INTERVAL_MS) {}
 
 protected:
     ObjectGuid Calculate() override { return SwpHelpers::FindMuruSingularityGuid(bot); }
@@ -99,8 +98,7 @@ class KiljaedenDragonOrbsValue : public CalculatedValue<GuidVector>
 public:
     KiljaedenDragonOrbsValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-              botAI, "kiljaeden dragon orbs",
-              SwpHelpers::KILJAEDEN_DRAGON_ORB_CACHE_INTERVAL_MS) {}
+              botAI, "kiljaeden dragon orbs", SwpHelpers::DRAGON_ORB_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return SwpHelpers::FindKiljaedenDragonOrbGuids(bot); }

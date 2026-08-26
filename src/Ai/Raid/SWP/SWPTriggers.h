@@ -19,11 +19,11 @@ public:
     bool IsActive() override;
 };
 
-class SunwellPlateauBotHasProtectiveAuraTrigger : public Trigger
+class SunwellPlateauBotHasAuraToRemoveTrigger : public Trigger
 {
 public:
-    SunwellPlateauBotHasProtectiveAuraTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "sunwell plateau bot has protective aura") {}
+    SunwellPlateauBotHasAuraToRemoveTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "sunwell plateau bot has aura to remove") {}
     bool IsActive() override;
 };
 
@@ -86,11 +86,11 @@ public:
     bool IsActive() override;
 };
 
-class KalecgosBotHasTooManyArcaneBuffetStacksTrigger : public Trigger
+class KalecgosTooManyArcaneBuffetStacksTrigger : public Trigger
 {
 public:
-    KalecgosBotHasTooManyArcaneBuffetStacksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kalecgos bot has too many arcane buffet stacks") {}
+    KalecgosTooManyArcaneBuffetStacksTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kalecgos too many arcane buffet stacks") {}
     bool IsActive() override;
 };
 
@@ -119,11 +119,11 @@ public:
     bool IsActive() override;
 };
 
-class BrutallusBossEngagedByTanksTrigger : public Trigger
+class BrutallusRequiresTwoTanksTrigger : public Trigger
 {
 public:
-    BrutallusBossEngagedByTanksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "brutallus boss engaged by tanks") {}
+    BrutallusRequiresTwoTanksTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "brutallus requires two tanks") {}
     bool IsActive() override;
 };
 
@@ -159,19 +159,19 @@ public:
     bool IsActive() override;
 };
 
-class FelmystBossEngagedByMainTankOnGroundTrigger : public Trigger
+class FelmystGroundPhaseShouldBeTankedTrigger : public Trigger
 {
 public:
-    FelmystBossEngagedByMainTankOnGroundTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "felmyst boss engaged by main tank on ground") {}
+    FelmystGroundPhaseShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "felmyst ground phase should be tanked") {}
     bool IsActive() override;
 };
 
-class FelmystRangedShouldSplitInThreeTrigger : public Trigger
+class FelmystRangedShouldPositionToDispelAndFleeTrigger : public Trigger
 {
 public:
-    FelmystRangedShouldSplitInThreeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "felmyst ranged should split in three") {}
+    FelmystRangedShouldPositionToDispelAndFleeTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "felmyst ranged should position to dispel and flee") {}
     bool IsActive() override;
 };
 
@@ -231,11 +231,11 @@ public:
     bool IsActive() override;
 };
 
-class FelmystMeleeCannotReachBossTrigger : public Trigger
+class FelmystMeleeCannotReachFlyingBossTrigger : public Trigger
 {
 public:
-    FelmystMeleeCannotReachBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "felmyst melee cannot reach boss") {}
+    FelmystMeleeCannotReachFlyingBossTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "felmyst melee cannot reach flying boss") {}
     bool IsActive() override;
 };
 
@@ -273,11 +273,11 @@ public:
     bool IsActive() override;
 };
 
-class EredarTwinsSacrolashEngagedByTwoTanksTrigger : public Trigger
+class EredarTwinsSacrolashRequiresTwoTanksTrigger : public Trigger
 {
 public:
-    EredarTwinsSacrolashEngagedByTwoTanksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "eredar twins sacrolash engaged by two tanks") {}
+    EredarTwinsSacrolashRequiresTwoTanksTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "eredar twins sacrolash requires two tanks") {}
     bool IsActive() override;
 };
 
@@ -289,43 +289,43 @@ public:
     bool IsActive() override;
 };
 
-class EredarTwinsBossesEngagedByRangedTrigger : public Trigger
+class EredarTwinsRangedNeedsLosTrigger : public Trigger
 {
 public:
-    EredarTwinsBossesEngagedByRangedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "eredar twins bosses engaged by ranged") {}
+    EredarTwinsRangedNeedsLosTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "eredar twins ranged needs los") {}
     bool IsActive() override;
 };
 
-class EredarTwinsOnlyOneBossRemainsTrigger : public Trigger
+class EredarTwinsOnlyAlythessRemainsTrigger : public Trigger
 {
 public:
-    EredarTwinsOnlyOneBossRemainsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "eredar twins only one boss remains") {}
+    EredarTwinsOnlyAlythessRemainsTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "eredar twins only alythess remains") {}
     bool IsActive() override;
 };
 
-class EredarTwinsBotHasTooManyFlameTouchedStacksTrigger : public Trigger
+class EredarTwinsTooManyFlameTouchedStacksTrigger : public Trigger
 {
 public:
-    EredarTwinsBotHasTooManyFlameTouchedStacksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "eredar twins bot has too many flame touched stacks") {}
+    EredarTwinsTooManyFlameTouchedStacksTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "eredar twins too many flame touched stacks") {}
     bool IsActive() override;
 };
 
-class EredarTwinsDeterminingDpsPriorityTrigger : public Trigger
+class EredarTwinsShouldFocusDpsTrigger : public Trigger
 {
 public:
-    EredarTwinsDeterminingDpsPriorityTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "eredar twins determining dps priority") {}
+    EredarTwinsShouldFocusDpsTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "eredar twins should focus dps") {}
     bool IsActive() override;
 };
 
-class EredarTwinsBotHasConflagrationTrigger : public Trigger
+class EredarTwinsActiveConflagrationTargetTrigger : public Trigger
 {
 public:
-    EredarTwinsBotHasConflagrationTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "eredar twins bot has conflagration") {}
+    EredarTwinsActiveConflagrationTargetTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "eredar twins active conflagration target") {}
     bool IsActive() override;
 };
 
@@ -355,11 +355,11 @@ public:
     bool IsActive() override;
 };
 
-class MuruBossesEngagedByRangedTrigger : public Trigger
+class MuruRangedShouldStackOrSpreadTrigger : public Trigger
 {
 public:
-    MuruBossesEngagedByRangedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "m'uru bosses engaged by ranged") {}
+    MuruRangedShouldStackOrSpreadTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "m'uru ranged should stack or spread") {}
     bool IsActive() override;
 };
 
@@ -442,11 +442,11 @@ public:
     bool IsActive() override;
 };
 
-class MuruEntropiusSpawnsDarknessPoolsTrigger : public Trigger
+class MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger : public Trigger
 {
 public:
-    MuruEntropiusSpawnsDarknessPoolsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "m'uru entropius spawns darkness pools") {}
+    MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "m'uru entropius darkness pools spawn dark fiends") {}
     bool IsActive() override;
 };
 
@@ -476,11 +476,11 @@ public:
     bool IsActive() override;
 };
 
-class KiljaedenBossEngagedByTanksTrigger : public Trigger
+class KiljaedenTanksShouldHoldBossAndReflectionsTrigger : public Trigger
 {
 public:
-    KiljaedenBossEngagedByTanksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kil'jaeden boss engaged by tanks") {}
+    KiljaedenTanksShouldHoldBossAndReflectionsTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kil'jaeden tanks should hold boss and reflections") {}
     bool IsActive() override;
 };
 

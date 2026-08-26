@@ -59,6 +59,21 @@ enum class FelmystGroundStack : uint8
     Right = 2,
 };
 
+struct IncomingEncapsulateState
+{
+    ObjectGuid targetGuid = ObjectGuid::Empty;
+    uint32 delayMs = 0;
+    uint32 expireMs = 0;
+    bool auraObserved = false;
+};
+
+struct DemonicVaporAnchor
+{
+    Position position;
+    FogLane lane;
+    uint8 sideMask;
+};
+
 struct FogOfCorruptionState
 {
     FogLane lane = FogLane::None;
@@ -75,12 +90,10 @@ struct FogPassState
     uint32 thirdPassWindowExpireMs = 0;
 };
 
-struct IncomingEncapsulateState
+struct FogSafeThreshold
 {
-    ObjectGuid targetGuid = ObjectGuid::Empty;
-    uint32 delayMs = 0;
-    uint32 expireMs = 0;
-    bool auraObserved = false;
+    Position a, b;
+    bool safeSideIsNorth;  // true = safe side has higher X (north), false = lower X (south)
 };
 
 struct FelmystEncounterState
@@ -99,27 +112,21 @@ struct FelmystEncounterState
 
 extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
 
-struct FogSafeThreshold
-{
-    Position a, b;
-    bool safeSideIsNorth;  // true = safe side has higher X (north), false = lower X (south)
-};
-
 inline constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
-inline constexpr float FELMYST_LOCATION_MATCH_DISTANCE = 2.0f;
+// Bots wait 300ms to react to Encapsulate (to make the action look less artificial)
+inline constexpr uint32 ENCAPSULATE_DELAY_MS = 300;
 
-// How close ranged have to be before a charmed player is worth committing to
+// How close ranged have to be to a charmed player to attack
 inline constexpr float FELMYST_CHARMED_TARGET_RANGE = 30.0f;
 
-struct DemonicVaporAnchor
-{
-    Position position;
-    FogLane lane;
-    uint8 sideMask;
-};
+// How long after landing following a flight phase does the raid keeps holding dps
+inline constexpr uint32 FELMYST_GROUNDED_DPS_WAIT_MS = 3000;
 
 inline constexpr uint8 DEMONIC_VAPOR_LEFT_SIDE = 0x1;
 inline constexpr uint8 DEMONIC_VAPOR_RIGHT_SIDE = 0x2;
+
+// How close Felmyst must be to a specified position to be considered there
+inline constexpr float FELMYST_LOCATION_MATCH_DISTANCE = 2.0f;
 
 inline Position const FOG_LEFT_SIDE =  { 1469.064f, 729.585f, 59.824f, 4.677f };
 inline Position const FOG_RIGHT_SIDE = { 1458.556f, 502.200f, 59.900f, 1.606f };

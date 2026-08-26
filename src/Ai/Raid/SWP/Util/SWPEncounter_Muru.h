@@ -71,18 +71,18 @@ inline constexpr uint32 MURU_ENCOUNTER_TARGETS_CACHE_INTERVAL_MS = 200;
 // 45996, a 15y zone doing 3k a second. 45996 is also applied to M'uru itself (via a separate
 // effect), so once it is applied, the Darkness window is read off that aura and these two are only
 // estimates used before the aura is applied.
-inline constexpr uint32 MURU_DARKNESS_PRE_EFFECT_MS = 3000;
-inline constexpr uint32 MURU_DARKNESS_AURA_MS = 20000;
+inline constexpr uint32 DARKNESS_PRE_EFFECT_MS = 3000;
+inline constexpr uint32 DARKNESS_AURA_MS = 20000;
 
 // This long before Darkness expires, melee are allowed to run back in (to account for run distance,
 // finishing current actions, tick delay).
-inline constexpr uint32 MURU_DARKNESS_RUN_BACK_ALLOWANCE_MS = 2000;
+inline constexpr uint32 DARKNESS_RUN_BACK_ALLOWANCE_MS = 2000;
 
 // This is an arbitrary window to allow tanks a bit more time to get positioned after Darkness.
-inline constexpr uint32 MURU_DARKNESS_EARLY_WINDOW_MS = 10000;
+inline constexpr uint32 DARKNESS_EARLY_WINDOW_MS = 10000;
 
 // Darkness damages within 15 yards of M'uru; the rest is the usual avoidance padding
-inline constexpr float MURU_DARKNESS_SAFE_DISTANCE = 20.0f;
+inline constexpr float DARKNESS_SAFE_DISTANCE = 20.0f;
 
 // The maximum distance from the melee dps holding spot that melee dps will wander to attack during
 // Darkness
@@ -96,21 +96,21 @@ inline constexpr float MURU_SHADOW_BOLT_VOLLEY_RADIUS = 20.0f;
 
 // Void Zones (25879) have aura 46262, ticking 46264 for 3k in a 3y radius, but more importantly
 // they spawn Dark Fiends. The wide safe distance is in anticipation of the Dark Fiend spawn.
-inline constexpr float MURU_VOID_ZONE_SAFE_DISTANCE = 8.0f;
-inline constexpr float MURU_VOID_ZONE_SEARCH_RADIUS = 12.0f;
+inline constexpr float VOID_ZONE_SAFE_DISTANCE = 8.0f;
+inline constexpr float VOID_ZONE_SEARCH_RADIUS = 12.0f;
 
 // Feeds the "muru void zones" value.
-inline constexpr uint32 MURU_VOID_ZONE_CACHE_INTERVAL_MS = 200;
+inline constexpr uint32 VOID_ZONE_CACHE_INTERVAL_MS = 200;
 
-inline constexpr float MURU_SINGULARITY_SEARCH_RADIUS = 30.0f;
+inline constexpr float SINGULARITY_SEARCH_RADIUS = 30.0f;
 
 // Feeds the "muru singularity" value. Only one exists at a time: Entropius casts Black Hole every
 // 29s, and Singularities despawn after 18s.
-inline constexpr uint32 MURU_SINGULARITY_CACHE_INTERVAL_MS = 200;
+inline constexpr uint32 SINGULARITY_CACHE_INTERVAL_MS = 200;
 
 // A Dark Fiend detonates within 2y of whoever it is chasing. The safe distance is deliberately
 // wide as touching a single Dark Fiend is almost a guaranteed wipe.
-inline constexpr float MURU_DARK_FIEND_SAFE_DISTANCE = 10.0f;
+inline constexpr float DARK_FIEND_SAFE_DISTANCE = 10.0f;
 
 // Tanks drag nothing further than this from the ranged stack
 inline constexpr float MURU_MAX_TARGET_DIST_FROM_STACK = 25.0f;
@@ -127,7 +127,7 @@ extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
 bool IsMuruPhaseActive(Unit* muru);
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
 bool TryGetMuruDarknessEarlyState(
-    Player* bot, Unit* muru, uint32 earlyWindowMs = MURU_DARKNESS_EARLY_WINDOW_MS);
+    Player* bot, Unit* muru, uint32 earlyWindowMs = DARKNESS_EARLY_WINDOW_MS);
 MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
 Unit* FindMuruBerserkerToStun(PlayerbotAI* botAI);

@@ -8,6 +8,7 @@
 #include "AiObjectContext.h"
 #include "Playerbots.h"
 #include <algorithm>
+#include <limits>
 #include <list>
 
 namespace SwpHelpers
@@ -171,20 +172,19 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
 
         StampMuruDarknessWindow(
             muruDarknessStates[instanceId], now,
-            MURU_DARKNESS_PRE_EFFECT_MS + static_cast<uint32>(elapsedZoneMs),
+            DARKNESS_PRE_EFFECT_MS + static_cast<uint32>(elapsedZoneMs),
             static_cast<uint32>(remainingMs));
     }
     else if (Aura* preEffect = muru->GetAura(Id(SwpSpells::SPELL_DARKNESS_PRE_EFFECT)))
     {
         int32 const duration = preEffect->GetDuration();
         uint32 const remainingPreEffectMs = duration < 0 ?
-            MURU_DARKNESS_PRE_EFFECT_MS :
-            std::min(static_cast<uint32>(duration), MURU_DARKNESS_PRE_EFFECT_MS);
+            DARKNESS_PRE_EFFECT_MS :
+            std::min(static_cast<uint32>(duration), DARKNESS_PRE_EFFECT_MS);
 
         StampMuruDarknessWindow(
-            muruDarknessStates[instanceId], now,
-            MURU_DARKNESS_PRE_EFFECT_MS - remainingPreEffectMs,
-            remainingPreEffectMs + MURU_DARKNESS_AURA_MS);
+            muruDarknessStates[instanceId], now, DARKNESS_PRE_EFFECT_MS - remainingPreEffectMs,
+            remainingPreEffectMs + DARKNESS_AURA_MS);
     }
 
     auto const stateItr = muruDarknessStates.find(instanceId);
@@ -192,7 +192,7 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
         return false;
 
     uint32 const expireMs = stateItr->second.expireMs;
-    if (expireMs > now + MURU_DARKNESS_RUN_BACK_ALLOWANCE_MS)
+    if (expireMs > now + DARKNESS_RUN_BACK_ALLOWANCE_MS)
         return true;
 
     if (expireMs <= now)
@@ -318,7 +318,7 @@ bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI)
 ObjectGuid FindMuruSingularityGuid(Player* bot)
 {
     Creature* singularity = bot->FindNearestCreature(
-        Id(SwpNpcs::NPC_SINGULARITY), MURU_SINGULARITY_SEARCH_RADIUS);
+        Id(SwpNpcs::NPC_SINGULARITY), SINGULARITY_SEARCH_RADIUS);
 
     return singularity ? singularity->GetGUID() : ObjectGuid::Empty;
 }
@@ -327,7 +327,7 @@ GuidVector FindMuruVoidZoneGuids(Player* bot)
 {
     std::list<Creature*> voidZones;
     bot->GetCreatureListWithEntryInGrid(
-        voidZones, Id(SwpNpcs::NPC_DARKNESS), MURU_VOID_ZONE_SEARCH_RADIUS);
+        voidZones, Id(SwpNpcs::NPC_DARKNESS), VOID_ZONE_SEARCH_RADIUS);
 
     GuidVector guids;
     guids.reserve(voidZones.size());
@@ -347,7 +347,7 @@ Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI)
         botAI->GetAiObjectContext()->GetValue<GuidVector>("muru void zones")->RefGet();
 
     Creature* nearest = nullptr;
-    float nearestDistance = MURU_VOID_ZONE_SAFE_DISTANCE;
+    float nearestDistance = VOID_ZONE_SAFE_DISTANCE;
 
     for (ObjectGuid const& guid : guids)
     {

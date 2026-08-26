@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <cmath>
 #include <list>
-#include <vector>
 
 using namespace EncounterHelpers;
 
@@ -794,10 +793,7 @@ bool IsFelmystLanding(Unit* felmyst)
 namespace
 {
 
-// A pass is recognized by watching Felmyst's flight destination change from one poll to the next,
-// so this has to run on every poll while she is airborne or a transition is missed entirely.
-// Callers wanting the window itself go through TryGetFelmystPostThirdPassWindow; callers that only
-// need the tracker kept current call this. Returns nullptr when the tracker has just been reset.
+// A pass is recognized by watching Felmyst's flight destination.
 FogPassState const* AdvanceFelmystFogPassTracker(Unit* felmyst)
 {
     if (!felmyst)
@@ -837,11 +833,11 @@ FogPassState const* AdvanceFelmystFogPassTracker(Unit* felmyst)
             previousDestinationLane == tracker.armedSweepLane &&
             IsFogSideLocation(destinationLocation))
         {
-            constexpr uint32 thirdPassWindowMs = 10000;
-
             ++tracker.completedPassCount;
             tracker.lastCompletedLane = tracker.armedSweepLane;
             tracker.armedSweepLane = FogLane::None;
+
+            constexpr uint32 thirdPassWindowMs = 10000;
             if (tracker.completedPassCount >= 3)
                 tracker.thirdPassWindowExpireMs = getMSTime() + thirdPassWindowMs;
         }
@@ -858,9 +854,6 @@ bool IsPostThirdPassWindowOpen(FogPassState const& tracker)
         tracker.thirdPassWindowExpireMs > getMSTime();
 }
 
-// Shared opening of the two read-only fog queries below. Returns nothing while she is grounded,
-// since every fog stage they test only means anything mid-flight, and reads the record rather
-// than indexing it so a query cannot create one.
 FelmystEncounterState const* GetFelmystAirborneState(Unit* felmyst)
 {
     if (!felmyst || !felmyst->IsFlying())
@@ -1117,9 +1110,8 @@ void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs)
     IncomingEncapsulateState& state =
         felmystEncounterStates[target->GetInstanceId()].incomingEncapsulate;
 
-    constexpr uint32 encapsulateDelayMs = 500;
     if (state.targetGuid != target->GetGUID())
-        state.delayMs = now + encapsulateDelayMs;
+        state.delayMs = now + ENCAPSULATE_DELAY_MS;
 
     state.targetGuid = target->GetGUID();
     state.expireMs = now + durationMs;

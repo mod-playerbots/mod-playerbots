@@ -10,9 +10,8 @@
 #include "PlayerbotTextMgr.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPSharedConstants.h"
-#include "Timer.h"
+#include <algorithm>
 #include <cmath>
-#include <string>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -56,8 +55,8 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
 bool FelmystRangedStackInThreeGroupsAction::Execute(Event /*event*/)
@@ -184,21 +183,25 @@ bool FelmystMassDispelGasNovaAction::Execute(Event /*event*/)
 bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
 {
     Player* leader = GetFelmystFlightLeader(bot);
+    if (!leader)
+        return MoveAwayFromVapor(false);
 
-    if (leader == bot && MarkTargetWithDiamond(bot, leader))
-        return true;
-
-    if (leader && leader->GetGUID() != _announcedFlightLeaderGuid)
+    if (leader == bot)
     {
-        _announcedFlightLeaderGuid = leader->GetGUID();
-        AnnounceFlightLeader(leader);
+        if (MarkTargetWithDiamond(bot, leader))
+            return true;
+
+        if (leader->GetGUID() != _announcedFlightLeaderGuid)
+        {
+            _announcedFlightLeaderGuid = leader->GetGUID();
+            AnnounceFlightLeader(leader);
+        }
+
+        return MoveAwayFromVapor(false);
     }
 
-    if (!leader || leader == bot)
-        return MoveAwayFromVapor();
-
-    constexpr float farDistance = 20.0f;
-    if (bot->GetDistance2d(leader) > farDistance && MoveAwayFromVapor(true))
+    constexpr float tooFarDistance = 20.0f;
+    if (bot->GetExactDist2d(leader) > tooFarDistance && MoveAwayFromVapor(true))
         return true;
 
     return MoveToFlightLeader(leader);
@@ -372,8 +375,8 @@ bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToDestination) * moveDist;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
@@ -401,6 +404,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
     Position destination;
     Position const referencePoint(
         felmyst->GetPositionX(), felmyst->GetPositionY(), felmyst->GetPositionZ());
+
     if (!TryGetFelmystFogSafeDestination(
             bot, shouldRepositionAfterThirdPass ? thirdPassLane : fogState.lane,
             destination, shouldRepositionAfterThirdPass ? &referencePoint : nullptr))
@@ -421,7 +425,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
         return true;
     }
 
-    // Try CCing skeletons in place before first pass move
+    // Try ccing skeletons in place before first pass move
     if (bot->getClass() == CLASS_MAGE &&
         botAI->CanCastSpell("frost nova", bot) && botAI->CastSpell("frost nova", bot))
     {
@@ -517,19 +521,25 @@ bool FelmystManageLandingDpsTimerAction::Execute(Event /*event*/)
     uint32 const instanceId = felmyst->GetInstanceId();
     auto& state = felmystEncounterStates[instanceId];
 
-    if (felmyst->IsFlying() && IsFelmystLanding(felmyst))
+    auto const clearTimers = [&state]
     {
+        if (!state.landingDpsWaitStartMs && !state.landingTouchdownMs)
+            return false;
+
+        state.landingDpsWaitStartMs = 0;
+        state.landingTouchdownMs = 0;
+        return true;
+    };
+
+    if (felmyst->IsFlying())
+    {
+        if (!IsFelmystLanding(felmyst))
+            return clearTimers();
+
         if (state.landingDpsWaitStartMs)
             return false;
 
         state.landingDpsWaitStartMs = getMSTime();
-        state.landingTouchdownMs = 0;
-        return true;
-    }
-
-    if (felmyst->IsFlying())
-    {
-        state.landingDpsWaitStartMs = 0;
         state.landingTouchdownMs = 0;
         return true;
     }
@@ -544,11 +554,8 @@ bool FelmystManageLandingDpsTimerAction::Execute(Event /*event*/)
         return true;
     }
 
-    constexpr uint32 groundedDpsWaitMs = 3000;
-    if (GetMSTimeDiffToNow(state.landingTouchdownMs) < groundedDpsWaitMs)
+    if (GetMSTimeDiffToNow(state.landingTouchdownMs) < FELMYST_GROUNDED_DPS_WAIT_MS)
         return false;
 
-    state.landingDpsWaitStartMs = 0;
-    state.landingTouchdownMs = 0;
-    return true;
+    return clearTimers();
 }

@@ -7,6 +7,7 @@
 #include "SWPEncounter_Brut.h"
 #include "Playerbots.h"
 #include <algorithm>
+#include <cmath>
 #include <vector>
 
 namespace SwpHelpers
@@ -431,6 +432,11 @@ bool ReleaseBrutallusBurnPad(Player* bot)
         return false;
 
     return instanceItr->second.rangedBurnPadAssignments.erase(bot->GetGUID()) > 0;
+}
+
+bool HasBrutallusBurn(Player* bot)
+{
+    return bot->HasAura(Id(SwpSpells::SPELL_BURN));
 }
 
 }

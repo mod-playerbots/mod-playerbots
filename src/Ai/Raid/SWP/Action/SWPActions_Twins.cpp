@@ -9,12 +9,12 @@
 #include "Playerbots.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPSharedConstants.h"
-#include <vector>
+#include <algorithm>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
 
-bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
+bool EredarTwinsMeleeJumpFromBalconyAction::Execute(Event /*event*/)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Position const& jumpPosition = EREDAR_TWINS_P1_RANGED_POSITION;
@@ -98,7 +98,7 @@ bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
     return botAI->CanCastSpell("steady shot", boss) && botAI->CastSpell("steady shot", boss);
 }
 
-bool EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction::Execute(Event /*event*/)
+bool EredarTwinsPositionSacrolashTanksAction::Execute(Event /*event*/)
 {
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     if (!sacrolash)
@@ -136,7 +136,7 @@ bool EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction::Execute(Event /
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
+bool EredarTwinsAlythessTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     if (!alythess)
@@ -211,7 +211,7 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
     return false;
 }
 
-bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
+bool EredarTwinsRangedStackAtBalconyEdgeAction::Execute(Event /*event*/)
 {
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     if (sacrolash && sacrolash->GetVictim() != bot && GetEredarTwinsBlazeTarget(bot) != bot)
@@ -289,8 +289,10 @@ bool EredarTwinsRemoveFlameSearAction::Execute(Event /*event*/)
     }
 }
 
-bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
+bool EredarTwinsDpsPrioritizeSacrolashAction::Execute(Event /*event*/)
 {
+    RecordEredarTwinsDpsHoldStart(bot);
+
     Unit* twinTarget = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     float threatHoldRatio = SACROLASH_THREAT_HOLD_RATIO;
     bool (*isTwinTank)(Player*) = IsAnySacrolashTank;
@@ -305,6 +307,8 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
     if (!twinTarget)
         return false;
 
+    // Healers are excluded from ShouldHoldTwinThreat() but need this action so that they focus
+    // their "healer dps"/wanding on Sacrolash in phase 1.
     if (ShouldHoldTwinThreat(bot, twinTarget, threatHoldRatio, isTwinTank))
     {
         bot->AttackStop();
@@ -318,7 +322,7 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
     return AI_VALUE(Unit*, "current target") != twinTarget && Attack(twinTarget);
 }
 
-bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
+bool EredarTwinsConflagrationTargetMoveFromGroupAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_ROGUE && botAI->CanCastSpell("vanish", bot) &&
         botAI->CastSpell("vanish", bot))
@@ -339,20 +343,19 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
             false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    Player* nearestPlayer = GetNearestPlayerInRadius(
-        bot, EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, CONFLAGRATION_SAFE_DISTANCE);
     if (!nearestPlayer)
         return false;
 
     float const distanceToPlayer = bot->GetExactDist2d(nearestPlayer);
-    if (distanceToPlayer >= EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE)
+    if (distanceToPlayer >= CONFLAGRATION_SAFE_DISTANCE)
         return false;
 
     bot->CastStop();
-    return MoveAway(nearestPlayer, EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE - distanceToPlayer);
+    return MoveAway(nearestPlayer, CONFLAGRATION_SAFE_DISTANCE - distanceToPlayer);
 }
 
-bool EredarTwinsMoveFromConflagSacrolashVictimAction::Execute(Event /*event*/)
+bool EredarTwinsMoveAwayFromSacrolashVictimAction::Execute(Event /*event*/)
 {
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     if (!sacrolash)
@@ -362,9 +365,9 @@ bool EredarTwinsMoveFromConflagSacrolashVictimAction::Execute(Event /*event*/)
     if (!victim)
         return false;
 
-    if (bot->GetDistance2d(victim) >= EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE)
+    if (bot->GetDistance2d(victim) >= CONFLAGRATION_SAFE_DISTANCE)
         return false;
 
     bot->CastStop();
-    return MoveFromGroup(EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE);
+    return MoveFromGroup(CONFLAGRATION_SAFE_DISTANCE);
 }

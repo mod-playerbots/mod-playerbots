@@ -313,7 +313,7 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool BrutallusHandleBurnAction::Execute(Event /*event*/)
+bool BrutallusIsolateBurnAction::Execute(Event /*event*/)
 {
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
@@ -423,7 +423,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool BrutallusHandleBurnAction::RemoveBurnWithCooldown()
+bool BrutallusIsolateBurnAction::RemoveBurnWithCooldown()
 {
     switch (bot->getClass())
     {
