@@ -162,14 +162,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru dark fiends spawned", {
         NextAction("m'uru kill dark fiends with dispel", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("m'uru entropius spawns darkness pools", {
-        NextAction("m'uru don't touch the dark fiend", ACTION_EMERGENCY + 9) }));
-
     triggers.push_back(new TriggerNode("m'uru darkness is coming", {
         NextAction("m'uru melee flee the darkness", ACTION_EMERGENCY + 8) }));
-
-    triggers.push_back(new TriggerNode("m'uru the singularity is near", {
-        NextAction("m'uru flee from singularity", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("m'uru berserker is buffed with flurry", {
         NextAction("m'uru cast stun on shadowsword berserker", ACTION_RAID + 3) }));
@@ -185,6 +179,12 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("m'uru warlock has enslaved void spawn", {
         NextAction("m'uru enslaved void spawn cast shadow bolt volley", ACTION_RAID + 4) }));
+
+    triggers.push_back(new TriggerNode("m'uru entropius spawns darkness pools", {
+        NextAction("m'uru don't touch the dark fiend", ACTION_EMERGENCY + 9) }));
+
+    triggers.push_back(new TriggerNode("m'uru the singularity is near", {
+        NextAction("m'uru flee from singularity", ACTION_EMERGENCY + 7) }));
 
     // Kil'jaeden <The Deceiver>
     triggers.push_back(new TriggerNode("kil'jaeden encounter has begun", {

@@ -163,14 +163,8 @@ public:
         creators["m'uru dark fiends spawned"] =
             &RaidSunwellTriggerContext::muru_dark_fiends_spawned;
 
-        creators["m'uru entropius spawns darkness pools"] =
-            &RaidSunwellTriggerContext::muru_entropius_spawns_darkness_pools;
-
         creators["m'uru darkness is coming"] =
             &RaidSunwellTriggerContext::muru_darkness_is_coming;
-
-        creators["m'uru the singularity is near"] =
-            &RaidSunwellTriggerContext::muru_the_singularity_is_near;
 
         creators["m'uru berserker is buffed with flurry"] =
             &RaidSunwellTriggerContext::muru_berserker_is_buffed_with_flurry;
@@ -186,6 +180,12 @@ public:
 
         creators["m'uru warlock has enslaved void spawn"] =
             &RaidSunwellTriggerContext::muru_warlock_has_enslaved_void_spawn;
+
+        creators["m'uru entropius spawns darkness pools"] =
+            &RaidSunwellTriggerContext::muru_entropius_spawns_darkness_pools;
+
+        creators["m'uru the singularity is near"] =
+            &RaidSunwellTriggerContext::muru_the_singularity_is_near;
 
         // Kil'jaeden <The Deceiver>
         creators["kil'jaeden encounter has begun"] =
@@ -374,14 +374,8 @@ private:
     static Trigger* muru_dark_fiends_spawned(PlayerbotAI* botAI) {
         return new MuruDarkFiendsSpawnedTrigger(botAI);
     }
-    static Trigger* muru_entropius_spawns_darkness_pools(PlayerbotAI* botAI) {
-        return new MuruEntropiusSpawnsDarknessPoolsTrigger(botAI);
-    }
     static Trigger* muru_darkness_is_coming(PlayerbotAI* botAI) {
         return new MuruDarknessIsComingTrigger(botAI);
-    }
-    static Trigger* muru_the_singularity_is_near(PlayerbotAI* botAI) {
-        return new MuruTheSingularityIsNearTrigger(botAI);
     }
     static Trigger* muru_berserker_is_buffed_with_flurry(PlayerbotAI* botAI) {
         return new MuruBerserkerIsBuffedWithFlurryTrigger(botAI);
@@ -397,6 +391,12 @@ private:
     }
     static Trigger* muru_warlock_has_enslaved_void_spawn(PlayerbotAI* botAI) {
         return new MuruWarlockHasEnslavedVoidSpawnTrigger(botAI);
+    }
+    static Trigger* muru_entropius_spawns_darkness_pools(PlayerbotAI* botAI) {
+        return new MuruEntropiusSpawnsDarknessPoolsTrigger(botAI);
+    }
+    static Trigger* muru_the_singularity_is_near(PlayerbotAI* botAI) {
+        return new MuruTheSingularityIsNearTrigger(botAI);
     }
 
     // Kil'jaeden <The Deceiver>

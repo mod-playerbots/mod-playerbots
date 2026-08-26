@@ -157,9 +157,6 @@ public:
         creators["m'uru kill dark fiends with dispel"] =
             &RaidSunwellActionContext::muru_kill_dark_fiends_with_dispel;
 
-        creators["m'uru don't touch the dark fiend"] =
-            &RaidSunwellActionContext::muru_dont_touch_the_dark_fiend;
-
         creators["m'uru tanks move sentinel to safe position"] =
             &RaidSunwellActionContext::muru_tanks_move_sentinel_to_safe_position;
 
@@ -168,9 +165,6 @@ public:
 
         creators["m'uru melee flee the darkness"] =
             &RaidSunwellActionContext::muru_melee_flee_the_darkness;
-
-        creators["m'uru flee from singularity"] =
-            &RaidSunwellActionContext::muru_flee_from_singularity;
 
         creators["m'uru cast stun on shadowsword berserker"] =
             &RaidSunwellActionContext::muru_cast_stun_on_shadowsword_berserker;
@@ -186,6 +180,12 @@ public:
 
         creators["m'uru enslaved void spawn cast shadow bolt volley"] =
             &RaidSunwellActionContext::muru_enslaved_void_spawn_cast_shadow_bolt_volley;
+
+        creators["m'uru don't touch the dark fiend"] =
+            &RaidSunwellActionContext::muru_dont_touch_the_dark_fiend;
+
+        creators["m'uru flee from singularity"] =
+            &RaidSunwellActionContext::muru_flee_from_singularity;
 
         // Kil'jaeden <The Deceiver>
         creators["kil'jaeden announce dragon orb user"] =
@@ -374,9 +374,6 @@ private:
     static Action* muru_kill_dark_fiends_with_dispel(PlayerbotAI* botAI) {
         return new MuruKillDarkFiendsWithDispelAction(botAI);
     }
-    static Action* muru_dont_touch_the_dark_fiend(PlayerbotAI* botAI) {
-        return new MuruDontTouchTheDarkFiendAction(botAI);
-    }
     static Action* muru_tanks_move_sentinel_to_safe_position(PlayerbotAI* botAI) {
         return new MuruTanksMoveSentinelToSafePositionAction(botAI);
     }
@@ -385,9 +382,6 @@ private:
     }
     static Action* muru_melee_flee_the_darkness(PlayerbotAI* botAI) {
         return new MuruMeleeFleeTheDarknessAction(botAI);
-    }
-    static Action* muru_flee_from_singularity(PlayerbotAI* botAI) {
-        return new MuruFleeFromSingularityAction(botAI);
     }
     static Action* muru_cast_stun_on_shadowsword_berserker(PlayerbotAI* botAI) {
         return new MuruCastStunOnShadowswordBerserkerAction(botAI);
@@ -403,6 +397,12 @@ private:
     }
     static Action* muru_enslaved_void_spawn_cast_shadow_bolt_volley(PlayerbotAI* botAI) {
         return new MuruEnslavedVoidSpawnCastShadowBoltVolleyAction(botAI);
+    }
+    static Action* muru_dont_touch_the_dark_fiend(PlayerbotAI* botAI) {
+        return new MuruDontTouchTheDarkFiendAction(botAI);
+    }
+    static Action* muru_flee_from_singularity(PlayerbotAI* botAI) {
+        return new MuruFleeFromSingularityAction(botAI);
     }
 
     // Kil'jaeden <The Deceiver>
