@@ -8,6 +8,7 @@
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "SethShared.h"
+#include <algorithm>
 #include <array>
 #include <cmath>
 
