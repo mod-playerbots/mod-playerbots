@@ -9,11 +9,6 @@
 
 #include "Trigger.h"
 
-// Trigger names describe the mechanic the paired action answers, not the condition tested here.
-// Most boss abilities are periodic and cannot be seen coming, so a trigger is usually a coarse
-// gate -- this boss is up, and this bot is the role that cares -- with any precise check living
-// in the action. Read alongside TKStrategy.cpp, the pairs document the encounter.
-
 // General
 
 class TempestKeepNoEncounterInProgressTrigger : public Trigger

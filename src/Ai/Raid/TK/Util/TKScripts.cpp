@@ -10,6 +10,8 @@
 #include "Spell.h"
 #include "Timer.h"
 #include "TKHelpers.h"
+#include <algorithm>
+#include <list>
 
 using namespace TkHelpers;
 

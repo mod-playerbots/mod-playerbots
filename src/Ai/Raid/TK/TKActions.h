@@ -11,6 +11,7 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 #include "TKHelpers.h"
+#include <string>
 #include <utility>
 #include <vector>
 
