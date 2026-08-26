@@ -164,7 +164,6 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
         return false;
     }
 
-
     for (size_t i = 0; i < tanks.size(); ++i)
     {
         if (i == myIndex)

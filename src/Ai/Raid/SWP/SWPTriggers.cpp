@@ -27,9 +27,13 @@ bool SunwellPlateauNoEncounterInProgressTrigger::IsActive()
     if (bot->GetMapId() != SWP_MAP_ID)
         return false;
 
-    // InstanceScript reports IN_PROGRESS for every SWP boss from JustEngagedWith until kill/evade.
+    // InstanceScript reports IN_PROGRESS for every SWP boss from JustEngagedWith until kill/evade,
+    // except that KJ does not begin until the Hands are defeated
     InstanceScript* instance = bot->GetInstanceScript();
-    return instance && !instance->IsEncounterInProgress();
+    if (!instance || instance->IsEncounterInProgress())
+        return false;
+
+    return !AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }
 
 bool SunwellPlateauBotHasAuraToRemoveTrigger::IsActive()

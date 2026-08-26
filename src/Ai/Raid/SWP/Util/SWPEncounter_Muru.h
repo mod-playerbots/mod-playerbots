@@ -74,24 +74,19 @@ inline constexpr uint32 MURU_ENCOUNTER_TARGETS_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 DARKNESS_PRE_EFFECT_MS = 3000;
 inline constexpr uint32 DARKNESS_AURA_MS = 20000;
 
-// This long before Darkness expires, melee are allowed to run back in (to account for run distance,
-// finishing current actions, tick delay).
-inline constexpr uint32 DARKNESS_RUN_BACK_ALLOWANCE_MS = 2000;
-
 // This is an arbitrary window to allow tanks a bit more time to get positioned after Darkness.
 inline constexpr uint32 DARKNESS_EARLY_WINDOW_MS = 10000;
 
-// Darkness damages within 15 yards of M'uru; the rest is the usual avoidance padding
+// Darkness damages within 15 yards of M'uru; the rest is avoidance padding.
 inline constexpr float DARKNESS_SAFE_DISTANCE = 20.0f;
 
-// The maximum distance from the melee dps holding spot that melee dps will wander to attack during
-// Darkness
+// The maximum distance from the melee dps holding spot that they wander to attack during Darkness.
 inline constexpr float MURU_HOLDING_POSITION_RADIUS = 20.0f;
 
-// Targeting is based on the nearest mob; this buffer is to keep targets sticky
+// Targeting is based on the nearest mob; this buffer is to keep targets sticky.
 inline constexpr float MURU_TARGET_SWITCH_MARGIN = 10.0f;
 
-// Radius of Shadow Bolt Volley (46082), which is centred on the enslaved Void Spawn
+// Radius of Shadow Bolt Volley (46082), which is centred on the enslaved Void Spawn.
 inline constexpr float MURU_SHADOW_BOLT_VOLLEY_RADIUS = 20.0f;
 
 // Void Zones (25879) have aura 46262, ticking 46264 for 3k in a 3y radius, but more importantly
@@ -112,12 +107,12 @@ inline constexpr uint32 SINGULARITY_CACHE_INTERVAL_MS = 200;
 // wide as touching a single Dark Fiend is almost a guaranteed wipe.
 inline constexpr float DARK_FIEND_SAFE_DISTANCE = 10.0f;
 
-// Tanks drag nothing further than this from the ranged stack
+// Tanks drag nothing further than this from the ranged stack.
 inline constexpr float MURU_MAX_TARGET_DIST_FROM_STACK = 25.0f;
 
 inline constexpr float MURU_MISDIRECT_MIN_TARGET_HP_PERCENT = 80.0f;
 
-// Dps cooldowns are held until 97% to allow for initial positioning
+// Dps cooldowns are held until 97% to allow for initial positioning.
 inline constexpr float MURU_MAX_DPS_HP_PERCENT = 97.0f;
 
 extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;

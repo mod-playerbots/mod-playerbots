@@ -36,8 +36,6 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     }
 
     // Brutallus
-
-
     auto const brutallusItr = brutallusEncounterStates.find(instanceId);
     if (brutallusItr != brutallusEncounterStates.end())
         reset |= brutallusItr->second.rangedBurnStates.erase(guid) > 0;

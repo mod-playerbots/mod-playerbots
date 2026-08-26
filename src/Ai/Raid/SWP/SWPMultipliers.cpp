@@ -747,12 +747,14 @@ float MuruDelayCooldownsMultiplier::GetValue(Action* action)
     if (entropius && entropius->GetHealthPct() < SWP_PULL_COMPLETE_HP_PERCENT)
         return 1.0f;
 
+    // Bloodlust is saved for Entropius
     if (bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action)))
     {
         return 0.0f;
     }
 
+    // Other dps cooldowns can be used on M'uru after the pull
     return muru->GetHealthPct() > MURU_MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
 }
 
