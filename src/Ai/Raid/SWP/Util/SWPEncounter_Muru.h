@@ -117,15 +117,15 @@ inline constexpr float MURU_MAX_TARGET_DIST_FROM_STACK = 25.0f;
 
 inline constexpr float MURU_MISDIRECT_MIN_TARGET_HP_PERCENT = 80.0f;
 
-// DPS cooldowns are held until 97% to allow for initial positioning
+// Dps cooldowns are held until 97% to allow for initial positioning
 inline constexpr float MURU_MAX_DPS_HP_PERCENT = 97.0f;
 
 extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     muruVoidSentinelTankAssignments;
 
-bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
 bool IsMuruPhaseActive(Unit* muru);
+bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
 bool TryGetMuruDarknessEarlyState(
     Player* bot, Unit* muru, uint32 earlyWindowMs = MURU_DARKNESS_EARLY_WINDOW_MS);
 MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI);

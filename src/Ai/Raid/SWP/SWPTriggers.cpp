@@ -650,18 +650,6 @@ bool MuruDarkFiendsSpawnedTrigger::IsActive()
     return AI_VALUE2(Unit*, "find target", "dark fiend");
 }
 
-bool MuruEntropiusSpawnsDarknessPoolsTrigger::IsActive()
-{
-    if (!AI_VALUE2(Unit*, "find target", "entropius"))
-        return false;
-
-    if (FindMuruVoidZoneToAvoid(botAI))
-        return true;
-
-    Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
-    return darkFiend && darkFiend->GetVictim() == bot;
-}
-
 bool MuruDarknessIsComingTrigger::IsActive()
 {
     if (!PlayerbotAI::IsMelee(bot))
@@ -674,28 +662,41 @@ bool MuruDarknessIsComingTrigger::IsActive()
     return TryGetMuruDarknessActiveState(bot, muru);
 }
 
-bool MuruTheSingularityIsNearTrigger::IsActive()
-{
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
-    if (!entropius)
-        return false;
-
-    Creature* singularity = botAI->GetCreature(AI_VALUE(ObjectGuid, "muru singularity"));
-    return singularity && singularity->IsAlive();
-}
-
 bool MuruBerserkerIsBuffedWithFlurryTrigger::IsActive()
 {
+    // No stuns and can't be a Tauren. Too bad.
+    if (bot->getClass() == CLASS_MAGE || bot->getClass() == CLASS_PRIEST ||
+        bot->getClass() == CLASS_WARLOCK)
+    {
+        return false;
+    }
+
+    if (!AI_VALUE2(Unit*, "find target", "m'uru"))
+        return false;
+
     return FindMuruBerserkerToStun(botAI);
 }
 
 bool MuruFuryMageCastingFelFireballTrigger::IsActive()
 {
+    // Do Druids have no interrupts...?
+    if (bot->getClass() == CLASS_DRUID)
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "m'uru"))
+        return false;
+
     return FindMuruFuryMageToInterrupt(botAI);
 }
 
 bool MuruFuryMageIsBuffedWithSpellFuryTrigger::IsActive()
 {
+    if (bot->getClass() != CLASS_MAGE)
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "m'uru"))
+        return false;
+
     return FindMuruFuryMageToSpellsteal(botAI);
 }
 
@@ -723,6 +724,28 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
 
     Unit* charm = bot->GetCharm();
     return charm && charm->IsAlive() && charm->GetEntry() == Id(SwpNpcs::NPC_VOID_SPAWN);
+}
+
+bool MuruEntropiusSpawnsDarknessPoolsTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "entropius"))
+        return false;
+
+    if (FindMuruVoidZoneToAvoid(botAI))
+        return true;
+
+    Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
+    return darkFiend && darkFiend->GetVictim() == bot;
+}
+
+bool MuruTheSingularityIsNearTrigger::IsActive()
+{
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    if (!entropius)
+        return false;
+
+    Creature* singularity = botAI->GetCreature(AI_VALUE(ObjectGuid, "muru singularity"));
+    return singularity && singularity->IsAlive();
 }
 
 // Kil'jaeden <The Deceiver>

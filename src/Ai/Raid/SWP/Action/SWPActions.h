@@ -448,14 +448,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class MuruDontTouchTheDarkFiendAction : public MovementAction
-{
-public:
-    MuruDontTouchTheDarkFiendAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "m'uru don't touch the dark fiend") {}
-    bool Execute(Event event) override;
-};
-
 class MuruTanksMoveSentinelToSafePositionAction : public AttackAction
 {
 public:
@@ -480,14 +472,6 @@ class MuruMeleeFleeTheDarknessAction : public MovementAction
 public:
     MuruMeleeFleeTheDarknessAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "m'uru melee flee the darkness") {}
-    bool Execute(Event event) override;
-};
-
-class MuruFleeFromSingularityAction : public MovementAction
-{
-public:
-    MuruFleeFromSingularityAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "m'uru flee from singularity") {}
     bool Execute(Event event) override;
 };
 
@@ -526,7 +510,6 @@ public:
 class MuruEnslavedVoidSpawnAttackAction : public Action
 {
 public:
-    // Abstract: only the derived names are registered, so there is no default to fall back on
     MuruEnslavedVoidSpawnAttackAction(PlayerbotAI* botAI, std::string const name)
         : Action(botAI, name) {}
 
@@ -544,6 +527,23 @@ public:
             botAI, "m'uru enslaved void spawn cast shadow bolt volley") {}
     bool Execute(Event event) override;
 };
+
+class MuruDontTouchTheDarkFiendAction : public MovementAction
+{
+public:
+    MuruDontTouchTheDarkFiendAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "m'uru don't touch the dark fiend") {}
+    bool Execute(Event event) override;
+};
+
+class MuruFleeFromSingularityAction : public MovementAction
+{
+public:
+    MuruFleeFromSingularityAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "m'uru flee from singularity") {}
+    bool Execute(Event event) override;
+};
+
 
 // Kil'jaeden <The Deceiver>
 

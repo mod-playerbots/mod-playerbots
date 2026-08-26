@@ -395,26 +395,10 @@ public:
     bool IsActive() override;
 };
 
-class MuruEntropiusSpawnsDarknessPoolsTrigger : public Trigger
-{
-public:
-    MuruEntropiusSpawnsDarknessPoolsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "m'uru entropius spawns darkness pools") {}
-    bool IsActive() override;
-};
-
 class MuruDarknessIsComingTrigger : public Trigger
 {
 public:
     MuruDarknessIsComingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "m'uru darkness is coming") {}
-    bool IsActive() override;
-};
-
-class MuruTheSingularityIsNearTrigger : public Trigger
-{
-public:
-    MuruTheSingularityIsNearTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "m'uru the singularity is near") {}
     bool IsActive() override;
 };
 
@@ -455,6 +439,22 @@ class MuruWarlockHasEnslavedVoidSpawnTrigger : public Trigger
 public:
     MuruWarlockHasEnslavedVoidSpawnTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "m'uru warlock has enslaved void spawn") {}
+    bool IsActive() override;
+};
+
+class MuruEntropiusSpawnsDarknessPoolsTrigger : public Trigger
+{
+public:
+    MuruEntropiusSpawnsDarknessPoolsTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "m'uru entropius spawns darkness pools") {}
+    bool IsActive() override;
+};
+
+class MuruTheSingularityIsNearTrigger : public Trigger
+{
+public:
+    MuruTheSingularityIsNearTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "m'uru the singularity is near") {}
     bool IsActive() override;
 };
 
