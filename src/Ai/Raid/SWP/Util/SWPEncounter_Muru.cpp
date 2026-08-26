@@ -192,7 +192,7 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
         return false;
 
     uint32 const expireMs = stateItr->second.expireMs;
-    if (expireMs > now + DARKNESS_RUN_BACK_ALLOWANCE_MS)
+    if (expireMs > now)
         return true;
 
     if (expireMs <= now)
