@@ -829,14 +829,12 @@ std::vector<WorldPosition> WorldPosition::getPathFromPath(std::vector<WorldPosit
     }
 
     PathGenerator path(pathUnit);
-    // See getPathStepFrom: generation (temp-Creature source) is left
-    // UNBIASED so reachable-but-steep links still form. Runtime bots keep
-    // the steep/water preference via CreateFilter's bot block.
-    if (!tempCreature)
-    {
-        path.SetNavTerrainCost(NAV_GROUND_STEEP, 5.0f);
-        path.SetNavTerrainCost(NAV_WATER, 10.0f);
-    }
+    // Use the same filter runtime bots get from CreateFilter. The temp
+    // creature would otherwise take the creature filter, which allows the
+    // steep polys bots refuse to walk. Stored paths are splined raw, so a
+    // link built over such polys sends bots up walls.
+    path.SetExcludeFlags(NAV_MAGMA | NAV_SLIME | NAV_GROUND_STEEP);
+    path.SetNavTerrainCost(NAV_WATER, 20.0f);
 
     // Limit the pathfinding attempts
     for (uint32 i = 0; i < maxAttempt; i++)

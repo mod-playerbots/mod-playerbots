@@ -613,8 +613,9 @@ public:
     // to suppress the hostile-target check (used by combat repositioning).
     void ClipPath(PlayerbotAI* ai, Unit* mover, bool ignoreEnemyTargets = false);
 
-    // Reject paths the navmesh accepts but a player can't walk:
-    // 2-point shortcut over 5y, or > 10y vertical drop with slope steeper than 2:1.
+    // Reject paths the navmesh accepts but a player can't walk: >50y 3D
+    // segment, 2-point shortcut over 5y, steep terminal stub, or a point in
+    // unswimmable water. Consecutive duplicate points are collapsed first.
     static bool IsPathCheating(std::vector<WorldPosition> const& path,
                                float endpointDistance);
 
@@ -761,12 +762,26 @@ public:
         return rNodes[urand(0, rNodes.size() - 1)];
     }
 
-    // Finds the best nodePath between two nodes (A* over the node graph)
+    // Default cap on A* node expansions for a runtime routing request.
+    static constexpr uint32 SEARCH_BUDGET_DEFAULT = 2000;
+
+    // No cap; generation-time callers must use this so the saved graph
+    // never depends on the runtime budget.
+    static constexpr uint32 SEARCH_BUDGET_UNLIMITED = 0;
+
+    // Finds the best nodePath between two nodes (A* over the node graph).
+    // For a cross-map goal the route may end at the first walkable node
+    // past a map crossing instead of at goal (caller detects this as
+    // back() != goal); the executor re-plans after each crossing anyway.
+    // searchBudget caps expansions; exhaustion returns an empty route,
+    // same as no route.
     TravelNodeRoute GetNodeRoute(TravelNode* start, TravelNode* goal,
-                                 Player* bot);
+                                 Player* bot,
+                                 uint32 searchBudget = SEARCH_BUDGET_DEFAULT);
 
     // Picks the nearest start/end nodes for two world positions and runs A*
-    // over the node graph to return a full route between them.
+    // between them. Debug command only; a cross-map route may end at a map
+    // seam rather than at the end node.
     TravelNodeRoute FindRouteNearestNodes(WorldPosition startPos,
                                           WorldPosition endPos,
                                           std::vector<WorldPosition>& startPath,
@@ -822,7 +837,9 @@ public:
     void InitTaxiGraph();
     std::vector<uint32> FindTaxiPath(uint32 fromNode, uint32 toNode);
 
-    void PrecomputeReachability();
+    // reportComponents logs a connectivity summary after the pass. Boot and
+    // full-regen callers pass true; per-iteration crop calls stay silent.
+    void PrecomputeReachability(bool reportComponents = false);
 
     // Resolve a full TravelPath from botPos to destination. Returns an
     // empty TravelPath if no graph route + mmap stitch is reachable;
@@ -841,6 +858,10 @@ private:
 
     TravelNodeMap(TravelNodeMap&&) = delete;
     TravelNodeMap& operator=(TravelNodeMap&&) = delete;
+
+    // Logs the componentId partition PrecomputeReachability computed:
+    // summary at INFO, per-component detail at DEBUG.
+    void logComponentConnectivity();
 
     // Taxi graph internals
     void BuildTaxiGraph();

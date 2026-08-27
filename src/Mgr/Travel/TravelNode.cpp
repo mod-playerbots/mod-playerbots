@@ -542,7 +542,10 @@ bool TravelNode::isUselessLink(TravelNode* farNode)
             if (!nearNode->hasRouteTo(farNode, true))
                 continue;
 
-            TravelNodeRoute route = TravelNodeMap::instance().GetNodeRoute(nearNode, farNode, nullptr);
+            // Unlimited budget: a budget-exhausted "no route" would read as
+            // "no alternate" and under-prune the saved graph.
+            TravelNodeRoute route = TravelNodeMap::instance().GetNodeRoute(
+                nearNode, farNode, nullptr, TravelNodeMap::SEARCH_BUDGET_UNLIMITED);
 
             if (route.isEmpty())
                 continue;
@@ -611,12 +614,17 @@ bool TravelNode::cropUselessLinks()
         if (!canCropStructuralWalkLink(this, farNode) || !canCropStructuralWalkLink(farNode, this))
             continue;
 
-        if (this->hasLinkTo(farNode) && this->isUselessLink(farNode))
+        // Decide both directions before removing anything: isUselessLink
+        // reads links the other removal would mutate, so removing first
+        // could sever both directions of a pair that should keep one.
+        bool const forwardUseless = this->hasLinkTo(farNode) && this->isUselessLink(farNode);
+        bool const reverseUseless = farNode->hasLinkTo(this) && farNode->isUselessLink(this);
+
+        if (forwardUseless)
         {
-            // Remove BOTH directions (ref 545-549): a one-way half-link left
-            // behind persists asymmetrically in the saved graph.
+            // One direction only; one-way links (ledge drops, teleports)
+            // are legitimate.
             this->removeLinkTo(farNode);
-            farNode->removeLinkTo(this);
             hasRemoved = true;
 
             if (sPlayerbotAIConfig.hasLog("crop.csv"))
@@ -631,19 +639,17 @@ bool TravelNode::cropUselessLinks()
             }
         }
 
-        if (farNode->hasLinkTo(this) && farNode->isUselessLink(this))
+        if (reverseUseless)
         {
-            // Remove BOTH directions (ref 562-566).
             farNode->removeLinkTo(this);
-            this->removeLinkTo(farNode);
             hasRemoved = true;
 
             if (sPlayerbotAIConfig.hasLog("crop.csv"))
             {
                 std::ostringstream out;
-                out << getName() << ",";
                 out << farNode->getName() << ",";
-                WorldPosition().printWKT({*getPosition(), *farNode->getPosition()}, out, 1);
+                out << getName() << ",";
+                WorldPosition().printWKT({*farNode->getPosition(), *getPosition()}, out, 1);
                 out << std::fixed;
 
                 sPlayerbotAIConfig.log("crop.csv", out.str().c_str());
@@ -724,23 +730,30 @@ void TravelNode::print([[maybe_unused]] bool printFailed)
 }
 
 // Attempts to move ahead of the path.
-bool TravelPath::IsPathCheating(std::vector<WorldPosition> const& path, float endpointDistance)
+bool TravelPath::IsPathCheating(std::vector<WorldPosition> const& rawPath, float endpointDistance)
 {
-    if (path.empty())
+    if (rawPath.empty())
         return false;
 
-    // Guard 0: any long straight segment is the pathfinder teleporting across
-    // terrain it could not route through. Walk paths are produced by
-    // FindSmoothPath, which resamples at 4y steps (SMOOTH_PATH_STEP_SIZE) --
-    // the curated graph's interior segments never exceed 30y. We do NOT use
-    // straight-path/corner output, so a >50y hop is always a fabricated jump
-    // (poisoned shortcut, same-poly line path, chain-stitch artifact), never
-    // legitimate string-pulling. Applies per segment, same-map pairs only
-    // (cross-map pairs are areaTrigger/portal seams).
+    // Collapse consecutive duplicate points first: a doubled endpoint makes
+    // Guard 2 measure a zero-length terminal stub and miss the real one.
+    std::vector<WorldPosition> path;
+    path.reserve(rawPath.size());
+    for (WorldPosition const& p : rawPath)
+        if (path.empty() || path.back().GetMapId() != p.GetMapId() ||
+            path.back().GetPositionX() != p.GetPositionX() ||
+            path.back().GetPositionY() != p.GetPositionY() ||
+            path.back().GetPositionZ() != p.GetPositionZ())
+            path.push_back(p);
+
+    // Guard 0: walk paths are resampled at 4y steps, so any >50y segment is
+    // a fabricated jump, never legitimate string-pulling. Measured in 3D so
+    // near-vertical drops count. Same-map segments only (cross-map pairs
+    // are areaTrigger/portal seams).
     constexpr float MAX_WALK_SEGMENT = 50.0f;
     for (size_t i = 1; i < path.size(); ++i)
         if (path[i - 1].GetMapId() == path[i].GetMapId() &&
-            path[i - 1].GetExactDist2d(path[i].GetPositionX(), path[i].GetPositionY()) > MAX_WALK_SEGMENT)
+            path[i - 1].distance(path[i]) > MAX_WALK_SEGMENT)
             return true;
 
     // Guard 1: 2-point path for >5y is navmesh "gave up" — straight
@@ -1466,12 +1479,15 @@ TravelNode* TravelNodeMap::getNode(WorldPosition pos, [[maybe_unused]] std::vect
 }
 
 TravelNodeRoute TravelNodeMap::GetNodeRoute(TravelNode* start, TravelNode* goal,
-    Player* bot)
+    Player* bot, uint32 searchBudget)
 {
     float botSpeed = bot ? bot->GetSpeed(MOVE_RUN) : 7.0f;
 
     if (start == goal)
         return TravelNodeRoute();
+
+    // Arms the cross-map seam exit in the main loop below.
+    bool const crossMap = start->GetMapId() != goal->GetMapId();
 
     // Basic A* algorithm
     std::unordered_map<TravelNode*, TravelNodeStub> m_stubs;
@@ -1533,6 +1549,8 @@ TravelNodeRoute TravelNodeMap::GetNodeRoute(TravelNode* start, TravelNode* goal,
     // Min-heap: smallest f at front
     auto heapComp = [](TravelNodeStub* i, TravelNodeStub* j) { return i->totalCost > j->totalCost; };
 
+    uint32 expansions = 0;
+
     open.push_back(startStub);
     startStub->open = true;
     std::push_heap(open.begin(), open.end(), heapComp);
@@ -1545,8 +1563,15 @@ TravelNodeRoute TravelNodeMap::GetNodeRoute(TravelNode* start, TravelNode* goal,
         currentNode->open = false;
 
         currentNode->closed = true;
+        expansions++;
 
-        if (currentNode->dataNode == goal)
+        // Cross-map seam exit (cmangos behavior): for a cross-map goal, stop
+        // at the first walkable node on another map. The executor re-plans
+        // after every map crossing, so anything past the seam is thrown away
+        // unwalked. Callers detect the truncation as back() != goal.
+        if (currentNode->dataNode == goal ||
+            (crossMap && currentNode->dataNode->GetMapId() != start->GetMapId() &&
+             currentNode->dataNode->isWalking()))
         {
             TravelNodeStub* parent = currentNode->parent;
 
@@ -1561,6 +1586,16 @@ TravelNodeRoute TravelNodeMap::GetNodeRoute(TravelNode* start, TravelNode* goal,
 
             reverse(path.begin(), path.end());
             return TravelNodeRoute(path);
+        }
+
+        // Budget exhausted: return empty, same as no route. Callers already
+        // handle empty; a partial route would never be walked.
+        if (searchBudget > 0 && expansions >= searchBudget)
+        {
+            LOG_DEBUG("playerbots",
+                      "[TravelFail] A* search budget ({}) exhausted routing {} -> {}, treating as no route",
+                      searchBudget, start->getName(), goal->getName());
+            return TravelNodeRoute();
         }
 
         for (auto const& link : *currentNode->dataNode->getLinks())  // for each successor n' of n
@@ -1820,10 +1855,18 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
             if (route.isEmpty())
                 continue;
 
+            // Seam route (last node != e): don't splice endProbe, which was
+            // computed from e. Use the bare destination as deferred tail so
+            // the executor's cache gates (keyed on the path tail) still
+            // match. The stub is never walked; the map flip forces a fresh
+            // plan first.
+            std::vector<WorldPosition> const finalLeg =
+                route.getNodes().back() == e ? endProbe : std::vector<WorldPosition>{destination};
+
             // On a transport: skip ground validation, accept the route.
             if (transportEntry)
             {
-                path = route.BuildPath({botPos}, endProbe, bot);
+                path = route.BuildPath({botPos}, finalLeg, bot);
                 return path;
             }
 
@@ -1857,7 +1900,7 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
             // successful pathToStart back as beginPath so subsequent
             // ResolveMovePath cycles can reuse it.
             beginPath = pathToStart;
-            path = route.BuildPath(pathToStart, endProbe, bot);
+            path = route.BuildPath(pathToStart, finalLeg, bot);
             return path;
         }
     }
@@ -2936,7 +2979,7 @@ void TravelNodeMap::generateAll()
     hasToSave = true;
     saveNodeStore();
 
-    PrecomputeReachability();
+    PrecomputeReachability(true);
 }
 
 void TravelNodeMap::Init()
@@ -2971,7 +3014,7 @@ void TravelNodeMap::Init()
         saveNodeStore();
     }
 
-    PrecomputeReachability();
+    PrecomputeReachability(true);
 }
 
 void TravelNodeMap::printMap()
@@ -3568,7 +3611,77 @@ std::vector<uint32> TravelNodeMap::BuildPath(uint32 fromNode, uint32 toNode,
     return path;
 }
 
-void TravelNodeMap::PrecomputeReachability()
+// Logs the componentId partition: component count, main size, and a
+// capped list of the rest. Components are weakly connected (undirected
+// edges), so separation means no path in either direction.
+void TravelNodeMap::logComponentConnectivity()
+{
+    // Detail-line cap so a badly fragmented graph doesn't flood the log.
+    constexpr uint32 MAX_REPORTED_DISCONNECTED_COMPONENTS = 50;
+
+    std::unordered_map<uint32, uint32> sizeById;
+    std::unordered_map<uint32, TravelNode*> representativeById;
+
+    uint32 totalNodes = 0;
+    for (auto* node : nodes)
+    {
+        if (!node)
+            continue;
+
+        ++totalNodes;
+        uint32 const id = node->getComponentId();
+        ++sizeById[id];
+        representativeById.try_emplace(id, node);
+    }
+
+    if (sizeById.empty())
+        return;
+
+    uint32 mainId = 0;
+    uint32 mainSize = 0;
+    for (auto const& [id, size] : sizeById)
+    {
+        if (size > mainSize)
+        {
+            mainSize = size;
+            mainId = id;
+        }
+    }
+
+    if (sizeById.size() == 1)
+    {
+        LOG_INFO("playerbots", "-- component check: graph is fully connected ({} nodes).", mainSize);
+        return;
+    }
+
+    LOG_INFO("playerbots",
+             "-- component check: {} disconnected components, largest holds {} of {} nodes.",
+             sizeById.size(), mainSize, totalNodes);
+
+    uint32 reported = 0;
+    for (auto const& [id, size] : sizeById)
+    {
+        if (id == mainId)
+            continue;
+
+        if (reported >= MAX_REPORTED_DISCONNECTED_COMPONENTS)
+            continue;
+
+        TravelNode* rep = representativeById[id];
+        WorldPosition* pos = rep->getPosition();
+        LOG_DEBUG("playerbots",
+                 "---- component {}: {} node(s), representative '{}' (map {}, {:.1f},{:.1f},{:.1f})",
+                 id, size, rep->getName(), rep->GetMapId(),
+                 pos->GetPositionX(), pos->GetPositionY(), pos->GetPositionZ());
+        ++reported;
+    }
+
+    uint32 const remaining = static_cast<uint32>(sizeById.size()) - 1 - reported;
+    if (remaining > 0)
+        LOG_DEBUG("playerbots", "---- {} further disconnected component(s) not listed.", remaining);
+}
+
+void TravelNodeMap::PrecomputeReachability(bool reportComponents)
 {
     std::unordered_map<TravelNode*, std::vector<TravelNode*>> reverseAdj;
     for (auto* node : nodes)
@@ -3669,4 +3782,8 @@ void TravelNodeMap::PrecomputeReachability()
             }
         }
     }
+
+    if (reportComponents)
+        logComponentConnectivity();
 }
+
