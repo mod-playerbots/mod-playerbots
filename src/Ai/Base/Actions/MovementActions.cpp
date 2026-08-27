@@ -3641,22 +3641,15 @@ bool MovementAction::DispatchMovement(TravelPath path,
                                                 tail.GetPositionX(), tail.GetPositionY(),
                                                 tail.GetPositionZ(),
                                                 botPos.getAngleTo(tail));
-            // TEMP DIAG: low-activity teleport-advance — pairs with the
-            // teleport-cooldown postpone probe in MoveTo2.
+
             LOG_DEBUG("playerbots",
-                      "[TransDiag] {} t={} teleport-advance ok={} -> ({:.1f},{:.1f},{:.1f}) "
+                      "low-activity teleport bot={} ok={} "
+                      "from={:.1f},{:.1f},{:.1f} to={:.1f},{:.1f},{:.1f} map {} "
                       "dist={:.0f} cooldown={}s",
-                      bot->GetName(), getMSTime(), teleOk,
+                      bot->GetName(), teleOk,
+                      botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(),
                       tail.GetPositionX(), tail.GetPositionY(), tail.GetPositionZ(),
-                      totalDist, (int64)(lastMove.nextTeleport - now));
-            // Charter §1: teleport is allowed and visible, but every use
-            // is an ERROR in the log — observability replaces invisibility.
-            LOG_ERROR("playerbots",
-                      "movement safety-net teleport: low-activity-advance bot={} from={:.1f},{:.1f},{:.1f} map {} "
-                      "to={:.1f},{:.1f},{:.1f} map {}",
-                      bot->GetName(), botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(),
-                      botPos.GetMapId(), tail.GetPositionX(), tail.GetPositionY(), tail.GetPositionZ(),
-                      tail.GetMapId());
+                      botPos.GetMapId(), totalDist, (int64)(lastMove.nextTeleport - now));
             if (sPlayerbotAIConfig.hasLog("bot_movement.csv"))
             {
                 std::ostringstream out;
