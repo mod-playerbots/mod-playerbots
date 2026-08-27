@@ -5,7 +5,6 @@
  */
 
 #include "CheckValuesAction.h"
-
 #include "AiObjectContext.h"
 #include "Event.h"
 #include "ObjectGuid.h"
