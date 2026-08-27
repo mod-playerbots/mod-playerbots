@@ -16,6 +16,7 @@
 #include <vector>
 
 class Player;
+class PlayerbotAI;
 class Unit;
 
 namespace SwpHelpers
@@ -63,6 +64,26 @@ inline constexpr float KILJAEDEN_PHASE3_HP_THRESHOLD = 85.0f;
 inline constexpr float KILJAEDEN_PHASE4_HP_THRESHOLD = 55.0f;
 inline constexpr float KILJAEDEN_PHASE5_HP_THRESHOLD = 25.0f;
 
+// Position check to gate trying to find Hands.
+inline constexpr float SUNWELL_CENTER_RADIUS = 100.0f;
+// Feeds the "kiljaeden hands" value.
+inline constexpr float HAND_SEARCH_RADIUS = 75.0f;
+inline constexpr uint32 HAND_CACHE_INTERVAL_MS = 200;
+// Hammer of Justice is a single-target spell that counts both CombatReaches so its actual range is
+// its tooltip range of 10y + 1.5y (player) + 2.5y (Hand) = 14y. Holding a little inside that
+// threshold leaves room for the Hand to shift between the range check and the cast landing.
+inline constexpr float HOLY_PALADIN_STUN_STANDOFF = 12.0f;
+// Timing between stuns for bots to coordinate them. A gate based purely on UNIT_STATE_STUNNED
+// still results in spam stuns due to the delay between a spell casting and resolving.
+inline constexpr uint32 HAND_CONTROL_CLAIM_MS = 1500;
+// Hands cast Shadow Infusion (45772) at or below 20% HP, which makes them permanently immune
+// to both stun and silence.
+inline constexpr float HAND_CC_IMMUNE_HP_PERCENT = 20.0f;
+// Radii for the tank abilities that are anchored on the caster rather than on the Hand.
+// 8 yards covers War Stomp (20549) and all 3 Arcane Torrent variants.
+inline constexpr float HAND_SELF_AOE_RACIAL_RADIUS = 8.0f;
+inline constexpr float HAND_SHOCKWAVE_RADIUS = 10.0f;
+
 // Throttle assigned ranged position rebuilds since they should be stable during the encounter.
 inline constexpr uint32 RANGED_ASSIGNMENT_REBUILD_INTERVAL_MS = 1000;
 inline constexpr uint32 ARMAGEDDON_ASSIGNMENT_REBUILD_INTERVAL_MS = 250;
@@ -75,36 +96,19 @@ inline constexpr float KILJAEDEN_REFLECTION_SHOUT_REACH = 10.0f;
 inline constexpr float KILJAEDEN_REFLECTION_CONSECRATION_REACH = 8.0f;
 inline constexpr float KILJAEDEN_REFLECTION_SEARCH_RADIUS = 100.0f;
 
-// Radii for the tank abilities that are anchored on the caster rather than on the Hand.
-// 8 yards covers War Stomp (20549) and all 3 Arcane Torrent variants.
-inline constexpr float KILJAEDEN_SELF_AOE_RACIAL_RADIUS = 8.0f;
-inline constexpr float KILJAEDEN_SHOCKWAVE_RADIUS = 10.0f;
-
-// Hands cast Shadow Infusion (45772) at or below 20% health, which makes them permanently immune
-// to both stun and silence. The 90% gate is arbitrary and intended to let the tanks spread the
-// Hands before they are stunned in place (to try to avoid Shadow Bolt Volley coverage).
-inline constexpr float HAND_STUN_IMMUNE_HP_PERCENT = 20.0f;
-inline constexpr float HAND_STUN_MAX_HP_PERCENT = 90.0f;
-
-// How far apart the Hands are kept by tanks
-inline constexpr float HAND_TANK_SEPARATION = 20.0f;
-
-// Shield of the Blue (45848) lasts 5s and Darkness of a Thousand Souls (46605) is an 8s channel, so
-// the dragon casts once <4.5s remain.
-// Bots with Fire Bloom hold clear of the stack until the same point.
-inline constexpr int32 SHIELD_OF_THE_BLUE_CAST_WINDOW_MS = 4500;
 inline constexpr float DRAGON_ORB_SEARCH_RADIUS = 200.0f;
-
 // The presence of Dragon Orbs is cached, but GO_FLAG_IN_USE and GO_FLAG_NOT_SELECTABLE are not.
 inline constexpr uint32 DRAGON_ORB_CACHE_INTERVAL_MS = 200;
 inline constexpr float DRAGON_ORB_IN_USE_HOLD_DISTANCE = 15.0f;
 // Grace after using an Orb before a lingering root is considered stale and is cleared.
 inline constexpr uint32 DRAGON_ORB_USE_GRACE_MS = 2000;
 inline constexpr uint32 DRAGON_ORB_ANNOUNCEMENT_RESET_MS = 10000;
-// Bots with Fire Bloom hold this far off the Darkness stack until the Shield casts.
+// Shield of the Blue (45848) lasts 5s and Darkness of a Thousand Souls (46605) is an 8s channel, so
+// the dragon casts once <4.5s remain.
+inline constexpr int32 SHIELD_OF_THE_BLUE_CAST_WINDOW_MS = 4500;
+// How far bots with Fire Bloom stay away from the Darkness stack until the Shield cast window.
 inline constexpr float FIRE_BLOOM_STANDOFF = 15.0f;
-
-// Breath: Haste and Breath: Revitalize are 13-yard cones on allies, so the dragon stops a little
+// Breath: Haste and Breath: Revitalize are 13y cones on allies, so the dragon stops a little
 // under half that from its target and looks for a cluster of roughly the same to cover at once.
 inline constexpr float DRAGON_BREATH_STANDOFF = 6.0f;
 inline constexpr float DRAGON_STANDOFF_TOLERANCE = 1.0f;
@@ -123,17 +127,22 @@ inline constexpr uint8 KILJAEDEN_MAX_BOTS_PER_RANGED_SLOT = 2;
 inline constexpr uint32 ARMAGEDDON_HAZARD_DURATION_MS = 10000;
 inline constexpr float ARMAGEDDON_SAFE_DISTANCE = 11.0f;
 
-inline Position const KILJAEDEN_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
+inline Position const SUNWELL_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
 inline Position const KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };
 inline Position const KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.823f };
 inline Position const KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };
 inline Position const KILJAEDEN_DARKNESS_POSITION = { 1709.768f, 642.241f, 27.706f };
 
-extern std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 extern std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
-extern std::unordered_map<uint32, std::array<ObjectGuid, 3>> kiljaedenHandTankAssignments;
+extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>>
+    kiljaedenHandControlClaims;
+extern std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 extern std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
 
+GuidVector FindKiljaedenHandGuids(Player* bot);
+std::vector<Unit*> GetKiljaedenHands(PlayerbotAI* botAI);
+bool IsKiljaedenHandControlClaimed(Unit* hand);
+void ClaimKiljaedenHandControl(Unit* hand);
 void AddKiljaedenArmageddon(
     uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
 bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon);

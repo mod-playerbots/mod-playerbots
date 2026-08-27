@@ -562,29 +562,32 @@ public:
     bool Execute(Event event) override;
 };
 
-class KiljaedenAssignHandsOfTheDeceiverAction : public AttackAction
+class KiljaedenControlHandsOfTheDeceiverAction : public Action
 {
 public:
-    KiljaedenAssignHandsOfTheDeceiverAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kil'jaeden assign hands of the deceiver") {}
-    bool Execute(Event event) override;
-
-private:
-    bool ExecuteTankHandAssignment(
-        std::vector<Unit*> const& hands,
-        Player* mainTank, Player* firstAssistTank, Player* secondAssistTank);
-};
-
-class KiljaedenStunHandsOfTheDeceiverAction : public Action
-{
-public:
-    KiljaedenStunHandsOfTheDeceiverAction(PlayerbotAI* botAI)
-        : Action(botAI, "kil'jaeden stun hands of the deceiver") {}
+    KiljaedenControlHandsOfTheDeceiverAction(PlayerbotAI* botAI)
+        : Action(botAI, "kil'jaeden control hands of the deceiver") {}
     bool Execute(Event event) override;
 
 private:
     bool CastStunOnHand(Unit* hand);
     bool CastSilenceOnHand(Unit* hand);
+};
+
+class KiljaedenMarkHandOfTheDeceiverAction : public Action
+{
+public:
+    KiljaedenMarkHandOfTheDeceiverAction(PlayerbotAI* botAI)
+        : Action(botAI, "kil'jaeden mark hand of the deceiver") {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenMoveHolyPaladinIntoStunRangeAction : public MovementAction
+{
+public:
+    KiljaedenMoveHolyPaladinIntoStunRangeAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "kil'jaeden move holy paladin into stun range") {}
+    bool Execute(Event event) override;
 };
 
 class KiljaedenPositionAndMoveTanksAction : public AttackAction

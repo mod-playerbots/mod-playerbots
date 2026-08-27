@@ -31,7 +31,7 @@ struct MuruEncounterTargets
     std::vector<Unit*> berserkers;
 };
 
-// What the "muru encounter targets" value stores
+// What the "muru encounter targets" value stores.
 struct MuruEncounterGuids
 {
     ObjectGuid muru;
@@ -93,7 +93,7 @@ inline constexpr float MURU_SHADOW_BOLT_VOLLEY_RADIUS = 20.0f;
 // they spawn Dark Fiends. The wide safe distance is in anticipation of the Dark Fiend spawn.
 inline constexpr float VOID_ZONE_SEARCH_RADIUS = 12.0f;
 inline constexpr float VOID_ZONE_SAFE_DISTANCE = 8.0f;
-// Dark Fiend search radii for killing (dispelling) and avoiding, respectively
+// Dark Fiend search radii for killing (dispelling) and avoiding, respectively.
 inline constexpr float DARK_FIEND_DISPEL_SEARCH_RADIUS = 50.0f;
 inline constexpr float DARK_FIEND_AVOID_SEARCH_RADIUS = 15.0f;
 // A Dark Fiend detonates within 2y of whoever it is chasing. The safe distance is deliberately

@@ -8,13 +8,14 @@
 #include "EncounterHelpers.h"
 #include "InstanceScript.h"
 #include "Playerbots.h"
-#include "SWPSharedConstants.h"
+#include "RtiTargetValue.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
+#include "SWPSharedConstants.h"
 #include <list>
 
 using namespace SwpHelpers;
@@ -72,6 +73,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     if (!IsMechanicTrackerBot(bot, SWP_MAP_ID))
         return reset;
 
+    reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
     reset |= kalecgosEncounterStates.erase(instanceId) > 0;
     reset |= brutallusEncounterStates.erase(instanceId) > 0;
     reset |= felmystEncounterStates.erase(instanceId) > 0;
@@ -82,7 +84,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= muruVoidSentinelTankAssignments.erase(instanceId) > 0;
     reset |= kiljaedenEncounterStates.erase(instanceId) > 0;
     reset |= ResetKiljaedenDragonOrbUserAnnouncement(instanceId);
-    reset |= kiljaedenHandTankAssignments.erase(instanceId) > 0;
+    reset |= kiljaedenHandControlClaims.erase(instanceId) > 0;
 
     return reset;
 }

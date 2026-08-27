@@ -8,10 +8,12 @@
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
+#include "RtiTargetValue.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPSharedConstants.h"
 #include <algorithm>
 #include <cmath>
+#include <iterator>
 #include <map>
 
 using namespace SwpHelpers;
@@ -35,202 +37,101 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
         std::map<std::string, std::string> placeholders = {{"%bot", orbUser->GetName()}};
         text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "kiljaeden_designated_dragon_orb_user",
-            "%bot is the first assistant and the designated dragon orb user!",
+            "%bot is the first assistant bot and the designated dragon orb user. If you would "
+            "like only players to control dragons, please remove assistant flags from all bots.",
             placeholders);
     }
     else
     {
         text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "kiljaeden_no_designated_dragon_orb_user",
-            "No bot has been assigned as the designated dragon orb user, "
-            "and therefore a player must control the dragons. "
-            "If you would like a bot to use the dragon orbs, "
-            "please set the assistant flag for a bot.",
+            "No bot has an assistant flag, and therefore a player must control the dragons. If you "
+            "would like a bot to control the dragons, please set the assistant flag for a bot.",
             {});
     }
 
     return botAI->SayToRaid(text);
 }
 
-bool KiljaedenAssignHandsOfTheDeceiverAction::Execute(Event /*event*/)
+bool KiljaedenMarkHandOfTheDeceiverAction::Execute(Event /*event*/)
 {
-    std::vector<Unit*> hands;
-    auto const& targets = AI_VALUE(GuidVector, "possible targets no los");
+    if (!IsMechanicTrackerBot(bot, SWP_MAP_ID))
+        return false;
 
-    for (ObjectGuid const& targetGuid : targets)
-    {
-        Unit* target = botAI->GetUnit(targetGuid);
-        if (target && target->GetEntry() == Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
-            hands.push_back(target);
-    }
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
 
+    // The standard FindTargetValue doesn't work here because zone combat isn't set when the Hands
+    // are pulled so individual bots need to take action to get the Hands on their threat lists
+    // for FindTargetValue. This is particularly problematic if the MechanicTracker is a healer.
+    std::vector<Unit*> const hands = GetKiljaedenHands(botAI);
     if (hands.empty())
         return false;
 
-    std::sort(hands.begin(), hands.end(),
-        [](Unit* left, Unit* right) { return left->GetGUID() < right->GetGUID(); });
-
-    if (IsMechanicTrackerBot(bot, SWP_MAP_ID) && MarkTargetWithSkull(bot, hands.front()))
-        return true;
-
-    if (!PlayerbotAI::IsTank(bot))
-        return AI_VALUE(Unit*, "current target") != hands.front() && Attack(hands.front());
-
-    Player* secondAssistTank = GetGroupAssistTank(bot, 1);
-    if (!secondAssistTank)
+    ObjectGuid const markedGuid = group->GetTargetIcon(RtiTargetValue::skullIndex);
+    if (std::any_of(hands.begin(), hands.end(),
+            [&markedGuid](Unit* hand) { return hand->GetGUID() == markedGuid; }))
+    {
         return false;
+    }
 
-    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
-    if (!firstAssistTank)
-        return false;
+    Unit* target = *std::min_element(hands.begin(), hands.end(),
+        [](Unit* left, Unit* right) { return left->GetHealth() < right->GetHealth(); });
 
-    Player* mainTank = GetGroupMainTank(bot);
-    if (!mainTank)
-        return false;
-
-    if (mainTank != bot && firstAssistTank != bot && secondAssistTank != bot)
-        return false;
-
-    return ExecuteTankHandAssignment(hands, mainTank, firstAssistTank, secondAssistTank);
+    return MarkTargetWithSkull(bot, target);
 }
 
-bool KiljaedenAssignHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
-    std::vector<Unit*> const& hands,
-    Player* mainTank, Player* firstAssistTank, Player* secondAssistTank)
+// Hammer of Justice!
+bool KiljaedenMoveHolyPaladinIntoStunRangeAction::Execute(Event /*event*/)
 {
-    std::vector<Player*> const tanks = { mainTank, firstAssistTank, secondAssistTank };
-
-    size_t myIndex = tanks.size();
-    for (size_t i = 0; i < tanks.size(); ++i)
-    {
-        if (bot == tanks[i])
-        {
-            myIndex = i;
-            break;
-        }
-    }
-
-    if (myIndex >= tanks.size())
+    if (bot->getClass() != CLASS_PALADIN || !PlayerbotAI::IsHeal(bot))
         return false;
 
-    auto& assignments = kiljaedenHandTankAssignments[bot->GetInstanceId()];
-    ObjectGuid& assignedGuid = assignments[myIndex];
-
-    if (!assignedGuid.IsEmpty())
-    {
-        bool stillPresent = false;
-        for (Unit* hand : hands)
-        {
-            if (hand->GetGUID() == assignedGuid)
-            {
-                stillPresent = true;
-                break;
-            }
-        }
-
-        if (!stillPresent)
-            assignedGuid = ObjectGuid::Empty;
-    }
-
-    if (assignedGuid.IsEmpty())
-    {
-        for (Unit* hand : hands)
-        {
-            ObjectGuid const handGuid = hand->GetGUID();
-
-            bool claimedByOtherTank = false;
-            for (size_t i = 0; i < assignments.size(); ++i)
-            {
-                if (i != myIndex && assignments[i] == handGuid)
-                {
-                    claimedByOtherTank = true;
-                    break;
-                }
-            }
-
-            if (!claimedByOtherTank)
-            {
-                assignedGuid = handGuid;
-                break;
-            }
-        }
-    }
-
-    if (assignedGuid.IsEmpty())
+    Group* group = bot->GetGroup();
+    if (!group)
         return false;
 
-    Unit* assignedHand = botAI->GetUnit(assignedGuid);
-    if (!assignedHand || !assignedHand->IsAlive())
+    Unit* hand = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
+    if (!hand || !hand->IsAlive() || hand->GetEntry() != Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
         return false;
 
-    if (AI_VALUE(Unit*, "current target") != assignedHand)
-        return Attack(assignedHand);
-
-    if (assignedHand->GetVictim() != bot || !bot->IsWithinMeleeRange(assignedHand) ||
-        assignedHand->HasUnitState(UNIT_STATE_STUNNED))
-    {
+    if (bot->GetExactDist2d(hand) <= HOLY_PALADIN_STUN_STANDOFF)
         return false;
-    }
 
-    for (size_t i = 0; i < tanks.size(); ++i)
-    {
-        if (i == myIndex)
-            continue;
-
-        Player* otherTank = tanks[i];
-        if (!otherTank || !otherTank->IsAlive())
-            continue;
-
-        ObjectGuid const otherGuid = assignments[i];
-        if (otherGuid.IsEmpty())
-            continue;
-
-        Unit* otherHand = botAI->GetUnit(otherGuid);
-        if (!otherHand || !otherHand->IsAlive())
-            continue;
-
-        float const distFromTank = bot->GetExactDist2d(otherTank);
-        if (distFromTank < HAND_TANK_SEPARATION)
-            return MoveAway(otherTank, HAND_TANK_SEPARATION - distFromTank, true);
-    }
-
-    return false;
+    return MoveTo(hand, HOLY_PALADIN_STUN_STANDOFF, MovementPriority::MOVEMENT_COMBAT);
 }
 
-bool KiljaedenStunHandsOfTheDeceiverAction::Execute(Event /*event*/)
+bool KiljaedenControlHandsOfTheDeceiverAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_SHAMAN)
         return false;
 
-    auto const& targets = AI_VALUE(GuidVector, "possible targets no los");
+    std::vector<Unit*> const hands = GetKiljaedenHands(botAI);
 
-    for (ObjectGuid const& targetGuid : targets)
+    for (Unit* target : hands)
     {
-        Unit* target = botAI->GetUnit(targetGuid);
-        if (!target || target->GetHealthPct() <= HAND_STUN_IMMUNE_HP_PERCENT ||
-            target->GetEntry() != Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
+        if (target->GetHealthPct() <= HAND_CC_IMMUNE_HP_PERCENT)
+            continue;
+
+        if (target->HasUnitState(UNIT_STATE_STUNNED) || target->HasSilenceAura() ||
+            IsKiljaedenHandControlClaimed(target))
         {
             continue;
         }
 
-        if (target->HasUnitState(UNIT_STATE_STUNNED) || target->HasSilenceAura())
-            continue;
-
-        if (CastStunOnHand(target))
+        if ((CastStunOnHand(target)) || CastSilenceOnHand(target))
+        {
+            ClaimKiljaedenHandControl(target);
             return true;
-
-        if (CastSilenceOnHand(target))
-            return true;
+        }
     }
 
     return false;
 }
 
-bool KiljaedenStunHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
+bool KiljaedenControlHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
 {
-    if (hand->GetHealthPct() > HAND_STUN_MAX_HP_PERCENT)
-        return false;
-
     auto const castSpell = [&](char const* spell)
     {
         return botAI->CanCastSpell(spell, hand) && botAI->CastSpell(spell, hand);
@@ -245,7 +146,8 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
     {
         case CLASS_DRUID:
             return (botAI->HasStrategy("bear", BOT_STATE_COMBAT) && castSpell("bash")) ||
-                (botAI->HasStrategy("cat", BOT_STATE_COMBAT) && castSpell("maim"));
+                (botAI->HasStrategy("cat", BOT_STATE_COMBAT) &&
+                 bot->GetComboPoints() >= 4 && castSpell("maim"));
 
         case CLASS_MAGE:
             return castSpell("deep freeze");
@@ -254,22 +156,22 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
             return castSpell("hammer of justice");
 
         case CLASS_ROGUE:
-            return castSpell("kidney shot");
+            return bot->GetComboPoints() >= 4 && castSpell("kidney shot");
 
         case CLASS_WARLOCK:
             return castSpell("shadowfury");
 
         case CLASS_WARRIOR:
             return castSpell("concussion blow") ||
-                castSelfAoe("shockwave", KILJAEDEN_SHOCKWAVE_RADIUS);
+                castSelfAoe("shockwave", HAND_SHOCKWAVE_RADIUS);
 
         default:
             return bot->getRace() == RACE_TAUREN &&
-                castSelfAoe("war stomp", KILJAEDEN_SELF_AOE_RACIAL_RADIUS);
+                castSelfAoe("war stomp", HAND_SELF_AOE_RACIAL_RADIUS);
     }
 }
 
-bool KiljaedenStunHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
+bool KiljaedenControlHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
 {
     auto const castSpell = [&](char const* spell)
     {
@@ -288,9 +190,8 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
             return castSpell("strangulate");
 
         default:
-            // Arcane Torrent is centred on the caster too, so it needs the same guard
             return bot->getRace() == RACE_BLOODELF &&
-                bot->GetExactDist(hand) < KILJAEDEN_SELF_AOE_RACIAL_RADIUS &&
+                bot->GetExactDist(hand) < HAND_SELF_AOE_RACIAL_RADIUS &&
                 castSpell("arcane torrent");
     }
 }
@@ -299,14 +200,12 @@ bool KiljaedenPositionAndMoveTanksAction::Execute(Event /*event*/)
 {
     if (!PlayerbotAI::IsMainTank(bot))
     {
-        // This grid search exists only to bridge the three seconds after spawn, during which a
-        // Reflection is passive and on nobody's threat list, meaning neither FindTargetValue nor
-        // standard bot target acquisition through "attackers" can locate it
+        // This grid search captures the 3s after spawn, during which Reflections are passive and
+        // neither "find target" nor standard target acquisition through "attackers" can locate it.
         if (Creature* reflection = bot->FindNearestCreature(
                 Id(SwpNpcs::NPC_SINISTER_REFLECTION), KILJAEDEN_REFLECTION_SEARCH_RADIUS))
         {
-            // Once aggressive it is on a threat list and therefore in "attackers,"" so failing
-            // here is intended to allow TankAssistAction to take over.
+            // Once Reflections are aggressive, tank assist can take over.
             return reflection->GetReactState() == REACT_PASSIVE &&
                 PickUpSinisterReflections(reflection);
         }
@@ -322,8 +221,7 @@ bool KiljaedenPositionAndMoveTanksAction::Execute(Event /*event*/)
 }
 
 // When Reflections activate after 3s, they begin attack with SMART_ACTION_ATTACK_START, which sets
-// a random victim. Thus, the first landed hit after activation should immediately grab aggro, and
-// we want that to be a tank, so hopefully they can get in range to start attacking before 3s pass.
+// a random victim. Thus, the first hit after activation should immediately grab aggro.
 bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* reflection)
 {
     if (AI_VALUE(Unit*, "current target") != reflection)

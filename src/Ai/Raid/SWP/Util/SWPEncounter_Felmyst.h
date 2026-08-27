@@ -113,19 +113,19 @@ struct FelmystEncounterState
 extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
 
 inline constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
-// Bots wait 300ms to react to Encapsulate (to make the action look less artificial)
+// Bots wait 300ms to react to Encapsulate (to make the action look less artificial).
 inline constexpr uint32 ENCAPSULATE_DELAY_MS = 300;
 
-// How close ranged have to be to a charmed player to attack
+// How close ranged have to be to a charmed player to attack.
 inline constexpr float FELMYST_CHARMED_TARGET_RANGE = 30.0f;
 
-// How long after landing following a flight phase does the raid keeps holding dps
+// How long after landing following a flight phase does the raid keeps holding DPS.
 inline constexpr uint32 FELMYST_GROUNDED_DPS_WAIT_MS = 3000;
 
 inline constexpr uint8 DEMONIC_VAPOR_LEFT_SIDE = 0x1;
 inline constexpr uint8 DEMONIC_VAPOR_RIGHT_SIDE = 0x2;
 
-// How close Felmyst must be to a specified position to be considered there
+// How close Felmyst must be to a specified position to be considered there.
 inline constexpr float FELMYST_LOCATION_MATCH_DISTANCE = 2.0f;
 
 inline Position const FOG_LEFT_SIDE =  { 1469.064f, 729.585f, 59.824f, 4.677f };
@@ -156,7 +156,7 @@ inline std::array const FOG_RIGHT_LANES = {
     Position{ 1441.640f, 520.520f, 50.083f, 1.449f },
 };
 
-// Note that WoW coordinates are rotated 90° from real-life coordinates
+// Note that WoW coordinates are rotated 90° from real-life coordinates.
 inline std::array const FOG_SAFE_THRESHOLDS = {
     FogSafeThreshold{ // Top lane safe threshold (west→east: safe = south)
         Position{ 1470.122f, 660.345f, 20.462f },

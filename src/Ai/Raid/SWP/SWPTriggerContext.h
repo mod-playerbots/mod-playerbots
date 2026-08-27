@@ -188,8 +188,8 @@ public:
             &RaidSunwellTriggerContext::muru_the_singularity_is_near;
 
         // Kil'jaeden <The Deceiver>
-        creators["kil'jaeden encounter has begun"] =
-            &RaidSunwellTriggerContext::kiljaeden_encounter_has_begun;
+        creators["kil'jaeden should coordinate orb use"] =
+            &RaidSunwellTriggerContext::kiljaeden_should_coordinate_orb_use;
 
         creators["kil'jaeden hands of the deceiver are active"] =
             &RaidSunwellTriggerContext::kiljaeden_hands_of_the_deceiver_are_active;
@@ -400,8 +400,8 @@ private:
     }
 
     // Kil'jaeden <The Deceiver>
-    static Trigger* kiljaeden_encounter_has_begun(PlayerbotAI* botAI) {
-        return new KiljaedenEncounterHasBegunTrigger(botAI);
+    static Trigger* kiljaeden_should_coordinate_orb_use(PlayerbotAI* botAI) {
+        return new KiljaedenShouldCoordinateOrbUseTrigger(botAI);
     }
     static Trigger* kiljaeden_hands_of_the_deceiver_are_active(PlayerbotAI* botAI) {
         return new KiljaedenHandsOfTheDeceiverAreActiveTrigger(botAI);
