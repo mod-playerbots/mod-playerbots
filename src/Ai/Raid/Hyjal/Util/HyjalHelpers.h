@@ -7,13 +7,12 @@
 #ifndef PLAYERBOTS_HYJALHELPERS_H
 #define PLAYERBOTS_HYJALHELPERS_H
 
-#include <unordered_map>
-#include <utility>
-#include <vector>
-
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace HyjalSummitHelpers
 {
@@ -101,7 +100,7 @@ namespace HyjalSummitHelpers
     extern const Position KAZROGAL_TANK_FINAL_POSITION;
     extern std::unordered_map<ObjectGuid, TankPositionState> kazrogalTankStep;
     extern std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
-    TankPositionState GetKazrogalTankPositionState(PlayerbotAI* botAI, Player* bot);
+    TankPositionState GetKazrogalTankPositionState(Player* bot);
 
     // Azgalor
     extern const Position AZGALOR_TANK_TRANSITION_POSITION;
@@ -117,7 +116,7 @@ namespace HyjalSummitHelpers
         uint32 spawnTime;
     };
     extern std::unordered_map<uint32, RainOfFireData> rainOfFirePosition;
-    TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot);
+    TankPositionState GetAzgalorTankPositionState(Player* bot);
     RainOfFireData* GetActiveAzgalorRainOfFire(uint32 instanceId);
     bool IsInRainOfFire(Player* bot, float radius);
     bool AnyGroupMemberHasDoom(Player* bot);

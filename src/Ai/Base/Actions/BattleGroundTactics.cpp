@@ -5,9 +5,6 @@
  */
 
 #include "BattleGroundTactics.h"
-
-#include <algorithm>
-
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
 #include "BattleGroundJoinAction.h"
@@ -33,6 +30,7 @@
 #include "PvpTriggers.h"
 #include "ServerFacade.h"
 #include "Vehicle.h"
+#include <algorithm>
 
 // common bg positions
 Position const WS_WAITING_POS_HORDE_1 = {944.981f, 1423.478f, 345.434f, 6.18f};
@@ -3423,9 +3421,6 @@ bool BGTactics::moveToObjectiveWp(BattleBotPath* const& currentPath, uint32 curr
 
     uint32 nPoint = reverse ? std::max((int)(currPoint - urand(1, 5)), 0)
                             : std::min((uint32)(currPoint + urand(1, 5)), lastPointInPath);
-    if (reverse && nPoint < 0)
-        nPoint = 0;
-
     BattleBotWaypoint& nextPoint = currentPath->at(nPoint);
 
     // std::ostringstream out;

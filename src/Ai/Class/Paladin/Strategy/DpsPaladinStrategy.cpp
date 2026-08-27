@@ -5,7 +5,6 @@
  */
 
 #include "DpsPaladinStrategy.h"
-
 #include "Playerbots.h"
 #include "Strategy.h"
 

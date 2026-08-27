@@ -5,15 +5,13 @@
  */
 
 #include "FleeManager.h"
-
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
-FleeManager::FleeManager(Player* bot, float maxAllowedDistance, float followAngle, bool forceMaxDistance,
+FleeManager::FleeManager(Player* bot, float maxAllowedDistance, float /*followAngle*/, bool forceMaxDistance,
                          WorldPosition startPosition)
     : bot(bot),
       maxAllowedDistance(maxAllowedDistance),
-      followAngle(followAngle),
       forceMaxDistance(forceMaxDistance),
       startPosition(startPosition ? startPosition : WorldPosition(bot))
 {
@@ -67,7 +65,7 @@ void FleeManager::calculatePossibleDestinations(std::vector<FleePoint*>& points)
     float botPosY = startPosition.GetPositionY();
     float botPosZ = startPosition.GetPositionZ();
 
-    FleePoint start(botAI, botPosX, botPosY, botPosZ);
+    FleePoint start(botPosX, botPosY, botPosZ);
     calculateDistanceToCreatures(&start);
 
     std::vector<float> enemyOri;
@@ -111,7 +109,7 @@ void FleeManager::calculatePossibleDestinations(std::vector<FleePoint*>& points)
                 if (!bot->IsWithinLOS(x, y, z) || (target && !target->IsWithinLOS(x, y, z)))
                     continue;
 
-                FleePoint* point = new FleePoint(botAI, x, y, z);
+                FleePoint* point = new FleePoint(x, y, z);
                 calculateDistanceToCreatures(point);
 
                 if (ServerFacade::instance().IsDistanceGreaterOrEqualThan(point->minDistance - start.minDistance,

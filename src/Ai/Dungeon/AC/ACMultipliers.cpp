@@ -1,11 +1,17 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "ACMultipliers.h"
 #include "ACActions.h"
 #include "ACTriggers.h"
-#include "MovementActions.h"
-#include "ReachTargetActions.h"
-#include "FollowActions.h"
 #include "AiObjectContext.h"
+#include "FollowActions.h"
+#include "MovementActions.h"
 #include "Playerbots.h"
+#include "ReachTargetActions.h"
 
 // Shirrak the Dead Watcher
 

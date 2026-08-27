@@ -1,11 +1,15 @@
-#include "Log.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
+#include "PlayerbotSpellRepository.h"
 #include "DBCStores.h"
 #include "DatabaseEnv.h"
 #include "Field.h"
-// Required due to poor implementation on AC side
-#include "QueryResult.h"
-
-#include "PlayerbotSpellRepository.h"
+#include "Log.h"
+#include "QueryResult.h"    // Required due to a poor implementation by AC
 
 //  caches the result set
 void PlayerbotSpellRepository::Initialize()

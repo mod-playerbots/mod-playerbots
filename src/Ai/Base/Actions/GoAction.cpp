@@ -5,7 +5,6 @@
  */
 
 #include "GoAction.h"
-
 #include "ChooseTravelTargetAction.h"
 #include "Event.h"
 #include "Formations.h"

@@ -6,12 +6,11 @@
 
 #include "CheckValuesAction.h"
 
+#include "AiObjectContext.h"
 #include "Event.h"
 #include "ObjectGuid.h"
-#include "ServerFacade.h"
-
 #include "PlayerbotAI.h"
-#include "AiObjectContext.h"
+#include "ServerFacade.h"
 
 CheckValuesAction::CheckValuesAction(PlayerbotAI* botAI) : Action(botAI, "check values") {}
 

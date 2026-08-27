@@ -5,8 +5,8 @@
  */
 
 #include "PriestTriggers.h"
-#include "PlayerbotAI.h"
 #include "Player.h"
+#include "PlayerbotAI.h"
 #include "Playerbots.h"
 
 bool ShadowProtectionTrigger::IsActive()

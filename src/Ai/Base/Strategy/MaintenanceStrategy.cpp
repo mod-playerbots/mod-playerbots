@@ -5,7 +5,6 @@
  */
 
 #include "MaintenanceStrategy.h"
-
 #include "Playerbots.h"
 
 std::vector<NextAction> MaintenanceStrategy::getDefaultActions() { return {}; }

@@ -123,6 +123,7 @@ public:
         creators["go"] = &ChatTriggerContext::go;
         creators["travel"] = &ChatTriggerContext::travel;
         creators["ready"] = &ChatTriggerContext::ready_check;
+        creators["rebuff"] = &ChatTriggerContext::rebuff;
         creators["debug"] = &ChatTriggerContext::debug;
         creators["cdebug"] = &ChatTriggerContext::cdebug;
         creators["cs"] = &ChatTriggerContext::cs;
@@ -264,6 +265,7 @@ private:
     static Trigger* reset_ai(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "reset botAI"); }
     static Trigger* spell(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "spell"); }
     static Trigger* ready_check(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "ready check"); }
+    static Trigger* rebuff(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "rebuff"); }
     static Trigger* give_leader(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "give leader"); }
     static Trigger* cheat(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "cheat"); }
     static Trigger* ginvite(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "ginvite"); }

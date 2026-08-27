@@ -5,7 +5,6 @@
  */
 
 #include "TrainerAction.h"
-
 #include "AiFactory.h"
 #include "BisListMgr.h"
 #include "BudgetValues.h"
@@ -36,7 +35,7 @@ bool TrainerAction::Execute(Event event)
     bool learnSpells = param.find("learn") != std::string::npos || sRandomPlayerbotMgr.IsRandomBot(bot) ||
                        (sPlayerbotAIConfig.allowLearnTrainerSpells &&
                         // TODO: Rewrite to only exclude start primary profession skills and make config dependent.
-                        (trainer->GetTrainerType() != Trainer::Type::Tradeskill || !botAI->HasActivePlayerMaster()));
+                        (trainer->GetTrainerType() != Trainer::Type::Tradeskill || !IsRealPlayer(botAI->GetMaster())));
 
     Iterate(target, learnSpells, spellId);
 
@@ -290,23 +289,10 @@ bool BisGearAction::RunAutogearFallback(uint16 effectiveIlvl)
 
     // Wipe all equipped slots so autogear gears from scratch at the requested ilvl
     // (avoids old high-tier items surviving the incremental 1.2x threshold).
-    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
-    {
-        if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
-            continue;
-        if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-            bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
-    }
+    PlayerbotFactory::DestroyEquippedGear(bot);
 
-    uint32 gs = effectiveIlvl == 0
-                    ? 0
-                    : PlayerbotFactory::CalcMixedGearScore(effectiveIlvl, sPlayerbotAIConfig.autoGearQualityLimit);
-    PlayerbotFactory factory(bot, bot->GetLevel(), sPlayerbotAIConfig.autoGearQualityLimit, gs);
-    factory.InitEquipment(false, sPlayerbotAIConfig.twoRoundsGearInit);
-    factory.InitAmmo();
-    if (bot->GetLevel() >= sPlayerbotAIConfig.minEnchantingBotLevel)
-        factory.ApplyEnchantAndGemsNew();
-    bot->DurabilityRepairAll(false, 1.0f, false);
+    PlayerbotFactory::AutoGear(bot, sPlayerbotAIConfig.autoGearQualityLimit, effectiveIlvl, /*incremental*/ false,
+                               sPlayerbotAIConfig.twoRoundsGearInit);
     return true;
 }
 
@@ -424,13 +410,7 @@ bool BisGearAction::Execute(Event event)
 
     // 1. Wipe everything currently equipped so autogear starts from a clean slate.
     //    Old items linger in inventory otherwise and autogear leaves slots empty on bag conflicts.
-    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
-    {
-        if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
-            continue;
-        if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-            bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
-    }
+    PlayerbotFactory::DestroyEquippedGear(bot);
 
     // Wipe equippable items from bags too. Autogear can shove old equipped items into bags
     // (HandleAutoStoreBagItemOpcode), and a unique-equipped duplicate stuck in a bag blocks
@@ -458,17 +438,11 @@ bool BisGearAction::Execute(Event event)
     // 2. Run full autogear on the empty bot so every slot gets a best-available pick.
     //    Uncovered slots will keep the autogear pick; BiS overwrites the rest below.
     if (sPlayerbotAIConfig.autoGearCommand)
-    {
-        uint32 fillGs = ilvl == 0
-                            ? 0
-                            : PlayerbotFactory::CalcMixedGearScore(ilvl, sPlayerbotAIConfig.autoGearQualityLimit);
-        PlayerbotFactory fillFactory(bot, bot->GetLevel(), sPlayerbotAIConfig.autoGearQualityLimit, fillGs);
-        fillFactory.InitEquipment(false, sPlayerbotAIConfig.twoRoundsGearInit);
-    }
+        PlayerbotFactory::AutoGear(bot, sPlayerbotAIConfig.autoGearQualityLimit, ilvl, /*incremental*/ false,
+                                   sPlayerbotAIConfig.twoRoundsGearInit, /*applyFinishers*/ false);
 
-    // 2b. Pre-destroy autogear picks that would conflict with any BiS item by entry.
-    //     Autogear may have placed the exact item BiS wants into trinket2/finger2 (or vice versa);
-    //     unique-equipped enforcement would then make BiS's equip silently drop one copy.
+    // Autogear may have placed the exact item BiS wants into trinket2/finger2 (or vice versa);
+    // unique-equipped enforcement would then make BiS's equip silently drop one copy.
     std::set<uint32> bisEntries;
     for (auto const& kv : bisMap)
         bisEntries.insert(kv.second);
@@ -560,33 +534,186 @@ bool RemoveGlyphAction::Execute(Event /*event*/)
     return true;
 }
 
-bool AutoGearAction::Execute(Event /*event*/)
+static uint32 GetWornItemLevelAverage(Player* player)
+{
+    uint32 sumLevel = 0;
+    uint32 count = 0;
+    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+    {
+        if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
+            continue;
+
+        if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+        {
+            sumLevel += item->GetTemplate()->ItemLevel;
+            ++count;
+        }
+    }
+
+    return count ? sumLevel / count : 0;
+}
+
+bool AutoGearAction::Execute(Event event)
 {
     if (!sPlayerbotAIConfig.autoGearCommand)
     {
-        botAI->TellError("autogear command is not allowed, please check the configuration.");
+        botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "autogear_command_disabled_error", "autogear command is not allowed, please check the configuration.", {}));
         return false;
     }
 
     if (!sPlayerbotAIConfig.autoGearCommandAltBots &&
         !sPlayerbotAIConfig.IsInRandomAccountList(bot->GetSession()->GetAccountId()))
     {
-        botAI->TellError("You cannot use autogear on alt bots.");
+        botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault("autogear_altbot_refused_error",
+                                                                          "You cannot use autogear on alt bots.", {}));
         return false;
     }
 
-    botAI->TellMaster("I'm auto gearing");
-    uint32 gs = sPlayerbotAIConfig.autoGearScoreLimit == 0
-                    ? 0
-                    : PlayerbotFactory::CalcMixedGearScore(sPlayerbotAIConfig.autoGearScoreLimit,
-                                                           sPlayerbotAIConfig.autoGearQualityLimit);
-    PlayerbotFactory factory(bot, bot->GetLevel(), sPlayerbotAIConfig.autoGearQualityLimit, gs);
-    factory.InitEquipment(true);
-    factory.InitAmmo();
-    if (bot->GetLevel() >= sPlayerbotAIConfig.minEnchantingBotLevel)
+    uint32 const qualityCap = static_cast<uint32>(sPlayerbotAIConfig.autoGearQualityLimit);
+    uint32 const ilvlCap = static_cast<uint32>(sPlayerbotAIConfig.autoGearScoreLimit);  // 0 == no limit
+
+    uint32 quality = qualityCap;
+    uint32 ilvl = ilvlCap;
+
+    // get optional chat quality
+    std::string param = event.getParam();
+    std::transform(param.begin(), param.end(), param.begin(), [](unsigned char c) { return std::tolower(c); });
+    size_t const first = param.find_first_not_of(" \t");
+    if (first == std::string::npos)
+        param.clear();
+    else
+        param = param.substr(first, param.find_last_not_of(" \t") - first + 1);
+
+    // 'reset' erases all equipped gear and regears from scratch instead of upgrading incrementally.
+    // It can be combined with a quality/ilvl argument: 'autogear reset green', 'autogear reset 200'.
+    bool reset = false;
+    if (param == "reset" || param.rfind("reset ", 0) == 0)
     {
-        factory.ApplyEnchantAndGemsNew();
+        reset = true;
+        param = param.size() > 5 ? param.substr(6) : "";
+        size_t const start = param.find_first_not_of(" \t");
+        param = start == std::string::npos ? "" : param.substr(start);
     }
-    bot->DurabilityRepairAll(false, 1.0f, false);
+
+    if (!param.empty())
+    {
+        if (param == "match")
+        {
+            Player* master = GetMaster();
+            if (!master)
+            {
+                botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "autogear_no_master_error", "I have no master to match gear with.", {}));
+                return false;
+            }
+
+            uint32 const requestedIlvl = GetWornItemLevelAverage(master);
+            if (requestedIlvl == 0)
+            {
+                botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "autogear_master_no_gear_error", "You have no gear equipped for me to match.", {}));
+                return false;
+            }
+
+            ilvl = (ilvlCap == 0) ? requestedIlvl : std::min(requestedIlvl, ilvlCap);
+            if (ilvlCap != 0 && requestedIlvl > ilvlCap)
+            {
+                std::map<std::string, std::string> phs;
+                phs["%limit"] = std::to_string(ilvlCap);
+                phs["%requested"] = std::to_string(requestedIlvl);
+                botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "autogear_ilvl_capped_msg",
+                    "Config caps item level at %limit, gearing to that instead of %requested.", phs));
+            }
+        }
+        else if (ChatHelper::parseItemQuality(param) != MAX_ITEM_QUALITY)
+        {
+
+            uint32 const requestedQuality = std::max<uint32>(ChatHelper::parseItemQuality(param), ITEM_QUALITY_NORMAL);
+
+            quality = std::min(requestedQuality, qualityCap);
+            if (requestedQuality > qualityCap)
+            {
+                std::map<std::string, std::string> phs;
+                phs["%quality"] = ChatHelper::FormatItemQuality(qualityCap);
+                botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "autogear_quality_capped_msg", "Config limits me to %quality quality, gearing to that.", phs));
+            }
+        }
+        else
+        {
+            // Handle negative numbers, garbage, and numbers that are too large to fit in a uint32.
+            constexpr size_t MAX_ILVL_DIGITS = 5;
+            bool const digitsOnly = !param.empty() && param.size() <= MAX_ILVL_DIGITS &&
+                                    param.find_first_not_of("0123456789") == std::string::npos;
+            uint32 const requestedIlvl = digitsOnly ? static_cast<uint32>(std::stoul(param)) : 0;
+
+            if (!requestedIlvl)
+            {
+                std::map<std::string, std::string> phs;
+                phs["%param"] = param;
+                botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "autogear_invalid_arg_error",
+                    "Unknown autogear option '%param'. Use bis, reset, match, a quality "
+                    "(white, green, blue, purple, orange) or a positive item level number.",
+                    phs));
+                return false;
+            }
+
+            if (requestedIlvl <= ITEM_QUALITY_LEGENDARY)
+            {
+                std::map<std::string, std::string> phs;
+                phs["%param"] = param;
+                botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "autogear_quality_as_number_error",
+                    "'%param' looks like a quality. Numbers are item levels (e.g. 200); use a colour word "
+                    "for quality: white, green, blue, purple, orange.",
+                    phs));
+                return false;
+            }
+
+            ilvl = (ilvlCap == 0) ? requestedIlvl : std::min(requestedIlvl, ilvlCap);
+            if (ilvlCap != 0 && requestedIlvl > ilvlCap)
+            {
+                std::map<std::string, std::string> phs;
+                phs["%limit"] = std::to_string(ilvlCap);
+                phs["%requested"] = std::to_string(requestedIlvl);
+                botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "autogear_ilvl_capped_msg",
+                    "Config caps item level at %limit, gearing to that instead of %requested.", phs));
+            }
+        }
+    }
+
+    std::map<std::string, std::string> announcePhs;
+    announcePhs["%quality"] = ChatHelper::FormatItemQuality(quality);
+    announcePhs["%ilvl"] = std::to_string(ilvl);
+    if (reset)
+        botAI->TellMaster(
+            ilvl != 0
+                ? PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                      "autogear_reset_start_msg",
+                      "I'm erasing my gear and regearing from scratch (%quality, up to item level %ilvl).", announcePhs)
+                : PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                      "autogear_reset_start_any_ilvl_msg", "I'm erasing my gear and regearing from scratch (%quality).",
+                      announcePhs));
+    else
+        botAI->TellMaster(
+            ilvl != 0 ? PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                            "autogear_start_msg", "I'm auto gearing (%quality, up to item level %ilvl).", announcePhs)
+                      : PlayerbotTextMgr::instance().GetBotTextOrDefault("autogear_start_any_ilvl_msg",
+                                                                         "I'm auto gearing (%quality).", announcePhs));
+
+    if (reset)
+    {
+        // Wipe everything equipped first so old high-tier items can't survive; then gear every
+        // slot from scratch instead of only upgrading past the incremental threshold.
+        PlayerbotFactory::DestroyEquippedGear(bot);
+        PlayerbotFactory::AutoGear(bot, quality, ilvl, /*incremental*/ false, sPlayerbotAIConfig.twoRoundsGearInit);
+    }
+    else
+        PlayerbotFactory::AutoGear(bot, quality, ilvl, /*incremental*/ true);
+
     return true;
 }

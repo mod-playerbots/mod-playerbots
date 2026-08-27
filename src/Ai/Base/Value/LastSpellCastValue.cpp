@@ -5,7 +5,6 @@
  */
 
 #include "LastSpellCastValue.h"
-
 #include "Playerbots.h"
 
 LastSpellCast::LastSpellCast() : id(0), timer(0) {}

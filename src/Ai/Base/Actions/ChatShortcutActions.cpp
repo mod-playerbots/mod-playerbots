@@ -5,7 +5,6 @@
  */
 
 #include "ChatShortcutActions.h"
-
 #include "Event.h"
 #include "Formations.h"
 #include "PlayerbotTextMgr.h"

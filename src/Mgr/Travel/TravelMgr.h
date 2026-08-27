@@ -7,15 +7,14 @@
 #ifndef PLAYERBOTS_TRAVELMGR_H
 #define PLAYERBOTS_TRAVELMGR_H
 
-#include <boost/functional/hash.hpp>
-#include <map>
-#include <random>
-
 #include "AiObject.h"
 #include "CreatureData.h"
 #include "GameObject.h"
 #include "GridDefines.h"
 #include "PlayerbotAIConfig.h"
+#include <boost/functional/hash.hpp>
+#include <map>
+#include <random>
 
 // Must come after the core headers: on MSVC <math.h> only exposes M_PI when
 // _USE_MATH_DEFINES is set beforehand, and Define.h (reached via AiObject.h) is

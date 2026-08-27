@@ -5,7 +5,6 @@
  */
 
 #include "WtsAction.h"
-
 #include "AiFactory.h"
 #include "Event.h"
 #include "ItemUsageValue.h"

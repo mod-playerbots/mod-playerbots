@@ -15,7 +15,6 @@
 #include "Corpse.h"
 #include "Event.h"
 #include "FleeManager.h"
-#include "G3D/Vector3.h"
 #include "GameObject.h"
 #include "LastMovementValue.h"
 #include "LootObjectStack.h"
@@ -43,6 +42,11 @@
 #include "Unit.h"
 #include "Vehicle.h"
 #include "WaypointMovementGenerator.h"
+#include "G3D/Vector3.h"
+#include <cmath>
+#include <cstdlib>
+#include <iomanip>
+#include <string>
 
 MovementAction::MovementAction(PlayerbotAI* botAI, std::string const name) : Action(botAI, name)
 {
@@ -676,15 +680,12 @@ void MovementAction::UpdateMovementState()
     wasMovementRestricted = isCurrentlyRestricted;
 
     // Temporary speed increase in group
-    // if (botAI->HasRealPlayerMaster())
-    // {
+    // if (botAI->HasGameClientMaster())
     //     bot->SetSpeedRate(MOVE_RUN, 1.1f);
-    // }
     // else
-    // {
     //     bot->SetSpeedRate(MOVE_RUN, 1.0f);
-    // }
-    // check if target is not reachable
+
+    // check if target is not reachable (from Vmangos)
     // if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE && bot->CanNotReachTarget() &&
     // !bot->InBattleground())
     // {
@@ -785,7 +786,6 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
         // botAI->TellError("No need to follow");
         return false;
     }
-
 
     // Move to target corpse if alive.
     if (!target->IsAlive() && bot->IsAlive() && target->GetGUID().IsPlayer())

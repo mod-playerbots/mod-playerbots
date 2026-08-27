@@ -5,13 +5,14 @@
  */
 
 #include "TKTriggers.h"
-#include "TKHelpers.h"
-#include "TKActions.h"
-#include "TKKaelthasBossAI.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
+#include "TKActions.h"
+#include "TKHelpers.h"
+#include "TKKaelthasBossAI.h"
 
 using namespace TempestKeepHelpers;
+using namespace EncounterHelpers;
 
 // Trash
 
@@ -113,7 +114,7 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
 
 bool AlarStrategyChangesBetweenPhasesTrigger::IsActive()
 {
-    return botAI->IsDps(bot) && IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, TEMPEST_KEEP_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "al'ar");
 }
 
@@ -182,7 +183,9 @@ bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
 
 bool VoidReaverBotIsNotInCombatTrigger::IsActive()
 {
-    return !bot->IsInCombat();
+    return bot->GetMapId() == TEMPEST_KEEP_MAP_ID &&
+           !AI_VALUE2(bool, "combat", "self target") &&
+           !AI_VALUE2(Unit*, "find target", "void reaver");
 }
 
 // High Astromancer Solarian
@@ -293,7 +296,7 @@ bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
         kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank || mainTank->HasAura(SPELL_FEAR_WARD))
         return false;
 
@@ -370,7 +373,7 @@ bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
 
 bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
+    if (!IsMechanicTrackerBot(bot, TEMPEST_KEEP_MAP_ID))
         return false;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
@@ -378,10 +381,7 @@ bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI || kaelAI->GetPhase() != PHASE_SINGLE_ADVISOR)
-        return false;
-
-    return IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, GetCapernianTank(bot));
+    return kaelAI && kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR;
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()

@@ -1,9 +1,15 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "PlayerbotGuildMgr.h"
-#include "Player.h"
-#include "PlayerbotAIConfig.h"
 #include "DatabaseEnv.h"
 #include "Guild.h"
 #include "GuildMgr.h"
+#include "Player.h"
+#include "PlayerbotAIConfig.h"
 #include "ScriptMgr.h"
 
 void PlayerbotGuildMgr::Init()
@@ -284,6 +290,8 @@ bool PlayerbotGuildMgr::IsRealGuild(uint32 guildId)
     if (it == _guildCache.end())
         return false;
 
+    // A "real guild" is one whose leader's account is not in the bot accounts list.
+    // Guild membership by real players does not affect this, only the leader's account type does.
     return it->second.hasRealPlayer;
 }
 

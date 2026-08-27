@@ -5,7 +5,6 @@
  */
 
 #include "ListQuestsActions.h"
-
 #include "Event.h"
 #include "Playerbots.h"
 
@@ -64,7 +63,7 @@ void ListQuestsAction::ListQuests(QuestListFilter filter, QuestTravelDetail trav
 
 uint32 ListQuestsAction::ListQuests(bool completed, bool silent, QuestTravelDetail travelDetail)
 {
-    TravelTarget* target;
+    TravelTarget* target = nullptr;
     WorldPosition botPos(bot);
     if (travelDetail != QUEST_TRAVEL_DETAIL_NONE)
         target = context->GetValue<TravelTarget*>("travel target")->Get();

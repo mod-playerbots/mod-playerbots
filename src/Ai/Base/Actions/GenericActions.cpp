@@ -5,18 +5,18 @@
  */
 
 #include "GenericActions.h"
-#include "PlayerbotAI.h"
-#include "Player.h"
+#include "CharmInfo.h"
+#include "CreatureAI.h"
 #include "Pet.h"
+#include "Player.h"
+#include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotTextMgr.h"
-#include "CreatureAI.h"
 #include "Playerbots.h"
-#include "CharmInfo.h"
-#include "SpellMgr.h"
 #include "SpellInfo.h"
-#include <vector>
+#include "SpellMgr.h"
 #include <algorithm>
+#include <vector>
 
 enum PetSpells
 {

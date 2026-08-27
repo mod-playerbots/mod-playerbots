@@ -7,15 +7,14 @@
 #ifndef PLAYERBOTS_BTHELPERS_H
 #define PLAYERBOTS_BTHELPERS_H
 
+#include "Common.h"
+#include "ObjectGuid.h"
+#include "Position.h"
 #include <array>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-#include "Common.h"
-#include "ObjectGuid.h"
-#include "Position.h"
 
 class GameObject;
 class Player;
@@ -163,7 +162,7 @@ extern const Position SHAHRAZ_TANK_POSITION;
 extern const Position SHAHRAZ_TRANSITION_POSITION;
 extern const Position SHAHRAZ_RANGED_POSITION;
 extern std::unordered_map<ObjectGuid, TankPositionState> shahrazTankStep;
-TankPositionState GetShahrazTankPositionState(PlayerbotAI* botAI, Player* bot);
+TankPositionState GetShahrazTankPositionState(Player* bot);
 
 // Illidari Council
 constexpr float COUNCIL_FLOOR_Z_THRESHOLD = 270.000f;

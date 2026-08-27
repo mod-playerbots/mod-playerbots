@@ -5,20 +5,21 @@
  */
 
 #include "HyjalMultipliers.h"
-#include "HyjalActions.h"
-#include "HyjalHelpers.h"
 #include "AiFactory.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidBearActions.h"
+#include "EncounterHelpers.h"
 #include "HunterActions.h"
+#include "HyjalActions.h"
+#include "HyjalHelpers.h"
 #include "PaladinActions.h"
-#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "ShamanActions.h"
 #include "WarriorActions.h"
 
 using namespace HyjalSummitHelpers;
+using namespace EncounterHelpers;
 
 // Without this multiplier, Bloodlust/Heroism will not be available for
 // bosses because it will be used on cooldown during trash waves
@@ -265,11 +266,11 @@ float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank || !GET_PLAYERBOT_AI(mainTank))
         return 1.0f;
 
-    TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
+    TankPositionState tankState = GetAzgalorTankPositionState(bot);
     if ((tankState == TankPositionState::Unknown ||
          tankState == TankPositionState::MovingToTransition) &&
          dynamic_cast<MovementAction*>(action) &&

@@ -5,7 +5,6 @@
  */
 
 #include "EnemyHealerTargetValue.h"
-
 #include "Playerbots.h"
 #include "ServerFacade.h"
 

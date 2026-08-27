@@ -5,7 +5,6 @@
  */
 
 #include "ImbueAction.h"
-
 #include "Event.h"
 #include "Playerbots.h"
 

@@ -5,7 +5,6 @@
  */
 
 #include "SnareTargetValue.h"
-
 #include "AiObjectContext.h"
 #include "PlayerbotAI.h"
 #include "ServerFacade.h"

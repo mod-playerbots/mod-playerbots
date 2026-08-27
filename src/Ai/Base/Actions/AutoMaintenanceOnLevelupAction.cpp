@@ -1,12 +1,16 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "AutoMaintenanceOnLevelupAction.h"
-
-#include "SpellMgr.h"
-
+#include "BroadcastHelper.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
-#include "BroadcastHelper.h"
+#include "SpellMgr.h"
 
 bool AutoMaintenanceOnLevelupAction::Execute(Event /*event*/)
 {
@@ -23,7 +27,7 @@ void AutoMaintenanceOnLevelupAction::AutoTeleportForLevel()
     if (!sPlayerbotAIConfig.autoTeleportForLevel || !sRandomPlayerbotMgr.IsRandomBot(bot))
         return;
 
-    if (botAI->HasRealPlayerMaster())
+    if (botAI->HasGameClientMaster())
         return;
 
     sRandomPlayerbotMgr.RandomTeleportForLevel(bot);

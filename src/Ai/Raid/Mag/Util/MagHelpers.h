@@ -7,13 +7,12 @@
 #ifndef PLAYERBOTS_MAGHELPERS_H
 #define PLAYERBOTS_MAGHELPERS_H
 
-#include <ctime>
-#include <unordered_map>
-#include <vector>
-
 #include "Group.h"
 #include "ObjectGuid.h"
 #include "PlayerbotAI.h"
+#include <ctime>
+#include <unordered_map>
+#include <vector>
 
 namespace MagtheridonHelpers
 {
@@ -83,8 +82,7 @@ Creature* GetChanneler(Player* bot, uint32 dbGuid);
 bool IsMagtheridonActive(Unit* magtheridon);
 bool IsCubeClicker(Player* bot);
 bool IsPositionInActiveDebris(uint32 instanceId, float x, float y, float radius = 10.0f);
-bool IsPositionInActiveConflagration(
-    PlayerbotAI* botAI, Player* bot, float x, float y);
+bool IsPositionInActiveConflagration(PlayerbotAI* botAI, float x, float y);
 
 }
 

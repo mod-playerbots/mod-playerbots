@@ -14,8 +14,10 @@
 #include "AcceptResurrectAction.h"
 #include "AreaTriggerAction.h"
 #include "ArenaTeamActions.h"
+#include "BattleGroundJoinAction.h"
 #include "BattleGroundTactics.h"
 #include "CheckMountStateAction.h"
+#include "EquipAction.h"
 #include "GuildAcceptAction.h"
 #include "GuildCreateActions.h"
 #include "InventoryChangeFailureAction.h"
@@ -26,9 +28,11 @@
 #include "NamedObjectContext.h"
 #include "PassLeadershipToMasterAction.h"
 #include "PetitionSignAction.h"
+#include "PetsAction.h"
 #include "QuestAction.h"
 #include "QuestConfirmAcceptAction.h"
 #include "ReadyCheckAction.h"
+#include "ReleaseSpiritAction.h"
 #include "RememberTaxiAction.h"
 #include "ReviveFromCorpseAction.h"
 #include "RewardAction.h"
@@ -40,9 +44,6 @@
 #include "TradeStatusAction.h"
 #include "TradeStatusExtendedAction.h"
 #include "UseMeetingStoneAction.h"
-#include "NamedObjectContext.h"
-#include "ReleaseSpiritAction.h"
-#include "PetsAction.h"
 
 class PlayerbotAI;
 
@@ -94,6 +95,8 @@ public:
         creators["accept duel"] = &WorldPacketActionContext::accept_duel;
         creators["ready check"] = &WorldPacketActionContext::ready_check;
         creators["ready check finished"] = &WorldPacketActionContext::ready_check_finished;
+        creators["force rebuff"] = &WorldPacketActionContext::force_rebuff;
+        creators["ready reply"] = &WorldPacketActionContext::ready_reply;
         creators["uninvite"] = &WorldPacketActionContext::uninvite;
         creators["security check"] = &WorldPacketActionContext::security_check;
         creators["guild accept"] = &WorldPacketActionContext::guild_accept;
@@ -123,6 +126,8 @@ private:
     static Action* ready_check(PlayerbotAI* botAI) { return new ReadyCheckAction(botAI); }
     static Action* accept_duel(PlayerbotAI* botAI) { return new AcceptDuelAction(botAI); }
     static Action* tell_cast_failed(PlayerbotAI* botAI) { return new TellCastFailedAction(botAI); }
+    static Action* force_rebuff(PlayerbotAI* botAI) { return new ForceRebuffAction(botAI); }
+    static Action* ready_reply(PlayerbotAI* botAI) { return new ReadyReplyAction(botAI); }
     static Action* party_command(PlayerbotAI* botAI) { return new PartyCommandAction(botAI); }
     static Action* store_loot(PlayerbotAI* botAI) { return new StoreLootAction(botAI); }
     static Action* accept_trade(PlayerbotAI* botAI) { return new TradeStatusAction(botAI); }

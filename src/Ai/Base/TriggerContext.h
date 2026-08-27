@@ -11,14 +11,16 @@
 #include "FishingTriggers.h"
 #include "GenericTriggers.h"
 #include "GuildTriggers.h"
+#include "HealthTriggers.h"
 #include "LfgTriggers.h"
 #include "LootTriggers.h"
 #include "TravelOrderActions.h"
 #include "NamedObjectContext.h"
 #include "NewRpgStrategy.h"
 #include "NewRpgTriggers.h"
-#include "PvpTriggers.h"
 #include "PullTriggers.h"
+#include "PvpTriggers.h"
+#include "RangeTriggers.h"
 #include "RpgTriggers.h"
 #include "RtiTriggers.h"
 #include "StuckTriggers.h"
@@ -44,6 +46,8 @@ public:
         creators["seldom"] = &TriggerContext::seldom;
         creators["often"] = &TriggerContext::often;
         creators["very often"] = &TriggerContext::very_often;
+
+        creators["force rebuff pending"] = &TriggerContext::force_rebuff_pending;
 
         creators["target critical health"] = &TriggerContext::TargetCriticalHealth;
 
@@ -336,6 +340,7 @@ private:
     static Trigger* TankAssist(PlayerbotAI* botAI) { return new TankAssistTrigger(botAI); }
     static Trigger* Timer(PlayerbotAI* botAI) { return new TimerTrigger(botAI); }
     static Trigger* TimerBG(PlayerbotAI* botAI) { return new TimerBGTrigger(botAI); }
+    static Trigger* force_rebuff_pending(PlayerbotAI* botAI) { return new ForceRebuffPendingTrigger(botAI); }
     static Trigger* NoTarget(PlayerbotAI* botAI) { return new NoTargetTrigger(botAI); }
     static Trigger* TargetInSight(PlayerbotAI* botAI) { return new TargetInSightTrigger(botAI); }
     static Trigger* not_dps_target_active(PlayerbotAI* botAI) { return new NotDpsTargetActiveTrigger(botAI); }

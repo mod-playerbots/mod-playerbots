@@ -1,9 +1,15 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_MCTRIGGERCONTEXT_H
 #define PLAYERBOTS_MCTRIGGERCONTEXT_H
 
 #include "BossAuraTriggers.h"
-#include "NamedObjectContext.h"
 #include "MCTriggers.h"
+#include "NamedObjectContext.h"
 
 class RaidMcTriggerContext : public NamedObjectContext<Trigger>
 {
@@ -26,6 +32,9 @@ public:
         creators["mc majordomo shadow resistance"] = &RaidMcTriggerContext::majordomo_shadow_resistance;
         creators["mc ragnaros fire resistance"] = &RaidMcTriggerContext::ragnaros_fire_resistance;
         creators["mc core hound mark"] = &RaidMcTriggerContext::core_hound_mark;
+        creators["mc in lava"] = &RaidMcTriggerContext::in_lava;
+        creators["mc golemagg magma splash"] = &RaidMcTriggerContext::golemagg_magma_splash;
+        creators["mc golemagg is healer"] = &RaidMcTriggerContext::golemagg_is_healer;
     }
 
 private:
@@ -45,6 +54,9 @@ private:
     static Trigger* majordomo_shadow_resistance(PlayerbotAI* botAI) { return new BossShadowResistanceTrigger(botAI, "majordomo executus"); }
     static Trigger* ragnaros_fire_resistance(PlayerbotAI* botAI) { return new BossFireResistanceTrigger(botAI, "ragnaros"); }
     static Trigger* core_hound_mark(PlayerbotAI* botAI) { return new McCoreHoundMarkTrigger(botAI); }
+    static Trigger* in_lava(PlayerbotAI* botAI) { return new McInLavaTrigger(botAI); }
+    static Trigger* golemagg_magma_splash(PlayerbotAI* botAI) { return new McGolemaggMagmaSplashTrigger(botAI); }
+    static Trigger* golemagg_is_healer(PlayerbotAI* botAI) { return new McGolemaggIsHealerTrigger(botAI); }
 };
 
 #endif

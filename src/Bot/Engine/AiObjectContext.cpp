@@ -5,9 +5,9 @@
  */
 
 #include "AiObjectContext.h"
-#include "Helpers.h"
 #include "DKAiObjectContext.h"
 #include "DruidAiObjectContext.h"
+#include "Helpers.h"
 #include "HunterAiObjectContext.h"
 #include "MageAiObjectContext.h"
 #include "PaladinAiObjectContext.h"

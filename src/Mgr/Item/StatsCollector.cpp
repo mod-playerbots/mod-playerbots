@@ -1,5 +1,10 @@
-#include "StatsCollector.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
+#include "StatsCollector.h"
 #include "DBCStores.h"
 #include "ItemTemplate.h"
 #include "PlayerbotAI.h"
@@ -696,6 +701,7 @@ void StatsCollector::HandleApplyAura(const SpellEffectInfo& effectInfo, float mu
                     }
                 }
             }
+            break;
         }
         case SPELL_AURA_MOD_POWER_REGEN:
         {
@@ -704,6 +710,7 @@ void StatsCollector::HandleApplyAura(const SpellEffectInfo& effectInfo, float mu
             {
                 case POWER_MANA:
                     stats[STATS_TYPE_MANA_REGENERATION] += val * multiplier;
+                    break;
                 default:
                     break;
             }

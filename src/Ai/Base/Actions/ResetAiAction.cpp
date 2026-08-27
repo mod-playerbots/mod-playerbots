@@ -5,7 +5,6 @@
  */
 
 #include "ResetAiAction.h"
-
 #include "Event.h"
 #include "Group.h"
 #include "ObjectGuid.h"

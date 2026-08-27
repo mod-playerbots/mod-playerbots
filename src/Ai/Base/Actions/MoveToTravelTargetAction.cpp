@@ -5,7 +5,6 @@
  */
 
 #include "MoveToTravelTargetAction.h"
-
 #include "ChooseRpgTargetAction.h"
 #include "LootObjectStack.h"
 #include "Playerbots.h"
@@ -37,7 +36,8 @@ bool MoveToTravelTargetAction::Execute(Event /*event*/)
                 continue;
 
             WorldPosition memberPos(member);
-            WorldPosition targetPos = *target->getPosition();
+            // unused while the angle-based filter below stays commented out
+            [[maybe_unused]] WorldPosition targetPos = *target->getPosition();
 
             float memberDistance = botLocation.distance(memberPos);
 

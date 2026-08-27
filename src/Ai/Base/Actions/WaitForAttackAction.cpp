@@ -4,11 +4,16 @@
  * or (at your option) any later version.
  */
 
+/*
+ * Ported from the CMaNGOS playerbots project (https://github.com/cmangos/playerbots), GPL v2,
+ * with modifications for AzerothCore.
+ * Original authors:
+ *   David Parra Ausina (davidonete/Flekz) <davidparraausina@gmail.com> - original author
+ *   Sebastiaan Keek (mostlikely4r) <sebastiaan.keek@gmail.com>
+ *   Cyberium <cyberium@users.noreply.github.com>
+ */
+
 #include "WaitForAttackAction.h"
-
-#include <algorithm>
-#include <cctype>
-
 #include "ObjectAccessor.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
@@ -16,6 +21,8 @@
 #include "ServerFacade.h"
 #include "TravelMgr.h"
 #include "WaitForAttackStrategy.h"
+#include <algorithm>
+#include <cctype>
 
 namespace
 {

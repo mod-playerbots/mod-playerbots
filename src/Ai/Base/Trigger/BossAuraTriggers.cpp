@@ -5,22 +5,20 @@
  */
 
 #include "BossAuraTriggers.h"
-
-#include <HunterBuffStrategies.h>
-#include <PaladinBuffStrategies.h>
-#include <Unit.h>
-
+#include "HunterBuffStrategies.h"
+#include "PaladinBuffStrategies.h"
 #include "Playerbots.h"
+#include "Unit.h"
 
 bool BossFireResistanceTrigger::IsActive()
 {
+    // Check if bot is paladin first: cheap check that filters out most of the raid
+    if (bot->getClass() != CLASS_PALADIN)
+        return false;
+
     // Check boss and it is alive
     Unit* boss = AI_VALUE2(Unit*, "find target", bossName);
     if (!boss || !boss->IsAlive() || boss->IsFriendlyTo(bot))
-        return false;
-
-    // Check if bot is paladin
-    if (bot->getClass() != CLASS_PALADIN)
         return false;
 
     // Check if bot have fire resistance aura
@@ -65,13 +63,13 @@ bool BossFireResistanceTrigger::IsActive()
 
 bool BossFrostResistanceTrigger::IsActive()
 {
+    // Check if bot is paladin first: cheap check that filters out most of the raid
+    if (bot->getClass() != CLASS_PALADIN)
+        return false;
+
     // Check boss and it is alive
     Unit* boss = AI_VALUE2(Unit*, "find target", bossName);
     if (!boss || !boss->IsAlive() || boss->IsFriendlyTo(bot))
-        return false;
-
-    // Check if bot is paladin
-    if (bot->getClass() != CLASS_PALADIN)
         return false;
 
     // Check if bot have frost resistance aura
@@ -116,17 +114,17 @@ bool BossFrostResistanceTrigger::IsActive()
 
 bool BossNatureResistanceTrigger::IsActive()
 {
-    // Check boss and it is alive
-    Unit* boss = AI_VALUE2(Unit*, "find target", bossName);
-    if (!boss || !boss->IsAlive() || boss->IsFriendlyTo(bot))
+    // Check if bot is hunter first: cheap check that filters out most of the raid
+    if (bot->getClass() != CLASS_HUNTER)
         return false;
 
     // Check if bot is alive
     if (!bot->IsAlive())
         return false;
 
-    // Check if bot is hunter
-    if (bot->getClass() != CLASS_HUNTER)
+    // Check boss and it is alive
+    Unit* boss = AI_VALUE2(Unit*, "find target", bossName);
+    if (!boss || !boss->IsAlive() || boss->IsFriendlyTo(bot))
         return false;
 
     // Check if bot have nature resistance aura
@@ -170,13 +168,13 @@ bool BossNatureResistanceTrigger::IsActive()
 
 bool BossShadowResistanceTrigger::IsActive()
 {
+    // Check if bot is paladin first: cheap check that filters out most of the raid
+    if (bot->getClass() != CLASS_PALADIN)
+        return false;
+
     // Check boss and it is alive
     Unit* boss = AI_VALUE2(Unit*, "find target", bossName);
     if (!boss || !boss->IsAlive() || boss->IsFriendlyTo(bot))
-        return false;
-
-    // Check if bot is paladin
-    if (bot->getClass() != CLASS_PALADIN)
         return false;
 
     // Check if bot have shadow resistance aura

@@ -8,8 +8,8 @@
 #define PLAYERBOTS_TOTEMSSHAMANSTRATEGY_H
 
 #include "GenericShamanStrategy.h"
-#include <vector>
 #include <string>
+#include <vector>
 
 // This is the header with all of the totem-related constants and arrays used in the Shaman strategies.
 
@@ -230,10 +230,10 @@ public:
     std::string const getName() override { return "strength of earth"; }
 };
 
-class StoneclawTotemStrategy : public GenericShamanStrategy
+class StoneskinTotemStrategy : public GenericShamanStrategy
 {
 public:
-    StoneclawTotemStrategy(PlayerbotAI* botAI);
+    StoneskinTotemStrategy(PlayerbotAI* botAI);
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     std::string const getName() override { return "stoneskin"; }
 };
