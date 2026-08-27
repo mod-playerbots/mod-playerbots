@@ -9,6 +9,16 @@
 
 #include "Multiplier.h"
 
+// General
+
+class SunwellPlateauNoEncounterDrinkingMultiplier : public Multiplier
+{
+public:
+    SunwellPlateauNoEncounterDrinkingMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "sunwell plateau no encounter drinking") {}
+    float GetValue(Action* action) override;
+};
+
 // Kalecgos
 
 class KalecgosControlMisdirectionMultiplier : public Multiplier
@@ -276,19 +286,11 @@ public:
     float GetValue(Action* action) override;
 };
 
-class KiljaedenTanksFocusAssignedHandOnlyMultiplier : public Multiplier
+class KiljaedenSingleTargetHandsMultiplier : public Multiplier
 {
 public:
-    KiljaedenTanksFocusAssignedHandOnlyMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "kil'jaeden tanks focus assigned hand only") {}
-    float GetValue(Action* action) override;
-};
-
-class KiljaedenDpsFocusAssignedHandOnlyMultiplier : public Multiplier
-{
-public:
-    KiljaedenDpsFocusAssignedHandOnlyMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "kil'jaeden dps focus assigned hand only") {}
+    KiljaedenSingleTargetHandsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kil'jaeden single target hands") {}
     float GetValue(Action* action) override;
 };
 

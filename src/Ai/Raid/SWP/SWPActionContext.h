@@ -191,11 +191,14 @@ public:
         creators["kil'jaeden announce dragon orb user"] =
             &RaidSunwellActionContext::kiljaeden_announce_dragon_orb_user;
 
-        creators["kil'jaeden assign hands of the deceiver"] =
-            &RaidSunwellActionContext::kiljaeden_assign_hands_of_the_deceiver;
+        creators["kil'jaeden control hands of the deceiver"] =
+            &RaidSunwellActionContext::kiljaeden_control_hands_of_the_deceiver;
 
-        creators["kil'jaeden stun hands of the deceiver"] =
-            &RaidSunwellActionContext::kiljaeden_stun_hands_of_the_deceiver;
+        creators["kil'jaeden mark hand of the deceiver"] =
+            &RaidSunwellActionContext::kiljaeden_mark_hand_of_the_deceiver;
+
+        creators["kil'jaeden move holy paladin into stun range"] =
+            &RaidSunwellActionContext::kiljaeden_move_holy_paladin_into_stun_range;
 
         creators["kil'jaeden position and move tanks"] =
             &RaidSunwellActionContext::kiljaeden_position_and_move_tanks;
@@ -409,11 +412,14 @@ private:
     static Action* kiljaeden_announce_dragon_orb_user(PlayerbotAI* botAI) {
         return new KiljaedenAnnounceDragonOrbUserAction(botAI);
     }
-    static Action* kiljaeden_assign_hands_of_the_deceiver(PlayerbotAI* botAI) {
-        return new KiljaedenAssignHandsOfTheDeceiverAction(botAI);
+    static Action* kiljaeden_control_hands_of_the_deceiver(PlayerbotAI* botAI) {
+        return new KiljaedenControlHandsOfTheDeceiverAction(botAI);
     }
-    static Action* kiljaeden_stun_hands_of_the_deceiver(PlayerbotAI* botAI) {
-        return new KiljaedenStunHandsOfTheDeceiverAction(botAI);
+    static Action* kiljaeden_mark_hand_of_the_deceiver(PlayerbotAI* botAI) {
+        return new KiljaedenMarkHandOfTheDeceiverAction(botAI);
+    }
+    static Action* kiljaeden_move_holy_paladin_into_stun_range(PlayerbotAI* botAI) {
+        return new KiljaedenMoveHolyPaladinIntoStunRangeAction(botAI);
     }
     static Action* kiljaeden_position_and_move_tanks(PlayerbotAI* botAI) {
         return new KiljaedenPositionAndMoveTanksAction(botAI);

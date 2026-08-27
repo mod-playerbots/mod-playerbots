@@ -34,10 +34,10 @@ struct EredarTwinsBlazeTargetState
     uint32 startMs = 0;
 };
 
-// Used to measure if a bot is on the balcony; deliberately a little below the actual balcony Z
+// Used to measure if a bot is on the balcony; deliberately a little below the actual balcony Z.
 inline constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
 
-// Grace period for the tanks to build threat before the rest of the raid opens fire
+// Grace period for the tanks to build threat before the rest of the raid opens fire.
 inline constexpr uint32 EREDAR_TWINS_DPS_HOLD_MS = 8000;
 
 // The Blaze trap GO casts 45246, dealing damage in a 3y radius; extra 1.5y is avoidance buffer.
@@ -77,13 +77,13 @@ inline std::array const ALYTHESS_TANK_POSITIONS = {
     Position{ 1830.007f, 620.924f, 33.404f }
 };
 
-// Phase 1 positions (ranged up top, melee on Sacrolash)
+// Phase 1 positions (ranged up top, melee on Sacrolash).
 inline Position const SACROLASH_TANK_POSITION  =             { 1804.255f, 630.193f, 33.404f };
 inline Position const EREDAR_TWINS_P1_RANGED_POSITION =      { 1808.076f, 603.460f, 51.684f };
 inline Position const EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1812.842f, 611.147f, 33.404f };
 inline Position const EREDAR_TWINS_RANGED_CONFLAG_POSITION = { 1801.133f, 584.456f, 50.696f };
 
-// Phase 2 positions (everybody stack behind Alythess)
+// Phase 2 positions (everybody stack behind Alythess).
 inline Position const EREDAR_TWINS_P2_MELEE_POSITION =       { 1814.327f, 625.645f, 33.404f };
 inline Position const EREDAR_TWINS_P2_RANGED_POSITION =      { 1805.587f, 625.653f, 33.404f };
 

@@ -460,11 +460,11 @@ public:
 
 // Kil'jaeden <The Deceiver>
 
-class KiljaedenEncounterHasBegunTrigger : public Trigger
+class KiljaedenShouldCoordinateOrbUseTrigger : public Trigger
 {
 public:
-    KiljaedenEncounterHasBegunTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kil'jaeden encounter has begun") {}
+    KiljaedenShouldCoordinateOrbUseTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kil'jaeden should coordinate orb use") {}
     bool IsActive() override;
 };
 

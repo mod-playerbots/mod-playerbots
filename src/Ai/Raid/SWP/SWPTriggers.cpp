@@ -8,13 +8,13 @@
 #include "EncounterHelpers.h"
 #include "InstanceScript.h"
 #include "Playerbots.h"
-#include "SWPSharedConstants.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
+#include "SWPSharedConstants.h"
 #include <cmath>
 
 using namespace SwpHelpers;
@@ -28,12 +28,15 @@ bool SunwellPlateauNoEncounterInProgressTrigger::IsActive()
         return false;
 
     // InstanceScript reports IN_PROGRESS for every SWP boss from JustEngagedWith until kill/evade,
-    // except that KJ does not begin until the Hands are defeated
+    // except for Kil'jaeden, which does not commence until the first Hand dies.
     InstanceScript* instance = bot->GetInstanceScript();
     if (!instance || instance->IsEncounterInProgress())
         return false;
 
-    return !AI_VALUE2(Unit*, "find target", "hand of the deceiver");
+    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > SUNWELL_CENTER_RADIUS)
+        return true;
+
+    return AI_VALUE(GuidVector, "kiljaeden hands").empty();
 }
 
 bool SunwellPlateauBotHasAuraToRemoveTrigger::IsActive()
@@ -763,15 +766,24 @@ bool MuruTheSingularityIsNearTrigger::IsActive()
 
 // Kil'jaeden <The Deceiver>
 
-bool KiljaedenEncounterHasBegunTrigger::IsActive()
+bool KiljaedenShouldCoordinateOrbUseTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(bot, SWP_MAP_ID) &&
-        AI_VALUE2(Unit*, "find target", "hand of the deceiver");
+    if (!IsMechanicTrackerBot(bot, SWP_MAP_ID))
+        return false;
+
+    auto const stateItr = kiljaedenEncounterStates.find(bot->GetInstanceId());
+    if (stateItr != kiljaedenEncounterStates.end() && stateItr->second.dragonOrbAnnouncementMs)
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }
 
 bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "hand of the deceiver");
+    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > SUNWELL_CENTER_RADIUS)
+        return false;
+
+    return !AI_VALUE(GuidVector, "kiljaeden hands").empty();
 }
 
 bool KiljaedenTanksShouldHoldBossAndReflectionsTrigger::IsActive()

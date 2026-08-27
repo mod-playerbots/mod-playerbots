@@ -171,7 +171,6 @@ void EnsureRangedAssignments(Group* group, BrutallusEncounterState& state)
             return;
         }
 
-        // Double up if every slot is taken (unlikely even though TBC hates melee, as there are 20)
         assignments[member->GetGUID()] =
             static_cast<uint8>(assignments.size() % BRUTALLUS_TOTAL_RANGED_POSITIONS);
     };
@@ -232,7 +231,6 @@ void EnsureMeleeAssignments(Group* group, BrutallusEncounterState& state)
             return;
         }
 
-        // Double up if every slot is taken (unlikely since there are 14 and TBC hates melee)
         assignments[member->GetGUID()] =
             static_cast<uint8>(assignments.size() % BRUTALLUS_TOTAL_MELEE_POSITIONS);
     };

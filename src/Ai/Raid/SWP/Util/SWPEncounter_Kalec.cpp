@@ -456,44 +456,6 @@ uint8 GetLeastFilledGroup(
 
 } // end anonymous namespace
 
-Player* GetNextSurfaceTankInOrder(
-    Group* group, std::array<ObjectGuid, KALECGOS_TANK_COUNT> const& orderedGuids,
-    ObjectGuid afterGuid, ObjectGuid excludedGuid, bool fallbackToFirst)
-{
-    uint8 startIndex = 0;
-    bool foundAfterGuid = false;
-
-    for (uint8 index = 0; index < KALECGOS_TANK_COUNT; ++index)
-    {
-        if (orderedGuids[index] == afterGuid)
-        {
-            startIndex = (index + 1) % KALECGOS_TANK_COUNT;
-            foundAfterGuid = true;
-            break;
-        }
-    }
-
-    if (!foundAfterGuid)
-    {
-        if (fallbackToFirst)
-            return GetFirstResolvedSurfaceTank(group, orderedGuids, excludedGuid);
-
-        return nullptr;
-    }
-
-    for (uint8 offset = 0; offset < KALECGOS_TANK_COUNT; ++offset)
-    {
-        ObjectGuid const guid = orderedGuids[(startIndex + offset) % KALECGOS_TANK_COUNT];
-        if (guid == ObjectGuid::Empty || guid == afterGuid || guid == excludedGuid)
-            continue;
-
-        if (Player* tank = ResolveSurfaceTank(group, guid))
-            return tank;
-    }
-
-    return nullptr;
-}
-
 bool IsExhausted(Player* bot)
 {
     return bot->HasAura(Id(SwpSpells::SPELL_SPECTRAL_EXHAUSTION));

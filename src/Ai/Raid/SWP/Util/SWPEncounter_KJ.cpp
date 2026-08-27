@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <list>
 
 namespace SwpHelpers
 {
@@ -97,8 +98,8 @@ float GetRangedSlotAngle(uint8 slotIndex)
         return 0.0f;
 
     return Position::NormalizeOrientation(std::atan2(
-        position.GetPositionY() - KILJAEDEN_CENTER_POSITION.GetPositionY(),
-        position.GetPositionX() - KILJAEDEN_CENTER_POSITION.GetPositionX()));
+        position.GetPositionY() - SUNWELL_CENTER_POSITION.GetPositionY(),
+        position.GetPositionX() - SUNWELL_CENTER_POSITION.GetPositionX()));
 }
 
 bool IsRangedSlotSafeFromArmageddons(
@@ -139,13 +140,67 @@ bool ShouldRebuildKiljaedenAssignments(uint32& lastRebuildMs, uint32 intervalMs)
 
 } // end anonymous namespace
 
-std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
-
 std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
-
-std::unordered_map<uint32, std::array<ObjectGuid, 3>> kiljaedenHandTankAssignments;
-
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>> kiljaedenHandControlClaims;
+std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
+
+GuidVector FindKiljaedenHandGuids(Player* bot)
+{
+    GuidVector guids;
+
+    std::list<Creature*> creatures;
+    bot->GetCreatureListWithEntryInGrid(
+        creatures, Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER), HAND_SEARCH_RADIUS);
+
+    for (Creature* creature : creatures)
+    {
+        if (creature && creature->IsAlive() && creature->IsInCombat())
+            guids.push_back(creature->GetGUID());
+    }
+
+    std::sort(guids.begin(), guids.end());
+
+    return guids;
+}
+
+std::vector<Unit*> GetKiljaedenHands(PlayerbotAI* botAI)
+{
+    std::vector<Unit*> hands;
+
+    for (ObjectGuid const& guid : botAI->GetAiObjectContext()
+             ->GetValue<GuidVector>("kiljaeden hands")->RefGet())
+    {
+        Unit* hand = botAI->GetUnit(guid);
+        if (hand && hand->IsAlive())
+            hands.push_back(hand);
+    }
+
+    return hands;
+}
+
+bool IsKiljaedenHandControlClaimed(Unit* hand)
+{
+    auto const instanceItr = kiljaedenHandControlClaims.find(hand->GetInstanceId());
+    if (instanceItr == kiljaedenHandControlClaims.end())
+        return false;
+
+    auto const claimItr = instanceItr->second.find(hand->GetGUID());
+    if (claimItr == instanceItr->second.end())
+        return false;
+
+    if (claimItr->second > getMSTime())
+        return true;
+
+    instanceItr->second.erase(claimItr);
+    return false;
+}
+
+void ClaimKiljaedenHandControl(Unit* hand)
+{
+    kiljaedenHandControlClaims[hand->GetInstanceId()][hand->GetGUID()] =
+        getMSTime() + HAND_CONTROL_CLAIM_MS;
+}
 
 void AddKiljaedenArmageddon(
     uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance)
@@ -227,7 +282,7 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
     float const angle = Position::NormalizeOrientation(
         KILJAEDEN_RANGED_ARC_ORIENTATION + angleOffset);
 
-    Position const& center = KILJAEDEN_CENTER_POSITION;
+    Position const& center = SUNWELL_CENTER_POSITION;
     float const positionX = center.GetPositionX() + std::cos(angle) * radius;
     float const positionY = center.GetPositionY() + std::sin(angle) * radius;
 

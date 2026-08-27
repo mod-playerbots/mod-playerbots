@@ -31,7 +31,6 @@ protected:
     }
 };
 
-// Collapses four per-tick sweeps of "possible targets no los"
 class MuruEncounterTargetsValue : public CalculatedValue<SwpHelpers::MuruEncounterGuids>
 {
 public:
@@ -47,8 +46,6 @@ protected:
     }
 };
 
-// The four values below replace grid searches that are otherwise run by corresponding triggers and
-// actions each tick.
 class MuruVoidZonesValue : public CalculatedValue<GuidVector>
 {
 public:
@@ -104,6 +101,17 @@ protected:
     GuidVector Calculate() override { return SwpHelpers::FindKiljaedenDragonOrbGuids(bot); }
 };
 
+class KiljaedenHandsValue : public CalculatedValue<GuidVector>
+{
+public:
+    KiljaedenHandsValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "kiljaeden hands", SwpHelpers::HAND_CACHE_INTERVAL_MS) {}
+
+protected:
+    GuidVector Calculate() override { return SwpHelpers::FindKiljaedenHandGuids(bot); }
+};
+
 class RaidSunwellValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
@@ -116,6 +124,7 @@ public:
         creators["kalecgos spectral rift"] = &RaidSunwellValueContext::kalecgos_spectral_rift;
         creators["muru singularity"] = &RaidSunwellValueContext::muru_singularity;
         creators["kiljaeden dragon orbs"] = &RaidSunwellValueContext::kiljaeden_dragon_orbs;
+        creators["kiljaeden hands"] = &RaidSunwellValueContext::kiljaeden_hands;
     }
 
 private:
@@ -139,6 +148,9 @@ private:
     }
     static UntypedValue* kiljaeden_dragon_orbs(PlayerbotAI* botAI) {
         return new KiljaedenDragonOrbsValue(botAI);
+    }
+    static UntypedValue* kiljaeden_hands(PlayerbotAI* botAI) {
+        return new KiljaedenHandsValue(botAI);
     }
 };
 
