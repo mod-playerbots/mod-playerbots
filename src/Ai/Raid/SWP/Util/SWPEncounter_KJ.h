@@ -81,13 +81,13 @@ inline constexpr float KILJAEDEN_SELF_AOE_RACIAL_RADIUS = 8.0f;
 inline constexpr float KILJAEDEN_SHOCKWAVE_RADIUS = 10.0f;
 
 // Hands cast Shadow Infusion (45772) at or below 20% health, which makes them permanently immune
-// to both stun and silence. The 80% gate is arbitrary and intended to let the tanks spread the
+// to both stun and silence. The 90% gate is arbitrary and intended to let the tanks spread the
 // Hands before they are stunned in place (to try to avoid Shadow Bolt Volley coverage).
 inline constexpr float HAND_STUN_IMMUNE_HP_PERCENT = 20.0f;
-inline constexpr float HAND_STUN_MAX_HP_PERCENT = 80.0f;
+inline constexpr float HAND_STUN_MAX_HP_PERCENT = 90.0f;
 
 // How far apart the Hands are kept by tanks
-inline constexpr float HAND_TANK_SEPARATION = 15.0f;
+inline constexpr float HAND_TANK_SEPARATION = 20.0f;
 
 // Shield of the Blue (45848) lasts 5s and Darkness of a Thousand Souls (46605) is an 8s channel, so
 // the dragon casts once <4.5s remain.
@@ -151,9 +151,6 @@ Unit* GetKiljaedenControlledDragon(Player* bot);
 bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId);
 Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 spellId);
 Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spellId = 0);
-bool HasAtLeastThreeBotTanks(
-    Player* bot, Player** outMainTank = nullptr, Player** outFirstAssist = nullptr,
-    Player** outSecondAssist = nullptr);
 
 }
 

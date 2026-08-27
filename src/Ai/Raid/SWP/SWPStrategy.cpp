@@ -265,6 +265,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Kil'jaeden <The Deceiver>
     multipliers.push_back(new KiljaedenDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new KiljaedenTanksFocusAssignedHandOnlyMultiplier(botAI));
+    multipliers.push_back(new KiljaedenDpsFocusAssignedHandOnlyMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlMovementAndTargetingMultiplier(botAI));
     multipliers.push_back(new KiljaedenPrioritizeDarknessProtectionMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlDragonMultiplier(botAI));
@@ -310,9 +311,11 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, Guid
     if (!IsMuruPhaseActive(muru))
         return;
 
+    bool const darknessActive = TryGetMuruDarknessActiveState(bot, muru);
     // Even during Darkness, the Sentinel Tank has full freedom to pick up Sentinels
-    bool const distanceUnrestricted = PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
-        TryGetMuruDarknessActiveState(bot, muru);
+    bool const distanceUnrestricted = darknessActive &&
+        PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+
     ObjectGuid const muruGuid = muru->GetGUID();
 
     for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
@@ -321,7 +324,7 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, Guid
         if (!attacker || attacker->GetEntry() == Id(SwpNpcs::NPC_VOID_SENTINEL))
             continue;
 
-        if (guid == muruGuid)
+        if (darknessActive && guid == muruGuid)
         {
             exclusions.insert(guid);
             continue;

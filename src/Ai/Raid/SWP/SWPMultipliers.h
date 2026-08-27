@@ -284,6 +284,14 @@ public:
     float GetValue(Action* action) override;
 };
 
+class KiljaedenDpsFocusAssignedHandOnlyMultiplier : public Multiplier
+{
+public:
+    KiljaedenDpsFocusAssignedHandOnlyMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kil'jaeden dps focus assigned hand only") {}
+    float GetValue(Action* action) override;
+};
+
 class KiljaedenControlMovementAndTargetingMultiplier : public Multiplier
 {
 public:

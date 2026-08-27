@@ -91,8 +91,14 @@ inline constexpr float MURU_SHADOW_BOLT_VOLLEY_RADIUS = 20.0f;
 
 // Void Zones (25879) have aura 46262, ticking 46264 for 3k in a 3y radius, but more importantly
 // they spawn Dark Fiends. The wide safe distance is in anticipation of the Dark Fiend spawn.
-inline constexpr float VOID_ZONE_SAFE_DISTANCE = 8.0f;
 inline constexpr float VOID_ZONE_SEARCH_RADIUS = 12.0f;
+inline constexpr float VOID_ZONE_SAFE_DISTANCE = 8.0f;
+// Dark Fiend search radii for killing (dispelling) and avoiding, respectively
+inline constexpr float DARK_FIEND_DISPEL_SEARCH_RADIUS = 50.0f;
+inline constexpr float DARK_FIEND_AVOID_SEARCH_RADIUS = 15.0f;
+// A Dark Fiend detonates within 2y of whoever it is chasing. The safe distance is deliberately
+// wide as touching a single Dark Fiend is almost a guaranteed wipe.
+inline constexpr float DARK_FIEND_SAFE_DISTANCE = 10.0f;
 
 // Feeds the "muru void zones" value.
 inline constexpr uint32 VOID_ZONE_CACHE_INTERVAL_MS = 200;
@@ -102,10 +108,6 @@ inline constexpr float SINGULARITY_SEARCH_RADIUS = 30.0f;
 // Feeds the "muru singularity" value. Only one exists at a time: Entropius casts Black Hole every
 // 29s, and Singularities despawn after 18s.
 inline constexpr uint32 SINGULARITY_CACHE_INTERVAL_MS = 200;
-
-// A Dark Fiend detonates within 2y of whoever it is chasing. The safe distance is deliberately
-// wide as touching a single Dark Fiend is almost a guaranteed wipe.
-inline constexpr float DARK_FIEND_SAFE_DISTANCE = 10.0f;
 
 // Tanks drag nothing further than this from the ranged stack.
 inline constexpr float MURU_MAX_TARGET_DIST_FROM_STACK = 25.0f;
