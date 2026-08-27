@@ -26,12 +26,10 @@ MMAP_THREADS=0           # 0 = auto-detect (each thread uses 1-2 GB RAM)
 MMAP_SINGLE_MAP=""       # e.g. "489" for Warsong Gulch only
 
 # Copy of the mod-playerbots CORE FORK's src/tools/mmaps_generator/mmaps-config.yaml.
-# This is NOT the stock AzerothCore config: values diverge deliberately
-# (maxSimplificationError 0.8 vs stock 1.8, per-tile 1.8 overrides for tiles
-# that would otherwise exceed Detour's 16-bit vertex cap and be skipped).
-# The shipped travel-node graph SQL was generated against a mesh built with
-# exactly this config — regenerating mmaps with different values produces a
-# mesh the graph no longer matches.
+# NOT the stock AzerothCore config: the shipped travel-node graph SQL was
+# generated against a mesh built with exactly these values, and a mesh built
+# with different values no longer matches the graph. Keep this in sync with
+# the repo file.
 # A mmaps-config.yaml already present next to the generator takes precedence
 # over this embedded copy (see STEP 3 below).
 MMAPS_CONFIG_YAML=$(cat <<'YAML_EOF'
@@ -46,6 +44,24 @@ mmapsConfig:
   # and is also where the "mmaps" folder will be created or located.
   dataDir: "./"
 
+  # Off-mesh connections define manual navigation links that are not part of the generated navmesh.
+  # They are used to connect two arbitrary points in the world where normal pathfinding cannot reach,
+  # such as jumps, ropes, ladders, teleports, elevators, or special scripted movement paths.
+  #
+  # Format:
+  #   mapID tileX,tileY (start_x start_y start_z) (end_x end_y end_z) size
+  #
+  # Fields:
+  #   mapID      - Map identifier where this connection exists.
+  #   tileX,tileY- Navmesh tile coordinates the connection belongs to.
+  #   start      - World position where the connection begins.
+  #   end        - World position where the connection ends.
+  #   size       - Effective radius of the connection (agent clearance / usability width).
+  offmeshConnections:
+    # Make Blades Edge Arena Ropes wider
+    - "562 31,20 (6234.474121 256.563721 11.063726) (6230.162598 251.681976 11.199670) 2.1"
+    - "562 31,20 (6242.273926 266.697540 11.090456) (6246.688965 272.064819 11.235604) 2.1"
+
   meshSettings:
     # Here we have global config for recast navigation.
     # It's possible to override these data on map or tile level (see mapsOverrides).
@@ -59,14 +75,14 @@ mmapsConfig:
     # In RecastDemo, you often work with world units instead of cell units.
     # By default, these cell units are converted to world units using the formula:
     #
-    #     cellSize = MMAP::GRID_SIZE / (vertexPerMapEdge - 1)
+    #     cellSize = MMAP::GRID_SIZE / (verticesPerMapEdge - 1)
     #
     # Where:
     #     MMAP::GRID_SIZE = 533.3333f (the size of one map tile in world units)
-    #     vertexPerMapEdge = number of vertices along one edge of the full map grid
+    #     verticesPerMapEdge = number of vertices along one edge of the full map grid
     #
     # Example:
-    #     If vertexPerMapEdge = 2000, then:
+    #     If verticesPerMapEdge = 2000, then:
     #         cellSize ≈ 533.3333 / (2000 - 1) ≈ 0.2667 world units per cell
     #
     # To convert a value from cell units to world units (e.g., walkableClimb),
@@ -93,13 +109,13 @@ mmapsConfig:
 
     # Number of vertices along one edge of the entire map's navmesh grid.
     # Higher values increase mesh resolution but also CPU/memory usage.
-    vertexPerMapEdge: 2000
+    verticesPerMapEdge: 2000
 
     # Number of vertices along one edge of each tile chunk.
-    # Must divide (vertexPerMapEdge - 1) evenly for seamless tiles.
+    # Must divide (verticesPerMapEdge - 1) evenly for seamless tiles.
     # A higher vertex count per tile means fewer total tiles,
     # reducing runtime work to load, unload, and manage tiles.
-    vertexPerTileEdge: 80
+    verticesPerTileEdge: 80
 
     # Tolerance for how much a polygon can deviate from the original geometry when simplified.
     # Higher values produce simpler (faster) meshes but can reduce accuracy.
@@ -143,22 +159,61 @@ mmapsConfig:
     # All parameters defined globally are eligible for override.
     # Just specify the parameter name and new value in the override section.
     mapsOverrides:
-      # NOTE on maxSimplificationError: 1.8 below: with the global 0.8 these
-      # geometry-heavy tiles exceed Detour's hard 16-bit vertex cap
-      # (dtCreateNavMeshData rejects vertCount >= 0xffff) and the generator
-      # SKIPS them entirely — leaving holes in the navmesh (Karazhan/Deadwind,
-      # most of Blade's Edge Mountains, Coilfang, Zul'Drak/Storm Peaks spots).
-      # 1.8 is the legacy generator's coarseness, which built these same tiles
-      # at ~21k vertices. Applied per tile so the rest of each map keeps the
-      # fine global setting.
-      "562": # Blade's Edge Arena
-        walkableRadius: 0 # This allows walking on the ropes to the pillars
+      # maxSimplificationError 1.8 overrides: at the global 0.8 these
+      # WMO-heavy tiles exceed Detour's 65535-vertex-per-tile cap and the
+      # builder skips them silently, leaving navmesh holes.
+      # Keys are "tileY,tileX" matching the mmtile filename digits; the
+      # --tile CLI arg takes the reversed pair (file 5712130 = key "21,30"
+      # = --tile 30,21).
+      "0": # Eastern Kingdoms
         tilesOverrides:
-          "20,31":
+          "52,35": # Deadwind Pass / Karazhan
             maxSimplificationError: 1.8
+
+      "1": # Kalimdor
+        tilesOverrides:
+          # Teldrassil canopy. walkableClimb 6: the roads step over roots
+          # taller than climb 4 allows. steepSlopeAngle 60: the only ground
+          # route out of Shadowglen crosses 50-60deg slopes, which default
+          # tagging marks NAV_GROUND_STEEP and bots refuse. Without both,
+          # the night elf starter zone is unreachable on foot.
+          # steepSlopeAngle changes don't alter tile headers; delete the 9
+          # .mmtile files (001{11,12,13}{28,29,30}) to force a rebuild.
+          "11,28":
+            walkableClimb: 6
+            steepSlopeAngle: 60
+          "11,29":
+            walkableClimb: 6
+            steepSlopeAngle: 60
+          "11,30":
+            walkableClimb: 6
+            steepSlopeAngle: 60
+          "12,28":
+            walkableClimb: 6
+            steepSlopeAngle: 60
+          "12,29":
+            walkableClimb: 6
+            steepSlopeAngle: 60
+          "12,30":
+            walkableClimb: 6
+            steepSlopeAngle: 60
+          "13,28":
+            walkableClimb: 6
+            steepSlopeAngle: 60
+          "13,29":
+            walkableClimb: 6
+            steepSlopeAngle: 60
+          "13,30":
+            walkableClimb: 6
+            steepSlopeAngle: 60
 
       "48": # Blackfathom Deeps
         cellSizeVertical: 0.5334 # ch*2 = 0.2667 * 2 ≈ 0.5334. Reduce the chance to have underground levels.
+
+      "509": # Ruins of Ahn'Qiraj
+        tilesOverrides:
+          "49,29":
+            maxSimplificationError: 1.8
 
       "529": # Arathi Basin
         tilesOverrides:
@@ -167,20 +222,12 @@ mmapsConfig:
             # https://github.com/azerothcore/azerothcore-wotlk/pull/22462#issuecomment-3067024680
             walkableSlopeAngle: 45
 
-      "0": # Eastern Kingdoms
-        tilesOverrides:
-          "52,35": # Karazhan / Deadwind Pass
-            maxSimplificationError: 1.8
-
-      "509": # Ruins of Ahn'Qiraj
-        tilesOverrides:
-          "49,29":
-            maxSimplificationError: 1.8
-
       "530": # Outland
         tilesOverrides:
           "32,30": # Dark portal
             walkableSlopeAngle: 45 # https://github.com/chromiecraft/chromiecraft/issues/8404#issuecomment-3476012660
+          "35,21": # Shattrath City
+            maxSimplificationError: 1.8
           # Blade's Edge Mountains / Zangarmarsh-Coilfang block
           "24,21":
             maxSimplificationError: 1.8
@@ -220,10 +267,8 @@ mmapsConfig:
             maxSimplificationError: 1.8
           "30,20":
             maxSimplificationError: 1.8
-          "35,21":
-            maxSimplificationError: 1.8
 
-      "532": # Karazhan (instance)
+      "532": # Karazhan
         tilesOverrides:
           "52,35":
             maxSimplificationError: 1.8
@@ -235,21 +280,28 @@ mmapsConfig:
           "26,38":
             maxSimplificationError: 1.8
 
+      "562": # Blade's Edge Arena
+        walkableRadius: 0 # This allows walking on the ropes to the pillars
+        tilesOverrides:
+          "20,31":
+            maxSimplificationError: 1.8
+
       "571": # Northrend
         tilesOverrides:
+          "21,30": # Dalaran
+            maxSimplificationError: 1.8
+          "21,28": # Crystalsong / Icecrown border
+            maxSimplificationError: 1.8
+          "21,37": # Zul'Drak
+            maxSimplificationError: 1.8
+          "29,21": # Borean Tundra coast
+            maxSimplificationError: 1.8
+          # Storm Peaks
           "16,34":
             maxSimplificationError: 1.8
           "16,35":
             maxSimplificationError: 1.8
           "17,34":
-            maxSimplificationError: 1.8
-          "21,28":
-            maxSimplificationError: 1.8
-          "21,30":
-            maxSimplificationError: 1.8
-          "21,37":
-            maxSimplificationError: 1.8
-          "29,21":
             maxSimplificationError: 1.8
 
   # debugOutput generates debug files in the `meshes` directory for use with RecastDemo.
