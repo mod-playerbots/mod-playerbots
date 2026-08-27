@@ -423,6 +423,13 @@ public:
     MuruPositionRangedByPhaseAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "m'uru position ranged by phase") {}
     bool Execute(Event event) override;
+    bool ResetEntropiusRangedPositionReached()
+    {
+        if (!_entropiusRangedPositionReached)
+            return false;
+        _entropiusRangedPositionReached = false;
+        return true;
+    }
 
 private:
     bool _entropiusRangedPositionReached = false;

@@ -57,6 +57,14 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
+    // M'uru
+    Action* muruAction = context->GetAction("m'uru position ranged by phase");
+    if (muruAction && static_cast<MuruPositionRangedByPhaseAction*>(
+            muruAction)->ResetEntropiusRangedPositionReached())
+    {
+        reset = true;
+    }
+
     // Kil'jaeden
     reset |= kiljaedenDragonOrbUseTimes.erase(guid.GetCounter()) > 0;
 

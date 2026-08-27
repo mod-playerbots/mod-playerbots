@@ -606,7 +606,6 @@ Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 s
     if (!group)
         return nullptr;
 
-
     Player* bestTarget = nullptr;
     uint32 bestClusterSize = 0;
     uint32 bestTotalClusterSize = 0;
@@ -692,63 +691,6 @@ Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spell
     }
 
     return closestTarget;
-}
-
-bool HasAtLeastThreeBotTanks(
-    Player* bot, Player** outMainTank, Player** outFirstAssist, Player** outSecondAssist)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    ObjectGuid const mainTankGuid = PlayerbotAI::GetMainTankGuid(group);
-    if (mainTankGuid.IsEmpty())
-        return false;
-
-    bool hasMainBotTank = false;
-    Player* mainTankPtr = nullptr;
-    std::vector<Player*> assistantTanks;
-    std::vector<Player*> nonAssistantTanks;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !PlayerbotAI::IsTank(member))
-            continue;
-
-        if (member->GetGUID() == mainTankGuid)
-        {
-            hasMainBotTank = GET_PLAYERBOT_AI(member) != nullptr;
-            mainTankPtr = member;
-            continue;
-        }
-
-        if (!GET_PLAYERBOT_AI(member))
-            continue;
-
-        if (group->IsAssistant(member->GetGUID()))
-            assistantTanks.push_back(member);
-        else
-            nonAssistantTanks.push_back(member);
-    }
-
-    if (outFirstAssist || outSecondAssist)
-    {
-        std::vector<Player*> ordered;
-        ordered.reserve(assistantTanks.size() + nonAssistantTanks.size());
-        ordered.insert(ordered.end(), assistantTanks.begin(), assistantTanks.end());
-        ordered.insert(ordered.end(), nonAssistantTanks.begin(), nonAssistantTanks.end());
-
-        if (outFirstAssist)
-            *outFirstAssist = ordered.size() >= 1 ? ordered[0] : nullptr;
-        if (outSecondAssist)
-            *outSecondAssist = ordered.size() >= 2 ? ordered[1] : nullptr;
-    }
-
-    if (outMainTank)
-        *outMainTank = hasMainBotTank ? mainTankPtr : nullptr;
-
-    return hasMainBotTank && (assistantTanks.size() + nonAssistantTanks.size()) >= 2;
 }
 
 }

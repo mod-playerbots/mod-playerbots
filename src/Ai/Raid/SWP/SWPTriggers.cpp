@@ -658,7 +658,10 @@ bool MuruDarkFiendsSpawnedTrigger::IsActive()
     if (bot->getClass() != CLASS_PRIEST && bot->getClass() != CLASS_SHAMAN)
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "dark fiend");
+    if (!AI_VALUE2(Unit*, "find target", "m'uru"))
+        return false;
+
+    return bot->FindNearestCreature(Id(SwpNpcs::NPC_DARK_FIEND), DARK_FIEND_DISPEL_SEARCH_RADIUS);
 }
 
 bool MuruDarknessIsComingTrigger::IsActive()
@@ -745,8 +748,7 @@ bool MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger::IsActive()
     if (FindMuruVoidZoneToAvoid(botAI))
         return true;
 
-    Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
-    return darkFiend && darkFiend->GetVictim() == bot;
+    return bot->FindNearestCreature(Id(SwpNpcs::NPC_DARK_FIEND), DARK_FIEND_AVOID_SEARCH_RADIUS);
 }
 
 bool MuruTheSingularityIsNearTrigger::IsActive()

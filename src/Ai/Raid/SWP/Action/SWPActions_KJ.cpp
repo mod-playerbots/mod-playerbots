@@ -51,16 +51,9 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 
     return botAI->SayToRaid(text);
 }
+
 bool KiljaedenAssignHandsOfTheDeceiverAction::Execute(Event /*event*/)
 {
-    // Fewer than 3 bot tanks makes this a headache so just skip in that case;
-    // it's not vital anyway
-    Player* mainTank = nullptr;
-    Player* firstAssistTank = nullptr;
-    Player* secondAssistTank = nullptr;
-    if (!HasAtLeastThreeBotTanks(bot, &mainTank, &firstAssistTank, &secondAssistTank))
-        return false;
-
     std::vector<Unit*> hands;
     auto const& targets = AI_VALUE(GuidVector, "possible targets no los");
 
@@ -80,10 +73,25 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::Execute(Event /*event*/)
     if (IsMechanicTrackerBot(bot, SWP_MAP_ID) && MarkTargetWithSkull(bot, hands.front()))
         return true;
 
-    if (PlayerbotAI::IsTank(bot))
-        return ExecuteTankHandAssignment(hands, mainTank, firstAssistTank, secondAssistTank);
+    if (!PlayerbotAI::IsTank(bot))
+        return AI_VALUE(Unit*, "current target") != hands.front() && Attack(hands.front());
 
-    return AI_VALUE(Unit*, "current target") != hands.front() && Attack(hands.front());
+    Player* secondAssistTank = GetGroupAssistTank(bot, 1);
+    if (!secondAssistTank)
+        return false;
+
+    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
+    if (!firstAssistTank)
+        return false;
+
+    Player* mainTank = GetGroupMainTank(bot);
+    if (!mainTank)
+        return false;
+
+    if (mainTank != bot && firstAssistTank != bot && secondAssistTank != bot)
+        return false;
+
+    return ExecuteTankHandAssignment(hands, mainTank, firstAssistTank, secondAssistTank);
 }
 
 bool KiljaedenAssignHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
@@ -220,7 +228,6 @@ bool KiljaedenStunHandsOfTheDeceiverAction::Execute(Event /*event*/)
 
 bool KiljaedenStunHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
 {
-    // 80% HP is arbitrary; it's to try to let tanks get some spread before stunning
     if (hand->GetHealthPct() > HAND_STUN_MAX_HP_PERCENT)
         return false;
 
@@ -237,13 +244,14 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
     switch (bot->getClass())
     {
         case CLASS_DRUID:
-            return castSpell("bash") || castSpell("maim");
-
-        case CLASS_PALADIN:
-            return castSpell("hammer of justice");
+            return (botAI->HasStrategy("bear", BOT_STATE_COMBAT) && castSpell("bash")) ||
+                (botAI->HasStrategy("cat", BOT_STATE_COMBAT) && castSpell("maim"));
 
         case CLASS_MAGE:
             return castSpell("deep freeze");
+
+        case CLASS_PALADIN:
+            return castSpell("hammer of justice");
 
         case CLASS_ROGUE:
             return castSpell("kidney shot");

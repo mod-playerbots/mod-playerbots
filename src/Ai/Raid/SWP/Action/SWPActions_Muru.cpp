@@ -374,10 +374,10 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
     bool const isMuruPhase = IsMuruPhaseActive(muru);
 
     Creature* darkFiendNearMuru = nullptr;
-    constexpr float searchRadius = 50.0f;
     constexpr float massDispelRange = 15.0f;
     std::list<Creature*> darkFiends;
-    bot->GetCreatureListWithEntryInGrid(darkFiends, Id(SwpNpcs::NPC_DARK_FIEND), searchRadius);
+    bot->GetCreatureListWithEntryInGrid(
+        darkFiends, Id(SwpNpcs::NPC_DARK_FIEND), DARK_FIEND_DISPEL_SEARCH_RADIUS);
 
     if (isMuruPhase)
     {
@@ -764,8 +764,9 @@ bool MuruKeepDistanceFromDarkFiendsAction::Execute(Event /*event*/)
         return MoveAway(voidZone, VOID_ZONE_SAFE_DISTANCE - distFromVoidZone);
     }
 
-    Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
-    if (!darkFiend || darkFiend->GetVictim() != bot)
+    Creature* darkFiend =
+        bot->FindNearestCreature(Id(SwpNpcs::NPC_DARK_FIEND), DARK_FIEND_AVOID_SEARCH_RADIUS);
+    if (!darkFiend)
         return false;
 
     float const distFromFiend = bot->GetDistance2d(darkFiend);
