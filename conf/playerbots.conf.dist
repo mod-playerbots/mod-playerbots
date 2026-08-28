@@ -509,6 +509,22 @@ AiPlayerbot.TellWhenMissingBuffReagents = 1
 # Default: 300 (5 minutes)
 AiPlayerbot.MissingBuffReagentMessageCooldown = 300
 
+# When a ready check is issued out of combat, bots refresh missing/short buffs before reporting ready.
+# A bot that still has buff work it can perform stays not-ready until the ready check ends; this
+# includes missing reagents (the cast is attempted and fails). Uses the always-on "force rebuff"
+# strategy: bots with strategy sets saved before this feature keep their saved set - reset their
+# strategies or use "nc +force rebuff" to opt them in. The "rebuff" chat command starts the same
+# buff pass without a ready check and works regardless of this setting.
+# Default: 0 (disabled)
+AiPlayerbot.ForceRebuffOnReadyCheck = 0
+
+# During a force-rebuff pass (ready check or the "rebuff" command), a buff is topped off (recast)
+# once it drops more than this many seconds below its full duration, so buffs are refreshed toward
+# maximum remaining time to last the fight. The effective margin never drops below the time the
+# pass has already run, so small values are safe.
+# Default: 60
+AiPlayerbot.ForceRebuffMarginSecs = 60
+
 # Bots can flee from enemies
 AiPlayerbot.FleeingEnabled = 1
 
@@ -1665,7 +1681,9 @@ AiPlayerbot.RandomBotArenaTeam5v5Count = 5
 AiPlayerbot.RandomBotArenaTeamMaxRating = 2000
 AiPlayerbot.RandomBotArenaTeamMinRating = 1000
 
-# Delete all randombot arena teams
+# Delete all random bot arena teams on startup. While enabled, no new random bot
+# arena teams are created or joined. Set back to 0 and restart the server to
+# resume normal random bot arena team assignment.
 AiPlayerbot.DeleteRandomBotArenaTeams = 0
 
 # PvP Restricted Zones (bots will not initiate PvP or defend themselves if attacked)

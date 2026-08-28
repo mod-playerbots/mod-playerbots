@@ -5,12 +5,13 @@
  */
 
 #include "HyjalActions.h"
+#include "EncounterHelpers.h"
 #include "HyjalHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "Timer.h"
 
 using namespace HyjalSummitHelpers;
+using namespace EncounterHelpers;
 
 // General
 
@@ -77,7 +78,7 @@ bool RageWinterchillMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!winterchill)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return false;
 
@@ -226,7 +227,7 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
 
     if (anetheron->GetHealthPct() > 95.0f)
     {
-        Player* mainTank = GetGroupMainTank(botAI, bot);
+        Player* mainTank = GetGroupMainTank(bot);
         if (!mainTank)
             return false;
 
@@ -241,7 +242,7 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
     if (Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
         infernal && infernal->GetHealthPct() > 50.0f)
     {
-        Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+        Player* firstAssistTank = GetGroupAssistTank(bot, 0);
         if (!firstAssistTank)
             return false;
 
@@ -266,7 +267,7 @@ bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
     if (MarkTargetWithSquare(bot, anetheron))
         return true;
 
-    SetRtiTarget(botAI, "square", anetheron);
+    SetRtiTarget(botAI, "square");
 
     if (AI_VALUE(Unit*, "current target") != anetheron)
         return Attack(anetheron);
@@ -398,7 +399,7 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
     if (MarkTargetWithDiamond(bot, infernal))
         return true;
 
-    SetRtiTarget(botAI, "diamond", infernal);
+    SetRtiTarget(botAI, "diamond");
 
     if (AI_VALUE(Unit*, "current target") != infernal)
         return Attack(infernal);
@@ -435,7 +436,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 
     if (botAI->IsMelee(bot))
     {
-        SetRtiTarget(botAI, "square", anetheron);
+        SetRtiTarget(botAI, "square");
 
         if (AI_VALUE(Unit*, "current target") != anetheron)
             return Attack(anetheron);
@@ -455,10 +456,10 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
         if (anetheron->GetHealthPct() > 10.0f && botAI->IsRangedDps(bot) &&
             bot->GetDistance2d(infernal) < 50.0f)
         {
-            if (Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+            if (Player* firstAssistTank = GetGroupAssistTank(bot, 0);
                 !firstAssistTank || infernal->GetVictim() == firstAssistTank)
             {
-                SetRtiTarget(botAI, "diamond", infernal);
+                SetRtiTarget(botAI, "diamond");
 
                 if (AI_VALUE(Unit*, "current target") != infernal)
                     return Attack(infernal);
@@ -467,7 +468,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
     }
     else if (botAI->IsRangedDps(bot))
     {
-        SetRtiTarget(botAI, "square", anetheron);
+        SetRtiTarget(botAI, "square");
 
         if (AI_VALUE(Unit*, "current target") != anetheron)
             return Attack(anetheron);
@@ -484,7 +485,7 @@ bool KazrogalMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!kazrogal)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return false;
 
@@ -551,7 +552,7 @@ bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
 // To spread cleave damage
 bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
 {
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return false;
 
@@ -714,7 +715,7 @@ bool AzgalorMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return false;
 
@@ -739,7 +740,7 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
     if (MarkTargetWithStar(bot, azgalor))
         return true;
 
-    SetRtiTarget(botAI, "star", azgalor);
+    SetRtiTarget(botAI, "star");
 
     if (AI_VALUE(Unit*, "current target") != azgalor)
         return Attack(azgalor);
@@ -827,7 +828,7 @@ bool AzgalorMeleeGetOutOfFireAndSwapTargetsAction::Execute(Event /*event*/)
     constexpr float singleTickMoveAwayDist = 6.0f;
     if (!IsInRainOfFire(bot, RAIN_OF_FIRE_RADIUS + singleTickMoveAwayDist))
     {
-        SetRtiTarget(botAI, "star", azgalor);
+        SetRtiTarget(botAI, "star");
         return false;
     }
 
@@ -836,11 +837,11 @@ bool AzgalorMeleeGetOutOfFireAndSwapTargetsAction::Execute(Event /*event*/)
 
     if (!desiredTarget)
     {
-        SetRtiTarget(botAI, "star", azgalor);
+        SetRtiTarget(botAI, "star");
         return MoveAway(azgalor, 5.0f);
     }
 
-    SetRtiTarget(botAI, "circle", desiredTarget);
+    SetRtiTarget(botAI, "circle");
 
     if (!bot->IsWithinMeleeRange(desiredTarget))
     {
@@ -869,7 +870,7 @@ bool AzgalorWaitAtSafePositionAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
-    SetRtiTarget(botAI, "star", azgalor);
+    SetRtiTarget(botAI, "star");
 
     const Position& position = AZGALOR_DOOMGUARD_POSITION;
     constexpr float moveDist = 10.0f;
@@ -919,7 +920,7 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
         if (MarkTargetWithCircle(bot, doomguard))
             return true;
 
-        SetRtiTarget(botAI, "circle", doomguard);
+        SetRtiTarget(botAI, "circle");
 
         if (AI_VALUE(Unit*, "current target") != doomguard)
             return Attack(doomguard);
@@ -970,7 +971,7 @@ bool AzgalorRangedDpsPrioritizeDoomguardsAction::Execute(Event /*event*/)
         if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
             doomguard && bot->GetDistance2d(doomguard) < 65.0f)
         {
-            SetRtiTarget(botAI, "circle", doomguard);
+            SetRtiTarget(botAI, "circle");
 
             if (AI_VALUE(Unit*, "current target") != doomguard)
                 return Attack(doomguard);
@@ -978,7 +979,7 @@ bool AzgalorRangedDpsPrioritizeDoomguardsAction::Execute(Event /*event*/)
     }
     else
     {
-        SetRtiTarget(botAI, "star", azgalor);
+        SetRtiTarget(botAI, "star");
 
         if (AI_VALUE(Unit*, "current target") != azgalor)
             return Attack(azgalor);
@@ -995,7 +996,7 @@ bool ArchimondeMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!archimonde)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return false;
 
@@ -1052,7 +1053,7 @@ bool ArchimondeCastFearImmunitySpellAction::Execute(Event /*event*/)
 
 bool ArchimondeCastFearImmunitySpellAction::CastFearWardOnMainTank()
 {
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (mainTank && botAI->CanCastSpell("fear ward", mainTank))
         return botAI->CastSpell("fear ward", mainTank);
 
@@ -1078,7 +1079,7 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
     if (!archimonde)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (mainTank && bot != mainTank)
     {
         const float distanceToMainTank = bot->GetDistance2d(mainTank);
