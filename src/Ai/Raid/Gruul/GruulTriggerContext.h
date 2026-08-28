@@ -15,21 +15,19 @@ class RaidGruulsLairTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidGruulsLairTriggerContext() : NamedObjectContext<Trigger>()
     {
+        // General
+        creators["gruul's lair no encounter in progress"] =
+            &RaidGruulsLairTriggerContext::gruuls_lair_no_encounter_in_progress;
+
         // High King Maulgar
-        creators["high king maulgar boss engaged by main tank"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_boss_engaged_by_main_tank;
+        creators["high king maulgar three ogres need melee tanks"] =
+            &RaidGruulsLairTriggerContext::high_king_maulgar_three_ogres_need_melee_tanks;
 
-        creators["high king maulgar olm engaged by first assist tank"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_olm_engaged_by_first_assist_tank;
+        creators["high king maulgar krosh needs mage tank"] =
+            &RaidGruulsLairTriggerContext::high_king_maulgar_krosh_needs_mage_tank;
 
-        creators["high king maulgar blindeye engaged by second assist tank"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_blindeye_engaged_by_second_assist_tank;
-
-        creators["high king maulgar krosh engaged by mage tank"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_krosh_engaged_by_mage_tank;
-
-        creators["high king maulgar kiggler engaged by moonkin tank"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_kiggler_engaged_by_moonkin_tank;
+        creators["high king maulgar kiggler needs moonkin tank"] =
+            &RaidGruulsLairTriggerContext::high_king_maulgar_kiggler_needs_moonkin_tank;
 
         creators["high king maulgar determining kill order"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_determining_kill_order;
@@ -46,33 +44,35 @@ public:
         creators["high king maulgar pulling ogre council"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_pulling_ogre_council;
 
-        // Gruul the Dragonkiller
-        creators["gruul the dragonkiller boss engaged by tanks"] =
-            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_engaged_by_tanks;
+        creators["high king maulgar boss casts intimidating roar"] =
+            &RaidGruulsLairTriggerContext::high_king_maulgar_boss_casts_intimidating_roar;
 
-        creators["gruul the dragonkiller boss engaged by ranged"] =
-            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_engaged_by_ranged;
+        // Gruul the Dragonkiller
+        creators["gruul the dragonkiller should be tanked"] =
+            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_should_be_tanked;
+
+        creators["gruul the dragonkiller ranged should spread"] =
+            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_ranged_should_spread;
 
         creators["gruul the dragonkiller incoming shatter"] =
             &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_incoming_shatter;
     }
 
 private:
+    // General
+    static Trigger* gruuls_lair_no_encounter_in_progress(PlayerbotAI* botAI) {
+        return new GruulsLairNoEncounterInProgress(botAI);
+    }
+
     // High King Maulgar
-    static Trigger* high_king_maulgar_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new HighKingMaulgarBossEngagedByMainTankTrigger(botAI);
+    static Trigger* high_king_maulgar_three_ogres_need_melee_tanks(PlayerbotAI* botAI) {
+        return new HighKingMaulgarThreeOgresNeedMeleeTanksTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_olm_engaged_by_first_assist_tank(PlayerbotAI* botAI) {
-        return new HighKingMaulgarOlmEngagedByFirstAssistTankTrigger(botAI);
+    static Trigger* high_king_maulgar_krosh_needs_mage_tank(PlayerbotAI* botAI) {
+        return new HighKingMaulgarKroshNeedsMageTankTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_blindeye_engaged_by_second_assist_tank(PlayerbotAI* botAI) {
-        return new HighKingMaulgarBlindeyeEngagedBySecondAssistTankTrigger(botAI);
-    }
-    static Trigger* high_king_maulgar_krosh_engaged_by_mage_tank(PlayerbotAI* botAI) {
-        return new HighKingMaulgarKroshEngagedByMageTankTrigger(botAI);
-    }
-    static Trigger* high_king_maulgar_kiggler_engaged_by_moonkin_tank(PlayerbotAI* botAI) {
-        return new HighKingMaulgarKigglerEngagedByMoonkinTankTrigger(botAI);
+    static Trigger* high_king_maulgar_kiggler_needs_moonkin_tank(PlayerbotAI* botAI) {
+        return new HighKingMaulgarKigglerNeedsMoonkinTankTrigger(botAI);
     }
     static Trigger* high_king_maulgar_determining_kill_order(PlayerbotAI* botAI) {
         return new HighKingMaulgarDeterminingKillOrderTrigger(botAI);
@@ -89,13 +89,16 @@ private:
     static Trigger* high_king_maulgar_pulling_ogre_council(PlayerbotAI* botAI) {
         return new HighKingMaulgarPullingOgreCouncilTrigger(botAI);
     }
+    static Trigger* high_king_maulgar_boss_casts_intimidating_roar(PlayerbotAI* botAI) {
+        return new HighKingMaulgarBossCastsIntimidatingRoarTrigger(botAI);
+    }
 
     // Gruul the Dragonkiller
-    static Trigger* gruul_the_dragonkiller_boss_engaged_by_tanks(PlayerbotAI* botAI) {
-        return new GruulTheDragonkillerBossEngagedByTanksTrigger(botAI);
+    static Trigger* gruul_the_dragonkiller_should_be_tanked(PlayerbotAI* botAI) {
+        return new GruulTheDragonkillerShouldBeTankedTrigger(botAI);
     }
-    static Trigger* gruul_the_dragonkiller_boss_engaged_by_ranged(PlayerbotAI* botAI) {
-        return new GruulTheDragonkillerBossEngagedByRangedTrigger(botAI);
+    static Trigger* gruul_the_dragonkiller_ranged_should_spread(PlayerbotAI* botAI) {
+        return new GruulTheDragonkillerRangedShouldSpreadTrigger(botAI);
     }
     static Trigger* gruul_the_dragonkiller_incoming_shatter(PlayerbotAI* botAI) {
         return new GruulTheDragonkillerIncomingShatterTrigger(botAI);
