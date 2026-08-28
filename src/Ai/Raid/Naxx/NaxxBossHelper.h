@@ -486,7 +486,11 @@ public:
         stalagg = AI_VALUE2(Unit*, "find target", "stalagg");
         return true;
     }
-    bool IsPhasePet() { return (feugen && feugen->IsAlive()) || (stalagg && stalagg->IsAlive()); }
+    // Stalagg and Feugen only feign death: they stay alive at 1 HP, flagged NOT_SELECTABLE, until
+    // Thaddius' tesla overload finishes them off or ACTION_RESTORE revives them. Testing IsAlive()
+    // alone would latch the pet phase on forever.
+    static bool IsPetActive(Unit* pet) { return pet && pet->IsAlive() && !pet->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE); }
+    bool IsPhasePet() { return IsPetActive(feugen) || IsPetActive(stalagg); }
     bool IsPhaseTransition()
     {
         if (IsPhasePet())
@@ -498,11 +502,11 @@ public:
     Unit* GetNearestPet()
     {
         Unit* unit = nullptr;
-        if (feugen && feugen->IsAlive())
+        if (IsPetActive(feugen))
             unit = feugen;
 
-        if (stalagg && stalagg->IsAlive() &&
-            (!feugen || !feugen->IsAlive() || bot->GetDistance(stalagg) < bot->GetDistance(feugen)))
+        if (IsPetActive(stalagg) &&
+            (!IsPetActive(feugen) || bot->GetDistance(stalagg) < bot->GetDistance(feugen)))
             unit = stalagg;
 
         return unit;
