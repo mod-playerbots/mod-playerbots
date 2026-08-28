@@ -347,12 +347,9 @@ bool EredarTwinsConflagrationTargetMoveFromGroupAction::Execute(Event /*event*/)
     if (!nearestPlayer)
         return false;
 
-    float const distanceToPlayer = bot->GetExactDist2d(nearestPlayer);
-    if (distanceToPlayer >= CONFLAGRATION_SAFE_DISTANCE)
-        return false;
-
     bot->CastStop();
-    return MoveAway(nearestPlayer, CONFLAGRATION_SAFE_DISTANCE - distanceToPlayer);
+    return MoveAway(
+        nearestPlayer, CONFLAGRATION_SAFE_DISTANCE - bot->GetExactDist2d(nearestPlayer));
 }
 
 bool EredarTwinsMoveAwayFromSacrolashVictimAction::Execute(Event /*event*/)
