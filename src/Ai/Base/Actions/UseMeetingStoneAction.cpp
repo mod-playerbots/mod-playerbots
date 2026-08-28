@@ -51,7 +51,7 @@ bool UseMeetingStoneAction::Execute(Event event)
         return false;
 
     GameObjectTemplate const* goInfo = gameObject->GetGOInfo();
-    if (!goInfo || goInfo->entry != 179944)
+    if (!goInfo || (goInfo->type != GAMEOBJECT_TYPE_MEETINGSTONE && goInfo->entry != 179944))
         return false;
 
     if (master->GetTarget() == bot->GetGUID())
@@ -72,11 +72,19 @@ bool UseMeetingStoneAction::SummonGroupMembers(Player* master, GameObject* stone
         return false;
 
     if (bot->GetMapId() != stone->GetMapId() || bot->GetDistance(stone) > sPlayerbotAIConfig.sightDistance)
+    {
+        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "meeting_stone_assist_too_far", "I'm too far from the meeting stone to help summon", {}));
         return false;
+    }
 
     uint32 minLevel = stone->GetGOInfo()->meetingstone.minLevel;
     if (bot->GetLevel() < minLevel)
+    {
+        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "meeting_stone_assist_level", "I'm not high enough level to use this meeting stone", {}));
         return false;
+    }
 
     Group* group = master->GetGroup();
     if (!group)
@@ -104,7 +112,11 @@ bool UseMeetingStoneAction::SummonGroupMembers(Player* master, GameObject* stone
     }
 
     if (farMembers.empty())
+    {
+        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "meeting_stone_nobody_far", "Everyone in the party is already here", {}));
         return false;
+    }
 
     std::sort(farMembers.begin(), farMembers.end(), [](Player* a, Player* b)
     {
@@ -133,8 +145,12 @@ bool UseMeetingStoneAction::SummonGroupMembers(Player* master, GameObject* stone
     bool summoned = false;
     for (uint32 i = botIndex; i < farMembers.size(); i += botCount)
     {
-        bot->SetTarget(farMembers[i]->GetGUID());
+        Player* member = farMembers[i];
+        bot->SetTarget(member->GetGUID());
         stone->Use(bot);
+        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "meeting_stone_summoning", "Summoning %member to the meeting stone",
+            {{"%member", member->GetName()}}));
         summoned = true;
     }
 
