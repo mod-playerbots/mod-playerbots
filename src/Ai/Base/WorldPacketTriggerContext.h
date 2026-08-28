@@ -19,6 +19,7 @@ public:
     {
         creators["gossip hello"] = &WorldPacketTriggerContext::gossip_hello;
         creators["group invite"] = &WorldPacketTriggerContext::group_invite;
+        creators["summon request"] = &WorldPacketTriggerContext::summon_request;
         creators["group set leader"] = &WorldPacketTriggerContext::group_set_leader;
         creators["not enough money"] = &WorldPacketTriggerContext::no_money;
         creators["not enough reputation"] = &WorldPacketTriggerContext::no_reputation;
@@ -120,6 +121,7 @@ private:
     static Trigger* resurrect_request(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "resurrect request"); }
     static Trigger* gossip_hello(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "gossip hello"); }
     static Trigger* group_invite(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "group invite"); }
+    static Trigger* summon_request(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "summon request"); }
     static Trigger* group_set_leader(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "group set leader"); }
     static Trigger* no_money(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "not enough money"); }
     static Trigger* no_reputation(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "not enough reputation"); }

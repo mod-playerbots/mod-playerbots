@@ -13,6 +13,8 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(
         new TriggerNode("group invite", { NextAction("accept invitation", relevance) }));
     triggers.push_back(
+        new TriggerNode("summon request", { NextAction("accept summon", relevance) }));
+    triggers.push_back(
         new TriggerNode("uninvite", { NextAction("uninvite", relevance) }));
     triggers.push_back(
         new TriggerNode("uninvite guid", { NextAction("uninvite", relevance) }));

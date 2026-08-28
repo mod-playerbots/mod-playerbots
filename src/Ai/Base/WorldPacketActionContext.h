@@ -12,6 +12,7 @@
 #include "AcceptInvitationAction.h"
 #include "AcceptQuestAction.h"
 #include "AcceptResurrectAction.h"
+#include "AcceptSummonAction.h"
 #include "AreaTriggerAction.h"
 #include "ArenaTeamActions.h"
 #include "BattleGroundJoinAction.h"
@@ -53,6 +54,7 @@ public:
     WorldPacketActionContext()
     {
         creators["accept invitation"] = &WorldPacketActionContext::accept_invitation;
+        creators["accept summon"] = &WorldPacketActionContext::accept_summon;
         creators["give leader in dungeon"] = &WorldPacketActionContext::give_leader_in_dungeon;
         creators["leader"] = &WorldPacketActionContext::pass_leadership_to_master;
         creators["tell not enough money"] = &WorldPacketActionContext::tell_not_enough_money;
@@ -142,6 +144,7 @@ private:
     static Action* auto_release(PlayerbotAI* botAI) { return new AutoReleaseSpiritAction(botAI); }
     static Action* revive_from_corpse(PlayerbotAI* botAI) { return new ReviveFromCorpseAction(botAI); }
     static Action* accept_invitation(PlayerbotAI* botAI) { return new AcceptInvitationAction(botAI); }
+    static Action* accept_summon(PlayerbotAI* botAI) { return new AcceptSummonAction(botAI); }
     static Action* give_leader_in_dungeon(PlayerbotAI* botAI) { return new GiveLeaderAction(botAI, "I don't know this dungeon, lead the way!"); }
     static Action* pass_leadership_to_master(PlayerbotAI* botAI) { return new PassLeadershipToMasterAction(botAI); }
     static Action* tell_not_enough_money(PlayerbotAI* botAI) { return new TellMasterAction(botAI, "Not enough money"); }

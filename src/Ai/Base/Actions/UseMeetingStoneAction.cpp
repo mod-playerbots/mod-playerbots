@@ -61,10 +61,10 @@ bool UseMeetingStoneAction::Execute(Event event)
     if (master->GetGroup() != bot->GetGroup())
         return false;
 
-    return SummonGroupMembers(master, gameObject);
+    return SummonGroupMembers(gameObject);
 }
 
-bool UseMeetingStoneAction::SummonGroupMembers(Player* master, GameObject* stone)
+bool UseMeetingStoneAction::SummonGroupMembers(GameObject* stone)
 {
     if (!sPlayerbotAIConfig.botsAssistMeetingStone)
         return false;
@@ -90,8 +90,9 @@ bool UseMeetingStoneAction::SummonGroupMembers(Player* master, GameObject* stone
     bool assisted = false;
 
     // Best-effort: click the summoning portal the master opened by using the
-    // meeting stone. Some cores reject this without the owner channeling, so the
-    // direct teleport below guarantees the summon actually completes.
+    // meeting stone. The target bot handles its own summon via AutoAcceptSummons,
+    // so the direct teleport is intentionally NOT used here - it could race the
+    // master's summon channel and teleport the master onto the target.
     std::list<GameObject*> targets;
     AnyGameObjectInObjectRangeCheck u_check(bot, sPlayerbotAIConfig.reactDistance);
     Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
@@ -102,29 +103,11 @@ bool UseMeetingStoneAction::SummonGroupMembers(Player* master, GameObject* stone
         if (portal->isSpawned() && portal->GetGOInfo() && portal->GetGOInfo()->entry == 179944)
         {
             portal->Use(bot);
+            botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "meeting_stone_assist_portal", "I'll help with your summon", {}));
+            assisted = true;
             break;
         }
-    }
-
-    // Summon whoever the master is targeting, or the master themselves.
-    Player* target = master->GetTarget() ? ObjectAccessor::FindPlayer(master->GetTarget()) : master;
-    if (target && target != bot && target->IsInSameRaidWith(bot) &&
-        target->GetLevel() >= minLevel && !target->IsBeingTeleported())
-    {
-        bot->SetTarget(target->GetGUID());
-        if (Teleport(bot, target, false))
-        {
-            botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                "meeting_stone_summoning", "Summoning %member to the meeting stone",
-                {{"%member", target->GetName()}}));
-            assisted = true;
-        }
-    }
-
-    if (!assisted)
-    {
-        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "meeting_stone_assist_nothing", "I can't help with the summon right now", {}));
     }
 
     return assisted;

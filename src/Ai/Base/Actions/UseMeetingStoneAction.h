@@ -32,7 +32,7 @@ public:
     UseMeetingStoneAction(PlayerbotAI* botAI) : SummonAction(botAI, "use meeting stone") {}
 
     bool Execute(Event event) override;
-    bool SummonGroupMembers(Player* master, GameObject* stone);
+    bool SummonGroupMembers(GameObject* stone);
 };
 
 #endif

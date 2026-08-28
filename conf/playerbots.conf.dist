@@ -240,6 +240,11 @@ AiPlayerbot.BotRepairWhenSummon = 1
 # Default: 1 (enabled)
 AiPlayerbot.BotsAssistMeetingStone = 1
 
+# Enable/Disable bots automatically accepting summons from their master or party
+# (e.g. meeting stone and warlock summons). Bots never initiate summons themselves.
+# Default: 1 (enabled)
+AiPlayerbot.AutoAcceptSummons = 1
+
 #
 #
 ####################################################################################################
