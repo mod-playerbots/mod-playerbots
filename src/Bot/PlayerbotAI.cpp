@@ -807,8 +807,8 @@ void PlayerbotAI::HandleTeleportAck()
         // reset AI state after teleport
         Reset(true);
 
-        // clear movement only AFTER teleport is finalized and bot is in world
-        if (bot->IsInWorld() && bot->GetMotionMaster())
+        // clear movement only AFTER teleport is finalized and bot is in world. Skip during a taxi map-transfer
+        if (bot->IsInWorld() && bot->GetMotionMaster() && !bot->IsInFlight())
         {
             bot->GetMotionMaster()->Clear(true);
             bot->StopMoving();
