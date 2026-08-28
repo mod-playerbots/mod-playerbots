@@ -62,6 +62,7 @@ public:
     RogueTriggerFactoryInternal()
     {
         creators["kick"] = &RogueTriggerFactoryInternal::kick;
+        creators["riposte"] = &RogueTriggerFactoryInternal::riposte;
         creators["rupture"] = &RogueTriggerFactoryInternal::rupture;
         creators["slice and dice"] = &RogueTriggerFactoryInternal::slice_and_dice;
         creators["hunger for blood"] = &RogueTriggerFactoryInternal::hunger_for_blood;
@@ -82,6 +83,7 @@ public:
 
 private:
     static Trigger* kick(PlayerbotAI* botAI) { return new KickInterruptSpellTrigger(botAI); }
+    static Trigger* riposte(PlayerbotAI* botAI) { return new RiposteAvailableTrigger(botAI); }
     static Trigger* rupture(PlayerbotAI* botAI) { return new RuptureTrigger(botAI); }
     static Trigger* slice_and_dice(PlayerbotAI* botAI) { return new SliceAndDiceTrigger(botAI); }
     static Trigger* hunger_for_blood(PlayerbotAI* botAI) { return new HungerForBloodTrigger(botAI); }
