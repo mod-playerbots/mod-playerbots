@@ -96,7 +96,7 @@ bool UseMeetingStoneAction::SummonGroupMembers(Player* master, GameObject* stone
             continue;
 
         bool far = member->GetMapId() != stone->GetMapId() ||
-            ServerFacade::instance().GetDistance2d(member, stone) > sPlayerbotAIConfig.reactDistance;
+            ServerFacade::instance().GetDistance2d(member, stone) > sPlayerbotAIConfig.farDistance;
         if (!far)
             continue;
 
