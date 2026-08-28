@@ -104,7 +104,7 @@ const Position SHAHRAZ_TRANSITION_POSITION = { 951.327f, 179.550f, 192.550f };
 const Position SHAHRAZ_RANGED_POSITION     = { 935.267f, 175.459f, 192.821f };
 std::unordered_map<ObjectGuid, TankPositionState> shahrazTankStep;
 
-TankPositionState GetShahrazTankPositionState(PlayerbotAI* botAI, Player* bot)
+TankPositionState GetShahrazTankPositionState(Player* bot)
 {
     Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)

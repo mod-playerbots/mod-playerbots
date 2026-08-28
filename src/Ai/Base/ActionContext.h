@@ -29,7 +29,6 @@
 #include "EmoteAction.h"
 #include "FishingAction.h"
 #include "FollowActions.h"
-#include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "GiveItemAction.h"
 #include "GreetAction.h"
@@ -48,6 +47,7 @@
 #include "NewRpgOutdoorPvP.h"
 #include "NonCombatActions.h"
 #include "OutfitAction.h"
+#include "PetsAction.h"
 #include "PositionAction.h"
 #include "PullActions.h"
 #include "RandomBotUpdateAction.h"
@@ -331,7 +331,6 @@ private:
     static Action* pull_end(PlayerbotAI* botAI) { return new PullEndAction(botAI); }
     static Action* return_to_pull_position(PlayerbotAI* botAI) { return new ReturnToPullPositionAction(botAI); }
     static Action* reach_pull(PlayerbotAI* botAI) { return new ReachPullAction(botAI); }
-    static Action* mana_tap(PlayerbotAI* botAI) { return new CastManaTapAction(botAI); }
     static Action* end_pull(PlayerbotAI* botAI) { return new ChangeCombatStrategyAction(botAI, "-pull"); }
     static Action* cancel_channel(PlayerbotAI* botAI) { return new CancelChannelAction(botAI); }
 
