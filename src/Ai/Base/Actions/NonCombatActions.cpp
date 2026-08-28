@@ -7,6 +7,8 @@
 #include "NonCombatActions.h"
 #include "Event.h"
 #include "Playerbots.h"
+#include <algorithm>
+#include <cmath>
 
 namespace
 {
@@ -52,19 +54,14 @@ bool DrinkAction::Execute(Event event)
         bot->SetStandState(UNIT_STAND_STATE_SIT);
         botAI->InterruptSpell();
 
-        // float hp = bot->GetHealthPercent();
-        float mp = bot->GetPowerPct(POWER_MANA);
-        float p = mp;
-        float delay;
-
-        if (!bot->InBattleground())
-            delay = 18000.0f * (100 - p) / 100.0f;
-        else
-            delay = 12000.0f * (100 - p) / 100.0f;
+        // 25990 restores 5% per 2s tick. This delay is a fallback because UpdateAI releases the bot at full mana.
+        float const delay =
+            std::max(1.0f, std::ceil((100.0f - bot->GetPowerPct(POWER_MANA)) / 5.0f)) * 2 * IN_MILLISECONDS;
 
         botAI->SetNextCheckDelay(delay);
 
         bot->AddAura(25990, bot);
+        botAI->BeginRestRecovery(RestRecoveryObjective::Mana);
         return true;
         // return botAI->CastSpell(24707, bot);
     }
@@ -112,19 +109,14 @@ bool EatAction::Execute(Event event)
         bot->SetStandState(UNIT_STAND_STATE_SIT);
         botAI->InterruptSpell();
 
-        float hp = bot->GetHealthPct();
-        // float mp = bot->HasMana() ? bot->GetPowerPercent() : 0.f;
-        float p = hp;
-        float delay;
-
-        if (!bot->InBattleground())
-            delay = 18000.0f * (100 - p) / 100.0f;
-        else
-            delay = 12000.0f * (100 - p) / 100.0f;
+        // 25990 restores 5% per 2s tick. This delay is a fallback because UpdateAI releases the bot at full health.
+        float const delay =
+            std::max(1.0f, std::ceil((100.0f - bot->GetHealthPct()) / 5.0f)) * 2 * IN_MILLISECONDS;
 
         botAI->SetNextCheckDelay(delay);
 
         bot->AddAura(25990, bot);
+        botAI->BeginRestRecovery(RestRecoveryObjective::Health);
         return true;
     }
 

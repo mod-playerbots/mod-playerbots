@@ -63,6 +63,7 @@ constexpr uint32 SPELL_TITAN_GRIP = 49152;
 constexpr uint32 SPELL_DK_FROST_PRESENCE = 48263;
 constexpr uint32 SPELL_GRAVITY_LAPSE_TK = 39432;
 constexpr uint32 SPELL_GRAVITY_LAPSE_MGT = 44226;
+constexpr uint32 SPELL_FOOD_CHEAT_RECOVERY = 25990;
 }
 
 std::vector<std::string> PlayerbotAI::dispel_whitelist = {
@@ -242,6 +243,28 @@ PlayerbotAI::~PlayerbotAI()
         PlayerbotsMgr::instance().RemovePlayerBotData(bot->GetGUID(), true);
 }
 
+void PlayerbotAI::UpdateRestRecovery()
+{
+    if (restRecoveryObjective == RestRecoveryObjective::None)
+        return;
+
+    bool const recoveryComplete =
+        (restRecoveryObjective == RestRecoveryObjective::Health && bot->IsFullHealth()) ||
+        (restRecoveryObjective == RestRecoveryObjective::Mana &&
+         bot->GetPower(POWER_MANA) >= bot->GetMaxPower(POWER_MANA));
+    if (recoveryComplete)
+    {
+        restRecoveryObjective = RestRecoveryObjective::None;
+        nextAICheckDelay = 0;
+        bot->RemoveAurasDueToSpell(SPELL_FOOD_CHEAT_RECOVERY);
+        bot->SetStandState(UNIT_STAND_STATE_STAND);
+        return;
+    }
+
+    if (!nextAICheckDelay)
+        restRecoveryObjective = RestRecoveryObjective::None;
+}
+
 void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 {
     // Handle the AI check delay
@@ -268,6 +291,8 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         if (HasCheat(BotCheatMask::power) && bot->getPowerType() != POWER_MANA)
             bot->SetPower(bot->getPowerType(), bot->GetMaxPower(bot->getPowerType()));
     }
+
+    UpdateRestRecovery();
 
     AllowActivity();
 
@@ -870,6 +895,7 @@ void PlayerbotAI::Reset(bool full)
     currentEngine = engines[BOT_STATE_NON_COMBAT];
     currentState = BOT_STATE_NON_COMBAT;
     nextAICheckDelay = 0;
+    restRecoveryObjective = RestRecoveryObjective::None;
     whispers.clear();
 
     aiObjectContext->GetValue<Unit*>("old target")->Set(nullptr);

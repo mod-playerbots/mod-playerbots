@@ -77,6 +77,13 @@ enum BotState
     BOT_STATE_MAX
 };
 
+enum class RestRecoveryObjective
+{
+    None,
+    Health,
+    Mana
+};
+
 bool IsRealPlayer(Player* player);
 bool IsSelfBot(Player* player);
 bool IsAlliance(uint8 race);
@@ -391,6 +398,7 @@ public:
 
     void UpdateAI(uint32 elapsed, bool minimal = false) override;
     void UpdateAIInternal(uint32 elapsed, bool minimal = false) override;
+    void BeginRestRecovery(RestRecoveryObjective objective) { restRecoveryObjective = objective; }
 
     std::string const HandleRemoteCommand(std::string const command);
     void HandleCommand(uint32 type, std::string const text, Player* fromPlayer);
@@ -615,6 +623,8 @@ private:
     static void _fillGearScoreData(Player* player, Item* item, std::vector<uint32>* gearScore, uint32& twoHandScore,
                                    bool mixed = false);
     bool IsTellAllowed(PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
+    void UpdateRestRecovery();
+    RestRecoveryObjective restRecoveryObjective = RestRecoveryObjective::None;
     void UpdateAIGroupMaster();
     Item* FindItemInInventory(std::function<bool(ItemTemplate const*)> checkItem) const;
     void HandleCommands();
