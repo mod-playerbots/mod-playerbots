@@ -9,6 +9,7 @@
 
 #include "MovementActions.h"
 
+class GameObject;
 class Player;
 class PlayerbotAI;
 
@@ -31,6 +32,7 @@ public:
     UseMeetingStoneAction(PlayerbotAI* botAI) : SummonAction(botAI, "use meeting stone") {}
 
     bool Execute(Event event) override;
+    bool SummonGroupMembers(Player* master, GameObject* stone);
 };
 
 #endif

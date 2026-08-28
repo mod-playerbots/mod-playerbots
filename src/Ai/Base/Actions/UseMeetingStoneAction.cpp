@@ -9,11 +9,17 @@
 #include "Event.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "Group.h"
 #include "NearestGameObjects.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotMgr.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
+#include "ServerFacade.h"
+
+#include <algorithm>
+#include <vector>
 
 bool UseMeetingStoneAction::Execute(Event event)
 {
@@ -25,12 +31,6 @@ bool UseMeetingStoneAction::Execute(Event event)
     p.rpos(0);
     ObjectGuid guid;
     p >> guid;
-
-    if (master->GetTarget() && master->GetTarget() != bot->GetGUID())
-        return false;
-
-    if (!master->GetTarget() && master->GetGroup() != bot->GetGroup())
-        return false;
 
     if (master->IsBeingTeleported())
         return false;
@@ -54,7 +54,91 @@ bool UseMeetingStoneAction::Execute(Event event)
     if (!goInfo || goInfo->entry != 179944)
         return false;
 
-    return Teleport(master, bot, false);
+    if (master->GetTarget() == bot->GetGUID())
+        return Teleport(master, bot, false);
+
+    if (master->GetGroup() != bot->GetGroup())
+        return false;
+
+    return SummonGroupMembers(master, gameObject);
+}
+
+bool UseMeetingStoneAction::SummonGroupMembers(Player* master, GameObject* stone)
+{
+    if (!sPlayerbotAIConfig.botsAssistMeetingStone)
+        return false;
+
+    if (bot->IsInCombat())
+        return false;
+
+    if (bot->GetMapId() != stone->GetMapId() || bot->GetDistance(stone) > sPlayerbotAIConfig.sightDistance)
+        return false;
+
+    uint32 minLevel = stone->GetGOInfo()->meetingstone.minLevel;
+    if (bot->GetLevel() < minLevel)
+        return false;
+
+    Group* group = master->GetGroup();
+    if (!group)
+        return false;
+
+    std::vector<Player*> farMembers;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == master || member == bot)
+            continue;
+
+        if (member->IsBeingTeleported())
+            continue;
+
+        if (member->GetLevel() < minLevel)
+            continue;
+
+        bool far = member->GetMapId() != stone->GetMapId() ||
+            ServerFacade::instance().GetDistance2d(member, stone) > sPlayerbotAIConfig.reactDistance;
+        if (!far)
+            continue;
+
+        farMembers.push_back(member);
+    }
+
+    if (farMembers.empty())
+        return false;
+
+    std::sort(farMembers.begin(), farMembers.end(), [](Player* a, Player* b)
+    {
+        return a->GetGUID() < b->GetGUID();
+    });
+
+    uint32 botCount = 0;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && sPlayerbotsMgr.GetPlayerbotAI(member))
+            botCount++;
+    }
+
+    uint32 botIndex = 0;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !sPlayerbotsMgr.GetPlayerbotAI(member))
+            continue;
+        if (member == bot)
+            break;
+        botIndex++;
+    }
+
+    bool summoned = false;
+    for (uint32 i = botIndex; i < farMembers.size(); i += botCount)
+    {
+        bot->SetTarget(farMembers[i]->GetGUID());
+        stone->Use(bot);
+        summoned = true;
+    }
+
+    return summoned;
 }
 
 bool SummonAction::Execute(Event /*event*/)

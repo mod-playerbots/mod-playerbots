@@ -236,6 +236,10 @@ AiPlayerbot.ReviveBotWhenSummoned = 1
 # Default: 1 (enabled)
 AiPlayerbot.BotRepairWhenSummon = 1
 
+# Enable/Disable bots assisting with meeting stone summons for other party members
+# Default: 1 (enabled)
+AiPlayerbot.BotsAssistMeetingStone = 1
+
 #
 #
 ####################################################################################################
