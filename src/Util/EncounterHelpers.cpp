@@ -45,9 +45,9 @@ bool GetTankPositionStep(
     float const toPosX = position.GetPositionX() - botX;
     float const toPosY = position.GetPositionY() - botY;
 
-    // Move backwards only when the bot (1) has aggro on the mob it is tanking, (2) is in melee
-    // range of the mob, and (3) the destination is on the opposite side of the bot from the mob.
-    // Generally, the entire movement would be gated on (1) and (2) anyway, but there are some
+    // Move backwards only when (1) the bot has aggro on the mob it is tanking, (2) the bot is in
+    // melee range of the mob, and (3) the destination is on the opposite side of the bot from the
+    // mob. Generally, the entire movement would be gated on (1) and (2) anyway, but there are some
     // exceptions and thus the checks are made again in the helper.
     backwards = false;
     if (facing && facing->GetVictim() == bot && bot->IsWithinMeleeRange(facing))
