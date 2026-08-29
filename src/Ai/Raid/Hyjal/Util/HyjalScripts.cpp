@@ -131,7 +131,7 @@ public:
 
         constexpr uint32 TRAIL_DURATION = 18000;
         trail.erase(std::remove_if(trail.begin(), trail.end(),
-            [now](const DoomfireTrailData& d)
+            [now](DoomfireTrailData const& d)
             {
                 return getMSTimeDiff(d.recordTime, now) > TRAIL_DURATION;
             }), trail.end());

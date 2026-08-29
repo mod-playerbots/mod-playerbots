@@ -29,8 +29,8 @@ private:
     PlayerbotSpellRepository() = default;
     ~PlayerbotSpellRepository() = default;
 
-    PlayerbotSpellRepository(const PlayerbotSpellRepository&) = delete;
-    PlayerbotSpellRepository& operator=(const PlayerbotSpellRepository&) = delete;
+    PlayerbotSpellRepository(PlayerbotSpellRepository const&) = delete;
+    PlayerbotSpellRepository& operator=(PlayerbotSpellRepository const&) = delete;
 
     PlayerbotSpellRepository(PlayerbotSpellRepository&&) = delete;
     PlayerbotSpellRepository& operator=(PlayerbotSpellRepository&&) = delete;

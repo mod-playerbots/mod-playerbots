@@ -49,7 +49,7 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
     // After first three channelers are dead, wait for Magtheridon to activate
     if (!channelerTarget)
     {
-        const Position& position = WAITING_FOR_MAGTHERIDON_POSITION;
+        Position const& position = WAITING_FOR_MAGTHERIDON_POSITION;
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
             return MoveTo(MAGTHERIDON_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -80,7 +80,7 @@ bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event /*event*/)
 
     if (channelerDiamond->GetVictim() == bot)
     {
-        const Position& position = NW_CHANNELER_TANK_POSITION;
+        Position const& position = NW_CHANNELER_TANK_POSITION;
         const float distanceToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -116,7 +116,7 @@ bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event /*event*/
 
     if (channelerTriangle->GetVictim() == bot)
     {
-        const Position& position = NE_CHANNELER_TANK_POSITION;
+        Position const& position = NE_CHANNELER_TANK_POSITION;
         const float distanceToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -334,7 +334,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
 
     if (magtheridon->GetVictim() == bot && bot->GetHealthPct() > 50.0f)
     {
-        const Position& position = MAGTHERIDON_TANK_POSITION;
+        Position const& position = MAGTHERIDON_TANK_POSITION;
         const float distanceToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -450,7 +450,7 @@ bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon)
     return false;
 }
 
-bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeInfo)
+bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(CubeInfo const& cubeInfo)
 {
     auto timerIt = blastNovaTimer.find(bot->GetMap()->GetInstanceId());
     if (timerIt == blastNovaTimer.end() ||
@@ -466,7 +466,7 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeI
 
     if (Position safePos; FindSafePositionNearCube(cubeInfo, safeWaitDistance, safePos))
     {
-        botAI->InterruptSpell();
+        bot->CastStop();
         return MoveTo(MAGTHERIDON_MAP_ID, safePos.GetPositionX(), safePos.GetPositionY(),
                       bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
@@ -476,7 +476,7 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeI
 }
 
 bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
-    const CubeInfo& cubeInfo, float preferredDistance, Position& outPos)
+    CubeInfo const& cubeInfo, float preferredDistance, Position& outPos)
 {
     constexpr float angleStep = M_PI / 8.0f;
 
@@ -507,7 +507,7 @@ bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
 }
 
 bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(
-    const CubeInfo& cubeInfo, GameObject* cube)
+    CubeInfo const& cubeInfo, GameObject* cube)
 {
     constexpr float interactDistance = 1.0f;
     const float cubeDist = bot->GetDistance2d(cubeInfo.x, cubeInfo.y);
@@ -526,7 +526,7 @@ bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(
         return true;
     }
 
-    botAI->InterruptSpell();
+    bot->CastStop();
     return MoveTo(cube, interactDistance, MovementPriority::MOVEMENT_FORCED);
 }
 
@@ -534,7 +534,7 @@ bool MagtheridonMoveOutOfDebrisAction::Execute(Event /*event*/)
 {
     if (Position safePos; FindSafePosition(safePos))
     {
-        botAI->InterruptSpell();
+        bot->CastStop();
         return MoveTo(MAGTHERIDON_MAP_ID, safePos.GetPositionX(), safePos.GetPositionY(),
                       bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);

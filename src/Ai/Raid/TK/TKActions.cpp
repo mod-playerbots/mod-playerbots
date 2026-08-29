@@ -91,7 +91,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(
 {
     if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
     {
-        const Position& target =
+        Position const& target =
             (locationIndex == PLATFORM_0_IDX || locationIndex == PLATFORM_3_IDX)
                 ? PLATFORM_POSITIONS[0] : PLATFORM_POSITIONS[2];
 
@@ -114,7 +114,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(
 {
     if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
     {
-        const Position& target =
+        Position const& target =
             (locationIndex == PLATFORM_0_IDX || locationIndex == PLATFORM_1_IDX)
                 ? PLATFORM_POSITIONS[1] : PLATFORM_POSITIONS[3];
 
@@ -152,7 +152,7 @@ bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event /*event*/)
 
     if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
     {
-        const Position& target = PLATFORM_POSITIONS[locationIndex];
+        Position const& target = PLATFORM_POSITIONS[locationIndex];
 
         if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) > 5.0f)
         {
@@ -186,7 +186,7 @@ bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event /*event*/)
 
     if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
     {
-        const Position& groundTarget = GROUND_POSITIONS[locationIndex];
+        Position const& groundTarget = GROUND_POSITIONS[locationIndex];
 
         constexpr float distRangedFromTarget = 8.0f;
         constexpr float distTankFromTarget = 20.0f;
@@ -252,8 +252,8 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 
             if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
             {
-                const Position& groundTarget = GROUND_POSITIONS[locationIndex];
-                const Position& center = ALAR_POINT_MIDDLE;
+                Position const& groundTarget = GROUND_POSITIONS[locationIndex];
+                Position const& center = ALAR_POINT_MIDDLE;
                 float dx = center.GetPositionX() - groundTarget.GetPositionX();
                 float dy = center.GetPositionY() - groundTarget.GetPositionY();
                 float distToCenter =
@@ -346,7 +346,7 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
         if (bot->GetDistance2d(firstEmber) < safeDistance)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             return MoveAway(firstEmber, safeDistance - bot->GetDistance2d(firstEmber));
         }
 
@@ -359,7 +359,7 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
         if (bot->GetDistance2d(secondEmber) < safeDistance)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             return MoveAway(secondEmber, safeDistance - bot->GetDistance2d(secondEmber));
         }
 
@@ -387,7 +387,7 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
         GetClosestPlatformAndGround(bot->GetPosition(), closestPlatform, ground);
 
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         return JumpTo(TEMPEST_KEEP_MAP_ID, ground.GetPositionX(), ground.GetPositionY(),
                       ground.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
@@ -456,7 +456,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
         GetClosestPlatformAndGround(bot->GetPosition(), closestPlatform, ground);
 
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         return JumpTo(TEMPEST_KEEP_MAP_ID, ground.GetPositionX(), ground.GetPositionY(),
                       ground.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
@@ -524,7 +524,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
         {
             Position safestPos = FindSafestNearbyPosition(bot, flamePatches, hazardRadius);
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             return MoveTo(TEMPEST_KEEP_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                           safestPos.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_FORCED, true, false);
@@ -545,7 +545,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
         if (currentDistance < safeDistance)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             return MoveAway(alar, safeDistance - currentDistance);
         }
     }
@@ -569,7 +569,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
 bool AlarReturnToRoomCenterAction::Execute(Event /*event*/)
 {
     constexpr float distFromCenter = 45.0f;
-    const Position& center = ALAR_ROOM_CENTER;
+    Position const& center = ALAR_ROOM_CENTER;
     if (AI_VALUE(Unit*, "current target") == nullptr &&
         bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > distFromCenter)
     {
@@ -615,7 +615,7 @@ bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
     if (!voidReaver)
         return false;
 
-    const Position& position = VOID_REAVER_TANK_POSITION;
+    Position const& position = VOID_REAVER_TANK_POSITION;
 
     float dX = position.GetPositionX() - bot->GetPositionX();
     float dY = position.GetPositionY() - bot->GetPositionY();
@@ -637,7 +637,7 @@ bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
 bool VoidReaverUseAggroDumpAbilityAction::Execute(Event /*event*/)
 {
     botAI->Reset();
-    static const std::array<const char*, 6> spells =
+    static const std::array<char const*, 6> spells =
     {
         "divine protection",
         "fade",
@@ -646,7 +646,7 @@ bool VoidReaverUseAggroDumpAbilityAction::Execute(Event /*event*/)
         "soulshatter",
         "vanish",
     };
-    for (const char* spell : spells)
+    for (char const* spell : spells)
     {
         if (botAI->CanCastSpell(spell, bot) &&
             botAI->CastSpell(spell, bot))
@@ -781,7 +781,7 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     }
 
     it->second.erase(std::remove_if(it->second.begin(), it->second.end(),
-        [currentTime](const ArcaneOrbData& orb) {
+        [currentTime](ArcaneOrbData const& orb) {
             return getMSTimeDiff(orb.castTime, currentTime) > orbDuration;
         }), it->second.end());
 
@@ -789,7 +789,7 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     {
         constexpr uint32 minInterval = 0;
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         return FleePosition(fleeDest, safeDistance, minInterval);
     }
 
@@ -948,7 +948,7 @@ std::vector<Player*> HighAstromancerSolarianTargetSolariumPriestsAction::GetMele
 }
 
 Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsToBots(
-    const std::pair<Unit*, Unit*>& priestsPair, const std::vector<Player*>& meleeMembers)
+    std::pair<Unit*, Unit*> const& priestsPair, std::vector<Player*> const& meleeMembers)
 {
     if (!priestsPair.first || !priestsPair.second || meleeMembers.empty())
         return nullptr;
@@ -1073,7 +1073,7 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event /*event*/)
 
     if (sanguinar->GetVictim() == bot && bot->IsWithinMeleeRange(sanguinar))
     {
-        const Position& position = SANGUINAR_TANK_POSITION;
+        Position const& position = SANGUINAR_TANK_POSITION;
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -1220,7 +1220,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
         if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
                           false, true, MovementPriority::MOVEMENT_FORCED, true, false);
         }
@@ -1281,7 +1281,7 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event /*e
 
     if (telonicus->GetVictim() == bot && bot->IsWithinMeleeRange(telonicus))
     {
-        const Position& position = TELONICUS_TANK_POSITION;
+        Position const& position = TELONICUS_TANK_POSITION;
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -1303,7 +1303,7 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event /*e
 
 bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/)
 {
-    const Position* movePosition = nullptr;
+    Position const* movePosition = nullptr;
     if (botAI->IsAssistHealOfIndex(bot, 0, true))
     {
         movePosition = &ADVISOR_HEAL_POSITION;
@@ -1428,14 +1428,14 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
     if (!kaelthas)
         return false;
 
-    static const std::array<const char*, 3> advisorNames =
+    static const std::array<char const*, 3> advisorNames =
     {
         "grand astromancer capernian",
         "master engineer telonicus",
         "lord sanguinar"
     };
 
-    for (const char* name : advisorNames)
+    for (char const* name : advisorNames)
     {
         Unit* advisor = AI_VALUE2(Unit*, "find target", name);
         if (!advisor)
@@ -1812,7 +1812,7 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event /*event*/)
 
     if (kaelthas->GetVictim() == bot && bot->IsWithinMeleeRange(kaelthas))
     {
-        const Position& position = KAELTHAS_TANK_POSITION;
+        Position const& position = KAELTHAS_TANK_POSITION;
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -1999,14 +1999,14 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)
     }
     else
     {
-        static const std::array<const char*, 4> spells =
+        static const std::array<char const*, 4> spells =
         {
             "hamstring",
             "wing clip",
             "shiv",
             "stormstrike"
         };
-        for (const char* spell : spells)
+        for (char const* spell : spells)
         {
             if (botAI->CanCastSpell(spell, mcTarget))
                 return botAI->CastSpell(spell, mcTarget);
@@ -2025,7 +2025,7 @@ bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event /*event*/)
 
     if (!kaelthas->HasAura(SPELL_SHOCK_BARRIER))
     {
-        static const std::array<const char*, 8> spells =
+        static const std::array<char const*, 8> spells =
         {
             "bash",
             "counterspell",
@@ -2036,7 +2036,7 @@ bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event /*event*/)
             "silencing shot",
             "wind shear",
         };
-        for (const char* spell : spells)
+        for (char const* spell : spells)
         {
             if (botAI->CanCastSpell(spell, kaelthas))
                 return botAI->CastSpell(spell, kaelthas);
