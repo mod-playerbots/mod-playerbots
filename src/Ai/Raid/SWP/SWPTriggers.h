@@ -62,11 +62,11 @@ public:
     bool IsActive() override;
 };
 
-class KalecgosBossRequiresTankRotationTrigger : public Trigger
+class KalecgosRequiresTankRotationTrigger : public Trigger
 {
 public:
-    KalecgosBossRequiresTankRotationTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kalecgos boss requires tank rotation") {}
+    KalecgosRequiresTankRotationTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kalecgos requires tank rotation") {}
     bool IsActive() override;
 };
 

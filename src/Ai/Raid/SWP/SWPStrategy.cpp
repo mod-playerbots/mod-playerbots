@@ -35,7 +35,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kalecgos pulling boss", {
         NextAction("kalecgos misdirect boss to main tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("kalecgos boss requires tank rotation", {
+    triggers.push_back(new TriggerNode("kalecgos requires tank rotation", {
         NextAction("kalecgos surface tank position dragon", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kalecgos spectral rift is open", {
