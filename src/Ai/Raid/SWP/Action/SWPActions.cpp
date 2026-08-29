@@ -73,7 +73,9 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     if (!IsMechanicTrackerBot(bot, SWP_MAP_ID))
         return reset;
 
-    reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+    if (!AI_VALUE2(bool, "combat", "self target"))
+        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+
     reset |= kalecgosEncounterStates.erase(instanceId) > 0;
     reset |= brutallusEncounterStates.erase(instanceId) > 0;
     reset |= felmystEncounterStates.erase(instanceId) > 0;

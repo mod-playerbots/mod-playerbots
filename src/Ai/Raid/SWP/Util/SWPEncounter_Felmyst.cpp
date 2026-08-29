@@ -909,7 +909,7 @@ bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst)
         return false;
 
     // HP threshold to preserve melee targeting during the initial airborne pull
-    if (felmyst->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT)
+    if (felmyst->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return false;
 
     Position destination;

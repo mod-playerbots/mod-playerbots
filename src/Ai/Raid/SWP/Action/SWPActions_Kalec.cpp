@@ -10,7 +10,6 @@
 #include "PlayerbotTextMgr.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPSharedConstants.h"
-#include <algorithm>
 #include <cmath>
 #include <map>
 
@@ -76,29 +75,16 @@ bool KalecgosSurfaceTankPositionDragonAction::Execute(Event event)
     if (AI_VALUE(Unit*, "current target") != kalecgos)
         return Attack(kalecgos);
 
-    Position const& position = KALECGOS_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-
-    if (distToPosition > 3.0f)
+    // This action also runs for a tank that does not have aggro on Kalecgos, so whether to move
+    // backwards is kicked to GetTankPositionStep(), which makes backwards movement contingent on
+    // the bot being Kalecgos's victim.
+    constexpr float arrivalDist = 3.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (GetTankPositionStep(
+            bot, KALECGOS_TANK_POSITION, arrivalDist, kalecgos, moveX, moveY, backwards))
     {
-        float const posX = position.GetPositionX();
-        float const posY = position.GetPositionY();
-        float const botX = bot->GetPositionX();
-        float const botY = bot->GetPositionY();
-
-        float const toPosX = posX - botX;
-        float const toPosY = posY - botY;
-        float const toBossX = kalecgos->GetPositionX() - botX;
-        float const toBossY = kalecgos->GetPositionY() - botY;
-
-        bool const backwards = kalecgos->GetVictim() == bot &&
-            bot->IsWithinMeleeRange(kalecgos) && (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-        float const maxMoveDist = backwards ? 2.25f : 3.5f;
-        float const moveDist = std::min(maxMoveDist, distToPosition);
-        float const moveX = botX + (toPosX / distToPosition) * moveDist;
-        float const moveY = botY + (toPosY / distToPosition) * moveDist;
-
         return MoveTo(
             SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_COMBAT, true, backwards);

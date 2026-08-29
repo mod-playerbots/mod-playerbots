@@ -22,14 +22,112 @@
 #include "ShamanActions.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
+#include <algorithm>
+#include <cmath>
 #include <list>
 
 namespace EncounterHelpers
-
 {
 
-// Functions to mark targets with raid target icons
-// Note that these functions do not allow the player to change the icon during the encounter
+// For validating ground and collision in connection with issuing incremental movement. The caller
+// gives a destination and how far to travel towards it per tick. The helper projects that step,
+// checks whether the bot can actually take it, and returns where it lands. The returned stepZ is
+// snapped to the ground, so a MoveTo() using this helper should pass stepZ rather than the bot's Z.
+bool CanTakeStepTowards(
+    Player* bot, float destinationX, float destinationY, float moveDist,
+    float& stepX, float& stepY, float& stepZ)
+{
+    constexpr float minMoveDistance = 0.5f;
+
+    float const distance = bot->GetExactDist2d(destinationX, destinationY);
+    if (distance < minMoveDistance)
+        return false;
+
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const botZ = bot->GetPositionZ();
+
+    float const ratio = std::min(moveDist, distance) / distance;
+    float candidateX = botX + (destinationX - botX) * ratio;
+    float candidateY = botY + (destinationY - botY) * ratio;
+    float candidateZ = bot->GetMapWaterOrGroundLevel(candidateX, candidateY, botZ);
+
+    if (candidateZ <= INVALID_HEIGHT)
+        candidateZ = botZ;
+
+    // The 9th parameter of CanReachPositionAndGetValidCoords(), failOnSlopes, returns false for a
+    // non-walkable slope, but in my experience, walking downhill is always possible, and thus the
+    // check needlessly rejects descents. This variable gets around that problem.
+    bool const failOnSlopes = candidateZ > botZ;
+
+    // This helper will return false on collision rather than clamping to the contact point so that
+    // the caller can try a different path. Clamping is useless for avoidance since the bot will die
+    // just the same if it is in the middle of a hazard vs. halfway out and returning true.
+    float const requestedX = candidateX;
+    float const requestedY = candidateY;
+
+    if (!bot->GetMap()->CanReachPositionAndGetValidCoords(
+            bot, botX, botY, botZ, candidateX, candidateY, candidateZ, true, failOnSlopes))
+    {
+        return false;
+    }
+
+    constexpr float truncationTolerance = 1.0f;
+    if (std::hypot(candidateX - requestedX, candidateY - requestedY) > truncationTolerance)
+        return false;
+
+    stepX = candidateX;
+    stepY = candidateY;
+    stepZ = candidateZ;
+    return true;
+}
+
+// Calculate incremental movement to a tank position. No ground or collision is validated, unlike
+// CanTakeStepTowards(). The Z position passed for the MoveTo() action using this helper should
+// use the bot's Z, not the position's. Returns false once the bot is within arrivalDist.
+bool GetTankPositionStep(
+    Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
+    float& stepY, bool& backwards)
+{
+    float const distToPosition = bot->GetExactDist2d(position);
+    if (distToPosition <= arrivalDist)
+        return false;
+
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const toPosX = position.GetPositionX() - botX;
+    float const toPosY = position.GetPositionY() - botY;
+
+    // Move backwards only when the bot (1) has aggro on the mob it is tanking, (2) is in melee
+    // range of the mob, and (3) the destination is on the opposite side of the bot from the mob.
+    // Generally, the entire movement would be gated on (1) and (2) anyway, but there are some
+    // exceptions and thus the checks are made again in the helper.
+    backwards = false;
+    if (facing && facing->GetVictim() == bot && bot->IsWithinMeleeRange(facing))
+    {
+        float const toFacingX = facing->GetPositionX() - botX;
+        float const toFacingY = facing->GetPositionY() - botY;
+        backwards = (toPosX * toFacingX + toPosY * toFacingY) < 0.0f;
+    }
+
+    // Default time between AI ticks is 100ms, and base movement speed for players is 7y/s forwards
+    // and 4.5y/s backwards (i.e., 0.7y/0.45y per tick). There is not really benefit to having the
+    // step be farther than the distance that can be covered in a single tick. But this helper
+    // uses 5x tick distance to account for possible speed boosts, latency, and longer configured
+    // AI ticks. In my experience, this is plenty short enough to navigate poor terrain.
+    constexpr float backwardDistancePerStep = 2.25f;
+    constexpr float forwardDistancePerStep = 3.5f;
+    float const maxMoveDist = backwards ? backwardDistancePerStep : forwardDistancePerStep;
+    float const ratio = std::min(maxMoveDist, distToPosition) / distToPosition;
+
+    stepX = botX + toPosX * ratio;
+    stepY = botY + toPosY * ratio;
+
+    return true;
+}
+
+// Functions to mark targets with raid target icons.
+// Note that these functions do not allow the player to change the icon during the encounter.
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
 {
     if (!target)
@@ -89,6 +187,8 @@ bool MarkTargetWithMoon(Player* bot, Unit* target)
     return MarkTargetWithIcon(bot, target, RtiTargetValue::moonIndex);
 }
 
+// For clearing marks outside of combat so bots don't Leeroy on sight. This is best used when gated
+// behind an out of combat check (such as with IsInCombatValue).
 bool ClearTargetIcon(Player* bot, uint8 iconId)
 {
     Group* group = bot->GetGroup();
@@ -202,7 +302,7 @@ Player* GetGroupAssistTank(Player* bot, uint8 index)
     return nullptr;
 }
 
-// Return the first matching alive unit from PossibleTargetsValue within sightDistance from config
+// Return the first matching alive unit from PossibleTargetsValue within .sightDistance from config
 // Note that PossibleTargetsValue picks up only hostile units
 Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
 {
@@ -219,7 +319,8 @@ Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
 }
 
 // Return the nearest alive player (human or bot) within the specified radius. Distance is
-// measured by GetExactDist2d(), which does not take into account player hitboxes (1.5y).
+// measured by GetExactDist2d(), which does not take into account either player's CombatReach
+// (i.e., their hitboxes), which are 1.5y for all races (or 1.95y with Bloodlust/Heroism active).
 Player* GetNearestPlayerInRadius(Player* bot, float radius)
 {
     Group* group = bot->GetGroup();
@@ -246,7 +347,7 @@ Player* GetNearestPlayerInRadius(Player* bot, float radius)
     return nearestPlayer;
 }
 
-// Grid search for dynamic objects for methods to avoid dynobj-based AoE hazards
+// Grid search for dynamic objects for methods to avoid dynobj-based AoE hazards.
 std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId)
 {
     std::list<WorldObject*> objs;
@@ -273,7 +374,7 @@ std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius,
 }
 
 // This function is primarily for use in multipliers during encounters where it is desirable
-// for bots to save cooldowns for particular phases (or for a bit after the pull)
+// for bots to save cooldowns for particular phases (or for a bit after the pull).
 bool IsDpsCooldownAction(Player* bot, Action* action)
 {
     if (bot->getClass() == CLASS_SHAMAN && // Before dps gate to capture Resto
@@ -399,7 +500,7 @@ bool IsTauntAction(Player* bot, Action* action)
     }
 }
 
-// These abilities can be particularly problematic on the pull for a council-type boss
+// These abilities can be particularly problematic on the pull for a council-type boss.
 bool IsAoeThreatAction(Player* bot, Action* action)
 {
     if (!PlayerbotAI::IsTank(bot))

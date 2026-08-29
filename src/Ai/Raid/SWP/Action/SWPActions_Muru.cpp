@@ -452,27 +452,16 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
     if (voidSentinel->GetVictim() != bot || !bot->IsWithinMeleeRange(voidSentinel))
         return false;
 
-    Position const& tankPosition = GetAssignedVoidSentinelTankPosition(voidSentinel);
-    float const distToPosition = bot->GetExactDist2d(tankPosition);
-
-    if (distToPosition <= 2.0f)
+    constexpr float arrivalDist = 2.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetTankPositionStep(
+            bot, GetAssignedVoidSentinelTankPosition(voidSentinel), arrivalDist, voidSentinel,
+            moveX, moveY, backwards))
+    {
         return false;
-
-    float const posX = tankPosition.GetPositionX();
-    float const posY = tankPosition.GetPositionY();
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-
-    float const toPosX = posX - botX;
-    float const toPosY = posY - botY;
-    float const toBossX = voidSentinel->GetPositionX() - botX;
-    float const toBossY = voidSentinel->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
+    }
 
     return MoveTo(
         SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
