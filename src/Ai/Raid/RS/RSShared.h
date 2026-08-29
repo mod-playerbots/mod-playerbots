@@ -56,7 +56,7 @@ inline bool RsReleaseIfFollowing(Player* bot)
         return false;
 
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->CastStop();
     if (bot->GetTarget())
         bot->SetTarget(ObjectGuid::Empty);
     return true;

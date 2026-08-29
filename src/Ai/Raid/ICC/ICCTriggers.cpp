@@ -331,7 +331,7 @@ bool IccPutricideGrowingOozePuddleTrigger::IsActive()
     if (!boss)
         return false;
 
-    const GuidVector& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+    GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
     for (auto const& npc : npcs)
     {
         if (Unit* unit = botAI->GetUnit(npc))

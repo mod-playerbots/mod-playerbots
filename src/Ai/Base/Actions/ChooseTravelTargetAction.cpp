@@ -963,8 +963,8 @@ bool ChooseTravelTargetAction::needForQuest(Unit* target)
     return false;
 }
 
-bool ChooseTravelTargetAction::needItemForQuest(uint32 itemId, const Quest* questTemplate,
-                                                const QuestStatusData* questStatus)
+bool ChooseTravelTargetAction::needItemForQuest(uint32 itemId, Quest const* questTemplate,
+                                                QuestStatusData const* questStatus)
 {
     for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
     {

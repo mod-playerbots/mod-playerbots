@@ -70,7 +70,7 @@ namespace HyjalSummitHelpers
         float& stepX, float& stepY, float& stepZ);
     RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot);
     std::pair<size_t, size_t> GetBotCircleIndexAndCount(PlayerbotAI* botAI, Player* bot,
-                                                        const RangedGroups& groups);
+                                                        RangedGroups const& groups);
 
     // Rage Winterchill
     extern const Position WINTERCHILL_TANK_POSITION;
@@ -93,7 +93,7 @@ namespace HyjalSummitHelpers
     extern const Position ANETHERON_W_INFERNAL_POSITION;
     extern std::unordered_map<ObjectGuid, bool> hasReachedAnetheronPosition;
     Player* GetInfernoTarget(Unit* anetheron);
-    const Position& GetClosestInfernalTankPosition(Player* bot);
+    Position const& GetClosestInfernalTankPosition(Player* bot);
 
     // Kaz'rogal
     extern const Position KAZROGAL_TANK_TRANSITION_POSITION;
