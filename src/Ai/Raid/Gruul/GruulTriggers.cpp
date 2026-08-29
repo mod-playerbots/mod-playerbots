@@ -96,7 +96,7 @@ bool HighKingMaulgarPullingOgreCouncilTrigger::IsActive()
         return false;
 
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-    return blindeye && blindeye->GetHealthPct() > BLINDEYE_PULL_COMPLETE_HP_PERCENT;
+    return blindeye && blindeye->GetHealthPct() > BLINDEYE_ENGAGED_HEALTH_PCT;
 }
 
 bool HighKingMaulgarBossCastsIntimidatingRoarTrigger::IsActive()

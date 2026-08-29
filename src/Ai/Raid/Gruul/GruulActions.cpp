@@ -24,17 +24,17 @@ bool GruulsLairResetEncounterStatesAction::Execute(Event /*event*/)
 {
     bool reset = false;
 
-    if (!AI_VALUE2(bool, "combat", "self target"))
-    {
-        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
-        reset |= ClearTargetIcon(bot, RtiTargetValue::crossIndex);
-    }
-
     Action* action = context->GetAction("gruul the dragonkiller spread ranged");
     if (action &&
         static_cast<GruulTheDragonkillerSpreadRangedAction*>(action)->ResetInitialPosition())
     {
         reset = true;
+    }
+
+    if (IsMechanicTrackerBot(bot, GRUUL_MAP_ID) && !AI_VALUE2(bool, "combat", "self target"))
+    {
+        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+        reset |= ClearTargetIcon(bot, RtiTargetValue::crossIndex);
     }
 
     return reset;
@@ -71,23 +71,12 @@ bool HighKingMaulgarMeleeTanksPositionBossesAction::Execute(Event /*event*/)
     if (target->GetVictim() != bot || !bot->IsWithinMeleeRange(target))
         return false;
 
-    float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 3.0f)
+    constexpr float arrivalDist = 3.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetTankPositionStep(bot, position, arrivalDist, target, moveX, moveY, backwards))
         return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = position.GetPositionX() - botX;
-    float const toPosY = position.GetPositionY() - botY;
-
-    float const toBossX = target->GetPositionX() - botX;
-    float const toBossY = target->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
         GRUUL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
@@ -387,25 +376,12 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
     if (gruul->GetVictim() != bot || !bot->IsWithinMeleeRange(gruul))
         return false;
 
-    Position const& position = GRUUL_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-
-    if (distToPosition <= 3.0f)
+    constexpr float arrivalDist = 3.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetTankPositionStep(bot, GRUUL_TANK_POSITION, arrivalDist, gruul, moveX, moveY, backwards))
         return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = position.GetPositionX() - botX;
-    float const toPosY = position.GetPositionY() - botY;
-
-    float const toBossX = gruul->GetPositionX() - botX;
-    float const toBossY = gruul->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
         GRUUL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,

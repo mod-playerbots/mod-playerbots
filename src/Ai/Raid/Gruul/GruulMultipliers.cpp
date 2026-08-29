@@ -31,7 +31,7 @@ float GruulsLairDelayDpsCooldownsMultiplier::GetValue(Action* action)
         return 0.0f;
 
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-    return blindeye && blindeye->GetHealthPct() > BLINDEYE_PULL_COMPLETE_HP_PERCENT ? 0.0f : 1.0f;
+    return blindeye && blindeye->GetHealthPct() > BLINDEYE_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
 float HighKingMaulgarControlTankActionsMultiplier::GetValue(Action* action)
