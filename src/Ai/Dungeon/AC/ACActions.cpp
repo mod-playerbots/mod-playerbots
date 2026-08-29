@@ -6,11 +6,14 @@
 
 #include "ACActions.h"
 #include "ACTriggers.h"
+#include "EncounterHelpers.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include <algorithm>
 #include <iterator>
 #include <vector>
+
+using namespace EncounterHelpers;
 
 // Tank will position Shirrak at the specified coordinates, up the stairs
 bool ShirrakTankPositionBossAction::Execute(Event /*event*/)
@@ -28,20 +31,19 @@ bool ShirrakTankPositionBossAction::Execute(Event /*event*/)
         return false;
     }
 
-    Position const& position = SHIRRAK_TANK_POSITION;
-    float distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 3.0f)
+    constexpr float arrivalDist = 3.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetTankPositionStep(
+            bot, SHIRRAK_TANK_POSITION, arrivalDist, shirrak, moveX, moveY, backwards))
+    {
         return false;
-
-    float dX = position.GetPositionX() - bot->GetPositionX();
-    float dY = position.GetPositionY() - bot->GetPositionY();
-    float moveDist = std::min(2.0f, distToPosition);
-    float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-    float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+    }
 
     return MoveTo(
         bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, true);
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool ShirrakFleeFocusFireAction::Execute(Event /*event*/)
