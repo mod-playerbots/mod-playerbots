@@ -346,7 +346,7 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
         if (bot->GetDistance2d(firstEmber) < safeDistance)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             return MoveAway(firstEmber, safeDistance - bot->GetDistance2d(firstEmber));
         }
 
@@ -359,7 +359,7 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
         if (bot->GetDistance2d(secondEmber) < safeDistance)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             return MoveAway(secondEmber, safeDistance - bot->GetDistance2d(secondEmber));
         }
 
@@ -387,7 +387,7 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
         GetClosestPlatformAndGround(bot->GetPosition(), closestPlatform, ground);
 
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         return JumpTo(TEMPEST_KEEP_MAP_ID, ground.GetPositionX(), ground.GetPositionY(),
                       ground.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
@@ -456,7 +456,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
         GetClosestPlatformAndGround(bot->GetPosition(), closestPlatform, ground);
 
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         return JumpTo(TEMPEST_KEEP_MAP_ID, ground.GetPositionX(), ground.GetPositionY(),
                       ground.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
@@ -524,7 +524,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
         {
             Position safestPos = FindSafestNearbyPosition(bot, flamePatches, hazardRadius);
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             return MoveTo(TEMPEST_KEEP_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                           safestPos.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_FORCED, true, false);
@@ -545,7 +545,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
         if (currentDistance < safeDistance)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             return MoveAway(alar, safeDistance - currentDistance);
         }
     }
@@ -789,7 +789,7 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     {
         constexpr uint32 minInterval = 0;
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         return FleePosition(fleeDest, safeDistance, minInterval);
     }
 
@@ -1220,7 +1220,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
         if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
                           false, true, MovementPriority::MOVEMENT_FORCED, true, false);
         }

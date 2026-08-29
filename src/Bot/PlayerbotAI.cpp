@@ -288,7 +288,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             if (spellInterruptRequested)
             {
                 spellInterruptRequested = false;
-                InterruptSpell();
+                bot->InterruptSpell(currentSpell->GetCurrentContainer());
                 YieldThread(bot, GetReactDelay());
                 return;
             }
@@ -300,7 +300,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
                 // Interrupt if target is dead or spell can't target dead units
                 if (spellTarget && !spellTarget->IsAlive() && !spellInfo->IsAllowingDeadTarget())
                 {
-                    InterruptSpell();
+                    bot->InterruptSpell(currentSpell->GetCurrentContainer());
                     YieldThread(bot, GetReactDelay());
                     return;
                 }
@@ -309,7 +309,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
                 if (goSpellTarget && !goSpellTarget->isSpawned())
                 {
-                    InterruptSpell();
+                    bot->InterruptSpell(currentSpell->GetCurrentContainer());
                     YieldThread(bot, GetReactDelay());
                     return;
                 }
@@ -341,7 +341,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
                 // Interrupt if target ally has full health (heal by other member)
                 if (isHeal && isSingleTarget && spellTarget && spellTarget->IsFullHealth())
                 {
-                    InterruptSpell();
+                    bot->InterruptSpell(currentSpell->GetCurrentContainer());
                     YieldThread(bot, GetReactDelay());
                     return;
                 }
@@ -367,7 +367,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
         {
             spellInterruptRequested = false;
-            InterruptSpell();
+            bot->InterruptSpell(CURRENT_CHANNELED_SPELL);
             YieldThread(bot, GetReactDelay());
             return;
         }
@@ -902,8 +902,7 @@ void PlayerbotAI::Reset(bool full)
     aiObjectContext->GetValue<GuidSet&>("ignore rpg target")->Get().clear();
 
     bot->GetMotionMaster()->Clear();
-
-    InterruptSpell();
+    bot->CastStop();
 
     if (full)
     {
@@ -1320,7 +1319,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                 horizontalSpeed = 0.11f;
             verticalSpeed = -verticalSpeed;
 
-            InterruptSpell();
+            bot->CastStop();
             bot->StopMoving();
             bot->GetMotionMaster()->Clear();
 
@@ -1578,7 +1577,6 @@ void PlayerbotAI::DoNextAction(bool min)
 
 void PlayerbotAI::ReInitCurrentEngine()
 {
-    // InterruptSpell();
     currentEngine->Init();
 }
 
@@ -4262,34 +4260,6 @@ void PlayerbotAI::WaitForSpellCast(Spell* spell)
     SetNextCheckDelay(castTime + sPlayerbotAIConfig.reactDelay);
 }
 
-void PlayerbotAI::InterruptSpell()
-{
-    for (uint8 type = CURRENT_MELEE_SPELL; type <= CURRENT_CHANNELED_SPELL; type++)
-    {
-        Spell* spell = bot->GetCurrentSpell((CurrentSpellTypes)type);
-        if (!spell)
-            continue;
-
-        bot->InterruptSpell((CurrentSpellTypes)type);
-
-        WorldPacket data(SMSG_SPELL_FAILURE, 8 + 1 + 4 + 1);
-        data << bot->GetPackGUID();
-        data << uint8(1);
-        data << uint32(spell->m_spellInfo->Id);
-        data << uint8(0);
-        bot->SendMessageToSet(&data, true);
-
-        data.Initialize(SMSG_SPELL_FAILED_OTHER, 8 + 1 + 4 + 1);
-        data << bot->GetPackGUID();
-        data << uint8(1);
-        data << uint32(spell->m_spellInfo->Id);
-        data << uint8(0);
-        bot->SendMessageToSet(&data, true);
-
-        SpellInterrupted(spell->m_spellInfo->Id);
-    }
-}
-
 void PlayerbotAI::RemoveAura(std::string const name)
 {
     uint32 spellid = aiObjectContext->GetValue<uint32>("spell id", name)->Get();
@@ -6686,7 +6656,7 @@ void PlayerbotAI::PetFollow()
     if (!pet)
         return;
     pet->AttackStop();
-    pet->InterruptNonMeleeSpells(false);
+    pet->CastStop();
     pet->ClearInPetCombat();
     pet->GetMotionMaster()->MoveFollow(bot, PET_FOLLOW_DIST, pet->GetFollowAngle());
     if (pet->ToPet())

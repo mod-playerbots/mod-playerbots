@@ -1822,11 +1822,11 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     {
         // This block is needed to prevent bots from floating into the air to attack sporebats
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         bot->StopMoving();
         bot->GetMotionMaster()->Clear();
-        bot->TeleportTo(SSC_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
-                        platformZ, bot->GetOrientation());
+        bot->NearTeleportTo(bot->GetPositionX(), bot->GetPositionY(),
+                            platformZ, bot->GetOrientation());
         return true;
     }
 
@@ -1957,7 +1957,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     if (currentTarget && !IsValidLadyVashjCombatNpc(currentTarget, botAI))
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         context->GetValue<Unit*>("current target")->Set(nullptr);
         bot->SetTarget(ObjectGuid::Empty);
         bot->SetSelection(ObjectGuid());
@@ -2072,9 +2072,9 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(tainted) > 10.0f)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        bot->TeleportTo(SSC_MAP_ID, tainted->GetPositionX(), tainted->GetPositionY(),
-                        tainted->GetPositionZ(), tainted->GetOrientation());
+        bot->CastStop();
+        bot->NearTeleportTo(tainted->GetPositionX(), tainted->GetPositionY(),
+                            tainted->GetPositionZ(), tainted->GetOrientation());
     }
 
     if (AI_VALUE(Unit*, "current target") != tainted)
@@ -2315,7 +2315,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
     float targetZ = pos.GetPositionZ();
 
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -2370,7 +2370,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
     float targetZ = pos.GetPositionZ();
 
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -2435,7 +2435,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
     float targetZ = pos.GetPositionZ();
 
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -2490,7 +2490,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
     float targetZ = pos.GetPositionZ();
 
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }

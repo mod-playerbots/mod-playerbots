@@ -466,7 +466,7 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeI
 
     if (Position safePos; FindSafePositionNearCube(cubeInfo, safeWaitDistance, safePos))
     {
-        botAI->InterruptSpell();
+        bot->CastStop();
         return MoveTo(MAGTHERIDON_MAP_ID, safePos.GetPositionX(), safePos.GetPositionY(),
                       bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
@@ -526,7 +526,7 @@ bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(
         return true;
     }
 
-    botAI->InterruptSpell();
+    bot->CastStop();
     return MoveTo(cube, interactDistance, MovementPriority::MOVEMENT_FORCED);
 }
 
@@ -534,7 +534,7 @@ bool MagtheridonMoveOutOfDebrisAction::Execute(Event /*event*/)
 {
     if (Position safePos; FindSafePosition(safePos))
     {
-        botAI->InterruptSpell();
+        bot->CastStop();
         return MoveTo(MAGTHERIDON_MAP_ID, safePos.GetPositionX(), safePos.GetPositionY(),
                       bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);

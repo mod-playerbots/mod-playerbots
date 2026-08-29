@@ -1101,7 +1101,7 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
                     continue;
                 pet->SetReactState(REACT_PASSIVE);
                 pet->AttackStop();
-                pet->InterruptNonMeleeSpells(true);
+                pet->CastStop();
                 pet->CombatStop();
                 pet->SetTarget(ObjectGuid::Empty);
                 if (CharmInfo* ci = pet->GetCharmInfo())
@@ -1247,7 +1247,7 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
     if (myZoneAllProtected)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         bot->SetTarget(ObjectGuid::Empty);
         bot->SetFacingTo(losTomb->GetAngle(bot));
     }
