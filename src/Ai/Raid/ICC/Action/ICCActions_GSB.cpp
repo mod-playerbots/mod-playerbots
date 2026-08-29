@@ -374,7 +374,7 @@ bool IccGunshipRocketJumpAction::Execute(Event /*event*/)
             if (bot->GetVictim())
             {
                 bot->AttackStop();
-                bot->InterruptNonMeleeSpells(true);
+                bot->CastStop();
                 bot->SetTarget(ObjectGuid::Empty);
             }
             if (botOnEnemyShip)

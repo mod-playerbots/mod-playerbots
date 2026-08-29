@@ -77,7 +77,7 @@ extern std::unordered_map<uint32, std::vector<DebrisData>> activeDebrisPositions
 
 extern const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS;
 std::vector<CubeInfo> GetAllCubeInfosByDbGuids(
-    Map* map, const std::vector<uint32>& cubeDbGuids);
+    Map* map, std::vector<uint32> const& cubeDbGuids);
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
 bool IsMagtheridonActive(Unit* magtheridon);
 bool IsCubeClicker(Player* bot);

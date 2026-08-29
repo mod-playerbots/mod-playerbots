@@ -30,8 +30,8 @@ private:
     PlayerbotRepository() = default;
     ~PlayerbotRepository() = default;
 
-    PlayerbotRepository(const PlayerbotRepository&) = delete;
-    PlayerbotRepository& operator=(const PlayerbotRepository&) = delete;
+    PlayerbotRepository(PlayerbotRepository const&) = delete;
+    PlayerbotRepository& operator=(PlayerbotRepository const&) = delete;
 
     PlayerbotRepository(PlayerbotRepository&&) = delete;
     PlayerbotRepository& operator=(PlayerbotRepository&&) = delete;

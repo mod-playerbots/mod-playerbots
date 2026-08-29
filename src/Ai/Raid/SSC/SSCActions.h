@@ -442,8 +442,8 @@ public:
     static std::vector<Unit*> GetAllSporeDropTriggers(Player* bot);
 
 private:
-    Position FindSafestNearbyPosition(const std::vector<Unit*>& spores, const Position& position, float maxRadius, float hazardRadius);
-    bool IsPathSafeFromSpores(const Position& start, const Position& end, const std::vector<Unit*>& spores, float hazardRadius);
+    Position FindSafestNearbyPosition(std::vector<Unit*> const& spores, Position const& position, float maxRadius, float hazardRadius);
+    bool IsPathSafeFromSpores(Position const& start, Position const& end, std::vector<Unit*> const& spores, float hazardRadius);
 };
 
 class LadyVashjUseFreeActionAbilitiesAction : public Action

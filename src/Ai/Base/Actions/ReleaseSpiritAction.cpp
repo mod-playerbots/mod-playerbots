@@ -40,7 +40,7 @@ bool ReleaseSpiritAction::Execute(Event event)
         return false;
     }
 
-    const WorldPacket& packet = event.getPacket();
+    WorldPacket const& packet = event.getPacket();
     const std::string message = !packet.empty() && packet.GetOpcode() == CMSG_REPOP_REQUEST
         ? PlayerbotTextMgr::instance().GetBotTextOrDefault("release_spirit_releasing", "Releasing...", {})
         : PlayerbotTextMgr::instance().GetBotTextOrDefault("release_spirit_meet_graveyard", "Meet me at the graveyard", {});
@@ -68,7 +68,7 @@ void ReleaseSpiritAction::IncrementDeathCount() const
     }
 }
 
-void ReleaseSpiritAction::LogRelease(const std::string& releaseMsg) const
+void ReleaseSpiritAction::LogRelease(std::string const& releaseMsg) const
 {
     const std::string teamPrefix = bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H";
 
@@ -219,7 +219,7 @@ bool AutoReleaseSpiritAction::ShouldDelayBattlegroundRelease() const
 
 bool RepopAction::Execute(Event /*event*/)
 {
-    const GraveyardStruct* graveyard = GetGrave(
+    GraveyardStruct const* graveyard = GetGrave(
         AI_VALUE(uint32, "death count") > 10 ||
         CalculateDeadTime() > 30 * MINUTE
     );
@@ -244,7 +244,7 @@ int64 RepopAction::CalculateDeadTime() const
     return bot->isDead() ? 0 : 60 * MINUTE;
 }
 
-void RepopAction::PerformGraveyardTeleport(const GraveyardStruct* graveyard) const
+void RepopAction::PerformGraveyardTeleport(GraveyardStruct const* graveyard) const
 {
     bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
     bot->TeleportTo(graveyard->Map, graveyard->x, graveyard->y, graveyard->z, 0.f);
