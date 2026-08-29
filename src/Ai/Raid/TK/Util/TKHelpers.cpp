@@ -436,7 +436,7 @@ bool HasEquippableItemForSlot(Player* bot, uint8 slot)
         uint8 bag = (i == 0) ? INVENTORY_SLOT_BAG_0 : (INVENTORY_SLOT_BAG_START + i - 1);
         uint8 startSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_START : 0;
         uint8 endSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_END
-            : (bot->GetBagByPos(bag) ? bot->GetBagByPos(bag)->GetBagSize() : 0);
+            : (bot->GetBagByPos(bag) ? bot->GetBagByPos(bag)->GetBagSize() : uint8(0));
 
         for (uint8 bagSlot = startSlot; bagSlot < endSlot; ++bagSlot)
         {
