@@ -283,12 +283,6 @@ public:
     CastArcaneTorrentAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "arcane torrent") {}
 };
 
-class CastManaTapAction : public CastBuffSpellAction
-{
-public:
-    CastManaTapAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "mana tap") {}
-};
-
 class CastWarStompAction : public CastMeleeSpellAction
 {
 public:

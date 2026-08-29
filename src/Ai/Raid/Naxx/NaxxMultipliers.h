@@ -19,14 +19,17 @@ public:
     float GetValue(Action* action) override;
 };
 
-//class HeiganDanceMultiplier : public Multiplier
-//{
-//public:
-//    HeiganDanceMultiplier(PlayerbotAI* ai) : Multiplier(ai, "helgan dance") {}
-//
-//public:
-//    float GetValue(Action* action) override;
-//};
+class HeiganDanceMultiplier : public Multiplier
+{
+public:
+    explicit HeiganDanceMultiplier(PlayerbotAI* ai) : Multiplier(ai, "heigan dance"), helper(ai) {}
+
+public:
+    float GetValue(Action* action) override;
+
+private:
+    HeiganBossHelper helper;
+};
 
 class LoathebGenericMultiplier : public Multiplier
 {

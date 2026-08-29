@@ -21,8 +21,8 @@ public:
         creators["grobbulus move center"] = &RaidNaxxActionContext::grobbulus_move_center;
         creators["grobbulus move away"] = &RaidNaxxActionContext::grobbulus_move_away;
 
-        //creators["heigan dance melee"] = &RaidNaxxActionContext::heigan_dance_melee;
-        //creators["heigan dance ranged"] = &RaidNaxxActionContext::heigan_dance_ranged;
+        creators["heigan dance melee"] = &RaidNaxxActionContext::heigan_dance_melee;
+        creators["heigan dance ranged"] = &RaidNaxxActionContext::heigan_dance_ranged;
         creators["thaddius attack nearest pet"] = &RaidNaxxActionContext::thaddius_attack_nearest_pet;
         // creators["thaddius melee to place"] = &RaidNaxxActionContext::thaddius_tank_to_place;
         // creators["thaddius ranged to place"] = &RaidNaxxActionContext::thaddius_ranged_to_place;
@@ -59,8 +59,8 @@ private:
     static Action* rotate_grobbulus(PlayerbotAI* ai) { return new GrobbulusRotateAction(ai); }
     static Action* grobbulus_move_center(PlayerbotAI* ai) { return new GrobbulusMoveCenterAction(ai); }
     static Action* grobbulus_move_away(PlayerbotAI* ai) { return new GrobbulusMoveAwayAction(ai); }
-    //static Action* heigan_dance_melee(PlayerbotAI* ai) { return new HeiganDanceMeleeAction(ai); }
-    //static Action* heigan_dance_ranged(PlayerbotAI* ai) { return new HeiganDanceRangedAction(ai); }
+    static Action* heigan_dance_melee(PlayerbotAI* ai) { return new HeiganDanceAction(ai, false); }
+    static Action* heigan_dance_ranged(PlayerbotAI* ai) { return new HeiganDanceAction(ai, true); }
     static Action* thaddius_attack_nearest_pet(PlayerbotAI* ai) { return new ThaddiusAttackNearestPetAction(ai); }
     // static Action* thaddius_tank_to_place(PlayerbotAI* ai) { return new ThaddiusMeleeToPlaceAction(ai); }
     // static Action* thaddius_ranged_to_place(PlayerbotAI* ai) { return new ThaddiusRangedToPlaceAction(ai); }

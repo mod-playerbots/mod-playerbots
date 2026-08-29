@@ -5,7 +5,6 @@
  */
 
 #include "TOCActions.h"
-#include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"

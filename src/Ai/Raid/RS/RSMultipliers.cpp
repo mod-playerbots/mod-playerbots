@@ -5,13 +5,13 @@
  */
 
 #include "RSMultipliers.h"
+#include "AttackAction.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
 #include "FollowActions.h"
-#include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "ICCActions.h"
@@ -19,6 +19,7 @@
 #include "MovementActions.h"
 #include "NearestNpcsValue.h"
 #include "PaladinActions.h"
+#include "PetsAction.h"
 #include "Playerbots.h"
 #include "PriestActions.h"
 #include "RSActions.h"
