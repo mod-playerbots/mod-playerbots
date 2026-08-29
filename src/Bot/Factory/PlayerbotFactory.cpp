@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "PlayerbotFactory.h"
@@ -2698,7 +2699,7 @@ void PlayerbotFactory::EnchantItem(Item* item)
             uint8 sp = 0;
             uint8 ap = 0;
             uint8 tank = 0;
-            for (uint8 i = ITEM_MOD_MANA; i < MAX_ITEM_MOD; ++i)
+            for (uint8 i = 0; i < MAX_SPELL_ITEM_ENCHANTMENT_EFFECTS; ++i)
             {
                 if (enchant->type[i] != ITEM_ENCHANTMENT_TYPE_STAT)
                     continue;
@@ -3945,7 +3946,8 @@ void PlayerbotFactory::InitFood()
             (proto->Spells[0].SpellCategory != 11 && proto->Spells[0].SpellCategory != 59) || proto->Bonding != NO_BIND)
             continue;
 
-        if (proto->RequiredLevel > bot->GetLevel() || proto->RequiredLevel < bot->GetLevel() - 9)
+        if (proto->RequiredLevel > bot->GetLevel() ||
+            static_cast<int32>(proto->RequiredLevel) < static_cast<int32>(bot->GetLevel()) - 9)
             continue;
 
         if (proto->RequiredSkill && !bot->HasSkill(proto->RequiredSkill))
@@ -4748,7 +4750,8 @@ void PlayerbotFactory::InitImmersive()
             Stats from = (Stats)urand(STAT_STRENGTH, MAX_STATS - 1);
             Stats to = (Stats)urand(STAT_STRENGTH, MAX_STATS - 1);
             int32 delta = urand(0, 5 + bot->GetLevel() / 3);
-            if (from != to && percentMap[to] + delta <= 100 && percentMap[from] - delta >= 0)
+            if (from != to && static_cast<int32>(percentMap[to]) + delta <= 100 &&
+                static_cast<int32>(percentMap[from]) - delta >= 0)
             {
                 percentMap[to] += delta;
                 percentMap[from] -= delta;

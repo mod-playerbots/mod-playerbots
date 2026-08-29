@@ -9,7 +9,6 @@
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
-#include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "MCActions.h"

@@ -231,7 +231,7 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
     if (!mainTank || !GET_PLAYERBOT_AI(mainTank) || botAI->IsMainTank(bot))
         return false;
 
-    TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
+    TankPositionState tankState = GetAzgalorTankPositionState(bot);
     return tankState == TankPositionState::Unknown ||
            tankState == TankPositionState::MovingToTransition;
 }
