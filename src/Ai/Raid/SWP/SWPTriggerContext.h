@@ -36,8 +36,8 @@ public:
         creators["kalecgos pulling boss"] =
             &RaidSunwellTriggerContext::kalecgos_pulling_boss;
 
-        creators["kalecgos boss requires tank rotation"] =
-            &RaidSunwellTriggerContext::kalecgos_boss_requires_tank_rotation;
+        creators["kalecgos requires tank rotation"] =
+            &RaidSunwellTriggerContext::kalecgos_requires_tank_rotation;
 
         creators["kalecgos spectral rift is open"] =
             &RaidSunwellTriggerContext::kalecgos_spectral_rift_is_open;
@@ -243,8 +243,8 @@ private:
     static Trigger* kalecgos_should_communicate_boss_health(PlayerbotAI* botAI) {
         return new KalecgosShouldCommunicateBossHealthTrigger(botAI);
     }
-    static Trigger* kalecgos_boss_requires_tank_rotation(PlayerbotAI* botAI) {
-        return new KalecgosBossRequiresTankRotationTrigger(botAI);
+    static Trigger* kalecgos_requires_tank_rotation(PlayerbotAI* botAI) {
+        return new KalecgosRequiresTankRotationTrigger(botAI);
     }
     static Trigger* kalecgos_spectral_rift_is_open(PlayerbotAI* botAI) {
         return new KalecgosSpectralRiftIsOpenTrigger(botAI);

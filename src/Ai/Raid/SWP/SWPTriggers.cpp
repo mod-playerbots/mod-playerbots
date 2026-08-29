@@ -122,7 +122,7 @@ bool KalecgosPullingBossTrigger::IsActive()
     return kalecgos && kalecgos->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT;
 }
 
-bool KalecgosBossRequiresTankRotationTrigger::IsActive()
+bool KalecgosRequiresTankRotationTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
