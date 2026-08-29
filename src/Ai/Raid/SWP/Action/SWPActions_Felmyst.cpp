@@ -33,30 +33,20 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
         return false;
     }
 
-    Position const position = GetFelmystMainTankGroundPosition(bot);
-    float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 2.0f)
+    constexpr float arrivalDist = 3.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetTankPositionStep(
+            bot, GetFelmystMainTankGroundPosition(bot), arrivalDist, felmyst, moveX, moveY,
+            backwards))
+    {
         return false;
-
-    float const posX = position.GetPositionX();
-    float const posY = position.GetPositionY();
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-
-    float const toPosX = posX - botX;
-    float const toPosY = posY - botY;
-    float const toBossX = felmyst->GetPositionX() - botX;
-    float const toBossY = felmyst->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
+    }
 
     return MoveTo(
         SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, true);
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool FelmystRangedStackInThreeGroupsAction::Execute(Event /*event*/)

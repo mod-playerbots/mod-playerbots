@@ -292,7 +292,7 @@ float BrutallusDelayCooldownsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
-    return brutallus && brutallus->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT ? 0.0f : 1.0f;
+    return brutallus && brutallus->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
 // Felmyst
@@ -454,7 +454,7 @@ float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
     if (felmyst->IsFlying())
         return 0.0f;
 
-    return felmyst->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT ? 0.0f : 1.0f;
+    return felmyst->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
 // Eredar Twins
@@ -753,7 +753,7 @@ float MuruDelayCooldownsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
-    if (entropius && entropius->GetHealthPct() < SWP_PULL_COMPLETE_HP_PERCENT)
+    if (entropius && entropius->GetHealthPct() < BOSS_ENGAGED_HEALTH_PCT)
         return 1.0f;
 
     // Bloodlust is saved for Entropius

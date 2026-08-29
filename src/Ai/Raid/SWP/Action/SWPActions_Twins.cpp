@@ -9,7 +9,6 @@
 #include "Playerbots.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPSharedConstants.h"
-#include <algorithm>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -110,26 +109,15 @@ bool EredarTwinsPositionSacrolashTanksAction::Execute(Event /*event*/)
     if (sacrolash->GetVictim() != bot || !bot->IsWithinMeleeRange(sacrolash))
         return false;
 
-    Position const& position = SACROLASH_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 2.0f)
+    constexpr float arrivalDist = 2.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetTankPositionStep(
+            bot, SACROLASH_TANK_POSITION, arrivalDist, sacrolash, moveX, moveY, backwards))
+    {
         return false;
-
-    float const posX = position.GetPositionX();
-    float const posY = position.GetPositionY();
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-
-    float const toPosX = posX - botX;
-    float const toPosY = posY - botY;
-    float const toBossX = sacrolash->GetPositionX() - botX;
-    float const toBossY = sacrolash->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
+    }
 
     return MoveTo(
         SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,

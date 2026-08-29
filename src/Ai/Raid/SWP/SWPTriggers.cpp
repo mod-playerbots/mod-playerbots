@@ -119,7 +119,7 @@ bool KalecgosPullingBossTrigger::IsActive()
         return false;
 
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
-    return kalecgos && kalecgos->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT;
+    return kalecgos && kalecgos->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 bool KalecgosRequiresTankRotationTrigger::IsActive()
@@ -203,7 +203,7 @@ bool BrutallusPullingBossTrigger::IsActive()
         return false;
 
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
-    return brutallus && brutallus->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT;
+    return brutallus && brutallus->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 bool BrutallusRequiresTwoTanksTrigger::IsActive()
@@ -260,7 +260,7 @@ bool FelmystPullingBossTrigger::IsActive()
     if (!felmyst)
         return false;
 
-    if (felmyst->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT)
+    if (felmyst->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return true;
 
     if (felmyst->IsFlying())
@@ -315,7 +315,7 @@ bool FelmystRangedShouldPositionToDispelAndFleeTrigger::IsActive()
     // On initial landing, let the MT get aggro before assuming positions
     Player* mainTank = GetGroupMainTank(bot);
     if (mainTank && felmyst->GetVictim() != mainTank &&
-        felmyst->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT)
+        felmyst->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
     {
         return false;
     }
@@ -481,7 +481,7 @@ bool EredarTwinsPullingBossesTrigger::IsActive()
         return false;
 
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    return alythess && alythess->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT;
+    return alythess && alythess->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 bool EredarTwinsSacrolashRequiresTwoTanksTrigger::IsActive()
