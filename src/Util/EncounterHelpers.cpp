@@ -29,62 +29,9 @@
 namespace EncounterHelpers
 {
 
-// For validating ground and collision in connection with issuing incremental movement. The caller
-// gives a destination and how far to travel towards it per tick. The helper projects that step,
-// checks whether the bot can actually take it, and returns where it lands. The returned stepZ is
-// snapped to the ground, so a MoveTo() using this helper should pass stepZ rather than the bot's Z.
-bool CanTakeStepTowards(
-    Player* bot, float destinationX, float destinationY, float moveDist,
-    float& stepX, float& stepY, float& stepZ)
-{
-    constexpr float minMoveDistance = 0.5f;
-
-    float const distance = bot->GetExactDist2d(destinationX, destinationY);
-    if (distance < minMoveDistance)
-        return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const botZ = bot->GetPositionZ();
-
-    float const ratio = std::min(moveDist, distance) / distance;
-    float candidateX = botX + (destinationX - botX) * ratio;
-    float candidateY = botY + (destinationY - botY) * ratio;
-    float candidateZ = bot->GetMapWaterOrGroundLevel(candidateX, candidateY, botZ);
-
-    if (candidateZ <= INVALID_HEIGHT)
-        candidateZ = botZ;
-
-    // The 9th parameter of CanReachPositionAndGetValidCoords(), failOnSlopes, returns false for a
-    // non-walkable slope, but in my experience, walking downhill is always possible, and thus the
-    // check needlessly rejects descents. This variable gets around that problem.
-    bool const failOnSlopes = candidateZ > botZ;
-
-    // This helper will return false on collision rather than clamping to the contact point so that
-    // the caller can try a different path. Clamping is useless for avoidance since the bot will die
-    // just the same if it is in the middle of a hazard vs. halfway out and returning true.
-    float const requestedX = candidateX;
-    float const requestedY = candidateY;
-
-    if (!bot->GetMap()->CanReachPositionAndGetValidCoords(
-            bot, botX, botY, botZ, candidateX, candidateY, candidateZ, true, failOnSlopes))
-    {
-        return false;
-    }
-
-    constexpr float truncationTolerance = 1.0f;
-    if (std::hypot(candidateX - requestedX, candidateY - requestedY) > truncationTolerance)
-        return false;
-
-    stepX = candidateX;
-    stepY = candidateY;
-    stepZ = candidateZ;
-    return true;
-}
-
-// Calculate incremental movement to a tank position. No ground or collision is validated, unlike
-// CanTakeStepTowards(). The Z position passed for the MoveTo() action using this helper should
-// use the bot's Z, not the position's. Returns false once the bot is within arrivalDist.
+// Calculate incremental movement to a tank position. No ground or collision is validated. The
+// Z position passed for the MoveTo() action using this helper should use the bot's Z, not the
+// position's. Returns false once the bot is within arrivalDist.
 bool GetTankPositionStep(
     Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
     float& stepY, bool& backwards)
@@ -114,7 +61,9 @@ bool GetTankPositionStep(
     // and 4.5y/s backwards (i.e., 0.7y/0.45y per tick). There is not really benefit to having the
     // step be farther than the distance that can be covered in a single tick. But this helper
     // uses 5x tick distance to account for possible speed boosts, latency, and longer configured
-    // AI ticks. In my experience, this is plenty short enough to navigate poor terrain.
+    // AI ticks. In my experience, this is plenty short enough to navigate poor terrain, but if you
+    // are moving steeply uphill and find that movement is failing, it may be possible that the step
+    // distances would need to be even shorter (in which case you couldn't use this helper).
     constexpr float backwardDistancePerStep = 2.25f;
     constexpr float forwardDistancePerStep = 3.5f;
     float const maxMoveDist = backwards ? backwardDistancePerStep : forwardDistancePerStep;
