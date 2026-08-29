@@ -426,7 +426,7 @@ EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)
     return { startPos, endPos, eyeBlastWidth };
 }
 
-bool IsPositionInEyeBlastDangerArea(const Position& pos, const EyeBlastDangerArea& area)
+bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area)
 {
     const float dx = area.end.GetPositionX() - area.start.GetPositionX();
     const float dy = area.end.GetPositionY() - area.start.GetPositionY();

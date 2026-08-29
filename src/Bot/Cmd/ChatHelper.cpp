@@ -228,7 +228,7 @@ std::string const ChatHelper::formatMoney(uint32 copper)
     return out.str();
 }
 
-std::string ChatHelper::parseValue(const std::string& type, const std::string& text)
+std::string ChatHelper::parseValue(std::string const& type, std::string const& text)
 {
     std::string retString;
 
@@ -435,7 +435,7 @@ std::string const ChatHelper::FormatItem(ItemTemplate const* proto, uint32 count
     snprintf(color, sizeof(color), "%x", ItemQualityColors[proto->Quality]);
 
     std::string itemName;
-    const ItemLocale* locale = sObjectMgr->GetItemLocale(proto->ItemId);
+    ItemLocale const* locale = sObjectMgr->GetItemLocale(proto->ItemId);
 
     if (locale && locale->Name.size() > sWorld->GetDefaultDbcLocale())
         itemName = locale->Name[sWorld->GetDefaultDbcLocale()];
@@ -722,12 +722,12 @@ std::set<uint32> extractGeneric(std::string_view text, std::string_view prefix)
     return ids;
 }
 
-std::set<uint32> ChatHelper::ExtractAllQuestIds(const std::string& text)
+std::set<uint32> ChatHelper::ExtractAllQuestIds(std::string const& text)
 {
     return extractGeneric(text, "Hquest:");
 }
 
-std::set<uint32> ChatHelper::ExtractAllItemIds(const std::string& text)
+std::set<uint32> ChatHelper::ExtractAllItemIds(std::string const& text)
 {
     return extractGeneric(text, "Hitem:");
 }

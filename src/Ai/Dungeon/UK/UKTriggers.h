@@ -50,13 +50,6 @@ public:
     bool IsActive() override;
 };
 
-class IngvarStaggeringRoarTrigger : public Trigger
-{
-public:
-    IngvarStaggeringRoarTrigger(PlayerbotAI* ai) : Trigger(ai, "ingvar staggering roar") {}
-    bool IsActive() override;
-};
-
 class IngvarDreadfulRoarTrigger : public Trigger
 {
 public:
