@@ -45,29 +45,6 @@ bool AttackDalronnAction::Execute(Event /*event*/)
     return Attack(boss);
 }
 
-bool IngvarStopCastingAction::Execute(Event /*event*/)
-{
-    // Doesn't work, this action gets queued behind the current spell instead of interrupting it
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
-    if (!boss) { return false; }
-
-    int32 my_spell_id = AI_VALUE(uint32, "active spell");
-    if (!my_spell_id || my_spell_id == 0)
-    {
-        return false;
-    }
-
-    Spell* spell = bot->FindCurrentSpellBySpellId(my_spell_id);
-    if (!spell) { return false; }
-
-    // bot->Yell("cancelling spell="+std::to_string(my_spell_id), LANG_UNIVERSAL);
-    bot->InterruptSpell(spell->GetCurrentContainer(), false, true, true);
-
-    // Can slightly optimise by allowing bot to keep casting if they will finish the cast
-    // before boss spell goes off, however need to hook boss AI for cast remaining.
-    return true;
-}
-
 bool IngvarDodgeSmashAction::isUseful() { return !AI_VALUE2(bool, "behind", "current target"); }
 bool IngvarDodgeSmashAction::Execute(Event /*event*/)
 {

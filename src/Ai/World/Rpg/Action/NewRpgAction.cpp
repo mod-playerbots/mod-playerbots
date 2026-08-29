@@ -216,7 +216,7 @@ bool StartRpgDoQuestAction::Execute(Event event)
     std::string const text = event.getParam();
     PlayerbotChatHandler ch(owner);
     uint32 questId = ch.extractQuestId(text);
-    const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
+    Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
     if (quest)
     {
         botAI->rpgInfo.ChangeToDoQuest(questId, quest);
@@ -454,7 +454,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         int32 currentObjective = data.objectiveIdx;
         // check if the objective has completed
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
-        const QuestStatusData& q_status = bot->getQuestStatusMap().at(questId);
+        QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
         bool completed = true;
         if (currentObjective < QUEST_OBJECTIVES_COUNT)
         {
@@ -527,7 +527,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         int32 currentObjective = data.objectiveIdx;
         // check if the objective has progression
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
-        const QuestStatusData& q_status = bot->getQuestStatusMap().at(questId);
+        QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
         if (currentObjective < QUEST_OBJECTIVES_COUNT)
         {
             if (q_status.CreatureOrGOCount[currentObjective] != 0 && quest->RequiredNpcOrGoCount[currentObjective])
@@ -567,7 +567,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
 bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
 {
     uint32 questId = data.questId;
-    const Quest* quest = data.quest;
+    Quest const* quest = data.quest;
 
     if (data.objectiveIdx != -1)
     {

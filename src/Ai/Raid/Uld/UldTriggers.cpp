@@ -197,7 +197,7 @@ bool RazorscaleGroundedTrigger::IsActive()
 bool RazorscaleHarpoonAvailableTrigger::IsActive()
 {
     // Get harpoon data from the helper
-    const std::vector<RazorscaleBossHelper::HarpoonData>& harpoonData = RazorscaleBossHelper::GetHarpoonData();
+    std::vector<RazorscaleBossHelper::HarpoonData> const& harpoonData = RazorscaleBossHelper::GetHarpoonData();
 
     // Get the boss entity
     Unit* boss = AI_VALUE2(Unit*, "find target", "razorscale");
@@ -739,7 +739,7 @@ bool FreyaMoveToHealingSporeTrigger::IsActive()
     bool foundSpore = false;
 
     // Iterate through all targets to find healthy spores
-    for (const ObjectGuid& guid : targets)
+    for (ObjectGuid const& guid : targets)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive())
@@ -1336,7 +1336,7 @@ bool MimironRapidBurstTrigger::IsActive()
     float nearestRocketStrikeDistance = std::numeric_limits<float>::max();
     bool rocketStrikeDetected = false;
 
-    for (const ObjectGuid& guid : npcs)
+    for (ObjectGuid const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit)
@@ -1496,7 +1496,7 @@ bool MimironCheatTrigger::IsActive()
         return false;
 
     GuidVector targets = AI_VALUE(GuidVector, "nearest npcs");
-    for (const ObjectGuid& guid : targets)
+    for (ObjectGuid const& guid : targets)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive())
@@ -1699,7 +1699,7 @@ Unit* YoggSaronTrigger::GetNextIllusionRoomRtiTarget()
 
     if (botAI->HasCheat(BotCheatMask::raid))
     {
-        for (const ObjectGuid& guid : targets)
+        for (ObjectGuid const& guid : targets)
         {
             Unit* unit = botAI->GetUnit(guid);
             if (unit && unit->IsAlive() && unit->GetEntry() == NPC_LAUGHING_SKULL)
@@ -1710,9 +1710,9 @@ Unit* YoggSaronTrigger::GetNextIllusionRoomRtiTarget()
     float nearestDistance = std::numeric_limits<float>::max();
     Unit* nextIllusionRoomRtiTarget = nullptr;
 
-    for (const uint32& creatureId : illusionMobs)
+    for (uint32 const& creatureId : illusionMobs)
     {
-        for (const ObjectGuid& guid : targets)
+        for (ObjectGuid const& guid : targets)
         {
             Unit* unit = botAI->GetUnit(guid);
             if (unit && unit->IsAlive() && unit->GetEntry() == creatureId)
@@ -1771,7 +1771,7 @@ bool YoggSaronGuardianPositioningTrigger::IsActive()
     GuidVector targets = AI_VALUE(GuidVector, "nearest npcs");
     bool thereIsAnyGuardian = false;
 
-    for (const ObjectGuid& guid : targets)
+    for (ObjectGuid const& guid : targets)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive())
@@ -1881,7 +1881,7 @@ bool YoggSaronMarkTargetTrigger::IsActive()
         }
 
         GuidVector targets = AI_VALUE(GuidVector, "nearest npcs");
-        for (const ObjectGuid& guid : targets)
+        for (ObjectGuid const& guid : targets)
         {
             Unit* unit = botAI->GetUnit(guid);
             if (!unit || !unit->IsAlive())
@@ -2120,7 +2120,7 @@ bool YoggSaronPhase3PositioningTrigger::IsActive()
         GuidVector targets = AI_VALUE(GuidVector, "nearest npcs");
         bool thereIsAnyGuardian = false;
 
-        for (const ObjectGuid& guid : targets)
+        for (ObjectGuid const& guid : targets)
         {
             Unit* unit = botAI->GetUnit(guid);
             if (!unit || !unit->IsAlive())

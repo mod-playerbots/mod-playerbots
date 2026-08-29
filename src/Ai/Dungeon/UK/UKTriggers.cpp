@@ -31,18 +31,6 @@ bool DalronnDpsTrigger::IsActive()
     return !botAI->IsTank(bot);
 }
 
-bool IngvarStaggeringRoarTrigger::IsActive()
-{
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
-    if (!boss) { return false; }
-
-    if (boss->FindCurrentSpellBySpellId(SPELL_STAGGERING_ROAR))
-    {
-        return true;
-    }
-    return false;
-}
-
 bool IngvarDreadfulRoarTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");

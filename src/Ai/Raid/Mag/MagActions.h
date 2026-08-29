@@ -97,9 +97,9 @@ public:
 private:
     MagtheridonHelpers::CubeInfo const* GetAssignedCube();
     bool HandleCubeRelease(Unit* magtheridon);
-    bool HandleWaitingPhase(const MagtheridonHelpers::CubeInfo& cubeInfo);
-    bool HandleCubeInteraction(const MagtheridonHelpers::CubeInfo& cubeInfo, GameObject* cube);
-    bool FindSafePositionNearCube(const MagtheridonHelpers::CubeInfo& cubeInfo, float preferredDistance, Position& outPos);
+    bool HandleWaitingPhase(MagtheridonHelpers::CubeInfo const& cubeInfo);
+    bool HandleCubeInteraction(MagtheridonHelpers::CubeInfo const& cubeInfo, GameObject* cube);
+    bool FindSafePositionNearCube(MagtheridonHelpers::CubeInfo const& cubeInfo, float preferredDistance, Position& outPos);
 };
 
 class MagtheridonManageTimersAndAssignmentsAction : public Action

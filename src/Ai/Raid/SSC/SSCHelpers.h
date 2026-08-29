@@ -181,10 +181,10 @@ namespace SerpentShrineCavernHelpers
     struct GeneratorInfo { ObjectGuid guid; float x, y, z; };
     extern const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS;
     std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
-        Map* map, const std::vector<uint32>& generatorDbGuids);
+        Map* map, std::vector<uint32> const& generatorDbGuids);
     Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference);
-    const GeneratorInfo* GetNearestGeneratorToBot(
-        Player* bot, const std::vector<GeneratorInfo>& generators);
+    GeneratorInfo const* GetNearestGeneratorToBot(
+        Player* bot, std::vector<GeneratorInfo> const& generators);
 }
 
 #endif

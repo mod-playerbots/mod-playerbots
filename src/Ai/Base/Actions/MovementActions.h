@@ -137,7 +137,7 @@ protected:
     Position AverageGroupPos(float dis = sPlayerbotAIConfig.sightDistance, bool ranged = false, bool self = false);
     Player* NearestGroupMember(float dis = sPlayerbotAIConfig.sightDistance);
     float AverageGroupAngle(Unit* from, bool ranged = false, bool self = false);
-    Position GetNearestPosition(const std::vector<Position>& positions);
+    Position GetNearestPosition(std::vector<Position> const& positions);
     int lastMoveTimer = 0;
     int moveInterval;
 };

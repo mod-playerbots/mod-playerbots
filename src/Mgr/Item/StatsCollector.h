@@ -79,9 +79,9 @@ private:
     bool SpecialSpellFilter(uint32 spellId);
     bool SpecialEnchantFilter(uint32 enchantSpellId);
 
-    void HandleApplyAura(const SpellEffectInfo& effectInfo, float multiplier, bool canNextTrigger,
+    void HandleApplyAura(SpellEffectInfo const& effectInfo, float multiplier, bool canNextTrigger,
                          Milliseconds triggerCooldown);
-    float AverageValue(const SpellEffectInfo& effectInfo);
+    float AverageValue(SpellEffectInfo const& effectInfo);
 
 private:
     CollectorType type_;

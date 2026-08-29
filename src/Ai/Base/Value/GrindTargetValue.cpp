@@ -168,7 +168,7 @@ bool GrindTargetValue::needForQuest(Unit* target)
 
         if (status == QUEST_STATUS_INCOMPLETE)
         {
-            const QuestStatusData* questStatus = &bot->getQuestStatusMap()[questId];
+            QuestStatusData const* questStatus = &bot->getQuestStatusMap()[questId];
 
             if (questTemplate->GetQuestLevel() > bot->GetLevel() + 5)
                 continue;

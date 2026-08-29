@@ -109,7 +109,7 @@ uint8 AiFactory::GetPlayerSpecTab(Player* bot)
 std::map<uint8, uint32> AiFactory::GetPlayerSpecTabs(Player* bot)
 {
     std::map<uint8, uint32> tabs = {{0, 0}, {0, 0}, {0, 0}};
-    const PlayerTalentMap& talentMap = bot->GetTalentMap();
+    PlayerTalentMap const& talentMap = bot->GetTalentMap();
     for (PlayerTalentMap::const_iterator i = talentMap.begin(); i != talentMap.end(); ++i)
     {
         uint32 spellId = i->first;
@@ -126,7 +126,7 @@ std::map<uint8, uint32> AiFactory::GetPlayerSpecTabs(Player* bot)
 
         uint32 const* talentTabIds = GetTalentTabPages(bot->getClass());
 
-        const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
         int rank = spellInfo ? spellInfo->GetRank() : 1;
         if (talentInfo->TalentTab == talentTabIds[0])
             tabs[0] += rank;

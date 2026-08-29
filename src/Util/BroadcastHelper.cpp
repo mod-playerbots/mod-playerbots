@@ -264,7 +264,7 @@ bool BroadcastHelper::BroadcastLootingItem(PlayerbotAI* ai, Player* bot, ItemTem
     return false;
 }
 
-bool BroadcastHelper::BroadcastQuestAccepted(PlayerbotAI* ai, Player* bot, const Quest* quest)
+bool BroadcastHelper::BroadcastQuestAccepted(PlayerbotAI* ai, Player* bot, Quest const* quest)
 {
     if (!sPlayerbotAIConfig.enableBroadcasts)
         return false;
@@ -331,7 +331,7 @@ bool BroadcastHelper::BroadcastQuestUpdateAddKill(PlayerbotAI* ai, Player* bot, 
     return false;
 }
 
-bool BroadcastHelper::BroadcastQuestUpdateAddItem(PlayerbotAI* ai, Player* bot, Quest const* quest, uint32 availableCount, uint32 requiredCount, const ItemTemplate* proto)
+bool BroadcastHelper::BroadcastQuestUpdateAddItem(PlayerbotAI* ai, Player* bot, Quest const* quest, uint32 availableCount, uint32 requiredCount, ItemTemplate const* proto)
 {
     if (!sPlayerbotAIConfig.enableBroadcasts)
         return false;
@@ -800,7 +800,7 @@ bool BroadcastHelper::BroadcastSuggestGrindReputation(PlayerbotAI* ai, std::vect
     return false;
 }
 
-bool BroadcastHelper::BroadcastSuggestSell(PlayerbotAI* ai, const ItemTemplate* proto, uint32 count, uint32 price, Player* bot)
+bool BroadcastHelper::BroadcastSuggestSell(PlayerbotAI* ai, ItemTemplate const* proto, uint32 count, uint32 price, Player* bot)
 {
     if (!sPlayerbotAIConfig.enableBroadcasts)
         return false;

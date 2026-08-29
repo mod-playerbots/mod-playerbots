@@ -208,7 +208,7 @@ struct EyeBlastDangerArea
     float width;
 };
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot);
-bool IsPositionInEyeBlastDangerArea(const Position& pos, const EyeBlastDangerArea& area);
+bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area);
 GameObject* FindNearestTrap(PlayerbotAI* botAI, Player* bot);
 
 }

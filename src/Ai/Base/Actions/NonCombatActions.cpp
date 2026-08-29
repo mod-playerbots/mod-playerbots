@@ -50,7 +50,7 @@ bool DrinkAction::Execute(Event event)
             // return false;
         }
         bot->SetStandState(UNIT_STAND_STATE_SIT);
-        botAI->InterruptSpell();
+        bot->CastStop();
 
         // float hp = bot->GetHealthPercent();
         float mp = bot->GetPowerPct(POWER_MANA);
@@ -110,7 +110,7 @@ bool EatAction::Execute(Event event)
         }
 
         bot->SetStandState(UNIT_STAND_STATE_SIT);
-        botAI->InterruptSpell();
+        bot->CastStop();
 
         float hp = bot->GetHealthPct();
         // float mp = bot->HasMana() ? bot->GetPowerPercent() : 0.f;

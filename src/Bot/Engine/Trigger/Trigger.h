@@ -47,7 +47,7 @@ class TriggerNode
 {
 public:
     TriggerNode(
-        const std::string& name,
+        std::string const& name,
         std::vector<NextAction> handlers = {}
     ) :
     trigger(nullptr),

@@ -110,7 +110,7 @@ std::string PlayerbotGuildMgr::AssignToGuild(Player* player)
 
     size_t count = std::count_if(
         _guildCache.begin(), _guildCache.end(),
-        [](const std::pair<const uint32, GuildCache>& pair)
+        [](std::pair<const uint32, GuildCache> const& pair)
         {
             return !pair.second.hasRealPlayer;
         }

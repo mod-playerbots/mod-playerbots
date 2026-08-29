@@ -24,7 +24,7 @@ static constexpr float PARACHUTE_LAND_THRESHOLD = 15.0f;
 std::unordered_map<uint32, PreferredMountCache> CheckMountStateAction::mountCache;
 bool CheckMountStateAction::preferredMountTableChecked = false;
 
-MountData CollectMountData(const Player* bot)
+MountData CollectMountData(Player const* bot)
 {
     MountData data;
     for (auto& entry : bot->GetSpellMap())
@@ -426,7 +426,7 @@ bool CheckMountStateAction::TryPreferredMount(Player* master) const
     return false;
 }
 
-bool CheckMountStateAction::TryRandomMountFiltered(const std::map<int32, std::vector<uint32>>& spells, int32 masterSpeed) const
+bool CheckMountStateAction::TryRandomMountFiltered(std::map<int32, std::vector<uint32>> const& spells, int32 masterSpeed) const
 {
     for (auto it = spells.rbegin(); it != spells.rend(); ++it)
     {

@@ -37,7 +37,7 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValue(Action* action)
         "teron gorefiend", "supremus", "high warlord naj'entus" };
 
     Unit* boss = nullptr;
-    for (const char* name : BlackTempleBosses)
+    for (char const* name : BlackTempleBosses)
     {
         if (Unit* candidate = AI_VALUE2(Unit*, "find target", name))
         {

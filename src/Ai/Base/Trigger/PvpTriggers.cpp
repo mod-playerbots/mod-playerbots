@@ -328,7 +328,7 @@ bool AllianceNoSnowfallGY::IsActive()
 
     if (BattlegroundAV* av = dynamic_cast<BattlegroundAV*>(bg))
     {
-        const BG_AV_NodeInfo& snowfall = av->GetAVNodeInfo(BG_AV_NODES_SNOWFALL_GRAVE);
+        BG_AV_NodeInfo const& snowfall = av->GetAVNodeInfo(BG_AV_NODES_SNOWFALL_GRAVE);
         return snowfall.OwnerId != TEAM_ALLIANCE; // Active if the Snowfall Graveyard is NOT fully controlled by the Alliance
     }
 

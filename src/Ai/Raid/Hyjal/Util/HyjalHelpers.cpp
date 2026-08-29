@@ -64,9 +64,9 @@ RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot)
 }
 
 std::pair<size_t, size_t> GetBotCircleIndexAndCount(PlayerbotAI* botAI, Player* bot,
-                                                    const RangedGroups& groups)
+                                                    RangedGroups const& groups)
 {
-    const std::vector<Player*>& vec = botAI->IsHeal(bot) ? groups.healers : groups.rangedDps;
+    std::vector<Player*> const& vec = botAI->IsHeal(bot) ? groups.healers : groups.rangedDps;
     auto it = std::find(vec.begin(), vec.end(), bot);
     size_t index = (it != vec.end()) ? std::distance(vec.begin(), it) : 0;
 
@@ -150,10 +150,10 @@ Player* GetInfernoTarget(Unit* anetheron)
     return nullptr;
 }
 
-const Position& GetClosestInfernalTankPosition(Player* bot)
+Position const& GetClosestInfernalTankPosition(Player* bot)
 {
-    const Position& east = ANETHERON_E_INFERNAL_POSITION;
-    const Position& west = ANETHERON_W_INFERNAL_POSITION;
+    Position const& east = ANETHERON_E_INFERNAL_POSITION;
+    Position const& west = ANETHERON_W_INFERNAL_POSITION;
     return (bot->GetExactDist2d(east.GetPositionX(), east.GetPositionY()) <=
             bot->GetExactDist2d(west.GetPositionX(), west.GetPositionY())) ? east : west;
 }

@@ -15,7 +15,7 @@ class PlayerbotAI;
 class PetsAction : public Action
 {
 public:
-    PetsAction(PlayerbotAI* botAI, const std::string& defaultCmd = "") : Action(botAI, "pet"), defaultCmd(defaultCmd) {}
+    PetsAction(PlayerbotAI* botAI, std::string const& defaultCmd = "") : Action(botAI, "pet"), defaultCmd(defaultCmd) {}
 
     bool Execute(Event event) override;
 

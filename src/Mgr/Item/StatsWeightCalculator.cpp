@@ -582,7 +582,7 @@ void StatsWeightCalculator::CalculateItemSetMod(Player* player, ItemTemplate con
             if (itemSet != setId)
                 continue;
 
-            const ItemSetEntry* setEntry = sItemSetStore.LookupEntry(setId);
+            ItemSetEntry const* setEntry = sItemSetStore.LookupEntry(setId);
             if (!setEntry)
                 continue;
 

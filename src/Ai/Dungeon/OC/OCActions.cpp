@@ -330,7 +330,7 @@ bool AvoidArcaneExplosionAction::Execute(Event /*event*/)
     Unit* boss = AI_VALUE2(Unit*, "find target", "mage-lord urom");
     if (!boss) { return false; }
 
-    const Position* closestPos = nullptr;
+    Position const* closestPos = nullptr;
 
     for (auto& position : uromSafePositions)
     {

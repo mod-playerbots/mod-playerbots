@@ -163,7 +163,7 @@ bool CurseOfWeaknessTrigger::IsActive()
 
 struct WarlockPetDef
 {
-    const char* strategy;  // The strategy string as recognized by the AI (e.g., "imp", "voidwalker", etc.)
+    char const* strategy;  // The strategy string as recognized by the AI (e.g., "imp", "voidwalker", etc.)
     uint32 spellId;        // The spell ID required to summon this pet
     uint32 npcEntry;       // The NPC entry ID for the summoned pet creature
 };
@@ -184,9 +184,9 @@ bool WrongPetTrigger::IsActive()
     // Step 1: Count how many pet strategies are currently enabled for this bot.
     //         While doing so, also remember which pet strategy is the only enabled one (if that's the case).
     int enabledCount = 0;
-    const WarlockPetDef* enabledPet =
+    WarlockPetDef const* enabledPet =
         nullptr;  // Pointer to the pet definition of the enabled strategy, if only one is enabled
-    for (const WarlockPetDef& pd : pets)
+    for (WarlockPetDef const& pd : pets)
     {
         if (botAI->HasStrategy(pd.strategy, BOT_STATE_NON_COMBAT))
         {

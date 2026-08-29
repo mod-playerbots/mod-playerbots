@@ -179,7 +179,7 @@ bool TalonKingIkissLosArcaneExplosionAction::MoveToPillar(
     float const moveX = pillarCenter.GetPositionX() + targetRadius * cos(botAngle);
     float const moveY = pillarCenter.GetPositionY() + targetRadius * sin(botAngle);
 
-    botAI->InterruptSpell();
+    bot->CastStop();
     return MoveTo(
         SETH_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
@@ -210,7 +210,7 @@ bool TalonKingIkissLosArcaneExplosionAction::MoveAroundPillar(
     float const moveX = pillarCenter.GetPositionX() + distToPillar * cos(stepAngle);
     float const moveY = pillarCenter.GetPositionY() + distToPillar * sin(stepAngle);
 
-    botAI->InterruptSpell();
+    bot->CastStop();
     return MoveTo(
         SETH_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);

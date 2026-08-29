@@ -19,10 +19,6 @@ void WotlkDungeonUKStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 
     // Ingvar the Plunderer
 
-    // Doesn't work yet, this action doesn't get processed until the existing cast finishes
-    // triggers.push_back(new TriggerNode("ingvar staggering roar",
-    //          { NextAction("ingvar stop casting", ACTION_RAID + 1) }));
-
     // No easy way to check LoS here, the pillars do not seem to count as gameobjects.
     // Not implemented for now, unsure if this is needed as a good group can probably burst through the boss
     // and just eat the debuff.

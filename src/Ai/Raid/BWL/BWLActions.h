@@ -54,8 +54,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool CalculateFleeDirection(const Unit* boss, float& fleeX, float& fleeY) const;
-    bool MoveAlongFleeDirection(const Unit* boss, float fleeX, float fleeY);
+    bool CalculateFleeDirection(Unit const* boss, float& fleeX, float& fleeY) const;
+    bool MoveAlongFleeDirection(Unit const* boss, float fleeX, float fleeY);
 };
 
 // Chromaggus

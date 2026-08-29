@@ -147,7 +147,7 @@ GameObject* RazorscaleBossHelper::FindNearestHarpoon(float x, float y, float z) 
     return nearestHarpoon;
 }
 
-const std::vector<RazorscaleBossHelper::HarpoonData>& RazorscaleBossHelper::GetHarpoonData()
+std::vector<RazorscaleBossHelper::HarpoonData> const& RazorscaleBossHelper::GetHarpoonData()
 {
     static const std::vector<HarpoonData> harpoonData =
     {

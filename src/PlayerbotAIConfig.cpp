@@ -1104,7 +1104,7 @@ void PlayerbotAIConfig::loadWorldBuff()
     }
 }
 
-static std::vector<std::string> split(const std::string& str, const std::string& pattern)
+static std::vector<std::string> split(std::string const& str, std::string const& pattern)
 {
     std::vector<std::string> res;
     if (str == "")

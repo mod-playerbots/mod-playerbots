@@ -19,8 +19,7 @@ bool HeiganDanceAction::MoveToWaypoint(uint32 index, float distance)
         // and stop whatever we were casting.
         lastWaypoint = int32(index);
         AI_VALUE(LastMovement&, "last movement").Set(nullptr);
-        if (bot->IsNonMeleeSpellCast(true))
-            botAI->InterruptSpell();
+        bot->CastStop();
     }
 
     return MoveInside(bot->GetMapId(), HeiganBossHelper::WaypointX[index], HeiganBossHelper::WaypointY[index],

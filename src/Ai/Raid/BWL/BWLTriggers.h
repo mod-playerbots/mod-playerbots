@@ -23,7 +23,7 @@ public:
 class BwlRazorgoreNotMindControlledTrigger : public Trigger
 {
 public:
-    BwlRazorgoreNotMindControlledTrigger(PlayerbotAI* botAI, const std::string& name = "bwl razorgore not mind controlled") : Trigger(botAI, name) {}
+    BwlRazorgoreNotMindControlledTrigger(PlayerbotAI* botAI, std::string const& name = "bwl razorgore not mind controlled") : Trigger(botAI, name) {}
     bool IsActive() override;
 };
 

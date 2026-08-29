@@ -733,7 +733,7 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
         }
 
         // Lambda to handle bot login logic
-        auto tryLoginBot = [&](const CharacterInfo& charInfo) -> bool
+        auto tryLoginBot = [&](CharacterInfo const& charInfo) -> bool
         {
             if (GetEventValue(charInfo.guid, "add") ||
                 GetEventValue(charInfo.guid, "logout") ||
@@ -875,7 +875,7 @@ void RandomPlayerbotMgr::LoadBattleMastersCache()
     LOG_INFO("playerbots", ">> Loaded {} battlemaster entries", count);
 }
 
-std::vector<uint32> parseBrackets(const std::string& str)
+std::vector<uint32> parseBrackets(std::string const& str)
 {
     std::vector<uint32> brackets;
     std::stringstream ss(str);
@@ -1675,7 +1675,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
         if (!botAI->StarterLevelDistanceCheck(bot, loc, true))
             continue;
 
-        const LocaleConstant& locale = sWorld->GetDefaultDbcLocale();
+        LocaleConstant const& locale = sWorld->GetDefaultDbcLocale();
         LOG_DEBUG("playerbots",
                   "Random teleporting bot {} (level {}) to Map: {} ({}) Zone: {} ({}) Area: {} ({}) ZoneLevel: {} "
                   "AreaLevel: {} {},{},{} ({}/{} "

@@ -13,7 +13,7 @@ namespace ZulAmanHelpers
 
 // General
 Position FindSafestNearbyPosition(Player* bot,
-    const std::vector<Unit*>& hazards, const Position& safeZoneCenter,
+    std::vector<Unit*> const& hazards, Position const& safeZoneCenter,
     float safeZoneRadius, float hazardRadius, bool requireSafePath)
 {
     constexpr float searchStep = M_PI / 8.0f;
@@ -64,8 +64,8 @@ Position FindSafestNearbyPosition(Player* bot,
     return bestPos;
 }
 
-bool IsPathSafeFromHazards(const Position& start, const Position& end,
-    const std::vector<Unit*>& hazards, float hazardRadius)
+bool IsPathSafeFromHazards(Position const& start, Position const& end,
+    std::vector<Unit*> const& hazards, float hazardRadius)
 {
     constexpr uint8 numChecks = 10;
     float dx = end.GetPositionX() - start.GetPositionX();
@@ -85,7 +85,7 @@ bool IsPathSafeFromHazards(const Position& start, const Position& end,
 }
 
 bool IsPositionSafeFromHazards(
-    float x, float y, const std::vector<Unit*>& hazards, float hazardRadius)
+    float x, float y, std::vector<Unit*> const& hazards, float hazardRadius)
 {
     for (Unit* hazard : hazards)
     {

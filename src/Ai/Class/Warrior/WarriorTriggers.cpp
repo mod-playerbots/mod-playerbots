@@ -137,7 +137,7 @@ bool BattleShoutTrigger::IsActive()
     }
     int32 effectiveBsAp = int32(bsApValue * (1.0f + cpBonus));
 
-    static const char* blessingNames[] = {
+    static char const* blessingNames[] = {
         "blessing of might", "greater blessing of might", nullptr
     };
     for (int i = 0; blessingNames[i] != nullptr; ++i)

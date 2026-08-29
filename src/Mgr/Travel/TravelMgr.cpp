@@ -97,7 +97,7 @@ WorldPosition::WorldPosition(std::string const str)
             m_positionZ = std::stof(tokens[3]);
             m_orientation = std::stof(tokens[4]);
         }
-        catch (const std::exception&)
+        catch (std::exception const&)
         {
             m_mapId = 0;
             m_positionX = 0.0f;
@@ -108,7 +108,7 @@ WorldPosition::WorldPosition(std::string const str)
     }
 }
 
-WorldPosition::WorldPosition(uint32 mapId, const Position& pos)
+WorldPosition::WorldPosition(uint32 mapId, Position const& pos)
     : WorldLocation(mapId, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation())
 {
 }
@@ -198,14 +198,14 @@ WorldPosition::WorldPosition(uint32 mapid, mGridCoord grid)
 {
 }
 
-void WorldPosition::set(const WorldLocation& pos) { WorldRelocate(pos); }
+void WorldPosition::set(WorldLocation const& pos) { WorldRelocate(pos); }
 
-void WorldPosition::set(const WorldPosition& pos)
+void WorldPosition::set(WorldPosition const& pos)
 {
     WorldRelocate(pos.m_mapId, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
 }
 
-void WorldPosition::set(const WorldObject* pos)
+void WorldPosition::set(WorldObject const* pos)
 {
     WorldRelocate(pos->GetMapId(), pos->GetPositionX(), pos->GetPositionY(), pos->GetPositionZ(), pos->GetOrientation());
 }
@@ -228,14 +228,14 @@ WorldPosition::operator bool() const
     return GetMapId() != 0 || GetPositionX() != 0 || GetPositionY() != 0 || GetPositionZ() != 0;
 }
 
-bool operator==(WorldPosition const& p1, const WorldPosition& p2)
+bool operator==(WorldPosition const& p1, WorldPosition const& p2)
 {
     return p1.GetMapId() == p2.GetMapId() && p2.GetPositionX() == p1.GetPositionX() &&
            p2.GetPositionY() == p1.GetPositionY() && p2.GetPositionZ() == p1.GetPositionZ() &&
            p2.GetOrientation() == p1.GetOrientation();
 }
 
-bool operator!=(WorldPosition const& p1, const WorldPosition& p2) { return !(p1 == p2); }
+bool operator!=(WorldPosition const& p1, WorldPosition const& p2) { return !(p1 == p2); }
 
 WorldPosition& WorldPosition::operator+=(WorldPosition const& p1)
 {
@@ -442,7 +442,7 @@ std::string const WorldPosition::to_string()
     return out.str();
 }
 
-std::vector<std::string> WorldPosition::split(const std::string& s, char delimiter)
+std::vector<std::string> WorldPosition::split(std::string const& s, char delimiter)
 {
     std::vector<std::string> tokens;
     std::string token;

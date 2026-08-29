@@ -41,7 +41,7 @@ public:
         orbs.push_back(orbData);
 
         orbs.erase(std::remove_if(orbs.begin(), orbs.end(),
-            [currentTime](const ArcaneOrbData& orb) {
+            [currentTime](ArcaneOrbData const& orb) {
                 return getMSTimeDiff(orb.castTime, currentTime) > 5000;
             }), orbs.end());
     }

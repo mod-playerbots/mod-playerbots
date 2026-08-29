@@ -217,7 +217,7 @@ public:
 private:
     std::pair<Unit*, Unit*> GetSolariumPriests(PlayerbotAI* botAI);
     std::vector<Player*> GetMeleeBots(Group* group);
-    Unit* AssignSolariumPriestsToBots(const std::pair<Unit*, Unit*>& priestsPair, const std::vector<Player*>& meleeMembers);
+    Unit* AssignSolariumPriestsToBots(std::pair<Unit*, Unit*> const& priestsPair, std::vector<Player*> const& meleeMembers);
 };
 
 class HighAstromancerSolarianCastFearWardOnMainTankAction : public Action

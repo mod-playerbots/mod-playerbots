@@ -273,7 +273,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
             return false;
 
         // bot->SetStandState(UNIT_STAND_STATE_SIT);
-        botAI->InterruptSpell();
+        bot->CastStop();
         float hp = bot->GetHealthPct();
         float mp = bot->GetPower(POWER_MANA) * 100.0f / bot->GetMaxPower(POWER_MANA);
         float p = 0.f;

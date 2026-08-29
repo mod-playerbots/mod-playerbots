@@ -309,11 +309,11 @@ bool QuestUpdateAddKillAction::Execute(Event event)
     uint32 entry, questId, available, required;
     p >> questId >> entry >> available >> required;
     // LOG_INFO("playerbots", "[New rpg] Quest {} -> Creature {} ({}/{})", questId, entry, available, required);
-    const Quest* qInfo = sObjectMgr->GetQuestTemplate(questId);
+    Quest const* qInfo = sObjectMgr->GetQuestTemplate(questId);
     if (qInfo && (entry & 0x80000000))
     {
         entry &= 0x7FFFFFFF;
-        const GameObjectTemplate* info = sObjectMgr->GetGameObjectTemplate(entry);
+        GameObjectTemplate const* info = sObjectMgr->GetGameObjectTemplate(entry);
         if (info)
         {
             std::string infoName = botAI->GetLocalizedGameObjectName(entry);
@@ -392,7 +392,7 @@ bool QuestItemPushResultAction::Execute(Event event)
     if (guid != bot->GetGUID())
         return false;
 
-    const ItemTemplate* proto = sObjectMgr->GetItemTemplate(itemEntry);
+    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemEntry);
     if (!proto)
         return false;
 
@@ -402,7 +402,7 @@ bool QuestItemPushResultAction::Execute(Event event)
         if (!questId)
             continue;
 
-        const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
+        Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
         if (!quest)
             return false;
 
