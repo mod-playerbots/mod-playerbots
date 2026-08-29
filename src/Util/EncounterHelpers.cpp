@@ -29,9 +29,9 @@
 namespace EncounterHelpers
 {
 
-// Calculate incremental movement to a tank position. No ground or collision is validated, unlike
-// CanTakeStepTowards(). The Z position passed for the MoveTo() action using this helper should
-// use the bot's Z, not the position's. Returns false once the bot is within arrivalDist.
+// Calculate incremental movement to a tank position. No ground or collision is validated. The
+// Z position passed for the MoveTo() action using this helper should use the bot's Z, not the
+// position's. Returns false once the bot is within arrivalDist.
 bool GetTankPositionStep(
     Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
     float& stepY, bool& backwards)
