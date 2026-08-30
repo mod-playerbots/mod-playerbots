@@ -78,7 +78,7 @@ float TalonKingIkissDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     if (!ikiss)
         return 1.0f;
 
-    return ikiss->GetHealthPct() > 95.0f ? 0.0f : 1.0f;
+    return ikiss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
 float TalonKingIkissControlMovementMultiplier::GetValue(Action* action)

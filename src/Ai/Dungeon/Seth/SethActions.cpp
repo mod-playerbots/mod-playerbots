@@ -96,7 +96,7 @@ bool TalonKingIkissTankMoveBossToPillarPositionAction::Execute(Event /*event*/)
     if (!ikiss)
         return false;
 
-    if (ikiss->GetHealthPct() > 95.0f)
+    if (ikiss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         _hasReachedPillarPosition = false;
 
     if (_hasReachedPillarPosition == true)

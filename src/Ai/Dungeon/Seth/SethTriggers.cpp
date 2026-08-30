@@ -35,7 +35,7 @@ bool DarkweaverSythBossSummonsElementalsTrigger::IsActive()
         return false;
 
     Unit* syth = AI_VALUE2(Unit*, "find target", "darkweaver syth");
-    return syth && syth->GetHealthPct() > 10.0f;
+    return syth && syth->GetHealthPct() > BOSS_BURN_HEALTH_PCT;
 }
 
 bool AnzuEncounterHasTwoPhasesTrigger::IsActive()
