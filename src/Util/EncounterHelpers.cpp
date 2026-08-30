@@ -137,7 +137,7 @@ bool MarkTargetWithMoon(Player* bot, Unit* target)
 }
 
 // For clearing marks outside of combat so bots don't Leeroy on sight. This is best used when gated
-// behind an out of combat check (such as with IsInCombatValue).
+// behind an out-of-combat check (such as with IsInCombatValue).
 bool ClearTargetIcon(Player* bot, uint8 iconId)
 {
     Group* group = bot->GetGroup();
