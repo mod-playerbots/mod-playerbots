@@ -26,13 +26,20 @@ public:
         creators["bwl vaelastrasz burning adrenaline"] = &RaidBwlTriggerContext::bwl_vaelastrasz_burning_adrenaline;
 
         creators["bwl broodlord fire resistance"] = &RaidBwlTriggerContext::bwl_broodlord_fire_resistance_trigger;
+        creators["bwl broodlord ranged"] = &RaidBwlTriggerContext::bwl_broodlord_ranged;
 
         creators["bwl firemaw fire resistance"] = &RaidBwlTriggerContext::bwl_firemaw_fire_resistance_trigger;
+        creators["bwl firemaw not victim"] = &RaidBwlTriggerContext::bwl_firemaw_not_victim;
+        creators["bwl ebonroc not victim"] = &RaidBwlTriggerContext::bwl_ebonroc_not_victim;
         creators["bwl flamegor fire resistance"] = &RaidBwlTriggerContext::bwl_flamegor_fire_resistance_trigger;
+        creators["bwl flamegor not victim"] = &RaidBwlTriggerContext::bwl_flamegor_not_victim;
 
         creators["bwl affliction bronze"] = &RaidBwlTriggerContext::bwl_affliction_bronze;
-        creators["bwl wild magic"] = &RaidBwlTriggerContext::bwl_wild_magic;
+
+        creators["bwl nefarian positioning"] = &RaidBwlTriggerContext::bwl_nefarian_positioning;
+        creators["bwl nefarian wild magic"] = &RaidBwlTriggerContext::bwl_nefarian_wild_magic;
         creators["bwl nefarian fear ward"] = &RaidBwlTriggerContext::bwl_nefarian_fear_ward;
+
         creators["bwl death talon wyrmguard tank"] = &RaidBwlTriggerContext::bwl_death_talon_wyrmguard_tank;
         creators["bwl death talon wyrmguard ranged"] = &RaidBwlTriggerContext::bwl_death_talon_wyrmguard_ranged;
     }
@@ -45,10 +52,15 @@ private:
     static Trigger* bwl_vaelastrasz_positioning(PlayerbotAI* ai) { return new BwlVaelastraszPositioningTrigger(ai); }
     static Trigger* bwl_vaelastrasz_burning_adrenaline(PlayerbotAI* ai) { return new BwlVaelastraszBurningAdrenalineTrigger(ai); }
     static Trigger* bwl_broodlord_fire_resistance_trigger(PlayerbotAI* ai) { return new BossFireResistanceTrigger(ai, "broodlord lashlayer"); }
+    static Trigger* bwl_broodlord_ranged(PlayerbotAI* ai) { return new BwlBroodlordRangedTrigger(ai); }
     static Trigger* bwl_firemaw_fire_resistance_trigger(PlayerbotAI* ai) { return new BossFireResistanceTrigger(ai, "firemaw"); }
+    static Trigger* bwl_firemaw_not_victim(PlayerbotAI* ai) { return new BwlBlackDrakeNotVictimTrigger(ai, "firemaw"); }
+    static Trigger* bwl_ebonroc_not_victim(PlayerbotAI* ai) { return new BwlBlackDrakeNotVictimTrigger(ai, "ebonroc"); }
     static Trigger* bwl_flamegor_fire_resistance_trigger(PlayerbotAI* ai) { return new BossFireResistanceTrigger(ai, "flamegor"); }
+    static Trigger* bwl_flamegor_not_victim(PlayerbotAI* ai) { return new BwlBlackDrakeNotVictimTrigger(ai, "flamegor"); }
     static Trigger* bwl_affliction_bronze(PlayerbotAI* ai) { return new BwlAfflictionBronzeTrigger(ai); }
-    static Trigger* bwl_wild_magic(PlayerbotAI* ai) { return new BwlWildMagicTrigger(ai); }
+    static Trigger* bwl_nefarian_wild_magic(PlayerbotAI* ai) { return new BwlNefarianWildMagicTrigger(ai); }
+    static Trigger* bwl_nefarian_positioning(PlayerbotAI* ai) { return new BwlNefarianPositioningTrigger(ai); }
     static Trigger* bwl_nefarian_fear_ward(PlayerbotAI* ai) { return new BwlNefarianFearWardTrigger(ai); }
     static Trigger* bwl_death_talon_wyrmguard_tank(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardTankTrigger(ai); }
     static Trigger* bwl_death_talon_wyrmguard_ranged(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardRangedTrigger(ai); }

@@ -42,6 +42,12 @@ namespace BlackwingLairHelpers
 
     enum class BlackwingLairNPCs : uint32
     {
+        // Broodlord Lashlayer
+        NPC_CORRUPTED_RED_WHELP = 14022,
+        NPC_CORRUPTED_GREEN_WHELP = 14023,
+        NPC_CORRUPTED_BLUE_WHELP = 14024,
+        NPC_CORRUPTED_BRONZE_WHELP = 14025,
+
         // Trash
         NPC_DEATH_TALON_WYRMGUARD = 12460
     };
@@ -50,6 +56,7 @@ namespace BlackwingLairHelpers
     bool AreRazorgoreEggsAlive(PlayerbotAI* botAI);
     bool IsRazorgoreOffTank(Player* bot);
     bool IsNonBABotNearPosition(Player const* bot, Position const& position, float distance);
+    bool IsCorruptedWhelp(Unit const* unit);
 }
 
 #endif

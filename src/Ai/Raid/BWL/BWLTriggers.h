@@ -43,6 +43,29 @@ public:
     bool IsActive() override;
 };
 
+// Broodlord Lashlayer
+
+class BwlBroodlordRangedTrigger : public Trigger
+{
+public:
+    BwlBroodlordRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl broodlord ranged") {}
+    bool IsActive() override;
+};
+
+// Firemaw / Ebonroc / Flamegor
+
+class BwlBlackDrakeNotVictimTrigger : public Trigger
+{
+public:
+    BwlBlackDrakeNotVictimTrigger(PlayerbotAI* botAI, std::string bossName)
+        : Trigger(botAI, "bwl " + bossName + " not victim"),
+          bossName(std::move(bossName)) {}
+    bool IsActive() override;
+
+private:
+    const std::string bossName;
+};
+
 // Chromaggus
 
 class BwlAfflictionBronzeTrigger : public Trigger
@@ -54,10 +77,17 @@ public:
 
 // Nefarian
 
-class BwlWildMagicTrigger : public Trigger
+class BwlNefarianPositioningTrigger : public Trigger
 {
 public:
-    BwlWildMagicTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl wild magic") {}
+    BwlNefarianPositioningTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl nefarian positioning") {}
+    bool IsActive() override;
+};
+
+class BwlNefarianWildMagicTrigger : public Trigger
+{
+public:
+    BwlNefarianWildMagicTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl nefarian wild magic") {}
     bool IsActive() override;
 };
 

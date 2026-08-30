@@ -264,6 +264,42 @@ bool BwlVaelastraszMoveAwayAction::MoveAlongFleeDirection(Unit const* boss, floa
     return false;
 }
 
+// Broodlord Lashlayer
+
+static constexpr float BROODLORD_SAFE_DISTANCE = 18.0f;
+
+bool BwlBroodlordRangedMoveAwayAction::isUseful()
+{
+    // In case the bot pulled aggro, prevent it from kiting the boss through the room.
+    if (Unit* boss = AI_VALUE2(Unit*, "find target", "broodlord lashlayer"))
+        return boss->GetVictim() != bot;
+    return false;
+}
+
+bool BwlBroodlordRangedMoveAwayAction::Execute(Event /*event*/)
+{
+    if (Unit* boss = AI_VALUE2(Unit*, "find target", "broodlord lashlayer"))
+    {
+        float distToTravel = BROODLORD_SAFE_DISTANCE - bot->GetDistance2d(boss);
+        if (distToTravel > 0.0f)
+            return MoveAway(boss, distToTravel);
+    }
+    return false;
+}
+
+// Firemaw / Ebonroc / Flamegor
+
+bool BwlBlackDrakeAvoidBreathAction::isUseful()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", bossName);
+    if (!boss)
+        return false;
+
+    // Only reposition while standing in the frontal breath cone.
+    // No tail-swipe check: unlike RearFlankAction there is no rear danger zone here.
+    return boss->HasInArc(2.f * minAngle, bot);
+}
+
 // Chromaggus
 
 bool BwlUseHourglassSandAction::Execute(Event /*event*/)
@@ -357,7 +393,7 @@ Unit* BwlDeathTalonWyrmguardRangedMoveAwayAction::GetTarget()
 bool BwlDeathTalonWyrmguardRangedMoveAwayAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
-    if (!target)
+    if (!target || target->GetVictim() == bot)
         return false;
 
     float distToTravel = WYRMGUARD_SAFE_DISTANCE - bot->GetDistance2d(target);
