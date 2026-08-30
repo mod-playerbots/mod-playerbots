@@ -58,6 +58,31 @@ private:
     bool MoveAlongFleeDirection(Unit const* boss, float fleeX, float fleeY);
 };
 
+// Broodlord Lashlayer
+
+class BwlBroodlordRangedMoveAwayAction : public MovementAction
+{
+public:
+    BwlBroodlordRangedMoveAwayAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl broodlord ranged move away") {}
+    bool isUseful() override;
+    bool Execute(Event event) override;
+};
+
+// Firemaw / Ebonroc / Flamegor
+
+class BwlBlackDrakeAvoidBreathAction : public RearFlankAction
+{
+public:
+    BwlBlackDrakeAvoidBreathAction(PlayerbotAI* botAI, std::string bossName,
+                                   float minAngle = ANGLE_45_DEG)
+        : RearFlankAction(botAI, 0.0f, minAngle, M_PI),
+          bossName(std::move(bossName)) {}
+    bool isUseful() override;
+
+private:
+    const std::string bossName;
+};
+
 // Chromaggus
 
 class BwlUseHourglassSandAction : public Action

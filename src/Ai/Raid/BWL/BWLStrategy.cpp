@@ -30,16 +30,26 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("bwl broodlord fire resistance", {
         NextAction("bwl broodlord fire resistance", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("bwl broodlord ranged", {
+        NextAction("bwl broodlord ranged move away", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("bwl firemaw fire resistance", {
         NextAction("bwl firemaw fire resistance", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("bwl firemaw not victim", {
+        NextAction("bwl firemaw avoid breath", ACTION_MOVE + 4) }));
+    triggers.push_back(new TriggerNode("bwl ebonroc not victim", {
+        NextAction("bwl ebonroc avoid breath", ACTION_MOVE + 4) }));
     triggers.push_back(new TriggerNode("bwl flamegor fire resistance", {
         NextAction("bwl flamegor fire resistance", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("bwl flamegor not victim", {
+        NextAction("bwl flamegor avoid breath", ACTION_MOVE + 4) }));
 
     triggers.push_back(new TriggerNode("bwl affliction bronze", {
         NextAction("bwl use hourglass sand", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("bwl wild magic", {
+    triggers.push_back(new TriggerNode("bwl nefarian positioning", {
+        NextAction("rear flank", ACTION_MOVE + 4) }));
+    triggers.push_back(new TriggerNode("bwl nefarian wild magic", {
         NextAction("ice block", ACTION_RAID) }));
     triggers.push_back(new TriggerNode("bwl nefarian fear ward", {
         NextAction("bwl nefarian fear ward", ACTION_RAID) }));
@@ -54,5 +64,6 @@ void RaidBwlStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new RazorgoreTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszTankMultiplier(botAI));
+    multipliers.push_back(new BroodlordTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszBurningAdrenalineMultiplier(botAI));
 }

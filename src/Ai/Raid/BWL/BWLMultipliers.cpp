@@ -61,6 +61,34 @@ float VaelastraszTankMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float BroodlordTankMultiplier::GetValue(Action* action)
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "broodlord lashlayer");
+    if (!boss)
+        return 1.0f;
+
+    if (dynamic_cast<TankAssistAction*>(action))
+    {
+        // Prevents the tanks from changing targets to a whelp during the encounter.
+        // Tanks should build thread on the boss. DPS handles whelps on their own.
+        // Change target if it isn't a whelp (boss or respawned elite NPCs).
+        if (IsCorruptedWhelp(action->GetTarget()))
+           return 0.0f;
+
+        // Only the tank actually holding the boss keeps it as its target.
+        // All other tanks may switch to non-whelp targets.
+        // This should not happen, if the elites were killed before the encounter,
+        // but just in case...
+        if (boss->GetVictim() == bot && bot->GetVictim() == boss)
+           return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 float VaelastraszBurningAdrenalineMultiplier::GetValue(Action* action)
 {
     if (bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BURNING_ADRENALINE)))
