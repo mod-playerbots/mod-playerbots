@@ -122,4 +122,31 @@ protected:
     void ContinueCrossMapTaxi();
 };
 
+// Used by the "grab" strategy (QuestGrabStrategy), independent of "new rpg" --
+// reuses NewRpgBaseAction purely for its movement/quest-interaction helpers.
+// Three rules, tried in order: accept/turn in at a nearby questgiver if one's
+// ready (existing, unmodified SearchQuestGiverAndAcceptOrReward); else use a
+// carried quest item on the specific creature/GO a current objective still
+// needs (UseQuestItemOnRequiredTarget); else walk to and use the nearest
+// quest-relevant GameObject already in sight.
+class GrabQuestItemAction : public NewRpgBaseAction
+{
+public:
+    GrabQuestItemAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "grab quest item") {}
+    bool Execute(Event event) override;
+
+protected:
+    // Quest data (Quest::RequiredNpcOrGo[]) tells us exactly which creature (>0) or
+    // gameobject (<0) entry each objective slot still needs -- the same array
+    // NewRpgDoQuestAction already reads via RequiredNpcOrGoCount. What quest data does
+    // NOT tell us is which carried item resolves that objective (this codebase has no
+    // TrinityCore-style RequiredSourceItemId; classic "use item on target" quests grant
+    // credit via per-item hardcoded SpellScripts, e.g. spell_item_branns_communicator).
+    // So this tries each non-StartQuest "quest" category item against a nearby target
+    // matching an outstanding objective and lets the server's own item/spell target
+    // validation decide -- identical to what the manual "use <item> <target>" chat
+    // command already relies on.
+    bool UseQuestItemOnRequiredTarget();
+};
+
 #endif

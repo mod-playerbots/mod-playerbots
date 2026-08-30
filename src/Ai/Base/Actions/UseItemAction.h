@@ -25,9 +25,15 @@ public:
     bool Execute(Event event) override;
     bool isPossible() override;
 
+    // Public composition points for other actions (e.g. GrabQuestItemAction) that need to
+    // use a specific item on a specific target and are not themselves a UseItemAction --
+    // NewRpgBaseAction's own header calls for actions to be "composable instead of
+    // inheritable", so callers construct a UseItemAction and invoke these directly.
+    bool UseItemOnGameObject(Item* item, ObjectGuid go);
+    bool UseItemOnUnit(Item* item, Unit* unitTarget);
+
 protected:
     bool UseItemAuto(Item* item);
-    bool UseItemOnGameObject(Item* item, ObjectGuid go);
     bool UseItemOnItem(Item* item, Item* itemTarget);
     bool UseItem(Item* item, ObjectGuid go, Item* itemTarget, Unit* unitTarget = nullptr);
     bool UseGameObject(ObjectGuid guid);

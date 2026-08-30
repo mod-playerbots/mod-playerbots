@@ -406,6 +406,22 @@ AiPlayerbot.AggroDistance = 22
 AiPlayerbot.TooCloseDistance = 5.0
 AiPlayerbot.MeleeDistance = 0.75
 AiPlayerbot.FollowDistance = 1.5
+
+# AiPlayerbot.LeashDistance
+#     Description: How far (yards) a bot may wander from the group leader while
+#                  the "leash" strategy and an independent-movement strategy
+#                  (e.g. "new rpg", "grind") are both active before being
+#                  recalled. Enable with: nc +leash,+new rpg
+#     Default:     30.0
+AiPlayerbot.LeashDistance = 30.0
+
+# AiPlayerbot.QuestGrabDistance
+#     Description: How far (yards), from the bot's own current position (not
+#                  the group leader), the "grab" strategy will walk to accept/
+#                  turn in a quest or interact with a quest-relevant object it
+#                  can already see. Enable with: nc +grab
+#     Default:     30.0
+AiPlayerbot.QuestGrabDistance = 30.0
 AiPlayerbot.WhisperDistance = 6000.0
 AiPlayerbot.ContactDistance = 0.45
 AiPlayerbot.AoeRadius = 10

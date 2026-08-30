@@ -164,6 +164,26 @@ bool PossibleNewRpgTargetsValue::AcceptUnit(Unit* unit)
     if (unit->IsHostileTo(bot) || unit->IsPlayer())
         return false;
 
+    // LeashStrategy (see LeashStrategy.cpp) only recalls the bot once it has
+    // already wandered past AiPlayerbot.LeashDistance -- without this, new
+    // rpg could still pick an idle-interaction target beyond that distance
+    // (this value's own range is AiPlayerbot.RpgDistance, measured from the
+    // bot itself, not the leader), walk toward it, get recalled by the leash,
+    // then immediately re-pick the same distant target again. Refusing any
+    // candidate outside the leash distance from the actual leader closes
+    // that loop at the source instead of only reacting to it. The other half
+    // of this -- new rpg's own quest/grind/camp destination selection -- is
+    // guarded separately by WithinLeashRange in NewRpgBaseAction.cpp, since
+    // that path doesn't go through this value class at all.
+    if (botAI->HasStrategy("leash", BOT_STATE_NON_COMBAT))
+    {
+        if (Player* master = botAI->GetMaster())
+        {
+            if (ServerFacade::instance().GetDistance2d(master, unit) > sPlayerbotAIConfig.leashDistance)
+                return false;
+        }
+    }
+
     if (unit->HasNpcFlag(UNIT_NPC_FLAG_SPIRITHEALER))
         return false;
 
@@ -185,6 +205,11 @@ GuidVector PossibleNewRpgGameObjectsValue::Calculate()
     Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
     Cell::VisitObjects(bot, searcher, range);
 
+    // See the matching comment in PossibleNewRpgTargetsValue::AcceptUnit above
+    // -- same leash reasoning, applied to gameobjects instead of units.
+    bool const leashed = botAI->HasStrategy("leash", BOT_STATE_NON_COMBAT);
+    Player* const master = leashed ? botAI->GetMaster() : nullptr;
+
     std::vector<std::pair<ObjectGuid, float>> guidDistancePairs;
     for (GameObject* go : targets)
     {
@@ -203,6 +228,9 @@ GuidVector PossibleNewRpgGameObjectsValue::Calculate()
         if (!ignoreLos && !bot->IsWithinLOSInMap(go))
             continue;
 
+        if (master && ServerFacade::instance().GetDistance2d(master, go) > sPlayerbotAIConfig.leashDistance)
+            continue;
+
         guidDistancePairs.push_back({go->GetGUID(), bot->GetExactDist(go)});
     }
     GuidVector results;
@@ -212,6 +240,62 @@ GuidVector PossibleNewRpgGameObjectsValue::Calculate()
         return a.second < b.second;
     });
 
+    for (auto const& pair : guidDistancePairs) {
+        results.push_back(pair.first);
+    }
+    return results;
+}
+
+GuidVector PossibleQuestGrabTargetsValue::Calculate()
+{
+    std::list<GameObject*> targets;
+    AnyGameObjectInObjectRangeCheck u_check(bot, range);
+    Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
+    Cell::VisitObjects(bot, searcher, range);
+
+    // Diagnostic only: log every nearby GO this search actually visits, and exactly which
+    // check rejected it, so "grab" failures can be root-caused from Playerbots.log alone
+    // (LOG_DEBUG so it stays silent unless Logger.playerbots is at debug level).
+    LOG_DEBUG("playerbots", "[Quest Grab Search] {} found {} gameobject(s) within {} yd", bot->GetName(),
+              targets.size(), range);
+
+    std::vector<std::pair<ObjectGuid, float>> guidDistancePairs;
+    for (GameObject* go : targets)
+    {
+        if (!go->isSpawned() || !go->IsInWorld())
+        {
+            LOG_DEBUG("playerbots", "[Quest Grab Search] {} skipping {} (entry {}, {} yd) -- not spawned/in world",
+                      bot->GetName(), go->GetGOInfo()->name, go->GetEntry(), bot->GetDistance(go));
+            continue;
+        }
+
+        // No LOS/vmap raycast requirement here: the real client->server interaction path
+        // (WorldSession::HandleGameObjectUseOpcode, SpellHandler.cpp) only checks
+        // obj->IsWithinDistInMap(player, obj->GetInteractionDistance()) -- distance, nothing
+        // else. A vmap LOS check was rejecting perfectly legitimate targets (e.g. furniture
+        // pushed into a wall/tent corner, like Tallonkai's Dresser) that a real player can
+        // click on fine, since the client alone decides whether to render the use-cursor.
+
+        if (!go->ActivateToQuest(bot))
+        {
+            LOG_DEBUG("playerbots",
+                      "[Quest Grab Search] {} skipping {} (entry {}, type {}, {} yd) -- ActivateToQuest false",
+                      bot->GetName(), go->GetGOInfo()->name, go->GetEntry(), go->GetGoType(), bot->GetDistance(go));
+            continue;
+        }
+
+        LOG_DEBUG("playerbots", "[Quest Grab Search] {} accepted {} (entry {}, type {}, {} yd)", bot->GetName(),
+                  go->GetGOInfo()->name, go->GetEntry(), go->GetGoType(), bot->GetDistance(go));
+
+        guidDistancePairs.push_back({go->GetGUID(), bot->GetExactDist(go)});
+    }
+
+    // Sort by distance
+    std::sort(guidDistancePairs.begin(), guidDistancePairs.end(), [](auto const& a, auto const& b) {
+        return a.second < b.second;
+    });
+
+    GuidVector results;
     for (auto const& pair : guidDistancePairs) {
         results.push_back(pair.first);
     }
