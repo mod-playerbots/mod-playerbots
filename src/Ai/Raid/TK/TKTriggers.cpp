@@ -56,7 +56,7 @@ bool AlarPullingBossTrigger::IsActive()
         return false;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar && alar->GetHealthPct() > 95.0f;
+    return alar && alar->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
