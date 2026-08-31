@@ -20,6 +20,12 @@ class Unit;
 namespace EncounterHelpers
 {
 
+// Cheap, rough proxies for how far along an encounter is. 95% HP means the boss and raid are
+// positioned, the tank has threat, and the fight proper has started, so it's time to use cooldowns.
+// 10% means the boss is almost dead, so ignore adds and finish off the boss.
+inline constexpr float BOSS_ENGAGED_HEALTH_PCT = 95.0f;
+inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
+
 bool GetTankPositionStep(
     Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
     float& stepY, bool& backwards);

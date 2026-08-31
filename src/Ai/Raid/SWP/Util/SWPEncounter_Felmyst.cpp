@@ -230,9 +230,9 @@ FogLocation GetDestinationFogLocation(Unit* felmyst)
 bool IsNearLandingPosition(Position const& destination)
 {
     bool const nearRight =
-        destination.GetExactDist2d(RIGHT_LANDING_POSITION) <= FELMYST_LOCATION_MATCH_DISTANCE;
+        destination.GetExactDist2d(FELMYST_RIGHT_LANDING_POSITION) <= FELMYST_LOCATION_MATCH_DISTANCE;
     bool const nearLeft =
-        destination.GetExactDist2d(LEFT_LANDING_POSITION) <= FELMYST_LOCATION_MATCH_DISTANCE;
+        destination.GetExactDist2d(FELMYST_LEFT_LANDING_POSITION) <= FELMYST_LOCATION_MATCH_DISTANCE;
 
     return nearRight || nearLeft;
 }
@@ -258,9 +258,9 @@ FogLane GetNearestDemonicVaporLane(Player* bot)
 
 uint8 GetDemonicVaporAllowedSides(Player* bot)
 {
-    float const centerDistance = bot->GetExactDist2d(CENTER_GROUND_REFERENCE);
-    float const rightDistance = bot->GetExactDist2d(RIGHT_LANDING_POSITION);
-    float const leftDistance = bot->GetExactDist2d(LEFT_LANDING_POSITION);
+    float const centerDistance = bot->GetExactDist2d(FELMYST_CENTER_GROUND_REFERENCE);
+    float const rightDistance = bot->GetExactDist2d(FELMYST_RIGHT_LANDING_POSITION);
+    float const leftDistance = bot->GetExactDist2d(FELMYST_LEFT_LANDING_POSITION);
 
     if (centerDistance <= rightDistance && centerDistance <= leftDistance)
         return DEMONIC_VAPOR_LEFT_SIDE | DEMONIC_VAPOR_RIGHT_SIDE;
@@ -639,10 +639,10 @@ bool TryGetFelmystFogSafeDestination(
 
 Position const& GetFelmystMainTankGroundPosition(Player* bot)
 {
-    Position const* bestPosition = &TANK_POSITIONS[0];
+    Position const* bestPosition = &FELMYST_TANK_POSITIONS[0];
     float bestDistance = std::numeric_limits<float>::max();
 
-    for (Position const& position : TANK_POSITIONS)
+    for (Position const& position : FELMYST_TANK_POSITIONS)
     {
         float const distance = bot->GetExactDist2d(position);
         if (distance < bestDistance)

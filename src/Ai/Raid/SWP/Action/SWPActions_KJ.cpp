@@ -96,10 +96,10 @@ bool KiljaedenMoveHolyPaladinIntoStunRangeAction::Execute(Event /*event*/)
     if (!hand || !hand->IsAlive() || hand->GetEntry() != Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
         return false;
 
-    if (bot->GetExactDist2d(hand) <= HOLY_PALADIN_STUN_STANDOFF)
+    if (bot->GetExactDist2d(hand) <= HAND_HOLY_PALADIN_STANDOFF)
         return false;
 
-    return MoveTo(hand, HOLY_PALADIN_STUN_STANDOFF, MovementPriority::MOVEMENT_COMBAT);
+    return MoveTo(hand, HAND_HOLY_PALADIN_STANDOFF, MovementPriority::MOVEMENT_COMBAT);
 }
 
 bool KiljaedenControlHandsOfTheDeceiverAction::Execute(Event /*event*/)
@@ -163,11 +163,11 @@ bool KiljaedenControlHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
 
         case CLASS_WARRIOR:
             return castSpell("concussion blow") ||
-                castSelfAoe("shockwave", HAND_SHOCKWAVE_RADIUS);
+                castSelfAoe("shockwave", SHOCKWAVE_RADIUS);
 
         default:
             return bot->getRace() == RACE_TAUREN &&
-                castSelfAoe("war stomp", HAND_SELF_AOE_RACIAL_RADIUS);
+                castSelfAoe("war stomp", SELF_AOE_RACIAL_RADIUS);
     }
 }
 
@@ -191,7 +191,7 @@ bool KiljaedenControlHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
 
         default:
             return bot->getRace() == RACE_BLOODELF &&
-                bot->GetExactDist(hand) < HAND_SELF_AOE_RACIAL_RADIUS &&
+                bot->GetExactDist(hand) < SELF_AOE_RACIAL_RADIUS &&
                 castSpell("arcane torrent");
     }
 }
@@ -237,20 +237,20 @@ bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* re
     switch (bot->getClass())
     {
         case CLASS_DEATH_KNIGHT:
-            return castSpell("death and decay", KILJAEDEN_REFLECTION_RANGED_REACH) ||
-                castSpell("icy touch", KILJAEDEN_REFLECTION_ICY_TOUCH_REACH);
+            return castSpell("death and decay", RANGED_ABILITY_REACH) ||
+                castSpell("icy touch", ICY_TOUCH_REACH);
 
         case CLASS_DRUID:
-            return castSpell("feral charge - bear", KILJAEDEN_REFLECTION_CHARGE_REACH) ||
-                castSpell("challenging roar", KILJAEDEN_REFLECTION_SHOUT_REACH);
+            return castSpell("feral charge - bear", CHARGE_REACH) ||
+                castSpell("challenging roar", TAUNT_SHOUT_RADIUS);
 
         case CLASS_PALADIN:
-            return castSpell("avenger's shield", KILJAEDEN_REFLECTION_RANGED_REACH) ||
-                castSpell("consecration", KILJAEDEN_REFLECTION_CONSECRATION_REACH);
+            return castSpell("avenger's shield", RANGED_ABILITY_REACH) ||
+                castSpell("consecration", CONSECRATION_RADIUS);
 
         case CLASS_WARRIOR:
-            return castSpell("charge", KILJAEDEN_REFLECTION_CHARGE_REACH) ||
-                castSpell("challenging shout", KILJAEDEN_REFLECTION_SHOUT_REACH);
+            return castSpell("charge", CHARGE_REACH) ||
+                castSpell("challenging shout", TAUNT_SHOUT_RADIUS);
 
         default:
             return false;
@@ -667,14 +667,14 @@ bool KiljaedenDragonBuffAndProtectRaidAction::ExecuteOutsideDarknessOfAThousandS
 
     float const distanceToTarget = dragon->GetExactDist2d(target);
 
-    if (distanceToTarget > DRAGON_BREATH_STANDOFF + DRAGON_STANDOFF_TOLERANCE ||
+    if (distanceToTarget > KILJAEDEN_DRAGON_BREATH_STANDOFF + KILJAEDEN_DRAGON_STANDOFF_TOLERANCE ||
         (distanceToTarget > std::numeric_limits<float>::min() &&
-         distanceToTarget < DRAGON_BREATH_STANDOFF - DRAGON_STANDOFF_TOLERANCE))
+         distanceToTarget < KILJAEDEN_DRAGON_BREATH_STANDOFF - KILJAEDEN_DRAGON_STANDOFF_TOLERANCE))
     {
         float const deltaX = target->GetPositionX() - dragon->GetPositionX();
         float const deltaY = target->GetPositionY() - dragon->GetPositionY();
         float const moveRatio =
-            (distanceToTarget - DRAGON_BREATH_STANDOFF) / distanceToTarget;
+            (distanceToTarget - KILJAEDEN_DRAGON_BREATH_STANDOFF) / distanceToTarget;
         float const moveX = dragon->GetPositionX() + deltaX * moveRatio;
         float const moveY = dragon->GetPositionY() + deltaY * moveRatio;
 

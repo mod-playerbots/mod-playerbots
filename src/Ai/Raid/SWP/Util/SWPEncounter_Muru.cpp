@@ -57,16 +57,16 @@ float GetBerserkerStunReach(Player* bot)
         case CLASS_DRUID:
         case CLASS_ROGUE:
         case CLASS_WARRIOR:
-            return MURU_MELEE_ABILITY_REACH;
+            return MELEE_ABILITY_REACH;
 
         case CLASS_PALADIN:
-            return MURU_HAMMER_OF_JUSTICE_REACH;
+            return HAMMER_OF_JUSTICE_REACH;
 
         case CLASS_WARLOCK:
-            return MURU_RANGED_ABILITY_REACH;
+            return RANGED_ABILITY_REACH;
 
         default:
-            return bot->getRace() == RACE_TAUREN ? MURU_WAR_STOMP_REACH : 0.0f;
+            return bot->getRace() == RACE_TAUREN ? SELF_AOE_RACIAL_RADIUS : 0.0f;
     }
 }
 
@@ -76,20 +76,20 @@ float GetFuryMageInterruptReach(Player* bot)
     {
         case CLASS_ROGUE:
         case CLASS_WARRIOR:
-            return MURU_MELEE_ABILITY_REACH;
+            return MELEE_ABILITY_REACH;
 
         case CLASS_SHAMAN:
-            return MURU_WIND_SHEAR_REACH;
+            return WIND_SHEAR_REACH;
 
         case CLASS_DEATH_KNIGHT:
         case CLASS_MAGE:
         case CLASS_PALADIN:
         case CLASS_PRIEST:
         case CLASS_WARLOCK:
-            return MURU_RANGED_ABILITY_REACH;
+            return RANGED_ABILITY_REACH;
 
         case CLASS_HUNTER:
-            return MURU_SILENCING_SHOT_REACH;
+            return SILENCING_SHOT_REACH;
 
         default:
             return 0.0f;
@@ -172,19 +172,19 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
 
         StampMuruDarknessWindow(
             muruDarknessStates[instanceId], now,
-            DARKNESS_PRE_EFFECT_MS + static_cast<uint32>(elapsedZoneMs),
+            MURU_DARKNESS_PRE_EFFECT_MS + static_cast<uint32>(elapsedZoneMs),
             static_cast<uint32>(remainingMs));
     }
     else if (Aura* preEffect = muru->GetAura(Id(SwpSpells::SPELL_DARKNESS_PRE_EFFECT)))
     {
         int32 const duration = preEffect->GetDuration();
         uint32 const remainingPreEffectMs = duration < 0 ?
-            DARKNESS_PRE_EFFECT_MS :
-            std::min(static_cast<uint32>(duration), DARKNESS_PRE_EFFECT_MS);
+            MURU_DARKNESS_PRE_EFFECT_MS :
+            std::min(static_cast<uint32>(duration), MURU_DARKNESS_PRE_EFFECT_MS);
 
         StampMuruDarknessWindow(
-            muruDarknessStates[instanceId], now, DARKNESS_PRE_EFFECT_MS - remainingPreEffectMs,
-            remainingPreEffectMs + DARKNESS_AURA_MS);
+            muruDarknessStates[instanceId], now, MURU_DARKNESS_PRE_EFFECT_MS - remainingPreEffectMs,
+            remainingPreEffectMs + MURU_DARKNESS_AURA_MS);
     }
 
     auto const stateItr = muruDarknessStates.find(instanceId);
@@ -298,7 +298,7 @@ Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI)
         return nullptr;
 
     return SelectNearestQualifying(
-        botAI, GetCachedMuruEncounterGuids(botAI).furyMages, MURU_RANGED_ABILITY_REACH,
+        botAI, GetCachedMuruEncounterGuids(botAI).furyMages, RANGED_ABILITY_REACH,
         &IsSpellFuryBuffedFuryMage);
 }
 

@@ -298,7 +298,7 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
 
     KiljaedenEncounterState& state = kiljaedenEncounterStates[bot->GetInstanceId()];
     if (!ShouldRebuildKiljaedenAssignments(
-            state.rangedAssignmentRebuildMs, RANGED_ASSIGNMENT_REBUILD_INTERVAL_MS))
+            state.rangedAssignmentRebuildMs, KILJAEDEN_RANGED_ASSIGNMENT_REBUILD_INTERVAL_MS))
     {
         return;
     }
@@ -679,7 +679,7 @@ Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 s
         {
             Player* other = otherRef->GetSource();
             if (!IsDragonGroupTarget(bot, other) ||
-                candidate->GetExactDist2d(other) > DRAGON_CLUSTER_RADIUS)
+                candidate->GetExactDist2d(other) > KILJAEDEN_DRAGON_CLUSTER_RADIUS)
             {
                 continue;
             }
@@ -689,7 +689,7 @@ Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 s
                 ++clusterSize;
         }
 
-        if (clusterSize < DRAGON_MIN_CLUSTER_SIZE)
+        if (clusterSize < KILJAEDEN_DRAGON_MIN_CLUSTER_SIZE)
             continue;
 
         float const distanceToDragon = dragon->GetExactDist2d(candidate);

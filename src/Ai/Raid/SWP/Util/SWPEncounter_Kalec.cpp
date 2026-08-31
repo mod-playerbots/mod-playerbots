@@ -30,7 +30,7 @@ void ClearExpiredActiveRift(KalecgosEncounterState& state, uint32 now)
     if (!state.activeRiftOpenedMs)
         return;
 
-    if (getMSTimeDiff(state.activeRiftOpenedMs, now) <= RIFT_ACTIVE_WINDOW_MS)
+    if (getMSTimeDiff(state.activeRiftOpenedMs, now) <= SPECTRAL_RIFT_ACTIVE_WINDOW_MS)
         return;
 
     state.activeRiftOpenedMs = 0;
@@ -62,7 +62,7 @@ bool CanReachPortalBeforeExpiry(Player* bot)
     if (!exhaustion)
         return true;
 
-    return exhaustion->GetDuration() <= static_cast<int32>(RIFT_ENTRY_WINDOW_MS);
+    return exhaustion->GetDuration() <= static_cast<int32>(SPECTRAL_RIFT_ENTRY_WINDOW_MS);
 }
 
 bool IsPortalEligibleCandidate(Player* bot)
