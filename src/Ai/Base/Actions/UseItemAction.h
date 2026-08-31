@@ -31,9 +31,9 @@ public:
     // inheritable", so callers construct a UseItemAction and invoke these directly.
     bool UseItemOnGameObject(Item* item, ObjectGuid go);
     bool UseItemOnUnit(Item* item, Unit* unitTarget);
+    bool UseItemAuto(Item* item);
 
 protected:
-    bool UseItemAuto(Item* item);
     bool UseItemOnItem(Item* item, Item* itemTarget);
     bool UseItem(Item* item, ObjectGuid go, Item* itemTarget, Unit* unitTarget = nullptr);
     bool UseGameObject(ObjectGuid guid);

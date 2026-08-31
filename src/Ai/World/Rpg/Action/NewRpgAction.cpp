@@ -739,6 +739,9 @@ bool GrabQuestItemAction::Execute(Event /*event*/)
     if (UseQuestItemOnRequiredTarget())
         return true;
 
+    if (UseQuestItemToCreateRequiredItem())
+        return true;
+
     GuidVector candidates = AI_VALUE(GuidVector, "possible quest grab targets");
     if (candidates.empty())
         return false;
@@ -844,6 +847,77 @@ bool GrabQuestItemAction::UseQuestItemOnRequiredTarget()
 
                 if (used)
                     return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool GrabQuestItemAction::UseQuestItemToCreateRequiredItem()
+{
+    std::vector<Item*> questItems = AI_VALUE2(std::vector<Item*>, "inventory items", "quest");
+    if (questItems.empty())
+        return false;
+
+    for (Item* item : questItems)
+    {
+        ItemTemplate const* proto = item->GetTemplate();
+        if (proto->StartQuest)
+            continue;
+
+        for (uint8 spellIdx = 0; spellIdx < MAX_ITEM_PROTO_SPELLS; ++spellIdx)
+        {
+            uint32 spellId = proto->Spells[spellIdx].SpellId;
+            if (!spellId)
+                continue;
+
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+            if (!spellInfo)
+                continue;
+
+            for (uint8 effectIdx = 0; effectIdx < MAX_SPELL_EFFECTS; ++effectIdx)
+            {
+                if (spellInfo->Effects[effectIdx].Effect != SPELL_EFFECT_CREATE_ITEM)
+                    continue;
+
+                uint32 createdItemId = spellInfo->Effects[effectIdx].ItemType;
+
+                for (auto const& [questId, status] : bot->getQuestStatusMap())
+                {
+                    if (status.Status != QUEST_STATUS_INCOMPLETE)
+                        continue;
+
+                    Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+                    if (!quest)
+                        continue;
+
+                    for (uint8 j = 0; j < QUEST_ITEM_OBJECTIVES_COUNT; ++j)
+                    {
+                        if (quest->RequiredItemId[j] != createdItemId ||
+                            status.ItemCount[j] >= quest->RequiredItemCount[j])
+                            continue;
+
+                        // No explicit target: items like this (e.g. "Jade Phial" filled into
+                        // "Filled Jade Phial") are gated by the spell's own range/spell-focus
+                        // requirement, not by anything the bot selects -- the bot only needs
+                        // to already be standing in the right spot, which "grab" doesn't move
+                        // it for. UseItemAuto() lets the server's own cast validation decide;
+                        // a bot outside the required area just gets a harmless failed cast.
+                        LOG_DEBUG("playerbots",
+                                  "[Quest Item Use] {} trying {} (creates {}) for quest {} objective {} ({}/{} done)",
+                                  bot->GetName(), proto->Name1, createdItemId, questId, j, status.ItemCount[j],
+                                  quest->RequiredItemCount[j]);
+
+                        UseItemAction useItemAction(botAI);
+                        bool used = useItemAction.UseItemAuto(item);
+
+                        LOG_DEBUG("playerbots", "[Quest Item Use] {} {} using {}", bot->GetName(),
+                                  used ? "succeeded" : "failed", proto->Name1);
+
+                        if (used)
+                            return true;
+                    }
+                }
             }
         }
     }
