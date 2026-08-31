@@ -150,7 +150,25 @@ enum class SwpObjects : uint32
 };
 
 inline constexpr uint32 SWP_MAP_ID = 580;
-inline constexpr float BOSS_ENGAGED_HEALTH_PCT = 95.0f;
+
+// Ability reaches from SpellRange.dbc (MaxRangeHostile). Grouped by spell, not shared value.
+// _REACH is the distance from the caster to a target; _RADIUS is the area around the caster. Both
+// are the raw dbc figures. A single-target cast counts both combat reaches, so using unmodified
+// _REACH is conservative.
+inline constexpr float MELEE_ABILITY_REACH = 5.0f;
+inline constexpr float RANGED_ABILITY_REACH = 30.0f;
+inline constexpr float HAMMER_OF_JUSTICE_REACH = 10.0f;
+inline constexpr float ICY_TOUCH_REACH = 20.0f;
+inline constexpr float CHARGE_REACH = 25.0f;
+inline constexpr float WIND_SHEAR_REACH = 25.0f;
+inline constexpr float SILENCING_SHOT_REACH = 35.0f;
+inline constexpr float CONSECRATION_RADIUS = 8.0f;
+inline constexpr float SHOCKWAVE_RADIUS = 10.0f;
+
+// War Stomp (20549) and all 3 Arcane Torrent variants.
+inline constexpr float SELF_AOE_RACIAL_RADIUS = 8.0f;
+// Challenging Shout and Challenging Roar.
+inline constexpr float TAUNT_SHOUT_RADIUS = 10.0f;
 
 // Feeds the "swp volatile fiend" value.
 inline constexpr uint32 VOLATILE_FIEND_CACHE_INTERVAL_MS = 200;

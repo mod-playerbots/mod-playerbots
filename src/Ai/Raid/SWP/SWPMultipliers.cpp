@@ -629,7 +629,7 @@ float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    return sacrolash && sacrolash->GetHealthPct() > MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
+    return sacrolash && sacrolash->GetHealthPct() > EREDAR_TWINS_MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
 }
 
 // M'uru
@@ -730,7 +730,7 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
             MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
         float const targetDistFromRef = actionTarget->GetExactDist2d(refPosition);
 
-        return targetDistFromMuru > DARKNESS_SAFE_DISTANCE &&
+        return targetDistFromMuru > MURU_DARKNESS_SAFE_DISTANCE &&
             targetDistFromRef < MURU_HOLDING_POSITION_RADIUS;
     };
 
