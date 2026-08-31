@@ -27,7 +27,7 @@ float GruulsLairDelayDpsCooldownsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    if (gruul && gruul->GetHealthPct() > 95.0f)
+    if (gruul && gruul->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return 0.0f;
 
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
