@@ -13,7 +13,101 @@
  */
 
 #include "PerfMonitor.h"
+#include "Config.h"
 #include "Playerbots.h"
+#include <cmath>
+#include <ctime>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+
+namespace
+{
+std::string MetricName(PerformanceMetric metric)
+{
+    switch (metric)
+    {
+        case PERF_MON_TRIGGER:
+            return "Trigger";
+        case PERF_MON_VALUE:
+            return "Value";
+        case PERF_MON_ACTION:
+            return "Action";
+        case PERF_MON_RNDBOT:
+            return "RndBot";
+        case PERF_MON_TOTAL:
+            return "Total";
+        default:
+            return "?";
+    }
+}
+
+std::string JsonEscape(std::string const& value)
+{
+    std::ostringstream out;
+    for (char c : value)
+    {
+        switch (c)
+        {
+            case '"':
+                out << "\\\"";
+                break;
+            case '\\':
+                out << "\\\\";
+                break;
+            case '\b':
+                out << "\\b";
+                break;
+            case '\f':
+                out << "\\f";
+                break;
+            case '\n':
+                out << "\\n";
+                break;
+            case '\r':
+                out << "\\r";
+                break;
+            case '\t':
+                out << "\\t";
+                break;
+            default:
+                if (static_cast<unsigned char>(c) < 0x20)
+                    out << "\\u" << std::hex << std::setw(4) << std::setfill('0') << static_cast<uint32>(c)
+                        << std::dec;
+                else
+                    out << c;
+                break;
+        }
+    }
+
+    return out.str();
+}
+
+std::string JsonNumber(double value)
+{
+    if (!std::isfinite(value))
+        value = 0.0;
+
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(3) << value;
+
+    return out.str();
+}
+
+std::string JsonRatio(double value, double total)
+{
+    return JsonNumber(total > 0.0 ? value / total : 0.0);
+}
+
+std::string JsonPath(bool perTick)
+{
+    std::string dir = sConfigMgr->GetOption<std::string>("LogsDir", "", false);
+    if (!dir.empty() && dir.back() != '/' && dir.back() != '\\')
+        dir.push_back('/');
+
+    return dir + (perTick ? "pmon_tick.json" : "pmon_total.json");
+}
+}  // namespace
 
 PerfMonitorOperation* PerfMonitor::start(PerformanceMetric metric, std::string const name,
                                                        PerformanceStack* stack)
@@ -82,28 +176,7 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
         {
             std::map<std::string, PerformanceData*> pdMap = i->second;
 
-            std::string key;
-            switch (i->first)
-            {
-                case PERF_MON_TRIGGER:
-                    key = "Trigger";
-                    break;
-                case PERF_MON_VALUE:
-                    key = "Value";
-                    break;
-                case PERF_MON_ACTION:
-                    key = "Action";
-                    break;
-                case PERF_MON_RNDBOT:
-                    key = "RndBot";
-                    break;
-                case PERF_MON_TOTAL:
-                    key = "Total";
-                    break;
-                default:
-                    key = "?";
-                    break;
-            }
+            std::string const key = MetricName(i->first);
 
             std::vector<std::string> names;
 
@@ -177,27 +250,7 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
         {
             std::map<std::string, PerformanceData*> pdMap = i->second;
 
-            std::string key;
-            switch (i->first)
-            {
-                case PERF_MON_TRIGGER:
-                    key = "Trigger";
-                    break;
-                case PERF_MON_VALUE:
-                    key = "Value";
-                    break;
-                case PERF_MON_ACTION:
-                    key = "Action";
-                    break;
-                case PERF_MON_RNDBOT:
-                    key = "RndBot";
-                    break;
-                case PERF_MON_TOTAL:
-                    key = "Total";
-                    break;
-                default:
-                    key = "?";
-            }
+            std::string const key = MetricName(i->first);
 
             std::vector<std::string> names;
 
@@ -253,6 +306,164 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
             LOG_INFO("playerbots", " ");
         }
     }
+}
+
+void PerfMonitor::DumpJson(bool perTick)
+{
+    std::map<PerformanceMetric, std::map<std::string, PerformanceData*>> snapshot;
+    {
+        std::lock_guard<std::mutex> guard(lock);
+        snapshot = data;
+    }
+
+    if (snapshot.empty())
+        return;
+
+    struct Sample
+    {
+        std::string name;
+        uint64 totalTime;
+        uint64 minTime;
+        uint64 maxTime;
+        uint32 count;
+    };
+
+    std::map<PerformanceMetric, std::vector<Sample>> samples;
+    for (auto const& metric : snapshot)
+    {
+        std::vector<Sample>& rows = samples[metric.first];
+        for (auto const& entry : metric.second)
+        {
+            PerformanceData* pd = entry.second;
+            if (!pd)
+                continue;
+
+            std::lock_guard<std::mutex> guard(pd->lock);
+            rows.push_back({entry.first, pd->totalTime, pd->minTime, pd->maxTime, pd->count});
+        }
+
+        std::sort(rows.begin(), rows.end(),
+                  [](Sample const& i, Sample const& j) { return i.totalTime > j.totalTime; });
+    }
+
+    double updateAiTotalTime = 0.0;
+    double fullTickTotalTime = 0.0;
+    double fullTickCount = 0.0;
+    auto const totals = samples.find(PERF_MON_TOTAL);
+    if (totals != samples.end())
+    {
+        for (Sample const& row : totals->second)
+        {
+            if (row.name.find("PlayerbotAI::UpdateAIInternal") != std::string::npos)
+                updateAiTotalTime += static_cast<double>(row.totalTime);
+
+            if (row.name == "PlayerbotAIBase::FullTick")
+            {
+                fullTickTotalTime = static_cast<double>(row.totalTime);
+                fullTickCount = static_cast<double>(row.count);
+            }
+        }
+    }
+
+    double const denominator = perTick ? fullTickTotalTime : updateAiTotalTime;
+
+    char stamp[32] = "";
+    std::time_t const now = std::time(nullptr);
+    if (std::tm const* utc = std::gmtime(&now))
+        std::strftime(stamp, sizeof(stamp), "%Y-%m-%dT%H:%M:%SZ", utc);
+
+    std::ostringstream out;
+    out << "{\n";
+    out << "  \"generatedAt\": " << static_cast<uint64>(now) << ",\n";
+    out << "  \"generatedAtUtc\": \"" << stamp << "\",\n";
+    out << "  \"mode\": \"" << (perTick ? "tick" : "total") << "\",\n";
+    out << "  \"enabled\": " << (sPlayerbotAIConfig.perfMonEnabled ? "true" : "false") << ",\n";
+    out << "  \"timeUnit\": \"microseconds\",\n";
+    out << "  \"fullTickCount\": " << static_cast<uint64>(fullTickCount) << ",\n";
+    out << "  \"fullTickTotalTime\": " << static_cast<uint64>(fullTickTotalTime) << ",\n";
+    out << "  \"updateAiTotalTime\": " << static_cast<uint64>(updateAiTotalTime) << ",\n";
+    out << "  \"metrics\": [\n";
+
+    bool firstMetric = true;
+    for (auto const& metric : samples)
+    {
+        if (!firstMetric)
+            out << ",\n";
+        firstMetric = false;
+
+        out << "    {\n";
+        out << "      \"type\": \"" << MetricName(metric.first) << "\",\n";
+
+        if (metric.first != PERF_MON_TOTAL)
+        {
+            uint64 typeTotalTime = 0;
+            uint64 typeMinTime = 0;
+            uint64 typeMaxTime = 0;
+            uint64 typeCount = 0;
+            for (Sample const& row : metric.second)
+            {
+                typeTotalTime += row.totalTime;
+                typeCount += row.count;
+                if (!typeMinTime || (row.minTime && typeMinTime > row.minTime))
+                    typeMinTime = row.minTime;
+                if (typeMaxTime < row.maxTime)
+                    typeMaxTime = row.maxTime;
+            }
+
+            out << "      \"totalTime\": " << typeTotalTime << ",\n";
+            out << "      \"count\": " << typeCount << ",\n";
+            out << "      \"minTime\": " << typeMinTime << ",\n";
+            out << "      \"maxTime\": " << typeMaxTime << ",\n";
+            out << "      \"avgTime\": "
+                << JsonRatio(static_cast<double>(typeTotalTime), static_cast<double>(typeCount)) << ",\n";
+            out << "      \"percent\": "
+                << JsonNumber(denominator > 0.0 ? static_cast<double>(typeTotalTime) / denominator * 100.0 : 0.0)
+                << ",\n";
+            out << "      \"timePerTick\": " << JsonRatio(static_cast<double>(typeTotalTime), fullTickCount) << ",\n";
+            out << "      \"callsPerTick\": " << JsonRatio(static_cast<double>(typeCount), fullTickCount) << ",\n";
+        }
+
+        out << "      \"rows\": [\n";
+
+        bool firstRow = true;
+        for (Sample const& row : metric.second)
+        {
+            if (!firstRow)
+                out << ",\n";
+            firstRow = false;
+
+            out << "        {\"name\": \"" << JsonEscape(row.name) << "\"";
+            out << ", \"totalTime\": " << row.totalTime;
+            out << ", \"count\": " << row.count;
+            out << ", \"minTime\": " << row.minTime;
+            out << ", \"maxTime\": " << row.maxTime;
+            out << ", \"avgTime\": " << JsonRatio(static_cast<double>(row.totalTime), static_cast<double>(row.count));
+            out << ", \"percent\": "
+                << JsonNumber(denominator > 0.0 ? static_cast<double>(row.totalTime) / denominator * 100.0 : 0.0);
+            out << ", \"timePerTick\": " << JsonRatio(static_cast<double>(row.totalTime), fullTickCount);
+            out << ", \"callsPerTick\": " << JsonRatio(static_cast<double>(row.count), fullTickCount);
+            out << "}";
+        }
+
+        out << (firstRow ? "" : "\n") << "      ]\n";
+        out << "    }";
+    }
+
+    out << (firstMetric ? "" : "\n") << "  ]\n";
+    out << "}\n";
+
+    std::string const path = JsonPath(perTick);
+    std::ofstream file(path.c_str(), std::ios::out | std::ios::trunc);
+    if (!file)
+    {
+        LOG_ERROR("playerbots", "Performance monitor could not write {}", path);
+        return;
+    }
+
+    file << out.str();
+    file.close();
+
+    LOG_INFO("playerbots", "Performance monitor dump written to {}", path);
 }
 
 void PerfMonitor::Reset()
