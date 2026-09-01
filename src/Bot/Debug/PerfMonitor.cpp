@@ -15,10 +15,62 @@
 #include "PerfMonitor.h"
 #include "Playerbots.h"
 
+namespace
+{
+std::chrono::microseconds Now()
+{
+    return (std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()))
+        .time_since_epoch();
+}
+
+void RecordSample(PerformanceData* data, uint64 elapsed)
+{
+    std::lock_guard<std::mutex> guard(data->lock);
+    if (elapsed > 0)
+    {
+        if (!data->minTime || data->minTime > elapsed)
+            data->minTime = elapsed;
+
+        if (!data->maxTime || data->maxTime < elapsed)
+            data->maxTime = elapsed;
+
+        data->totalTime += elapsed;
+    }
+
+    ++data->count;
+}
+}  // namespace
+
+bool PerfMonitor::IsEnabled() { return sPlayerbotAIConfig.perfMonEnabled; }
+
+PerformanceData* PerfMonitor::GetOrCreate(PerformanceMetric metric, std::string const& name)
+{
+    std::lock_guard<std::mutex> guard(lock);
+    PerformanceData*& pd = data[metric][name];
+    if (!pd)
+    {
+        pd = new PerformanceData();
+        pd->minTime = 0;
+        pd->maxTime = 0;
+        pd->totalTime = 0;
+        pd->count = 0;
+    }
+
+    return pd;
+}
+
+PerformanceData* PerfMonitor::acquire(PerformanceMetric metric, std::string const& name)
+{
+    if (!IsEnabled())
+        return nullptr;
+
+    return GetOrCreate(metric, name);
+}
+
 PerfMonitorOperation* PerfMonitor::start(PerformanceMetric metric, std::string const name,
                                                        PerformanceStack* stack)
 {
-    if (!sPlayerbotAIConfig.perfMonEnabled)
+    if (!IsEnabled())
         return nullptr;
 
     std::string stackName = name;
@@ -41,19 +93,7 @@ PerfMonitorOperation* PerfMonitor::start(PerformanceMetric metric, std::string c
         stack->push_back(name);
     }
 
-    std::lock_guard<std::mutex> guard(lock);
-    PerformanceData* pd = data[metric][stackName];
-    if (!pd)
-    {
-        pd = new PerformanceData();
-        pd->minTime = 0;
-        pd->maxTime = 0;
-        pd->totalTime = 0;
-        pd->count = 0;
-        data[metric][stackName] = pd;
-    }
-
-    return new PerfMonitorOperation(pd, name, stack);
+    return new PerfMonitorOperation(GetOrCreate(metric, stackName), name, stack);
 }
 
 void PerfMonitor::PrintStats(bool perTick, bool fullStack)
@@ -275,32 +315,13 @@ void PerfMonitor::Reset()
 
 PerfMonitorOperation::PerfMonitorOperation(PerformanceData* data, std::string const name,
                                                          PerformanceStack* stack)
-    : data(data), name(name), stack(stack)
+    : data(data), name(name), stack(stack), started(Now())
 {
-    started = (std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()))
-                  .time_since_epoch();
 }
 
 void PerfMonitorOperation::finish()
 {
-    std::chrono::microseconds finished =
-        (std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()))
-            .time_since_epoch();
-    uint64 elapsed = (finished - started).count();
-
-    std::lock_guard<std::mutex> guard(data->lock);
-    if (elapsed > 0)
-    {
-        if (!data->minTime || data->minTime > elapsed)
-            data->minTime = elapsed;
-
-        if (!data->maxTime || data->maxTime < elapsed)
-            data->maxTime = elapsed;
-
-        data->totalTime += elapsed;
-    }
-
-    ++data->count;
+    RecordSample(data, (Now() - started).count());
 
     if (stack)
     {
@@ -308,4 +329,20 @@ void PerfMonitorOperation::finish()
     }
 
     delete this;
+}
+
+PerfMonitorScope::PerfMonitorScope(PerformanceData* data) : data(data)
+{
+    if (!data)
+        return;
+
+    started = Now();
+}
+
+PerfMonitorScope::~PerfMonitorScope()
+{
+    if (!data)
+        return;
+
+    RecordSample(data, (Now() - started).count());
 }
