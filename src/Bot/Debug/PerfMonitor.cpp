@@ -15,10 +15,72 @@
 #include "PerfMonitor.h"
 #include "Playerbots.h"
 
+namespace
+{
+std::chrono::microseconds Now()
+{
+    return (std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()))
+        .time_since_epoch();
+}
+
+void RecordSample(PerformanceData* data, uint64 elapsed)
+{
+    std::lock_guard<std::mutex> guard(data->lock);
+    if (elapsed > 0)
+    {
+        if (!data->minTime || data->minTime > elapsed)
+            data->minTime = elapsed;
+
+        if (!data->maxTime || data->maxTime < elapsed)
+            data->maxTime = elapsed;
+
+        data->totalTime += elapsed;
+    }
+
+    ++data->count;
+}
+}  // namespace
+
+bool PerfMonitor::IsEnabled() { return sPlayerbotAIConfig.perfMonEnabled; }
+
+PerformanceData* PerfMonitor::GetOrCreate(PerformanceMetric metric, std::string const& name)
+{
+    std::lock_guard<std::mutex> guard(lock);
+    PerformanceData*& pd = data[metric][name];
+    if (!pd)
+    {
+        pd = new PerformanceData();
+        pd->minTime = 0;
+        pd->maxTime = 0;
+        pd->totalTime = 0;
+        pd->count = 0;
+        pd->vetoes = 0;
+    }
+
+    return pd;
+}
+
+PerformanceData* PerfMonitor::acquire(PerformanceMetric metric, std::string const& name)
+{
+    if (!IsEnabled())
+        return nullptr;
+
+    return GetOrCreate(metric, name);
+}
+
+void PerfMonitor::CountVeto(PerformanceData* data)
+{
+    if (!data)
+        return;
+
+    std::lock_guard<std::mutex> guard(data->lock);
+    ++data->vetoes;
+}
+
 PerfMonitorOperation* PerfMonitor::start(PerformanceMetric metric, std::string const name,
                                                        PerformanceStack* stack)
 {
-    if (!sPlayerbotAIConfig.perfMonEnabled)
+    if (!IsEnabled())
         return nullptr;
 
     std::string stackName = name;
@@ -41,19 +103,7 @@ PerfMonitorOperation* PerfMonitor::start(PerformanceMetric metric, std::string c
         stack->push_back(name);
     }
 
-    std::lock_guard<std::mutex> guard(lock);
-    PerformanceData* pd = data[metric][stackName];
-    if (!pd)
-    {
-        pd = new PerformanceData();
-        pd->minTime = 0;
-        pd->maxTime = 0;
-        pd->totalTime = 0;
-        pd->count = 0;
-        data[metric][stackName] = pd;
-    }
-
-    return new PerfMonitorOperation(pd, name, stack);
+    return new PerfMonitorOperation(GetOrCreate(metric, stackName), name, stack);
 }
 
 void PerfMonitor::PrintStats(bool perTick, bool fullStack)
@@ -94,6 +144,9 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
                 case PERF_MON_ACTION:
                     key = "Action";
                     break;
+                case PERF_MON_MULTIPLIER:
+                    key = "Mult";
+                    break;
                 case PERF_MON_RNDBOT:
                     key = "RndBot";
                     break;
@@ -123,11 +176,13 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
             uint64 typeMinTime = 0xffffffffu;
             uint64 typeMaxTime = 0;
             uint32 typeCount = 0;
+            uint32 typeVetoes = 0;
             for (auto& name : names)
             {
                 PerformanceData* pd = pdMap[name];
                 typeTotalTime += pd->totalTime;
                 typeCount += pd->count;
+                typeVetoes += pd->vetoes;
                 if (typeMinTime > pd->minTime)
                     typeMinTime = pd->minTime;
                 if (typeMaxTime < pd->maxTime)
@@ -141,7 +196,16 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
                 if (!fullStack && disName.find("|") != std::string::npos)
                     disName = disName.substr(0, disName.find("|")) + "]";
 
-                if (perc >= 0.1f || avg >= 0.25f || pd->maxTime > 1000)
+                bool show = perc >= 0.1f || avg >= 0.25f || pd->maxTime > 1000;
+                if (i->first == PERF_MON_MULTIPLIER)
+                {
+                    if (pd->vetoes)
+                        disName += " [vetoed " + std::to_string(pd->vetoes) + "]";
+
+                    show = show || pd->vetoes > 0 || perc >= 0.01f;
+                }
+
+                if (show)
                 {
                     LOG_INFO("playerbots",
                              "{:7.3f}% {:10.3f}s | {:7.1f} .. {:7.1f} ({:10.3f} of {:10d}) - {:6}    : {}", perc, time,
@@ -153,8 +217,12 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
             float tMinTime = (float)typeMinTime / 1000.0f;
             float tMaxTime = (float)typeMaxTime / 1000.0f;
             float tAvg = (float)typeTotalTime / (float)typeCount / 1000.0f;
+            std::string totalName = "Total";
+            if (i->first == PERF_MON_MULTIPLIER && typeVetoes)
+                totalName += " [vetoed " + std::to_string(typeVetoes) + "]";
+
             LOG_INFO("playerbots", "{:7.3f}% {:10.3f}s | {:7.1f} .. {:7.1f} ({:10.3f} of {:10d}) - {:6}    : {}", tPerc,
-                     tTime, tMinTime, tMaxTime, tAvg, typeCount, key.c_str(), "Total");
+                     tTime, tMinTime, tMaxTime, tAvg, typeCount, key.c_str(), totalName.c_str());
             LOG_INFO("playerbots", " ");
         }
     }
@@ -189,6 +257,9 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
                 case PERF_MON_ACTION:
                     key = "Action";
                     break;
+                case PERF_MON_MULTIPLIER:
+                    key = "Mult";
+                    break;
                 case PERF_MON_RNDBOT:
                     key = "RndBot";
                     break;
@@ -214,11 +285,13 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
             uint64 typeMinTime = 0xffffffffu;
             uint64 typeMaxTime = 0;
             uint32 typeCount = 0;
+            uint32 typeVetoes = 0;
             for (auto& name : names)
             {
                 PerformanceData* pd = pdMap[name];
                 typeTotalTime += pd->totalTime;
                 typeCount += pd->count;
+                typeVetoes += pd->vetoes;
                 if (typeMinTime > pd->minTime)
                     typeMinTime = pd->minTime;
                 if (typeMaxTime < pd->maxTime)
@@ -232,7 +305,16 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
                 std::string disName = name;
                 if (!fullStack && disName.find("|") != std::string::npos)
                     disName = disName.substr(0, disName.find("|")) + "]";
-                if (perc >= 0.1f || avg >= 0.25f || pd->maxTime > 1000)
+                bool show = perc >= 0.1f || avg >= 0.25f || pd->maxTime > 1000;
+                if (i->first == PERF_MON_MULTIPLIER)
+                {
+                    if (pd->vetoes)
+                        disName += " [vetoed " + std::to_string(pd->vetoes) + "]";
+
+                    show = show || pd->vetoes > 0 || perc >= 0.01f;
+                }
+
+                if (show)
                 {
                     LOG_INFO("playerbots",
                              "{:7.3f}% {:9.3f}ms | {:7.1f} .. {:7.1f} ({:10.3f} of {:10.2f}) - {:6}    : {}", perc,
@@ -247,8 +329,12 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
                 float tMaxTime = (float)typeMaxTime / 1000.0f;
                 float tAvg = (float)typeTotalTime / (float)typeCount / 1000.0f;
                 float tAmount = (float)typeCount / fullTickCount;
+                std::string totalName = "Total";
+                if (i->first == PERF_MON_MULTIPLIER && typeVetoes)
+                    totalName += " [vetoed " + std::to_string(typeVetoes) + "]";
+
                 LOG_INFO("playerbots", "{:7.3f}% {:9.3f}ms | {:7.1f} .. {:7.1f} ({:10.3f} of {:10.2f}) - {:6}    : {}",
-                         tPerc, tTime, tMinTime, tMaxTime, tAvg, tAmount, key.c_str(), "Total");
+                         tPerc, tTime, tMinTime, tMaxTime, tAvg, tAmount, key.c_str(), totalName.c_str());
             }
             LOG_INFO("playerbots", " ");
         }
@@ -269,38 +355,20 @@ void PerfMonitor::Reset()
             pd->maxTime = 0;
             pd->totalTime = 0;
             pd->count = 0;
+            pd->vetoes = 0;
         }
     }
 }
 
 PerfMonitorOperation::PerfMonitorOperation(PerformanceData* data, std::string const name,
                                                          PerformanceStack* stack)
-    : data(data), name(name), stack(stack)
+    : data(data), name(name), stack(stack), started(Now())
 {
-    started = (std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()))
-                  .time_since_epoch();
 }
 
 void PerfMonitorOperation::finish()
 {
-    std::chrono::microseconds finished =
-        (std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()))
-            .time_since_epoch();
-    uint64 elapsed = (finished - started).count();
-
-    std::lock_guard<std::mutex> guard(data->lock);
-    if (elapsed > 0)
-    {
-        if (!data->minTime || data->minTime > elapsed)
-            data->minTime = elapsed;
-
-        if (!data->maxTime || data->maxTime < elapsed)
-            data->maxTime = elapsed;
-
-        data->totalTime += elapsed;
-    }
-
-    ++data->count;
+    RecordSample(data, (Now() - started).count());
 
     if (stack)
     {
@@ -308,4 +376,20 @@ void PerfMonitorOperation::finish()
     }
 
     delete this;
+}
+
+PerfMonitorScope::PerfMonitorScope(PerformanceData* data) : data(data)
+{
+    if (!data)
+        return;
+
+    started = Now();
+}
+
+PerfMonitorScope::~PerfMonitorScope()
+{
+    if (!data)
+        return;
+
+    RecordSample(data, (Now() - started).count());
 }
