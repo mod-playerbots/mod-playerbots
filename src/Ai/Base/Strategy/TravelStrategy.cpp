@@ -9,6 +9,13 @@
 
 TravelStrategy::TravelStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
+std::vector<NextAction> TravelStrategy::getDefaultActions()
+{
+    return {
+        NextAction("travel", 1.0f)
+    };
+}
+
 void TravelStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(

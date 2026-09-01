@@ -1410,13 +1410,6 @@ AiPlayerbot.EnableTravelNodes = 0
 AiPlayerbot.TravelNodeProbeSteps = 10
 AiPlayerbot.TravelNodeDirectDistance = 300
 
-# The "travel" whisper command (a debugging tool: 'travel <map> <x> <y> <z>',
-# 'travel <x> <y> <z>', 'travel status', 'travel stop') auto-enables
-# "+debug move" for the duration of the order when this is on, so its route
-# trace is visible without a separate command. Off by default.
-# Default: 0 (disabled)
-AiPlayerbot.TravelCommandDebugMove = 0
-
 # Control probability weights for RPG status of bots. Takes effect only when the status meets its premise.​
 # Sum of weights need not be 100. Set to 0 to disable the status.
 #

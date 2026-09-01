@@ -400,7 +400,6 @@ public:
     // node graph; beyond it the graph routes first and the direct probe is
     // only a no-route fallback.
     float travelNodeDirectDistance;
-    bool travelCommandDebugMove;
     std::unordered_map<NewRpgStatus, uint32> RpgStatusProbWeight;
     bool syncLevelWithPlayers;
     bool autoLearnQuestSpells;

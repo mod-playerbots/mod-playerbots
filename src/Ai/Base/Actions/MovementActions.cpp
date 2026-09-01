@@ -38,7 +38,6 @@
 #include "Timer.h"
 #include "Transport.h"
 #include "TravelNode.h"
-#include "TravelOrderValue.h"
 #include "Unit.h"
 #include "Vehicle.h"
 #include "WaypointMovementGenerator.h"
@@ -2530,20 +2529,23 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos,
                                            LastMovement& lastMove)
 {
     // Invariant: a Detour pathfind must only ever run on the bot's CURRENT map.
-    // The travel-node graph bridges maps via transition links (portals/flights/
-    // boats) and exists ONLY on the overworld continents (0/1/530/571). If either
-    // endpoint of a cross-map move is an instance, there is no graph route — the
-    // only way to "reach" it would be to project the bot onto another map and live-
-    // pathfind that map's navmesh query from this thread, which races that map's own
-    // update thread and can corrupt the shared dtNavMeshQuery node pool into an
-    // infinite loop (world-thread freeze). Refuse instead: MoveTo2 returns false on
+    // Cross-map moves are routed exclusively by the travel-node graph: candidate
+    // node selection is pure position math and the final endNode->destination leg
+    // is DEFERRED until the bot stands on the destination map (GetFullPath), so
+    // no remote navmesh query is ever issued. That works for any endpoint map
+    // that carries graph nodes — instance-side portal entrance/exit nodes
+    // included — but a map with no nodes at all cannot be bridged, and
+    // battlegrounds never use the graph. Refuse those: MoveTo2 returns false on
     // an empty path, so the move fails and the RPG layer drops the objective.
-    if (startPos.GetMapId() != endPos.GetMapId() &&
-        (!startPos.isOverworld() || !endPos.isOverworld()))
+    bool const crossMap = startPos.GetMapId() != endPos.GetMapId();
+    if (crossMap &&
+        (bot->InBattleground() ||
+         !sTravelNodeMap.hasNodesOnMap(startPos.GetMapId()) ||
+         !sTravelNodeMap.hasNodesOnMap(endPos.GetMapId())))
     {
         LOG_DEBUG("playerbots",
                   "[TravelGate] {} {} refused cross-map path: map {} ({:.0f},{:.0f},{:.0f}) "
-                  "-> map {} ({:.0f},{:.0f},{:.0f}) (instance endpoint, no graph route)",
+                  "-> map {} ({:.0f},{:.0f},{:.0f}) (no graph coverage on an endpoint map)",
                   bot->GetName(), bot->GetGUID().ToString(),
                   startPos.GetMapId(), startPos.GetPositionX(),
                   startPos.GetPositionY(), startPos.GetPositionZ(),
@@ -2607,6 +2609,22 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos,
     {
         out = lastMove.lastPath;
         resolveMethod = "cache-kept";
+    }
+
+    // A failed cross-map resolve must NOT fall through to the beeline: the
+    // destination's coordinates are meaningless on the bot's current map.
+    // Return empty so MoveTo2 reports the failure instead.
+    if (out.empty() && crossMap)
+    {
+        LOG_DEBUG("playerbots",
+                  "[TravelGate] {} {} no cross-map graph route: map {} "
+                  "({:.0f},{:.0f},{:.0f}) -> map {} ({:.0f},{:.0f},{:.0f})",
+                  bot->GetName(), bot->GetGUID().ToString(),
+                  startPos.GetMapId(), startPos.GetPositionX(),
+                  startPos.GetPositionY(), startPos.GetPositionZ(),
+                  endPos.GetMapId(), endPos.GetPositionX(),
+                  endPos.GetPositionY(), endPos.GetPositionZ());
+        return {};
     }
 
     // Last-ditch fallback: a single point at the destination, so the
@@ -3249,13 +3267,7 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
     // (random/background) and a teleport cooldown is still in effect
     // from a prior dispatch, postpone re-evaluation until the cooldown
     // expires instead of re-resolving the path every tick.
-    // An explicit travel order keeps the bot in detailed-move mode even
-    // when its master is on another map: after a transport crossing the
-    // bot is alone on the far continent, AllowActivity drops it into
-    // low-activity mode, and the teleport-advance/cooldown pair silently
-    // parks it for minutes (observed post-crossing 300s stall).
-    bool const detailedMove = botAI->AllowActivity(DETAILED_MOVE_ACTIVITY) ||
-                              AI_VALUE(TravelOrder&, "travel order").active;
+    bool const detailedMove = botAI->AllowActivity(DETAILED_MOVE_ACTIVITY);
     if (!detailedMove && lastMove.nextTeleport)
     {
         time_t const now = time(nullptr);
@@ -3609,11 +3621,8 @@ bool MovementAction::DispatchMovement(TravelPath path,
     // Skip cosmetic walking for low-activity bots with no nearby
     // player — teleport to the path tail and schedule a cooldown
     // instead. Matches the reference's MoveTo2 gate
-    // (`!detailedMove && !HasPlayerNearby`). Bots driving an explicit
-    // travel order stay in detailed mode (same gate as MoveTo2) — the
-    // order should walk visibly even with the master maps away.
-    if (!botAI->AllowActivity(DETAILED_MOVE_ACTIVITY) &&
-        !AI_VALUE(TravelOrder&, "travel order").active)
+    // (`!detailedMove && !HasPlayerNearby`).
+    if (!botAI->AllowActivity(DETAILED_MOVE_ACTIVITY))
     {
         // `last` (points.back()) is a coordinate on the bot's CURRENT map: the same
         // `points` are handed to MoveSplinePath/MovePoint on this map just below, so

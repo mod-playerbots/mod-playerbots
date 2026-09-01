@@ -27,7 +27,6 @@
 #include "FlagAction.h"
 #include "Formations.h"
 #include "GoAction.h"
-#include "TravelOrderActions.h"
 #include "GossipHelloAction.h"
 #include "GuildBankAction.h"
 #include "GuildManagementActions.h"
@@ -181,7 +180,6 @@ public:
         creators["sendmail"] = &ChatActionContext::sendmail;
         creators["mail"] = &ChatActionContext::mail;
         creators["go"] = &ChatActionContext::go;
-        creators["travel"] = &ChatActionContext::travel;
         creators["debug"] = &ChatActionContext::debug;
         creators["cdebug"] = &ChatActionContext::debug;
         creators["cs"] = &ChatActionContext::cs;
@@ -227,7 +225,6 @@ private:
     static Action* debug(PlayerbotAI* botAI) { return new DebugAction(botAI); }
     static Action* mail(PlayerbotAI* botAI) { return new MailAction(botAI); }
     static Action* go(PlayerbotAI* botAI) { return new GoAction(botAI); }
-    static Action* travel(PlayerbotAI* botAI) { return new TravelCommandAction(botAI); }
     static Action* sendmail(PlayerbotAI* botAI) { return new SendMailAction(botAI); }
     static Action* formation(PlayerbotAI* botAI) { return new SetFormationAction(botAI); }
     static Action* stance(PlayerbotAI* botAI) { return new SetStanceAction(botAI); }

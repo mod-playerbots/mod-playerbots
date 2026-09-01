@@ -64,7 +64,6 @@
 #include "StayActions.h"
 #include "SuggestWhatToDoAction.h"
 #include "TravelAction.h"
-#include "TravelOrderActions.h"
 #include "UseItemAction.h"
 #include "VehicleActions.h"
 #include "WaitForAttackAction.h"
@@ -84,6 +83,7 @@ public:
         creators["crpg"] = &ActionContext::crpg;
         creators["choose rpg target"] = &ActionContext::choose_rpg_target;
         creators["move to rpg target"] = &ActionContext::move_to_rpg_target;
+        creators["travel"] = &ActionContext::travel;
         creators["choose travel target"] = &ActionContext::choose_travel_target;
         creators["move to travel target"] = &ActionContext::move_to_travel_target;
         creators["move out of collision"] = &ActionContext::move_out_of_collision;
@@ -135,7 +135,6 @@ public:
         creators["flee to group leader"] = &ActionContext::flee_to_group_leader;
         creators["runaway"] = &ActionContext::runaway;
         creators["stay"] = &ActionContext::stay;
-        creators["drive travel order"] = &ActionContext::drive_travel_order;
         creators["sit"] = &ActionContext::sit;
         creators["aggressive target"] = &ActionContext::aggressive_target;
         creators["attack anything"] = &ActionContext::attack_anything;
@@ -292,6 +291,7 @@ private:
     static Action* crpg(PlayerbotAI* botAI) { return new CRpgAction(botAI); }
     static Action* choose_rpg_target(PlayerbotAI* botAI) { return new ChooseRpgTargetAction(botAI); }
     static Action* move_to_rpg_target(PlayerbotAI* botAI) { return new MoveToRpgTargetAction(botAI); }
+    static Action* travel(PlayerbotAI* botAI) { return new TravelAction(botAI); }
     static Action* choose_travel_target(PlayerbotAI* botAI) { return new ChooseTravelTargetAction(botAI); }
     static Action* move_to_travel_target(PlayerbotAI* botAI) { return new MoveToTravelTargetAction(botAI); }
     static Action* move_out_of_collision(PlayerbotAI* botAI) { return new MoveOutOfCollisionAction(botAI); }
@@ -345,7 +345,6 @@ private:
     static Action* attack_least_hp_target(PlayerbotAI* botAI) { return new AttackLeastHpTargetAction(botAI); }
     static Action* attack_enemy_player(PlayerbotAI* botAI) { return new AttackEnemyPlayerAction(botAI); }
     static Action* stay(PlayerbotAI* botAI) { return new StayAction(botAI); }
-    static Action* drive_travel_order(PlayerbotAI* botAI) { return new DriveTravelOrderAction(botAI); }
     static Action* sit(PlayerbotAI* botAI) { return new SitAction(botAI); }
     static Action* runaway(PlayerbotAI* botAI) { return new RunAwayAction(botAI); }
     static Action* follow(PlayerbotAI* botAI) { return new FollowAction(botAI); }

@@ -48,7 +48,6 @@
 #include "RpgStrategy.h"
 #include "RunawayStrategy.h"
 #include "StayStrategy.h"
-#include "TravelOrderActions.h"
 #include "TankAssistStrategy.h"
 #include "TellTargetStrategy.h"
 #include "ThreatStrategy.h"
@@ -218,7 +217,6 @@ public:
     {
         creators["follow"] = &MovementStrategyContext::follow_master;
         creators["stay"] = &MovementStrategyContext::stay;
-        creators["travel order"] = &MovementStrategyContext::travel_order;
         creators["runaway"] = &MovementStrategyContext::runaway;
         creators["flee from adds"] = &MovementStrategyContext::flee_from_adds;
         creators["guard"] = &MovementStrategyContext::guard;
@@ -228,7 +226,6 @@ private:
     static Strategy* guard(PlayerbotAI* botAI) { return new GuardStrategy(botAI); }
     static Strategy* follow_master(PlayerbotAI* botAI) { return new FollowMasterStrategy(botAI); }
     static Strategy* stay(PlayerbotAI* botAI) { return new StayStrategy(botAI); }
-    static Strategy* travel_order(PlayerbotAI* botAI) { return new TravelOrderStrategy(botAI); }
     static Strategy* runaway(PlayerbotAI* botAI) { return new RunawayStrategy(botAI); }
     static Strategy* flee_from_adds(PlayerbotAI* botAI) { return new FleeFromAddsStrategy(botAI); }
 };
