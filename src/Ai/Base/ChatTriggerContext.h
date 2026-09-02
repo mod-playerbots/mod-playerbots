@@ -121,7 +121,6 @@ public:
         creators["mail"] = &ChatTriggerContext::mail;
         creators["outfit"] = &ChatTriggerContext::outfit;
         creators["go"] = &ChatTriggerContext::go;
-        creators["travel"] = &ChatTriggerContext::travel;
         creators["ready"] = &ChatTriggerContext::ready_check;
         creators["rebuff"] = &ChatTriggerContext::rebuff;
         creators["debug"] = &ChatTriggerContext::debug;
@@ -171,7 +170,6 @@ private:
     static Trigger* debug(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "debug"); }
     static Trigger* cdebug(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "cdebug"); }
     static Trigger* go(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "go"); }
-    static Trigger* travel(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "travel"); }
     static Trigger* outfit(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "outfit"); }
     static Trigger* mail(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "mail"); }
     static Trigger* sendmail(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "sendmail"); }
