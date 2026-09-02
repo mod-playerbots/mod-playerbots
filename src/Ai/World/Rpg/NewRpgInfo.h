@@ -97,7 +97,6 @@ struct NewRpgInfo
     RpgData data;
 
     NewRpgStatus GetStatus();
-    // Short, hyphenated name for a status, used by movement/debug logging.
     static char const* StatusName(NewRpgStatus status);
     static NewRpgStatus StatusFromString(std::string const& name);
     bool HasStatusPersisted(uint32 maxDuration) { return GetMSTimeDiffToNow(startT) > maxDuration; }
