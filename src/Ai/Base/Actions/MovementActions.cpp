@@ -232,6 +232,10 @@ bool MovementAction::MoveNear(WorldObject* target, float distance, MovementPrior
     if (!target)
         return false;
 
+    UpdateMovementState();
+    if (!IsMovingAllowed() || !CanOverrideMovement(priority))
+        return false;
+
     float const followAngle = GetFollowAngle();
     float const followRange = botAI->GetRange("follow");
 
@@ -352,10 +356,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     // duration (upstream IsWaitingForLastMove semantics). Nothing more
     // elaborate ships here — full arbitration is the reaction engine's
     // job (addReactionEngine branch).
-    LastMovement& lastMoveGate = AI_VALUE(LastMovement&, "last movement");
-    if (priority < lastMoveGate.priority && bot->isMoving())
-        return false;
-    if (lastMoveGate.IsHoldActive() && priority <= lastMoveGate.priority)
+    if (!CanOverrideMovement(priority))
         return false;
 
     if (IsDuplicateMove(x, y, z))
@@ -551,6 +552,17 @@ bool MovementAction::IsMovingAllowed(WorldObject* target)
         return false;
 
     return IsMovingAllowed();
+}
+
+// Priority check for a new move request: requires equal or higher priority, and an explicit hold (SetNextMovementDelay) is only
+// broken by a strictly higher one.
+bool MovementAction::CanOverrideMovement(MovementPriority priority)
+{
+    LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
+    if (priority < lastMove.priority && bot->isMoving())
+        return false;
+
+    return !lastMove.IsHoldActive() || priority > lastMove.priority;
 }
 
 bool MovementAction::IsDuplicateMove(float x, float y, float z)
