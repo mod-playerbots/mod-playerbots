@@ -107,7 +107,7 @@ uint32 SpellIdValue::Calculate()
         for (auto it = spellIds.rbegin(); it != spellIds.rend(); ++it)
         {
             auto spellId = *it;
-            const SpellInfo* pSpellInfo = sSpellMgr->GetSpellInfo(spellId);
+            SpellInfo const* pSpellInfo = sSpellMgr->GetSpellInfo(spellId);
             if (!pSpellInfo)
                 continue;
 

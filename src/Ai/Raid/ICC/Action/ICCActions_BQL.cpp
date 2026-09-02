@@ -4,7 +4,6 @@
  * or (at your option) any later version.
  */
 
-#include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "ICCActions.h"
 #include "ICCTriggers.h"
@@ -1079,7 +1078,7 @@ bool IccBqlPactOfDarkfallenAction::Execute(Event /*event*/)
     return MoveToTargetPosition(targetPos, playersWithAura.size() + 1);  // +1 to include the bot itself
 }
 
-bool IccBqlPactOfDarkfallenAction::CalculateCenterPosition(Position& targetPos, const std::vector<Player*>& playersWithAura)
+bool IccBqlPactOfDarkfallenAction::CalculateCenterPosition(Position& targetPos, std::vector<Player*> const& playersWithAura)
 {
     float sumX = bot->GetPositionX();
     float sumY = bot->GetPositionY();

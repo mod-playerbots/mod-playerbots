@@ -4,7 +4,6 @@
  * or (at your option) any later version.
  */
 
-#include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "ICCActions.h"
 #include "ICCTriggers.h"
@@ -606,7 +605,7 @@ bool IccSindragosaHotAction::Execute(Event /*event*/)
     return false;
 }
 
-bool IccSindragosaFrostBeaconAction::HandleBeaconedPlayer(const Unit* boss)
+bool IccSindragosaFrostBeaconAction::HandleBeaconedPlayer(Unit const* boss)
 {
     // Phase 3 positioning (below 35% health, not flying)
     if (boss->HealthBelowPct(35) && !IsBossFlying(boss))
@@ -634,7 +633,7 @@ bool IccSindragosaFrostBeaconAction::HandleBeaconedPlayer(const Unit* boss)
     }
 
     std::sort(beaconedPlayers.begin(), beaconedPlayers.end(),
-              [](const Player* a, const Player* b) { return a->GetGUID() < b->GetGUID(); });
+              [](Player const* a, Player const* b) { return a->GetGUID() < b->GetGUID(); });
 
     // Find this bot's index
     auto const it = std::find(beaconedPlayers.begin(), beaconedPlayers.end(), bot);
@@ -663,14 +662,14 @@ bool IccSindragosaFrostBeaconAction::HandleBeaconedPlayer(const Unit* boss)
     }
 
     // Get tomb position and move if needed
-    static constexpr std::array<const Position*, 3> tombPositions = {
+    static constexpr std::array<Position const*, 3> tombPositions = {
         &ICC_SINDRAGOSA_THOMB1_POSITION, &ICC_SINDRAGOSA_THOMB2_POSITION, &ICC_SINDRAGOSA_THOMB3_POSITION};
 
-    const Position& tombPosition = *tombPositions[std::min(spot, tombPositions.size() - 1)];
+    Position const& tombPosition = *tombPositions[std::min(spot, tombPositions.size() - 1)];
     return MoveToPositionIfNeeded(tombPosition, TOMB_POSITION_TOLERANCE);
 }
 
-bool IccSindragosaFrostBeaconAction::HandleNonBeaconedPlayer(const Unit* boss)
+bool IccSindragosaFrostBeaconAction::HandleNonBeaconedPlayer(Unit const* boss)
 {
     // Collect beaconed players
     std::vector<Unit*> beaconedPlayers;
@@ -699,7 +698,7 @@ bool IccSindragosaFrostBeaconAction::HandleNonBeaconedPlayer(const Unit* boss)
             if (diff && (diff == RAID_DIFFICULTY_25MAN_NORMAL || diff == RAID_DIFFICULTY_25MAN_HEROIC))
                 is25Man = true;
 
-            const Position& safePosition = is25Man ? ICC_SINDRAGOSA_FBOMB_POSITION : ICC_SINDRAGOSA_FBOMB10_POSITION;
+            Position const& safePosition = is25Man ? ICC_SINDRAGOSA_FBOMB_POSITION : ICC_SINDRAGOSA_FBOMB10_POSITION;
 
             float const dist = bot->GetExactDist2d(safePosition.GetPositionX(), safePosition.GetPositionY());
             if (dist > MOVE_TOLERANCE)
@@ -739,7 +738,7 @@ bool IccSindragosaFrostBeaconAction::HandleNonBeaconedPlayer(const Unit* boss)
     return false;
 }
 
-bool IccSindragosaFrostBeaconAction::MoveToPositionIfNeeded(const Position& position, float tolerance)
+bool IccSindragosaFrostBeaconAction::MoveToPositionIfNeeded(Position const& position, float tolerance)
 {
     float const distance = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
     if (distance > tolerance)
@@ -749,7 +748,7 @@ bool IccSindragosaFrostBeaconAction::MoveToPositionIfNeeded(const Position& posi
     return distance <= tolerance;
 }
 
-bool IccSindragosaFrostBeaconAction::MoveToPosition(const Position& position)
+bool IccSindragosaFrostBeaconAction::MoveToPosition(Position const& position)
 {
     float posX = position.GetPositionX();
     float posY = position.GetPositionY();
@@ -761,7 +760,7 @@ bool IccSindragosaFrostBeaconAction::MoveToPosition(const Position& position)
                   true, false);
 }
 
-bool IccSindragosaFrostBeaconAction::IsBossFlying(const Unit* boss)
+bool IccSindragosaFrostBeaconAction::IsBossFlying(Unit const* boss)
 {
     return boss->GetExactDist2d(ICC_SINDRAGOSA_FLYING_POSITION.GetPositionX(),
                                 ICC_SINDRAGOSA_FLYING_POSITION.GetPositionY()) < 30.0f;
@@ -1102,7 +1101,7 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
                     continue;
                 pet->SetReactState(REACT_PASSIVE);
                 pet->AttackStop();
-                pet->InterruptNonMeleeSpells(true);
+                pet->CastStop();
                 pet->CombatStop();
                 pet->SetTarget(ObjectGuid::Empty);
                 if (CharmInfo* ci = pet->GetCharmInfo())
@@ -1248,7 +1247,7 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
     if (myZoneAllProtected)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         bot->SetTarget(ObjectGuid::Empty);
         bot->SetFacingTo(losTomb->GetAngle(bot));
     }

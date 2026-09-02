@@ -3504,8 +3504,8 @@ std::vector<uint32> TravelNodeMap::FindTaxiPath(uint32 fromNode, uint32 toNode)
     if (!startNode || !endNode)
         return {};
 
-    auto cacheItr = m_taxiPathCache.find(fromNode);
-    if (cacheItr == m_taxiPathCache.end())
+    auto cacheItr = taxiPathCache.find(fromNode);
+    if (cacheItr == taxiPathCache.end())
         return {};
 
     auto toNodeItr = cacheItr->second.find(toNode);
@@ -3517,7 +3517,7 @@ std::vector<uint32> TravelNodeMap::FindTaxiPath(uint32 fromNode, uint32 toNode)
 
 void TravelNodeMap::BuildTaxiGraph()
 {
-    m_taxiGraph.clear();
+    taxiGraph.clear();
     std::unordered_map<uint32, std::unordered_set<uint32>> tempGraph;
     for (uint32 i = 0; i < sTaxiPathStore.GetNumRows(); ++i)
     {
@@ -3529,17 +3529,19 @@ void TravelNodeMap::BuildTaxiGraph()
             continue;
 
         tempGraph[path->from].insert(path->to);
-        tempGraph[path->to].insert(path->from);
     }
     for (auto const& [node, neighbors] : tempGraph)
-        m_taxiGraph[node] = std::vector<uint32>(neighbors.begin(), neighbors.end());
+        taxiGraph[node] = std::vector<uint32>(neighbors.begin(), neighbors.end());
 }
 
 void TravelNodeMap::ComputeAllPaths()
 {
     std::set<uint32> allNodes;
-    for (auto const& [source, neighbors] : m_taxiGraph)
+    for (auto const& [source, neighbors] : taxiGraph)
+    {
         allNodes.insert(source);
+        allNodes.insert(neighbors.begin(), neighbors.end());
+    }
 
     for (uint32 source : allNodes)
     {
@@ -3552,7 +3554,7 @@ void TravelNodeMap::ComputeAllPaths()
 
             auto path = BuildPath(source, target, parentMap);
             if (!path.empty())
-                m_taxiPathCache[source][target] = path;
+                taxiPathCache[source][target] = path;
         }
     }
 }
@@ -3572,7 +3574,11 @@ std::unordered_map<uint32, uint32> TravelNodeMap::BFS(uint32 fromNode)
         uint32 current = workQueue.front();
         workQueue.pop();
 
-        for (uint32 next : m_taxiGraph.at(current))
+        auto graphItr = taxiGraph.find(current);
+        if (graphItr == taxiGraph.end())
+            continue;
+
+        for (uint32 next : graphItr->second)
         {
             if (visited.count(next))
                 continue;
@@ -3586,7 +3592,7 @@ std::unordered_map<uint32, uint32> TravelNodeMap::BFS(uint32 fromNode)
 }
 
 std::vector<uint32> TravelNodeMap::BuildPath(uint32 fromNode, uint32 toNode,
-                                              const std::unordered_map<uint32, uint32>& parentMap)
+                                              std::unordered_map<uint32, uint32> const& parentMap)
 {
     if (!parentMap.count(toNode))
         return {}; // unreachable
