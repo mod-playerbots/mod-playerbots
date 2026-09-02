@@ -41,7 +41,8 @@ std::string const TravelNodePath::print()
     return out.str().c_str();
 }
 
-// Gets the extra information needed to properly calculate the cost.
+// Walks the stored path and gathers what getCost() needs: total distance, swim distance,
+// and the highest-level hostile / alliance / horde creatures found near the route.
 void TravelNodePath::calculateCost(bool distanceOnly)
 {
     std::unordered_map<FactionTemplateEntry const*, bool> aReact, hReact;
@@ -55,7 +56,7 @@ void TravelNodePath::calculateCost(bool distanceOnly)
     maxLevelCreature = {0, 0, 0};
     swimDistance = 0;
 
-    // Reduce creature sampleling to every 40y to reduce calculation time. Distance/swim accumulation stays per-waypoint (exact).
+    // Scan for nearby creatures only every 40y to keep this fast; distance and swim totals still use every waypoint.
     constexpr float CREATURE_SAMPLE_INTERVAL = 40.0f;
     WorldPosition lastScan = WorldPosition();
 
@@ -65,7 +66,7 @@ void TravelNodePath::calculateCost(bool distanceOnly)
         if (!distanceOnly && (!lastScan || point.distance(lastScan) >= CREATURE_SAMPLE_INTERVAL))
         {
             lastScan = point;
-            for (CreatureData const* cData : point.getCreaturesNear(50))  // Agro radius + 5
+            for (CreatureData const* cData : point.getCreaturesNear(50))  // Aggro radius + 5
             {
                 CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(cData->id);
                 if (cInfo)
@@ -109,7 +110,8 @@ void TravelNodePath::calculateCost(bool distanceOnly)
         calculated = true;
 }
 
-// The cost to travel this path.
+// Estimated time (in seconds) for this bot to travel the path.
+// Returns -1 if the path is unusable (dead bot, unknown or unaffordable taxi).
 float TravelNodePath::getCost(Player* bot, uint32 cGold)
 {
     float modifier = 1.0f;  // Global modifier
@@ -160,14 +162,14 @@ float TravelNodePath::getCost(Player* bot, uint32 cGold)
             int mobAnnoyance = (maxLevelCreature[0] - level) - 10;  // Mobs 10 levels below do not bother us.
 
             if (isAlliance)
-                factionAnnoyance = (maxLevelCreature[2] - level) - 10;  // Opposite faction below 30 do not bother us.
+                factionAnnoyance = (maxLevelCreature[2] - level) - 10;  // Same threshold for opposite-faction guards.
             else if (!isAlliance)
                 factionAnnoyance = (maxLevelCreature[1] - level) - 10;
 
             if (mobAnnoyance > 0)
                 modifier += 0.1 * mobAnnoyance;  // For each level the whole path takes 10% longer.
             if (factionAnnoyance > 0)
-                modifier += 0.3 * factionAnnoyance;  // For each level the whole path takes 10% longer.
+                modifier += 0.3 * factionAnnoyance;  // For each level the whole path takes 30% longer.
         }
     }
     else if (getPathType() == TravelNodePathType::flightPath)
@@ -197,7 +199,8 @@ uint32 TravelNodePath::getPrice()
     return taxiPath->price;
 }
 
-// Creates or appends the path from one node to another. Returns if the path.
+// Builds (or finishes) the walkable path from this node to endNode, trying the
+// reverse direction as a fallback. Returns the stored path.
 TravelNodePath* TravelNode::BuildPath(TravelNode* endNode, Unit* bot, bool postProcess)
 {
     if (GetMapId() != endNode->GetMapId())
@@ -224,10 +227,8 @@ TravelNodePath* TravelNode::BuildPath(TravelNode* endNode, Unit* bot, bool postP
 
     bool canPath = endPos->isPathTo(path);  // Check if we reached our destination.
 
-    // Walk → portal/transport cheat: forward stalled but we got within
-    // 20y of the dest. Add a midpoint waypoint (if the gap is >1y) plus
-    // the endpoint and accept. Must run before the IsPathCheating 2-point
-    // reject so the appended points lift size above 2.
+    // Paths toward a portal/transport node often stall just short of it (the node
+    // sits off-mesh). If we got within 20y, bridge the last stretch manually and accept.
     if (!canPath && !isTransport() && !isPortal() && !getAreaTriggerId() &&
         !hasStructuralIncoming() &&
         (endNode->getAreaTriggerId() || endNode->isTransport() ||
@@ -268,19 +269,16 @@ TravelNodePath* TravelNode::BuildPath(TravelNode* endNode, Unit* bot, bool postP
     returnNodePath->setPath(path);
     returnNodePath->setComplete(canPath);
 
-    // Ensure the reverse path exists, recursively building it if needed.
-    // The recursion is bounded: BuildPath returns immediately when the
-    // reverse path is already marked complete.
+    // Make sure the reverse path exists, building it if needed (the recursion
+    // stops because BuildPath returns immediately once a path is complete).
     TravelNodePath* backNodePath = nullptr;
     if (!endNode->hasPathTo(this))
         backNodePath = endNode->BuildPath(this, bot, postProcess);
     else
         backNodePath = endNode->getPathTo(this);
 
-    // Forward attempt failed — try to salvage with the reverse:
-    //   * if the reverse is complete, flip it and use it
-    //   * if the reverse is also partial but the two partials end near
-    //     each other (<5y), stitch them into one path
+    // Forward attempt failed — salvage with the reverse path: use it flipped if
+    // it's complete, or stitch the two partials together if their ends meet (<5y).
     if (!canPath && backNodePath)
     {
         std::vector<WorldPosition> backPath = backNodePath->GetPath();
@@ -297,13 +295,9 @@ TravelNodePath* TravelNode::BuildPath(TravelNode* endNode, Unit* bot, bool postP
                 std::reverse(backPath.begin(), backPath.end());
                 path.insert(path.end(), backPath.begin(), backPath.end());
 
-                // The stitched geometry must be re-vetted: partial paths are
-                // persisted with their geometry intact even when the cheat gate
-                // rejected them (setPath stores the path, only complete=false),
-                // so the reverse partial can carry a fabricated jump its own
-                // BuildPath run already refused. The complete-flip branch above
-                // needs no recheck (complete == passed its gate); the stitch is
-                // the only door that resurrects rejected geometry.
+                // Re-check the stitched result: partial paths keep their geometry even
+                // when rejected earlier, so the reverse half may contain a jump its
+                // own build already refused.
                 canPath = !TravelPath::IsPathCheating(
                     path, getPosition()->distance(endNode->getPosition()));
 
@@ -319,21 +313,7 @@ TravelNodePath* TravelNode::BuildPath(TravelNode* endNode, Unit* bot, bool postP
         }
     }
 
-    // (Removed) transport-in-water veto: this AC-only block set canPath=false
-    // for any walk link FROM a transport node whose second waypoint was in
-    // water, which — before dock nodes existed — isolated boat/zeppelin
-    // clusters (they entered the walk pass as start nodes and nearly every
-    // dock approach crosses water). generateTransportNodes now creates a
-    // ground-level dock node per stop with a pre-made complete transport link
-    // and setLinked(true) on the transport node, so transports no longer enter
-    // the walk pass unlinked and the veto is obsolete. Ref TravelNode.cpp has
-    // no counterpart.
-
-    // No post-salvage IsPathCheating re-validation here: cmangos accepts the
-    // reverse-flip and the <5y stitch unconditionally (ref TravelNode.cpp
-    // ~352-375). The forward gate (the size==2 and slope checks above) already
-    // vetted the geometry, and the upstream pathfinder no longer emits poisoned
-    // shortcuts, so a second sweep here only rejects legitimate salvaged links.
+    // A complete reverse path is trusted as-is; only the stitched case above needs re-checking.
     returnNodePath->setComplete(canPath);
 
     // Mark this path as generated in the current run so the cheating-link
@@ -369,7 +349,8 @@ TravelNodePath* TravelNode::BuildPath(TravelNode* endNode, Unit* bot, bool postP
     return returnNodePath;
 }
 
-// Generic routine to remove references to nodes.
+// Removes the link to the given node, or (when node is nullptr) every
+// reference to this node anywhere in the graph.
 void TravelNode::removeLinkTo(TravelNode* node, bool removePaths)
 {
     if (node)  // Unlink this specific node
@@ -397,12 +378,9 @@ bool TravelNode::hasStructuralIncoming()
     if (structuralIncomingCache >= 0)
         return structuralIncomingCache != 0;
 
-    // Incoming links are not indexed per-node, so scan the graph for any other
-    // node holding a structural (areaTrigger/transport/staticPortal) link into
-    // this one. This is what gives portal/transport EXIT nodes an identity for
-    // prune protection on DB-loaded graphs, where the transient areaTriggerId /
-    // areaTriggerTarget flags have been lost. Result is memoized: structural
-    // links are stable across a generation run (crop only removes walk links).
+    // Scan the graph for any node linking into this one via areaTrigger/transport/portal.
+    // This is how portal and transport EXIT nodes are recognized on DB-loaded graphs
+    // (protecting them from pruning). Cached: structural links don't change during a run.
     bool found = false;
     for (auto& other : TravelNodeMap::instance().getNodes())
     {
@@ -475,10 +453,6 @@ bool TravelNode::isUselessLink(TravelNode* farNode)
         farPath = getPathTo(farNode);
         farLength = farPath->getDistance();
 
-        // areaTrigger-exit consolidation (ref ~462-482): if this is an
-        // areaTrigger entrance and a nearby (<20y) walk link reaches an
-        // areaTrigger target while farNode is NOT itself a target, prefer the
-        // exit and drop this link.
         if (getAreaTriggerId())
         {
             bool farIsTarget = farNode->isAreaTriggerTarget();
@@ -515,8 +489,8 @@ bool TravelNode::isUselessLink(TravelNode* farNode)
         if (farNode->hasLinkTo(this) && !nearNode->hasLinkTo(this))
             continue;
 
-        // This node might get removed later; can't rely on it as a faster
-        // route (ref 499-500).
+        // AreaTrigger nodes may themselves be removed later; don't count on
+        // one as the alternate route.
         if (nearNode->getAreaTriggerId())
             continue;
 
@@ -526,21 +500,17 @@ bool TravelNode::isUselessLink(TravelNode* farNode)
             if (nearLength + nearNode->linkDistanceTo(farNode) < farLength * 1.1)
                 return true;
 
-            // Does the far path pass within interaction range of the nearby
-            // node? Then the direct link is redundant (ref 508-511).
+            // If the direct path already passes right next to this neighbour,
+            // the direct link is redundant.
             if (farPath && !farPath->GetPath().empty())
                 if (nearPos.closestSq(farPath->GetPath()).distance(nearPos) < INTERACTION_DISTANCE)
                     return true;
         }
         else
         {
-            // (ref 515) mapOnly reachability pre-filter: only consider the
-            // alternate route if farNode is reachable from nearNode WITHOUT
-            // leaving the map. GetNodeRoute happily routes through portal
-            // (0.1y) and flight edges, which makes almost every direct walk
-            // link look redundant and crops real overland connectivity.
-            if (!nearNode->hasRouteTo(farNode, true))
-                continue;
+            // Only consider alternate routes that stay on this map: routing through
+            // near-free portal/flight edges would make almost every direct walk link
+            // look redundant and crop real overland connectivity.
 
             // Unlimited budget: a budget-exhausted "no route" would read as
             // "no alternate" and under-prune the saved graph.
@@ -564,16 +534,10 @@ bool TravelNode::isUselessLink(TravelNode* farNode)
 
 namespace
 {
-    // Structure nodes (elevators / zeppelins / portals / instance entrances /
-    // exits) used to be fully exempt from redundancy cropping. That exemption
-    // was a bandage for crop severing their approaches, whose real causes are
-    // all fixed now (honest pathfinder, intrinsic identity, sweep-before-crop,
-    // reachability recomputed per iteration, mapOnly route pre-filter) -- and it let
-    // instance exits accumulate up to 200 walk links (~30% of all graph
-    // edges). Crop their redundant walk links like any other node, but with a
-    // seatbelt that makes the old isolation bug structurally impossible: a
-    // structural node always keeps at least MIN_STRUCTURAL_WALK_LINKS walk
-    // approaches, and its shortest approach is never removed.
+    // Structural nodes (elevators / zeppelins / portals / instance entrances and
+    // exits) get their redundant walk links cropped like any other node, but always
+    // keep at least MIN_STRUCTURAL_WALK_LINKS approaches — and never lose the
+    // shortest one — so a structure can't be cut off from the walk graph.
     constexpr uint32 MIN_STRUCTURAL_WALK_LINKS = 3;
 
     bool canCropStructuralWalkLink(TravelNode* node, TravelNode* other)
@@ -761,20 +725,10 @@ bool TravelPath::IsPathCheating(std::vector<WorldPosition> const& rawPath, float
     if (path.size() == 2 && endpointDistance > 5.0f)
         return true;
 
-    // Guard 2: steep near-vertical step. The terminal segments are the joint
-    // between the RAW node position (path.front()/back() are never mesh
-    // points -- subzone means are coordinate averages, POI/spirithealer nodes
-    // come from spawn tables, and all z values predate AC's mesh) and the
-    // first mesh-snapped point. Measured on curated data, 521/532 links this
-    // guard used to flag were steep ONLY in that node-attachment stub while
-    // the interior was near-flat -- a data artifact, not a navmesh cheat. So
-    // the stub alone never condemns a path; flag only when it is actually
-    // suspicious:
-    //   - the path is too short to have a trustworthy mesh interior (<=3 pts)
-    //   - the steep stub covers a real horizontal run (>5y: a traversal, not
-    //     a vertical snap)
-    //   - the adjacent MESH segment is steep too (the slope continues into
-    //     real geometry).
+    // Guard 2: steep near-vertical steps. The first and last segments only join the
+    // raw node position to the mesh and are often steep for harmless data reasons,
+    // so a steep end segment fails the path only when the path is tiny (<=3 points),
+    // the step covers a real horizontal run (>5y), or the slope continues into the mesh.
     if (path.size() > 2)
     {
         auto const isSteep = [](WorldPosition const& a, WorldPosition const& b)
@@ -991,11 +945,8 @@ bool TravelPath::UpcomingSpecialMovement(WorldPosition startPos,
     {
         if (startP->entry)
         {
-            // Reference also checks an AreaTriggerEntry DBC store
-            // (sAreaTriggerStore). AC doesn't expose a separate DBC
-            // store for area triggers — sObjectMgr->GetAreaTrigger is
-            // the loaded view of the same data, so it's the only
-            // existence check we need on this side.
+            // sObjectMgr->GetAreaTrigger is AC's loaded view of the trigger
+            // data, so it's the only existence check needed.
             AreaTrigger const* at = sObjectMgr->GetAreaTrigger(startP->entry);
             if (!at)
                 return false;
@@ -1019,11 +970,9 @@ bool TravelPath::UpcomingSpecialMovement(WorldPosition startPos,
         return true;
     }
 
-    // Flight path: hand over to the taxi handler when near the node.
-    // Wider than INTERACTION_DISTANCE (5.5y): stored node points can sit
-    // on unreachable spots (platform z-offsets), parking the bot ~11y
-    // out (observed at the Booty Bay flight master). The handler's
-    // ActivateTaxiPathTo does its own proximity validation.
+    // Flight path: hand over to the taxi handler when near the node. The 20y range
+    // (wider than interaction distance) tolerates node points stored on unreachable
+    // spots; the handler validates proximity itself.
     if (startP->type == PathNodeType::NODE_FLIGHTPATH)
     {
         float const fmDist = startPos.distance(startP->point);
@@ -1561,10 +1510,9 @@ TravelNodeRoute TravelNodeMap::GetNodeRoute(TravelNode* start, TravelNode* goal,
         currentNode->closed = true;
         expansions++;
 
-        // Cross-map seam exit (cmangos behavior): for a cross-map goal, stop
-        // at the first walkable node on another map. The executor re-plans
-        // after every map crossing, so anything past the seam is thrown away
-        // unwalked. Callers detect the truncation as back() != goal.
+        // For a cross-map goal, stop at the first walkable node on another map:
+        // the route is re-planned after every map crossing anyway. Callers detect
+        // the truncation as back() != goal.
         if (currentNode->dataNode == goal ||
             (crossMap && currentNode->dataNode->GetMapId() != start->GetMapId() &&
              currentNode->dataNode->isWalking()))
@@ -1716,15 +1664,10 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
 {
     TravelPath path;
 
-    // Tiered routing. Short same-map moves (<= travelNodeDirectDistance,
-    // default 300y) prefer a DIRECT mmap path — natural and cheap (a
-    // couple of chained steps). Beyond that the GRAPH routes first, so the
-    // node system actually drives long travel (the reference's ungated
-    // probe-first made every navmesh-reachable same-map journey bypass the
-    // nodes entirely, burning up to 40 plan-time Detour queries to do it).
-    // The direct probe then reappears only as a no-route FALLBACK at the
-    // bottom of this function. A failed short probe leaves its partial
-    // waypoints in beginPath for the per-candidate start-glue cropping.
+    // Tiered routing: short same-map trips (<= travelNodeDirectDistance, default
+    // 300y) try a direct mmap path first; longer trips route through the node graph,
+    // with the direct probe kept only as a no-route fallback at the bottom. A failed
+    // short probe leaves its waypoints in beginPath for reuse below.
     std::vector<WorldPosition> beginPath;
     if (sPlayerbotAIConfig.travelNodeProbeSteps > 0 &&
         botPos.GetMapId() == destination.GetMapId() &&
@@ -1736,20 +1679,15 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
             return TravelPath(beginPath);
     }
 
-    std::shared_lock<std::shared_timed_mutex> guard(m_nMapMtx);
 
-    // Mirror reference: if the bot is mid-transport, the first valid
-    // route wins immediately (no per-candidate validation against the
-    // ground — the transport handles position).
+    // If the bot is mid-transport, the first valid route wins immediately
+    // (no ground validation — the transport handles position).
     uint32 transportEntry = 0;
     if (bot && bot->GetTransport())
         transportEntry = bot->GetTransport()->GetEntry();
 
-    // K-nearest start + end node candidates (K=5). Map-wide scan to mirror
-    // reference `getNodes(pos, -1)` — restricting to bot's zone misses
-    // nodes that sit just across a zone boundary (e.g. a cave whose
-    // interior node is in a different zone than its entrance).
-    // Rank by full 3D distance
+    // Pick the K nearest candidate nodes (3D distance) for both ends. Scan the
+    // whole map: filtering by zone would miss nodes just across a zone boundary.
     constexpr uint32 K = 5;
     auto pickKNearest = [&](WorldPosition pos) -> std::vector<TravelNode*>
     {
@@ -1779,11 +1717,8 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
         return path;  // empty
     }
 
-    // Iterate combinations with per-candidate path validation. Skip
-    // nodes that failed a prior pass (bad*Nodes), reject endNodes whose
-    // mmap-path to dest can't reach within 1y, and reject startNodes
-    // whose mmap-path from bot can't reach within maxStartDistance
-    // (20y for transport, 1y otherwise — matches reference).
+    // Try candidate pairs, validating each end with real mmap paths and
+    // remembering failures so a bad node is only tested once.
     std::vector<TravelNode*> badStartNodes, badEndNodes;
 
     for (TravelNode* e : endCandidates)
@@ -1794,27 +1729,17 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
             continue;
         WorldPosition endNodePos = *e->getPosition();
 
-        // Validate endNode -> destination is pathable near the destination.
-        // Destinations are interaction targets (flight masters, innkeepers, quest
-        // givers) that routinely stand on off-mesh / raised geometry several yards
-        // above the nearest walkable navmesh (e.g. Mudsprocket's stilted flight
-        // platform: node at z~35, FM at z~42). isPathTo's vertical tolerance
-        // defaults to 2y, so a 1y check rejected those reachable routes wholesale.
-        // Accept a wider horizontal (spellDistance) and vertical (endMaxZ) band:
-        // arriving in that neighbourhood IS success, the bot climbs the last
-        // stretch locally.
+        // Validate that the endNode can reach the destination. Use a generous band
+        // (spellDistance horizontally, 25y vertically): destinations are NPCs that
+        // often stand on raised or off-mesh spots, and the bot covers the last
+        // stretch locally after arriving.
         constexpr float endMaxZ = 25.0f;
         std::vector<WorldPosition> endProbe;
         bool endPathOk = false;
-        // Only run a live final-leg probe when the bot is ACTUALLY standing on the
-        // destination map. Otherwise getPathTo(destination, nullptr) spins up a temp
-        // creature and pathfinds the DESTINATION map's navmesh from this (start) map
-        // thread, racing that map's own update thread on the shared dtNavMeshQuery
-        // node pool -> world-thread freeze. For a cross-map route the final leg is
-        // DEFERRED: stub the endNode->destination segment and let the funnel resolve
-        // it locally (ResolveMovePath's in-sight probe) once the bot has crossed onto
-        // the destination map. The endNode is then selected by position + hasRouteTo
-        // rather than by this probe.
+        // Only probe the final leg when the bot is already on the destination map:
+        // pathfinding another map's navmesh from this thread races that map's own
+        // update thread and can freeze the world thread. For cross-map routes the
+        // final leg is stubbed and resolved locally once the bot arrives.
         if (endNodePos.GetMapId() == destination.GetMapId() &&
             bot && bot->GetMapId() == destination.GetMapId())
         {
@@ -1851,11 +1776,9 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
             if (route.isEmpty())
                 continue;
 
-            // Seam route (last node != e): don't splice endProbe, which was
-            // computed from e. Use the bare destination as deferred tail so
-            // the executor's cache gates (keyed on the path tail) still
-            // match. The stub is never walked; the map flip forces a fresh
-            // plan first.
+            // If A* stopped at a map seam (route doesn't end at e), don't append the
+            // probe computed for e — use the bare destination instead; a fresh plan
+            // is made after the map crossing anyway.
             std::vector<WorldPosition> const finalLeg =
                 route.getNodes().back() == e ? endProbe : std::vector<WorldPosition>{destination};
 
@@ -1866,12 +1789,8 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
                 return path;
             }
 
-            // Validate bot -> startNode is pathable within maxStartDistance.
-            // Reference reuses the (failed) probe waypoints first via
-            // cropPathTo, falling back to a fresh getPathTo only if the
-            // probe can't be cropped to reach startNode. This saves
-            // re-running mmap when the probe already covers part of
-            // the journey to startNode.
+            // Validate the bot can walk to the start node, reusing the earlier
+            // probe waypoints when possible instead of re-running mmap.
             float const maxStartDistance = s->isTransport() ? 20.0f : INTERACTION_DISTANCE;
             std::vector<WorldPosition> pathToStart = beginPath;
             bool startPathOk = !pathToStart.empty() &&
@@ -1880,9 +1799,8 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
             if (!startPathOk && bot && botPos.GetMapId() == startNodePos.GetMapId())
             {
                 pathToStart = botPos.getPathTo(startNodePos, bot);
-                // Same 25y vertical band as the end check: multi-level start
-                // positions (bot on a Dalaran balcony/platform, node a few yards
-                // below on the street mesh) otherwise fail isPathTo's 2y default Z.
+                // 25y vertical tolerance: multi-level areas put the node a few
+                // yards above or below the bot's mesh level.
                 startPathOk = startNodePos.isPathTo(pathToStart, maxStartDistance, 25.0f);
             }
 
@@ -1892,21 +1810,15 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
                 continue;
             }
 
-            // Both ends validated — build and return. Save the
-            // successful pathToStart back as beginPath so subsequent
-            // ResolveMovePath cycles can reuse it.
+            // Both ends validated — build and return, keeping pathToStart for reuse.
             beginPath = pathToStart;
             path = route.BuildPath(pathToStart, finalLeg, bot);
             return path;
         }
     }
 
-    // Fallback: no usable graph route (no candidates, no A* route, or every
-    // candidate failed validation). Try a direct chained mmap probe on the
-    // bot's own map so same-map journeys still work where the graph is
-    // sparse or disconnected. Step budget is configurable
-    // (AiPlayerbot.TravelNodeProbeSteps, 0 = no fallback) — each step is a
-    // plan-time Detour query, so keep it small.
+    // Fallback when the graph gave no usable route: try a direct chained mmap probe
+    // on the bot's own map (step budget: AiPlayerbot.TravelNodeProbeSteps, 0 = off).
     if (sPlayerbotAIConfig.travelNodeProbeSteps > 0 &&
         botPos.GetMapId() == destination.GetMapId())
     {
@@ -1915,13 +1827,9 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
         if (destination.isPathTo(direct, sPlayerbotAIConfig.spellDistance))
             return TravelPath(direct);
 
-        // Partial progress still beats nothing. On long journeys the
-        // capped probe can't reach the destination in one plan, but the
-        // funnel re-resolves as the bot advances, so returning the
-        // partial leg chains probes across the whole journey (this is
-        // the graph-off behavior). Discarding it left ResolveMovePath
-        // with a 1-point beeline that makeShortCut wipes — the observed
-        // Hellfire freeze/1-point crawl.
+        // A partial probe still helps: the path is re-planned as the bot advances,
+        // so returning the partial leg chains probes across a long journey instead
+        // of leaving the bot stuck with a useless one-point path.
         float const remaining = direct.empty() ? -1.0f : destination.distance(direct.back());
         if (direct.size() > 1 &&
             remaining + 10.0f < destination.distance(botPos))
@@ -2092,10 +2000,8 @@ void TravelNodeMap::generateAreaTriggerNodes()
             travelPath.setPath({*inNode->getPosition(), *outNode->getPosition()});
             inNode->setPathTo(outNode, travelPath);
 
-            // Intrinsic structural identity (does not survive DB round-trips).
-            // The entrance node carries the trigger id; the destination node is
-            // flagged as a teleport target (an exit / incoming-only node).
-            inNode->setAreaTriggerId(itr.first);
+            // Tag structural identity: the entrance carries the trigger id, the
+            // destination is flagged as a teleport target (flags aren't saved to DB).
             outNode->setAreaTriggerTarget(true);
         }
     }
@@ -2103,11 +2009,8 @@ void TravelNodeMap::generateAreaTriggerNodes()
 
 void TravelNodeMap::makeDockNode(TravelNode* node, WorldPosition exitPos, std::string const dockName)
 {
-    // Manual curation hook: a hand-placed node named exactly
-    // "<ship node name><dockName>" within 75y of the stop is authoritative —
-    // adopt it as the dock instead of computing a position. Wire the board
-    // links here; its WALK linking happens via the standard unlinked-node
-    // pass (insert it with linked = 0).
+    // A hand-placed node named "<ship node name><dockName>" within 75y overrides
+    // the computed dock position: adopt it and wire the boarding links to it.
     std::string const curatedName = node->getName() + dockName;
     for (TravelNode* n : nodes)
     {
@@ -2129,16 +2032,12 @@ void TravelNodeMap::makeDockNode(TravelNode* node, WorldPosition exitPos, std::s
         return;
     }
 
-    // cmangos snaps exitPos to the closest correct navmesh point via
-    // ClosestCorrectPoint(20,1,0). AC's WorldPosition has no such helper, so
-    // we settle the Z onto the sampled ground height at the (already
-    // Z-offset) exit position when the map/grid is loaded. If the ground can't
-    // be sampled we fall back to the offset position verbatim.
+    // Settle the exit position onto the sampled ground height, falling back to
+    // the raw offset position if the ground can't be sampled.
     if (Map* map = exitPos.getMap())
     {
-        // Boot-time generation runs before anyone loads these grids;
-        // without terrain the height sample fails and isInWater lies,
-        // silently skipping the dry relocation below.
+        // Boot-time generation runs before these grids are loaded; without
+        // terrain the height sample fails and the water check below lies.
         map->EnsureGridCreated(Acore::ComputeGridCoord(exitPos.GetPositionX(), exitPos.GetPositionY()));
 
         float const gh = map->GetHeight(exitPos.GetPositionX(), exitPos.GetPositionY(),
@@ -2146,12 +2045,9 @@ void TravelNodeMap::makeDockNode(TravelNode* node, WorldPosition exitPos, std::s
         if (gh > INVALID_HEIGHT)
             exitPos.setZ(gh);
 
-        // The z-settle is vertical only: ship stops sit mid-harbor, so the
-        // settled point can still be IN THE WATER (observed at Menethil —
-        // the "dock" landed at the ship stop and every walk link swam to
-        // it). Ring-search outward for the nearest dry ground point and
-        // put the dock there; if nothing dry is found within 40y, keep
-        // the settled position (better than no dock at all).
+        // Ship stops sit mid-harbor, so the settled point may still be in the water.
+        // Search outward in rings for the nearest dry ground and put the dock there;
+        // if nothing dry is found within 40y, keep the settled position.
         if (exitPos.isInWater())
         {
             bool found = false;
@@ -2226,11 +2122,8 @@ void TravelNodeMap::generateTransportNodes()
 
         if (path.empty())
         {
-            // Elevators / trams: no taxi path. Positions come from the
-            // TransportAnimation keyframes (transport-local offsets rotated by
-            // each spawned GO's orientation and added to its spawn position),
-            // mirroring AC StaticTransport::RelocateToProgress. cmangos
-            // computes the same offsets via TransportAnimInfo.
+            // Elevators / trams have no taxi path: positions come from the transport
+            // animation keyframes, rotated and offset to each spawned GO's location.
             TransportAnimation const* animation = sTransportMgr->GetTransportAnimInfo(entry);
             if (!animation)
                 continue;
@@ -2258,8 +2151,8 @@ void TravelNodeMap::generateTransportNodes()
                     if (prevNode)
                         ppath.push_back(pos);
 
-                    // A keyframe with the same position as the previous one is a
-                    // stop (the elevator pauses). cmangos uses distance==0.
+                    // A keyframe at the same position as the previous one is a
+                    // stop (the elevator pauses there).
                     if (pos.distance(lPos) == 0)
                     {
                         TravelNode* node =
@@ -2373,11 +2266,8 @@ void TravelNodeMap::generateTransportNodes()
 
 void TravelNodeMap::generatePortalNodes()
 {
-    // Static portals: spellcaster GameObjects whose spell teleports the caster.
-    // Each becomes a one-way staticPortal (type 6) link from an entry node at
-    // the GO spawn to an exit node at the teleport destination. Ported from
-    // cmangos generatePortalNodes; the exit node reads as structural via the
-    // incoming type-6 link (hasStructuralIncoming), so no marker is needed.
+    // Static portals are spellcaster GameObjects whose spell teleports the user.
+    // Each becomes a one-way staticPortal link from the GO spawn to the destination.
     for (GameObjectData const* goData : WorldPosition().getGameObjectsNear(0, 0))
     {
         GameObjectTemplate const* data = sObjectMgr->GetGameObjectTemplate(goData->id);
@@ -2388,7 +2278,7 @@ void TravelNodeMap::generatePortalNodes()
         if (!spellInfo)
             continue;
 
-        // Follow one level of triggered spell (matches cmangos EffectTriggerSpell[0]).
+        // Follow one level of triggered spell.
         if (spellInfo->Effects[EFFECT_0].TriggerSpell)
             if (SpellInfo const* triggered = sSpellMgr->GetSpellInfo(spellInfo->Effects[EFFECT_0].TriggerSpell))
                 spellInfo = triggered;
@@ -2466,10 +2356,8 @@ void TravelNodeMap::generateWalkPathMap(uint32 mapId)
 {
     std::vector<TravelNode*> mapNodes = TravelNodeMap::instance().getNodes(WorldPosition(mapId, 1, 1));
 
-    // Count only UNLINKED nodes -- that's the actual work this call does. The
-    // helper pass calls this repeatedly (once per added node) where all but the
-    // new node are already linked, so total = mapNodes.size() would read "1/940"
-    // every call. Counting unlinked makes it read a sane "1/1".
+    // Progress totals count only unlinked nodes — the actual work this call does
+    // (repeat calls from the helper pass usually add just one new node).
     uint32 total = 0;
     for (auto& n : mapNodes)
         if (n && !n->isLinked())
@@ -2487,9 +2375,8 @@ void TravelNodeMap::generateWalkPathMap(uint32 mapId)
         if (processed % 50 == 0 || processed == total)
             LOG_INFO("playerbots", "-- walkpaths: map {} {}/{}", mapId, processed, total);
 
-        // Per-node trace at debug: logged BEFORE the inner loop so a hang
-        // inside BuildPath is pinned to this exact node (no "done" line
-        // follows it). Enable debug on "playerbots" to hunt regen hangs.
+        // Logged before the inner loop so a hang inside BuildPath is pinned
+        // to this exact node.
         LOG_DEBUG("playerbots", "-- walkpaths: map {} {}/{} start | node ({:.0f},{:.0f},{:.0f})",
                  mapId, processed, total,
                  p->GetPositionX(), p->GetPositionY(), p->GetPositionZ());
@@ -2683,8 +2570,7 @@ void TravelNodeMap::generateTaxiPaths()
 
     for (uint32 i = 0; i < totalPaths; ++i)
     {
-        // Heartbeat so this phase never looks stalled -- it iterates thousands
-        // of taxi paths and was previously silent.
+        // Progress heartbeat: this loop covers thousands of taxi paths.
         if (++processed % 500 == 0)
             LOG_INFO("playerbots", "-- taxi: {}/{} processed | {} flight links",
                      processed, totalPaths, created);
@@ -2728,15 +2614,10 @@ void TravelNodeMap::generateTaxiPaths()
         TravelNodePath travelPath(0.1f, totalTime, (uint8)TravelNodePathType::flightPath, i, true);
         travelPath.setPath(ppath);
 
-        // Preserve existing walk LINKS — taxi-position lookup can resolve to
-        // a non-FM node (innkeeper, subzone), and overwriting its walk path
-        // with a flight path makes the walkable connection disappear.
-        // Must check hasLinkTo (a *valid* walk connection), NOT hasPathTo:
-        // generateWalkPaths runs first and leaves *failed* walk-path attempts
-        // in the paths map for any neighbour in range. A flight master whose
-        // taxi destinations sit within that radius (e.g. Shatter Point ->
-        // Dark Portal ~760y / Honor Hold ~1550y) would otherwise have every
-        // flight link suppressed by those dead walk attempts.
+        // Don't overwrite an existing valid walk link (the position lookup can
+        // resolve to a non-flight-master node such as an innkeeper). Check hasLinkTo,
+        // not hasPathTo: failed walk attempts also sit in the paths map and would
+        // wrongly suppress real flight links.
         if (startNode->hasLinkTo(endNode) &&
             startNode->getPathTo(endNode)->getPathType() == TravelNodePathType::walk)
             continue;
@@ -2808,22 +2689,10 @@ namespace
                 if (link.second->getPathType() != TravelNodePathType::walk)
                     continue;
 
-                // Only ever touch links (re)built during THIS generation run.
-                // DB-loaded links are curated data; deleting one is permanent
-                // (the walk pass skips already-linked nodes, so nothing
-                // recreates it). The transient builtDuringRun flag defaults
-                // false and is never read back from storage, so loaded links
-                // are always skipped here.
-                if (!link.second->getBuiltDuringRun())
-                    continue;
-
-                // Never prune the walk approach to a structure node. The steep
-                // stub at an elevator / zeppelin / portal / instance entrance
-                // (or exit) is the structure, not a navmesh cheat, and the bot
-                // needs this link to reach it. isStructural() is symmetric, so
-                // it covers incoming-only exit nodes too.
-                if (startNode->isStructural() || link.first->isStructural())
-                    continue;
+            // Only touch links built during this run: DB-loaded links are curated
+            // data, and deleting one is permanent (nothing would recreate it).
+            // Never prune the walk approach to a structure node: the steep step
+            // at an elevator/zeppelin/portal is the structure itself, not a cheat.
 
                 ++scanned;
 
@@ -2890,9 +2759,8 @@ void TravelNodeMap::calculatePathCosts()
         if (processed % 50 == 0 || processed == total)
             LOG_INFO("playerbots", "-- pathcosts: {}/{}", processed, total);
 
-        // Per-node trace at debug: logged BEFORE costing this node's links so
-        // a hang inside calculateCost (which scans creatures per waypoint) is
-        // pinned to this exact node.
+        // Logged before costing this node's links so a hang inside
+        // calculateCost is pinned to this exact node.
         LOG_DEBUG("playerbots", "-- pathcosts: {}/{} start | map {} node ({:.0f},{:.0f},{:.0f}) {} links",
                  processed, total, startNode->GetMapId(),
                  sp->GetPositionX(), sp->GetPositionY(), sp->GetPositionZ(),
@@ -2918,25 +2786,14 @@ void TravelNodeMap::calculatePathCosts()
 
 void TravelNodeMap::generatePaths()
 {
-    // Rebuild the areaTrigger (type 2) and transport (type 3) node links every
-    // run. These are otherwise born only in generateNodes() (full node regen),
-    // so a link reset wipes them with nothing to restore them -- leaving every
-    // instance entrance/exit, portal and zeppelin/elevator orphaned. Both
-    // generators are idempotent (addNode dedups within 5y) and setPathTo
-    // unconditionally re-creates the link, so re-running just restores them.
-    //
-    // MUST run before generateWalkPaths: the walk/helper passes branch on
-    // isTransport()/isPortal(), which are defined by the presence of these very
-    // links. Absent them, transport/portal nodes are mis-linked as plain walk
-    // nodes. They touch no navmesh/grid state, so running them first is safe.
+    // Re-create the areaTrigger, transport and portal links every run: they are only
+    // born in generateNodes(), so a link reset would otherwise leave instance
+    // entrances, portals and transports orphaned. Must run before generateWalkPaths,
+    // which relies on isTransport()/isPortal() (defined by these very links).
     LOG_INFO("playerbots", "-Generating area trigger nodes");
     generateAreaTriggerNodes();
     LOG_INFO("playerbots", "-Generating transport nodes");
     generateTransportNodes();
-    // Restore type-6 staticPortal links before pruning, same rationale as the
-    // areaTrigger/transport re-run above: these links are otherwise born only
-    // in generateNodes() and a link reset would wipe them with nothing to
-    // recreate them, voiding isPortal()/hasStructuralIncoming() prune guards.
     LOG_INFO("playerbots", "-Generating portal nodes");
     generatePortalNodes();
 
@@ -2946,20 +2803,14 @@ void TravelNodeMap::generatePaths()
     LOG_INFO("playerbots", "-Generating helper nodes");
     generateHelperNodes();
 
-    // removeUselessPaths (below) is essential: it drops links to nodes already
-    // reachable via another node, which (with the 2000y candidate radius) is
-    // the difference between a saveable graph and tens of millions of
-    // redundant path points -> OOM.
-
-    // Cheat sweep MUST run before removeUselessPaths: the crop pass judges a
-    // link "useless" when an alternate route exists, and if that route runs
-    // through links this sweep is about to delete, the crop decision severs
-    // real connectivity (scored as hard breaks). Sweeping first means crop
-    // only ever sees links that will survive. The sweep itself only touches
-    // links built during this run (builtDuringRun), never curated DB links.
+    // The cheat sweep must run before removeUselessPaths: cropping keeps a link
+    // only when an alternate route exists, and that route must not run through
+    // links the sweep is about to delete.
     LOG_INFO("playerbots", "-Removing cheating paths");
     removeCheatingPaths();
 
+    // Drop links already covered by another route; without this the graph
+    // balloons to tens of millions of redundant path points.
     LOG_INFO("playerbots", "-Removing useless paths");
     removeUselessPaths();
 
@@ -2992,14 +2843,8 @@ void TravelNodeMap::Init()
     LoadNodeStore();
     calcMapOffset();
 
-    // Boot-time generation self-loads the grids/mmap tiles it needs
-    // (ensureNavTilesForGeneration in TravelMgr.cpp), including instance
-    // maps nobody has entered -- it just makes boot slower.
-    if (hasToGen || hasToFullGen)
-    {
-        if (hasToFullGen)
-            generateNodes();
-
+    // Incremental boot-time generation self-loads the grids/mmap tiles it needs
+    // (TravelMgr::GetPathingCreature); it only makes boot slower.
         generatePaths();
         hasToGen = false;
         hasToFullGen = false;
@@ -3209,12 +3054,8 @@ void TravelNodeMap::saveNodeStore()
         PlayerbotsDatabase.CommitTransaction(linkTrans);
     }
 
-    // Phase 2: path points in chunked transactions. Previously all
-    // ~1.5M point inserts went into a single mega-transaction which
-    // exceeded MySQL's packet/transaction limits and partial-committed,
-    // corrupting the DB (links saved, paths empty). Chunk now commits
-    // every ~10000 rows. A failed chunk loses only its rows; the rest
-    // survive.
+    // Phase 4: path points, committed every ~10000 rows. A single mega-transaction
+    // (~1.5M rows) used to exceed MySQL limits and partial-commit, corrupting the store.
     constexpr uint32 BATCH_SIZE = 500;
     constexpr uint32 BATCHES_PER_COMMIT = 20;  // 20 * 500 = 10000 rows per tx
     uint32 points = 0;
@@ -3746,11 +3587,9 @@ void TravelNodeMap::PrecomputeReachability(bool reportComponents)
         }
     }
 
-    // Same-map components: a cross-map link (portal/transport/flight) is
-    // never followed, so this is a strictly finer partition than the global
-    // one above. Feeds hasRouteTo(node, true) — the crop pass's isUselessLink
-    // pre-filter, which must not treat a cheap cross-map portal "route" as a
-    // same-map alternative to a direct walk link (see isUselessLink).
+    // Same-map components: cross-map links are never followed, giving a finer
+    // partition. Feeds hasRouteTo(node, true), used by the crop pass so a cheap
+    // cross-map portal "route" doesn't count as a same-map alternative.
     {
         std::unordered_set<TravelNode*> visited;
         uint32 nextId = 1;
