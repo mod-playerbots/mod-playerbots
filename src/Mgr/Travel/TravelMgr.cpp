@@ -5,7 +5,6 @@
  */
 
 #include "TravelMgr.h"
-
 #include "AreaDefines.h"
 #include "CellImpl.h"
 #include "ChatHelper.h"
@@ -30,6 +29,11 @@
 #include <mutex>
 #include <numeric>
 #include <unordered_set>
+
+namespace
+{
+    constexpr uint32 PATHING_CREATURE_ENTRY = 1;
+}
 
 // Navigation data
 
@@ -282,7 +286,8 @@ bool WorldPosition::isDarkWater()
                                                       GetPositionZ(), DEFAULT_COLLISION_HEIGHT,
                                                       MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN);
 
-    return (liquidData.Flags & MAP_LIQUID_TYPE_DARK_WATER) != 0;
+    return (liquidData.Status & MAP_LIQUID_STATUS_SWIMMING) != 0 &&
+           (liquidData.Flags & MAP_LIQUID_TYPE_DARK_WATER) != 0;
 };
 
 bool WorldPosition::setAtWaterSurface()
@@ -677,27 +682,38 @@ std::vector<WorldPosition> WorldPosition::fromPointsArray(std::vector<G3D::Vecto
     return retVec;
 }
 
-namespace
+Unit* TravelMgr::GetPathingCreature(uint32 mapId)
 {
-    // Travel-node generation only (temp-Creature pathing). Detour can only
-    // search loaded mmap tiles and nobody is on the map to load them during
-    // generation, so create every grid once per map -- same effect as a
-    // player zoning in (Map::OnCreateMap -> LoadAllGrids), minus object
-    // spawns. On preloaded continents the sweep is a no-op.
-    void ensureNavTilesForGeneration(Map* map)
-    {
-        static std::mutex ensuredLock;
-        static std::unordered_set<uint32> ensuredMaps;
-        {
-            std::lock_guard<std::mutex> lock(ensuredLock);
-            if (!ensuredMaps.insert(map->GetId()).second)
-                return;
-        }
+    auto it = pathingCreatures.find(mapId);
+    if (it != pathingCreatures.end())
+        return it->second;
 
-        for (uint32 x = 0; x < MAX_NUMBER_OF_GRIDS; ++x)
-            for (uint32 y = 0; y < MAX_NUMBER_OF_GRIDS; ++y)
-                map->EnsureGridCreated(GridCoord(x, y));
+    Map* map = sMapMgr->CreateBaseMap(mapId);
+    if (!map)
+        return nullptr;
+
+    for (uint32 x = 0; x < MAX_NUMBER_OF_GRIDS; ++x)
+        for (uint32 y = 0; y < MAX_NUMBER_OF_GRIDS; ++y)
+            map->EnsureGridCreated(GridCoord(x, y));
+
+    Creature* creature = new Creature();
+    if (!creature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map, PHASEMASK_NORMAL,
+                        PATHING_CREATURE_ENTRY, 0, 0.0f, 0.0f, 0.0f, 0.0f))
+    {
+        delete creature;
+        return nullptr;
     }
+
+    pathingCreatures[mapId] = creature;
+    return creature;
+}
+
+void TravelMgr::ReleasePathingCreatures()
+{
+    for (auto& entry : pathingCreatures)
+        delete entry.second;
+
+    pathingCreatures.clear();
 }
 
 // A single pathfinding attempt from one position to another. Returns pathfinding status and path.
@@ -800,33 +816,9 @@ std::vector<WorldPosition> WorldPosition::getPathFromPath(std::vector<WorldPosit
 
     std::vector<WorldPosition> subPath, fullPath = startPath;
 
-    // Construct ONE PathGenerator and thread it through every step
-    // to avoid the per-step alloc cost. AC's BuildPolyPath has a
-    // subpath-prefix optimization that can bend chained probes, so
-    // call Clear() before each step to reset the poly cache.
-    Unit* pathUnit = bot;
-    Creature* tempCreature = nullptr;
+    Unit* pathUnit = bot ? bot : TravelMgr::instance().GetPathingCreature(GetMapId());
     if (!pathUnit)
-    {
-        // CreateBaseMap, not FindBaseMap: generation must path on instance
-        // maps nobody has entered since boot. The fresh map's navmesh is
-        // empty; ensureNavTilesForGeneration below loads the tiles.
-        Map* map = sMapMgr->CreateBaseMap(GetMapId());
-        if (!map)
-            return fullPath;
-
-        tempCreature = new Creature();
-        if (!tempCreature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map,
-                                   PHASEMASK_NORMAL, 1 /*entry*/, 0,
-                                   currentPos.GetPositionX(), currentPos.GetPositionY(),
-                                   currentPos.GetPositionZ(), 0))
-        {
-            delete tempCreature;
-            return fullPath;
-        }
-        pathUnit = tempCreature;
-        ensureNavTilesForGeneration(map);
-    }
+        return fullPath;
 
     PathGenerator path(pathUnit);
     // Use the same filter runtime bots get from CreateFilter. The temp
@@ -857,9 +849,6 @@ std::vector<WorldPosition> WorldPosition::getPathFromPath(std::vector<WorldPosit
 
         currentPos = subPath.back();
     }
-
-    if (tempCreature)
-        delete tempCreature;
 
     return fullPath;
 }

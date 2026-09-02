@@ -531,12 +531,8 @@ public:
         radiusMin = radiusMin1;
         radiusMax = radiusMax1;
     }
-    TravelDestination(std::vector<WorldPosition*> points1, float radiusMin1, float radiusMax1)
-    {
-        points = points1;
-        radiusMin = radiusMin1;
-        radiusMax = radiusMax1;
-    }
+    TravelDestination(TravelDestination const&) = delete;
+    TravelDestination& operator=(TravelDestination const&) = delete;
     virtual ~TravelDestination();
 
     void addPoint(WorldPosition* pos)
@@ -965,6 +961,9 @@ public:
     NullTravelDestination* nullTravelDestination = new NullTravelDestination();
     WorldPosition* nullWorldPosition = new WorldPosition();
 
+    Unit* GetPathingCreature(uint32 mapId);
+    void ReleasePathingCreatures();
+
     void printGrid(uint32 mapId, int x, int y, std::string const type);
     void printObj(WorldObject* obj, std::string const type);
 
@@ -997,6 +996,7 @@ private:
     void PrepareZone2LevelBracket();
     void PrepareDestinationCache();
     bool destinationCachesReady = false;
+    std::unordered_map<uint32, Creature*> pathingCreatures;
 
     // Internal types
     struct LevelBracket
