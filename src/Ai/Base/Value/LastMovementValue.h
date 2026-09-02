@@ -28,7 +28,7 @@ class LastMovement
 {
 public:
     LastMovement();
-    LastMovement(LastMovement& other);
+    LastMovement(LastMovement const& other);
 
     LastMovement& operator=(LastMovement const& other)
     {
@@ -39,6 +39,7 @@ public:
         lastPath = other.lastPath;
         nextTeleport = other.nextTeleport;
         priority = other.priority;
+        msTime = other.msTime;
         holdStartMs = other.holdStartMs;
         holdDurationMs = other.holdDurationMs;
         lastTransportEntry = other.lastTransportEntry;

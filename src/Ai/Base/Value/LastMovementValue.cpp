@@ -9,7 +9,7 @@
 
 LastMovement::LastMovement() { clear(); }
 
-LastMovement::LastMovement(LastMovement& other)
+LastMovement::LastMovement(LastMovement const& other)
     : taxiNodes(other.taxiNodes),
       taxiMaster(other.taxiMaster),
       lastAreaTrigger(other.lastAreaTrigger),
@@ -19,6 +19,7 @@ LastMovement::LastMovement(LastMovement& other)
     nextTeleport = other.nextTeleport;
     lastPath = other.lastPath;
     priority = other.priority;
+    msTime = other.msTime;
     holdStartMs = other.holdStartMs;
     holdDurationMs = other.holdDurationMs;
     lastTransportEntry = other.lastTransportEntry;
