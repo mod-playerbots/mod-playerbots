@@ -2532,27 +2532,13 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos,
     // Cross-map moves are routed exclusively by the travel-node graph: candidate
     // node selection is pure position math and the final endNode->destination leg
     // is DEFERRED until the bot stands on the destination map (GetFullPath), so
-    // no remote navmesh query is ever issued. That works for any endpoint map
-    // that carries graph nodes — instance-side portal entrance/exit nodes
-    // included — but a map with no nodes at all cannot be bridged, and
-    // battlegrounds never use the graph. Refuse those: MoveTo2 returns false on
-    // an empty path, so the move fails and the RPG layer drops the objective.
+    // no remote navmesh query is ever issued. An endpoint map with no graph
+    // nodes (battlegrounds, arenas, dev maps, a degraded node store) needs no
+    // pre-check here: GetFullPath's candidate scan comes up empty for it and
+    // refuses loudly ([TravelFail] no node candidates), its direct-probe
+    // fallback is same-map gated, and MoveTo2 returns false on the empty path
+    // so the driver counts the failure and gives up.
     bool const crossMap = startPos.GetMapId() != endPos.GetMapId();
-    if (crossMap &&
-        (bot->InBattleground() ||
-         !sTravelNodeMap.hasNodesOnMap(startPos.GetMapId()) ||
-         !sTravelNodeMap.hasNodesOnMap(endPos.GetMapId())))
-    {
-        LOG_DEBUG("playerbots",
-                  "[TravelGate] {} {} refused cross-map path: map {} ({:.0f},{:.0f},{:.0f}) "
-                  "-> map {} ({:.0f},{:.0f},{:.0f}) (no graph coverage on an endpoint map)",
-                  bot->GetName(), bot->GetGUID().ToString(),
-                  startPos.GetMapId(), startPos.GetPositionX(),
-                  startPos.GetPositionY(), startPos.GetPositionZ(),
-                  endPos.GetMapId(), endPos.GetPositionX(),
-                  endPos.GetPositionY(), endPos.GetPositionZ());
-        return {};
-    }
 
     float const totalDistance = startPos.distance(endPos);
     float const maxDistChange = totalDistance * 0.1f;
