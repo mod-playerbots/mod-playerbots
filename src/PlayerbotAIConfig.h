@@ -392,13 +392,7 @@ public:
     bool autoDoQuests;
     bool enableNewRpgStrategy;
     bool enableTravelNodes;
-    // Max chained mmap steps for GetFullPath's direct probes (each step is
-    // a Detour query at plan time). 0 disables both the short-move direct
-    // preference and the no-route fallback — pure graph-or-nothing.
     uint32 travelNodeProbeSteps;
-    // Same-map moves up to this distance prefer a direct mmap path over the
-    // node graph; beyond it the graph routes first and the direct probe is
-    // only a no-route fallback.
     float travelNodeDirectDistance;
     std::unordered_map<NewRpgStatus, uint32> RpgStatusProbWeight;
     bool syncLevelWithPlayers;
