@@ -659,7 +659,7 @@ public:
     }
     float getTotalDistance();
 
-    std::vector<TravelNode*> getNodes() { return nodes; }
+    std::vector<TravelNode*> const& getNodes() { return nodes; }
 
     TravelPath BuildPath(
         std::vector<WorldPosition> pathToStart = {},
@@ -725,7 +725,7 @@ public:
     }
 
     // Get all nodes
-    std::vector<TravelNode*> getNodes() { return nodes; }
+    std::vector<TravelNode*> const& getNodes() { return nodes; }
     std::vector<TravelNode*> getNodes(WorldPosition pos, float range = -1);
 
     // Find nearest node.
