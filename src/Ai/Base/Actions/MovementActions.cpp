@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 
+#include "AreaDefines.h"
 #include "Corpse.h"
 #include "Event.h"
 #include "FleeManager.h"
@@ -2453,7 +2454,7 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos,
     bool const needsLongPath =
         startPos.GetMapId() != endPos.GetMapId() ||
         totalDistance > sPlayerbotAIConfig.sightDistance ||
-        (startPos.GetMapId() == 609 &&
+        (startPos.GetMapId() == MAP_EBON_HOLD &&
          std::fabs(startPos.GetPositionZ() - endPos.GetPositionZ()) > 20.0f);
 
     TravelPath out;
