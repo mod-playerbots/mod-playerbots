@@ -29,10 +29,10 @@
 namespace EncounterHelpers
 {
 
-// Calculate incremental movement to a tank position. No ground or collision is validated. The
+// Calculate incremental movement to a position. No ground or collision is validated. The
 // Z position passed for the MoveTo() action using this helper should use the bot's Z, not the
 // position's. Returns false once the bot is within arrivalDist.
-bool GetTankPositionStep(
+bool GetStepToPosition(
     Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
     float& stepY, bool& backwards)
 {
@@ -45,10 +45,11 @@ bool GetTankPositionStep(
     float const toPosX = position.GetPositionX() - botX;
     float const toPosY = position.GetPositionY() - botY;
 
-    // Move backwards only when (1) the bot has aggro on the mob it is tanking, (2) the bot is in
+    // 'facing' is optional and is for tanks. Pass the mob being tanked to allow the step to be
+    // walked backwards when (1) the bot has aggro on the mob it is tanking, (2) the bot is in
     // melee range of the mob, and (3) the destination is on the opposite side of the bot from the
     // mob. Generally, the entire movement would be gated on (1) and (2) anyway, but there are some
-    // exceptions and thus the checks are made again in the helper.
+    // exceptions and thus the checks are made again here. Pass nullptr for a plain forward step.
     backwards = false;
     if (facing && facing->GetVictim() == bot && bot->IsWithinMeleeRange(facing))
     {

@@ -35,7 +35,7 @@ bool ShirrakTankPositionBossAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetTankPositionStep(
+    if (!GetStepToPosition(
             bot, SHIRRAK_TANK_POSITION, arrivalDist, shirrak, moveX, moveY, backwards))
     {
         return false;
