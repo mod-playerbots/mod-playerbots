@@ -43,7 +43,7 @@ void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName);
 bool IsMechanicTrackerBot(Player* bot, uint32 mapId);
 Player* GetGroupMainTank(Player* bot);
 Player* GetGroupAssistTank(Player* bot, uint8 index);
-Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
+Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry); // DO NOT USE, WILL BE REMOVED
 Player* GetNearestPlayerInRadius(Player* bot, float radius);
 std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId);
 bool IsDpsCooldownAction(Player* bot, Action* action);
