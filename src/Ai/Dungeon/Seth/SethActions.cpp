@@ -18,7 +18,7 @@ using namespace EncounterHelpers;
 bool TimeLostControllerMarkCharmingTotemWithSkullAction::Execute(Event /*event*/)
 {
     constexpr float searchRadius = 40.0f;
-    Unit* totem = bot->FindNearestCreature(Id(SethNpcs::NPC_CHARMING_TOTEM), searchRadius, true);
+    Unit* totem = bot->FindNearestCreature(Id(SethNpcs::NPC_CHARMING_TOTEM), searchRadius);
     return totem && MarkTargetWithSkull(bot, totem);
 }
 
@@ -72,7 +72,7 @@ bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event /*event*/)
 
     for (uint32 entry : spiritEntries)
     {
-        Creature* spirit = bot->FindNearestCreature(entry, searchRadius, true);
+        Creature* spirit = bot->FindNearestCreature(entry, searchRadius);
         if (spirit && !spirit->GetAuraEffect(
                 SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_DRUID, REJUVENATION_SPELL_ICON_ID, 0))
         {

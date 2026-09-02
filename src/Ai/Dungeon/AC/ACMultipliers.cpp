@@ -33,7 +33,7 @@ float ShirrakFleeFocusFireMultiplier::GetValue(Action* action)
     if (dynamic_cast<ShirrakFleeFocusFireAction*>(action))
         return 1.0f;
 
-    Creature* flare = bot->FindNearestCreature(NPC_FOCUS_FIRE, FLARE_SEARCH_RADIUS, true);
+    Creature* flare = bot->FindNearestCreature(NPC_FOCUS_FIRE, FLARE_SEARCH_RADIUS);
     if (!flare)
         return 1.0f;
 
