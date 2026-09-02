@@ -37,7 +37,7 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetTankPositionStep(
+    if (!GetStepToPosition(
             bot, GetFelmystMainTankGroundPosition(bot), arrivalDist, felmyst, moveX, moveY,
             backwards))
     {

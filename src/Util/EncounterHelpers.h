@@ -26,7 +26,7 @@ namespace EncounterHelpers
 inline constexpr float BOSS_ENGAGED_HEALTH_PCT = 95.0f;
 inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
 
-bool GetTankPositionStep(
+bool GetStepToPosition(
     Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
     float& stepY, bool& backwards);
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);

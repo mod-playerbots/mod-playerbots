@@ -456,7 +456,7 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetTankPositionStep(
+    if (!GetStepToPosition(
             bot, GetAssignedVoidSentinelTankPosition(voidSentinel), arrivalDist, voidSentinel,
             moveX, moveY, backwards))
     {

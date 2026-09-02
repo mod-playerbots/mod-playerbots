@@ -113,7 +113,7 @@ bool EredarTwinsPositionSacrolashTanksAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetTankPositionStep(
+    if (!GetStepToPosition(
             bot, SACROLASH_TANK_POSITION, arrivalDist, sacrolash, moveX, moveY, backwards))
     {
         return false;
