@@ -401,16 +401,6 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
             if (newTransport != bot->GetTransport())
             {
-                // TEMP DIAG: the auto-sync changing a rider's transport is the
-                // suspected mid-ride ejection — log both sides and the guard state.
-                LOG_DEBUG("playerbots",
-                          "[TransDiag] {} t={} auto-sync CHANGE: cur={} new={} recorded={} at ({:.1f},{:.1f},{:.1f})",
-                          bot->GetName(), getMSTime(),
-                          bot->GetTransport() ? bot->GetTransport()->GetEntry() : 0,
-                          newTransport ? newTransport->GetEntry() : 0,
-                          lastMove.lastTransportEntry,
-                          bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
-
                 if (bot->GetTransport())
                     bot->GetTransport()->RemovePassenger(bot, true);
 
@@ -419,12 +409,6 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
                 bot->StopMovingOnCurrentPos();
             }
-        }
-        else
-        {
-            // TEMP DIAG: confirms the ejection guard was armed this second.
-            LOG_DEBUG("playerbots", "[TransDiag] {} t={} auto-sync skipped (intentional ride {})",
-                      bot->GetName(), getMSTime(), lastMove.lastTransportEntry);
         }
     }
 

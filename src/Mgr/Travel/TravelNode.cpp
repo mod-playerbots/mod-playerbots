@@ -1032,10 +1032,6 @@ bool TravelPath::UpcomingSpecialMovement(WorldPosition startPos,
             cutTo(*startP, false);
             return true;
         }
-        // TEMP DIAG: flight node on the path but still out of reach.
-        LOG_DEBUG("playerbots",
-                  "[FlightDiag] flight node at {:.1f}y from ({:.1f},{:.1f},{:.1f}) — outside 20y gate",
-                  fmDist, startPos.GetPositionX(), startPos.GetPositionY(), startPos.GetPositionZ());
     }
 
     // Transports are always ridden for real: cut to dock if off-transport,
