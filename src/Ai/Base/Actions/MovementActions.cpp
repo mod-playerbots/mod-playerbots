@@ -192,9 +192,6 @@ void MovementAction::CreateWp(Player* wpOwner, float x, float y, float z, float 
     float dist = wpOwner->GetDistance(x, y, z);
     float delay = 1000.0f * dist / wpOwner->GetSpeed(MOVE_RUN) + sPlayerbotAIConfig.reactDelay;
 
-    // if (!important)
-    // delay *= 0.25;
-
     Creature* wpCreature = wpOwner->SummonCreature(entry, x, y, z - 1, o, TEMPSUMMON_TIMED_DESPAWN, delay);
     botAI->GetBot()->AddAura(246, wpCreature);
 
@@ -709,12 +706,6 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
     if (!botAI->IsSafe(target))
         return MoveTo(target, distance);
 
-    // Subtract the target's hitbox so we end up at the requested
-    // standoff from its edge, not from its centre.
-    distance = distance <= target->GetObjectSize()
-        ? 0.0f
-        : distance - target->GetObjectSize();
-
     UpdateMovementState();
 
     // Cross-transport follow: if bot and target are on different
@@ -728,7 +719,6 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
     if (!bot->InBattleground() && ServerFacade::instance().IsDistanceLessOrEqualThan(ServerFacade::instance().GetDistance2d(bot, target),
                                                                            sPlayerbotAIConfig.followDistance))
     {
-        // botAI->TellError("No need to follow");
         return false;
     }
 
@@ -820,7 +810,6 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
 
     bot->CastStop();
 
-    // AI_VALUE(LastMovement&, "last movement").Set(target);
     ClearIdleState();
 
     if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FOLLOW_MOTION_TYPE)
@@ -1217,7 +1206,6 @@ bool MovementAction::MoveInside(uint32 mapId, float x, float y, float z, float d
     {
         return false;
     }
-    EmitDebugMove("MoveInside", "mmap", x, y, z);
     return MoveNear(mapId, x, y, z, distance, priority);
 }
 
@@ -3000,7 +2988,7 @@ bool MovementAction::FindBoardingPointOnTransport(Map* map, Transport* expectedT
 // otherwise teleport-snap to a boarding point (there is no walkable deck navmesh).
 bool MovementAction::BoardTransport(Transport* transport)
 {
-    if (!transport || transport->IsStaticTransport())
+    if (!transport)
         return false;
 
     Map* map = bot->GetMap();
@@ -3311,9 +3299,6 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
             }
         }
     }
-
-    if (!path.empty())
-        lastMove.setPath(path);
 
     // ClipPath — truncate at first hostile creature in range / non-walkable
     // hop / drifted past reactDistance / > 125 sqDist jump. Combat callers
