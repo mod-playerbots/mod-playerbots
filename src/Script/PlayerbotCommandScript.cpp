@@ -13,6 +13,8 @@
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
 #include "TravelNode.h"
+#include <mutex>
+#include <shared_mutex>
 
 using namespace Acore::ChatCommands;
 
@@ -107,7 +109,7 @@ public:
 
     static bool HandleGenerateTravelNodesCommand(ChatHandler* handler, char const* /*args*/)
     {
-        if (sTravelNodeMap.getNodes().empty())
+        if (!sPlayerbotAIConfig.enableTravelNodes)
         {
             handler->PSendSysMessage("Travel node generation refused: AiPlayerbot.EnableTravelNodes is disabled, so the node store was never loaded and generating now would overwrite it.");
             return true;
@@ -115,7 +117,10 @@ public:
 
         handler->PSendSysMessage("Regenerating travel node paths (all maps)... The world thread is blocked until this finishes.");
         LOG_INFO("playerbots", "Manual travel node regeneration started via console command.");
-        sTravelNodeMap.generateAll();
+        {
+            std::unique_lock<std::shared_timed_mutex> lock(sTravelNodeMap.m_nMapMtx);
+            sTravelNodeMap.generateAll();
+        }
         handler->PSendSysMessage("Travel node regeneration complete. Paths saved to database.");
         return true;
     }
