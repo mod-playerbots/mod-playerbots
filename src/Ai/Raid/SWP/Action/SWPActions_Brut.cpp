@@ -61,7 +61,7 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
         float moveX;
         float moveY;
         bool backwards;
-        if (!GetTankPositionStep(bot, position, arrivalDist, brutallus, moveX, moveY, backwards))
+        if (!GetStepToPosition(bot, position, arrivalDist, brutallus, moveX, moveY, backwards))
             return false;
 
         return MoveTo(

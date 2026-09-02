@@ -76,13 +76,13 @@ bool KalecgosSurfaceTankPositionDragonAction::Execute(Event event)
         return Attack(kalecgos);
 
     // This action also runs for a tank that does not have aggro on Kalecgos, so whether to move
-    // backwards is kicked to GetTankPositionStep(), which makes backwards movement contingent on
+    // backwards is kicked to GetStepToPosition(), which makes backwards movement contingent on
     // the bot being Kalecgos's victim.
     constexpr float arrivalDist = 3.0f;
     float moveX;
     float moveY;
     bool backwards;
-    if (GetTankPositionStep(
+    if (GetStepToPosition(
             bot, KALECGOS_TANK_POSITION, arrivalDist, kalecgos, moveX, moveY, backwards))
     {
         return MoveTo(
