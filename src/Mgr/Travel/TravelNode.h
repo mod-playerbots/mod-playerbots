@@ -10,6 +10,8 @@
 #include "TravelMgr.h"
 #include <shared_mutex>
 
+struct AreaTrigger;
+
 // THEORY
 //
 //  Pathfinding uses the detour recast navmesh engine for mob, npc, and bot movement.
@@ -395,6 +397,7 @@ public:
     // Removes links to other nodes that can also be reached by passing another node.
     bool isUselessLink(TravelNode* farNode);
     bool cropUselessLinks();
+    bool canCropWalkLinkTo(TravelNode* other);
 
     // Returns all nodes that can be reached from this node. mapOnly restricts
     // the BFS to links that stay on this node's map (no portals/flights/
@@ -568,6 +571,8 @@ public:
     std::ostringstream const print();
 
 private:
+
+    static bool IsPointInAreaTrigger(AreaTrigger const* at, uint32 mapId, float x, float y, float z, float delta);
 
     std::vector<PathNodePoint>::iterator getNextPoint(WorldPosition startPos, float maxDist, bool onTransport);
     bool shouldMoveToNextPoint(WorldPosition startPos,
@@ -762,6 +767,9 @@ private:
     // Logs the componentId partition PrecomputeReachability computed:
     // summary at INFO, per-component detail at DEBUG.
     void logComponentConnectivity();
+
+    static uint32 TravelBudgetFor(Player* bot);
+    uint32 pruneCheatingWalkLinks(std::vector<TravelNode*> const& scanNodes);
 
     // Taxi graph internals
     void BuildTaxiGraph();
