@@ -44,8 +44,7 @@
 //    teleportSpell(5) — Spell-based teleport (e.g. mage portals)
 //    staticPortal(6)  — Manually defined teleport link (DB only, not pruned by generation)
 //
-//  On server start saved nodes and links are loaded via TravelNodeMap::Init(). An index of nodes by zone is prepared
-//  (instead of scanning all ~4000 nodes), precomputes undirected connected components for O(1) reachability checks
+//  On server start saved nodes and links are loaded via TravelNodeMap::Init(). Init() precomputes undirected connected components for O(1) reachability checks
 //  (see PrecomputeReachability), and builds a taxi BFS graph. Paths and routes are calculated once during generation
 //  and saved for future use — runtime path-building was removed (H3) because it mutated the shared graph from bot
 //  map threads under only a shared_lock. Nodes are only added at startup or via the console `.generate` command —
@@ -66,9 +65,9 @@
 //
 //  Travel Flow:
 //
-//  GetFullPath finds nearest nodes (zone-indexed), runs A* to get a node route, then
+//  GetFullPath picks the nearest candidate nodes on each map, runs A* to get a node route, then
 //  BuildPath assembles a flat TravelPath with typed waypoints (walk, portal, transport, flight).
-//  MoveFarTo re-resolves a fresh TravelPath each tick; UpcomingSpecialMovement cuts
+//  MoveTo2 reuses the cached TravelPath while the destination is unchanged; UpcomingSpecialMovement cuts
 //  to the head segment when special; HandleSpecialMovement dispatches the matching
 //  action (portal interact, area-trigger marker, transport board, flight taxi).
 //  Cross-map travel is handled naturally by portal/transport edges in the A* graph.
@@ -86,13 +85,12 @@
 //  bot map threads. A missing/incomplete same-map segment now falls straight through to the existing node-point
 //  hop instead (see TravelNodeRoute::BuildPath).
 //
-//  GetFullPath still takes a shared_lock on m_nMapMtx (TravelNode.cpp) before reading the graph; with no runtime
-//  writers left on the bot-AI path this is uncontested in normal play. saveNodeStore() takes NO lock at all — it
-//  only reads the graph to persist it, which is safe as long as nothing else mutates it concurrently.
+//  GetFullPath takes m_nMapMtx with try_lock_shared before reading the graph and returns an empty path when an
+//  edit holds the lock, so bots fail a resolve instead of blocking their map thread. saveNodeStore() takes NO
+//  lock at all; it only reads the graph to persist it.
 //
-//  GM-only debug chat commands (DebugAction.cpp, outside this file) remain the only way to edit the graph at
-//  runtime (add/remove/reload nodes); those call sites manage m_nMapMtx locking around their own edits. They are
-//  rare, operator-invoked, and entirely off the bot AI's automatic decision loop.
+//  GM-only commands (DebugAction.cpp 'load node' / 'crop path', console 'travel generatenode') remain the only
+//  way to edit the graph at runtime; each takes a unique_lock on m_nMapMtx for the whole edit.
 //
 
 enum class TravelNodePathType : uint8
@@ -143,7 +141,7 @@ public:
 
     // Getters
     bool getComplete() { return complete || pathType != TravelNodePathType::walk; }
-    std::vector<WorldPosition> GetPath() { return path; }
+    std::vector<WorldPosition> const& GetPath() const { return path; }
 
     TravelNodePathType getPathType() { return pathType; }
     uint32 getPathObject() { return pathObject; }
@@ -257,11 +255,7 @@ public:
     void setLinked(bool linked1) { linked = linked1; }
     void setPoint(WorldPosition point1) { point = point1; }
 
-    // Intrinsic areaTrigger identity. Ported from cmangos getAreaTriggerId(),
-    // but stored on the node instead of derived from sAreaTriggerStore (AC has
-    // no such DBC store). Set in generateAreaTriggerNodes when the node is
-    // created; NOT persisted across DB round-trips, so loaded graphs must fall
-    // back to the incoming/outgoing structural-link checks below.
+    // Intrinsic areaTrigger identity. Ported from cmangos getAreaTriggerId().
     void setAreaTriggerId(uint32 id) { areaTriggerId = id; }
     uint32 getAreaTriggerId() { return areaTriggerId; }
     void setAreaTriggerTarget(bool target) { areaTriggerTarget = target; }
@@ -275,12 +269,7 @@ public:
     bool isImportant() { return important; }
     bool isLinked() { return linked; }
 
-    // Does any OTHER node hold a structural (areaTrigger/transport/staticPortal)
-    // link INTO this node? Incoming links are not stored per-node, so this
-    // scans the whole graph. It gives portal/transport EXIT nodes (which have
-    // only incoming structural edges) an identity, so prune protection is
-    // symmetric. Scoped to structural types only — walk incoming links do not
-    // confer structural identity.
+    // Does any OTHER node hold a structural (areaTrigger/transport/staticPortal) link INTO this node?
     bool hasStructuralIncoming();
 
     bool isTransport()
@@ -413,22 +402,7 @@ public:
     std::vector<TravelNode*> getNodeMap(bool importantOnly = false,
         std::vector<TravelNode*> ignoreNodes = {}, bool mapOnly = false);
 
-    // O(1) reachability check via the undirected connected components
-    // precomputed by TravelNodeMap::PrecomputeReachability() (H2). mapOnly
-    // selects the same-map-only partition (mapComponentId) — the crop pass
-    // uses it so a walk link is never judged redundant based on a route
-    // through portal/flight edges to another map (cmangos hasRouteTo(node,
-    // true)); the default (componentId) allows any link type, including
-    // cross-map ones.
-    //
-    // This over-approximates true DIRECTED reachability by design: two
-    // nodes sharing a component may only be connected one-way. hasRouteTo is
-    // a fast pre-filter only — GetNodeRoute (A*) remains the authoritative,
-    // direction-correct check and simply returns an empty route when no
-    // directed path exists. It therefore can never wrongly SKIP a routable
-    // pair (the worst case is one wasted A* call), the result no longer
-    // depends on node processing order (unlike the old forward-BFS forest),
-    // and it costs O(1) memory per node instead of a full reachable-set map.
+    // Checks if it is even possible to route to this node.
     bool hasRouteTo(TravelNode* node, bool mapOnly = false)
     {
         if (!node)
@@ -440,11 +414,6 @@ public:
         return componentId != 0 && componentId == node->componentId;
     }
 
-    // Number of nodes reachable from this one (size of its forward route
-    // network). Generation-time only (called from generateHelperNodes,
-    // which runs before PrecomputeReachability has assigned componentId for
-    // this generation pass), so this is a plain, uncached forward BFS
-    // rather than the componentId fast path above.
     uint32 getRouteSize() { return (uint32)getNodeMap().size(); }
 
     // Set by TravelNodeMap::PrecomputeReachability() only. 0 = unassigned.
@@ -479,12 +448,10 @@ protected:
     // This node has been checked for nearby links
     bool linked = false;
 
-    // Intrinsic areaTrigger identity (see setAreaTriggerId). 0 = not an
-    // areaTrigger entrance node. Not persisted to DB.
+    // Intrinsic areaTrigger identity (see setAreaTriggerId). 0 = not an areaTrigger entrance node.
     uint32 areaTriggerId = 0;
 
-    // True when this node is the teleport DESTINATION of an areaTrigger (an
-    // exit node). Not persisted to DB.
+    // True when this node is the teleport DESTINATION of an areaTrigger (an exit node).
     bool areaTriggerTarget = false;
 
     // Cache for hasStructuralIncoming(): -1 = uncomputed, 0/1 = result.
@@ -523,10 +490,7 @@ struct PathNodePoint
     {
         return point == p1.point && type == p1.type && entry == p1.entry;
     }
-    // A "walkable" node is one we traverse on foot. Portals/transports/
-    // taxis/teleports are entry/exit hops, not points to anchor a
-    // shortcut on. Used by makeShortCut to skip them when picking the
-    // closest-point-on-path to the bot.
+
     bool isWalkable() const { return (uint8)type <= (uint8)PathNodeType::NODE_NODE; }
 };
 
@@ -539,9 +503,7 @@ public:
     {
         fullPath = fullPath1;
     }
-    TravelPath(std::vector<WorldPosition> path,
-               PathNodeType type = PathNodeType::NODE_PATH,
-               uint32 entry = 0)
+    TravelPath(std::vector<WorldPosition> path, PathNodeType type = PathNodeType::NODE_PATH, uint32 entry = 0)
     {
         addPath(path, type, entry);
     }
@@ -569,7 +531,7 @@ public:
     bool empty() const { return fullPath.empty(); }
     size_t size() const { return fullPath.size(); }
     const PathNodePoint& operator[](size_t idx) const { return fullPath[idx]; }
-    std::vector<PathNodePoint> GetPath() { return fullPath; }
+    std::vector<PathNodePoint> const& GetPath() const { return fullPath; }
     const std::vector<PathNodePoint>& GetPathRef() const { return fullPath; }
     WorldPosition getFront() { return fullPath.front().point; }
     WorldPosition getBack() { return fullPath.back().point; }
@@ -584,32 +546,17 @@ public:
 
     bool makeShortCut(WorldPosition startPos, float maxDist, Unit* bot = nullptr);
 
-    // For each waypoint that's in/under water, snap its Z to the water
-    // surface. No-op when destination is itself underwater (caller wants
-    // the bot to dive) or path's front map differs from dest map.
-    // Mirrors the reference's underwater→surface snap so bots swim
-    // along the top of shallow water on land-bound paths instead of
-    // diving and air-walking the seafloor.
+    // For each waypoint that's in/under water, snap its Z to the water surface.
     void surfaceSnapWaypoints(WorldPosition endPos);
 
     // Trim the path up to (and optionally including) the given point.
-    // Returns true if the point was found. Used by upcoming special-
-    // movement detection to advance the path past a portal/transport/
-    // area-trigger node once the bot reaches it.
     bool cutTo(PathNodePoint point, bool including);
 
     // Returns true if the next reachable segment is a special-handling
     // node (portal / area-trigger / transport / flightpath / teleport)
     // and the bot is close enough / positioned right to handle it now.
-    // Trims the path up to that segment as a side effect. Caller then
-    // dispatches the matching special-movement handler on the new head.
     bool UpcomingSpecialMovement(WorldPosition startPos, float maxDist, bool onTransport);
 
-    // Truncate the path at the first waypoint that would put the bot in
-    // range of a hostile creature (within attack range, in LOS, level-cap
-    // sane), at a non-walkable hop, after drifting beyond reactDistance
-    // from the start, or across a > 125-sqDist jump. Set ignoreEnemyTargets
-    // to suppress the hostile-target check (used by combat repositioning).
     void ClipPath(PlayerbotAI* ai, Unit* mover, bool ignoreEnemyTargets = false);
 
     // Reject paths the navmesh accepts but a player can't walk: >50y 3D
@@ -621,18 +568,8 @@ public:
     std::ostringstream const print();
 
 private:
-    // Returns the next-best-point iterator within maxDist from startPos:
-    // skips waypoints behind the bot, advances while shouldMoveToNextPoint
-    // allows, projects onto current segment to decide if the bot has
-    // already passed it.
-    std::vector<PathNodePoint>::iterator getNextPoint(WorldPosition startPos,
-                                                     float maxDist,
-                                                     bool onTransport);
 
-    // Heuristic for getNextPoint: decides whether the iterator should
-    // step forward to nextP. Stops at special nodes (area triggers,
-    // portals, transports, flight paths), at map boundaries, and when
-    // accumulated distance exceeds maxDist.
+    std::vector<PathNodePoint>::iterator getNextPoint(WorldPosition startPos, float maxDist, bool onTransport);
     bool shouldMoveToNextPoint(WorldPosition startPos,
                                std::vector<PathNodePoint>::iterator beg,
                                std::vector<PathNodePoint>::iterator ed,
@@ -661,10 +598,7 @@ public:
 
     std::vector<TravelNode*> const& getNodes() { return nodes; }
 
-    TravelPath BuildPath(
-        std::vector<WorldPosition> pathToStart = {},
-        std::vector<WorldPosition> pathToEnd = {},
-        Unit* bot = nullptr);
+    TravelPath BuildPath(std::vector<WorldPosition> pathToStart = {}, std::vector<WorldPosition> pathToEnd = {}, Unit* bot = nullptr);
 
     std::ostringstream const print();
 
@@ -683,9 +617,9 @@ public:
     TravelNodeStub(TravelNode* dataNode1) { dataNode = dataNode1; }
 
     TravelNode* dataNode;
-    float totalCost = 0.0;
-    float costFromStart = 0.0;
-    float heuristic = 0.0;
+    float totalCost = 0.0f;
+    float costFromStart = 0.0f;
+    float heuristic = 0.0f;
     bool open = false;
     bool closed = false;
     TravelNodeStub* parent = nullptr;
@@ -703,35 +637,23 @@ public:
         return instance;
     }
 
-    TravelNode* addNode(WorldPosition pos,
-                        std::string const preferedName = "Travel Node",
-                        bool isImportant = false,
-                        bool checkDuplicate = true,
-                        bool transport = false,
-                        uint32 transportId = 0);
+    TravelNode* addNode(WorldPosition pos, std::string const preferedName = "Travel Node", bool isImportant = false,
+                        bool checkDuplicate = true, bool transport = false, uint32 transportId = 0);
     void removeNode(TravelNode* node);
-    bool removeNodes()
+    void removeNodes()
     {
-        if (m_nMapMtx.try_lock_for(std::chrono::seconds(10)))
-        {
-            for (auto& node : nodes)
-                removeNode(node);
-
-            m_nMapMtx.unlock();
-            return true;
-        }
-
-        return false;
+        while (!_nodes.empty())
+            removeNode(_nodes.back());
     }
 
     // Get all nodes
-    std::vector<TravelNode*> const& getNodes() { return nodes; }
+    std::vector<TravelNode*> const& getNodes() { return _nodes; }
     std::vector<TravelNode*> getNodes(WorldPosition pos, float range = -1);
 
     // Find nearest node.
     TravelNode* getNode(TravelNode* sameNode)
     {
-        for (auto& node : nodes)
+        for (auto& node : _nodes)
         {
             if (node->getName() == sameNode->getName()
                 && node->getPosition() == sameNode->getPosition())
@@ -741,11 +663,8 @@ public:
         return nullptr;
     }
 
-    TravelNode* getNode(WorldPosition pos,
-                        std::vector<WorldPosition>& ppath,
-                        Unit* bot = nullptr, float range = -1);
-    TravelNode* getNode(WorldPosition pos, Unit* bot = nullptr,
-                        float range = -1)
+    TravelNode* getNode(WorldPosition pos, std::vector<WorldPosition>& ppath, Unit* bot = nullptr, float range = -1);
+    TravelNode* getNode(WorldPosition pos, Unit* bot = nullptr, float range = -1)
     {
         std::vector<WorldPosition> ppath;
         return getNode(pos, ppath, bot, range);
@@ -774,16 +693,14 @@ public:
     // back() != goal); the executor re-plans after each crossing anyway.
     // searchBudget caps expansions; exhaustion returns an empty route,
     // same as no route.
-    TravelNodeRoute GetNodeRoute(TravelNode* start, TravelNode* goal,
-                                 Player* bot,
-                                 uint32 searchBudget = SEARCH_BUDGET_DEFAULT);
+    TravelNodeRoute GetNodeRoute(TravelNode* start, TravelNode* goal, Player* bot,
+                                 uint32 searchBudget = SEARCH_BUDGET_DEFAULT, int64 presetGold = -1,
+                                 bool* budgetExhausted = nullptr);
 
     // Picks the nearest start/end nodes for two world positions and runs A*
     // between them. Debug command only; a cross-map route may end at a map
     // seam rather than at the end node.
-    TravelNodeRoute FindRouteNearestNodes(WorldPosition startPos,
-                                          WorldPosition endPos,
-                                          std::vector<WorldPosition>& startPath,
+    TravelNodeRoute FindRouteNearestNodes(WorldPosition startPos, WorldPosition endPos, std::vector<WorldPosition>& startPath,
                                           Player* bot = nullptr);
 
     void setHasToGen() { hasToGen = true; }
@@ -794,12 +711,6 @@ public:
     void generateNodes();
     void generateTransportNodes();
     void generatePortalNodes();
-    // Create a ground-level dock/exit node near a transport stop and wire a
-    // pre-made BIDIRECTIONAL, complete transport link between it and the
-    // transport node, then mark the transport node linked. This keeps
-    // transport nodes out of the walk pass as unlinked starts (ported from
-    // cmangos makeDockNode). exitPos should already carry the display-specific
-    // Z offset that lands it on walkable ground.
     void makeDockNode(TravelNode* node, WorldPosition exitPos,
                       std::string const dockName);
     void generateZoneMeanNodes();
@@ -809,11 +720,6 @@ public:
     void generateHelperNodes(uint32 mapId);
     void generateHelperNodes();
     void removeUselessPaths();
-    // Re-validate every saved walk link against IsPathCheating and drop the
-    // failures (and their reverse). The build-time guards only gate links as
-    // BuildPath creates them; links loaded from the DB (the bulk of the graph)
-    // are trusted verbatim, so stale pre-guard "straight shot" links survive
-    // there. This sweeps the whole in-memory graph so a regen cleans them.
     void removeCheatingPaths();
     void calculatePathCosts();
     void generateTaxiPaths();
@@ -836,13 +742,8 @@ public:
     void InitTaxiGraph();
     std::vector<uint32> FindTaxiPath(uint32 fromNode, uint32 toNode);
 
-    // reportComponents logs a connectivity summary after the pass. Boot and
-    // full-regen callers pass true; per-iteration crop calls stay silent.
     void PrecomputeReachability(bool reportComponents = false);
 
-    // Resolve a full TravelPath from botPos to destination. Returns an
-    // empty TravelPath if no graph route + mmap stitch is reachable;
-    // the caller is then expected to fall back to a single-point path.
     TravelPath GetFullPath(WorldPosition botPos,
         WorldPosition destination, Unit* bot = nullptr);
 
@@ -872,7 +773,7 @@ private:
     std::unordered_map<uint32, std::vector<uint32>> taxiGraph;
     std::map<uint32, std::map<uint32, std::vector<uint32>>> taxiPathCache;
 
-    std::vector<TravelNode*> nodes;
+    std::vector<TravelNode*> _nodes;
 
     std::vector<std::pair<uint32, WorldPosition>> mapOffsets;
 
