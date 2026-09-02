@@ -12,6 +12,8 @@
 #include "Spell.h"
 #include "SpellMgr.h"
 #include "TravelMgr.h"
+#include <mutex>
+#include <shared_mutex>
 
 bool DebugAction::Execute(Event event)
 {
@@ -251,16 +253,13 @@ bool DebugAction::Execute(Event event)
     else if (text.find("gen node") != std::string::npos ||
              text.find("gen path") != std::string::npos)
     {
-        // Disabled: generateAll() touches Map / grid / mmap state that is only
-        // safe to mutate on the world thread. Running it from a detached worker
-        // (or from a bot tick on a MapUpdater thread) races with world updates
-        // and freezes the server.
         botAI->TellMasterNoFacing(
             "Disabled in chat. Run '.playerbots travel generatenode' from the server console.");
         return true;
     }
     else if (text.find("crop path") != std::string::npos)
     {
+        std::unique_lock<std::shared_timed_mutex> lock(TravelNodeMap::instance().m_nMapMtx);
         TravelNodeMap::instance().removeUselessPaths();
         return true;
     }
@@ -275,6 +274,7 @@ bool DebugAction::Execute(Event event)
         std::thread t(
             []
             {
+                std::unique_lock<std::shared_timed_mutex> lock(TravelNodeMap::instance().m_nMapMtx);
                 TravelNodeMap::instance().removeNodes();
                 TravelNodeMap::instance().LoadNodeStore();
                 TravelNodeMap::instance().PrecomputeReachability();
