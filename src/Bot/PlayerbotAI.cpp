@@ -1541,7 +1541,7 @@ void PlayerbotAI::DoNextAction(bool min)
         SetNextCheckDelay(sPlayerbotAIConfig.passiveDelay);
         return;
     }
-    else if (bot->isAFK())
+    else if (bot->isAFK() && !IsSelfBot(bot))
         bot->ToggleAFK();
 
     if (master && master->IsInWorld())

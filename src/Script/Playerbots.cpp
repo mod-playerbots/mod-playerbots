@@ -512,6 +512,7 @@ public:
 };
 
 void AddPlayerbotsSecureLoginScripts();
+void AddPlayerbotsSelfBotAfkScripts();
 
 void AddSC_MagtheridonBotScripts();
 void AddSC_TempestKeepBotScripts();
@@ -531,6 +532,7 @@ void AddPlayerbotsScripts()
     new PlayerbotsScript();
     new PlayerBotsBGScript();
     AddPlayerbotsSecureLoginScripts();
+    AddPlayerbotsSelfBotAfkScripts();
     AddPlayerbotsCommandscripts();
     PlayerBotsGuildValidationScript();
     AddSC_MagtheridonBotScripts();
