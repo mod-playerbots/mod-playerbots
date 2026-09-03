@@ -386,7 +386,7 @@ public:
         {
             Player* player = ObjectAccessor::FindPlayer(guid);
 
-            if (guid.IsGroup() || (player && !PlayerbotsMgr::instance().GetPlayerbotAI(player)))
+            if (guid.IsGroup() || IsRealPlayer(player) || IsSelfBot(player))
             {
                 nonBotFound = true;
                 break;
