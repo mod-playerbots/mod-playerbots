@@ -463,8 +463,6 @@ bool MovementAction::ReachCombatTo(Unit* target, float distance)
         return false;
 
     PathGenerator path(bot);
-    path.SetNavTerrainCost(NAV_GROUND_STEEP, 5.0f);
-    path.SetNavTerrainCost(NAV_WATER, 10.0f);
     path.CalculatePath(tx, ty, tz, false);
     PathType type = path.GetPathType();
     int typeOk = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_SHORTCUT;
@@ -1176,14 +1174,12 @@ bool MovementAction::MoveInside(uint32 mapId, float x, float y, float z, float d
     return MoveNear(mapId, x, y, z, distance, priority);
 }
 
-// Runs PathGenerator to (x,y,z) with steep/water terrain de-prioritised;
+// Runs PathGenerator to (x,y,z) with the bot navigation filter;
 // reachable when the result type is within acceptMask.
 PathResult MovementAction::GeneratePath(float x, float y, float z, uint32 acceptMask, bool forceDestination)
 {
     PathResult result;
     PathGenerator gen(bot);
-    gen.SetNavTerrainCost(NAV_GROUND_STEEP, 5.0f);
-    gen.SetNavTerrainCost(NAV_WATER, 10.0f);
     gen.CalculatePath(x, y, z, forceDestination);
     PathType const pathType = gen.GetPathType();
     result.reachable = !(pathType & (~acceptMask));
