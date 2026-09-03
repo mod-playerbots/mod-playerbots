@@ -291,7 +291,7 @@ bool BwlBroodlordRangedMoveAwayAction::Execute(Event /*event*/)
 
 bool BwlBlackDrakeAvoidBreathAction::isUseful()
 {
-    const Unit* boss = GetTarget();
+    Unit const* boss = GetTarget();
     if (!boss)
         return false;
 
