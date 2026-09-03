@@ -2473,7 +2473,7 @@ bool TankFaceAction::Execute(Event /*event*/)
 
 bool RearFlankAction::isUseful()
 {
-    const Unit* target = GetTarget();
+    Unit const* target = GetTarget();
     if (!target)
         return false;
 
@@ -2488,7 +2488,7 @@ bool RearFlankAction::isUseful()
 
 bool RearFlankAction::Execute(Event /*event*/)
 {
-    const Unit* target = GetTarget();
+    Unit const* target = GetTarget();
     if (!target)
         return false;
 
