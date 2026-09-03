@@ -42,7 +42,7 @@ bool BwlRazorgoreNotMindControlledTrigger::IsActive()
 
 bool BwlVaelastraszPositioningTrigger::IsActive()
 {
-    // Prevent non-tanks from rotating the boss while the tanks gain thread.
+    // Prevent non-tanks from rotating the boss while the tanks gain threat.
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "vaelastrasz the corrupt"))
         return boss->GetVictim() != bot;
     return false;
@@ -84,7 +84,7 @@ bool BwlAfflictionBronzeTrigger::IsActive()
 
 bool BwlNefarianPositioningTrigger::IsActive()
 {
-    // Prevent non-tanks from rotating the boss while the tanks gain thread.
+    // Prevent non-tanks from rotating the boss while the tanks gain threat.
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "nefarian"))
         return boss->GetVictim() != bot;
     return false;

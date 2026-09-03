@@ -25,14 +25,6 @@ public:
     float GetValue(Action* action) override;
 };
 
-class BroodlordTankMultiplier : public Multiplier
-{
-public:
-    BroodlordTankMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "broodlord tank multiplier") {}
-    float GetValue(Action* action) override;
-};
-
 class VaelastraszBurningAdrenalineMultiplier : public Multiplier
 {
 public:

@@ -38,6 +38,7 @@ public:
 
         creators["bwl use hourglass sand"] = &RaidBwlActionContext::bwl_use_hourglass_sand;
         creators["bwl nefarian fear ward"] = &RaidBwlActionContext::bwl_nefarian_fear_ward;
+        creators["bwl nefarian rear flank"] = &RaidBwlActionContext::bwl_nefarian_rear_flank;
 
         creators["bwl death talon wyrmguard tank move away"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_tank_move_away;
         creators["bwl death talon wyrmguard ranged move away"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_ranged_move_away;
@@ -60,6 +61,7 @@ private:
     static Action* bwl_flamegor_avoid_breath(PlayerbotAI* ai) { return new BwlBlackDrakeAvoidBreathAction(ai, "flamegor"); }
     static Action* bwl_use_hourglass_sand(PlayerbotAI* ai) { return new BwlUseHourglassSandAction(ai); }
     static Action* bwl_nefarian_fear_ward(PlayerbotAI* ai) { return new BwlNefarianFearWardAction(ai); }
+    static Action* bwl_nefarian_rear_flank(PlayerbotAI* ai) { return new BossRearFlankAction(ai, "nefarian"); }
     static Action* bwl_death_talon_wyrmguard_tank_move_away(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardTankMoveAwayAction(ai); }
     static Action* bwl_death_talon_wyrmguard_ranged_move_away(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardRangedMoveAwayAction(ai); }
 };
