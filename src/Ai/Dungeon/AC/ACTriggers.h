@@ -10,7 +10,7 @@
 #include "Common.h"
 #include "Trigger.h"
 
-class Position;
+struct Position;
 
 inline constexpr uint32 NPC_FOCUS_FIRE = 18374;
 inline constexpr float FLARE_SEARCH_RADIUS = 20.0f;
