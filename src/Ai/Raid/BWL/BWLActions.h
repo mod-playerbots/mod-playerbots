@@ -70,17 +70,13 @@ public:
 
 // Firemaw / Ebonroc / Flamegor
 
-class BwlBlackDrakeAvoidBreathAction : public RearFlankAction
+class BwlBlackDrakeAvoidBreathAction : public BossRearFlankAction
 {
 public:
-    BwlBlackDrakeAvoidBreathAction(PlayerbotAI* botAI, std::string bossName,
+    BwlBlackDrakeAvoidBreathAction(PlayerbotAI* botAI, std::string const& bossName,
                                    float minAngle = ANGLE_45_DEG)
-        : RearFlankAction(botAI, 0.0f, minAngle, M_PI),
-          bossName(std::move(bossName)) {}
+        : BossRearFlankAction(botAI, bossName, 0.0f, minAngle, M_PI) {}
     bool isUseful() override;
-
-private:
-    const std::string bossName;
 };
 
 // Chromaggus

@@ -5,7 +5,10 @@
  */
 
 #include "BWLStrategy.h"
+
+#include "BWLHelpers.h"
 #include "BWLMultipliers.h"
+#include "Playerbots.h"
 
 void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -48,7 +51,7 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("bwl use hourglass sand", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("bwl nefarian positioning", {
-        NextAction("rear flank", ACTION_MOVE + 4) }));
+        NextAction("bwl nefarian rear flank", ACTION_MOVE + 4) }));
     triggers.push_back(new TriggerNode("bwl nefarian wild magic", {
         NextAction("ice block", ACTION_RAID) }));
     triggers.push_back(new TriggerNode("bwl nefarian fear ward", {
@@ -64,6 +67,45 @@ void RaidBwlStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new RazorgoreTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszTankMultiplier(botAI));
-    multipliers.push_back(new BroodlordTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszBurningAdrenalineMultiplier(botAI));
+}
+
+void RaidBwlStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
+{
+    if (type != TargetValueExclusionType::Tank)
+        return;
+
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    if (Unit* broodlord = AI_VALUE2(Unit*, "find target", "broodlord lashlayer"))
+    {
+        Unit* bossVictim = broodlord->GetVictim();
+        Player* bossVictimPlayer = bossVictim ? bossVictim->ToPlayer() : nullptr;
+
+        Unit* bot = botAI->GetBot();
+        if (!bossVictimPlayer || !PlayerbotAI::IsTank(bossVictimPlayer) || bossVictim == bot)
+        {
+            // Only the tank actually holding the boss keeps it as its target at all times.
+            // All other tanks may switch to non-whelp targets (other branch).
+            // This should not happen, if the elites were killed before the encounter, but just in case...
+            // If the boss targets a non-tank, all tanks should ignore the adds and attack the boss only.
+            for (ObjectGuid const guid : AI_VALUE(GuidVector, "attackers"))
+            {
+                Unit* unit = botAI->GetUnit(guid);
+                if (unit != broodlord)
+                    exclusions.insert(guid);
+            }
+        }
+        else
+        {
+            // Prevents the tanks from changing targets to a whelp during the encounter.
+            // Tanks should build threat on the boss. DPS handles whelps on their own.
+            // Change target if it isn't a whelp (boss or respawned elite NPCs).
+            for (ObjectGuid const guid : AI_VALUE(GuidVector, "attackers"))
+            {
+                Unit* unit = botAI->GetUnit(guid);
+                if (BlackwingLairHelpers::IsCorruptedWhelp(unit))
+                    exclusions.insert(guid);
+            }
+        }
+    }
 }
