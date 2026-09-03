@@ -495,7 +495,7 @@ struct PathNodePoint
     PathNodeType type = PathNodeType::NODE_PATH;
     uint32 entry = 0;
 
-    bool operator==(const PathNodePoint& p1) const
+    bool operator==(PathNodePoint const& p1) const
     {
         return point == p1.point && type == p1.type && entry == p1.entry;
     }
@@ -539,9 +539,9 @@ public:
 
     bool empty() const { return fullPath.empty(); }
     size_t size() const { return fullPath.size(); }
-    const PathNodePoint& operator[](size_t idx) const { return fullPath[idx]; }
+    PathNodePoint const& operator[](size_t idx) const { return fullPath[idx]; }
     std::vector<PathNodePoint> const& GetPath() const { return fullPath; }
-    const std::vector<PathNodePoint>& GetPathRef() const { return fullPath; }
+    std::vector<PathNodePoint> const& GetPathRef() const { return fullPath; }
     WorldPosition getFront() { return fullPath.front().point; }
     WorldPosition getBack() { return fullPath.back().point; }
 

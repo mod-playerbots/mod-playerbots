@@ -1258,7 +1258,6 @@ TravelPath TravelNodeRoute::BuildPath(std::vector<WorldPosition> pathToStart, st
             if (prevNode->hasPathTo(node))  // Get the path to the next node if it exists.
                 nodePath = prevNode->getPathTo(node);
 
-
             if (!nodePath || !nodePath->getComplete())  // If we can not build a path just try to move to the node.
             {
                 travelPath.addPoint(*prevNode->getPosition(), PathNodeType::NODE_NODE);
@@ -3637,4 +3636,3 @@ void TravelNodeMap::PrecomputeReachability(bool reportComponents)
     if (reportComponents)
         logComponentConnectivity();
 }
-

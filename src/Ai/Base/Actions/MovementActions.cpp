@@ -193,7 +193,6 @@ void MovementAction::EmitDebugMove(char const* method, char const* generator, fl
     botAI->TellMasterNoFacing(out);
 }
 
-
 // Spawns a temporary creature at the point as a visual waypoint marker (debug aid).
 void MovementAction::CreateWp(Player* wpOwner, float x, float y, float z, float o, uint32 entry, bool important)
 {
@@ -2834,7 +2833,6 @@ bool MovementAction::HandleSpecialMovement(TravelPath& path)
             return false;
     }
 }
-
 
 // GetTransportForPos with a small vertical tolerance — deck height varies and an
 // exact-z probe often misses the hull.
