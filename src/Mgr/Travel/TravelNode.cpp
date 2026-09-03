@@ -2,6 +2,15 @@
  * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
+ *
+ * Travel path execution (TravelPath::ClipPath, cutTo, getNextPoint, shouldMoveToNextPoint,
+ * UpcomingSpecialMovement, makeShortCut), node generation (generateHelperNodes, generateTransportNodes,
+ * makeDockNode, generatePortalNodes, generateWalkPathMap) and the BuildPath reverse-path stitching ported
+ * from the CMaNGOS playerbots project (https://github.com/cmangos/playerbots), GPL v2, with modifications
+ * for AzerothCore.
+ * Original authors:
+ *   Sebastiaan Keek (mostlikely4r) <sebastiaan.keek@gmail.com>
+ *   Cyberium <cyberium@users.noreply.github.com>
  */
 
 #include "TravelNode.h"

@@ -2,6 +2,14 @@
  * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
+ *
+ * Elements of the Movement funnel (MoveTo2, ResolveMovePath, DispatchMovement, WaitForTransport, HandleSpecialMovement,
+ * FollowOnTransport and the transport boarding helpers) ported from the CMaNGOS playerbots project
+ * (https://github.com/cmangos/playerbots), GPL v2, with modifications for AzerothCore.
+ * Original authors:
+ *   Sebastiaan Keek (mostlikely4r) <sebastiaan.keek@gmail.com>
+ *   celguar <celguar@gmail.com>
+ *   David Parra Ausina (davidonete/Flekz) <davidparraausina@gmail.com>
  */
 
 #include "MovementActions.h"
@@ -315,7 +323,7 @@ bool MovementAction::MoveToLOS(WorldObject* target, bool ranged)
     return false;
 }
 
-// Main movement entry point: applies priority gating and duplicate suppression, then
+// Main movement entry point for design lines 1-4. Checks priority, duplicates, then
 // either dispatches directly (exact/flying/vehicle/config bypass) or funnels through
 // the path-aware MoveTo2 pipeline.
 bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, bool react,
@@ -324,15 +332,10 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
                             bool backwards, bool ignoreEnemyTargets)
 {
     UpdateMovementState();
-    if (!IsMovingAllowed())
+    if (!IsMovingAllowed()) // 1. CAN WE MOVE AT ALL?
         return false;
 
-    // Vehicle mover resolution (reference MoveTo pattern): a controlling
-    // passenger steers the vehicle base, not its own body; a passenger
-    // without control can't dispatch movement at all. Node-graph routing
-    // (MoveTo2's ResolveMovePath) has no concept of a non-bot mover, so
-    // vehicles are forced onto the direct-pathing bypass below instead
-    // of ever reaching MoveTo2.
+    // 2. Check if bot has vehicle control.
     Unit* mover = bot;
     bool const isVehiclePassenger = bot->GetVehicle() != nullptr;
     if (isVehiclePassenger)
@@ -344,15 +347,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
         mover = vehicle->GetBase();
     }
 
-    // MovementPriority dictates replacement. Walk in progress: a
-    // lower-priority wish does not replace it, higher or equal does
-    // (newest wins). Explicit hold (SetNextMovementDelay): STRICT — only
-    // a strictly higher priority breaks it, so a NORMAL hold (RPG
-    // reading/patrol pause) blocks the bot's own NORMAL walks but yields
-    // to combat, and a FORCED encounter hold is absolute for its
-    // duration (upstream IsWaitingForLastMove semantics). Nothing more
-    // elaborate ships here — full arbitration is the reaction engine's
-    // job (addReactionEngine branch).
+    // 3. Check if movement action is allowed.
     if (!CanOverrideMovement(priority))
         return false;
 
@@ -362,18 +357,12 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     bool generatePath = !bot->IsFlying() && !bot->isSwimming();
     if (isVehiclePassenger)
         generatePath = !mover->CanFly();
+
     bool const disableMoveSplinePath =
         sPlayerbotAIConfig.disableMoveSplinePath >= 2 ||
         (sPlayerbotAIConfig.disableMoveSplinePath == 1 && bot->InBattleground());
 
-    // Intentional bypass — skip the path-aware pipeline and dispatch
-    // straight to DoMovePoint. Cases:
-    //   exact_waypoint: caller wants the raw target, no clipping
-    //   disableMoveSplinePath: config-driven engine fallback
-    //   flying/swimming: pathfinding via engine MovePoint, not mmap probe
-    //   backwards: AC-specific back-shuffle; no parity in MoveTo2
-    //   isVehiclePassenger: node-graph routing has no notion of a
-    //     non-bot mover — vehicles always take direct pathing
+    // 4. Bypass the path-aware funnel for exact waypoints.
     if (exact_waypoint || disableMoveSplinePath || !generatePath || backwards || isVehiclePassenger)
     {
         float distance = mover->GetExactDist(x, y, z);
@@ -395,10 +384,6 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
         return false;
     }
 
-    // Path-aware funnel: ResolveMovePath → makeShortCut →
-    // UpcomingSpecialMovement/HandleSpecialMovement → ClipPath →
-    // DispatchMovement. Matches the reference's MoveTo2 flow. Never
-    // reached for a vehicle mover (forced onto the bypass above).
     return MoveTo2(WorldPosition(mapId, x, y, z),
                    idle, react, ignoreEnemyTargets, priority, lessDelay);
 }
@@ -478,8 +463,6 @@ bool MovementAction::ReachCombatTo(Unit* target, float distance)
         return false;
 
     PathGenerator path(bot);
-    // Soft bias: STEEP / WATER are reachable but de-prioritised so the
-    // bot picks normal ground when an alternative exists.
     path.SetNavTerrainCost(NAV_GROUND_STEEP, 5.0f);
     path.SetNavTerrainCost(NAV_WATER, 10.0f);
     path.CalculatePath(tx, ty, tz, false);
@@ -496,17 +479,9 @@ bool MovementAction::ReachCombatTo(Unit* target, float distance)
 
     path.ShortenPathUntilDist(G3D::Vector3(tx, ty, tz), shortenTo);
     G3D::Vector3 endPos = path.GetPath().back();
-    // Combat callers pass ignoreEnemyTargets=true so ClipPath doesn't
-    // halt the chase at an intermediate hostile when funnelling through
-    // MoveTo2 — the chase target itself is the enemy we want to reach.
-    // react=true skips the awake early-out so the chase re-aims at the
-    // moving target every tick instead of riding out the current leg.
-    bool moved = MoveTo(target->GetMapId(), endPos.x, endPos.y, endPos.z, /*idle*/false, /*react*/true, false, false,
-                        MovementPriority::MOVEMENT_COMBAT, /*lessDelay*/true, false, /*ignoreEnemyTargets*/true);
-    // Only emit on a successful new commit — combat ticks call this
-    // many times per second and MoveTo internally suppresses while a
-    // prior spline is still playing. Emitting before the suppression
-    // check produces per-tick whisper spam.
+
+    bool moved = MoveTo(target->GetMapId(), endPos.x, endPos.y, endPos.z, false, true, false, false,
+                        MovementPriority::MOVEMENT_COMBAT, true, false, true);
     if (moved)
         EmitDebugMove("ReachCombatTo", "mmap", endPos.x, endPos.y, endPos.z);
     return moved;
@@ -551,8 +526,8 @@ bool MovementAction::IsMovingAllowed(WorldObject* target)
     return IsMovingAllowed();
 }
 
-// Priority check for a new move request: requires equal or higher priority, and an explicit hold (SetNextMovementDelay) is only
-// broken by a strictly higher one.
+// Priority check for a new move request: requires equal or higher priority,
+// holds (SetNextMovementDelay) are broken by higher priorities.
 bool MovementAction::CanOverrideMovement(MovementPriority priority)
 {
     LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
@@ -598,7 +573,10 @@ bool MovementAction::IsMovingAllowed()
     return botAI->CanMove();
 }
 
-bool MovementAction::Follow(Unit* target, float distance) { return Follow(target, distance, GetFollowAngle()); }
+bool MovementAction::Follow(Unit* target, float distance)
+{
+    return Follow(target, distance, GetFollowAngle());
+}
 
 // Keeps swim / water-walk / fly movement flags in sync with the bot's surroundings
 // (and its master's state), broadcasting an update only when something changed.
@@ -700,9 +678,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
     if (!target)
         return false;
 
-    // Unsafe target (cross-faction / phased / leaving) — fall through to
-    // a generic MoveTo so the bot at least heads in their direction
-    // instead of refusing to move.
+    // Check if target is on the same map, instance, or is being teleported.
     if (!botAI->IsSafe(target))
         return MoveTo(target, distance);
 
@@ -858,9 +834,6 @@ bool MovementAction::FollowOnTransport(Unit* target)
     if (Transport* myTransport = bot->GetTransport())
         myTransport->RemovePassenger(bot);
 
-    // NearTeleportTo is the AC equivalent of cmangos's Relocate+
-    // SendHeartBeat sequence: it relocates the bot AND broadcasts the
-    // movement update so server-side state stays consistent.
     bot->NearTeleportTo(target->GetPositionX(),
                         target->GetPositionY(),
                         target->GetPositionZ(),
@@ -878,17 +851,12 @@ float MovementAction::MoveDelay(float distance, bool backwards)
 {
     float speed;
     if (bot->isSwimming())
-    {
         speed = backwards ? bot->GetSpeed(MOVE_SWIM_BACK) : bot->GetSpeed(MOVE_SWIM);
-    }
     else if (bot->IsFlying())
-    {
         speed = backwards ? bot->GetSpeed(MOVE_FLIGHT_BACK) : bot->GetSpeed(MOVE_FLIGHT);
-    }
     else
-    {
         speed = backwards ? bot->GetSpeed(MOVE_RUN_BACK) : bot->GetSpeed(MOVE_RUN);
-    }
+
     float delay = distance / speed;
     return delay;
 }
@@ -1094,11 +1062,11 @@ void MovementAction::ClearIdleState()
 bool MovementAction::MoveAway(Unit* target, float distance, bool backwards)
 {
     if (!target)
-    {
         return false;
-    }
+
     EmitDebugMove("MoveAway", "mmap", target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
     float init_angle = target->GetAngle(bot);
+
     for (float delta = 0; delta <= M_PI / 2; delta += M_PI / 8)
     {
         float angle = init_angle + delta;
@@ -1121,9 +1089,8 @@ bool MovementAction::MoveAway(Unit* target, float distance, bool backwards)
             return true;
         }
         if (delta == 0)
-        {
             continue;
-        }
+
         exact = true;
         angle = init_angle - delta;
         dx = bot->GetPositionX() + cos(angle) * distance;
@@ -1303,19 +1270,16 @@ bool AvoidAoeAction::Execute(Event /*event*/)
 {
     // Case #1: Aura with dynamic object (e.g. rain of fire)
     if (AvoidAuraWithDynamicObj())
-    {
         return true;
-    }
+
     // Case #2: Trap game object with spell (e.g. lava bomb)
     if (AvoidGameObjectWithDamage())
-    {
         return true;
-    }
+
     // Case #3: Trigger npc (e.g. Lesser shadow fissure)
     if (AvoidUnitWithDamageAura())
-    {
         return true;
-    }
+
     return false;
 }
 
@@ -1323,40 +1287,34 @@ bool AvoidAoeAction::AvoidAuraWithDynamicObj()
 {
     Aura* aura = AI_VALUE(Aura*, "area debuff");
     if (!aura || aura->IsRemoved() || aura->IsExpired())
-    {
         return false;
-    }
+
     if (!aura->GetOwner() || !aura->GetOwner()->IsInWorld())
-    {
         return false;
-    }
+
     // The aura owner can change between check intervals; a non-dynobj aura
     // here would crash GetDynobjOwner below.
     if (aura->GetType() != DYNOBJ_AURA_TYPE)
-    {
         return false;
-    }
+
     SpellInfo const* spellInfo = aura->GetSpellInfo();
     if (!spellInfo)
-    {
         return false;
-    }
+
     if (sPlayerbotAIConfig.aoeAvoidSpellWhitelist.find(spellInfo->Id) !=
         sPlayerbotAIConfig.aoeAvoidSpellWhitelist.end())
         return false;
 
     DynamicObject* dynOwner = aura->GetDynobjOwner();
     if (!dynOwner || !dynOwner->IsInWorld())
-    {
         return false;
-    }
+
     float radius = dynOwner->GetRadius();
     if (!radius || radius > sPlayerbotAIConfig.maxAoeAvoidRadius)
         return false;
     if (bot->GetDistance(dynOwner) > radius)
-    {
         return false;
-    }
+
     std::ostringstream name;
     name << spellInfo->SpellName[LOCALE_enUS];
     if (FleePosition(dynOwner->GetPosition(), radius))
@@ -2406,37 +2364,16 @@ bool MoveAwayFromPlayerWithDebuffAction::isPossible()
     return bot->CanFreeMove();
 }
 
-
 // Turns start -> end into a TravelPath: the cached path when still valid, a
 // node-graph route for long or cross-map trips, a plain mmap probe otherwise.
-TravelPath MovementAction::ResolveMovePath(WorldPosition startPos,
-                                           WorldPosition endPos,
-                                           LastMovement& lastMove)
+TravelPath MovementAction::ResolveMovePath(WorldPosition startPos, WorldPosition endPos, LastMovement& lastMove)
 {
-    // Invariant: a Detour pathfind must only ever run on the bot's CURRENT map.
-    // Cross-map moves are routed exclusively by the travel-node graph: candidate
-    // node selection is pure position math and the final endNode->destination leg
-    // is DEFERRED until the bot stands on the destination map (GetFullPath), so
-    // no remote navmesh query is ever issued. An endpoint map with no graph
-    // nodes (battlegrounds, arenas, dev maps, a degraded node store) needs no
-    // pre-check here: GetFullPath's candidate scan comes up empty for it and
-    // refuses loudly ([TravelFail] no node candidates), its direct-probe
-    // fallback is same-map gated, and MoveTo2 returns false on the empty path
-    // so the driver counts the failure and gives up.
     bool const crossMap = startPos.GetMapId() != endPos.GetMapId();
 
     float const totalDistance = startPos.distance(endPos);
     float const maxDistChange = totalDistance * 0.1f;
 
-    // Cache validity: once the bot has changed maps (transport/portal
-    // crossing) the cached path still starts on the OLD map and carries
-    // the ship-route segment. Reusing it on the arrival side makes the
-    // nearest "upcoming special" a transport node again, so the bot
-    // stands at the shore waiting to re-board the boat it just left
-    // (observed: silent 300s stall after crossing to map 1). A path
-    // whose start is not on the bot's current map is dead — resolve
-    // fresh instead. Off-transport only: mid-ride the bot's map can
-    // legitimately flip before the cached path is consumed.
+    // 8.1 Check if the bot has a path cached and if it is still usable (same map or on a transport).
     bool const cacheUsable = !lastMove.lastPath.empty() &&
         (bot->GetTransport() ||
          lastMove.lastPath.getFront().GetMapId() == startPos.GetMapId());
@@ -2446,15 +2383,11 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos,
         lastMove.lastPath.getBack().distance(endPos) < maxDistChange)
         return lastMove.lastPath;
 
-    // Long path = cross-map or beyond sight; otherwise pure mmap probe.
-    // Map 609 (Ebon Hold, DK starter) special-case: the area is stacked
-    // vertically, so a horizontally-close target on a different floor
-    // needs graph routing through the spiral stairs even when within
-    // sight distance.
+    // Check if we must use travel node system to arrive to destination. Long path = cross-map or beyond sight; otherwise pure mmap probe.
     bool const needsLongPath =
-        startPos.GetMapId() != endPos.GetMapId() ||
-        totalDistance > sPlayerbotAIConfig.sightDistance ||
-        (startPos.GetMapId() == MAP_EBON_HOLD &&
+        crossMap || //between maps
+        totalDistance > sPlayerbotAIConfig.sightDistance || //distance beyond pathfinding distance
+        (startPos.GetMapId() == MAP_EBON_HOLD && // In Ebon Hold, and you are traveling vertically.
          std::fabs(startPos.GetPositionZ() - endPos.GetPositionZ()) > 20.0f);
 
     TravelPath out;
@@ -2463,28 +2396,23 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos,
                            !sTravelNodeMap.getNodes().empty() && !bot->InBattleground();
     char const* resolveMethod = usedGraph ? "graph" : "probe";
     if (usedGraph)
-    {
         out = sTravelNodeMap.GetFullPath(startPos, endPos, bot);
-    }
     else
     {
         std::vector<WorldPosition> probe = startPos.getPathTo(endPos, bot);
         out.addPath(probe);
     }
 
-    // Regression guard: if cached path's tail is no worse than the new
-    // path's tail, keep the cached one (catches probes blocked by geometry).
-    // Same cacheUsable gate — never resurrect a dead old-map path.
+    // Check if the new path is better than the old one in reaching the destination.
     if (cacheUsable && !out.empty() &&
-        lastMove.lastPath.getBack().distance(endPos) <= out.getBack().distance(endPos))
+            lastMove.lastPath.getBack().distance(endPos) + sPlayerbotAIConfig.targetPosRecalcDistance
+        < out.getBack().distance(endPos))
     {
         out = lastMove.lastPath;
         resolveMethod = "cache-kept";
     }
 
-    // A failed cross-map resolve must NOT fall through to the beeline: the
-    // destination's coordinates are meaningless on the bot's current map.
-    // Return empty so MoveTo2 reports the failure instead.
+    // If no path is found between maps, then skip beeline.
     if (out.empty() && crossMap)
     {
         LOG_DEBUG("playerbots",
@@ -2502,13 +2430,7 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos,
     // caller has at least something to dispatch.
     if (out.empty())
     {
-        // Tracking: the chosen pathfinder produced nothing, so we beeline a single
-        // point at the destination. For a far target this means the travel-node graph
-        // could not route there (sparse coverage / disconnected) after we declined a
-        // live long-distance Detour — the exact case to watch when tuning the gates.
-        // Only logged for non-trivial distances; short in-zone beelines are normal.
-        // Graph-route failures are classified by [TravelFail] inside GetFullPath;
-        // here we only note the direct-probe (non-graph) beelines.
+        // Beeline fallback for path failures.
         if (!usedGraph && totalDistance > sPlayerbotAIConfig.sightDistance)
             LOG_DEBUG("playerbots",
                       "[TravelGate] {} {} no path, beelining {:.0f}y: map {} "
@@ -3055,17 +2977,14 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
     if (!IsMovingAllowed())
         return false;
 
-    // Resume a transport ride if we're still on the same boat as last tick.
+    // 5. Check if we are on a transport.
     if (WaitForTransport())
         return true;
 
     WorldPosition botPos(bot);
     LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
 
-    // Detailed-move throttle: if this bot is in low-activity mode
-    // (random/background) and a teleport cooldown is still in effect
-    // from a prior dispatch, postpone re-evaluation until the cooldown
-    // expires instead of re-resolving the path every tick.
+    //6. Check if bot is throttled and last teleport time. If movement throttled, then set up teleporting.
     bool const detailedMove = botAI->AllowActivity(DETAILED_MOVE_ACTIVITY);
     if (!detailedMove && lastMove.nextTeleport)
     {
@@ -3079,7 +2998,7 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
     else
         lastMove.nextTeleport = 0;
 
-    // Short-stop: at destination — stop and clear the cached path.
+    // 7. Short-stop: at destination — stop and clear the cached path.
     float const totalDistance = botPos.distance(endPos);
     if (totalDistance < sPlayerbotAIConfig.targetPosRecalcDistance)
     {
@@ -3090,15 +3009,9 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
         return false;
     }
 
-    // Awake + early-out (no dozing): the brain ticks every ~100ms and
-    // re-wishes this journey each tick. While the legs are still playing
-    // a leg of the SAME journey — bot moving, cached path aimed at
-    // (nearly) this destination — there is nothing to decide: report
-    // success without resolving anything. The journey advances at leg
-    // boundaries: the spline ends, isMoving() drops, and the next tick
-    // resolves the next leg. Chases (react=true) re-aim every tick and
-    // skip this. A changed destination (>10% of the journey) falls
-    // through to a fresh resolve immediately.
+    // Check if the bot needs to react, is moving, and is on a transport or is within
+    // the same map as the last path. If so, and the last path's back is close enough
+    // to the end position, return true to continue moving.
     if (!react && bot->isMoving() && !lastMove.lastPath.empty() &&
         (bot->GetTransport() ||
          lastMove.lastPath.getFront().GetMapId() == botPos.GetMapId()) &&
@@ -3106,25 +3019,18 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
             std::max(totalDistance * 0.1f, sPlayerbotAIConfig.targetPosRecalcDistance))
         return true;
 
-    // Per-tick re-resolve: rebuild the TravelPath from the bot's current
-    // position every tick. ResolveMovePath internally gates graph A* by
-    // sightDistance — short moves skip the graph and use a raw probe, so
-    // funnelling every MoveTo here is cost-bounded for in-zone moves.
+    // 8. Get the travel route.
     TravelPath path = ResolveMovePath(botPos, endPos, lastMove);
     lastMove.setPath(path);
     if (path.empty())
         return false;
 
-    // Trim leading waypoints behind the bot. Skip on transports — bot's
-    // world-space position diverges from path coords mid-ride.
+    // 9. Trim leading waypoints behind the bot.
     if (!bot->GetTransport())
         path.makeShortCut(botPos, sPlayerbotAIConfig.reactDistance, bot);
     if (path.empty())
     {
-        // makeShortCut wipes the path when its nearest walkable point is
-        // beyond reactDistance (150y) — guaranteed for the single-point
-        // beeline fallback and common where node coverage is sparse
-        // (observed: permanent silent stall in Hellfire, 480 ticks).
+        // makeShortCut erased the path, but we are not at the destination.
         // Bridge toward the resolved path's first same-map walkable
         // anchor with a capped probe instead of consuming the tick.
         WorldPosition anchor{};
@@ -3136,21 +3042,18 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
                 break;
             }
         }
-
+        // Found an anchor, lets path to it.
         if (anchor)
         {
             uint32 const bridgeSteps = sPlayerbotAIConfig.travelNodeProbeSteps
                                            ? sPlayerbotAIConfig.travelNodeProbeSteps : 10;
-            std::vector<WorldPosition> bridge =
-                anchor.getPathFromPath({botPos}, bot, bridgeSteps);
+            std::vector<WorldPosition> bridge = anchor.getPathFromPath({botPos}, bot, bridgeSteps);
             if (!bridge.empty())
                 path.addPath(bridge);
         }
 
         if (path.empty())
         {
-            // No anchor or no probe either — fail the tick so the driver
-            // counts a failed resolve instead of stalling silently.
             LOG_DEBUG("playerbots", "[TravelFail] {} shortcut emptied path, no bridge (dist={:.0f})",
                       bot->GetName(), totalDistance);
             lastMove.setPath(path);
@@ -3159,35 +3062,21 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
     }
 
     bool const onTransport = bot->GetTransport() != nullptr;
-    if (path.UpcomingSpecialMovement(botPos,
-                                      sPlayerbotAIConfig.reactDistance,
-                                      onTransport))
+    if (path.UpcomingSpecialMovement(botPos, sPlayerbotAIConfig.reactDistance, onTransport))
     {
         if (HandleSpecialMovement(path))
             return true;
-        // Special handler declined (e.g. AREA_TRIGGER with entry → caller
-        // dispatches the walk into the trigger volume). Fall through.
     }
 
-    // Transport guard: bot is on a transport but no special movement
-    // applies this tick — don't dispatch a walk spline (would fight the
-    // transport's own movement).
+    // 11. TRANSPORT LOGISTICS.  Approaching a dock: ship present → board; absent → wait.  Mid-ride: disembark when the cached path says the stop has been reached.
     if (onTransport)
     {
         Transport* trans = bot->GetTransport();
 
-        // Adopt the ride: whatever boarded us (BoardTransport OR the
-        // UpdateAI positional auto-sync), record the transport so the
-        // auto-sync's ejection guard arms. Without this the raycast
-        // re-sync can RemovePassenger a mid-ocean rider (observed).
         if (!lastMove.lastTransportEntry)
             lastMove.lastTransportEntry = trans->GetEntry();
 
-        // Destination-side disembark: find the first walkable point AFTER
-        // this transport's segment in the full cached path and hop off
-        // when it comes into reach. Scanning the FULL path (not the
-        // trimmed local copy) guarantees the landing is on the far side —
-        // points before the segment (the departure dock) can't match.
+        // Get the exit point details for the transport.
         PathNodePoint const* exitP = nullptr;
         bool seenOurTransport = false;
         for (PathNodePoint const& p : lastMove.lastPath.GetPathRef())
@@ -3205,9 +3094,6 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
             }
         }
 
-        // 30y, not reactDistance: the ship stops within ~20y of the dock
-        // point, and a 150y radius made the bot "teleport to the dock"
-        // while the ship was still visibly sailing in.
         constexpr float EXIT_HOP_DISTANCE = 30.0f;
         if (exitP && exitP->point.GetMapId() == bot->GetMapId() &&
             bot->GetExactDist(exitP->point.GetPositionX(),
@@ -3233,80 +3119,68 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
         return false;
     }
 
-    // Proactive board-wait. Transport stop nodes sit at z=0 IN THE WATER
-    // beside the pier (e.g. Northspear at Menethil, node 1969), and the
-    // unbiased link generation swims straight to them — so the bot treads
-    // water at the stop point and UpcomingSpecialMovement's board
-    // detection may never fire (observed: zero board logs at Menethil).
-    // Handle boarding here instead: with an upcoming transport point on
-    // this map, board when the ship is present; otherwise wait DRY by
-    // trimming the walk at the water's edge.
+    // Transport boarding.
+    PathNodePoint const* boardP = nullptr;
+    for (PathNodePoint const& p : lastMove.lastPath.GetPathRef())
     {
-        PathNodePoint const* boardP = nullptr;
-        for (PathNodePoint const& p : lastMove.lastPath.GetPathRef())
+        if (p.type == PathNodeType::NODE_TRANSPORT && p.entry &&
+            p.entry != lastMove.lastCompletedTransportEntry &&
+            p.point.GetMapId() == botPos.GetMapId() &&
+            botPos.distance(p.point) < sPlayerbotAIConfig.reactDistance * 2.0f)
         {
-            if (p.type == PathNodeType::NODE_TRANSPORT && p.entry &&
-                p.entry != lastMove.lastCompletedTransportEntry &&
-                p.point.GetMapId() == botPos.GetMapId() &&
-                botPos.distance(p.point) < sPlayerbotAIConfig.reactDistance * 2.0f)
-            {
-                boardP = &p;
-                break;
-            }
-        }
-
-        if (boardP)
-        {
-            Transport* dockShip = GetTransportForPosTolerant(
-                bot->GetMap(), bot, bot->GetPhaseMask(),
-                boardP->point.GetPositionX(), boardP->point.GetPositionY(),
-                std::max(boardP->point.GetPositionZ(), bot->GetPositionZ()));
-            if (dockShip && dockShip->GetEntry() == boardP->entry)
-            {
-                bool const boarded = BoardTransport(dockShip);
-                if (boarded)
-                {
-                    lastMove.lastTransportEntry = boardP->entry;
-                    botAI->SetNextCheckDelay(1000);
-                    return true;
-                }
-            }
-            else
-            {
-                // Ship absent: keep only the dry prefix of the walk.
-                std::vector<PathNodePoint> dry;
-                for (PathNodePoint const& p : path.GetPathRef())
-                {
-                    WorldPosition wp = p.point;
-                    if (wp.isInWater())
-                        break;
-                    dry.push_back(p);
-                }
-
-                bool const atDryEnd = dry.empty() ||
-                    bot->GetExactDist(dry.back().point.GetPositionX(),
-                                      dry.back().point.GetPositionY(),
-                                      dry.back().point.GetPositionZ()) < 5.0f;
-                if (atDryEnd)
-                {
-                    // Nowhere dry left to walk — stand and wait for the
-                    // ship (also kills the dock jiggle at BB).
-                    bot->StopMoving();
-                    botAI->SetNextCheckDelay(1000);
-                    return true;
-                }
-                path = TravelPath(dry);
-            }
+            boardP = &p;
+            break;
         }
     }
 
-    // ClipPath — truncate at first hostile creature in range / non-walkable
+    if (boardP)
+    {
+        Transport* dockShip = GetTransportForPosTolerant(
+            bot->GetMap(), bot, bot->GetPhaseMask(),
+            boardP->point.GetPositionX(), boardP->point.GetPositionY(),
+            std::max(boardP->point.GetPositionZ(), bot->GetPositionZ()));
+        if (dockShip && dockShip->GetEntry() == boardP->entry)
+        {
+            bool const boarded = BoardTransport(dockShip);
+            if (boarded)
+            {
+                lastMove.lastTransportEntry = boardP->entry;
+                botAI->SetNextCheckDelay(1000);
+                return true;
+            }
+        }
+        else
+        {
+            // Ship absent: keep only the dry prefix of the walk.
+            std::vector<PathNodePoint> dry;
+            for (PathNodePoint const& p : path.GetPathRef())
+            {
+                WorldPosition wp = p.point;
+                if (wp.isInWater())
+                    break;
+                dry.push_back(p);
+            }
+
+            bool const atDryEnd = dry.empty() ||
+                bot->GetExactDist(dry.back().point.GetPositionX(),
+                                  dry.back().point.GetPositionY(),
+                                  dry.back().point.GetPositionZ()) < 5.0f;
+            if (atDryEnd)
+            {
+                // Nowhere dry left to walk — stand and wait for the ship
+                bot->StopMoving();
+                botAI->SetNextCheckDelay(1000);
+                return true;
+            }
+            path = TravelPath(dry);
+        }
+    }
+
+    // Trim the path behind the bot and up to the first hostile creature in range / non-walkable
     // hop / drifted past reactDistance / > 125 sqDist jump. Combat callers
     // pass ignoreEnemyTargets=true so the chase doesn't stop at an
     // intermediate enemy.
     path.ClipPath(botAI, bot, ignoreEnemyTargets);
-    if (path.empty())
-        return false;
 
     // If destination is on land, snap any underwater waypoints to the
     // water surface so the bot swims along the top instead of diving.
@@ -3329,9 +3203,6 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
         botAI->TellMasterNoFacing(tlog);
     }
 
-    if (path.empty())
-        return false;
-
     if (!bot->IsMounted() && !bot->IsInCombat() &&
         bot->IsOutdoors() && bot->IsAlive())
         botAI->DoSpecificAction("check mount state", Event(), true);
@@ -3347,18 +3218,10 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
 
 // Hands the resolved path to the motion master — spline for multi-point paths,
 // MovePoint for a single point — or teleport-advances low-activity bots.
-bool MovementAction::DispatchMovement(TravelPath path,
-                                      WorldPosition dest,
-                                      char const* label,
-                                      MovementPriority priority,
-                                      // Duration plumbing returns with the reaction engine
-                                      // (declared action durations); unused until then.
-                                      [[maybe_unused]] bool lessDelay,
-                                      bool react)
+bool MovementAction::DispatchMovement(TravelPath path, WorldPosition dest, char const* label,
+                                      MovementPriority priority, [[maybe_unused]] bool lessDelay, bool react)
 {
-    // Build the PointsArray from the TravelPath. Done here (not at the
-    // caller) so DispatchMovement can be invoked with a TravelPath
-    // directly, matching the reference's signature.
+    // Build the PointsArray from the TravelPath.
     std::vector<WorldPosition> const& pts = path.getPointPath();
     Movement::PointsArray points;
     points.reserve(pts.size());
@@ -3373,33 +3236,16 @@ bool MovementAction::DispatchMovement(TravelPath path,
     float totalDist = 0.f;
     for (size_t i = 1; i < points.size(); ++i)
         totalDist += (points[i] - points[i - 1]).length();
-    // After ClipPath/makeShortCut the dispatched path frequently reduces
-    // to a single point, so the point-to-point sum alone is zero and the
-    // post-dispatch wait collapses to the 100ms react floor (the per-tick
-    // re-dispatch cadence seen in testing). Include the bot->first-point
-    // leg so the wait covers the real move. (Not skipped on transports:
-    // MoveTo2's onTransport gate always returns before reaching here, so
-    // bot->GetTransport() is guaranteed null at this point — see the
-    // terrain-clamp comment further down.)
+    // A one-point path sums to zero, defeating the teleport gate below, so
+    // add the bot->first-point leg. Transport-local coords never reach here.
     totalDist += (points.front() -
                   G3D::Vector3(bot->GetPositionX(), bot->GetPositionY(),
                                bot->GetPositionZ())).length();
 
-    // Skip cosmetic walking for low-activity bots with no nearby
-    // player — teleport to the path tail and schedule a cooldown
-    // instead. Matches the reference's MoveTo2 gate
-    // (`!detailedMove && !HasPlayerNearby`).
+    // Skip cosmetic walking for low-activity bots with no nearby player.
     if (!botAI->AllowActivity(DETAILED_MOVE_ACTIVITY))
     {
-        // `last` (points.back()) is a coordinate on the bot's CURRENT map: the same
-        // `points` are handed to MoveSplinePath/MovePoint on this map just below, so
-        // they are current-map by construction. Teleport-snap to the tail on the
-        // bot's OWN map, not dest's. The original code paired these current-map coords
-        // with dest.GetMapId(); on a cross-map route dest is on another map, so
-        // (dest.map, last.xyz) named the wrong map for the coordinate and dropped the
-        // bot at a bogus point. Using the bot's map keeps the snap correct for both
-        // same-map and cross-map routes — the bot teleport-advances along the
-        // current-map prefix and changes maps through the transition handlers.
+        // Teleport target is the far end of THIS tick's clipped path (points.back()) not the journey's destination.
         WorldPosition tail(bot->GetMapId(), last.x, last.y, last.z);
         time_t now = time(nullptr);
         if (totalDist > sPlayerbotAIConfig.reactDistance &&
@@ -3454,42 +3300,24 @@ bool MovementAction::DispatchMovement(TravelPath path,
         }
     }
 
-    // Reference: also gates on !IsInWater && !IsUnderWater so a bot
-    // wading through shallow water (no SWIMMING movement flag yet)
-    // doesn't trigger engine pathfinding mid-dispatch.
     bool const generatePath = !bot->IsFlying() && !bot->isSwimming() &&
                               !bot->IsInWater() && !bot->IsUnderWater();
 
-    // Pre-dispatch normalization: clear looping emote, stand, interrupt
-    // non-melee cast. Reference does this at MoveTo2 level before
-    // DispatchMovement; we do it here at the equivalent point in the flow.
     bot->ClearEmoteState();
     if (!bot->IsStandState())
         bot->SetStandState(UNIT_STAND_STATE_STAND);
     if (bot->IsNonMeleeSpellCast(true))
         bot->InterruptNonMeleeSpells(true);
 
-    // Per-point terrain clamp. The reference wraps this in a transport-
-    // passenger local<->world coordinate sandwich, but that's dead code
-    // here: MoveTo2's onTransport gate always returns before reaching
-    // DispatchMovement (verified — single call site), so bot->GetTransport()
-    // is guaranteed null and `points` are always world-space already.
     for (auto& pt : points)
         bot->UpdateAllowedPositionZ(pt.x, pt.y, pt.z);
 
-    // mm.Clear → exactly one generator (P2: never both MovePoint AND
-    // MoveSplinePath in the same dispatch). Any multi-point route keeps
-    // its waypoints via MoveSplinePath — including swimming/wading/flying
-    // movers, whose resolved shore-hugging points must not collapse into
-    // a straight MovePoint beeline through geometry. Only a path that
-    // reduced to a single point falls back to MovePoint.
+    // mm.Clear → exactly one generator
     MotionMaster* mm = bot->GetMotionMaster();
     mm->Clear();
 
     if (points.size() >= 2)
-    {
         mm->MoveSplinePath(&points, moveMode);
-    }
     else
     {
         float const flySpeed = bot->IsFlying() ? bot->GetSpeed(MOVE_FLIGHT) : 0.0f;
@@ -3516,9 +3344,5 @@ bool MovementAction::DispatchMovement(TravelPath path,
         sPlayerbotAIConfig.log("bot_movement.csv", out.str().c_str());
     }
 
-    // No doze: the brain keeps ticking at react delay. Re-wishes of this
-    // journey are absorbed by MoveTo2's awake early-out (still moving
-    // toward an unchanged destination → nothing to do), so dispatching
-    // does not put the AI to sleep.
     return true;
 }

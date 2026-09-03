@@ -2,6 +2,14 @@
  * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
+ *
+ * Movement funnel declarations (MoveTo2, ResolveMovePath, DispatchMovement, WaitForTransport,
+ * HandleSpecialMovement, FollowOnTransport) ported from the CMaNGOS playerbots project
+ * (https://github.com/cmangos/playerbots), GPL v2, with modifications for AzerothCore.
+ * Original authors:
+ *   Sebastiaan Keek (mostlikely4r) <sebastiaan.keek@gmail.com>
+ *   celguar <celguar@gmail.com>
+ *   David Parra Ausina (davidonete/Flekz) <davidparraausina@gmail.com>
  */
 
 #ifndef PLAYERBOTS_MOVEMENTACTIONS_H
@@ -36,15 +44,12 @@ struct Position;
 // --- MoveTo ----------------------------------------------------
 //  1. CAN WE MOVE AT ALL?  UpdateMovementState + IsMovingAllowed — dead,
 //     CC'd, mid-flight, uncontrolled.
-//  2. WHO IS THE MOVER?  A bot in a controlling vehicle seat moves the
-//     vehicle base — dispatching on the seated Player would move a body the
-//     encounter ignores while the vehicle stands still. A passenger without
-//     control refuses: its legs aren't its own.
+//  2. WHO IS THE MOVER?  A bot in a controlling vehicle seat drives the
+//     vehicle base. A passenger without control refuses.
 //  3. IS THIS ACTION ALLOWED RIGHT NOW?  MovementPriority dictates
 //     replacement: while the bot is still executing a walk, a
 //     lower-priority action does not replace it; higher or equal does
-//     (newest wins). Then exact-duplicate dedup so identical re-issues
-//     cost nothing.
+//     (newest wins). Then deduplicate so identical re-issues dont change.
 //  4. LITERAL OR ROUTED?  Some moves must be taken exactly as given — exact
 //     waypoints (formations), flying/swimming movers, backward steps,
 //     vehicles (the route planner has no notion of a non-bot mover), and the
@@ -53,11 +58,9 @@ struct Position;
 //     the routing pipeline.
 //
 // --- MoveTo2: the routing pipeline ------------------------------------------
-//  5. ALREADY RIDING?  (WaitForTransport) On a recorded transport ride the
-//     only decisions are "stay aboard" or "this is my stop" — walking logic
-//     is meaningless on a moving deck, so the ride is resolved before any
-//     of it runs.
-//  6. UNWATCHED-BOT ECONOMY.  A config-gated cheat that lets bots no player
+//  5. ALREADY RIDING?  (WaitForTransport) On a transport the only decisions are "
+//     stay aboard" or "this is my stop." Resolve and then continue.
+//  6. TRAVEL SKIPPING.  A config-gated cheat that lets bots no player
 //     can see advance by teleport instead of walking, cutting server cost.
 //  7. CLOSE ENOUGH TO DESTINATION? (short-stop, targetPosRecalcDistance) Arriving is a
 //     decision too: within the threshold the journey ends — stop, clear state.
@@ -91,10 +94,8 @@ struct Position;
 //     first and cuts the path so the head IS the special leg —
 //     HandleSpecialMovement only ever looks at the head, so the two are
 //     always called as a pair.
-// 11. SHIP LOGISTICS.  Approaching a dock: ship present → board; absent →
-//     walk to the water's edge and hold. Ship schedules are slow, so
-//     waiting is legitimate player behavior — indefinitely, and NEVER
-//     "stuck".
+// 11. TRANSPORT LOGISTICS.  Approaching a dock: ship present → board; absent →
+//     walk to the water's edge and hold.
 // 12. DANGER ON THE PATH.  (ClipPath) Cut the walk short before hostile
 //     camps unless the caller explicitly accepts the risk — stopping short
 //     beats delivering the bot into a pull it didn't choose.
