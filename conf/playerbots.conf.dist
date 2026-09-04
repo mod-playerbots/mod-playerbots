@@ -208,12 +208,6 @@ AiPlayerbot.AutoInitEquipLevelLimitRatio = 1.0
 # Default: 1 - (enabled)
 AiPlayerbot.AllowLearnTrainerSpells = 1
 
-# SellNormalQualityEquipment
-# Description: Allow the bot to sell white armor when using the `s *` command.
-# Useful while low-level questing so bots sell their unequipped white (normal quality) equipment.
-# Default: 0 - (disabled)
-AiPlayerbot.SellNormalQualityEquipment = 0
-
 #
 #
 ####################################################################################################
