@@ -97,7 +97,7 @@ public:
     bool Initialize();
     void LoadRandomBotLevelConfig();
     bool IsInRandomAccountList(uint32 id);
-    bool IsInRandomQuestItemList(uint32 id);
+    bool IsInBotQuestItemList(uint32 id);
     bool IsPvpProhibited(uint32 zoneId, uint32 areaId);
     bool IsInPvpProhibitedZone(uint32 id);
     bool IsInPvpProhibitedArea(uint32 id);
@@ -148,14 +148,14 @@ public:
     int weightTeleToShattrathCity;
     int weightTeleToDalaran;
     std::vector<uint32> randomBotMaps;
-    std::vector<uint32> randomBotQuestItems;
+    std::vector<uint32> botQuestItems;
     std::vector<uint32> randomBotAccounts;
-    std::vector<uint32> randomBotSpellIds;
-    std::vector<uint32> randomBotQuestIds;
+    std::vector<uint32> botSpellIds;
+    std::vector<uint32> botQuestIds;
     uint32 randomBotTeleportDistance;
-    float randomGearLoweringChance;
-    int32 randomGearQualityLimit;
-    int32 randomGearScoreLimit;
+    float gearLoweringChance;
+    int32 gearQualityLimit;
+    int32 gearScoreLimit;
     bool preferClassArmorType;
     bool preferredSpecWeapons;
     float randomBotMinLevelChance, randomBotMaxLevelChance;
@@ -181,12 +181,12 @@ public:
     float fishingDistanceFromMaster, fishingDistance, endFishingWithMaster;
 
     // chat
-    bool randomBotTalk;
-    bool randomBotEmote;
-    bool randomBotSuggestDungeons;
+    bool botTalk;
+    bool botEmote;
+    bool botSuggestDungeons;
     bool enableBroadcasts;
     bool enableGreet;
-    bool randomBotSayWithoutMaster;
+    bool botSayWithoutMaster;
 
     uint32 broadcastChanceMaxValue;
 
@@ -293,10 +293,10 @@ public:
     uint32 randomClassSpecIndex[MAX_CLASSES][MAX_SPECNO];
 
     std::string commandPrefix, commandSeparator;
-    std::string randomBotAccountPrefix;
-    uint32 randomBotAccountCount;
-    bool randomBotRandomPassword;
-    bool deleteRandomBotAccounts;
+    std::string botAccountPrefix;
+    uint32 botAccountCount;
+    bool botRandomPassword;
+    bool deleteBotAccounts;
     uint32 randomBotGuildCount, randomBotGuildSizeMax;
     bool deleteRandomBotGuilds;
     std::vector<uint32> pvpProhibitedZoneIds;
@@ -348,8 +348,8 @@ public:
     uint32 commandServerPort;
     bool perfMonEnabled;
     bool summonWhenGroup;
-    ShowHideCosmetic randomBotShowHelmet;
-    ShowHideCosmetic randomBotShowCloak;
+    ShowHideCosmetic botShowHelmet;
+    ShowHideCosmetic botShowCloak;
     bool randomBotFixedLevel;
     bool disableRandomLevels;
     float randomBotXPRate;

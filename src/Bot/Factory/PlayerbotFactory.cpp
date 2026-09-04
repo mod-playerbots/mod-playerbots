@@ -371,18 +371,18 @@ bool PlayerbotFactory::LearnProfessionSpecialization(Player* bot,
     return bot->HasSpell(knownSpellId);
 }
 
-PlayerbotFactory::PlayerbotFactory(Player* bot, uint32 level, uint32 itemQuality, uint32 gearScoreLimit)
-    : level(level), itemQuality(itemQuality), gearScoreLimit(gearScoreLimit), bot(bot)
+PlayerbotFactory::PlayerbotFactory(Player* bot, uint32 level, uint32 itemQuality, uint32 maxGearScore)
+    : level(level), itemQuality(itemQuality), maxGearScore(maxGearScore), bot(bot)
 {
     botAI = GET_PLAYERBOT_AI(bot);
     if (!this->itemQuality)
     {
-        uint32 gs = sPlayerbotAIConfig.randomGearScoreLimit == 0
+        uint32 gs = sPlayerbotAIConfig.gearScoreLimit == 0
                         ? 0
-                        : PlayerbotFactory::CalcMixedGearScore(sPlayerbotAIConfig.randomGearScoreLimit,
-                                                               sPlayerbotAIConfig.randomGearQualityLimit);
-        this->itemQuality = sPlayerbotAIConfig.randomGearQualityLimit;
-        this->gearScoreLimit = gs;
+                        : PlayerbotFactory::CalcMixedGearScore(sPlayerbotAIConfig.gearScoreLimit,
+                                                               sPlayerbotAIConfig.gearQualityLimit);
+        this->itemQuality = sPlayerbotAIConfig.gearQualityLimit;
+        this->maxGearScore = gs;
     }
 }
 
@@ -420,8 +420,8 @@ void PlayerbotFactory::Init()
         }
     }
 
-    for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.randomBotQuestIds.begin();
-         i != sPlayerbotAIConfig.randomBotQuestIds.end(); ++i)
+    for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.botQuestIds.begin();
+         i != sPlayerbotAIConfig.botQuestIds.end(); ++i)
     {
         uint32 questId = *i;
         AddPrevQuests(questId, specialQuestIds);
@@ -591,8 +591,8 @@ void PlayerbotFactory::Prepare()
         bot->SetUInt32Value(PLAYER_XP, 0);
     }
 
-    if (sPlayerbotAIConfig.randomBotShowHelmet == ShowHideCosmetic::ALWAYS_SHOW ||
-        (sPlayerbotAIConfig.randomBotShowHelmet == ShowHideCosmetic::RANDOMIZE && urand(0, 4)))
+    if (sPlayerbotAIConfig.botShowHelmet == ShowHideCosmetic::ALWAYS_SHOW ||
+        (sPlayerbotAIConfig.botShowHelmet == ShowHideCosmetic::RANDOMIZE && urand(0, 4)))
     {
         bot->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM);
     }
@@ -601,8 +601,8 @@ void PlayerbotFactory::Prepare()
         bot->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM);
     }
 
-    if (sPlayerbotAIConfig.randomBotShowCloak == ShowHideCosmetic::ALWAYS_SHOW ||
-        (sPlayerbotAIConfig.randomBotShowCloak == ShowHideCosmetic::RANDOMIZE && urand(0, 4)))
+    if (sPlayerbotAIConfig.botShowCloak == ShowHideCosmetic::ALWAYS_SHOW ||
+        (sPlayerbotAIConfig.botShowCloak == ShowHideCosmetic::RANDOMIZE && urand(0, 4)))
     {
         bot->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK);
     }
@@ -1740,7 +1740,7 @@ private:
         if (keep.find(id) != keep.end())
             return false;
 
-        if (sPlayerbotAIConfig.IsInRandomQuestItemList(id))
+        if (sPlayerbotAIConfig.IsInBotQuestItemList(id))
             return true;
 
         return false;
@@ -2002,7 +2002,7 @@ void Shuffle(std::vector<uint32>& items)
 //         bool noItem = false;
 //         uint32 quality = urand(ITEM_QUALITY_UNCOMMON, ITEM_QUALITY_EPIC);
 //         uint32 attempts = 10;
-//         if (urand(0, 100) < 100 * sPlayerbotAIConfig.randomGearLoweringChance && quality > ITEM_QUALITY_NORMAL)
+//         if (urand(0, 100) < 100 * sPlayerbotAIConfig.gearLoweringChance && quality > ITEM_QUALITY_NORMAL)
 //         {
 //             quality--;
 //         }
@@ -2236,7 +2236,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
         }
 
         int32 desiredQuality = itemQuality;
-        if (urand(0, 100) < 100 * sPlayerbotAIConfig.randomGearLoweringChance && desiredQuality > ITEM_QUALITY_NORMAL)
+        if (urand(0, 100) < 100 * sPlayerbotAIConfig.gearLoweringChance && desiredQuality > ITEM_QUALITY_NORMAL)
             desiredQuality--;
 
         do
@@ -2268,8 +2268,8 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
 
                         bool shouldCheckGS = desiredQuality > ITEM_QUALITY_NORMAL;
 
-                        if (shouldCheckGS && gearScoreLimit != 0 &&
-                            CalcMixedGearScore(proto->ItemLevel, proto->Quality) > gearScoreLimit)
+                        if (shouldCheckGS && maxGearScore != 0 &&
+                            CalcMixedGearScore(proto->ItemLevel, proto->Quality) > maxGearScore)
                         {
                             continue;
                         }
@@ -2520,7 +2520,7 @@ inline Item* StoreNewItemInInventorySlot(Player* player, uint32 newItemId, uint3
 //     std::map<uint32, std::vector<uint32>> items;
 
 //     uint32 desiredQuality = itemQuality;
-//     while (urand(0, 100) < 100 * sPlayerbotAIConfig.randomGearLoweringChance && desiredQuality >
+//     while (urand(0, 100) < 100 * sPlayerbotAIConfig.gearLoweringChance && desiredQuality >
 //     ITEM_QUALITY_NORMAL)
 //     {
 //         desiredQuality--;
@@ -2654,7 +2654,7 @@ void PlayerbotFactory::EnchantItem(Item* item)
     if (bot->GetLevel() < sPlayerbotAIConfig.minEnchantingBotLevel)
         return;
 
-    if (urand(0, 100) < 100 * sPlayerbotAIConfig.randomGearLoweringChance)
+    if (urand(0, 100) < 100 * sPlayerbotAIConfig.gearLoweringChance)
         return;
 
     ItemTemplate const* proto = item->GetTemplate();
@@ -3356,8 +3356,8 @@ void PlayerbotFactory::InitClassSpells()
 
 void PlayerbotFactory::InitSpecialSpells()
 {
-    for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.randomBotSpellIds.begin();
-         i != sPlayerbotAIConfig.randomBotSpellIds.end(); ++i)
+    for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.botSpellIds.begin();
+         i != sPlayerbotAIConfig.botSpellIds.end(); ++i)
     {
         uint32 spellId = *i;
         bot->learnSpell(spellId);
@@ -4600,7 +4600,7 @@ void PlayerbotFactory::InitInventoryEquip()
     std::vector<uint32> ids;
 
     uint32 desiredQuality = itemQuality;
-    if (urand(0, 100) < 100 * sPlayerbotAIConfig.randomGearLoweringChance && desiredQuality > ITEM_QUALITY_NORMAL)
+    if (urand(0, 100) < 100 * sPlayerbotAIConfig.gearLoweringChance && desiredQuality > ITEM_QUALITY_NORMAL)
     {
         desiredQuality--;
     }

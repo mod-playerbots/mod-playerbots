@@ -3378,7 +3378,7 @@ void TravelMgr::LoadQuestTravelTable()
 
         // Use randombot 0.
         std::ostringstream cout;
-        cout << sPlayerbotAIConfig.randomBotAccountPrefix << 0;
+        cout << sPlayerbotAIConfig.botAccountPrefix << 0;
         std::string const accountName = cout.str();
 
         LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_ID_BY_USERNAME);

@@ -51,7 +51,7 @@ enum spec : uint8
 class PlayerbotFactory
 {
 public:
-    PlayerbotFactory(Player* bot, uint32 level, uint32 itemQuality = 0, uint32 gearScoreLimit = 0);
+    PlayerbotFactory(Player* bot, uint32 level, uint32 itemQuality = 0, uint32 maxGearScore = 0);
 
     static ObjectGuid GetRandomBot();
     static void Init();
@@ -219,7 +219,7 @@ private:
     EnchantContainer::const_iterator GetEnchantContainerEnd() { return m_EnchantContainer.end(); }
     uint32 level;
     uint32 itemQuality;
-    uint32 gearScoreLimit;
+    uint32 maxGearScore;
     static std::list<uint32> specialQuestIds;
     static std::unordered_map<uint32, std::vector<uint32>> trainerIdCache;
     static std::vector<uint32> enchantSpellIdCache;
