@@ -469,7 +469,7 @@ public:
         auto it = logFiles.find(fileName);
         return it != logFiles.end() && it->second.second;
     }
-    void log(std::string const fileName, const char* str, ...);
+    void log(std::string const fileName, char const* str, ...);
 
     void loadWorldBuff();
 
@@ -517,8 +517,8 @@ private:
     PlayerbotAIConfig() = default;
     ~PlayerbotAIConfig() = default;
 
-    PlayerbotAIConfig(const PlayerbotAIConfig&) = delete;
-    PlayerbotAIConfig& operator=(const PlayerbotAIConfig&) = delete;
+    PlayerbotAIConfig(PlayerbotAIConfig const&) = delete;
+    PlayerbotAIConfig& operator=(PlayerbotAIConfig const&) = delete;
 
     PlayerbotAIConfig(PlayerbotAIConfig&&) = delete;
     PlayerbotAIConfig& operator=(PlayerbotAIConfig&&) = delete;

@@ -1928,11 +1928,11 @@ bool BGTactics::selectObjective(bool reset)
                 {
                     uint32 bossEntry = (team == TEAM_HORDE) ? AV_CPLACE_MINE_S_3 : AV_CPLACE_MINE_N_3;
                     Creature* mBossNeutral = bg->GetBGCreature(bossEntry);
-                    const Position* minePositions[] = {(team == TEAM_HORDE) ? &AV_MINE_SOUTH_1 : &AV_MINE_NORTH_1,
+                    Position const* minePositions[] = {(team == TEAM_HORDE) ? &AV_MINE_SOUTH_1 : &AV_MINE_NORTH_1,
                                                        (team == TEAM_HORDE) ? &AV_MINE_SOUTH_2 : &AV_MINE_NORTH_2,
                                                        (team == TEAM_HORDE) ? &AV_MINE_SOUTH_3 : &AV_MINE_NORTH_3};
 
-                    const Position* chosen = minePositions[urand(0, 2)];
+                    Position const* chosen = minePositions[urand(0, 2)];
                     pos.Set(chosen->GetPositionX(), chosen->GetPositionY(), chosen->GetPositionZ(), bot->GetMapId());
                     posMap["bg objective"] = pos;
                     BgObjective = mBossNeutral;
@@ -1958,7 +1958,7 @@ bool BGTactics::selectObjective(bool reset)
 
             if (!BgObjective && hasSnowfallRole)
             {
-                const BG_AV_NodeInfo& snowfallNode = av->GetAVNodeInfo(BG_AV_NODES_SNOWFALL_GRAVE);
+                BG_AV_NodeInfo const& snowfallNode = av->GetAVNodeInfo(BG_AV_NODES_SNOWFALL_GRAVE);
                 if (snowfallNode.OwnerId == TEAM_NEUTRAL)
                 {
                     if (GameObject* go = bg->GetBGObject(BG_AV_OBJECT_FLAG_N_SNOWFALL_GRAVE))
@@ -2004,7 +2004,7 @@ bool BGTactics::selectObjective(bool reset)
 
                 for (auto const& [nodeId, goId] : defendObjectives)
                 {
-                    const BG_AV_NodeInfo& node = av->GetAVNodeInfo(nodeId);
+                    BG_AV_NodeInfo const& node = av->GetAVNodeInfo(nodeId);
                     if (node.State == POINT_DESTROYED)
                         continue;
 
@@ -2057,7 +2057,7 @@ bool BGTactics::selectObjective(bool reset)
 
                 for (auto const& [nodeId, goId] : attackObjectives)
                 {
-                    const BG_AV_NodeInfo& node = av->GetAVNodeInfo(nodeId);
+                    BG_AV_NodeInfo const& node = av->GetAVNodeInfo(nodeId);
                     GameObject* go = bg->GetBGObject(goId);
                     if (!go || node.State == POINT_DESTROYED || node.TotalOwnerId == team)
                         continue;
@@ -2079,7 +2079,7 @@ bool BGTactics::selectObjective(bool reset)
                 else
                 {
                     // Fallback: move to boss wait position
-                    const Position& waitPos = (team == TEAM_HORDE) ? AV_BOSS_WAIT_H : AV_BOSS_WAIT_A;
+                    Position const& waitPos = (team == TEAM_HORDE) ? AV_BOSS_WAIT_H : AV_BOSS_WAIT_A;
 
                     float rx, ry, rz;
                     bot->GetRandomPoint(waitPos, 5.0f, rx, ry, rz);
@@ -2121,7 +2121,7 @@ bool BGTactics::selectObjective(bool reset)
                 float rx, ry, rz;
                 if (linkedNodeId && AVNodeMovementTargets.count(*linkedNodeId))
                 {
-                    const AVNodePositionData& data = AVNodeMovementTargets[*linkedNodeId];
+                    AVNodePositionData const& data = AVNodeMovementTargets[*linkedNodeId];
                     bot->GetRandomPoint(data.pos, frand(-data.maxRadius, data.maxRadius), rx, ry, rz);
                 }
                 else
@@ -2564,7 +2564,7 @@ bool BGTactics::selectObjective(bool reset)
 
                 if (bestNodeId != 0 && EY_NodePositions.contains(bestNodeId))
                 {
-                    const Position& targetPos = EY_NodePositions[bestNodeId];
+                    Position const& targetPos = EY_NodePositions[bestNodeId];
                     float rx, ry, rz;
                     bot->GetRandomPoint(targetPos, 5.0f, rx, ry, rz);
 
@@ -2590,7 +2590,7 @@ bool BGTactics::selectObjective(bool reset)
                 }
                 else
                 {
-                    const Position& fallback = (team == TEAM_ALLIANCE) ? EY_FLAG_RETURN_POS_RETREAT_ALLIANCE
+                    Position const& fallback = (team == TEAM_ALLIANCE) ? EY_FLAG_RETURN_POS_RETREAT_ALLIANCE
                                                                        : EY_FLAG_RETURN_POS_RETREAT_HORDE;
 
                     float rx, ry, rz;
@@ -2620,7 +2620,7 @@ bool BGTactics::selectObjective(bool reset)
                     if (it == EY_NodePositions.end())
                         continue;
 
-                    const Position& p = it->second;
+                    Position const& p = it->second;
                     if (bot->IsWithinDist2d(p.GetPositionX(), p.GetPositionY(), 125.0f))
                     {
                         float rx, ry, rz;
@@ -2697,7 +2697,7 @@ bool BGTactics::selectObjective(bool reset)
                         uint32 chosenId = owned[urand(0, owned.size() - 1)];
                         if (EY_NodePositions.contains(chosenId))
                         {
-                            const Position& p = EY_NodePositions[chosenId];
+                            Position const& p = EY_NodePositions[chosenId];
                             float rx, ry, rz;
                             bot->GetRandomPoint(p, 5.0f, rx, ry, rz);
                             rz = bot->GetMap()->GetHeight(rx, ry, rz);
@@ -2759,7 +2759,7 @@ bool BGTactics::selectObjective(bool reset)
 
                     if (bestNode && EY_NodePositions.contains(*bestNode))
                     {
-                        const Position& p = EY_NodePositions[*bestNode];
+                        Position const& p = EY_NodePositions[*bestNode];
                         float rx, ry, rz;
                         bot->GetRandomPoint(p, 5.0f, rx, ry, rz);
                         rz = bot->GetMap()->GetHeight(rx, ry, rz);
@@ -2814,7 +2814,7 @@ bool BGTactics::selectObjective(bool reset)
                     uint32 chosen = candidates[urand(0, candidates.size() - 1)];
                     if (EY_NodePositions.contains(chosen))
                     {
-                        const Position& p = EY_NodePositions[chosen];
+                        Position const& p = EY_NodePositions[chosen];
                         pos.Set(p.GetPositionX(), p.GetPositionY(), p.GetPositionZ(), bot->GetMapId());
                         foundObjective = true;
                     }
@@ -3421,9 +3421,6 @@ bool BGTactics::moveToObjectiveWp(BattleBotPath* const& currentPath, uint32 curr
 
     uint32 nPoint = reverse ? std::max((int)(currPoint - urand(1, 5)), 0)
                             : std::min((uint32)(currPoint + urand(1, 5)), lastPointInPath);
-    if (reverse && nPoint < 0)
-        nPoint = 0;
-
     BattleBotWaypoint& nextPoint = currentPath->at(nPoint);
 
     // std::ostringstream out;
@@ -3624,18 +3621,10 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
             return false;
 
         // If the capture target is no longer available (another bot already captured it), stop channeling
-        if (GameObject* targetFlag = currentSpell->m_targets.GetGOTarget())
+        GameObject* targetFlag = currentSpell->m_targets.GetGOTarget();
+        if (!targetFlag || !targetFlag->isSpawned() || targetFlag->GetGoState() != GO_STATE_READY)
         {
-            if (!targetFlag->isSpawned() || targetFlag->GetGoState() != GO_STATE_READY)
-            {
-                bot->InterruptNonMeleeSpells(true);
-                resetObjective();
-                return false;
-            }
-        }
-        else
-        {
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             resetObjective();
             return false;
         }
@@ -4295,9 +4284,7 @@ bool ArenaTactics::Execute(Event /*event*/)
 
             if (path.GetPathType() != PATHFIND_NOPATH)
             {
-                // If you are casting a spell and lost your target due to LoS, interrupt the cast and move
-                if (bot->IsNonMeleeSpellCast(false, true, true, false, true))
-                    bot->InterruptNonMeleeSpells(true);
+                bot->CastStop();
 
                 float x, y, z;
                 target->GetPosition(x, y, z);

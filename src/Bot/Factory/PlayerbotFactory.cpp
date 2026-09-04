@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "PlayerbotFactory.h"
@@ -541,7 +542,7 @@ void PlayerbotFactory::BuildCcBreakTrinketCache()
         tmp.push_back({f[0].Get<uint32>(), f[1].Get<uint16>()});
     } while (result->NextRow());
 
-    std::sort(tmp.begin(), tmp.end(), [](const CcItem& a, const CcItem& b) {
+    std::sort(tmp.begin(), tmp.end(), [](CcItem const& a, CcItem const& b) {
         return a.itemLevel > b.itemLevel;
     });
     for (auto& c : tmp)
@@ -2698,7 +2699,7 @@ void PlayerbotFactory::EnchantItem(Item* item)
             uint8 sp = 0;
             uint8 ap = 0;
             uint8 tank = 0;
-            for (uint8 i = ITEM_MOD_MANA; i < MAX_ITEM_MOD; ++i)
+            for (uint8 i = 0; i < MAX_SPELL_ITEM_ENCHANTMENT_EFFECTS; ++i)
             {
                 if (enchant->type[i] != ITEM_ENCHANTMENT_TYPE_STAT)
                     continue;
@@ -3945,7 +3946,8 @@ void PlayerbotFactory::InitFood()
             (proto->Spells[0].SpellCategory != 11 && proto->Spells[0].SpellCategory != 59) || proto->Bonding != NO_BIND)
             continue;
 
-        if (proto->RequiredLevel > bot->GetLevel() || proto->RequiredLevel < bot->GetLevel() - 9)
+        if (proto->RequiredLevel > bot->GetLevel() ||
+            static_cast<int32>(proto->RequiredLevel) < static_cast<int32>(bot->GetLevel()) - 9)
             continue;
 
         if (proto->RequiredSkill && !bot->HasSkill(proto->RequiredSkill))
@@ -4748,7 +4750,8 @@ void PlayerbotFactory::InitImmersive()
             Stats from = (Stats)urand(STAT_STRENGTH, MAX_STATS - 1);
             Stats to = (Stats)urand(STAT_STRENGTH, MAX_STATS - 1);
             int32 delta = urand(0, 5 + bot->GetLevel() / 3);
-            if (from != to && percentMap[to] + delta <= 100 && percentMap[from] - delta >= 0)
+            if (from != to && static_cast<int32>(percentMap[to]) + delta <= 100 &&
+                static_cast<int32>(percentMap[from]) - delta >= 0)
             {
                 percentMap[to] += delta;
                 percentMap[from] -= delta;
@@ -4870,13 +4873,13 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool /*destroyOld*/)
     uint8 jewelersCount = 0;
     int requiredActive = 2;
     std::vector<uint32> availableGems;
-    for (const uint32& enchantGem : enchantGemIdCache)
+    for (uint32 const& enchantGem : enchantGemIdCache)
     {
         ItemTemplate const* gemTemplate = sObjectMgr->GetItemTemplate(enchantGem);
         if (!gemTemplate)
             continue;
 
-        const GemPropertiesEntry* gemProperties = sGemPropertiesStore.LookupEntry(gemTemplate->GemProperties);
+        GemPropertiesEntry const* gemProperties = sGemPropertiesStore.LookupEntry(gemTemplate->GemProperties);
         if (!gemProperties)
             continue;
 
@@ -4925,7 +4928,7 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool /*destroyOld*/)
             continue;
         int32 bestEnchantId = -1;
         float bestScore = 0;
-        for (const uint32& enchantSpell : enchantSpellIdCache)
+        for (uint32 const& enchantSpell : enchantSpellIdCache)
         {
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(enchantSpell);
             if (!spellInfo)
@@ -5005,7 +5008,7 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool /*destroyOld*/)
                 if (isJewelersGem && jewelersCount >= 3)
                     continue;
 
-                const GemPropertiesEntry* gemProperties = sGemPropertiesStore.LookupEntry(gemTemplate->GemProperties);
+                GemPropertiesEntry const* gemProperties = sGemPropertiesStore.LookupEntry(gemTemplate->GemProperties);
                 if (!gemProperties)
                     continue;
 

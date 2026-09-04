@@ -46,10 +46,10 @@ namespace BlackwingLairHelpers
         NPC_DEATH_TALON_WYRMGUARD = 12460
     };
 
-    bool IsActiveSuppressionDeviceInRange(const GameObject* go, const Player* bot);
+    bool IsActiveSuppressionDeviceInRange(GameObject const* go, Player const* bot);
     bool AreRazorgoreEggsAlive(PlayerbotAI* botAI);
     bool IsRazorgoreOffTank(Player* bot);
-    bool IsNonBABotNearPosition(const Player* bot, Position const& position, float distance);
+    bool IsNonBABotNearPosition(Player const* bot, Position const& position, float distance);
 }
 
 #endif

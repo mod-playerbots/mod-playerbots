@@ -108,8 +108,8 @@ bool RsHalionTankPositionAction::Execute(Event )
 
     if (bot->GetExactDist2d(home) > 1.0f)
     {
-        if (committed && bot->IsNonMeleeSpellCast(false))
-            bot->InterruptNonMeleeSpells(false);
+        if (committed)
+            bot->CastStop();
 
         if (committed && !bot->HasAura(RS_SPELL_NITRO_BOOSTS))
             bot->AddAura(RS_SPELL_NITRO_BOOSTS, bot);
@@ -264,8 +264,7 @@ bool RsHalionMeteorAction::Execute(Event )
     if (!RsHalionMeteorShouldRally(bot))
         return false;
 
-    if (bot->IsNonMeleeSpellCast(false))
-        bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
     botAI->Reset();
 
     Position const& target = RsHalionMeteorSpot(bot->GetInstanceId());
@@ -576,8 +575,7 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
 
     if (RsHalionCutterBeamDanger(botAI, bot) && singleCutter && cutterFiring)
     {
-        if (bot->IsNonMeleeSpellCast(false))
-            bot->InterruptNonMeleeSpells(false);
+        bot->CastStop();
 
         Unit* na = pairs[0].first;
         Unit* nb = pairs[0].second;
@@ -609,8 +607,8 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
     if (loose && bot->IsNonMeleeSpellCast(false, false, true))
         return false;
 
-    if (RsHalionCutterBeamDanger(botAI, bot) && cutterFiring && bot->IsNonMeleeSpellCast(false))
-        bot->InterruptNonMeleeSpells(false);
+    if (RsHalionCutterBeamDanger(botAI, bot) && cutterFiring)
+        bot->CastStop();
 
     float const bossX = boss->GetPositionX();
     float const bossY = boss->GetPositionY();

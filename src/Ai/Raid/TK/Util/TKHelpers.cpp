@@ -59,8 +59,8 @@ std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 npcEntry, float sear
     return hazardTriggers;
 }
 
-Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards,
-    float hazardRadius, const Position* center)
+Position FindSafestNearbyPosition(Player* bot, std::vector<Unit*> const& hazards,
+    float hazardRadius, Position const* center)
 {
     constexpr float searchStep = M_PI / 8.0f;
     constexpr float minDistance = 2.0f;
@@ -75,7 +75,7 @@ Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards
     {
         for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
         {
-            const Position& searchCenter = center ? *center : bot->GetPosition();
+            Position const& searchCenter = center ? *center : bot->GetPosition();
             float x = searchCenter.GetPositionX() + distance * std::cos(angle);
             float y = searchCenter.GetPositionY() + distance * std::sin(angle);
 
@@ -121,7 +121,7 @@ Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards
 }
 
 bool IsPathSafeFromHazards(
-    const Position& start, const Position& end, const std::vector<Unit*>& hazards, float hazardRadius)
+    Position const& start, Position const& end, std::vector<Unit*> const& hazards, float hazardRadius)
 {
     constexpr uint8 numChecks = 10;
     float dx = end.GetPositionX() - start.GetPositionX();
@@ -248,7 +248,7 @@ int8 GetAlarCurrentLocationIndex(Unit* alar)
     return locationIndex;
 }
 
-void GetClosestPlatformAndGround(const Position& botPos, int8& closestPlatform, Position& ground)
+void GetClosestPlatformAndGround(Position const& botPos, int8& closestPlatform, Position& ground)
 {
     float minDist = std::numeric_limits<float>::max();
     closestPlatform = -1;
@@ -414,8 +414,8 @@ bool HasEquippableItemForSlot(Player* bot, uint8 slot)
     {
         uint8 bag = (i == 0) ? INVENTORY_SLOT_BAG_0 : (INVENTORY_SLOT_BAG_START + i - 1);
         uint8 startSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_START : 0;
-        uint8 endSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_END :
-                        (bot->GetBagByPos(bag) ? bot->GetBagByPos(bag)->GetBagSize() : 0);
+        uint8 endSlot = (bag == INVENTORY_SLOT_BAG_0) ? static_cast<uint8>(INVENTORY_SLOT_ITEM_END) :
+                        (bot->GetBagByPos(bag) ? bot->GetBagByPos(bag)->GetBagSize() : uint8(0));
 
         for (uint8 bagSlot = startSlot; bagSlot < endSlot; ++bagSlot)
         {

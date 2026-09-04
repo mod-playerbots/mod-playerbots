@@ -5,7 +5,6 @@
  */
 
 #include "EquipAction.h"
-#include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "ICCActions.h"
 #include "ICCTriggers.h"
@@ -375,7 +374,7 @@ bool IccGunshipRocketJumpAction::Execute(Event /*event*/)
             if (bot->GetVictim())
             {
                 bot->AttackStop();
-                bot->InterruptNonMeleeSpells(true);
+                bot->CastStop();
                 bot->SetTarget(ObjectGuid::Empty);
             }
             if (botOnEnemyShip)

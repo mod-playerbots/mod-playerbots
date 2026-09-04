@@ -70,7 +70,7 @@ namespace HyjalSummitHelpers
         float& stepX, float& stepY, float& stepZ);
     RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot);
     std::pair<size_t, size_t> GetBotCircleIndexAndCount(PlayerbotAI* botAI, Player* bot,
-                                                        const RangedGroups& groups);
+                                                        RangedGroups const& groups);
 
     // Rage Winterchill
     extern const Position WINTERCHILL_TANK_POSITION;
@@ -93,14 +93,14 @@ namespace HyjalSummitHelpers
     extern const Position ANETHERON_W_INFERNAL_POSITION;
     extern std::unordered_map<ObjectGuid, bool> hasReachedAnetheronPosition;
     Player* GetInfernoTarget(Unit* anetheron);
-    const Position& GetClosestInfernalTankPosition(Player* bot);
+    Position const& GetClosestInfernalTankPosition(Player* bot);
 
     // Kaz'rogal
     extern const Position KAZROGAL_TANK_TRANSITION_POSITION;
     extern const Position KAZROGAL_TANK_FINAL_POSITION;
     extern std::unordered_map<ObjectGuid, TankPositionState> kazrogalTankStep;
     extern std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
-    TankPositionState GetKazrogalTankPositionState(PlayerbotAI* botAI, Player* bot);
+    TankPositionState GetKazrogalTankPositionState(Player* bot);
 
     // Azgalor
     extern const Position AZGALOR_TANK_TRANSITION_POSITION;
@@ -116,7 +116,7 @@ namespace HyjalSummitHelpers
         uint32 spawnTime;
     };
     extern std::unordered_map<uint32, RainOfFireData> rainOfFirePosition;
-    TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot);
+    TankPositionState GetAzgalorTankPositionState(Player* bot);
     RainOfFireData* GetActiveAzgalorRainOfFire(uint32 instanceId);
     bool IsInRainOfFire(Player* bot, float radius);
     bool AnyGroupMemberHasDoom(Player* bot);

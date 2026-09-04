@@ -91,10 +91,10 @@ namespace TempestKeepHelpers
     constexpr uint32 TEMPEST_KEEP_MAP_ID = 550;
     Unit* GetNearestNonTankPlayerInRadius(PlayerbotAI* botAI, Player* bot, float radius);
     std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 npcEntry, float searchRadius);
-    Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards,
-        float hazardRadius, const Position* center = nullptr);
+    Position FindSafestNearbyPosition(Player* bot, std::vector<Unit*> const& hazards,
+        float hazardRadius, Position const* center = nullptr);
     bool IsPathSafeFromHazards(
-        const Position& start, const Position& end, const std::vector<Unit*>& hazards,
+        Position const& start, Position const& end, std::vector<Unit*> const& hazards,
         float hazardRadius);
 
     // Al'ar <Phoenix God>
@@ -131,7 +131,7 @@ namespace TempestKeepHelpers
     int8 GetAlarDestinationLocationIndex(Unit* alar, Position& dest);
     int8 GetAlarCurrentLocationIndex(Unit* alar);
     void GetClosestPlatformAndGround(
-        const Position& botPos, int8& closestPlatform, Position& ground);
+        Position const& botPos, int8& closestPlatform, Position& ground);
     std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(PlayerbotAI* botAI);
     Player* GetSecondEmberTank(Player* bot);
 

@@ -28,13 +28,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class IngvarStopCastingAction : public Action
-{
-public:
-    IngvarStopCastingAction(PlayerbotAI* ai) : Action(ai, "ingvar stop casting") {}
-    bool Execute(Event event) override;
-};
-
 class IngvarDodgeSmashAction : public MovementAction
 {
 public:

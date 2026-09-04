@@ -4,7 +4,6 @@
  * or (at your option) any later version.
  */
 
-#include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "ICCActions.h"
 #include "ICCScripts.h"
@@ -528,7 +527,7 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
                 if (!s_stageInbound[stageKey])
                 {
                     bot->AttackStop();
-                    bot->InterruptNonMeleeSpells(true);
+                    bot->CastStop();
                     bot->SetTarget(ObjectGuid::Empty);
                     context->GetValue<Unit*>("current target")->Set(nullptr);
                     botAI->Reset();
@@ -976,7 +975,7 @@ bool IccLichKingWinterAction::HandleTankPositioning()
             if (!s_mtInbound[mtKey])
             {
                 bot->AttackStop();
-                bot->InterruptNonMeleeSpells(true);
+                bot->CastStop();
                 bot->SetTarget(ObjectGuid::Empty);
                 context->GetValue<Unit*>("current target")->Set(nullptr);
                 botAI->Reset();
@@ -1265,7 +1264,7 @@ bool IccLichKingWinterAction::HandleRangedPositioning()
         if (!wasInbound)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             bot->SetTarget(ObjectGuid::Empty);
             context->GetValue<Unit*>("current target")->Set(nullptr);
             botAI->Reset();
@@ -1728,7 +1727,7 @@ bool IccLichKingWinterAction::HandlePetManagement()
         if (ci->GetCommandState() != COMMAND_FOLLOW)
         {
             pet->AttackStop();
-            pet->InterruptNonMeleeSpells(false);
+            pet->CastStop();
             pet->GetMotionMaster()->MoveFollow(bot, PET_FOLLOW_DIST, pet->GetFollowAngle());
             ci->SetCommandState(COMMAND_FOLLOW);
             ci->SetIsCommandAttack(false);
@@ -2453,9 +2452,8 @@ bool IccLichKingAddsAction::HandleQuakeMechanics(Unit* boss)
     if (dist >= QUAKE_MIN && dist <= QUAKE_MAX)
         return false;
 
-    // Interrupt active spell cast before repositioning
-    if (bot->HasUnitState(UNIT_STATE_CASTING))
-        bot->InterruptNonMeleeSpells(false);
+    // Interrupt active channel before repositioning
+    bot->CastStop();
 
     float const dx = bot->GetPositionX() - boss->GetPositionX();
     float const dy = bot->GetPositionY() - boss->GetPositionY();
@@ -3537,9 +3535,7 @@ bool IccLichKingAddsAction::HandleDefileMechanics(Unit* boss, Difficulty diff)
                 float moveY = botY + MOVE_DISTANCE * std::sin(bestAngle);
                 float moveZ = FIXED_Z;
 
-                if (bot->HasUnitState(UNIT_STATE_CASTING))
-                    bot->InterruptNonMeleeSpells(false);
-
+                bot->CastStop();
                 bot->UpdateAllowedPositionZ(moveX, moveY, moveZ);
                 MoveTo(bot->GetMapId(), moveX, moveY, moveZ,
                        false, false, false, true, MovementPriority::MOVEMENT_FORCED);
@@ -3666,9 +3662,7 @@ bool IccLichKingAddsAction::HandleDefileMechanics(Unit* boss, Difficulty diff)
     float destZ = bot->GetPositionZ();
     bot->UpdateAllowedPositionZ(destX, destY, destZ);
 
-    if (bot->HasUnitState(UNIT_STATE_CASTING))
-        bot->InterruptNonMeleeSpells(false);
-
+    bot->CastStop();
     MoveTo(bot->GetMapId(), destX, destY, destZ,
            false, false, false, true, MovementPriority::MOVEMENT_FORCED);
     return true;

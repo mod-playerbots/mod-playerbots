@@ -4,7 +4,6 @@
  * or (at your option) any later version.
  */
 
-#include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "ICCActions.h"
 #include "ICCScripts.h"
@@ -32,7 +31,7 @@ bool IccPutricideMutatedPlagueAction::Execute(Event /*event*/)
     if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FOLLOW_MOTION_TYPE)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         if (bot->GetTarget())
             bot->SetTarget(ObjectGuid::Empty);
         return false;
@@ -81,7 +80,7 @@ bool IccPutricideGrowingOozePuddleAction::Execute(Event /*event*/)
         bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FOLLOW_MOTION_TYPE)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         if (bot->GetTarget())
             bot->SetTarget(ObjectGuid::Empty);
         if (Unit* master = botAI->GetMaster())
@@ -1112,7 +1111,7 @@ bool IccPutricideAvoidMalleableGooAction::Execute(Event /*event*/)
         bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FOLLOW_MOTION_TYPE)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         if (bot->GetTarget())
             bot->SetTarget(ObjectGuid::Empty);
         if (Unit* master = botAI->GetMaster())
