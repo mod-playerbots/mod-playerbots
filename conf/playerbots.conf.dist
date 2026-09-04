@@ -103,6 +103,9 @@ AiPlayerbot.AddClassAccountPoolSize = 50
 
 # Prefix for created bot accounts (of any type).
 # Do not change this prefix while there are existing bot accounts.
+# The decimal account number is appended to this prefix. The longest generated account name must be at most
+# 16 characters when AiPlayerbot.RandomBotRandomPassword is 0 because the account name is also used as the password,
+# or 17 characters when AiPlayerbot.RandomBotRandomPassword is 1.
 AiPlayerbot.RandomBotAccountPrefix = "rndbot"
 
 # Delete all randombot accounts
