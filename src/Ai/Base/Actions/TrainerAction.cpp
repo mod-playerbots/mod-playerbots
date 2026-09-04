@@ -67,10 +67,20 @@ bool TrainerAction::isPossible()
     if (!trainer->IsTrainerValidForPlayer(bot))
         return false;
 
-    if (trainer->GetSpells().empty())
-        return false;
+    for (Trainer::Spell const& spell : trainer->GetSpells())
+    {
+        Trainer::Spell const* trainerSpell = trainer->GetSpell(spell.SpellId);
+        if (!trainerSpell)
+            continue;
 
-    return true;
+        if (!PlayerbotFactory::IsTrainerSpellAllowedForBot(bot, trainer, trainerSpell))
+            continue;
+
+        if (trainer->CanTeachSpell(bot, trainerSpell))
+            return true;
+    }
+
+    return false;
 }
 
 Unit* TrainerAction::GetTarget()
@@ -107,6 +117,9 @@ void TrainerAction::Iterate(Creature* creature, bool learnSpells, uint32 spellId
 
         Trainer::Spell const* trainerSpell = trainer->GetSpell(spell.SpellId);
         if (!trainerSpell)
+            continue;
+
+        if (!PlayerbotFactory::IsTrainerSpellAllowedForBot(bot, trainer, trainerSpell))
             continue;
 
         if (!trainer->CanTeachSpell(bot, trainerSpell))
