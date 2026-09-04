@@ -1812,6 +1812,8 @@ std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocations(st
             continue;
 
         Map* map = player->GetMap();
+        if (!map)
+            continue;
 
         // Instanceable maps (dungeons, raids, battlegrounds, arenas) are never valid targets: a
         // WorldLocation carries no instance id, so a bot would be sent to another instance of the
