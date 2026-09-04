@@ -736,6 +736,12 @@ AiPlayerbot.RandomBotMaxLevel = 80
 # Default: 0 (disabled)
 AiPlayerbot.SyncLevelWithPlayers = 0
 
+# Concentrate randombots teleporting into level-appropriate open-world zones that hold a real
+# (non-GM) player. Falls back to normal teleporting behaviour when no player's zone matches.
+# Best paired with AiPlayerbot.SyncLevelWithPlayers.
+# Default: 0 (disabled)
+AiPlayerbot.RandomBotConcentrateInPlayerZone = 0
+
 # Mark many quests ≤ bot level as complete (slows down bot creation)
 # Default: 0 (disabled)
 AiPlayerbot.PreQuests = 0
