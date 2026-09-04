@@ -665,7 +665,7 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const& text, Player& fr
     {
         std::string response = HandleRemoteCommand(filtered.substr(6));
         WorldPacket data;
-        ChatHandler::BuildChatPacket(data, CHAT_MSG_ADDON, response.c_str(), LANG_ADDON, CHAT_TAG_NONE, bot->GetGUID(),
+        ChatHandler::BuildChatPacket(data, CHAT_MSG_ADDON, LANG_ADDON, bot->GetGUID(), {}, response, CHAT_TAG_NONE,
                                      bot->GetName());
         ServerFacade::instance().SendPacket(&fromPlayer, &data);
         return;
@@ -2929,7 +2929,7 @@ bool PlayerbotAI::SayToParty(std::string const& msg)
         return false;
 
     WorldPacket data;
-    ChatHandler::BuildChatPacket(data, CHAT_MSG_PARTY, msg.c_str(), LANG_UNIVERSAL, CHAT_TAG_NONE, bot->GetGUID(),
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_PARTY, LANG_UNIVERSAL, bot->GetGUID(), {}, msg, CHAT_TAG_NONE,
                                  bot->GetName());
 
     for (auto receiver : GetRealPlayersInGroup())
@@ -2946,7 +2946,7 @@ bool PlayerbotAI::SayToRaid(std::string const& msg)
         return false;
 
     WorldPacket data;
-    ChatHandler::BuildChatPacket(data, CHAT_MSG_RAID, msg.c_str(), LANG_UNIVERSAL, CHAT_TAG_NONE, bot->GetGUID(),
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_RAID, LANG_UNIVERSAL, bot->GetGUID(), {}, msg, CHAT_TAG_NONE,
                                  bot->GetName());
 
     for (auto receiver : GetRealPlayersInGroup())
