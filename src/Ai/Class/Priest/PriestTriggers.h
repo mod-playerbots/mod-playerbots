@@ -31,16 +31,12 @@ BUFF_TRIGGER(InnerFocusTrigger, "inner focus");
 CC_TRIGGER(ShackleUndeadTrigger, "shackle undead");
 INTERRUPT_TRIGGER(SilenceTrigger, "silence");
 INTERRUPT_HEALER_TRIGGER(SilenceEnemyHealerTrigger, "silence");
-
-// racials
 DEBUFF_CHECKISOWNER_TRIGGER(DevouringPlagueTrigger, "devouring plague");
 BUFF_TRIGGER(TouchOfWeaknessTrigger, "touch of weakness");
 DEBUFF_TRIGGER(HexOfWeaknessTrigger, "hex of weakness");
 BUFF_TRIGGER(ShadowguardTrigger, "shadowguard");
-BUFF_TRIGGER(FearWardTrigger, "fear ward");
 DEFLECT_TRIGGER(FeedbackTrigger, "feedback");
 SNARE_TRIGGER(ChastiseTrigger, "chastise");
-
 BOOST_TRIGGER_A(ShadowfiendTrigger, "shadowfiend");
 
 class ShadowProtectionTrigger : public BuffTrigger
@@ -87,6 +83,15 @@ class DivineSpiritTrigger : public BuffTrigger
 public:
     DivineSpiritTrigger(PlayerbotAI* botAI)
         : BuffTrigger(botAI, "divine spirit", 4 * 2000) {}
+
+    bool IsActive() override;
+};
+
+class FearWardOnMainTankTrigger : public BuffOnMainTankTrigger
+{
+public:
+    FearWardOnMainTankTrigger(PlayerbotAI* botAI)
+        : BuffOnMainTankTrigger(botAI, "fear ward", false, 2000) {}
 
     bool IsActive() override;
 };
