@@ -153,8 +153,6 @@ BUFF_ACTION(CastTouchOfWeaknessAction, "touch of weakness");
 DEBUFF_ACTION(CastHexOfWeaknessAction, "hex of weakness");
 BUFF_ACTION(CastShadowguardAction, "shadowguard");
 HEAL_ACTION(CastDesperatePrayerAction, "desperate prayer");
-BUFF_ACTION(CastFearWardAction, "fear ward");
-BUFF_PARTY_ACTION(CastFearWardOnPartyAction, "fear ward");
 SPELL_ACTION_U(CastStarshardsAction, "starshards",
                (AI_VALUE2(uint8, "mana", "self target") > 50 && AI_VALUE(Unit*, "current target") &&
                 AI_VALUE2(float, "distance", "current target") > 15.0f));
@@ -184,7 +182,8 @@ public:
 class CastPenanceOnPartyAction : public HealPartyMemberAction
 {
 public:
-    CastPenanceOnPartyAction(PlayerbotAI* ai) : HealPartyMemberAction(ai, "penance", 25.0f, HealingManaEfficiency::HIGH)
+    CastPenanceOnPartyAction(PlayerbotAI* ai)
+        : HealPartyMemberAction(ai, "penance", 25.0f, HealingManaEfficiency::HIGH)
     {
     }
 };
@@ -235,6 +234,12 @@ public:
 
     bool isUseful() override;
     Unit* GetTarget() override;
+};
+
+class CastFearWardOnMainTankAction : public BuffOnMainTankAction
+{
+public:
+    CastFearWardOnMainTankAction(PlayerbotAI* botAI) : BuffOnMainTankAction(botAI, "fear ward") {}
 };
 
 class CastMindSearAction : public CastSpellAction
