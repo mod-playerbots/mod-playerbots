@@ -29,7 +29,7 @@ public:
     bool CreateGuild(Player* player, std::string guildName);
     void OnGuildUpdate  (Guild* guild);
     bool SetGuildEmblem(uint32 guildId);
-    void DeleteBotGuilds();
+    void DeleteRandomBotGuilds();
     bool IsRealGuild(uint32 guildId);
     bool IsRealGuild(Player* bot);
 
