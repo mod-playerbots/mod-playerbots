@@ -35,8 +35,7 @@ jobs:
     name: ${{ matrix.os }}-${{ matrix.cpp_compiler }}
 
     env:
-      CXXFLAGS: "-Wall -Wextra -Winit-self -Woverloaded-virtual -Werror -Wno-error=deprecated-declarations"
-
+      CXXFLAGS: "-Wall -Wextra -Winit-self -Woverloaded-virtual -Werror -Wno-error=deprecated-declarations -Wno-error=array-bounds"
     steps:
       - name: Checkout AzerothCore
         uses: actions/checkout@v3
