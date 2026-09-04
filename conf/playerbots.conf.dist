@@ -172,7 +172,9 @@ AiPlayerbot.RandomBotGuildCount = 20
 # Maximum number of members in randombot guilds (minimum is hardcoded to 10)
 AiPlayerbot.RandomBotGuildSizeMax = 15
 
-# Delete all randombot guilds if set to 1
+# Delete all randombot (and any addclass bot) guilds on startup. While enabled,
+# no new randombot guilds are created or joined. Set back to 0 and restart the
+# server to resume normal random bot guild assignment.
 AiPlayerbot.DeleteRandomBotGuilds = 0
 
 # Randombots will invite players to groups/raids/guilds
@@ -1687,9 +1689,9 @@ AiPlayerbot.RandomBotArenaTeam5v5Count = 5
 AiPlayerbot.RandomBotArenaTeamMaxRating = 2000
 AiPlayerbot.RandomBotArenaTeamMinRating = 1000
 
-# Delete all random bot arena teams on startup. While enabled, no new random bot
-# arena teams are created or joined. Set back to 0 and restart the server to
-# resume normal random bot arena team assignment.
+# Delete all randombot (and any addclass bot) arena teams on startup. While enabled,
+# no new randombot arena teams are created or joined. Set back to 0 and restart the
+# server to resume normal randombot arena team assignment.
 AiPlayerbot.DeleteRandomBotArenaTeams = 0
 
 # PvP Restricted Zones (bots will not initiate PvP or defend themselves if attacked)

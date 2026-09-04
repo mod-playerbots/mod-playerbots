@@ -4861,6 +4861,9 @@ void PlayerbotFactory::InitGuild()
         return;
     }
 
+    if (sPlayerbotAIConfig.deleteRandomBotGuilds)
+        return;
+
     std::string guildName = PlayerbotGuildMgr::instance().AssignToGuild(bot);
     if (guildName.empty())
         return;
