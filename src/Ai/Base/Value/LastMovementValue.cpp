@@ -38,6 +38,7 @@ void LastMovement::clear()
     holdStartMs = 0;
     holdDurationMs = 0;
     lastTransportEntry = 0;
+    lastCompletedTransportEntry = 0;
 }
 
 void LastMovement::Set([[maybe_unused]] Unit* follow)
