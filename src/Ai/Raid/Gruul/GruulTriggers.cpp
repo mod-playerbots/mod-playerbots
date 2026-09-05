@@ -10,12 +10,13 @@
 #include "Playerbots.h"
 
 using namespace GruulHelpers;
+using namespace EncounterHelpers;
 
 // General
 
 bool GruulsLairNoEncounterInProgressTrigger::IsActive()
 {
-    return !EncounterHelpers::IsEncounterInProgress(bot, GRUUL_MAP_ID);
+    return !IsEncounterInProgress(bot, GRUUL_MAP_ID);
 }
 
 // High King Maulgar <Lord of the Ogres>
