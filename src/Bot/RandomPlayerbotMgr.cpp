@@ -2574,10 +2574,24 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* /*handler*/,
 
 void RandomPlayerbotMgr::HandleCommand(uint32 type, std::string const text, Player* fromPlayer, std::string channelName)
 {
+    // The sender needs guarding too: chatting right after a (GM/panel) teleport
+    // reached LevelFor(from) with transient map/group state and crashed
+    // (Andrew's repro, 2026-08-20). Symmetric to the per-bot guard below.
+    if (!fromPlayer || !fromPlayer->IsInWorld() || fromPlayer->IsBeingTeleported() || !fromPlayer->FindMap())
+        return;
+
     for (PlayerBotMap::const_iterator it = GetPlayerBotsBegin(); it != GetPlayerBotsEnd(); ++it)
     {
         Player* const bot = it->second;
-        if (!bot)
+        // Bots mid-login/logout sit in this map without a usable Player or AI.
+        // Chatting during a login flood walked into them: GET_PLAYERBOT_AI
+        // returned null and ->HandleCommand crashed the server (SIGSEGV 0x258,
+        // 2026-08-20). Skip anything not fully in the world with an attached AI.
+        if (!bot || !bot->IsInWorld() || bot->IsBeingTeleported())
+            continue;
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+        if (!botAI)
             continue;
 
         if (!channelName.empty())
@@ -2590,7 +2604,7 @@ void RandomPlayerbotMgr::HandleCommand(uint32 type, std::string const text, Play
             }
         }
 
-        GET_PLAYERBOT_AI(bot)->HandleCommand(type, text, fromPlayer);
+        botAI->HandleCommand(type, text, fromPlayer);
     }
 }
 
