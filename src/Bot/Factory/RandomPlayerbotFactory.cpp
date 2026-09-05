@@ -21,6 +21,33 @@
 #include "SharedDefines.h"
 #include "SocialMgr.h"
 #include "Timer.h"
+#include "Util.h"
+
+namespace
+{
+char const* GetAccountCreationError(AccountOpResult result)
+{
+    switch (result)
+    {
+        case AOR_OK:
+            return "no error";
+        case AOR_NAME_TOO_LONG:
+            return "account name is too long";
+        case AOR_PASS_TOO_LONG:
+            return "password is too long";
+        case AOR_EMAIL_TOO_LONG:
+            return "email is too long";
+        case AOR_NAME_ALREADY_EXIST:
+            return "account name already exists";
+        case AOR_NAME_NOT_EXIST:
+            return "account name does not exist";
+        case AOR_DB_INTERNAL_ERROR:
+            return "database error";
+    }
+
+    return "unknown error";
+}
+}
 
 constexpr RandomPlayerbotFactory::NameRaceAndGender RandomPlayerbotFactory::CombineRaceAndGender(uint8 race,
                                                                                                 uint8 gender)
@@ -595,8 +622,9 @@ void RandomPlayerbotFactory::CreateRandomBots()
 
     LOG_INFO("playerbots", "Creating random bot accounts...");
     std::unordered_map<NameRaceAndGender, std::vector<std::string>> nameCache;
-    std::vector<std::future<void>> account_creations;
+    std::vector<std::string> accountNamesToCreate;
     int account_creation = 0;
+    bool accountCreationFailed = false;
 
     // Calculates the total number of required accounts.
     uint32 totalAccountCount = CalculateTotalAccountCount();
@@ -611,11 +639,38 @@ void RandomPlayerbotFactory::CreateRandomBots()
         LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_ID_BY_USERNAME);
         stmt->SetData(0, accountName);
         PreparedQueryResult result = LoginDatabase.Query(stmt);
-        if (result)
+        if (!result)
+            accountNamesToCreate.push_back(accountName);
+    }
+
+    if (!accountNamesToCreate.empty())
+    {
+        std::string const& longestAccountName = accountNamesToCreate.back();
+        std::string accountNameForLength = longestAccountName;
+        std::size_t const longestAccountNameLength = utf8length(accountNameForLength);
+
+        if (longestAccountNameLength > MAX_ACCOUNT_STR)
         {
-            continue;
+            LOG_ERROR("playerbots",
+                "Cannot create random bot accounts: generated account name '{}' is {} characters, exceeding the "
+                "{}-character account name limit. Shorten AiPlayerbot.RandomBotAccountPrefix.",
+                longestAccountName, longestAccountNameLength, MAX_ACCOUNT_STR);
+            return;
         }
-        account_creation++;
+
+        if (!sPlayerbotAIConfig.randomBotRandomPassword && longestAccountNameLength > MAX_PASS_STR)
+        {
+            LOG_ERROR("playerbots",
+                "Cannot create random bot accounts: generated account name '{}' is {} characters and will also be "
+                "used as its password, exceeding the {}-character password limit. Shorten "
+                "AiPlayerbot.RandomBotAccountPrefix or enable AiPlayerbot.RandomBotRandomPassword.",
+                longestAccountName, longestAccountNameLength, MAX_PASS_STR);
+            return;
+        }
+    }
+
+    for (std::string const& accountName : accountNamesToCreate)
+    {
         std::string password = "";
         if (sPlayerbotAIConfig.randomBotRandomPassword)
         {
@@ -627,9 +682,17 @@ void RandomPlayerbotFactory::CreateRandomBots()
         else
             password = accountName;
 
-        sAccountMgr->CreateAccount(accountName, password);
+        AccountOpResult const result = sAccountMgr->CreateAccount(accountName, password);
+        if (result != AOR_OK)
+        {
+            LOG_ERROR("playerbots", "Failed to create random bot account '{}': {} (error code {})", accountName,
+                GetAccountCreationError(result), static_cast<uint32>(result));
+            accountCreationFailed = true;
+            break;
+        }
 
-        LOG_DEBUG("playerbots", "Account {} created for random bots", accountName.c_str());
+        account_creation++;
+        LOG_DEBUG("playerbots", "Account {} created for random bots", accountName);
     }
     if (account_creation)
     {
@@ -641,6 +704,12 @@ void RandomPlayerbotFactory::CreateRandomBots()
             std::this_thread::sleep_for(1s);
         }
         LOG_INFO("playerbots", ">> {} Accounts loaded into database in {} ms", account_creation, GetMSTimeDiffToNow(timer));
+    }
+
+    if (accountCreationFailed)
+    {
+        LOG_ERROR("playerbots", "Aborting random bot character creation because an account could not be created.");
+        return;
     }
 
     LOG_INFO("playerbots", "Creating random bot characters...");
