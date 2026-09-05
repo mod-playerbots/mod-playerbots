@@ -285,6 +285,10 @@ void CheckMountStateAction::CompleteDismount(Player* bot)
     bot->SetFallInformation(0, startZ);
     fallInfo.pos.Relocate(x, y, groundZ);
     bot->HandleFall(fallInfo);
+    // HandleFall has taken its damage off startZ. Leave the fall reference at the ground the bot
+    // is about to occupy, not at the altitude it left: Player::IsFalling() compares the standing Z
+    // against this value, so startZ would read as a permanent fall.
+    bot->SetFallInformation(0, groundZ);
     bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
 }
 
