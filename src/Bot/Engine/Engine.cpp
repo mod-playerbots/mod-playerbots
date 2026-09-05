@@ -186,11 +186,20 @@ bool Engine::DoNextAction(Unit* /*unit*/, uint32 /*depth*/, bool minimal)
             // Apply multipliers early to avoid unnecessary iterations
             for (Multiplier* multiplier : multipliers)
             {
-                relevance *= multiplier->GetValue(action);
+                float value;
+                {
+                    PerfMonitorScope scope(multiplier->GetPerfData());
+                    value = multiplier->GetValue(action);
+                }
+
+                relevance *= value;
                 action->setRelevance(relevance);
 
                 if (relevance <= 0)
                 {
+                    if (value <= 0)
+                        multiplier->NoteVeto();
+
                     LogAction("Multiplier %s made action %s useless", multiplier->getName().c_str(), action->getName().c_str());
                     break;
                 }

@@ -30,6 +30,7 @@ struct PerformanceData
     uint64_t maxTime;
     uint64_t totalTime;
     uint32_t count;
+    uint32_t vetoes;
     std::mutex lock;
 };
 
@@ -38,6 +39,7 @@ enum PerformanceMetric
     PERF_MON_TRIGGER,
     PERF_MON_VALUE,
     PERF_MON_ACTION,
+    PERF_MON_MULTIPLIER,
     PERF_MON_RNDBOT,
     PERF_MON_TOTAL
 };
@@ -55,6 +57,20 @@ private:
     std::chrono::microseconds started;
 };
 
+class PerfMonitorScope
+{
+public:
+    explicit PerfMonitorScope(PerformanceData* data);
+    ~PerfMonitorScope();
+
+    PerfMonitorScope(PerfMonitorScope const&) = delete;
+    PerfMonitorScope& operator=(PerfMonitorScope const&) = delete;
+
+private:
+    PerformanceData* data;
+    std::chrono::microseconds started;
+};
+
 class PerfMonitor
 {
 public:
@@ -65,8 +81,12 @@ public:
         return instance;
     }
 
+    static bool IsEnabled();
+
     PerfMonitorOperation* start(PerformanceMetric metric, std::string const name,
                                        PerformanceStack* stack = nullptr);
+    PerformanceData* acquire(PerformanceMetric metric, std::string const& name);
+    static void CountVeto(PerformanceData* data);
     void PrintStats(bool perTick = false, bool fullStack = false);
     void Reset();
 
@@ -79,6 +99,8 @@ private:
 
     PerfMonitor(PerfMonitor&&) = delete;
     PerfMonitor& operator=(PerfMonitor&&) = delete;
+
+    PerformanceData* GetOrCreate(PerformanceMetric metric, std::string const& name);
 
     std::map<PerformanceMetric, std::map<std::string, PerformanceData*> > data;
     std::mutex lock;
