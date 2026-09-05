@@ -11,6 +11,9 @@
 #include "BattlegroundWS.h"
 #include "DBCStores.h"
 #include "Event.h"
+#include "LootObjectStack.h"
+#include "NewRpgDoQuest.h"
+#include "NewRpgInfo.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
@@ -86,6 +89,7 @@ bool CheckMountStateAction::Execute(Event /*event*/)
     bool shouldMount = false;
 
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
+    LootObject lootTarget = AI_VALUE(LootObject, "loot target");
     if (currentTarget)
     {
         float dismountDistance = CalculateDismountDistance();
@@ -95,6 +99,10 @@ bool CheckMountStateAction::Execute(Event /*event*/)
 
         shouldDismount = (distanceToTarget <= dismountDistance + combatReach);
         shouldMount = (distanceToTarget > mountDistance + combatReach);
+    }
+    else if (lootTarget.IsLootPossible(bot))
+    {
+        shouldMount = (AI_VALUE2(float, "distance", "loot target") >= CalculateMountDistance());
     }
     else
     {
@@ -135,7 +143,18 @@ bool CheckMountStateAction::Execute(Event /*event*/)
     // No real master (random bot or self-bot) OR bot in BG
     if ((noRealMaster || inBattleground) && !bot->IsMounted() &&
         noAttackers && shouldMount && !bot->IsInCombat())
+    {
+        // Do-quest travel dismounts at engage range from a target, or on arrival otherwise.
+        if (auto const* doQuest = std::get_if<NewRpgInfo::DoQuest>(&botAI->rpgInfo.data))
+        {
+            float const arrival = doQuest->targetGuid ? NEW_RPG_ENGAGE_RANGE : 10.0f;
+            WorldPosition dest = doQuest->targetGuid ? doQuest->targetPos : doQuest->pos;
+            if (dest != WorldPosition() && bot->GetMapId() == dest.GetMapId() &&
+                bot->GetExactDist(dest) <= arrival + CalculateMountDistance())
+                return false;
+        }
         return Mount();
+    }
 
     if (!bot->IsFlying() && shouldDismount && bot->IsMounted() &&
         (enemy || dps || (!noAttackers && bot->IsInCombat())))
