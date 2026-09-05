@@ -1106,6 +1106,182 @@ bool RazorscaleFuseArmorAction::Execute(Event /*event*/)
     return true;
 }
 
+//xt002
+bool Xt002DeconstructorRaidPositionAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+
+    if (!boss)
+        return false;
+
+    if (botAI->IsMainTank(bot) && bot->GetExactDist(ULDUAR_XT002_DECONSTRUCTOR_MAINTANK_SPOT) > 3.0f)
+        return MoveTo(ULDUAR_MAP_ID, ULDUAR_XT002_DECONSTRUCTOR_MAINTANK_SPOT.GetPositionX(),
+                      ULDUAR_XT002_DECONSTRUCTOR_MAINTANK_SPOT.GetPositionY(),
+                      ULDUAR_XT002_DECONSTRUCTOR_MAINTANK_SPOT.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT);
+
+    if (botAI->IsRanged(bot) && bot->GetExactDist(ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT) > 1.0f)
+        return MoveTo(ULDUAR_MAP_ID, ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT.GetPositionX(),
+                      ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT.GetPositionY(),
+                      ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT);
+    return false;
+}
+
+bool Xt002DeconstructorMoveSearingLightAction::isUseful()
+{
+    Xt002DeconstructorSearingLightTrigger searingLightTrigger(botAI);
+    return searingLightTrigger.IsActive();
+}
+
+bool Xt002DeconstructorMoveSearingLightAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+
+    if (!boss || botAI->IsMainTank(bot))
+        return false;
+
+    if (bot->GetExactDist(ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT) > 1.0f)
+        return MoveTo(ULDUAR_MAP_ID, ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT.GetPositionX(),
+                      ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT.GetPositionY(),
+                      ULDUAR_XT002_DECONSTRUCTOR_SEARING_LIGHT_SPOT.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT);
+    return false;
+}
+
+bool Xt002DeconstructorMoveGravityBombAction::isUseful()
+{
+    Xt002DeconstructorGravityBombTrigger gravityBombTrigger(botAI);
+    return gravityBombTrigger.IsActive();
+}
+
+bool Xt002DeconstructorMoveGravityBombAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+    if (!boss || botAI->IsMainTank(bot))
+        return false;
+
+    bool isMelee = botAI->IsMelee(bot);
+    Position const& origin =
+        isMelee ? ULDUAR_XT002_DECONSTRUCTOR_GRAVITY_BOMB_SPOT_1 : ULDUAR_XT002_DECONSTRUCTOR_GRAVITY_BOMB_SPOT_2;
+
+    const float originX = origin.GetPositionX();
+    const float originY = origin.GetPositionY();
+    struct Offset2D
+    {
+        float dx;
+        float dy;
+    };
+
+    static auto const OFFSETS = []()
+    {
+        std::vector<Offset2D> offsets;
+        offsets.reserve(12);
+        constexpr float stepDown = 6.0f;
+        constexpr float stepLeft = 6.0f;
+
+        for (int i = 0; i < 12; ++i)
+        {
+            int row = i % 4;
+            int col = i / 4;
+            offsets.push_back({+(row * stepDown), +(col * stepLeft)});
+        }
+        return offsets;
+    }();
+
+    constexpr float voidZoneRadius = 5.0f;
+    constexpr float searchRadius = 100.0f;
+    std::list<Creature*> voidZones;
+    boss->GetCreatureListWithEntryInGrid(voidZones, NPC_XT002_VOIDZONE, searchRadius);
+    float targetX = originX;
+    float targetY = originY;
+    for (auto const& offset : OFFSETS)
+    {
+        float candX = originX + offset.dx;
+        float candY = originY + offset.dy;
+        bool hasVoidZone = false;
+
+        for (Creature* vz : voidZones)
+        {
+            if (vz->GetExactDist2d(candX, candY) < voidZoneRadius)
+            {
+                hasVoidZone = true;
+                break;
+            }
+        }
+
+        if (!hasVoidZone)
+        {
+            targetX = candX;
+            targetY = candY;
+            break;
+        }
+    }
+
+    if (bot->GetDistance(targetX, targetY, origin.GetPositionZ()) < 1.0f)
+        return true;
+
+    return MoveTo(ULDUAR_MAP_ID, targetX, targetY, origin.GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT);
+}
+
+bool Xt002DeconstructorTargetAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+    Unit* heart = AI_VALUE2(Unit*, "find target", "heart of the deconstructor");
+    Unit* pummeller = AI_VALUE2(Unit*, "find target", "xm-024 pummeller");
+    Unit* scrapbot = AI_VALUE2(Unit*, "find target", "xs-013 scrapbot");
+    Unit* boombot = AI_VALUE2(Unit*, "find target", "xe-321 boombot");
+    Unit* lifespark = AI_VALUE2(Unit*, "find target", "life spark");
+
+    Unit* target = nullptr;
+
+    if (lifespark)
+        target = lifespark;
+    else if (boombot)
+        target = boombot;
+    else if (scrapbot)
+        target = scrapbot;
+    else if (pummeller)
+        target = pummeller;
+    else if (heart)
+        target = heart;
+    else if (boss)
+        target = boss;
+
+    if (botAI->IsMainTank(bot))
+    {
+        if (boss && AI_VALUE(Unit*, "current target") != boss)
+            return Attack(boss);
+        return false;
+    }
+
+    if (botAI->IsAssistTank(bot))
+    {
+        if (pummeller && pummeller->IsWithinDist2d(ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT.GetPositionX(),
+                                                   ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT.GetPositionY(), 31.0f))
+        {
+            if (AI_VALUE(Unit*, "current target") != pummeller)
+                return Attack(pummeller);
+            return false;
+        }
+
+        if (boss && boss->GetVictim() == bot)
+            return bot->AttackStop();
+
+        return false;
+    }
+
+    if ((heart || boss) && botAI->IsMelee(bot) && AI_VALUE(Unit*, "current target") != (heart ? heart : boss))
+        return Attack(heart ? heart : boss);
+
+    if (target && botAI->IsRangedDps(bot) && AI_VALUE(Unit*, "current target") != target &&
+        bot->IsWithinDist2d(target, 31.0f))
+        return Attack(target);
+
+    return false;
+}
+
 bool IronAssemblyLightningTendrilsAction::isUseful()
 {
     IronAssemblyLightningTendrilsTrigger ironAssemblyLightningTendrilsTrigger(botAI);

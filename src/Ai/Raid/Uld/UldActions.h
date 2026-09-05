@@ -112,6 +112,39 @@ public:
     bool isUseful() override;
 };
 
+//
+// XT002 Deconstructor
+//
+class Xt002DeconstructorMoveSearingLightAction : public MovementAction
+{
+public:
+    Xt002DeconstructorMoveSearingLightAction(PlayerbotAI* botAI) : MovementAction(botAI, "xt002 deconstructor move searing light action") {}
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+class Xt002DeconstructorMoveGravityBombAction : public MovementAction
+{
+public:
+    Xt002DeconstructorMoveGravityBombAction(PlayerbotAI* botAI) : MovementAction(botAI, "xt002 deconstructor move gravity bomb action") {}
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+class Xt002DeconstructorRaidPositionAction : public MovementAction
+{
+public:
+    Xt002DeconstructorRaidPositionAction(PlayerbotAI* botAI) : MovementAction(botAI, "xt002 deconstructor raid position action") {}
+    bool Execute(Event event) override;
+};
+
+class Xt002DeconstructorTargetAction : public AttackAction
+{
+public:
+    Xt002DeconstructorTargetAction(PlayerbotAI* botAI) : AttackAction(botAI, "xt002 deconstructor target action") {}
+    bool Execute(Event event) override;
+};
+
 class HodirMoveSnowpackedIcicleAction : public MovementAction
 {
 public:
