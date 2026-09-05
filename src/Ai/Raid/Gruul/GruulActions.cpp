@@ -375,7 +375,7 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
         {
             Player* member = ref->GetSource();
             if (!member || !member->IsAlive() || member->GetMapId() != GRUUL_MAP_ID ||
-                !PlayerbotAI::IsRanged(member))
+                !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsRanged(member))
             {
                 continue;
             }
