@@ -32,6 +32,15 @@ bool InnerFireTrigger::IsActive()
     return SpellTrigger::IsActive() && !botAI->HasAura(spell, target);
 }
 
+bool FearWardOnMainTankTrigger::IsActive()
+{
+    uint32 const spellId = AI_VALUE2(uint32, "spell id", spell);
+    if (!spellId || bot->HasSpellCooldown(spellId))
+        return false;
+
+    return BuffOnMainTankTrigger::IsActive();
+}
+
 bool ShadowformTrigger::IsActive() { return !botAI->HasAura("shadowform", bot); }
 
 bool ShadowfiendTrigger::IsActive() { return BoostTrigger::IsActive() && !bot->HasSpellCooldown(34433); }

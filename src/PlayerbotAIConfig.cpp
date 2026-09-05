@@ -752,6 +752,8 @@ bool PlayerbotAIConfig::Initialize()
     RpgStatusProbWeight[RPG_OUTDOOR_PVP] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.OutdoorPvp", 10);
 
     syncLevelWithPlayers = sConfigMgr->GetOption<bool>("AiPlayerbot.SyncLevelWithPlayers", false);
+    randomBotConcentrateInPlayerZone =
+        sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotConcentrateInPlayerZone", false);
     randomBotGroupNearby = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotGroupNearby", false);
 
     // arena

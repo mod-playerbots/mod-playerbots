@@ -4,14 +4,14 @@
  * or (at your option) any later version.
  */
 
-#ifndef PLAYERBOTS_SETHDATA_H
-#define PLAYERBOTS_SETHDATA_H
+#ifndef PLAYERBOTS_SETHSHARED_H
+#define PLAYERBOTS_SETHSHARED_H
 
 #include "Common.h"
 #include "Position.h"
 #include <type_traits>
 
-namespace SethData
+namespace SethShared
 {
 
 template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
