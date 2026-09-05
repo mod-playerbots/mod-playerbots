@@ -172,7 +172,7 @@ bool PlayerHasFlag::IsCapturingFlag(Player* bot)
                 uint32 controlledBases = 0;
                 for (uint8 point = 0; point < EY_POINTS_MAX; ++point)
                 {
-                    if (bg->GetCapturePointInfo(point)._ownerTeamId == bot->GetTeamId())
+                    if (bg->GetCapturePointOwner(point) == bot->GetTeamId())
                         controlledBases++;
                 }
 

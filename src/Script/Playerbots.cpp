@@ -29,8 +29,8 @@ public:
 
     bool OnDatabasesLoading() override
     {
-        DatabaseLoader playerbotLoader("server.playerbots");
-        playerbotLoader.SetUpdateFlags(sConfigMgr->GetOption<bool>("Playerbots.Updates.EnableDatabases", true)
+        DatabaseLoader playerbotLoader("server.playerbots",
+                                       sConfigMgr->GetOption<bool>("Playerbots.Updates.EnableDatabases", true)
                                            ? DatabaseLoader::DATABASE_PLAYERBOTS
                                            : 0);
         playerbotLoader.AddDatabase(PlayerbotsDatabase, "Playerbots");
@@ -43,12 +43,6 @@ public:
     void OnDatabasesClosing() override { PlayerbotsDatabase.Close(); }
 
     void OnDatabaseWarnAboutSyncQueries(bool apply) override { PlayerbotsDatabase.WarnAboutSyncQueries(apply); }
-
-    void OnDatabaseSelectIndexLogout(Player* player, uint32& statementIndex, uint32& statementParam) override
-    {
-        statementIndex = CHAR_UPD_CHAR_OFFLINE;
-        statementParam = player->GetGUID().GetCounter();
-    }
 
     void OnDatabaseGetDBRevision(std::string& revision) override
     {
