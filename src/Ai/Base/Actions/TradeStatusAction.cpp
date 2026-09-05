@@ -216,7 +216,7 @@ bool TradeStatusAction::CheckTrade()
     }
 
     uint32 accountId = bot->GetSession()->GetAccountId();
-    if (!sPlayerbotAIConfig.IsInRandomAccountList(accountId))
+    if (!sPlayerbotAIConfig.IsInBotAccountList(accountId))
     {
         int32 botItemsMoney = CalculateCost(bot, true);
         int32 botMoney = bot->GetTradeData()->GetMoney() + botItemsMoney;

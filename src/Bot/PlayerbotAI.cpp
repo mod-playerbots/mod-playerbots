@@ -1227,7 +1227,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                     bool isFromFreeBot = false;
                     sCharacterCache->GetCharacterNameByGuid(guid1, name);
                     uint32 accountId = sCharacterCache->GetCharacterAccountIdByGuid(guid1);
-                    isFromFreeBot = sPlayerbotAIConfig.IsInRandomAccountList(accountId);
+                    isFromFreeBot = sPlayerbotAIConfig.IsInBotAccountList(accountId);
                     bool isMentioned = message.find(bot->GetName()) != std::string::npos;
 
                     // ChatChannelSource chatChannelSource = GetChatChannelSource(bot, msgtype, chanName);

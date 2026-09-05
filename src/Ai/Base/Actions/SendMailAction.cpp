@@ -15,7 +15,7 @@
 bool SendMailAction::Execute(Event event)
 {
     uint32 account = bot->GetSession()->GetAccountId();
-    bool randomBot = sPlayerbotAIConfig.IsInRandomAccountList(account);
+    bool randomBot = sPlayerbotAIConfig.IsInBotAccountList(account);
 
     GuidVector gos = *context->GetValue<GuidVector>("nearest game objects");
     bool mailboxFound = false;
