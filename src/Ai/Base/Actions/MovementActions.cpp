@@ -3300,11 +3300,8 @@ bool MovementAction::DispatchMovement(TravelPath path, WorldPosition dest, char 
     bot->ClearEmoteState();
     if (!bot->IsStandState())
         bot->SetStandState(UNIT_STAND_STATE_STAND);
-    if (bot->IsNonMeleeSpellCast(true))
-        bot->InterruptNonMeleeSpells(true);
 
-    for (auto& pt : points)
-        bot->UpdateAllowedPositionZ(pt.x, pt.y, pt.z);
+    bot->CastStop();
 
     // mm.Clear → exactly one generator
     MotionMaster* mm = bot->GetMotionMaster();
