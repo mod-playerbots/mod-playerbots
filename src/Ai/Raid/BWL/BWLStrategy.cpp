@@ -33,6 +33,8 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("bwl firemaw fire resistance", {
         NextAction("bwl firemaw fire resistance", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("bwl ebonroc shadow", {
+        NextAction("bwl ebonroc taunt", ACTION_RAID) }));
     triggers.push_back(new TriggerNode("bwl flamegor fire resistance", {
         NextAction("bwl flamegor fire resistance", ACTION_RAID) }));
 
@@ -44,8 +46,10 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("bwl nefarian fear ward", {
         NextAction("bwl nefarian fear ward", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("bwl death talon wyrmguard tank", {
+    triggers.push_back(new TriggerNode("bwl death talon wyrmguard active tank", {
         NextAction("bwl death talon wyrmguard tank move away", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("bwl death talon wyrmguard active tank", {
+        NextAction("bwl death talon wyrmguard tank fap", ACTION_RAID) }));
     triggers.push_back(new TriggerNode("bwl death talon wyrmguard ranged", {
         NextAction("bwl death talon wyrmguard ranged move away", ACTION_RAID) }));
 }
@@ -55,4 +59,5 @@ void RaidBwlStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new RazorgoreTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszBurningAdrenalineMultiplier(botAI));
+    multipliers.push_back(new EbonrocShadowMultiplier(botAI));
 }
