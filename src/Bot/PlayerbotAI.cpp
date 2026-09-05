@@ -256,6 +256,26 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         bot->GetSession()->isLogingOut() || bot->IsDuringRemoveFromWorld())
         return;
 
+    // Stand in for the movement heartbeat a real client sends.
+    //
+    // Player::m_lastFallZ is client-fed: its only continuous updater is
+    // Player::UpdateFallInformationIfNeed, whose sole caller is
+    // WorldSession::HandleMovementOpcodes, so a client re-anchors it on every movement packet.
+    // Bots send no movement opcodes and move by spline Relocate, so the value stays frozen at the
+    // last teleport, login, fall or dismount. Player::IsFalling() is a Z comparison against it
+    // (GetPositionZ() < m_lastFallZ && !IsInFlight()), not a movement-flag test, and it shadows
+    // the non-virtual Unit::IsFalling(). A bot standing below its frozen mark therefore reads as
+    // falling forever - RandomPlayerbotMgr::RandomTeleport alone guarantees it, storing
+    // ground + 0.05f as the mark and then walking the bot off it. LFGMgr::TeleportPlayer refuses
+    // the dungeon entry teleport with LFG_TELEPORTERROR_FALLING on that basis and there is no
+    // retry, so the bot is stranded outside the instance.
+    //
+    // Unit::IsFalling() is qualified explicitly because it is the real test - movement flags plus
+    // an unfinalized falling movespline. Guarding on it leaves a genuine fall's mark intact so
+    // Player::HandleFall still computes fall damage.
+    if (!bot->Unit::IsFalling())
+        bot->SetFallInformation(0, bot->GetPositionZ());
+
     // Handle cheat options (set bot health and power if cheats are enabled)
     if (bot->IsAlive() &&
         (static_cast<uint32>(GetCheat()) > 0 || static_cast<uint32>(sPlayerbotAIConfig.botCheatMask) > 0))
