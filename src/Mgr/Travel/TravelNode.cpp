@@ -1210,9 +1210,9 @@ TravelNodeRoute TravelNodeMap::getRoute(TravelNode* start, TravelNode* goal, Pla
             if (homeNode)
             {
                 PortalNode* portNode = (PortalNode*)TravelNodeMap::instance().teleportNodes[bot->GetGUID()][8690];
+                if (!portNode)
                 {
                     portNode = new PortalNode(start);
-
                     TravelNodeMap::instance().teleportNodes[bot->GetGUID()][8690] = portNode;
                 }
 
@@ -1376,6 +1376,7 @@ TravelNodeRoute TravelNodeMap::getRoute(WorldPosition startPos, WorldPosition en
     {
         startPath.clear();
         TravelNode* botNode = TravelNodeMap::instance().teleportNodes[bot->GetGUID()][0];
+        if (!botNode)
         {
             botNode = new TravelNode(startPos, "Bot Pos", false);
             TravelNodeMap::instance().teleportNodes[bot->GetGUID()][0] = botNode;
