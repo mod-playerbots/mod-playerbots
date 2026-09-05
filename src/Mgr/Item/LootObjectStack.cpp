@@ -288,9 +288,8 @@ bool LootObject::IsLootPossible(Player* bot)
 
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     if (!botAI)
-    {
         return false;
-    }
+
     if (reqItem && !bot->HasItemCount(reqItem, 1))
         return false;
 
@@ -314,6 +313,20 @@ bool LootObject::IsLootPossible(Player* bot)
     // A bot has no client, so make the same call the server makes for one.
     if (go && go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND) && !go->ActivateToQuest(bot))
         return false;
+
+    //Prevents bot from getting stuck in an infinite loop of
+    //gathering herb/ore/skin -> bag too full, don't pick up -> gather again
+    bool gatheringObject = skillId == SKILL_HERBALISM || skillId == SKILL_MINING || skillId == SKILL_SKINNING || skillId == SKILL_ENGINEERING;
+
+    Player* master = botAI->GetMaster();
+    bool hasActivePlayerMaster = master && !GET_PLAYERBOT_AI(master);
+    if (gatheringObject && !hasActivePlayerMaster)
+    {
+        uint8 bagUsage = botAI->GetAiObjectContext() ->GetValue<uint8>("bag space")->Get();
+
+        if (bagUsage > 80)
+            return false;
+    }
 
     if (skillId == SKILL_NONE)
         return true;
