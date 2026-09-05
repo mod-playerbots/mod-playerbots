@@ -1,21 +1,21 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_ACTIONCONTEXT_H
-#define _PLAYERBOT_ACTIONCONTEXT_H
+#ifndef PLAYERBOTS_ACTIONCONTEXT_H
+#define PLAYERBOTS_ACTIONCONTEXT_H
 
 #include "AddLootAction.h"
 #include "AhActions.h"
 #include "SellAction.h"
 #include "AttackAction.h"
-#include "ShareQuestAction.h"
-#include "BattleGroundTactics.h"
 #include "AutoMaintenanceOnLevelupAction.h"
 #include "BattleGroundJoinAction.h"
 #include "BattleGroundTactics.h"
 #include "BuyAction.h"
+#include "CancelChannelAction.h"
 #include "CastCustomSpellAction.h"
 #include "ChangeStrategyAction.h"
 #include "ChangeTalentsAction.h"
@@ -27,9 +27,10 @@
 #include "CombatActions.h"
 #include "DelayAction.h"
 #include "DestroyItemAction.h"
+#include "DropQuestAction.h"
 #include "EmoteAction.h"
+#include "FishingAction.h"
 #include "FollowActions.h"
-#include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "GiveItemAction.h"
 #include "GreetAction.h"
@@ -44,11 +45,13 @@
 #include "MoveToRpgTargetAction.h"
 #include "MoveToTravelTargetAction.h"
 #include "MovementActions.h"
+#include "NewRpgAction.h"
+#include "NewRpgOutdoorPvP.h"
 #include "NonCombatActions.h"
 #include "OutfitAction.h"
+#include "PetsAction.h"
 #include "PositionAction.h"
 #include "PullActions.h"
-#include "DropQuestAction.h"
 #include "RandomBotUpdateAction.h"
 #include "ReachTargetActions.h"
 #include "ReleaseSpiritAction.h"
@@ -59,17 +62,15 @@
 #include "RpgSubActions.h"
 #include "RtiAction.h"
 #include "SayAction.h"
+#include "ShareQuestAction.h"
 #include "StayActions.h"
 #include "SuggestWhatToDoAction.h"
 #include "TravelAction.h"
+#include "UseItemAction.h"
 #include "VehicleActions.h"
+#include "WaitForAttackAction.h"
 #include "WorldBuffAction.h"
 #include "XpGainAction.h"
-#include "NewRpgAction.h"
-#include "NewRpgOutdoorPvP.h"
-#include "FishingAction.h"
-#include "CancelChannelAction.h"
-#include "WaitForAttackAction.h"
 
 class PlayerbotAI;
 
@@ -177,6 +178,8 @@ public:
         creators["berserking"] = &ActionContext::berserking;
         creators["every man for himself"] = &ActionContext::every_man_for_himself;
         creators["will of the forsaken"] = &ActionContext::will_of_the_forsaken;
+        creators["stoneform"] = &ActionContext::stoneform;
+        creators["escape artist"] = &ActionContext::escape_artist;
         creators["use trinket"] = &ActionContext::use_trinket;
         creators["auto talents"] = &ActionContext::auto_talents;
         creators["auto share quest"] = &ActionContext::auto_share_quest;
@@ -335,7 +338,6 @@ private:
     static Action* pull_end(PlayerbotAI* botAI) { return new PullEndAction(botAI); }
     static Action* return_to_pull_position(PlayerbotAI* botAI) { return new ReturnToPullPositionAction(botAI); }
     static Action* reach_pull(PlayerbotAI* botAI) { return new ReachPullAction(botAI); }
-    static Action* mana_tap(PlayerbotAI* botAI) { return new CastManaTapAction(botAI); }
     static Action* end_pull(PlayerbotAI* botAI) { return new ChangeCombatStrategyAction(botAI, "-pull"); }
     static Action* cancel_channel(PlayerbotAI* botAI) { return new CancelChannelAction(botAI); }
 
@@ -387,6 +389,8 @@ private:
     static Action* berserking(PlayerbotAI* botAI) { return new CastBerserkingAction(botAI); }
     static Action* every_man_for_himself(PlayerbotAI* botAI) { return new CastEveryManForHimselfAction(botAI); }
     static Action* will_of_the_forsaken(PlayerbotAI* botAI) { return new CastWillOfTheForsakenAction(botAI); }
+    static Action* stoneform(PlayerbotAI* botAI) { return new CastStoneformAction(botAI); }
+    static Action* escape_artist(PlayerbotAI* botAI) { return new CastEscapeArtistAction(botAI); }
     static Action* use_trinket(PlayerbotAI* botAI) { return new UseTrinketAction(botAI); }
     static Action* auto_talents(PlayerbotAI* botAI) { return new AutoSetTalentsAction(botAI); }
     static Action* auto_share_quest(PlayerbotAI* ai) { return new AutoShareQuestAction(ai); }

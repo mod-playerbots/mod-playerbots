@@ -1,12 +1,13 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "DropQuestAction.h"
-
 #include "ChatHelper.h"
 #include "Event.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 
 bool DropQuestAction::Execute(Event event)
@@ -48,13 +49,18 @@ bool DropQuestAction::Execute(Event event)
 
     if (botAI->HasStrategy("debug quest", BotState::BOT_STATE_NON_COMBAT) || botAI->HasStrategy("debug rpg", BotState::BOT_STATE_COMBAT))
     {
-        const Quest* pQuest = sObjectMgr->GetQuestTemplate(entry);
+        Quest const* pQuest = sObjectMgr->GetQuestTemplate(entry);
         const std::string text_quest = ChatHelper::FormatQuest(pQuest);
         LOG_INFO("playerbots", "{} => Quest [ {} ] removed", bot->GetName(), pQuest->GetTitle());
-        bot->Say("Quest [ " + text_quest + " ] removed", LANG_UNIVERSAL);
+        std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "quest_removed_debug",
+            "Quest [%quest] removed",
+            {{"%quest", text_quest}});
+        bot->Say(text, LANG_UNIVERSAL);
     }
 
-    botAI->TellMaster("Quest removed");
+    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        "quest_remove", "Quest removed", {}));
     return true;
 }
 
@@ -69,7 +75,10 @@ bool CleanQuestLogAction::Execute(Event event)
 
     // Only output this message if "debug rpg" strategy is enabled
     if (botAI->HasStrategy("debug rpg", BotState::BOT_STATE_COMBAT))
-        botAI->TellMaster("Clean Quest Log command received, removing grey/trivial quests...");
+        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "clean_quest_log_started",
+            "Clean Quest Log command received, removing grey/trivial quests...",
+            {}));
 
     uint8 botLevel = bot->GetLevel();  // Get bot's level
 
@@ -79,7 +88,7 @@ bool CleanQuestLogAction::Execute(Event event)
         if (!questId)
             continue;
 
-        const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
+        Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
         if (!quest)
             continue;
 
@@ -103,7 +112,10 @@ bool CleanQuestLogAction::Execute(Event event)
         {
             // Output only if "debug rpg" strategy is enabled
             if (botAI->HasStrategy("debug rpg", BotState::BOT_STATE_COMBAT))
-                botAI->TellMaster("Quest [ " + quest->GetTitle() + " ] will be removed because it is trivial (grey).");
+                botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "quest_trivial_will_remove",
+                    "Quest [%title] will be removed because it is trivial (grey).",
+                    {{"%title", quest->GetTitle()}}));
 
             // Remove quest
             botAI->rpgStatistic.questDropped++;
@@ -116,17 +128,27 @@ bool CleanQuestLogAction::Execute(Event event)
             {
                 const std::string text_quest = ChatHelper::FormatQuest(quest);
                 LOG_INFO("playerbots", "{} => Quest [ {} ] removed", bot->GetName(), quest->GetTitle());
-                bot->Say("Quest [ " + text_quest + " ] removed", LANG_UNIVERSAL);
+                std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "quest_removed_debug",
+                    "Quest [%quest] removed",
+                    {{"%quest", text_quest}});
+                bot->Say(text, LANG_UNIVERSAL);
             }
 
             if (botAI->HasStrategy("debug rpg", BotState::BOT_STATE_COMBAT))
-                botAI->TellMaster("Quest [ " + quest->GetTitle() + " ] has been removed.");
+                botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "quest_has_been_removed",
+                    "Quest [%title] has been removed.",
+                    {{"%title", quest->GetTitle()}}));
         }
         else
         {
             // Only output if "debug rpg" strategy is enabled
             if (botAI->HasStrategy("debug rpg", BotState::BOT_STATE_COMBAT))
-                botAI->TellMaster("Quest [ " + quest->GetTitle() + " ] is not trivial and will be kept.");
+                botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "quest_not_trivial_kept",
+                    "Quest [%title] is not trivial and will be kept.",
+                    {{"%title", quest->GetTitle()}}));
         }
     }
 
@@ -204,9 +226,16 @@ void CleanQuestLogAction::DropQuestType(uint8& numQuest, uint8 wantNum, bool isG
         {
             const std::string text_quest = ChatHelper::FormatQuest(quest);
             LOG_INFO("playerbots", "{} => Quest [ {} ] removed", bot->GetName(), quest->GetTitle());
-            bot->Say("Quest [ " + text_quest + " ] removed", LANG_UNIVERSAL);
+            std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "quest_removed_debug",
+                "Quest [%quest] removed",
+                {{"%quest", text_quest}});
+            bot->Say(text, LANG_UNIVERSAL);
         }
-        botAI->TellMaster("Quest removed" + chat->FormatQuest(quest));
+        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "quest_removed_with_name",
+            "Quest removed %quest",
+            {{"%quest", chat->FormatQuest(quest)}}));
     }
 }
 

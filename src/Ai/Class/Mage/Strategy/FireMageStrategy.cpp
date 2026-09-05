@@ -1,41 +1,16 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "FireMageStrategy.h"
 #include "Playerbots.h"
 #include "Strategy.h"
 
-// ===== Action Node Factory =====
-class FireMageStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
-{
-public:
-    FireMageStrategyActionNodeFactory()
-    {
-        creators["fireball"] = &fireball;
-        creators["frostbolt"] = &frostbolt;
-        creators["fire blast"] = &fire_blast;
-        creators["pyroblast"] = &pyroblast;
-        creators["scorch"] = &scorch;
-        creators["living bomb"] = &living_bomb;
-        creators["combustion"] = &combustion;
-    }
-
-private:
-    static ActionNode* fireball(PlayerbotAI*) { return new ActionNode("fireball", {}, {}, {}); }
-    static ActionNode* frostbolt(PlayerbotAI*) { return new ActionNode("frostbolt", {}, {}, {}); }
-    static ActionNode* fire_blast(PlayerbotAI*) { return new ActionNode("fire blast", {}, {}, {}); }
-    static ActionNode* pyroblast(PlayerbotAI*) { return new ActionNode("pyroblast", {}, {}, {}); }
-    static ActionNode* scorch(PlayerbotAI*) { return new ActionNode("scorch", {}, {}, {}); }
-    static ActionNode* living_bomb(PlayerbotAI*) { return new ActionNode("living bomb", {}, {}, {}); }
-    static ActionNode* combustion(PlayerbotAI*) { return new ActionNode("combustion", {}, {}, {}); }
-};
-
-// ===== Single Target Strategy =====
 FireMageStrategy::FireMageStrategy(PlayerbotAI* botAI) : GenericMageStrategy(botAI)
 {
-    actionNodeFactories.Add(new FireMageStrategyActionNodeFactory());
+    // No custom ActionNodeFactory needed
 }
 
 // ===== Default Actions =====
@@ -78,6 +53,23 @@ void FireMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "hot streak",
             {
                 NextAction("pyroblast", 25.0f)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "enemy too close for spell",
+            {
+                NextAction("dragon's breath", ACTION_INTERRUPT + 1)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "enemy is close",
+            {
+                NextAction("blast wave", ACTION_INTERRUPT)
             }
         )
     );

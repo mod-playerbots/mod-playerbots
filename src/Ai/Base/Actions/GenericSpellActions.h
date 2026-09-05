@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_GENERICSPELLACTIONS_H
-#define _PLAYERBOT_GENERICSPELLACTIONS_H
+#ifndef PLAYERBOTS_GENERICSPELLACTIONS_H
+#define PLAYERBOTS_GENERICSPELLACTIONS_H
 
 #include "Action.h"
 #include "PlayerbotAI.h"
@@ -69,9 +70,7 @@ class CastDebuffSpellAction : public CastAuraSpellAction
 {
 public:
     CastDebuffSpellAction(PlayerbotAI* botAI, std::string const spell, bool isOwner = false, float needLifeTime = 8.0f)
-        : CastAuraSpellAction(botAI, spell, isOwner), needLifeTime(needLifeTime)
-    {
-    }
+        : CastAuraSpellAction(botAI, spell, isOwner), needLifeTime(needLifeTime) {}
     bool isUseful() override;
 
 private:
@@ -90,9 +89,7 @@ class CastDebuffSpellOnAttackerAction : public CastDebuffSpellAction
 public:
     CastDebuffSpellOnAttackerAction(PlayerbotAI* botAI, std::string const spell, bool isOwner = true,
                                     float needLifeTime = 8.0f)
-        : CastDebuffSpellAction(botAI, spell, isOwner, needLifeTime)
-    {
-    }
+        : CastDebuffSpellAction(botAI, spell, isOwner, needLifeTime) {}
 
     Value<Unit*>* GetTargetValue() override;
     std::string const getName() override { return spell + " on attacker"; }
@@ -104,9 +101,7 @@ class CastDebuffSpellOnMeleeAttackerAction : public CastDebuffSpellAction
 public:
     CastDebuffSpellOnMeleeAttackerAction(PlayerbotAI* botAI, std::string const spell, bool isOwner = true,
                                          float needLifeTime = 8.0f)
-        : CastDebuffSpellAction(botAI, spell, isOwner, needLifeTime)
-    {
-    }
+        : CastDebuffSpellAction(botAI, spell, isOwner, needLifeTime) {}
 
     Value<Unit*>* GetTargetValue() override;
     std::string const getName() override { return spell + " on attacker"; }
@@ -119,28 +114,36 @@ public:
     CastBuffSpellAction(PlayerbotAI* botAI, std::string const spell, bool checkIsOwner = false, uint32 beforeDuration = 0);
 
     std::string const GetTargetName() override { return "self target"; }
+    bool isUseful() override;
+    bool Execute(Event event) override;
 };
 
-class CastEnchantItemAction : public CastSpellAction
+class GroupBuffSpellAction : public CastBuffSpellAction
 {
 public:
-    CastEnchantItemAction(PlayerbotAI* botAI, std::string const spell);
+    GroupBuffSpellAction(PlayerbotAI* botAI, std::string const spell, bool checkIsOwner = false,
+                         uint32 beforeDuration = 0)
+        : CastBuffSpellAction(botAI, spell, checkIsOwner, beforeDuration) {}
 
-    bool isPossible() override;
-    std::string const GetTargetName() override { return "self target"; }
+    bool isUseful() override;
+    bool Execute(Event event) override;
 };
 
-class CastEnchantItemMainHandAction : public CastEnchantItemAction
+class CastEnchantItemMainHandAction : public CastSpellAction
 {
 public:
     CastEnchantItemMainHandAction(PlayerbotAI* botAI, std::string const spell);
+    std::string const GetTargetName() override { return "self target"; }
+    bool Execute(Event event) override;
     bool isPossible() override;
 };
 
-class CastEnchantItemOffHandAction : public CastEnchantItemAction
+class CastEnchantItemOffHandAction : public CastSpellAction
 {
 public:
     CastEnchantItemOffHandAction(PlayerbotAI* botAI, std::string const spell);
+    std::string const GetTargetName() override { return "self target"; }
+    bool Execute(Event event) override;
     bool isPossible() override;
 };
 
@@ -156,8 +159,6 @@ public:
     // Yunfan: Mana efficiency tell the bot how to save mana. The higher the better.
     HealingManaEfficiency manaEfficiency;
     uint8 estAmount;
-
-    // protected:
 };
 
 class CastAoeHealSpellAction : public CastHealingSpellAction
@@ -197,9 +198,7 @@ class HealPartyMemberAction : public CastHealingSpellAction, public PartyMemberA
 public:
     HealPartyMemberAction(PlayerbotAI* botAI, std::string const spell, uint8 estAmount = 15.0f,
                           HealingManaEfficiency manaEfficiency = HealingManaEfficiency::MEDIUM, bool isOwner = true)
-        : CastHealingSpellAction(botAI, spell, estAmount, manaEfficiency, isOwner), PartyMemberActionNameSupport(spell)
-    {
-    }
+        : CastHealingSpellAction(botAI, spell, estAmount, manaEfficiency, isOwner), PartyMemberActionNameSupport(spell) {}
 
     std::string const GetTargetName() override { return "party member to heal"; }
     std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
@@ -224,9 +223,7 @@ class CurePartyMemberAction : public CastSpellAction, public PartyMemberActionNa
 {
 public:
     CurePartyMemberAction(PlayerbotAI* botAI, std::string const spell, uint32 dispelType)
-        : CastSpellAction(botAI, spell), PartyMemberActionNameSupport(spell), dispelType(dispelType)
-    {
-    }
+        : CastSpellAction(botAI, spell), PartyMemberActionNameSupport(spell), dispelType(dispelType) {}
 
     Value<Unit*>* GetTargetValue() override;
     std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
@@ -235,18 +232,25 @@ protected:
     uint32 dispelType;
 };
 
-// Make Bots Paladin, druid, mage use the greater buff rank spell
 class BuffOnPartyAction : public CastBuffSpellAction, public PartyMemberActionNameSupport
 {
 public:
     BuffOnPartyAction(PlayerbotAI* botAI, std::string const spell)
-        : CastBuffSpellAction(botAI, spell), PartyMemberActionNameSupport(spell) { }
+        : CastBuffSpellAction(botAI, spell), PartyMemberActionNameSupport(spell) {}
 
     Value<Unit*>* GetTargetValue() override;
-    bool Execute(Event event) override;
     std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
 };
-// End Fix
+
+class GroupBuffOnPartyAction : public GroupBuffSpellAction, public PartyMemberActionNameSupport
+{
+public:
+    GroupBuffOnPartyAction(PlayerbotAI* botAI, std::string const spell)
+        : GroupBuffSpellAction(botAI, spell), PartyMemberActionNameSupport(spell) {}
+
+    Value<Unit*>* GetTargetValue() override;
+    std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
+};
 
 class CastShootAction : public CastSpellAction
 {
@@ -279,12 +283,6 @@ public:
     CastArcaneTorrentAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "arcane torrent") {}
 };
 
-class CastManaTapAction : public CastBuffSpellAction
-{
-public:
-    CastManaTapAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "mana tap") {}
-};
-
 class CastWarStompAction : public CastMeleeSpellAction
 {
 public:
@@ -310,7 +308,6 @@ public:
 
     std::string const GetTargetName() override { return "self target"; }
     bool isPossible() override;
-    bool isUseful() override;
 };
 
 class CastWillOfTheForsakenAction : public CastSpellAction
@@ -320,7 +317,22 @@ public:
 
     std::string const GetTargetName() override { return "self target"; }
     bool isPossible() override;
-    bool isUseful() override;
+};
+
+class CastStoneformAction : public CastSpellAction
+{
+public:
+    CastStoneformAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "stoneform") {}
+
+    std::string const GetTargetName() override { return "self target"; }
+};
+
+class CastEscapeArtistAction : public CastSpellAction
+{
+public:
+    CastEscapeArtistAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "escape artist") {}
+
+    std::string const GetTargetName() override { return "self target"; }
 };
 
 class UseTrinketAction : public Action
@@ -328,8 +340,13 @@ class UseTrinketAction : public Action
 public:
     UseTrinketAction(PlayerbotAI* botAI) : Action(botAI, "use trinket") {}
     bool Execute(Event event) override;
+
 protected:
     bool UseTrinket(Item* trinket);
+
+private:
+    std::unordered_map<uint64, uint32> trinketItemCooldownExpiries;
+    std::unordered_map<uint32, uint32> trinketCategoryCooldownExpiries;
 };
 
 class CastSpellOnEnemyHealerAction : public CastSpellAction
@@ -466,12 +483,11 @@ class BuffOnMainTankAction : public CastBuffSpellAction, public MainTankActionNa
 {
 public:
     BuffOnMainTankAction(PlayerbotAI* ai, std::string spell, bool checkIsOwner = false)
-        : CastBuffSpellAction(ai, spell, checkIsOwner), MainTankActionNameSupport(spell)
-    {
-    }
+        : CastBuffSpellAction(ai, spell, checkIsOwner), MainTankActionNameSupport(spell) {}
 
 public:
     virtual Value<Unit*>* GetTargetValue();
     virtual std::string const getName() { return MainTankActionNameSupport::getName(); }
 };
+
 #endif

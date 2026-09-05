@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "OffhealRetPaladinStrategy.h"
-
 #include "Playerbots.h"
 #include "Strategy.h"
 
@@ -18,8 +18,6 @@ public:
         creators["seal of vengeance"] = &seal_of_vengeance;
         creators["seal of command"] = &seal_of_command;
         creators["blessing of might"] = &blessing_of_might;
-        creators["crusader strike"] = &crusader_strike;
-        creators["divine plea"] = &divine_plea;
     }
 
 private:
@@ -69,26 +67,6 @@ private:
             "blessing of might",
             /*P*/ {},
             /*A*/ { NextAction("blessing of kings") },
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* crusader_strike([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "crusader strike",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* divine_plea([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "divine plea",
-            /*P*/ {},
-            /*A*/ {},
             /*C*/ {}
         );
     }

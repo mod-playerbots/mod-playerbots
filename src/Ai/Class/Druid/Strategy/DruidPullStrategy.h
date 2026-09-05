@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_DRUID_PULL_STRATEGY_H
-#define _PLAYERBOT_DRUID_PULL_STRATEGY_H
+#ifndef PLAYERBOTS_DRUIDPULLSTRATEGY_H
+#define PLAYERBOTS_DRUIDPULLSTRATEGY_H
 
 #include "PullStrategy.h"
 

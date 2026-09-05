@@ -1,21 +1,26 @@
-#ifndef _PLAYERBOT_WOTLKDUNGEONTRIGGERCONTEXT_H
-#define _PLAYERBOT_WOTLKDUNGEONTRIGGERCONTEXT_H
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
-#include "UtgardeKeep/UtgardeKeepTriggerContext.h"
-#include "Nexus/NexusTriggerContext.h"
-#include "AzjolNerub/AzjolNerubTriggerContext.h"
-#include "OldKingdom/OldKingdomTriggerContext.h"
-#include "DraktharonKeep/DrakTharonKeepTriggerContext.h"
-#include "VioletHold/VioletHoldTriggerContext.h"
-#include "Gundrak/GundrakTriggerContext.h"
-#include "HallsOfStone/HallsOfStoneTriggerContext.h"
-#include "HallsOfLightning/HallsOfLightningTriggerContext.h"
-#include "Oculus/OculusTriggerContext.h"
-#include "UtgardePinnacle/UtgardePinnacleTriggerContext.h"
-#include "CullingOfStratholme/CullingOfStratholmeTriggerContext.h"
-#include "ForgeOfSouls/ForgeOfSoulsTriggerContext.h"
-#include "PitOfSaron/PitOfSaronTriggerContext.h"
-#include "TrialOfTheChampion/TrialOfTheChampionTriggerContext.h"
-// #include "HallsOfReflection/HallsOfReflectionTriggerContext.h"
+#ifndef PLAYERBOTS_WOTLKDUNGEONTRIGGERCONTEXT_H
+#define PLAYERBOTS_WOTLKDUNGEONTRIGGERCONTEXT_H
+
+#include "AKTriggerContext.h"
+#include "ANTriggerContext.h"
+#include "CoSTriggerContext.h"
+#include "DTKTriggerContext.h"
+#include "FoSTriggerContext.h"
+#include "GDTriggerContext.h"
+#include "HoLTriggerContext.h"
+#include "HoSTriggerContext.h"
+#include "NexTriggerContext.h"
+#include "OCTriggerContext.h"
+#include "PoSTriggerContext.h"
+#include "TOCTriggerContext.h"
+#include "UKTriggerContext.h"
+#include "UPTriggerContext.h"
+#include "VHTriggerContext.h"
 
 #endif

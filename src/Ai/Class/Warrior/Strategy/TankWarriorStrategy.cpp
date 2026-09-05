@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "TankWarriorStrategy.h"
@@ -19,8 +20,6 @@ public:
         creators["heroic throw taunt"] = &heroic_throw_taunt;
         creators["taunt"] = &taunt;
         creators["taunt spell"] = &taunt;
-        creators["vigilance"] = &vigilance;
-        creators["enraged regeneration"] = &enraged_regeneration;
     }
 
 private:
@@ -100,26 +99,6 @@ private:
             "taunt",
             /*P*/ {},
             /*A*/ { NextAction("heroic throw taunt") },
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* vigilance(PlayerbotAI* /*botAI*/)
-    {
-        return new ActionNode(
-            "vigilance",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* enraged_regeneration(PlayerbotAI* /*botAI*/)
-    {
-        return new ActionNode(
-            "enraged regeneration",
-            /*P*/ {},
-            /*A*/ {},
             /*C*/ {}
         );
     }

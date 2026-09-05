@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "ArcaneMageStrategy.h"
@@ -13,22 +14,18 @@ public:
     ArcaneMageStrategyActionNodeFactory()
     {
         creators["arcane blast"] = &arcane_blast;
-        creators["arcane barrage"] = &arcane_barrage;
-        creators["arcane missiles"] = &arcane_missiles;
-        creators["fire blast"] = &fire_blast;
-        creators["frostbolt"] = &frostbolt;
-        creators["arcane power"] = &arcane_power;
-        creators["icy veins"] = &icy_veins;
     }
 
 private:
-    static ActionNode* arcane_blast(PlayerbotAI*) { return new ActionNode("arcane blast", {}, {}, {}); }
-    static ActionNode* arcane_barrage(PlayerbotAI*) { return new ActionNode("arcane barrage", {}, {}, {}); }
-    static ActionNode* arcane_missiles(PlayerbotAI*) { return new ActionNode("arcane missiles", {}, {}, {}); }
-    static ActionNode* fire_blast(PlayerbotAI*) { return new ActionNode("fire blast", {}, {}, {}); }
-    static ActionNode* frostbolt(PlayerbotAI*) { return new ActionNode("frostbolt", {}, {}, {}); }
-    static ActionNode* arcane_power(PlayerbotAI*) { return new ActionNode("arcane power", {}, {}, {}); }
-    static ActionNode* icy_veins(PlayerbotAI*) { return new ActionNode("icy veins", {}, {}, {}); }
+    // Arcane Barrage is the alternate for Arcane Blast (cast while moving, or
+    // when Arcane Blast is unavailable - e.g. not yet learned at low levels).
+    static ActionNode* arcane_blast([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("arcane blast",
+                              /*P*/ {},
+                              /*A*/ { NextAction("arcane barrage") },
+                              /*C*/ {});
+    }
 };
 
 // ===== Single Target Strategy =====

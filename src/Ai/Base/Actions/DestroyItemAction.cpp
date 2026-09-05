@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "DestroyItemAction.h"
-
 #include "Event.h"
 #include "ItemCountValue.h"
 #include "Playerbots.h"
@@ -37,7 +37,7 @@ void DestroyItemAction::DestroyItem(FindItemVisitor* visitor)
     }
 }
 
-bool SmartDestroyItemAction::isUseful() { return !botAI->HasActivePlayerMaster(); }
+bool SmartDestroyItemAction::isUseful() { return !IsRealPlayer(botAI->GetMaster()); }
 
 bool SmartDestroyItemAction::Execute(Event /*event*/)
 {
@@ -46,8 +46,8 @@ bool SmartDestroyItemAction::Execute(Event /*event*/)
     if (bagSpace < 90)
         return false;
 
-    // only destoy grey items if with real player/guild
-    if (botAI->HasRealPlayerMaster() && botAI->IsInRealGuild())
+    // Only destroy grey items when the master is a real player or selfbot, and the bot is in a real guild.
+    if (botAI->HasGameClientMaster() && botAI->IsInRealGuild())
     {
         std::set<Item*> items;
         FindItemsToTradeByQualityVisitor visitor(ITEM_QUALITY_POOR, 5);

@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_EVENT_H
-#define _PLAYERBOT_EVENT_H
+#ifndef PLAYERBOTS_EVENT_H
+#define PLAYERBOTS_EVENT_H
 
 #include "WorldPacket.h"
 
@@ -14,7 +15,8 @@ class Player;
 class Event
 {
 public:
-    Event(Event const& other) : source(other.source), param(other.param), packet(other.packet), owner(other.owner) {}
+    Event(Event const& other) = default;
+    Event& operator=(Event const& other) = default;
     Event() {}
     Event(std::string const source) : source(source) {}
     Event(std::string const source, std::string const param, Player* owner = nullptr)

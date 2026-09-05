@@ -1,15 +1,15 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_HEALTHTRIGGERS_H
-#define _PLAYERBOT_HEALTHTRIGGERS_H
-
-#include <stdexcept>
+#ifndef PLAYERBOTS_HEALTHTRIGGERS_H
+#define PLAYERBOTS_HEALTHTRIGGERS_H
 
 #include "PlayerbotAIConfig.h"
 #include "Trigger.h"
+#include <stdexcept>
 
 class PlayerbotAI;
 
@@ -141,6 +141,15 @@ class TargetCriticalHealthTrigger : public TargetLowHealthTrigger
 {
 public:
     TargetCriticalHealthTrigger(PlayerbotAI* botAI) : TargetLowHealthTrigger(botAI, 20) {}
+};
+
+class HealerLowManaTrigger : public Trigger
+{
+public:
+    HealerLowManaTrigger(PlayerbotAI* botAI) : Trigger(botAI, "healer low mana") {}
+
+    std::string const GetTargetName() override { return "healer low mana"; }
+    bool IsActive() override;
 };
 
 class PartyMemberDeadTrigger : public Trigger

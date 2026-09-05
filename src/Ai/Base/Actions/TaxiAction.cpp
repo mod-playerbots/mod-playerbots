@@ -1,15 +1,16 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "TaxiAction.h"
-
+#include "Config.h"
 #include "Event.h"
 #include "LastMovementValue.h"
-#include "Playerbots.h"
 #include "PlayerbotAIConfig.h"
-#include "Config.h"
+#include "PlayerbotTextMgr.h"
+#include "Playerbots.h"
 
 bool TaxiAction::Execute(Event event)
 {
@@ -24,7 +25,8 @@ bool TaxiAction::Execute(Event event)
     {
         movement.taxiNodes.clear();
         movement.Set(nullptr);
-        botAI->TellMaster("I am ready for the next flight");
+        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "taxi_ready_next_flight", "I am ready for the next flight", {}));
         return true;
     }
 
@@ -41,6 +43,7 @@ bool TaxiAction::Execute(Event event)
         if (bot->GetDistance(npc) > sPlayerbotAIConfig.farDistance)
             continue;
 
+        bot->GetSession()->SendLearnNewTaxiNode(npc);
         uint32 curloc = sObjectMgr->GetNearestTaxiNode(npc->GetPositionX(), npc->GetPositionY(), npc->GetPositionZ(),
                                                        npc->GetMapId(), bot->GetTeamId());
 
@@ -57,7 +60,7 @@ bool TaxiAction::Execute(Event event)
         }
 
         // Only for follower bots
-        if (botAI->HasRealPlayerMaster())
+        if (botAI->HasGameClientMaster())
         {
             uint32 index = botAI->GetGroupSlotIndex(bot);
             uint32 delay = sPlayerbotAIConfig.botTaxiDelayMin +
@@ -120,13 +123,15 @@ bool TaxiAction::Execute(Event event)
         {
             movement.taxiNodes.clear();
             movement.Set(nullptr);
-            botAI->TellError("I can't fly with you");
+            botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "taxi_cant_fly_with_you", "I can't fly with you", {}));
             return false;
         }
 
         return true;
     }
 
-    botAI->TellError("Cannot find any flightmaster to talk");
+    botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        "taxi_no_flightmaster_nearby", "Cannot find any flightmaster to talk", {}));
     return false;
 }

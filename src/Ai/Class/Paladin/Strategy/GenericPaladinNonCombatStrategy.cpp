@@ -1,13 +1,13 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "GenericPaladinNonCombatStrategy.h"
-
+#include "AiFactory.h"
 #include "GenericPaladinStrategyActionNodeFactory.h"
 #include "Playerbots.h"
-#include "AiFactory.h"
 
 GenericPaladinNonCombatStrategy::GenericPaladinNonCombatStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI)
 {
@@ -26,8 +26,11 @@ void GenericPaladinNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tr
     triggers.push_back(new TriggerNode("not sensing undead", { NextAction("sense undead", ACTION_IDLE + 1.0f) }));
 
     int specTab = AiFactory::GetPlayerSpecTab(botAI->GetBot());
-    if (specTab == PALADIN_TAB_HOLY || specTab == PALADIN_TAB_PROTECTION)
+    if (specTab == PALADIN_TAB_HOLY)
         triggers.push_back(new TriggerNode("often", { NextAction("apply oil", ACTION_IDLE + 1.0f) }));
-    if (specTab == PALADIN_TAB_RETRIBUTION)
+    if (specTab == PALADIN_TAB_PROTECTION || specTab == PALADIN_TAB_RETRIBUTION)
         triggers.push_back(new TriggerNode("often", { NextAction("apply stone", ACTION_IDLE + 1.0f) }));
+
+    triggers.push_back(new TriggerNode("greater blessing needed",
+        { NextAction("cast greater blessing assignment", ACTION_NORMAL) }));
 }

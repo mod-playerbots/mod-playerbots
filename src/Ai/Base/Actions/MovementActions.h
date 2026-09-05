@@ -1,22 +1,23 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_MOVEMENTACTIONS_H
-#define _PLAYERBOT_MOVEMENTACTIONS_H
-
-#include <cmath>
+#ifndef PLAYERBOTS_MOVEMENTACTIONS_H
+#define PLAYERBOTS_MOVEMENTACTIONS_H
 
 #include "Action.h"
 #include "LastMovementValue.h"
 #include "PlayerbotAIConfig.h"
+#include <cmath>
 
 class Player;
 class PlayerbotAI;
 class Unit;
 class WorldObject;
-class Position;
+
+struct Position;
 
 #define ANGLE_45_DEG (static_cast<float>(M_PI) / 4.f)
 #define ANGLE_90_DEG M_PI_2
@@ -85,16 +86,12 @@ private:
 class FleeAction : public MovementAction
 {
 public:
-    FleeAction(PlayerbotAI* botAI, float distance = sPlayerbotAIConfig.spellDistance)
-        : MovementAction(botAI, "flee"), distance(distance)
+    FleeAction(PlayerbotAI* botAI) : MovementAction(botAI, "flee")
     {
     }
 
     bool Execute(Event event) override;
     bool isUseful() override;
-
-private:
-    float distance;
 };
 
 class FleeWithPetAction : public MovementAction
@@ -140,7 +137,7 @@ protected:
     Position AverageGroupPos(float dis = sPlayerbotAIConfig.sightDistance, bool ranged = false, bool self = false);
     Player* NearestGroupMember(float dis = sPlayerbotAIConfig.sightDistance);
     float AverageGroupAngle(Unit* from, bool ranged = false, bool self = false);
-    Position GetNearestPosition(const std::vector<Position>& positions);
+    Position GetNearestPosition(std::vector<Position> const& positions);
     int lastMoveTimer = 0;
     int moveInterval;
 };
@@ -275,7 +272,7 @@ public:
         this->intervals = intervals;
         this->clockwise = clockwise;
         this->call_counters = 0;
-        for (int i = 0; i < intervals; i++)
+        for (uint32 i = 0; i < intervals; i++)
         {
             float angle = start_angle + 2 * M_PI * i / intervals;
             waypoints.push_back(std::make_pair(center_x + cos(angle) * radius, center_y + sin(angle) * radius));

@@ -1,15 +1,15 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "DeadStrategy.h"
-
 #include "Playerbots.h"
 
 void DeadStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    PassTroughStrategy::InitTriggers(triggers);
+    PassThroughStrategy::InitTriggers(triggers);
 
     triggers.push_back(
         new TriggerNode("often", { NextAction("auto release", relevance) }));
@@ -29,4 +29,4 @@ void DeadStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "can self resurrect", { NextAction("self resurrect", relevance + 2.0f) }));
 }
 
-DeadStrategy::DeadStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI) {}
+DeadStrategy::DeadStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI) {}

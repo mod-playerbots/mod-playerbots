@@ -1,22 +1,22 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "LfgActions.h"
-
 #include "AiFactory.h"
 #include "ItemVisitors.h"
 #include "LFGMgr.h"
 #include "Opcodes.h"
 #include "Playerbots.h"
+#include "RandomPlayerbotMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
-#include "RandomPlayerbotMgr.h"
 
 using namespace lfg;
 
-bool LfgJoinAction::Execute(Event event) { return JoinLFG(); }
+bool LfgJoinAction::Execute(Event /*event*/) { return JoinLFG(); }
 
 uint32 LfgJoinAction::GetRoles()
 {
@@ -115,7 +115,7 @@ bool LfgJoinAction::JoinLFG()
         auto const& botLevel = bot->GetLevel();
 
         /*LFG_TYPE_RANDOM on classic is 15-58 so bot over level 25 will never queue*/
-        if (dungeon->MinLevel && (botLevel < dungeon->MinLevel || botLevel > dungeon->MaxLevel) ||
+        if ((dungeon->MinLevel && (botLevel < dungeon->MinLevel || botLevel > dungeon->MaxLevel)) ||
             (botLevel > dungeon->MinLevel + 10 && dungeon->TypeID == LFG_TYPE_DUNGEON))
             continue;
 
@@ -172,9 +172,8 @@ bool LfgJoinAction::JoinLFG()
 
 bool LfgRoleCheckAction::Execute(Event /*event*/)
 {
-    if (Group* group = bot->GetGroup())
+    if (bot->GetGroup())
     {
-        uint32 currentRoles = sLFGMgr->GetRoles(bot->GetGUID());
         uint32 newRoles = GetRoles();
         // if (currentRoles == newRoles)
         //     return false;
@@ -275,6 +274,15 @@ bool LfgLeaveAction::Execute(Event /*event*/)
     if (sLFGMgr->GetState(bot->GetGUID()) > LFG_STATE_QUEUED)
         return false;
 
+    // Don't drop a queue we deliberately joined. The "seldom" tick (RandomTrigger, ~300s)
+    // otherwise pulls random bots straight back out, so LFGQueue::CheckCompatibility never
+    // sees a role-complete pool that holds still long enough to form a group. Turning
+    // RandomBotJoinLfg off still lets whoever is mid-queue fall through and leave.
+    // Config bool is tested first so the O(currentBots) IsRandomBot() scan is skipped
+    // whenever the feature is disabled.
+    if (sPlayerbotAIConfig.randomBotJoinLfg && RandomPlayerbotMgr::instance().IsRandomBot(bot))
+        return false;
+
     WorldPacket* packet = new WorldPacket(CMSG_LFG_LEAVE);
     bot->GetSession()->QueuePacket(packet);
     // sLFGMgr->LeaveLfg(bot->GetGUID());
@@ -315,8 +323,8 @@ bool LfgJoinAction::isUseful()
     if (bot->GetLevel() < 15)
         return false;
 
-    // don't use if active player master
-    if (GET_PLAYERBOT_AI(bot)->IsRealPlayer())
+    // Don't use for selfbots (a real player is at the keyboard).
+    if (IsSelfBot(bot))
         return false;
 
     if (bot->GetGroup() && bot->GetGroup()->GetLeaderGUID() != bot->GetGUID())

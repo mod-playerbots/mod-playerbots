@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_GENERICPRIESTSTRATEGYACTIONNODEFACTORY_H
-#define _PLAYERBOT_GENERICPRIESTSTRATEGYACTIONNODEFACTORY_H
+#ifndef PLAYERBOTS_GENERICPRIESTSTRATEGYACTIONNODEFACTORY_H
+#define PLAYERBOTS_GENERICPRIESTSTRATEGYACTIONNODEFACTORY_H
 
 #include "Action.h"
 #include "NamedObjectContext.h"
@@ -21,7 +22,6 @@ public:
         creators["divine spirit"] = &divine_spirit;
         creators["divine spirit on party"] = &divine_spirit_on_party;
         creators["power word: shield"] = &power_word_shield;
-        // creators["power word: shield on party"] = &power_word_shield_on_party;
         creators["renew"] = &renew;
         creators["renew on party"] = &renew_on_party;
         creators["greater heal"] = &greater_heal;
@@ -33,8 +33,6 @@ public:
         creators["flash heal"] = &flash_heal;
         creators["flash heal on party"] = &flash_heal_on_party;
         creators["psychic scream"] = &psychic_scream;
-        // creators["fade"] = &fade;
-        creators["shadowfiend"] = &shadowfiend;
     }
 
 private:
@@ -207,16 +205,6 @@ private:
             "psychic scream",
             /*P*/ {},
             /*A*/ { NextAction("fade") },
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* shadowfiend([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "shadowfiend",
-            /*P*/ {},
-            /*A*/ {},
             /*C*/ {}
         );
     }

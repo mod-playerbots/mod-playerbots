@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "GenericMageNonCombatStrategy.h"
@@ -12,28 +13,10 @@ class GenericMageNonCombatStrategyActionNodeFactory : public NamedObjectFactory<
 public:
     GenericMageNonCombatStrategyActionNodeFactory()
     {
-        creators["molten armor"] = &molten_armor;
-        creators["mage armor"] = &mage_armor;
         creators["ice armor"] = &ice_armor;
     }
 
 private:
-    static ActionNode* molten_armor([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("molten armor",
-                              /*P*/ {},
-                              /*A*/ { NextAction("mage armor") },
-                              /*C*/ {});
-    }
-
-    static ActionNode* mage_armor([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("mage armor",
-                              /*P*/ {},
-                              /*A*/ { NextAction("ice armor") },
-                              /*C*/ {});
-    }
-
     static ActionNode* ice_armor([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("ice armor",
@@ -65,7 +48,7 @@ void MageBuffManaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void MageBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("mage armor", { NextAction("molten armor", 19.0f) }));
+    triggers.push_back(new TriggerNode("molten armor", { NextAction("molten armor", 19.0f) }));
 }
 
 void MageBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

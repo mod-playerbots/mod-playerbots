@@ -1,16 +1,26 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_STRATEGY_H
-#define _PLAYERBOT_STRATEGY_H
+#ifndef PLAYERBOTS_STRATEGY_H
+#define PLAYERBOTS_STRATEGY_H
 
 #include "Action.h"
 #include "Multiplier.h"
 #include "NamedObjectContext.h"
+#include "ObjectGuid.h"
 #include "PlayerbotAIAware.h"
 #include "Trigger.h"
+
+enum class TargetValueExclusionType : uint8
+{
+    None = 0,
+    Tank,
+    Dps,
+    Attacker
+};
 
 enum StrategyType : uint32
 {
@@ -40,19 +50,19 @@ enum StrategyType : uint32
 //     ACTION_EMERGENCY = 90
 // };
 
-static float ACTION_IDLE = 0.0f;
-static float ACTION_BG = 1.0f;
-static float ACTION_DEFAULT = 5.0f;
-static float ACTION_NORMAL = 10.0f;
-static float ACTION_HIGH = 20.0f;
-static float ACTION_MOVE = 30.0f;
-static float ACTION_INTERRUPT = 40.0f;
-static float ACTION_DISPEL = 50.0f;
-static float ACTION_RAID = 60.0f;
-static float ACTION_LIGHT_HEAL = 10.0f;
-static float ACTION_MEDIUM_HEAL = 20.0f;
-static float ACTION_CRITICAL_HEAL = 30.0f;
-static float ACTION_EMERGENCY = 90.0f;
+static constexpr float ACTION_IDLE = 0.0f;
+static constexpr float ACTION_BG = 1.0f;
+static constexpr float ACTION_DEFAULT = 5.0f;
+static constexpr float ACTION_NORMAL = 10.0f;
+static constexpr float ACTION_HIGH = 20.0f;
+static constexpr float ACTION_MOVE = 30.0f;
+static constexpr float ACTION_INTERRUPT = 40.0f;
+static constexpr float ACTION_DISPEL = 50.0f;
+static constexpr float ACTION_RAID = 60.0f;
+static constexpr float ACTION_LIGHT_HEAL = 10.0f;
+static constexpr float ACTION_MEDIUM_HEAL = 20.0f;
+static constexpr float ACTION_CRITICAL_HEAL = 30.0f;
+static constexpr float ACTION_EMERGENCY = 90.0f;
 
 class Strategy : public PlayerbotAIAware
 {
@@ -63,6 +73,9 @@ public:
     virtual std::vector<NextAction> getDefaultActions() { return {}; }
     virtual void InitTriggers([[maybe_unused]] std::vector<TriggerNode*>& triggers) {}
     virtual void InitMultipliers([[maybe_unused]] std::vector<Multiplier*>& multipliers) {}
+    virtual void AppendTargetExclusions([[maybe_unused]] GuidSet& exclusions,
+                                        [[maybe_unused]] TargetValueExclusionType type) {}
+    virtual bool HasTargetExclusions() const { return false; }
     virtual std::string const getName() = 0;
     virtual uint32 GetType() const { return STRATEGY_TYPE_GENERIC; }
     virtual ActionNode* GetAction(std::string const name);

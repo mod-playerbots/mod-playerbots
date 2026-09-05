@@ -1,25 +1,34 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "AiObjectContext.h"
-#include "TriggerContext.h"
+#include "Aq20TriggerContext.h"
+#include "BTTriggerContext.h"
+#include "BWLTriggerContext.h"
 #include "ChatTriggerContext.h"
+#include "EoETriggerContext.h"
+#include "GruulTriggerContext.h"
+#include "HyjalTriggerContext.h"
+#include "ICCTriggerContext.h"
+#include "KaraTriggerContext.h"
+#include "MCTriggerContext.h"
+#include "MagTriggerContext.h"
+#include "NaxxTriggerContext.h"
+#include "OSTriggerContext.h"
+#include "OnyTriggerContext.h"
+#include "RSTriggerContext.h"
+#include "SSCTriggerContext.h"
+#include "TKTriggerContext.h"
+#include "TbcDungeonTriggerContext.h"
+#include "TriggerContext.h"
+#include "UldTriggerContext.h"
+#include "VoATriggerContext.h"
 #include "WorldPacketTriggerContext.h"
-#include "Ai/Raid/Aq20/RaidAq20TriggerContext.h"
-#include "Ai/Raid/MoltenCore/RaidMcTriggerContext.h"
-#include "Ai/Raid/BlackwingLair/RaidBwlTriggerContext.h"
-#include "Ai/Raid/Karazhan/RaidKarazhanTriggerContext.h"
-#include "Ai/Raid/GruulsLair/RaidGruulsLairTriggerContext.h"
-#include "Ai/Raid/Magtheridon/RaidMagtheridonTriggerContext.h"
-#include "Ai/Raid/Naxxramas/RaidNaxxTriggerContext.h"
-#include "Ai/Raid/SerpentshrineCavern/RaidSSCTriggerContext.h"
-#include "Ai/Raid/TempestKeep/RaidTempestKeepTriggerContext.h"
-#include "Ai/Raid/ZulAman/RaidZulAmanTriggerContext.h"
-#include "Ai/Raid/ObsidianSanctum/RaidOsTriggerContext.h"
-#include "Ai/Raid/EyeOfEternity/RaidEoETriggerContext.h"
-#include "Ai/Raid/VaultOfArchavon/RaidVoATriggerContext.h"
-#include "Ai/Raid/Ulduar/RaidUlduarTriggerContext.h"
-#include "Ai/Raid/Onyxia/RaidOnyxiaTriggerContext.h"
-#include "Ai/Raid/Icecrown/RaidIccTriggerContext.h"
-#include "Ai/Dungeon/TbcDungeonTriggerContext.h"
-#include "Ai/Dungeon/WotlkDungeonTriggerContext.h"
+#include "WotlkDungeonTriggerContext.h"
+#include "ZATriggerContext.h"
 
 void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
 {
@@ -35,6 +44,8 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidNaxxTriggerContext());
     triggerContexts.Add(new RaidSSCTriggerContext());
     triggerContexts.Add(new RaidTempestKeepTriggerContext());
+    triggerContexts.Add(new RaidHyjalSummitTriggerContext());
+    triggerContexts.Add(new RaidBlackTempleTriggerContext());
     triggerContexts.Add(new RaidZulAmanTriggerContext());
     triggerContexts.Add(new RaidOsTriggerContext());
     triggerContexts.Add(new RaidEoETriggerContext());
@@ -42,7 +53,12 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidUlduarTriggerContext());
     triggerContexts.Add(new RaidOnyxiaTriggerContext());
     triggerContexts.Add(new RaidIccTriggerContext());
+    triggerContexts.Add(new RaidRsTriggerContext());
     triggerContexts.Add(new TbcDungeonAuchenaiCryptsTriggerContext());
+    triggerContexts.Add(new TbcDungeonSethekkHallsTriggerContext());
+    triggerContexts.Add(new TbcDungeonMechanarTriggerContext());
+    triggerContexts.Add(new TbcDungeonUnderbogTriggerContext());
+    triggerContexts.Add(new TbcDungeonMagistersTerraceTriggerContext());
     triggerContexts.Add(new WotlkDungeonUKTriggerContext());
     triggerContexts.Add(new WotlkDungeonNexTriggerContext());
     triggerContexts.Add(new WotlkDungeonANTriggerContext());

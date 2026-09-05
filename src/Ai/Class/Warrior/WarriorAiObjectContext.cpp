@@ -1,18 +1,18 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "WarriorAiObjectContext.h"
-
 #include "ArmsWarriorStrategy.h"
 #include "FuryWarriorStrategy.h"
 #include "GenericWarriorNonCombatStrategy.h"
 #include "NamedObjectContext.h"
 #include "Playerbots.h"
 #include "TankWarriorStrategy.h"
-#include "WarriorPullStrategy.h"
 #include "WarriorActions.h"
+#include "WarriorPullStrategy.h"
 #include "WarriorTriggers.h"
 
 class WarriorStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -27,7 +27,7 @@ public:
 
 private:
     static Strategy* nc(PlayerbotAI* botAI) { return new GenericWarriorNonCombatStrategy(botAI); }
-    static Strategy* warrior_aoe(PlayerbotAI* botAI) { return new WarrirorAoeStrategy(botAI); }
+    static Strategy* warrior_aoe(PlayerbotAI* botAI) { return new WarriorAoeStrategy(botAI); }
     static Strategy* pull(PlayerbotAI* botAI) { return new WarriorPullStrategy(botAI); }
 };
 

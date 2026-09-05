@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_GUILDTASKMGR_H
-#define _PLAYERBOT_GUILDTASKMGR_H
+#ifndef PLAYERBOTS_GUILDTASKMGR_H
+#define PLAYERBOTS_GUILDTASKMGR_H
 
+#include "Chat.h"
+#include "DatabaseEnvFwd.h"
+#include "Player.h"
+#include "Unit.h"
+#include <cstdint>
 #include <map>
 #include <vector>
-#include <cstdint>
-
-#include "DatabaseEnvFwd.h"
-#include "Unit.h"
-#include "Player.h"
-#include "Chat.h"
 
 class GuildTaskMgr
 {
@@ -38,8 +38,8 @@ private:
     GuildTaskMgr() = default;
     ~GuildTaskMgr() = default;
 
-    GuildTaskMgr(const GuildTaskMgr&) = delete;
-    GuildTaskMgr& operator=(const GuildTaskMgr&) = delete;
+    GuildTaskMgr(GuildTaskMgr const&) = delete;
+    GuildTaskMgr& operator=(GuildTaskMgr const&) = delete;
 
     GuildTaskMgr(GuildTaskMgr&&) = delete;
     GuildTaskMgr& operator=(GuildTaskMgr&&) = delete;

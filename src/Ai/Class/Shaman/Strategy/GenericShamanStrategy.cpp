@@ -1,12 +1,13 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "GenericShamanStrategy.h"
+#include "AiFactory.h"
 #include "Playerbots.h"
 #include "Strategy.h"
-#include "AiFactory.h"
 
 class GenericShamanStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -161,9 +162,7 @@ void ShamanAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     }
     else if (tab == SHAMAN_TAB_ENHANCEMENT)
     {
-        triggers.push_back(new TriggerNode("medium aoe",{ NextAction("magma totem", 24.0f),
-                                                          NextAction("fire nova", 23.0f), }));
-
+        triggers.push_back(new TriggerNode("medium aoe",{ NextAction("fire nova", 23.0f), }));
         triggers.push_back(new TriggerNode("maelstrom weapon 5 and medium aoe", { NextAction("chain lightning", 22.0f), }));
         triggers.push_back(new TriggerNode("maelstrom weapon 4 and medium aoe", { NextAction("chain lightning", 21.0f), }));
         triggers.push_back(new TriggerNode("enemy within melee", { NextAction("fire nova", 5.1f), }));

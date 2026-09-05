@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_PALADINBUFFSTRATEGIES_H
-#define _PLAYERBOT_PALADINBUFFSTRATEGIES_H
+#ifndef PLAYERBOTS_PALADINBUFFSTRATEGIES_H
+#define PLAYERBOTS_PALADINBUFFSTRATEGIES_H
 
 #include "Strategy.h"
 
@@ -16,7 +17,7 @@ public:
     PaladinBuffManaStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
-    std::string const getName() override { return "bmana"; }
+    std::string const getName() override { return "bwisdom"; }
 };
 
 class PaladinBuffHealthStrategy : public Strategy
@@ -25,7 +26,7 @@ public:
     PaladinBuffHealthStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
-    std::string const getName() override { return "bhealth"; }
+    std::string const getName() override { return "bsanc"; }
 };
 
 class PaladinBuffDpsStrategy : public Strategy
@@ -34,7 +35,7 @@ public:
     PaladinBuffDpsStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
-    std::string const getName() override { return "bdps"; }
+    std::string const getName() override { return "bmight"; }
 };
 
 class PaladinBuffArmorStrategy : public Strategy
@@ -88,7 +89,7 @@ public:
     PaladinBuffStatsStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
-    std::string const getName() override { return "bstats"; }
+    std::string const getName() override { return "bkings"; }
 };
 
 class PaladinShadowResistanceStrategy : public Strategy

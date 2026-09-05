@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_TRAINERACTION_H
-#define _PLAYERBOT_TRAINERACTION_H
+#ifndef PLAYERBOTS_TRAINERACTION_H
+#define PLAYERBOTS_TRAINERACTION_H
 
 #include "Action.h"
 #include "ChatHelper.h"
@@ -51,6 +52,16 @@ class AutoGearAction : public Action
 public:
     AutoGearAction(PlayerbotAI* botAI) : Action(botAI, "autogear") {}
     bool Execute(Event event) override;
+};
+
+class BisGearAction : public Action
+{
+public:
+    BisGearAction(PlayerbotAI* botAI) : Action(botAI, "autogear bis") {}
+    bool Execute(Event event) override;
+
+private:
+    bool RunAutogearFallback(uint16 effectiveIlvl);
 };
 
 #endif

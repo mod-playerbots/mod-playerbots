@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "PriestNonCombatStrategy.h"
-
 #include "Playerbots.h"
 #include "PriestNonCombatStrategyActionNodeFactory.h"
 
@@ -19,6 +19,8 @@ void PriestNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(
         new TriggerNode("inner fire",{ NextAction("inner fire", 10.0f) }));
+    triggers.push_back(
+        new TriggerNode("vampiric embrace", { NextAction("vampiric embrace", 16.0f) }));
     triggers.push_back(new TriggerNode(
         "party member dead",{ NextAction("remove shadowform", ACTION_CRITICAL_HEAL + 11),
                                                NextAction("resurrection", ACTION_CRITICAL_HEAL + 10) }));
@@ -54,12 +56,6 @@ void PriestBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(
-        new TriggerNode("prayer of fortitude on party",
-                       { NextAction("prayer of fortitude on party", 12.0f) }));
-    triggers.push_back(
-        new TriggerNode("prayer of spirit on party",
-                       { NextAction("prayer of spirit on party", 14.0f) }));
     triggers.push_back(
         new TriggerNode("power word: fortitude on party",
                        { NextAction("power word: fortitude on party", 11.0f) }));

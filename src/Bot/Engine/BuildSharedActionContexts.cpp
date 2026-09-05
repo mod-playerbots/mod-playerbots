@@ -1,25 +1,34 @@
-#include "AiObjectContext.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "ActionContext.h"
+#include "AiObjectContext.h"
+#include "Aq20ActionContext.h"
+#include "BTActionContext.h"
+#include "BWLActionContext.h"
 #include "ChatActionContext.h"
+#include "EoEActionContext.h"
+#include "GruulActionContext.h"
+#include "HyjalActionContext.h"
+#include "ICCActionContext.h"
+#include "KaraActionContext.h"
+#include "MCActionContext.h"
+#include "MagActionContext.h"
+#include "NaxxActionContext.h"
+#include "OSActionContext.h"
+#include "OnyActionContext.h"
+#include "RSActionContext.h"
+#include "SSCActionContext.h"
+#include "TKActionContext.h"
+#include "TbcDungeonActionContext.h"
+#include "UldActionContext.h"
+#include "VoAActionContext.h"
 #include "WorldPacketActionContext.h"
-#include "Ai/Raid/Aq20/RaidAq20ActionContext.h"
-#include "Ai/Raid/MoltenCore/RaidMcActionContext.h"
-#include "Ai/Raid/BlackwingLair/RaidBwlActionContext.h"
-#include "Ai/Raid/Karazhan/RaidKarazhanActionContext.h"
-#include "Ai/Raid/GruulsLair/RaidGruulsLairActionContext.h"
-#include "Ai/Raid/Naxxramas/RaidNaxxActionContext.h"
-#include "Ai/Raid/Magtheridon/RaidMagtheridonActionContext.h"
-#include "Ai/Raid/SerpentshrineCavern/RaidSSCActionContext.h"
-#include "Ai/Raid/TempestKeep/RaidTempestKeepActionContext.h"
-#include "Ai/Raid/ZulAman/RaidZulAmanActionContext.h"
-#include "Ai/Raid/ObsidianSanctum/RaidOsActionContext.h"
-#include "Ai/Raid/EyeOfEternity/RaidEoEActionContext.h"
-#include "Ai/Raid/VaultOfArchavon/RaidVoAActionContext.h"
-#include "Ai/Raid/Ulduar/RaidUlduarActionContext.h"
-#include "Ai/Raid/Onyxia/RaidOnyxiaActionContext.h"
-#include "Ai/Raid/Icecrown/RaidIccActionContext.h"
-#include "Ai/Dungeon/TbcDungeonActionContext.h"
-#include "Ai/Dungeon/WotlkDungeonActionContext.h"
+#include "WotlkDungeonActionContext.h"
+#include "ZAActionContext.h"
 
 void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
 {
@@ -34,6 +43,8 @@ void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Act
     actionContexts.Add(new RaidMagtheridonActionContext());
     actionContexts.Add(new RaidSSCActionContext());
     actionContexts.Add(new RaidTempestKeepActionContext());
+    actionContexts.Add(new RaidHyjalSummitActionContext());
+    actionContexts.Add(new RaidBlackTempleActionContext());
     actionContexts.Add(new RaidZulAmanActionContext());
     actionContexts.Add(new RaidNaxxActionContext());
     actionContexts.Add(new RaidOsActionContext());
@@ -42,7 +53,12 @@ void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Act
     actionContexts.Add(new RaidUlduarActionContext());
     actionContexts.Add(new RaidOnyxiaActionContext());
     actionContexts.Add(new RaidIccActionContext());
+    actionContexts.Add(new RaidRsActionContext());
     actionContexts.Add(new TbcDungeonAuchenaiCryptsActionContext());
+    actionContexts.Add(new TbcDungeonSethekkHallsActionContext());
+    actionContexts.Add(new TbcDungeonMechanarActionContext());
+    actionContexts.Add(new TbcDungeonUnderbogActionContext());
+    actionContexts.Add(new TbcDungeonMagistersTerraceActionContext());
     actionContexts.Add(new WotlkDungeonUKActionContext());
     actionContexts.Add(new WotlkDungeonNexActionContext());
     actionContexts.Add(new WotlkDungeonANActionContext());

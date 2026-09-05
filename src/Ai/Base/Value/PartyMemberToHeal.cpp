@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "PartyMemberToHeal.h"
-
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
@@ -133,6 +133,32 @@ bool PartyMemberToHeal::Check(Unit* player)
     //     : 40.0f);
     return player->GetMapId() == bot->GetMapId() && !player->IsCharmed() &&
            bot->GetDistance2d(player) < sPlayerbotAIConfig.healDistance * 2 && bot->IsWithinLOSInMap(player);
+}
+
+Unit* HealerLowMana::Calculate()
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    MinValueCalculator calc(100);
+
+    for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+    {
+        Player* player = gref->GetSource();
+        if (!player || player == bot)
+            continue;
+        if (player->IsGameMaster() || !player->IsAlive())
+            continue;
+        if (!botAI->IsHeal(player))
+            continue;
+
+        float mana = player->GetPowerPct(POWER_MANA);
+        if (mana < calc.minValue)
+            calc.probe(mana, player);
+    }
+
+    return (Unit*)calc.param;
 }
 
 Unit* PartyMemberToProtect::Calculate()

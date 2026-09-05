@@ -1,19 +1,25 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_PLAYERBOTFACTORY_H
-#define _PLAYERBOT_PLAYERBOTFACTORY_H
-
-#include <string>
-#include <utility>
+#ifndef PLAYERBOTS_PLAYERBOTFACTORY_H
+#define PLAYERBOTS_PLAYERBOTFACTORY_H
 
 #include "InventoryAction.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
+#include <string>
+#include <utility>
 
 class Item;
+
+namespace Trainer
+{
+    class Trainer;
+    struct Spell;
+}
 
 struct ItemTemplate;
 
@@ -67,12 +73,17 @@ public:
     static void InitTalentsBySpecNo(Player* bot, int specNo, bool reset);
     static void InitTalentsByParsedSpecLink(Player* bot, std::vector<std::vector<uint32>> parsedSpecLink, bool reset);
     void InitAvailableSpells();
+    static bool IsTrainerSpellAllowedForBot(Player* bot, Trainer::Trainer const* trainer,
+                                             Trainer::Spell const* trainerSpell);
     void InitClassSpells();
     void InitSpecialSpells();
     void InitEquipment(bool incremental, bool second_chance = false);
     void InitPet();
     void InitAmmo();
     static uint32 CalcMixedGearScore(uint32 gs, uint32 quality);
+    static void DestroyEquippedGear(Player* bot);
+    static void AutoGear(Player* bot, uint32 itemQuality, uint32 ilvl, bool incremental, bool secondChance = false,
+                        bool applyFinishers = true);
     void InitPetTalents();
     void CleanupConsumables();
     void InitReagents();
@@ -155,14 +166,16 @@ private:
     bool CanEquipItem(ItemTemplate const* proto);
     bool CanEquipUnseenItem(uint8 slot, uint16& dest, uint32 item);
     static bool IsPrimaryTradeSkill(uint16 skillId);
+    static bool IsSecondaryTradeSkill(uint16 skillId);
+    static uint16 GetTrainerSpellTradeSkill(Trainer::Spell const* trainerSpell);
     static bool IsGatheringTradeSkill(uint16 skillId);
     static bool IsCraftingTradeSkill(uint16 skillId);
     static uint32 GetProfessionStarterSpell(uint16 skillId);
     static std::vector<WeightedProfessionPair> GetClassProfessionPairs(Player* bot);
     static std::vector<WeightedProfessionPair> GetRandomProfessionPairs();
     static std::pair<uint16, uint16> ChooseProfessionPair(std::vector<WeightedProfessionPair> const& professionPairs);
-    static bool HasProfessionPair(std::vector<WeightedProfessionPair> const& professionPairs,
-                                  uint16 firstSkill, uint16 secondSkill);
+    static uint16 ChooseComplementaryProfession(
+        std::vector<WeightedProfessionPair> const& professionPairs, uint16 existingSkill);
     static uint16 ChooseSingleProfession(std::vector<WeightedProfessionPair> const& professionPairs);
     static uint32 GetStoredOrRandomValue(Player* bot, std::string const& key, uint32 minValue, uint32 maxValue);
     static bool HasAnySpell(Player* bot, std::vector<uint32> const& spells);
@@ -202,7 +215,6 @@ private:
     void InitInventoryEquip();
     void InitInventorySkill();
     Item* StoreItem(uint32 itemId, uint32 count);
-    void InitArenaTeam();
     void InitImmersive();
     static void AddPrevQuests(uint32 questId, std::list<uint32>& questIds);
     void LoadEnchantContainer();

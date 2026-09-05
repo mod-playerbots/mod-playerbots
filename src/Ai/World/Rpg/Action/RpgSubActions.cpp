@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "RpgSubActions.h"
-
 #include "BudgetValues.h"
 #include "ChooseRpgTargetAction.h"
 #include "EmoteAction.h"
@@ -13,13 +13,14 @@
 #include "GuildCreateActions.h"
 #include "LastMovementValue.h"
 #include "MovementActions.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "PossibleRpgTargetsValue.h"
 #include "SocialMgr.h"
 
 void RpgHelper::OnExecute(std::string nextAction)
 {
-    if (botAI->HasRealPlayerMaster() && nextAction == "rpg")
+    if (botAI->HasGameClientMaster() && nextAction == "rpg")
         nextAction = "rpg cancel";
 
     SET_AI_VALUE(std::string, "next rpg action", nextAction);
@@ -82,7 +83,7 @@ void RpgHelper::setFacing(GuidPosition guidPosition)
 
 void RpgHelper::setDelay(bool waitForGroup)
 {
-    if (!botAI->HasRealPlayerMaster() || (waitForGroup && botAI->GetGroupLeader() == bot && bot->GetGroup()))
+    if (!botAI->HasGameClientMaster() || (waitForGroup && botAI->GetGroupLeader() == bot && bot->GetGroup()))
         botAI->SetNextCheckDelay(sPlayerbotAIConfig.rpgDelay);
     else
         botAI->SetNextCheckDelay(sPlayerbotAIConfig.rpgDelay / 5);
@@ -103,7 +104,7 @@ std::string const RpgSubAction::ActionName() { return "none"; }
 
 Event RpgSubAction::ActionEvent(Event event) { return event; }
 
-bool RpgStayAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
+bool RpgStayAction::isUseful() { return rpg->InRange() && !botAI->HasGameClientMaster(); }
 
 bool RpgStayAction::Execute(Event /*event*/)
 {
@@ -113,7 +114,7 @@ bool RpgStayAction::Execute(Event /*event*/)
     return true;
 }
 
-bool RpgWorkAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
+bool RpgWorkAction::isUseful() { return rpg->InRange() && !botAI->HasGameClientMaster(); }
 
 bool RpgWorkAction::Execute(Event /*event*/)
 {
@@ -122,7 +123,7 @@ bool RpgWorkAction::Execute(Event /*event*/)
     return true;
 }
 
-bool RpgEmoteAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
+bool RpgEmoteAction::isUseful() { return rpg->InRange() && !botAI->HasGameClientMaster(); }
 
 bool RpgEmoteAction::Execute(Event /*event*/)
 {
@@ -146,7 +147,7 @@ bool RpgCancelAction::Execute(Event /*event*/)
     return true;
 }
 
-bool RpgTaxiAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
+bool RpgTaxiAction::isUseful() { return rpg->InRange() && !botAI->HasGameClientMaster(); }
 
 bool RpgTaxiAction::Execute(Event /*event*/)
 {
@@ -372,7 +373,7 @@ std::vector<Item*> RpgTradeUsefulAction::CanGiveItems(GuidPosition guidPosition)
 
     std::vector<Item*> giveItems;
 
-    if (botAI->HasActivePlayerMaster() || !GET_PLAYERBOT_AI(player))
+    if (IsRealPlayer(botAI->GetMaster()) || !GET_PLAYERBOT_AI(player))
         return giveItems;
 
     std::vector<ItemUsage> myUsages = {ITEM_USAGE_NONE, ITEM_USAGE_VENDOR, ITEM_USAGE_AH, ITEM_USAGE_DISENCHANT};
@@ -429,13 +430,16 @@ bool RpgTradeUsefulAction::Execute(Event /*event*/)
     {
         if (bot->GetTradeData() && bot->GetTradeData()->HasItem(item->GetGUID()))
         {
-            if (bot->GetGroup() && bot->GetGroup()->IsMember(guidP) && botAI->HasRealPlayerMaster())
-                botAI->TellMasterNoFacing(
-                    "You can use this " + chat->FormatItem(item->GetTemplate()) + " better than me, " +
-                    guidP.GetPlayer()->GetName() /*chat->FormatWorldobject(guidP.GetPlayer())*/ + ".");
+            if (bot->GetGroup() && bot->GetGroup()->IsMember(guidP) && botAI->HasGameClientMaster())
+                botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "rpg_item_better_for_player",
+                    "You can use this %item better than me, %player.",
+                    {{"%item", chat->FormatItem(item->GetTemplate())}, {"%player", guidP.GetPlayer()->GetName()}}));
             else
-                bot->Say("You can use this " + chat->FormatItem(item->GetTemplate()) + " better than me, " +
-                             player->GetName() /*chat->FormatWorldobject(player)*/ + ".",
+                bot->Say(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                             "rpg_item_better_for_player",
+                             "You can use this %item better than me, %player.",
+                             {{"%item", chat->FormatItem(item->GetTemplate())}, {"%player", player->GetName()}}),
                          (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
 
             if (!urand(0, 4) || items.size() < 2)
@@ -449,7 +453,10 @@ bool RpgTradeUsefulAction::Execute(Event /*event*/)
             }
         }
         else
-            bot->Say("Start trade with" + chat->FormatWorldobject(player),
+            bot->Say(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                         "rpg_start_trade_with_player",
+                         "Start trade with %player",
+                         {{"%player", chat->FormatWorldobject(player)}}),
                      (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
 
         botAI->SetNextCheckDelay(sPlayerbotAIConfig.rpgDelay);

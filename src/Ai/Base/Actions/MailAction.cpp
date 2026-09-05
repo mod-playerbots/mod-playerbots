@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "MailAction.h"
-
 #include "ChatHelper.h"
 #include "Event.h"
 #include "Mail.h"
@@ -192,6 +192,9 @@ ReadMailProcessor ReadMailProcessor::instance;
 std::map<uint32, Mail*> filterList(std::vector<Mail*> src, std::string const filter)
 {
     std::map<uint32, Mail*> result;
+
+    if (src.empty())
+        return result;
     if (filter.empty() || filter == "*")
     {
         uint32 idx = 0;
@@ -204,8 +207,8 @@ std::map<uint32, Mail*> filterList(std::vector<Mail*> src, std::string const fil
     if (filter.find("-") != std::string::npos)
     {
         std::vector<std::string> ss = split(filter, '-');
-        uint32 from = 0;
-        uint32 to = src.size() - 1;
+        int32 from = 0;
+        int32 to = static_cast<int32>(src.size()) - 1;
 
         if (!ss[0].empty())
             from = atoi(ss[0].c_str()) - 1;
@@ -216,17 +219,17 @@ std::map<uint32, Mail*> filterList(std::vector<Mail*> src, std::string const fil
         if (from < 0)
             from = 0;
 
-        if (from > src.size() - 1)
-            from = src.size() - 1;
+        if (from > static_cast<int32>(src.size()) - 1)
+            from = static_cast<int32>(src.size()) - 1;
 
         if (to < 0)
             to = 0;
 
-        if (to > src.size() - 1)
-            to = src.size() - 1;
+        if (to > static_cast<int32>(src.size()) - 1)
+            to = static_cast<int32>(src.size()) - 1;
 
-        for (uint32 i = from; i <= to; ++i)
-            result[i] = src[i];
+        for (int32 i = from; i <= to; ++i)
+            result[static_cast<uint32>(i)] = src[i];
 
         return result;
     }
@@ -234,15 +237,15 @@ std::map<uint32, Mail*> filterList(std::vector<Mail*> src, std::string const fil
     std::vector<std::string> ss = split(filter, ',');
     for (std::vector<std::string>::iterator i = ss.begin(); i != ss.end(); ++i)
     {
-        uint32 idx = atoi(i->c_str()) - 1;
+        int32 idx = atoi(i->c_str()) - 1;
 
         if (idx < 0)
             idx = 0;
 
-        if (idx > src.size() - 1)
-            idx = src.size() - 1;
+        if (idx > static_cast<int32>(src.size()) - 1)
+            idx = static_cast<int32>(src.size()) - 1;
 
-        result[idx] = src[idx];
+        result[static_cast<uint32>(idx)] = src[idx];
     }
 
     return result;

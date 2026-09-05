@@ -1,18 +1,18 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "AttackAction.h"
-
 #include "CreatureAI.h"
 #include "Event.h"
 #include "LastMovementValue.h"
 #include "LootObjectStack.h"
 #include "PlayerbotAI.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "SharedDefines.h"
 #include "Unit.h"
 #include "WaitForAttackStrategy.h"
 
@@ -38,7 +38,8 @@ bool AttackMyTargetAction::Execute(Event /*event*/)
     if (!guid)
     {
         if (verbose)
-            botAI->TellError("You have no target");
+            botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "pull_no_target_error", "You have no target", {}));
 
         return false;
     }
@@ -56,7 +57,8 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     if (!target)
     {
         if (verbose)
-            botAI->TellError("I have no target");
+            botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "attack_no_target_error", "I have no target", {}));
 
         return false;
     }
@@ -64,7 +66,10 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     if (!target->IsInWorld())
     {
         if (verbose)
-            botAI->TellError(std::string(target->GetName()) + " is no longer in the world.");
+            botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "attack_target_not_in_world_error",
+                "%target is no longer in the world.",
+                {{"%target", target->GetName()}}));
 
         return false;
     }
@@ -73,7 +78,8 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
         bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
     {
         if (verbose)
-            botAI->TellError("I cannot attack in flight");
+            botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "attack_in_flight_error", "I cannot attack in flight", {}));
 
         return false;
     }
@@ -85,7 +91,10 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
         sPlayerbotAIConfig.IsPvpProhibited(target->GetZoneId(), target->GetAreaId())))
     {
         if (verbose)
-            botAI->TellError("I cannot attack other players in PvP prohibited areas.");
+            botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "attack_pvp_prohibited_error",
+                "I cannot attack other players in PvP prohibited areas.",
+                {}));
 
         return false;
     }
@@ -93,7 +102,10 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     if (bot->IsFriendlyTo(target))
     {
         if (verbose)
-            botAI->TellError(std::string(target->GetName()) + " is friendly to me.");
+            botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "attack_target_friendly_error",
+                "%target is friendly to me.",
+                {{"%target", target->GetName()}}));
 
         return false;
     }
@@ -101,7 +113,10 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     if (target->isDead())
     {
         if (verbose)
-            botAI->TellError(std::string(target->GetName()) + " is dead.");
+            botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "attack_target_dead_error",
+                "%target is dead.",
+                {{"%target", target->GetName()}}));
 
         return false;
     }
@@ -109,7 +124,10 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     if (!bot->IsWithinLOSInMap(target))
     {
         if (verbose)
-            botAI->TellError(std::string(target->GetName()) + " is not in my sight.");
+            botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "attack_target_not_in_sight_error",
+                "%target is not in my sight.",
+                {{"%target", target->GetName()}}));
 
         return false;
     }
@@ -129,7 +147,10 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     if (sameTarget && inCombat && sameAttackMode)
     {
         if (verbose)
-            botAI->TellError("I am already attacking " + std::string(target->GetName()) + ".");
+            botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "attack_already_attacking_error",
+                "I am already attacking %target.",
+                {{"%target", target->GetName()}}));
 
         return false;
     }
@@ -137,7 +158,8 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     if (!bot->IsValidAttackTarget(target))
     {
         if (verbose)
-            botAI->TellError("I cannot attack an invalid target.");
+            botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "attack_invalid_target_error", "I cannot attack an invalid target.", {}));
 
         return false;
     }
@@ -198,3 +220,15 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
 bool AttackDuelOpponentAction::isUseful() { return AI_VALUE(Unit*, "duel target"); }
 
 bool AttackDuelOpponentAction::Execute(Event /*event*/) { return Attack(AI_VALUE(Unit*, "duel target")); }
+
+bool MeleeAction::isUseful()
+{
+    // do not allow if can't attack from vehicle
+    if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
+        return false;
+
+    // Do not start autoattack while prowled — let opener spells break stealth intentionally.
+    // Future rogue stealth implementation should use this instead:
+    // return !(botAI->HasAura("stealth", bot) || botAI->HasAura("prowl", bot));
+    return !botAI->HasAura("prowl", bot);
+}

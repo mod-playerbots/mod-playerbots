@@ -1,14 +1,15 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_NEARESTGAMEOBJECTS_H
-#define _PLAYERBOT_NEARESTGAMEOBJECTS_H
+#ifndef PLAYERBOTS_NEARESTGAMEOBJECTS_H
+#define PLAYERBOTS_NEARESTGAMEOBJECTS_H
 
+#include "GameObject.h"
 #include "PlayerbotAIConfig.h"
 #include "Value.h"
-#include "GameObject.h"
 
 class PlayerbotAI;
 
@@ -33,9 +34,9 @@ private:
 class NearestGameObjects : public ObjectGuidListCalculatedValue
 {
 public:
-    NearestGameObjects(PlayerbotAI* botAI, float range = sPlayerbotAIConfig.sightDistance, bool ignoreLos = false,
+    NearestGameObjects(PlayerbotAI* botAI, float range = sPlayerbotAIConfig.sightDistance, bool /*ignoreLos*/ = false,
                        std::string const name = "nearest game objects")
-        : ObjectGuidListCalculatedValue(botAI, name, 1 * 1000), range(range), ignoreLos(ignoreLos)
+        : ObjectGuidListCalculatedValue(botAI, name, 1 * 1000), range(range)
     {
     }
 
@@ -44,7 +45,6 @@ protected:
 
 private:
     float range;
-    bool ignoreLos;
 };
 
 class NearestTrapWithDamageValue : public ObjectGuidListCalculatedValue

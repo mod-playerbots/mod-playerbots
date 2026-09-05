@@ -1,22 +1,24 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_OPERATIONS_H
-#define _PLAYERBOT_OPERATIONS_H
+#ifndef PLAYERBOTS_PLAYERBOTOPERATIONS_H
+#define PLAYERBOTS_PLAYERBOTOPERATIONS_H
 
 #include "Group.h"
 #include "GroupMgr.h"
 #include "GuildMgr.h"
-#include "Playerbots.h"
 #include "ObjectAccessor.h"
-#include "PlayerbotOperation.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotMgr.h"
+#include "PlayerbotOperation.h"
 #include "PlayerbotRepository.h"
+#include "Playerbots.h"
+#include "RandomPlayerbotFactory.h"
 #include "RandomPlayerbotMgr.h"
 #include "UseMeetingStoneAction.h"
 #include "WorldSession.h"
@@ -242,6 +244,7 @@ public:
         }
 
         group->ChangeLeader(newLeader->GetGUID());
+        group->SendUpdate();
         LOG_DEBUG("playerbots", "GroupSetLeaderOperation: Changed leader to {}", newLeader->GetName());
         return true;
     }
@@ -285,7 +288,7 @@ public:
         }
 
         // Step 1: Remove all members from their existing groups
-        for (const ObjectGuid& memberGuid : m_memberGuids)
+        for (ObjectGuid const& memberGuid : m_memberGuids)
         {
             Player* member = ObjectAccessor::FindPlayer(memberGuid);
             if (!member)
@@ -324,7 +327,7 @@ public:
 
         // Step 4: Add members to the new group
         uint32 addedMembers = 0;
-        for (const ObjectGuid& memberGuid : m_memberGuids)
+        for (ObjectGuid const& memberGuid : m_memberGuids)
         {
             Player* member = ObjectAccessor::FindPlayer(memberGuid);
             if (!member)
@@ -360,7 +363,7 @@ public:
         }
 
         // Step 5: Teleport members to leader and reset AI
-        for (const ObjectGuid& memberGuid : m_memberGuids)
+        for (ObjectGuid const& memberGuid : m_memberGuids)
         {
             Player* member = ObjectAccessor::FindPlayer(memberGuid);
             if (!member || !newGroup->IsMember(memberGuid))
@@ -428,7 +431,7 @@ public:
             return false;
 
         Group* group = bot->GetGroup();
-        if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && botAI->HasActivePlayerMaster())
+        if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && IsRealPlayer(botAI->GetMaster()))
             PlayerbotRepository::instance().Save(botAI);
 
         return true;
@@ -575,6 +578,31 @@ private:
     ObjectGuid m_botGuid;
     ObjectGuid m_auctioneerGuid;
     WorldPacket m_packet;
+};
+
+class ArenaTeamAssignOperation : public PlayerbotOperation
+{
+public:
+    explicit ArenaTeamAssignOperation(ObjectGuid botGuid) : m_botGuid(botGuid) {}
+
+    bool Execute() override
+    {
+        Player* bot = ObjectAccessor::FindPlayer(m_botGuid);
+        if (!bot)
+            return false;
+
+        RandomPlayerbotFactory::AssignBotToArenaTeamInternal(bot);
+        return true;
+    }
+
+    ObjectGuid GetBotGuid() const override { return m_botGuid; }
+
+    std::string GetName() const override { return "ArenaTeamAssign"; }
+
+    bool IsValid() const override { return ObjectAccessor::FindPlayer(m_botGuid) != nullptr; }
+
+private:
+    ObjectGuid m_botGuid;
 };
 
 #endif

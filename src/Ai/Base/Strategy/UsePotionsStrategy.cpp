@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "UsePotionsStrategy.h"
@@ -32,5 +33,5 @@ void UsePotionsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "critical health", { NextAction("healthstone", ACTION_MEDIUM_HEAL + 1) }));
     triggers.push_back(
-        new TriggerNode("low mana", { NextAction("mana potion", ACTION_EMERGENCY) }));
+        new TriggerNode("medium mana", { NextAction("mana potion", ACTION_EMERGENCY) }));
 }

@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "PartyMemberWithoutAuraValue.h"
-
+#include "GenericBuffUtils.h"
 #include "Playerbots.h"
 
 extern std::vector<std::string> split(std::string const s, char delim);
@@ -13,7 +14,7 @@ class PlayerWithoutAuraPredicate : public FindPlayerPredicate, public PlayerbotA
 {
 public:
     PlayerWithoutAuraPredicate(PlayerbotAI* botAI, std::string const aura)
-        : PlayerbotAIAware(botAI), FindPlayerPredicate(), auras(split(aura, ','))
+        : FindPlayerPredicate(), PlayerbotAIAware(botAI), auras(split(aura, ','))
     {
     }
 
@@ -25,7 +26,7 @@ public:
 
         for (std::vector<std::string>::iterator i = auras.begin(); i != auras.end(); ++i)
         {
-            if (botAI->HasAura(*i, unit))
+            if (!ai::buff::BuffBelowRefreshTarget(botAI, botAI->GetAura(*i, unit), 0))
                 return false;
         }
 

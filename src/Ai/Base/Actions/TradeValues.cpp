@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "TradeValues.h"
-
 #include "ItemUsageValue.h"
 #include "Playerbots.h"
 
@@ -16,7 +16,7 @@ std::vector<Item*> ItemsUsefulToGiveValue::Calculate()
 
     std::vector<Item*> giveItems;
 
-    if (botAI->HasActivePlayerMaster() || !GET_PLAYERBOT_AI(player))
+    if (IsRealPlayer(botAI->GetMaster()) || !GET_PLAYERBOT_AI(player))
         return giveItems;
 
     std::vector<ItemUsage> myUsages = {ITEM_USAGE_NONE, ITEM_USAGE_VENDOR, ITEM_USAGE_AH, ITEM_USAGE_DISENCHANT};

@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_CHATACTIONCONTEXTACTION_H
-#define _PLAYERBOT_CHATACTIONCONTEXTACTION_H
+#ifndef PLAYERBOTS_CHATACTIONCONTEXT_H
+#define PLAYERBOTS_CHATACTIONCONTEXT_H
 
 #include "AddLootAction.h"
 #include "AttackAction.h"
@@ -22,6 +23,7 @@
 #include "DestroyItemAction.h"
 #include "DropQuestAction.h"
 #include "EquipAction.h"
+#include "EquipGlyphsAction.h"
 #include "FlagAction.h"
 #include "Formations.h"
 #include "GoAction.h"
@@ -35,13 +37,14 @@
 #include "ListQuestsActions.h"
 #include "ListSpellsAction.h"
 #include "LogLevelAction.h"
-#include "LootStrategyAction.h"
 #include "LootRollAction.h"
-#include "SetFocusHealTargetsAction.h"
+#include "LootStrategyAction.h"
 #include "MailAction.h"
 #include "NamedObjectContext.h"
 #include "NewRpgAction.h"
+#include "OpenItemAction.h"
 #include "PassLeadershipToMasterAction.h"
+#include "PetsAction.h"
 #include "PositionAction.h"
 #include "PullActions.h"
 #include "QueryItemUsageAction.h"
@@ -58,36 +61,34 @@
 #include "SellAction.h"
 #include "SendMailAction.h"
 #include "SetCraftAction.h"
+#include "SetFocusHealTargetsAction.h"
 #include "SetHomeAction.h"
 #include "ShareQuestAction.h"
 #include "SkipSpellsListAction.h"
 #include "Stances.h"
 #include "StatsAction.h"
+#include "TameAction.h"
 #include "TaxiAction.h"
 #include "TeleportAction.h"
 #include "TellCastFailedAction.h"
 #include "TellEmblemsAction.h"
+#include "TellGlyphsAction.h"
 #include "TellItemCountAction.h"
 #include "TellLosAction.h"
-#include "TellReputationAction.h"
 #include "TellPvpStatsAction.h"
+#include "TellReputationAction.h"
 #include "TellTargetAction.h"
 #include "TradeAction.h"
 #include "TrainerAction.h"
 #include "UnequipAction.h"
+#include "UnlockItemAction.h"
+#include "UnlockTradedItemAction.h"
 #include "UseItemAction.h"
 #include "UseMeetingStoneAction.h"
+#include "WaitForAttackAction.h"
 #include "WhoAction.h"
 #include "WipeAction.h"
 #include "WtsAction.h"
-#include "OpenItemAction.h"
-#include "UnlockItemAction.h"
-#include "UnlockTradedItemAction.h"
-#include "TameAction.h"
-#include "TellGlyphsAction.h"
-#include "EquipGlyphsAction.h"
-#include "PetsAction.h"
-#include "WaitForAttackAction.h"
 
 class ChatActionContext : public NamedObjectContext<Action>
 {
@@ -139,6 +140,7 @@ public:
         creators["maintenance"] = &ChatActionContext::maintenance;
         creators["remove glyph"] = &ChatActionContext::remove_glyph;
         creators["autogear"] = &ChatActionContext::autogear;
+        creators["autogear bis"] = &ChatActionContext::autogear_bis;
         creators["equip upgrade"] = &ChatActionContext::equip_upgrade;
         creators["attack my target"] = &ChatActionContext::attack_my_target;
         creators["pull my target"] = &ChatActionContext::pull_my_target;
@@ -261,6 +263,7 @@ private:
     static Action* maintenance(PlayerbotAI* botAI) { return new MaintenanceAction(botAI); }
     static Action* remove_glyph(PlayerbotAI* botAI) { return new RemoveGlyphAction(botAI); }
     static Action* autogear(PlayerbotAI* botAI) { return new AutoGearAction(botAI); }
+    static Action* autogear_bis(PlayerbotAI* botAI) { return new BisGearAction(botAI); }
     static Action* equip_upgrade(PlayerbotAI* botAI) { return new EquipUpgradeAction(botAI); }
     static Action* co(PlayerbotAI* botAI) { return new ChangeCombatStrategyAction(botAI); }
     static Action* nc(PlayerbotAI* botAI) { return new ChangeNonCombatStrategyAction(botAI); }

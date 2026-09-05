@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "TradeAction.h"
@@ -69,7 +70,7 @@ bool TradeAction::Execute(Event event)
             continue;
 
         int8 slot = item->CanBeTraded() ? -1 : TRADE_SLOT_NONTRADED;
-        if (TradeItem(item, slot) && slot != TRADE_SLOT_NONTRADED && ++traded >= count)
+        if (TradeItem(item, slot) && slot != TRADE_SLOT_NONTRADED && ++traded >= uint32(count))
             break;
     }
 

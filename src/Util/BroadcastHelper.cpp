@@ -1,9 +1,14 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
-#include "Playerbots.h"
 #include "BroadcastHelper.h"
-#include "ServerFacade.h"
-#include "Channel.h"
 #include "AiFactory.h"
+#include "Channel.h"
+#include "Playerbots.h"
+#include "ServerFacade.h"
 
 BroadcastHelper::BroadcastHelper() {}
 
@@ -11,7 +16,7 @@ uint8 BroadcastHelper::GetLocale()
 {
     uint8 locale = sWorld->GetDefaultDbcLocale();
     // -- In case we're using auto detect on config file^M
-    if (locale >= MAX_LOCALES)
+    if (locale >= TOTAL_LOCALES)
         locale = LocaleConstant::LOCALE_enUS;
     return locale;
 }
@@ -259,7 +264,7 @@ bool BroadcastHelper::BroadcastLootingItem(PlayerbotAI* ai, Player* bot, ItemTem
     return false;
 }
 
-bool BroadcastHelper::BroadcastQuestAccepted(PlayerbotAI* ai, Player* bot, const Quest* quest)
+bool BroadcastHelper::BroadcastQuestAccepted(PlayerbotAI* ai, Player* bot, Quest const* quest)
 {
     if (!sPlayerbotAIConfig.enableBroadcasts)
         return false;
@@ -326,7 +331,7 @@ bool BroadcastHelper::BroadcastQuestUpdateAddKill(PlayerbotAI* ai, Player* bot, 
     return false;
 }
 
-bool BroadcastHelper::BroadcastQuestUpdateAddItem(PlayerbotAI* ai, Player* bot, Quest const* quest, uint32 availableCount, uint32 requiredCount, const ItemTemplate* proto)
+bool BroadcastHelper::BroadcastQuestUpdateAddItem(PlayerbotAI* ai, Player* bot, Quest const* quest, uint32 availableCount, uint32 requiredCount, ItemTemplate const* proto)
 {
     if (!sPlayerbotAIConfig.enableBroadcasts)
         return false;
@@ -795,7 +800,7 @@ bool BroadcastHelper::BroadcastSuggestGrindReputation(PlayerbotAI* ai, std::vect
     return false;
 }
 
-bool BroadcastHelper::BroadcastSuggestSell(PlayerbotAI* ai, const ItemTemplate* proto, uint32 count, uint32 price, Player* bot)
+bool BroadcastHelper::BroadcastSuggestSell(PlayerbotAI* ai, ItemTemplate const* proto, uint32 count, uint32 price, Player* bot)
 {
     if (!sPlayerbotAIConfig.enableBroadcasts)
         return false;

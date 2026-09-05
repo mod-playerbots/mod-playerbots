@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "DpsRogueStrategy.h"
-
 #include "Playerbots.h"
 
 class DpsRogueStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -14,7 +14,6 @@ public:
     {
         creators["sinister strike"] = &sinister_strike;
         creators["kick"] = &kick;
-        creators["kidney shot"] = &kidney_shot;
         creators["backstab"] = &backstab;
         creators["rupture"] = &rupture;
     }
@@ -40,15 +39,6 @@ private:
             /*C*/ {}
         );
     }
-    static ActionNode* kidney_shot([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "kidney shot",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
     static ActionNode* backstab([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
@@ -71,7 +61,7 @@ private:
     }
 };
 
-DpsRogueStrategy::DpsRogueStrategy(PlayerbotAI* botAI) : MeleeCombatStrategy(botAI)
+DpsRogueStrategy::DpsRogueStrategy(PlayerbotAI* botAI) : GenericRogueStrategy(botAI)
 {
     actionNodeFactories.Add(new DpsRogueStrategyActionNodeFactory());
 }
@@ -86,7 +76,7 @@ std::vector<NextAction> DpsRogueStrategy::getDefaultActions()
 
 void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    MeleeCombatStrategy::InitTriggers(triggers);
+    GenericRogueStrategy::InitTriggers(triggers);
 
     triggers.push_back(
         new TriggerNode(
@@ -111,7 +101,16 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "slice and dice",
             {
-                NextAction("slice and dice", ACTION_HIGH + 2)
+                NextAction("slice and dice", ACTION_HIGH + 5)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "riposte",
+            {
+                NextAction("riposte", ACTION_HIGH + 4)
             }
         )
     );
@@ -183,24 +182,6 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(
         new TriggerNode(
-            "light aoe",
-            {
-                NextAction("blade flurry", ACTION_HIGH + 3)
-            }
-        )
-    );
-
-    triggers.push_back(
-        new TriggerNode(
-            "blade flurry",
-                {
-                NextAction("blade flurry", ACTION_HIGH + 2)
-            }
-        )
-    );
-
-    triggers.push_back(
-        new TriggerNode(
             "enemy out of melee",
             {
                 NextAction("stealth", ACTION_HIGH + 3),
@@ -235,9 +216,6 @@ public:
     StealthedRogueStrategyActionNodeFactory()
     {
         creators["ambush"] = &ambush;
-        creators["cheap shot"] = &cheap_shot;
-        creators["garrote"] = &garrote;
-        creators["sap"] = &sap;
         creators["sinister strike"] = &sinister_strike;
     }
 
@@ -248,36 +226,6 @@ private:
             "ambush",
             /*P*/ {},
             /*A*/ { NextAction("garrote") },
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* cheap_shot([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "cheap shot",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* garrote([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "garrote",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* sap([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "sap",
-            /*P*/ {},
-            /*A*/ {},
             /*C*/ {}
         );
     }
@@ -404,7 +352,7 @@ void RogueAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "light aoe",
             {
-                NextAction("blade flurry", ACTION_HIGH)
+                NextAction("blade flurry", ACTION_HIGH + 4)
             }
         )
     );
@@ -425,6 +373,15 @@ void RogueBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "adrenaline rush",
             {
                 NextAction("adrenaline rush", ACTION_HIGH + 2)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "blade flurry",
+            {
+                NextAction("blade flurry", ACTION_HIGH + 4)
             }
         )
     );

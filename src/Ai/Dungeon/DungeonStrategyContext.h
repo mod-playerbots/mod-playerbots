@@ -1,40 +1,33 @@
-#ifndef _PLAYERBOT_DUNGEONSTRATEGYCONTEXT_H
-#define _PLAYERBOT_DUNGEONSTRATEGYCONTEXT_H
-
-#include "Strategy.h"
-#include "AuchenaiCrypts/Strategy/AuchenaiCryptsStrategy.h"
-#include "UtgardeKeep/Strategy/UtgardeKeepStrategy.h"
-#include "Nexus/Strategy/NexusStrategy.h"
-#include "AzjolNerub/Strategy/AzjolNerubStrategy.h"
-#include "OldKingdom/Strategy/OldKingdomStrategy.h"
-#include "DraktharonKeep/Strategy/DrakTharonKeepStrategy.h"
-#include "VioletHold/Strategy/VioletHoldStrategy.h"
-#include "Gundrak/Strategy/GundrakStrategy.h"
-#include "HallsOfStone/Strategy/HallsOfStoneStrategy.h"
-#include "HallsOfLightning/Strategy/HallsOfLightningStrategy.h"
-#include "Oculus/Strategy/OculusStrategy.h"
-#include "UtgardePinnacle/Strategy/UtgardePinnacleStrategy.h"
-#include "CullingOfStratholme/Strategy/CullingOfStratholmeStrategy.h"
-#include "ForgeOfSouls/Strategy/ForgeOfSoulsStrategy.h"
-#include "PitOfSaron/Strategy/PitOfSaronStrategy.h"
-#include "TrialOfTheChampion/Strategy/TrialOfTheChampionStrategy.h"
-
 /*
-Full list/TODO:
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
-Trial of the Champion - ToC
-Alliance Champions: Deathstalker Visceri, Eressea Dawnsinger, Mokra the Skullcrusher, Runok Wildmane, Zul'tore
-Horde Champions: Ambrose Boltspark, Colosos, Jacob Alerius, Jaelyne Evensong, Lana Stouthammer
-Argent Champion: Argent Confessor Paletress/Eadric the Pure
-The Black Knight
-Halls of Reflection - HoR
-Falric, Marwyn, The Lich King
-Pit of Saron - PoS
-Forgemaster Garfrost, Krick & Ick, Scourgelord Tyrannus
-The Forge of Souls - FoS
-Bronjahm, Devourer of Souls
+#ifndef PLAYERBOTS_DUNGEONSTRATEGYCONTEXT_H
+#define PLAYERBOTS_DUNGEONSTRATEGYCONTEXT_H
 
-*/
+#include "ACStrategy.h"
+#include "AKStrategy.h"
+#include "ANStrategy.h"
+#include "CoSStrategy.h"
+#include "DTKStrategy.h"
+#include "FoSStrategy.h"
+#include "GDStrategy.h"
+#include "HoLStrategy.h"
+#include "HoSStrategy.h"
+#include "MechStrategy.h"
+#include "MgTStrategy.h"
+#include "NexStrategy.h"
+#include "OCStrategy.h"
+#include "PoSStrategy.h"
+#include "SethStrategy.h"
+#include "Strategy.h"
+#include "TOCStrategy.h"
+#include "UBStrategy.h"
+#include "UKStrategy.h"
+#include "UPStrategy.h"
+#include "VHStrategy.h"
 
 class DungeonStrategyContext : public NamedObjectContext<Strategy>
 {
@@ -46,6 +39,10 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
 
             // Burning Crusade
             creators["tbc-ac"] = &DungeonStrategyContext::tbc_ac;           // Auchindoun: Auchenai Crypts
+            creators["tbc-seth"] = &DungeonStrategyContext::tbc_seth;       // Auchindoun: Sethekk Halls
+            creators["tbc-mech"] = &DungeonStrategyContext::tbc_mech;       // Tempest Keep: The Mechanar
+            creators["tbc-ub"] = &DungeonStrategyContext::tbc_ub;           // Coilfang Reservoir: The Underbog
+            creators["tbc-mgt"] = &DungeonStrategyContext::tbc_mgt;         // Magisters' Terrace
 
             // Wrath of the Lich King
             creators["wotlk-uk"] = &DungeonStrategyContext::wotlk_uk;       // Utgarde Keep
@@ -61,12 +58,15 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
             creators["wotlk-up"] = &DungeonStrategyContext::wotlk_up;       // Utgarde Pinnacle
             creators["wotlk-cos"] = &DungeonStrategyContext::wotlk_cos;     // The Culling of Stratholme
             creators["wotlk-toc"] = &DungeonStrategyContext::wotlk_toc;     // Trial of the Champion
-            creators["wotlk-hor"] = &DungeonStrategyContext::wotlk_hor;     // Halls of Reflection
             creators["wotlk-pos"] = &DungeonStrategyContext::wotlk_pos;     // Pit of Saron
             creators["wotlk-fos"] = &DungeonStrategyContext::wotlk_fos;     // The Forge of Souls
         }
     private:
         static Strategy* tbc_ac(PlayerbotAI* botAI) { return new TbcDungeonAuchenaiCryptsStrategy(botAI); }
+        static Strategy* tbc_seth(PlayerbotAI* botAI) { return new TbcDungeonSethekkHallsStrategy(botAI); }
+        static Strategy* tbc_mech(PlayerbotAI* botAI) { return new TbcDungeonMechanarStrategy(botAI); }
+        static Strategy* tbc_ub(PlayerbotAI* botAI) { return new TbcDungeonUnderbogStrategy(botAI); }
+        static Strategy* tbc_mgt(PlayerbotAI* botAI) { return new TbcDungeonMagistersTerraceStrategy(botAI); }
         static Strategy* wotlk_uk(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
         static Strategy* wotlk_nex(PlayerbotAI* botAI) { return new WotlkDungeonNexStrategy(botAI); }
         static Strategy* wotlk_an(PlayerbotAI* botAI) { return new WotlkDungeonANStrategy(botAI); }
@@ -82,8 +82,6 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
         static Strategy* wotlk_fos(PlayerbotAI* botAI) { return new WotlkDungeonFoSStrategy(botAI); }
         static Strategy* wotlk_pos(PlayerbotAI* botAI) { return new WotlkDungeonPoSStrategy(botAI); }
         static Strategy* wotlk_toc(PlayerbotAI* botAI) { return new WotlkDungeonToCStrategy(botAI); }
-        // NYI from here down
-        static Strategy* wotlk_hor(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
 };
 
 #endif

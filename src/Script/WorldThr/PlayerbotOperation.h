@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_OPERATION_H
-#define _PLAYERBOT_OPERATION_H
+#ifndef PLAYERBOTS_PLAYERBOTOPERATION_H
+#define PLAYERBOTS_PLAYERBOTOPERATION_H
 
 #include "Common.h"
 #include "ObjectGuid.h"
@@ -84,7 +85,7 @@ public:
  */
 struct PlayerbotOperationComparator
 {
-    bool operator()(const std::unique_ptr<PlayerbotOperation>& a, const std::unique_ptr<PlayerbotOperation>& b) const
+    bool operator()(std::unique_ptr<PlayerbotOperation> const& a, std::unique_ptr<PlayerbotOperation> const& b) const
     {
         return a->GetPriority() < b->GetPriority();  // Lower priority goes to back of queue
     }

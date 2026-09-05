@@ -1,17 +1,16 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#include "Log.h"
-#include "Timer.h"
+#include "PlayerbotDungeonRepository.h"
 #include "DatabaseEnv.h"
 #include "Field.h"
+#include "Log.h"
+#include "QueryResult.h"    // Required due to a poor implementation by AC
+#include "Timer.h"
 #include "World.h"
-// Required import due to poor implementation by AC
-#include "QueryResult.h"
-
-#include "PlayerbotDungeonRepository.h"
 
 std::vector<DungeonSuggestion> const PlayerbotDungeonRepository::GetDungeonSuggestions()
 {

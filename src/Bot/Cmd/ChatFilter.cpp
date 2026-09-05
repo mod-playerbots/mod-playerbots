@@ -1,20 +1,19 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "ChatFilter.h"
-
+#include "AiFactory.h"
 #include "Group.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
-#include "AiFactory.h"
-
 #include <algorithm>
 #include <cctype>
 #include <string>
 
-static std::string ToLower(const std::string& str)
+static std::string ToLower(std::string const& str)
 {
     std::string out = str;
     std::transform(out.begin(), out.end(), out.begin(), [](unsigned char c){ return std::tolower(c); });
@@ -370,7 +369,7 @@ public:
 private:
     std::map<std::pair<uint8, int>, std::string> specTabNames;
 
-    bool ParseSpecPrefix(const std::string& message, std::string& specPrefix, std::string& rest)
+    bool ParseSpecPrefix(std::string const& message, std::string& specPrefix, std::string& rest)
     {
         std::string msgLower = ToLower(message);
         for (auto const& entry : specTabNames)
@@ -387,7 +386,7 @@ private:
         return false;
     }
 
-    bool MatchesSpec(Player* bot, const std::string& specPrefix)
+    bool MatchesSpec(Player* bot, std::string const& specPrefix)
     {
         uint8 cls = bot->getClass();
         int specTab = AiFactory::GetPlayerSpecTab(bot);

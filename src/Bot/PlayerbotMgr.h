@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_PLAYERBOTMGR_H
-#define _PLAYERBOT_PLAYERBOTMGR_H
+#ifndef PLAYERBOTS_PLAYERBOTMGR_H
+#define PLAYERBOTS_PLAYERBOTMGR_H
 
 #include "ObjectGuid.h"
 #include "Player.h"
@@ -80,10 +81,10 @@ public:
 
     void SaveToDB();
 
-    void HandleSetSecurityKeyCommand(Player* player, const std::string& key);
-    void HandleLinkAccountCommand(Player* player, const std::string& accountName, const std::string& key);
+    void HandleSetSecurityKeyCommand(Player* player, std::string const& key);
+    void HandleLinkAccountCommand(Player* player, std::string const& accountName, std::string const& key);
     void HandleViewLinkedAccountsCommand(Player* player);
-    void HandleUnlinkAccountCommand(Player* player, const std::string& accountName);
+    void HandleUnlinkAccountCommand(Player* player, std::string const& accountName);
 
 protected:
     void OnBotLoginInternal(Player* const bot) override;
@@ -114,8 +115,8 @@ private:
     PlayerbotsMgr() = default;
     ~PlayerbotsMgr() = default;
 
-    PlayerbotsMgr(const PlayerbotsMgr&) = delete;
-    PlayerbotsMgr& operator=(const PlayerbotsMgr&) = delete;
+    PlayerbotsMgr(PlayerbotsMgr const&) = delete;
+    PlayerbotsMgr& operator=(PlayerbotsMgr const&) = delete;
 
     PlayerbotsMgr(PlayerbotsMgr&&) = delete;
     PlayerbotsMgr& operator=(PlayerbotsMgr&&) = delete;

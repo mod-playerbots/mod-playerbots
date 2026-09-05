@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "Engine.h"
-
 #include "Action.h"
 #include "Event.h"
 #include "PerfMonitor.h"
@@ -118,10 +118,12 @@ void Engine::Init()
 {
     Reset();
 
+    hasTargetExclusions = false;
     for (std::map<std::string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)
     {
         Strategy* strategy = i->second;
         strategyTypeMask |= strategy->GetType();
+        hasTargetExclusions |= strategy->HasTargetExclusions();
         strategy->InitMultipliers(multipliers);
         strategy->InitTriggers(triggers);
         for (auto &iter : strategy->actionNodeFactories.creators)
@@ -148,6 +150,9 @@ bool Engine::DoNextAction(Unit* /*unit*/, uint32 /*depth*/, bool minimal)
     bool actionExecuted = false;
     ActionBasket* basket = nullptr;
     time_t currentTime = time(nullptr);
+
+    if (!minimal)
+        botAI->forceRebuff.RollBuffPendingCycle();
 
     // Update triggers and push default actions
     ProcessTriggers(minimal);
@@ -369,10 +374,10 @@ void Engine::addStrategies(std::string first, ...)
     va_list vl;
     va_start(vl, first);
 
-    const char* cur;
+    char const* cur;
     do
     {
-        cur = va_arg(vl, const char*);
+        cur = va_arg(vl, char const*);
         if (cur)
             addStrategy(cur, false);
     } while (cur);
@@ -389,10 +394,10 @@ void Engine::addStrategiesNoInit(std::string first, ...)
     va_list vl;
     va_start(vl, first);
 
-    const char* cur;
+    char const* cur;
     do
     {
-        cur = va_arg(vl, const char*);
+        cur = va_arg(vl, char const*);
         if (cur)
             addStrategy(cur, false);
     } while (cur);
@@ -470,6 +475,9 @@ void Engine::ProcessTriggers(bool minimal)
 
             if (!event)
                 continue;
+
+            if (trigger->IsBuffTrigger() && !trigger->IsDebuffTrigger())
+                botAI->forceRebuff.NoteBuffProposed();
 
             fires[trigger] = event;
             LogAction("T:%s", trigger->getName().c_str());
@@ -605,7 +613,7 @@ bool Engine::ListenAndExecute(Action* action, Event event)
 void Engine::LogAction(char const* format, ...)
 {
     Player* bot = botAI->GetBot();
-    if (sPlayerbotAIConfig.logInGroupOnly && (!bot->GetGroup() || !botAI->HasRealPlayerMaster()) && !testMode)
+    if (sPlayerbotAIConfig.logInGroupOnly && (!bot->GetGroup() || !botAI->HasGameClientMaster()) && !testMode)
         return;
 
     char buf[1024];
@@ -667,7 +675,7 @@ void Engine::LogValues()
         return;
 
     Player* bot = botAI->GetBot();
-    if (sPlayerbotAIConfig.logInGroupOnly && (!bot->GetGroup() || !botAI->HasRealPlayerMaster()))
+    if (sPlayerbotAIConfig.logInGroupOnly && (!bot->GetGroup() || !botAI->HasGameClientMaster()))
         return;
 
     std::string const text = botAI->GetAiObjectContext()->FormatValues();

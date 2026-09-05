@@ -1,18 +1,18 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_VALUE_H
-#define _PLAYERBOT_VALUE_H
-
-#include <time.h>
+#ifndef PLAYERBOTS_VALUE_H
+#define PLAYERBOTS_VALUE_H
 
 #include "AiObject.h"
 #include "ObjectGuid.h"
-#include "PerfMonitor.h"
 #include "Timer.h"
 #include "Unit.h"
+#include <time.h>
+#include <unordered_map>
 
 class PlayerbotAI;
 class Unit;
@@ -71,24 +71,14 @@ public:
     T Get() override
     {
         if (checkInterval < 2)
-        {
-            // PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_VALUE, this->getName(),
-            // this->context ? &this->context->performanceStack : nullptr);
             value = Calculate();
-            // if (pmo)
-            //     pmo->finish();
-        }
         else
         {
             time_t now = getMSTime();
             if (!lastCheckTime || now - lastCheckTime >= checkInterval)
             {
                 lastCheckTime = now;
-                // PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_VALUE, this->getName(),
-                // this->context ? &this->context->performanceStack : nullptr);
                 value = Calculate();
-                // if (pmo)
-                //     pmo->finish();
             }
         }
         return value;
@@ -104,24 +94,14 @@ public:
     T& RefGet() override
     {
         if (checkInterval < 2)
-        {
-            // PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_VALUE, this->getName(),
-            // this->context ? &this->context->performanceStack : nullptr);
             value = Calculate();
-            // if (pmo)
-            //     pmo->finish();
-        }
         else
         {
             time_t now = getMSTime();
             if (!lastCheckTime || now - lastCheckTime >= checkInterval)
             {
                 lastCheckTime = now;
-                // PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_VALUE, this->getName(),
-                // this->context ? &this->context->performanceStack : nullptr);
                 value = Calculate();
-                // if (pmo)
-                //     pmo->finish();
             }
         }
         return value;
@@ -153,12 +133,7 @@ public:
         if (!this->lastCheckTime)
         {
             this->lastCheckTime = now;
-
-            PerfMonitorOperation* pmo = sPerfMonitor.start(
-                PERF_MON_VALUE, this->getName(), this->context ? &this->context->performanceStack : nullptr);
             this->value = this->Calculate();
-            if (pmo)
-                pmo->finish();
         }
 
         return this->value;
@@ -414,6 +389,19 @@ public:
     }
 private:
     std::list<FleeInfo> data = {};
+};
+
+class MissingBuffReagentNoticeValue : public ManualSetValue<std::unordered_map<std::string, uint32>&>
+{
+public:
+    MissingBuffReagentNoticeValue(
+        PlayerbotAI* botAI, std::string const name = "missing buff reagent notice")
+        : ManualSetValue<std::unordered_map<std::string, uint32>&>(botAI, noticeTimes, name)
+    {
+    }
+
+private:
+    std::unordered_map<std::string, uint32> noticeTimes;
 };
 
 #endif

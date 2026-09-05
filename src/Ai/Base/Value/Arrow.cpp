@@ -1,13 +1,13 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "Arrow.h"
-
+#include "Group.h"
 #include "Map.h"
 #include "PlayerbotAI.h"
-#include "Group.h"
 
 WorldLocation ArrowFormation::GetLocationInternal()
 {
@@ -19,8 +19,8 @@ WorldLocation ArrowFormation::GetLocationInternal()
     uint32 tankLines = 1 + tanks.Size() / 6;
     uint32 meleeLines = 1 + melee.Size() / 6;
     uint32 rangedLines = 1 + ranged.Size() / 6;
-    //TODO Implement Healer Lines
-    uint32 healerLines = 1 + healers.Size() / 6;
+    //@TODO Implement Healer Lines
+    //uint32 healerLines = 1 + healers.Size() / 6;
     float offset = 0.f;
 
     Player* master = botAI->GetMaster();

@@ -1,5 +1,11 @@
-#include "QuestConfirmAcceptAction.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
+#include "QuestConfirmAcceptAction.h"
+#include "QuestPackets.h"
 #include "WorldPacket.h"
 
 bool QuestConfirmAcceptAction::Execute(Event event)
@@ -18,6 +24,8 @@ bool QuestConfirmAcceptAction::Execute(Event event)
     std::ostringstream out;
     out << "Quest: " << chat->FormatQuest(quest) << " confirm accept";
     botAI->TellMaster(out);
-    bot->GetSession()->HandleQuestConfirmAccept(sendPacket);
+    WorldPackets::Quest::QuestConfirmAcceptClient confirmAccept(std::move(sendPacket));
+    confirmAccept.Read();
+    bot->GetSession()->HandleQuestConfirmAccept(confirmAccept);
     return true;
 }

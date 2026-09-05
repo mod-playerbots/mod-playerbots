@@ -1,31 +1,30 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "TravelMgr.h"
-
-#include <iomanip>
-#include <numeric>
-
 #include "AreaDefines.h"
+#include "CellImpl.h"
+#include "ChatHelper.h"
+#include "Corpse.h"
 #include "Creature.h"
 #include "Log.h"
-#include "ObjectAccessor.h"
-#include "TravelNode.h"
-#include "Talentspec.h"
-#include "ChatHelper.h"
+#include "Map.h"
 #include "MapCollisionData.h"
 #include "MapMgr.h"
+#include "ObjectAccessor.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
 #include "RaceMgr.h"
+#include "Talentspec.h"
 #include "TransportMgr.h"
+#include "TravelNode.h"
 #include "VMapFactory.h"
 #include "VMapMgr2.h"
-#include "Map.h"
-#include "Corpse.h"
-#include "CellImpl.h"
+#include <iomanip>
+#include <numeric>
 
 // Navigation data
 
@@ -98,7 +97,7 @@ WorldPosition::WorldPosition(std::string const str)
             m_positionZ = std::stof(tokens[3]);
             m_orientation = std::stof(tokens[4]);
         }
-        catch (const std::exception&)
+        catch (std::exception const&)
         {
             m_mapId = 0;
             m_positionX = 0.0f;
@@ -109,7 +108,7 @@ WorldPosition::WorldPosition(std::string const str)
     }
 }
 
-WorldPosition::WorldPosition(uint32 mapId, const Position& pos)
+WorldPosition::WorldPosition(uint32 mapId, Position const& pos)
     : WorldLocation(mapId, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation())
 {
 }
@@ -199,14 +198,14 @@ WorldPosition::WorldPosition(uint32 mapid, mGridCoord grid)
 {
 }
 
-void WorldPosition::set(const WorldLocation& pos) { WorldRelocate(pos); }
+void WorldPosition::set(WorldLocation const& pos) { WorldRelocate(pos); }
 
-void WorldPosition::set(const WorldPosition& pos)
+void WorldPosition::set(WorldPosition const& pos)
 {
     WorldRelocate(pos.m_mapId, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
 }
 
-void WorldPosition::set(const WorldObject* pos)
+void WorldPosition::set(WorldObject const* pos)
 {
     WorldRelocate(pos->GetMapId(), pos->GetPositionX(), pos->GetPositionY(), pos->GetPositionZ(), pos->GetOrientation());
 }
@@ -229,14 +228,14 @@ WorldPosition::operator bool() const
     return GetMapId() != 0 || GetPositionX() != 0 || GetPositionY() != 0 || GetPositionZ() != 0;
 }
 
-bool operator==(WorldPosition const& p1, const WorldPosition& p2)
+bool operator==(WorldPosition const& p1, WorldPosition const& p2)
 {
     return p1.GetMapId() == p2.GetMapId() && p2.GetPositionX() == p1.GetPositionX() &&
            p2.GetPositionY() == p1.GetPositionY() && p2.GetPositionZ() == p1.GetPositionZ() &&
            p2.GetOrientation() == p1.GetOrientation();
 }
 
-bool operator!=(WorldPosition const& p1, const WorldPosition& p2) { return !(p1 == p2); }
+bool operator!=(WorldPosition const& p1, WorldPosition const& p2) { return !(p1 == p2); }
 
 WorldPosition& WorldPosition::operator+=(WorldPosition const& p1)
 {
@@ -382,7 +381,7 @@ WorldPosition WorldPosition::firstOutRange(std::vector<WorldPosition> list, floa
 // Returns true if (on the x-y plane) the position is inside the three points.
 bool WorldPosition::isInside(WorldPosition* p1, WorldPosition* p2, WorldPosition* p3)
 {
-    if (GetMapId() != p1->GetMapId() != p2->GetMapId() != p3->GetMapId())
+    if (GetMapId() != p1->GetMapId() || GetMapId() != p2->GetMapId() || GetMapId() != p3->GetMapId())
         return false;
 
     float d1, d2, d3;
@@ -443,7 +442,7 @@ std::string const WorldPosition::to_string()
     return out.str();
 }
 
-std::vector<std::string> WorldPosition::split(const std::string& s, char delimiter)
+std::vector<std::string> WorldPosition::split(std::string const& s, char delimiter)
 {
     std::vector<std::string> tokens;
     std::string token;
@@ -540,7 +539,7 @@ std::string const WorldPosition::getAreaName(bool fullName, bool zoneName)
     return areaName;
 }
 
-std::set<Transport*> WorldPosition::getTransports(uint32 entry)
+std::set<Transport*> WorldPosition::getTransports(uint32 /*entry*/)
 {
     /*
     if (!entry)
@@ -909,7 +908,7 @@ uint32 WorldPosition::getUnitsAggro(GuidVector& units, Player* bot)
 
 void FindPointCreatureData::operator()(CreatureData const& creatureData)
 {
-    if (!entry || creatureData.id1 == entry)
+    if (!entry || creatureData.id == entry)
         if ((!point || creatureData.mapid == point.GetMapId()) &&
             (!radius || point.sqDistance(WorldPosition(creatureData.mapid, creatureData.posX, creatureData.posY,
                                                        creatureData.posZ)) < radius * radius))
@@ -1060,14 +1059,14 @@ bool GuidPosition::IsCreatureOrGOAccessible()
 GuidPosition::GuidPosition(WorldObject* wo) : ObjectGuid(wo->GetGUID()), WorldPosition(wo), loadedFromDB(false) {}
 
 GuidPosition::GuidPosition(CreatureData const& creData)
-    : ObjectGuid(HighGuid::Unit, creData.id1, creData.spawnId),
+    : ObjectGuid(HighGuid::Unit, creData.id, creData.spawnId),
       WorldPosition(creData.mapid, creData.posX, creData.posY, creData.posZ, creData.orientation)
 {
     loadedFromDB = true;
 }
 
 GuidPosition::GuidPosition(GameObjectData const& goData)
-    : ObjectGuid(HighGuid::GameObject, goData.id),
+    : ObjectGuid(HighGuid::GameObject, goData.id, goData.spawnId),
       WorldPosition(goData.mapid, goData.posX, goData.posY, goData.posZ, goData.orientation)
 {
     loadedFromDB = true;
@@ -1258,7 +1257,7 @@ bool QuestObjectiveTravelDestination::isActive(Player* bot)
         GuidVector targets = AI_VALUE(GuidVector, "possible targets");
 
         for (auto& target : targets)
-            if (target.GetEntry() == getEntry() && target.IsCreature() && botAI->GetCreature(target) &&
+            if (target.GetEntry() == uint32(getEntry()) && target.IsCreature() && botAI->GetCreature(target) &&
                 botAI->GetCreature(target)->IsAlive())
                 return true;
 
@@ -1310,7 +1309,7 @@ bool RpgTravelDestination::isActive(Player* bot)
 
     for (ObjectGuid const guid : ignoreList)
     {
-        if (guid.GetEntry() == getEntry())
+        if (guid.GetEntry() == uint32(getEntry()))
             return false;
 
     }
@@ -1455,7 +1454,7 @@ bool BossTravelDestination::isActive(Player* bot)
         GuidVector targets = AI_VALUE(GuidVector, "possible targets");
 
         for (auto& target : targets)
-            if (target.GetEntry() == getEntry() && target.IsCreature() && botAI->GetCreature(target) &&
+            if (target.GetEntry() == uint32(getEntry()) && target.IsCreature() && botAI->GetCreature(target) &&
                 botAI->GetCreature(target)->IsAlive())
                 return true;
 
@@ -1885,14 +1884,14 @@ void TravelMgr::LoadQuestTravelTable()
     for (auto& creatureData : WorldPosition().getCreaturesNear())
     {
         t_unit.type = 0;
-        t_unit.entry = creatureData->id1;
+        t_unit.entry = creatureData->id;
         t_unit.map = creatureData->mapid;
         t_unit.x = creatureData->posX;
         t_unit.y = creatureData->posY;
         t_unit.z = creatureData->posZ;
         t_unit.o = creatureData->orientation;
 
-        entryCount[creatureData->id1]++;
+        entryCount[creatureData->id]++;
 
         units.push_back(t_unit);
     }
@@ -1920,7 +1919,7 @@ void TravelMgr::LoadQuestTravelTable()
     /*
     //                          0    1  2   3          4          5          6           7     8
     std::string const query = "SELECT 0,guid,id,map,position_x,position_y,position_z,orientation, (SELECT COUNT(*) FROM
-    creature k WHERE c.id1 = k.id1) FROM creature c UNION ALL SELECT
+    creature k WHERE c.id = k.id) FROM creature c UNION ALL SELECT
     1,guid,id,map,position_x,position_y,position_z,orientation, (SELECT COUNT(*) FROM gameobject h WHERE h.id = g.id)
     FROM gameobject g";
 
@@ -2918,7 +2917,7 @@ void TravelMgr::LoadQuestTravelTable()
     {
         for (CreatureData const* cData : WorldPosition().getCreaturesNear())
         {
-            CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(cData->id1);
+            CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(cData->id);
             if (!cInfo)
                 continue;
 
@@ -3620,7 +3619,8 @@ void TravelMgr::LoadQuestTravelTable()
                                 max[tb] = tcl->second.second;
                             }
 
-                            if (a[0] && a[1] && a[2] && min[0] == min[1] == min[2] && max[0] == max[1] == max[2])
+                            if (a[0] && a[1] && a[2] && min[0] == min[1] && min[1] == min[2] && max[0] == max[1] &&
+                                max[1] == max[2])
                             {
                                 if (min[0] != 1 || max[0] != MAX_LEVEL - 1)
                                     out << classes[cls] << "(" << min[0] << "-" << max[0] << ")";
@@ -3836,7 +3836,7 @@ uint32 TravelMgr::getDialogStatus(Player* pPlayer, int32 questgiver, Quest const
 
 // Selects a random WorldPosition from a list. Use a distance weighted distribution.
 std::vector<WorldPosition*> TravelMgr::getNextPoint(WorldPosition* center, std::vector<WorldPosition*> points,
-                                                    uint32 amount)
+                                                    uint32 /*amount*/)
 {
     std::vector<WorldPosition*> retVec;
 
@@ -4677,7 +4677,7 @@ void TravelMgr::PrepareDestinationCache()
     std::map<uint32, std::map<uint32, std::vector<WorldLocation>>> tempCreatureCache;
     for (auto const& [guid, creatureData] : sObjectMgr->GetAllCreatureData())
     {
-        CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureData.id1);
+        CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureData.id);
         if (!creatureTemplate)
             continue;
 
@@ -4690,7 +4690,7 @@ void TravelMgr::PrepareDestinationCache()
         float y = creatureData.posY;
         float z = creatureData.posZ;
         float orient = creatureData.orientation;
-        uint32 templateEntry = creatureData.id1;
+        uint32 templateEntry = creatureData.id;
 
         Map* map = sMapMgr->FindMap(mapId, 0);
         if (!map)
@@ -4716,9 +4716,9 @@ void TravelMgr::PrepareDestinationCache()
             (creatureTemplate->unit_flags & 4096) == 0 &&
             creatureTemplate->rank == 0)
         {
-            uint32 roundX = static_cast<uint32>(std::round(x / 50.0f));
-            uint32 roundY = static_cast<uint32>(std::round(y / 50.0f));
-            uint32 roundZ = static_cast<uint32>(std::round(z / 50.0f));
+            int32 roundX = static_cast<int32>(std::lround(x / 50.0f));
+            int32 roundY = static_cast<int32>(std::lround(y / 50.0f));
+            int32 roundZ = static_cast<int32>(std::lround(z / 50.0f));
             tempLocsCache[std::make_tuple(mapId, roundX, roundY, roundZ)].push_back(creatureData);
             tempCreatureCache[templateEntry][areaId].push_back(WorldLocation(mapId, x, y, z));
         }
@@ -4775,7 +4775,7 @@ void TravelMgr::PrepareDestinationCache()
                 {
                     LevelBracket bracket = zone2LevelBracket[areaId];
                     WorldPosition loc(mapId, x + cos(orient) * 5.0f, y + sin(orient) * 5.0f, z + 0.5f, orient + M_PI);
-                    for (int i = bracket.low; i <= bracket.high; i++)
+                    for (uint32 i = bracket.low; i <= bracket.high; i++)
                     {
                         if (forHorde)
                             hordeHubsPerLevelCache[i].push_back(loc);
@@ -4791,7 +4791,7 @@ void TravelMgr::PrepareDestinationCache()
 
                 LevelBracket bracket = zone2LevelBracket[areaId];
                 WorldPosition loc(mapId, x + cos(orient) * 5.0f, y + sin(orient) * 5.0f, z + 0.5f, orient + M_PI);
-                for (int i = bracket.low; i <= bracket.high; i++)
+                for (uint32 i = bracket.low; i <= bracket.high; i++)
                 {
                     if (forHorde)
                         hordeHubsPerLevelCache[i].push_back(loc);
@@ -4816,7 +4816,7 @@ void TravelMgr::PrepareDestinationCache()
             bLoc.loc = WorldLocation(mapId, x + cos(orient) * 6.0f, y + sin(orient) * 6.0f, z + 2.0f, orient + M_PI);
             bLoc.entry = templateEntry;
             uint32 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
-            for (int32 l = 1; l <= maxLevel; l++)
+            for (uint32 l = 1; l <= maxLevel; l++)
             {
                 // Bots 1-60 go to base game bankers (all have minlevel 30 or 45)
                 if (l <=60 && level > 45)
@@ -4867,7 +4867,7 @@ void TravelMgr::PrepareDestinationCache()
     {
         if (creatureDataList.size() >= 2)
         {
-            CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureDataList[0].id1);
+            CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureDataList[0].id);
             uint32 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
 
             float totalX = 0.0f;
@@ -4888,7 +4888,7 @@ void TravelMgr::PrepareDestinationCache()
             for (int32 l = (int32)level - (int32)sPlayerbotAIConfig.randomBotTeleLowerLevel;
                  l <= (int32)level + (int32)sPlayerbotAIConfig.randomBotTeleHigherLevel; l++)
             {
-                if (l < 1 || l > maxLevel)
+                if (l < 1 || l > int32(maxLevel))
                     continue;
 
                 locsPerLevelCache[(uint8)l].push_back(WorldLocation(mapId, avgX, avgY, avgZ, 0.0f));

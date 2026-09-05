@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "DpsPaladinStrategy.h"
-
 #include "Playerbots.h"
 #include "Strategy.h"
 
@@ -16,7 +16,6 @@ public:
         creators["sanctity aura"] = &sanctity_aura;
         creators["retribution aura"] = &retribution_aura;
         creators["blessing of might"] = &blessing_of_might;
-        creators["crusader strike"] = &crusader_strike;
         creators["repentance"] = &repentance;
         creators["repentance on enemy healer"] = &repentance_on_enemy_healer;
         creators["repentance on snare target"] = &repentance_on_snare_target;
@@ -30,16 +29,6 @@ private:
             "blessing of might",
             /*P*/ {},
             /*A*/ { NextAction("blessing of kings") },
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* crusader_strike([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "crusader strike",
-            /*P*/ {},
-            /*A*/ {},
             /*C*/ {}
         );
     }

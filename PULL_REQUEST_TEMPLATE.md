@@ -41,7 +41,12 @@ any impact on performance, you may skip these question. If necessary, a maintain
 
 
 ## Impact Assessment
-<!-- As a generic test, before and after measure of pmon (playerbot pmon tick) can help you here. -->
+<!--
+As a generic test, pmon checks before and after your edits are helpful. To standardize the measurement, set the configs
+BotActiveAlone = 100 & botActiveAloneSmartScale = 0. After server boot, enable the monitor `playerbot pmon toggle`
+right after the bots finished logging-in, and run the stack command `playerbot pmon stack` 5 minutes after that.
+The last "Total" line is the main result to look for.
+-->
 - Does this change increase per-bot/per-tick processing or risk scaling poorly with thousands of bots?
     - - [ ] No, not at all
     - - [ ] Minimal impact (**explain below**)
@@ -77,6 +82,26 @@ If yes, please specify:
 
 
 
+## Code Provenance / Attribution
+<!--
+mod-playerbots is GPLv2 and is derived from the CMaNGOS playerbots (ike3). Code may be ported or
+adapted from other GPLv2 projects, but upstream attribution MUST be preserved (GPLv2 §1 and §2(a)).
+Never replace an upstream copyright notice with the project header.
+-->
+Was any code in this PR copied or adapted from a sister / upstream project (e.g. CMaNGOS playerbots,
+ MaNGOS, another module)?
+- - [ ] No, all code in this PR is original
+- - [ ] Yes (**name the project and the original author(s) below**)
+<!--
+If yes, please provide:
+- Source project + URL (and the specific file/commit if known).
+- Original author(s) — add a `Co-authored-by: Name <email>` trailer for each to your commit.
+- Attribution in code: an in-file "Ported/adapted from <project>" note on substantially-ported files,
+  or an inline "// Adapted from <project>" comment for small snippets.
+-->
+
+
+
 <!--
 TRANSLATIONS:
 Anything new that the bots say in chat must be in a translatable format. This is done using GetBotTextOrDefault,
@@ -84,16 +109,16 @@ which you can search for in the codebase to find examples. Your code needs to ha
 while the full translations need to be in an SQL update file. The languages in the file are the nine language
 options supported by AzerothCore: English, Korean, French, German, Chinese, Taiwanese, Spanish, Spanish Mexico, and
 Russian. See data/sql/playerbots/updates/2025_12_27_ai_playerbot_fishing_text.sql as an example of a translation SQL
-update, whose content are called within the codebase at src/strategy/actions/FishingAction.cpp
+update, whose content are called within the codebase at src/Ai/Base/Actions/FishingAction.cpp
 -->
 
 ## Final Checklist
 
-- - [ ] Stability is not compromised.
-- - [ ] Performance impact is understood, tested, and acceptable.
-- - [ ] Added logic complexity is justified and explained.
+- - [ ] Changes are understood and tested for server stability and performance impact.
 - - [ ] Any new bot dialogue lines are translated.
-- - [ ] Documentation updated if needed (Conf comments, WiKi commands).
+- - [ ] New source files use the GPLv2 header.
+- - [ ] Documentation updated if needed (Code comments, Conf comments, WiKi commands).
+- - [ ] New and modified files do not introduce new compiler warnings.
 
 ## Notes for Reviewers
 <!-- Anything else that's helpful to review or test your pull request. -->

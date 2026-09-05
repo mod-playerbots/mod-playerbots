@@ -1,17 +1,16 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "ChatHelper.h"
-
 #include "AiFactory.h"
 #include "Common.h"
 #include "ItemTemplate.h"
 #include "ObjectMgr.h"
 #include "Playerbots.h"
 #include "SpellInfo.h"
-
 #include <regex>
 
 std::map<std::string, uint32> ChatHelper::consumableSubClasses;
@@ -42,7 +41,9 @@ ChatHelper::ChatHelper(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
 {
     itemQualities["poor"] = ITEM_QUALITY_POOR;
     itemQualities["gray"] = ITEM_QUALITY_POOR;
+    itemQualities["grey"] = ITEM_QUALITY_POOR;
     itemQualities["normal"] = ITEM_QUALITY_NORMAL;
+    itemQualities["common"] = ITEM_QUALITY_NORMAL;
     itemQualities["white"] = ITEM_QUALITY_NORMAL;
     itemQualities["uncommon"] = ITEM_QUALITY_UNCOMMON;
     itemQualities["green"] = ITEM_QUALITY_UNCOMMON;
@@ -50,8 +51,12 @@ ChatHelper::ChatHelper(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
     itemQualities["blue"] = ITEM_QUALITY_RARE;
     itemQualities["epic"] = ITEM_QUALITY_EPIC;
     itemQualities["violet"] = ITEM_QUALITY_EPIC;
+    itemQualities["purple"] = ITEM_QUALITY_EPIC;
     itemQualities["legendary"] = ITEM_QUALITY_LEGENDARY;
     itemQualities["yellow"] = ITEM_QUALITY_LEGENDARY;
+    itemQualities["orange"] = ITEM_QUALITY_LEGENDARY;
+    itemQualities["artifact"] = ITEM_QUALITY_ARTIFACT;
+    itemQualities["heirloom"] = ITEM_QUALITY_HEIRLOOM;
 
     consumableSubClasses["potion"] = ITEM_SUBCLASS_POTION;
     consumableSubClasses["elixir"] = ITEM_SUBCLASS_ELIXIR;
@@ -64,19 +69,18 @@ ChatHelper::ChatHelper(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
     projectileSubClasses["arrows"] = ITEM_SUBCLASS_ARROW;
     projectileSubClasses["bullets"] = ITEM_SUBCLASS_BULLET;
 
-    // tradeSubClasses["cloth"] = ITEM_SUBCLASS_CLOTH;
-    // tradeSubClasses["leather"] = ITEM_SUBCLASS_LEATHER;
-    // tradeSubClasses["metal"] = ITEM_SUBCLASS_METAL_STONE;
-    // tradeSubClasses["stone"] = ITEM_SUBCLASS_METAL_STONE;
-    // tradeSubClasses["ore"] = ITEM_SUBCLASS_METAL_STONE;
-    // tradeSubClasses["meat"] = ITEM_SUBCLASS_MEAT;
-    // tradeSubClasses["herb"] = ITEM_SUBCLASS_HERB;
-    // tradeSubClasses["elemental"] = ITEM_SUBCLASS_ELEMENTAL;
-    // tradeSubClasses["disenchants"] = ITEM_SUBCLASS_ENCHANTING;
-    // tradeSubClasses["enchanting"] = ITEM_SUBCLASS_ENCHANTING;
-    // tradeSubClasses["gems"] = ITEM_SUBCLASS_JEWELCRAFTING;
-    // tradeSubClasses["jewels"] = ITEM_SUBCLASS_JEWELCRAFTING;
-    // tradeSubClasses["jewelcrafting"] = ITEM_SUBCLASS_JEWELCRAFTING;
+    tradeSubClasses["cloth"] = ITEM_SUBCLASS_CLOTH;
+    tradeSubClasses["leather"] = ITEM_SUBCLASS_LEATHER;
+    tradeSubClasses["metal"] = ITEM_SUBCLASS_METAL_STONE;
+    tradeSubClasses["stone"] = ITEM_SUBCLASS_METAL_STONE;
+    tradeSubClasses["ore"] = ITEM_SUBCLASS_METAL_STONE;
+    tradeSubClasses["meat"] = ITEM_SUBCLASS_MEAT;
+    tradeSubClasses["herb"] = ITEM_SUBCLASS_HERB;
+    tradeSubClasses["elemental"] = ITEM_SUBCLASS_ELEMENTAL;
+    tradeSubClasses["disenchants"] = ITEM_SUBCLASS_ENCHANTING;
+    tradeSubClasses["enchanting"] = ITEM_SUBCLASS_ENCHANTING;
+    // Note: gems/jewels are ITEM_CLASS_GEM, not a trade-goods subclass, so they are not
+    // mapped here (a JEWELCRAFTING trade-goods match would miss actual gems).
 
     slots["head"] = EQUIPMENT_SLOT_HEAD;
     slots["neck"] = EQUIPMENT_SLOT_NECK;
@@ -224,7 +228,7 @@ std::string const ChatHelper::formatMoney(uint32 copper)
     return out.str();
 }
 
-std::string ChatHelper::parseValue(const std::string& type, const std::string& text)
+std::string ChatHelper::parseValue(std::string const& type, std::string const& text)
 {
     std::string retString;
 
@@ -431,7 +435,7 @@ std::string const ChatHelper::FormatItem(ItemTemplate const* proto, uint32 count
     snprintf(color, sizeof(color), "%x", ItemQualityColors[proto->Quality]);
 
     std::string itemName;
-    const ItemLocale* locale = sObjectMgr->GetItemLocale(proto->ItemId);
+    ItemLocale const* locale = sObjectMgr->GetItemLocale(proto->ItemId);
 
     if (locale && locale->Name.size() > sWorld->GetDefaultDbcLocale())
         itemName = locale->Name[sWorld->GetDefaultDbcLocale()];
@@ -555,6 +559,31 @@ uint32 ChatHelper::parseItemQuality(std::string const text)
         return MAX_ITEM_QUALITY;
 
     return itemQualities[text];
+}
+
+std::string const ChatHelper::FormatItemQuality(uint32 quality)
+{
+    switch (quality)
+    {
+        case ITEM_QUALITY_POOR:
+            return "grey";
+        case ITEM_QUALITY_NORMAL:
+            return "white";
+        case ITEM_QUALITY_UNCOMMON:
+            return "green";
+        case ITEM_QUALITY_RARE:
+            return "blue";
+        case ITEM_QUALITY_EPIC:
+            return "purple";
+        case ITEM_QUALITY_LEGENDARY:
+            return "orange";
+        case ITEM_QUALITY_ARTIFACT:
+            return "artifact";
+        case ITEM_QUALITY_HEIRLOOM:
+            return "heirloom";
+        default:
+            return "unknown";
+    }
 }
 
 bool ChatHelper::parseItemClass(std::string const text, uint32* itemClass, uint32* itemSubClass)
@@ -693,12 +722,12 @@ std::set<uint32> extractGeneric(std::string_view text, std::string_view prefix)
     return ids;
 }
 
-std::set<uint32> ChatHelper::ExtractAllQuestIds(const std::string& text)
+std::set<uint32> ChatHelper::ExtractAllQuestIds(std::string const& text)
 {
     return extractGeneric(text, "Hquest:");
 }
 
-std::set<uint32> ChatHelper::ExtractAllItemIds(const std::string& text)
+std::set<uint32> ChatHelper::ExtractAllItemIds(std::string const& text)
 {
     return extractGeneric(text, "Hitem:");
 }

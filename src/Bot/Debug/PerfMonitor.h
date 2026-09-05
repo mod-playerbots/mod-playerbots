@@ -1,17 +1,26 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_PERFORMANCEMONITOR_H
-#define _PLAYERBOT_PERFORMANCEMONITOR_H
+/*
+ * Ported from the CMaNGOS playerbots project (https://github.com/cmangos/playerbots), GPL v2,
+ * with modifications for AzerothCore.
+ * Original authors:
+ *   ike3 <ike@email.org> - original author
+ *   Sebastiaan Keek (mostlikely4r) <sebastiaan.keek@gmail.com>
+ */
+
+#ifndef PLAYERBOTS_PERFMONITOR_H
+#define PLAYERBOTS_PERFMONITOR_H
 
 #include <chrono>
+#include <cstdint>
 #include <ctime>
 #include <map>
 #include <mutex>
 #include <vector>
-#include <cstdint>
 
 typedef std::vector<std::string> PerformanceStack;
 
@@ -65,8 +74,8 @@ private:
     PerfMonitor() = default;
     virtual ~PerfMonitor() = default;
 
-    PerfMonitor(const PerfMonitor&) = delete;
-    PerfMonitor& operator=(const PerfMonitor&) = delete;
+    PerfMonitor(PerfMonitor const&) = delete;
+    PerfMonitor& operator=(PerfMonitor const&) = delete;
 
     PerfMonitor(PerfMonitor&&) = delete;
     PerfMonitor& operator=(PerfMonitor&&) = delete;

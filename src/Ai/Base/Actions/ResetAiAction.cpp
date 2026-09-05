@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "ResetAiAction.h"
-
 #include "Event.h"
 #include "Group.h"
 #include "ObjectGuid.h"
@@ -42,6 +42,21 @@ bool ResetAiAction::Execute(Event event)
             {
                 return false;
             }
+        }
+    }
+    if (Player* master = botAI->GetMaster())
+    {
+        Group* botGroup = bot->GetGroup();
+        Group* masterGroup = master->GetGroup();
+        if (botGroup && (!masterGroup || masterGroup != botGroup))
+            botAI->SetMaster(nullptr);
+    }
+    if (sRandomPlayerbotMgr.IsRandomBot(bot) && !bot->InBattleground())
+    {
+        if (bot->GetGroup() && (!botAI->GetMaster() || GET_PLAYERBOT_AI(botAI->GetMaster())))
+        {
+            if (Player* newMaster = botAI->FindNewMaster())
+                botAI->SetMaster(newMaster);
         }
     }
     PlayerbotRepository::instance().Reset(botAI);

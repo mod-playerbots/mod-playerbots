@@ -1,0 +1,36 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
+#ifndef PLAYERBOTS_EOEACTIONCONTEXT_H
+#define PLAYERBOTS_EOEACTIONCONTEXT_H
+
+#include "Action.h"
+#include "EoEActions.h"
+#include "NamedObjectContext.h"
+
+class RaidEoEActionContext : public NamedObjectContext<Action>
+{
+public:
+    RaidEoEActionContext()
+    {
+        creators["malygos position"] = &RaidEoEActionContext::position;
+        creators["malygos target"] = &RaidEoEActionContext::target;
+        // creators["pull power spark"] = &RaidEoEActionContext::pull_power_spark;
+        // creators["kill power spark"] = &RaidEoEActionContext::kill_power_spark;
+        creators["eoe fly drake"] = &RaidEoEActionContext::eoe_fly_drake;
+        creators["eoe drake attack"] = &RaidEoEActionContext::eoe_drake_attack;
+    }
+
+private:
+    static Action* position(PlayerbotAI* ai) { return new MalygosPositionAction(ai); }
+    static Action* target(PlayerbotAI* ai) { return new MalygosTargetAction(ai); }
+    // static Action* pull_power_spark(PlayerbotAI* ai) { return new PullPowerSparkAction(ai); }
+    // static Action* kill_power_spark(PlayerbotAI* ai) { return new KillPowerSparkAction(ai); }
+    static Action* eoe_fly_drake(PlayerbotAI* ai) { return new EoEFlyDrakeAction(ai); }
+    static Action* eoe_drake_attack(PlayerbotAI* ai) { return new EoEDrakeAttackAction(ai); }
+};
+
+#endif

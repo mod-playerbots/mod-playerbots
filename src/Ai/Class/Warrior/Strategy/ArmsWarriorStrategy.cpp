@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "ArmsWarriorStrategy.h"
@@ -15,9 +16,6 @@ public:
         creators["piercing howl"] = &piercing_howl;
         creators["mocking blow"] = &mocking_blow;
         creators["heroic strike"] = &heroic_strike;
-        creators["enraged regeneration"] = &enraged_regeneration;
-        creators["retaliation"] = &retaliation;
-        creators["shattering throw"] = &shattering_throw;
     }
 
 private:
@@ -70,36 +68,6 @@ private:
             /*C*/ {}
         );
     }
-
-    static ActionNode* enraged_regeneration(PlayerbotAI* /*botAI*/)
-    {
-        return new ActionNode(
-            "enraged regeneration",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* retaliation(PlayerbotAI* /*botAI*/)
-    {
-        return new ActionNode(
-            "retaliation",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* shattering_throw(PlayerbotAI* /*botAI*/)
-    {
-        return new ActionNode(
-            "shattering throw",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
 };
 
 ArmsWarriorStrategy::ArmsWarriorStrategy(PlayerbotAI* botAI) : GenericWarriorStrategy(botAI)
@@ -112,6 +80,7 @@ std::vector<NextAction> ArmsWarriorStrategy::getDefaultActions()
     return {
         NextAction("bladestorm", ACTION_DEFAULT + 0.2f),
         NextAction("mortal strike", ACTION_DEFAULT + 0.1f),
+        NextAction("sunder armor", ACTION_DEFAULT + 0.05f),
         NextAction("melee", ACTION_DEFAULT)
     };
 }

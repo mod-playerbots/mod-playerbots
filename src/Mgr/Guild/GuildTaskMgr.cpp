@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "GuildTaskMgr.h"
-
 #include "ChatHelper.h"
 #include "Group.h"
 #include "GuildMgr.h"
@@ -223,7 +223,7 @@ bool GuildTaskMgr::CreateKillTask(Player* player, uint32 guildId)
     uint32 level = player->GetLevel();
     QueryResult results = WorldDatabase.Query(
         "SELECT ct.Entry, c.map, c.position_x, c.position_y, ct.Name FROM creature_template ct "
-        "JOIN creature c ON ct.Entry = c.id1 WHERE ct.MaxLevel < {} AND ct.MinLevel > {} AND ct.Rank = {} ",
+        "JOIN creature c ON ct.Entry = c.id WHERE ct.MaxLevel < {} AND ct.MinLevel > {} AND ct.Rank = {} ",
         level + 4, level - 3, rank);
     if (results)
     {
@@ -387,7 +387,7 @@ bool GuildTaskMgr::SendKillAdvertisement(CharacterDatabaseTransaction& trans, ui
         return false;
 
     QueryResult result =
-        WorldDatabase.Query("SELECT map, position_x, position_y, position_z FROM creature WHERE id1 = {}", creatureId);
+        WorldDatabase.Query("SELECT map, position_x, position_y, position_z FROM creature WHERE id = {}", creatureId);
     if (!result)
         return false;
 

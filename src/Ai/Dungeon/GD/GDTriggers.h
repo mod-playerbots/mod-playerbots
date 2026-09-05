@@ -1,0 +1,51 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
+#ifndef PLAYERBOTS_GDTRIGGERS_H
+#define PLAYERBOTS_GDTRIGGERS_H
+
+#include "DungeonStrategyUtils.h"
+#include "GenericTriggers.h"
+#include "PlayerbotAIConfig.h"
+#include "Trigger.h"
+
+enum GundrakIDs
+{
+    // Slad'ran
+    SPELL_POISON_NOVA_N             = 55081,
+    SPELL_POISON_NOVA_H             = 59842,
+    NPC_SNAKE_WRAP                  = 29742,
+
+    // Gal'darah
+    SPELL_WHIRLING_SLASH_N          = 55250,
+    SPELL_WHIRLING_SLASH_H          = 59824,
+};
+
+#define SPELL_POISON_NOVA           DUNGEON_MODE(bot, SPELL_POISON_NOVA_N, SPELL_POISON_NOVA_H)
+#define SPELL_WHIRLING_SLASH        DUNGEON_MODE(bot, SPELL_WHIRLING_SLASH_N, SPELL_WHIRLING_SLASH_H)
+
+class SladranPoisonNovaTrigger : public Trigger
+{
+public:
+    SladranPoisonNovaTrigger(PlayerbotAI* ai) : Trigger(ai, "slad'ran poison nova") {}
+    bool IsActive() override;
+};
+
+class SladranSnakeWrapTrigger : public Trigger
+{
+public:
+    SladranSnakeWrapTrigger(PlayerbotAI* ai) : Trigger(ai, "slad'ran snake wrap") {}
+    bool IsActive() override;
+};
+
+class GaldarahWhirlingSlashTrigger : public Trigger
+{
+public:
+    GaldarahWhirlingSlashTrigger(PlayerbotAI* ai) : Trigger(ai, "gal'darah whirling slash") {}
+    bool IsActive() override;
+};
+
+#endif

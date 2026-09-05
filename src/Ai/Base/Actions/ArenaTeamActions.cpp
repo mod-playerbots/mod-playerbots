@@ -1,11 +1,12 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "ArenaTeamActions.h"
-
 #include "ArenaTeamMgr.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 
 bool ArenaTeamAcceptAction::Execute(Event event)
@@ -31,7 +32,9 @@ bool ArenaTeamAcceptAction::Execute(Event event)
     if (bot->GetArenaTeamId(at->GetSlot()))
     {
         // bot is already in an arena team
-        bot->Say("Sorry, I am already in such team", LANG_UNIVERSAL);
+        std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "arena_team_already_in_team", "Sorry, I am already in such team", {});
+        bot->Say(text, LANG_UNIVERSAL);
         accept = false;
     }
 
@@ -39,7 +42,9 @@ bool ArenaTeamAcceptAction::Execute(Event event)
     {
         WorldPacket data(CMSG_ARENA_TEAM_ACCEPT);
         bot->GetSession()->HandleArenaTeamAcceptOpcode(data);
-        bot->Say("Thanks for the invite!", LANG_UNIVERSAL);
+        std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "arena_team_thanks_for_invite", "Thanks for the invite!", {});
+        bot->Say(text, LANG_UNIVERSAL);
         LOG_INFO("playerbots", "Bot {} <{}> accepts Arena Team invite", bot->GetGUID().ToString().c_str(),
                  bot->GetName().c_str());
         return true;

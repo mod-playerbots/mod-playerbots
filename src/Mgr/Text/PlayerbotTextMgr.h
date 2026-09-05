@@ -1,15 +1,15 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_PLAYERBOTTEXTMGR_H
-#define _PLAYERBOT_PLAYERBOTTEXTMGR_H
-
-#include <map>
-#include <vector>
+#ifndef PLAYERBOTS_PLAYERBOTTEXTMGR_H
+#define PLAYERBOTS_PLAYERBOTTEXTMGR_H
 
 #include "Common.h"
+#include <map>
+#include <vector>
 
 struct BotTextEntry
 {
@@ -77,7 +77,7 @@ public:
                                     std::map<std::string, std::string> placeholders);
     void LoadBotTexts();
     void LoadBotTextChance();
-    static void replaceAll(std::string& str, const std::string& from, const std::string& to);
+    static void replaceAll(std::string& str, std::string const& from, std::string const& to);
     bool rollTextChance(std::string text);
 
     uint32 GetLocalePriority();
@@ -87,22 +87,22 @@ public:
 private:
     PlayerbotTextMgr()
     {
-        for (uint8 i = 0; i < MAX_LOCALES; ++i)
+        for (uint8 i = 0; i < TOTAL_LOCALES; ++i)
         {
             botTextLocalePriority[i] = 0;
         }
     };
     ~PlayerbotTextMgr() = default;
 
-    PlayerbotTextMgr(const PlayerbotTextMgr&) = delete;
-    PlayerbotTextMgr& operator=(const PlayerbotTextMgr&) = delete;
+    PlayerbotTextMgr(PlayerbotTextMgr const&) = delete;
+    PlayerbotTextMgr& operator=(PlayerbotTextMgr const&) = delete;
 
     PlayerbotTextMgr(PlayerbotTextMgr&&) = delete;
     PlayerbotTextMgr& operator=(PlayerbotTextMgr&&) = delete;
 
     std::map<std::string, std::vector<BotTextEntry>> botTexts;
     std::map<std::string, uint32> botTextChance;
-    uint32 botTextLocalePriority[MAX_LOCALES];
+    uint32 botTextLocalePriority[TOTAL_LOCALES];
 };
 
 #endif

@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "PossibleTargetsValue.h"
-
+#include "AreaDefines.h"
 #include "AttackersValue.h"
 #include "CellImpl.h"
 #include "DBCStructure.h"
@@ -16,7 +17,6 @@
 #include "SpellAuraEffects.h"
 #include "SpellMgr.h"
 #include "Unit.h"
-#include "AreaDefines.h"
 
 // Level difference thresholds for attack probability
 constexpr int32 EXTREME_LEVEL_DIFF = 5;  // Don't attack if enemy is this much higher
@@ -152,15 +152,15 @@ bool PossibleTriggersValue::AcceptUnit(Unit* unit)
         unit->GetAuraEffectsByType(SPELL_AURA_PERIODIC_TRIGGER_SPELL);
     Unit::AuraEffectList const& aurasPeriodicTriggerWithValueSpell =
         unit->GetAuraEffectsByType(SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE);
-    for (const Unit::AuraEffectList& list : {aurasPeriodicTriggerSpell, aurasPeriodicTriggerWithValueSpell})
+    for (Unit::AuraEffectList const& list : {aurasPeriodicTriggerSpell, aurasPeriodicTriggerWithValueSpell})
     {
         for (auto i = list.begin(); i != list.end(); ++i)
         {
             AuraEffect* aurEff = *i;
-            const SpellInfo* spellInfo = aurEff->GetSpellInfo();
+            SpellInfo const* spellInfo = aurEff->GetSpellInfo();
             if (!spellInfo)
                 continue;
-            const SpellInfo* triggerSpellInfo =
+            SpellInfo const* triggerSpellInfo =
                 sSpellMgr->GetSpellInfo(spellInfo->Effects[aurEff->GetEffIndex()].TriggerSpell);
             if (!triggerSpellInfo)
                 continue;

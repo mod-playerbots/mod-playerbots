@@ -1,31 +1,28 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "BossAuraTriggers.h"
-
-#include <HunterBuffStrategies.h>
-#include <PaladinBuffStrategies.h>
-#include <Unit.h>
-
+#include "HunterBuffStrategies.h"
+#include "PaladinBuffStrategies.h"
 #include "Playerbots.h"
+#include "Unit.h"
 
 bool BossFireResistanceTrigger::IsActive()
 {
+    // Check if bot is paladin first: cheap check that filters out most of the raid
+    if (bot->getClass() != CLASS_PALADIN)
+        return false;
+
     // Check boss and it is alive
     Unit* boss = AI_VALUE2(Unit*, "find target", bossName);
     if (!boss || !boss->IsAlive() || boss->IsFriendlyTo(bot))
         return false;
 
-    // Check if bot is paladin
-    if (bot->getClass() != CLASS_PALADIN)
-        return false;
-
     // Check if bot have fire resistance aura
-    if (bot->HasAura(SPELL_FIRE_RESISTANCE_AURA_RANK_5) || bot->HasAura(SPELL_FIRE_RESISTANCE_AURA_RANK_4) ||
-        bot->HasAura(SPELL_FIRE_RESISTANCE_AURA_RANK_3) || bot->HasAura(SPELL_FIRE_RESISTANCE_AURA_RANK_2) ||
-        bot->HasAura(SPELL_FIRE_RESISTANCE_AURA_RANK_1))
+    if (botAI->HasAura("fire resistance aura", bot))
         return false;
 
     // Check if bot dont have already have fire resistance strategy
@@ -66,19 +63,17 @@ bool BossFireResistanceTrigger::IsActive()
 
 bool BossFrostResistanceTrigger::IsActive()
 {
+    // Check if bot is paladin first: cheap check that filters out most of the raid
+    if (bot->getClass() != CLASS_PALADIN)
+        return false;
+
     // Check boss and it is alive
     Unit* boss = AI_VALUE2(Unit*, "find target", bossName);
     if (!boss || !boss->IsAlive() || boss->IsFriendlyTo(bot))
         return false;
 
-    // Check if bot is paladin
-    if (bot->getClass() != CLASS_PALADIN)
-        return false;
-
     // Check if bot have frost resistance aura
-    if (bot->HasAura(SPELL_FROST_RESISTANCE_AURA_RANK_5) || bot->HasAura(SPELL_FROST_RESISTANCE_AURA_RANK_4) ||
-        bot->HasAura(SPELL_FROST_RESISTANCE_AURA_RANK_3) || bot->HasAura(SPELL_FROST_RESISTANCE_AURA_RANK_2) ||
-        bot->HasAura(SPELL_FROST_RESISTANCE_AURA_RANK_1))
+    if (botAI->HasAura("frost resistance aura", bot))
         return false;
 
     // Check if bot dont have already have frost resistance strategy
@@ -119,22 +114,21 @@ bool BossFrostResistanceTrigger::IsActive()
 
 bool BossNatureResistanceTrigger::IsActive()
 {
-    // Check boss and it is alive
-    Unit* boss = AI_VALUE2(Unit*, "find target", bossName);
-    if (!boss || !boss->IsAlive() || boss->IsFriendlyTo(bot))
+    // Check if bot is hunter first: cheap check that filters out most of the raid
+    if (bot->getClass() != CLASS_HUNTER)
         return false;
 
     // Check if bot is alive
     if (!bot->IsAlive())
         return false;
 
-    // Check if bot is hunter
-    if (bot->getClass() != CLASS_HUNTER)
+    // Check boss and it is alive
+    Unit* boss = AI_VALUE2(Unit*, "find target", bossName);
+    if (!boss || !boss->IsAlive() || boss->IsFriendlyTo(bot))
         return false;
 
     // Check if bot have nature resistance aura
-    if (bot->HasAura(SPELL_ASPECT_OF_THE_WILD_RANK_4) || bot->HasAura(SPELL_ASPECT_OF_THE_WILD_RANK_3) ||
-        bot->HasAura(SPELL_ASPECT_OF_THE_WILD_RANK_2) || bot->HasAura(SPELL_ASPECT_OF_THE_WILD_RANK_1))
+    if (botAI->HasAura("aspect of the wild", bot))
         return false;
 
     // Check if bot dont have already setted nature resistance aura
@@ -174,21 +168,17 @@ bool BossNatureResistanceTrigger::IsActive()
 
 bool BossShadowResistanceTrigger::IsActive()
 {
+    // Check if bot is paladin first: cheap check that filters out most of the raid
+    if (bot->getClass() != CLASS_PALADIN)
+        return false;
+
     // Check boss and it is alive
     Unit* boss = AI_VALUE2(Unit*, "find target", bossName);
     if (!boss || !boss->IsAlive() || boss->IsFriendlyTo(bot))
         return false;
 
-    // Check if bot is paladin
-    if (bot->getClass() != CLASS_PALADIN)
-        return false;
-
     // Check if bot have shadow resistance aura
-    if (bot->HasAura(SPELL_SHADOW_RESISTANCE_AURA_RANK_5) ||
-        bot->HasAura(SPELL_SHADOW_RESISTANCE_AURA_RANK_4) ||
-        bot->HasAura(SPELL_SHADOW_RESISTANCE_AURA_RANK_3) ||
-        bot->HasAura(SPELL_SHADOW_RESISTANCE_AURA_RANK_2) ||
-        bot->HasAura(SPELL_SHADOW_RESISTANCE_AURA_RANK_1))
+    if (botAI->HasAura("shadow resistance aura", bot))
         return false;
 
     // Check if bot dont have already have shadow resistance strategy

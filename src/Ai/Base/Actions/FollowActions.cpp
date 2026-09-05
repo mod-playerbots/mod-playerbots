@@ -1,23 +1,22 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "FollowActions.h"
-
-#include <algorithm>
-#include <cmath>
-#include <array>
-
 #include "Event.h"
 #include "Formations.h"
 #include "LastMovementValue.h"
+#include "Map.h"
 #include "MotionMaster.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "Transport.h"
-#include "Map.h"
+#include <algorithm>
+#include <array>
+#include <cmath>
 
 namespace
 {
@@ -177,11 +176,7 @@ bool FollowAction::Execute(Event /*event*/)
                     if (bot->IsSitState())
                         bot->SetStandState(UNIT_STAND_STATE_STAND);
 
-                    if (bot->IsNonMeleeSpellCast(true))
-                    {
-                        bot->CastStop();
-                        botAI->InterruptSpell();
-                    }
+                    bot->CastStop();
 
                     if (MotionMaster* mm = bot->GetMotionMaster())
                     {
@@ -218,7 +213,7 @@ bool FollowAction::Execute(Event /*event*/)
     else
     {
         WorldLocation loc = formation->GetLocation();
-        if (Formation::IsNullLocation(loc) || loc.GetMapId() == -1)
+        if (Formation::IsNullLocation(loc) || loc.GetMapId() == MAPID_INVALID)
             return false;
 
         MovementPriority priority = botAI->GetState() == BOT_STATE_COMBAT ? MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_NORMAL;
@@ -259,6 +254,8 @@ bool FollowAction::isUseful()
     Unit* fTarget = nullptr;
     if (!target.empty())
         fTarget = AI_VALUE(Unit*, target);
+    else if (botAI->GetMaster())
+        fTarget = botAI->GetMaster();
     else
         fTarget = AI_VALUE(Unit*, "group leader");
 

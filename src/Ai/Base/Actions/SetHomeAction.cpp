@@ -1,11 +1,12 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "SetHomeAction.h"
-
 #include "Event.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 
 bool SetHomeAction::Execute(Event /*event*/)
@@ -28,7 +29,8 @@ bool SetHomeAction::Execute(Event /*event*/)
         {
             Creature* creature = botAI->GetCreature(selection);
             bot->GetSession()->SendBindPoint(creature);
-            botAI->TellMaster("This inn is my new home");
+            botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "set_home_success", "This inn is my new home", {}));
             return true;
         }
 
@@ -40,10 +42,12 @@ bool SetHomeAction::Execute(Event /*event*/)
             continue;
 
         bot->GetSession()->SendBindPoint(unit);
-        botAI->TellMaster("This inn is my new home");
+        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "set_home_success", "This inn is my new home", {}));
         return true;
     }
 
-    botAI->TellError("Can't find any innkeeper around");
+    botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        "set_home_no_innkeeper_error", "Can't find any innkeeper around", {}));
     return false;
 }
