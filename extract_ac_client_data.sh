@@ -100,7 +100,7 @@ mmapsConfig:
     #
     # Vanilla WotLK uses 6, which allows creatures to "jump" over fences.
     # Classic WotLK uses 4, which forces creatures to walk around fences.
-    walkableClimb: 4
+    walkableClimb: 6
 
     # Minimum distance (in cell units) around walkable surfaces.
     # Helps prevent NPCs from clipping into walls and narrow gaps.
@@ -112,14 +112,14 @@ mmapsConfig:
     verticesPerMapEdge: 2000
 
     # Number of vertices along one edge of each tile chunk.
-    # Must divide (verticesPerMapEdge - 1) evenly for seamless tiles.
+    # Must divide (vertexPerMapEdge - 1) evenly for seamless tiles.
     # A higher vertex count per tile means fewer total tiles,
     # reducing runtime work to load, unload, and manage tiles.
     verticesPerTileEdge: 80
 
     # Tolerance for how much a polygon can deviate from the original geometry when simplified.
     # Higher values produce simpler (faster) meshes but can reduce accuracy.
-    maxSimplificationError: 0.8
+    maxSimplificationError: 1.8
 
     # You can override any global parameter for a specific map by specifying its map ID.
     # Inside each map override, you can also override parameters per individual tile,
@@ -159,61 +159,8 @@ mmapsConfig:
     # All parameters defined globally are eligible for override.
     # Just specify the parameter name and new value in the override section.
     mapsOverrides:
-      # maxSimplificationError 1.8 overrides: at the global 0.8 these
-      # WMO-heavy tiles exceed Detour's 65535-vertex-per-tile cap and the
-      # builder skips them silently, leaving navmesh holes.
-      # Keys are "tileY,tileX" matching the mmtile filename digits; the
-      # --tile CLI arg takes the reversed pair (file 5712130 = key "21,30"
-      # = --tile 30,21).
-      "0": # Eastern Kingdoms
-        tilesOverrides:
-          "52,35": # Deadwind Pass / Karazhan
-            maxSimplificationError: 1.8
-
-      "1": # Kalimdor
-        tilesOverrides:
-          # Teldrassil canopy. walkableClimb 6: the roads step over roots
-          # taller than climb 4 allows. steepSlopeAngle 60: the only ground
-          # route out of Shadowglen crosses 50-60deg slopes, which default
-          # tagging marks NAV_GROUND_STEEP and bots refuse. Without both,
-          # the night elf starter zone is unreachable on foot.
-          # steepSlopeAngle changes don't alter tile headers; delete the 9
-          # .mmtile files (001{11,12,13}{28,29,30}) to force a rebuild.
-          "11,28":
-            walkableClimb: 6
-            steepSlopeAngle: 60
-          "11,29":
-            walkableClimb: 6
-            steepSlopeAngle: 60
-          "11,30":
-            walkableClimb: 6
-            steepSlopeAngle: 60
-          "12,28":
-            walkableClimb: 6
-            steepSlopeAngle: 60
-          "12,29":
-            walkableClimb: 6
-            steepSlopeAngle: 60
-          "12,30":
-            walkableClimb: 6
-            steepSlopeAngle: 60
-          "13,28":
-            walkableClimb: 6
-            steepSlopeAngle: 60
-          "13,29":
-            walkableClimb: 6
-            steepSlopeAngle: 60
-          "13,30":
-            walkableClimb: 6
-            steepSlopeAngle: 60
-
       "48": # Blackfathom Deeps
         cellSizeVertical: 0.5334 # ch*2 = 0.2667 * 2 ≈ 0.5334. Reduce the chance to have underground levels.
-
-      "509": # Ruins of Ahn'Qiraj
-        tilesOverrides:
-          "49,29":
-            maxSimplificationError: 1.8
 
       "529": # Arathi Basin
         tilesOverrides:
@@ -226,83 +173,6 @@ mmapsConfig:
         tilesOverrides:
           "32,30": # Dark portal
             walkableSlopeAngle: 45 # https://github.com/chromiecraft/chromiecraft/issues/8404#issuecomment-3476012660
-          "35,21": # Shattrath City
-            maxSimplificationError: 1.8
-          # Blade's Edge Mountains / Zangarmarsh-Coilfang block
-          "24,21":
-            maxSimplificationError: 1.8
-          "24,22":
-            maxSimplificationError: 1.8
-          "25,19":
-            maxSimplificationError: 1.8
-          "25,20":
-            maxSimplificationError: 1.8
-          "25,21":
-            maxSimplificationError: 1.8
-          "25,22":
-            maxSimplificationError: 1.8
-          "26,19":
-            maxSimplificationError: 1.8
-          "26,20":
-            maxSimplificationError: 1.8
-          "27,19":
-            maxSimplificationError: 1.8
-          "27,20":
-            maxSimplificationError: 1.8
-          "27,21":
-            maxSimplificationError: 1.8
-          "28,21":
-            maxSimplificationError: 1.8
-          "28,22":
-            maxSimplificationError: 1.8
-          "29,18":
-            maxSimplificationError: 1.8
-          "29,19":
-            maxSimplificationError: 1.8
-          "29,20":
-            maxSimplificationError: 1.8
-          "29,21":
-            maxSimplificationError: 1.8
-          "30,19":
-            maxSimplificationError: 1.8
-          "30,20":
-            maxSimplificationError: 1.8
-
-      "532": # Karazhan
-        tilesOverrides:
-          "52,35":
-            maxSimplificationError: 1.8
-          "52,36":
-            maxSimplificationError: 1.8
-
-      "533": # Naxxramas
-        tilesOverrides:
-          "26,38":
-            maxSimplificationError: 1.8
-
-      "562": # Blade's Edge Arena
-        walkableRadius: 0 # This allows walking on the ropes to the pillars
-        tilesOverrides:
-          "20,31":
-            maxSimplificationError: 1.8
-
-      "571": # Northrend
-        tilesOverrides:
-          "21,30": # Dalaran
-            maxSimplificationError: 1.8
-          "21,28": # Crystalsong / Icecrown border
-            maxSimplificationError: 1.8
-          "21,37": # Zul'Drak
-            maxSimplificationError: 1.8
-          "29,21": # Borean Tundra coast
-            maxSimplificationError: 1.8
-          # Storm Peaks
-          "16,34":
-            maxSimplificationError: 1.8
-          "16,35":
-            maxSimplificationError: 1.8
-          "17,34":
-            maxSimplificationError: 1.8
 
   # debugOutput generates debug files in the `meshes` directory for use with RecastDemo.
   # This is useful for inspecting and debugging mmap generation visually.
