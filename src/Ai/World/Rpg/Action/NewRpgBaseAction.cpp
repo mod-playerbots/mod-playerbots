@@ -42,6 +42,13 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     if (dest == WorldPosition())
         return false;
 
+    if (bot->IsInFlight())
+    {
+        botAI->rpgInfo.stuckTs = getMSTime();
+        botAI->rpgInfo.stuckAttempts = 0;
+        return true;
+    }
+
     if (dest != botAI->rpgInfo.moveFarPos)
     {
         // clear stuck information if it's a new dest
@@ -49,14 +56,14 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     }
 
     // First check if there is some activity where a bot being stationary does not
-    // mean they are stuck. Transport, taxi, or waiting for a ship/zeppelin.
+    // mean they are stuck. Transport or waiting for a ship/zeppelin (taxi is
+    // handled by the early return above).
     // A cross-map destination is exempt from stuck checks as the distance is random due
     // to bot->GetDistance(dest) diffs doing raw coordinates with no map check.
     bool const onTransport = bot->GetTransport() != nullptr;
-    bool const onTaxi = bot->IsInFlight();
     bool const crossMap = bot->GetMapId() != dest.GetMapId();
-    bool const waitingAtDock = !onTransport && !onTaxi && !crossMap && IsHoldingAtDockWait();
-    if (onTransport || onTaxi || crossMap || waitingAtDock)
+    bool const waitingAtDock = !onTransport && !crossMap && IsHoldingAtDockWait();
+    if (onTransport || crossMap || waitingAtDock)
     {
         botAI->rpgInfo.stuckTs = getMSTime();
         botAI->rpgInfo.stuckAttempts = 0;

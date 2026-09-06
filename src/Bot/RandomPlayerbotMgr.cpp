@@ -46,6 +46,8 @@
 #include <ctime>
 #include <iomanip>
 #include <random>
+#include <set>
+#include <utility>
 
 struct GuidClassRaceInfo
 {
@@ -1786,11 +1788,85 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
         }
     }
     std::vector<WorldLocation> locs = sTravelMgr.GetTeleportLocations(bot);
+
+    if (sPlayerbotAIConfig.randomBotConcentrateInPlayerZone && !locs.empty())
+    {
+        std::vector<WorldLocation> playerZoneLocs = GetPlayerZoneTeleportLocations(locs, bot);
+        if (!playerZoneLocs.empty())
+            locs = std::move(playerZoneLocs);
+    }
+
     if (!locs.empty())
     {
         RandomTeleport(bot, locs, false);
         return;
     }
+}
+
+// Returns the subset of teleport locations that lie in a zone currently occupied by a real
+// (non-GM) player, so random bots can be gathered where players actually are. Returns an empty
+// vector when no player is online or none of the locations match, letting the caller fall back
+// to the default world-wide behaviour.
+std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocations(std::vector<WorldLocation> const& locs,
+                                                                              Player* bot)
+{
+    std::set<uint32> playerMaps;
+    std::set<std::pair<uint32, uint32>> playerMapZones;
+
+    // players only ever holds real (non random bot) players and is maintained on login/logout, so
+    // this is a pass over the online player list, not a world-wide scan.
+    for (Player* player : players)
+    {
+        if (!player || !player->IsInWorld() || player->IsGameMaster())
+            continue;
+
+        Map* map = player->GetMap();
+        if (!map)
+            continue;
+
+        // Instanceable maps (dungeons, raids, battlegrounds, arenas) are never valid targets: a
+        // WorldLocation carries no instance id, so a bot would be sent to another instance of the
+        // same map rather than to the player.
+        if (map->Instanceable())
+            continue;
+
+        // Resolve the player zone the same way as the candidate locations below (unphased terrain),
+        // so a player standing in a phased area still matches its underlying zone.
+        uint32 zoneId = map->GetZoneId(PHASEMASK_NORMAL, player->GetPositionX(), player->GetPositionY(),
+                                       player->GetPositionZ());
+        playerMaps.insert(map->GetId());
+        playerMapZones.insert(std::make_pair(map->GetId(), zoneId));
+    }
+
+    std::vector<WorldLocation> filtered;
+    if (playerMapZones.empty())
+        return filtered;
+
+    for (WorldLocation const& loc : locs)
+    {
+        if (playerMaps.find(loc.GetMapId()) == playerMaps.end())
+            continue;
+
+        uint32 zoneId = sMapMgr->GetZoneId(PHASEMASK_NORMAL, loc);
+        if (playerMapZones.find(std::make_pair(loc.GetMapId(), zoneId)) == playerMapZones.end())
+            continue;
+
+        // Skip enemy-faction zones, matching the check in RandomTeleport. This has to be done here:
+        // the caller only falls back to normal teleporting when the filtered set is empty, so keeping
+        // a hostile location would let the downstream team check drain the set and strand the bot.
+        if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(zoneId))
+        {
+            if (zone->team == 4 && bot->GetTeamId() == TEAM_ALLIANCE)
+                continue;
+
+            if (zone->team == 2 && bot->GetTeamId() == TEAM_HORDE)
+                continue;
+        }
+
+        filtered.push_back(loc);
+    }
+
+    return filtered;
 }
 
 void RandomPlayerbotMgr::RandomTeleportGrindForLevel(Player* bot)
