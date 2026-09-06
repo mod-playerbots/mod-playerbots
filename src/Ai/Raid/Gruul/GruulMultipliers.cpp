@@ -179,8 +179,8 @@ float GruulTheDragonkillerControlTankMovementMultiplier::GetValueInEncounter(Act
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    // if (!PlayerbotAI::IsTank(bot))
-    //     return 1.0f;
+    if (!PlayerbotAI::IsTank(bot))
+        return 1.0f;
 
     if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<AvoidAoeAction*>(action))
@@ -188,8 +188,7 @@ float GruulTheDragonkillerControlTankMovementMultiplier::GetValueInEncounter(Act
         return 1.0f;
     }
 
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    return gruul /*&& gruul->GetVictim() == bot*/ ? 0.0f : 1.0f;
+    return AI_VALUE2(Unit*, "find target", "gruul the dragonkiller") ? 0.0f : 1.0f;
 }
 
 float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValueInEncounter(Action* action)
