@@ -107,9 +107,16 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
         return true;
     }
 
+    // Everything below this point casts, and every opening or gathering spell has a cast
+    // time -- PlayerbotAI::CastSpell refuses outright while isMoving(). StopMoving() only
+    // asks the spline to end, so casting in the same tick burns the attempt and the bot
+    // walks off and comes back: measured at seven refused casts in one second, all with
+    // isMoving() still true. Stop, then retry on a later tick, standing still.
     if (bot->isMoving())
     {
         bot->StopMoving();
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.lootDelay);
+        return false;
     }
 
     if (creature)

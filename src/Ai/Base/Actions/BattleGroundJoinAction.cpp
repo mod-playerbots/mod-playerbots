@@ -742,8 +742,8 @@ bool BGStatusAction::Execute(Event event)
 {
     uint32 QueueSlot;
     uint32 instanceId;
-    uint32 mapId;
-    uint32 statusid;
+    uint32 mapId = 0;
+    uint32 statusid = 0;
     uint32 Time1 = 0;
     uint32 Time2 = 0;
     std::string _bgType;
@@ -797,12 +797,13 @@ bool BGStatusAction::Execute(Event event)
     if (!queueTypeId)
         return false;
 
-    BattlegroundBracketId bracketId = BG_BRACKET_ID_FIRST;
     Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(_bgTypeId);
     mapId = bg->GetMapId();
     PvPDifficultyEntry const* pvpDiff = GetBattlegroundBracketByLevel(mapId, bot->GetLevel());
-    if (pvpDiff)
-        bracketId = pvpDiff->GetBracketId();
+    if (!pvpDiff)
+        return false;
+
+    BattlegroundBracketId bracketId = pvpDiff->GetBracketId();
 
     bool isArena = false;
     uint8 type = false;  // arenatype if arena

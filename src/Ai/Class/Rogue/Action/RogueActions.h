@@ -155,28 +155,29 @@ public:
 class UseDeadlyPoisonAction : public UseItemAction
 {
 public:
-    UseDeadlyPoisonAction(PlayerbotAI* ai) : UseItemAction(ai, "Deadly Poison") {}
+    UseDeadlyPoisonAction(PlayerbotAI* botAI) : UseItemAction(botAI, "Deadly Poison") {}
 
     bool Execute(Event event) override;
-    bool isPossible() override;
+    bool isPossible() override { return true; }
 };
 
 class UseInstantPoisonAction : public UseItemAction
 {
 public:
-    UseInstantPoisonAction(PlayerbotAI* ai) : UseItemAction(ai, "Instant Poison") {}
+    UseInstantPoisonAction(PlayerbotAI* botAI) : UseItemAction(botAI, "Instant Poison") {}
 
     bool Execute(Event event) override;
-    bool isPossible() override;
+    bool isPossible() override { return true; }
 };
 
 class UseInstantPoisonOffHandAction : public UseItemAction
 {
 public:
-    UseInstantPoisonOffHandAction(PlayerbotAI* ai) : UseItemAction(ai, "Instant Poison Off Hand") {}
+    UseInstantPoisonOffHandAction(PlayerbotAI* botAI)
+        : UseItemAction(botAI, "Instant Poison Off Hand") {}
 
     bool Execute(Event event) override;
-    bool isPossible() override;
+    bool isPossible() override { return true; }
 };
 
 class FanOfKnivesAction : public CastMeleeSpellAction

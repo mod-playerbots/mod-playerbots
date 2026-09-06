@@ -26,27 +26,28 @@ bool AvoidPoisonNovaAction::Execute(Event /*event*/)
 
 bool AttackSnakeWrapAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "slad'ran");
+    Unit* snakeWrap = GundrakSladran::GetAssignedSnakeWrap(botAI);
+    if (!snakeWrap) { return false; }
+
+    if (AI_VALUE(Unit*, "current target") == snakeWrap) { return false; }
+
+    return Attack(snakeWrap);
+}
+
+bool SladranStackOnTankAction::Execute(Event /*event*/)
+{
+    Player* tank = GundrakSladran::GetStackTank(botAI);
+    if (!tank) { return false; }
+
+    return MoveTo(tank, GundrakSladran::STACK_CLOSE_TO_YD, MovementPriority::MOVEMENT_COMBAT);
+}
+
+bool SladranTankHoldAction::Execute(Event /*event*/)
+{
+    Unit* boss = GundrakSladran::GetTankHoldTarget(botAI);
     if (!boss) { return false; }
 
-    // Target is not findable from threat table using AI_VALUE2(),
-    // therefore need to search manually for the unit name
-    GuidVector targets = AI_VALUE(GuidVector, "possible targets no los");
-
-    for (auto& target : targets)
-    {
-        Unit* unit = botAI->GetUnit(target);
-        if (unit && unit->GetEntry() == NPC_SNAKE_WRAP)
-        {
-            Unit* currentTarget = AI_VALUE(Unit*, "current target");
-            if (!currentTarget || currentTarget->GetEntry() != NPC_SNAKE_WRAP)
-            {
-            return Attack(unit);
-            }
-        }
-    }
-
-    return false;
+    return Attack(boss);
 }
 
 bool AvoidWhirlingSlashAction::Execute(Event /*event*/)

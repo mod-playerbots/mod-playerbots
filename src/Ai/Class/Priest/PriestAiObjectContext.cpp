@@ -96,7 +96,7 @@ public:
         creators["touch of weakness"] = &PriestTriggerFactoryInternal::touch_of_weakness;
         creators["hex of weakness"] = &PriestTriggerFactoryInternal::hex_of_weakness;
         creators["shadowguard"] = &PriestTriggerFactoryInternal::shadowguard;
-        creators["fear ward"] = &PriestTriggerFactoryInternal::fear_ward;
+        creators["fear ward on main tank"] = &PriestTriggerFactoryInternal::fear_ward_on_main_tank;
         creators["feedback"] = &PriestTriggerFactoryInternal::feedback;
         creators["binding heal"] = &PriestTriggerFactoryInternal::binding_heal;
         creators["chastise"] = &PriestTriggerFactoryInternal::chastise;
@@ -135,7 +135,7 @@ private:
     static Trigger* shadow_protection(PlayerbotAI* botAI) { return new ShadowProtectionTrigger(botAI); }
     static Trigger* shackle_undead(PlayerbotAI* botAI) { return new ShackleUndeadTrigger(botAI); }
     static Trigger* feedback(PlayerbotAI* botAI) { return new FeedbackTrigger(botAI); }
-    static Trigger* fear_ward(PlayerbotAI* botAI) { return new FearWardTrigger(botAI); }
+    static Trigger* fear_ward_on_main_tank(PlayerbotAI* botAI) { return new FearWardOnMainTankTrigger(botAI); }
     static Trigger* shadowguard(PlayerbotAI* botAI) { return new ShadowguardTrigger(botAI); }
     static Trigger* hex_of_weakness(PlayerbotAI* botAI) { return new HexOfWeaknessTrigger(botAI); }
     static Trigger* touch_of_weakness(PlayerbotAI* botAI) { return new TouchOfWeaknessTrigger(botAI); }
@@ -215,8 +215,7 @@ public:
         creators["hex of weakness"] = &PriestAiObjectContextInternal::hex_of_weakness;
         creators["shadowguard"] = &PriestAiObjectContextInternal::shadowguard;
         creators["desperate prayer"] = &PriestAiObjectContextInternal::desperate_prayer;
-        creators["fear ward"] = &PriestAiObjectContextInternal::fear_ward;
-        creators["fear ward on party"] = &PriestAiObjectContextInternal::fear_ward_on_party;
+        creators["fear ward on main tank"] = &PriestAiObjectContextInternal::fear_ward_on_main_tank;
         creators["starshards"] = &PriestAiObjectContextInternal::starshards;
         creators["elune's grace"] = &PriestAiObjectContextInternal::elunes_grace;
         creators["feedback"] = &PriestAiObjectContextInternal::feedback;
@@ -308,8 +307,7 @@ private:
     static Action* feedback(PlayerbotAI* botAI) { return new CastFeedbackAction(botAI); }
     static Action* elunes_grace(PlayerbotAI* botAI) { return new CastElunesGraceAction(botAI); }
     static Action* starshards(PlayerbotAI* botAI) { return new CastStarshardsAction(botAI); }
-    static Action* fear_ward_on_party(PlayerbotAI* botAI) { return new CastFearWardOnPartyAction(botAI); }
-    static Action* fear_ward(PlayerbotAI* botAI) { return new CastFearWardAction(botAI); }
+    static Action* fear_ward_on_main_tank(PlayerbotAI* botAI) { return new CastFearWardOnMainTankAction(botAI); }
     static Action* desperate_prayer(PlayerbotAI* botAI) { return new CastDesperatePrayerAction(botAI); }
     static Action* shadowguard(PlayerbotAI* botAI) { return new CastShadowguardAction(botAI); }
     static Action* hex_of_weakness(PlayerbotAI* botAI) { return new CastHexOfWeaknessAction(botAI); }

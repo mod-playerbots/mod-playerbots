@@ -27,6 +27,20 @@ public:
     bool Execute(Event event) override;
 };
 
+class SladranStackOnTankAction : public MovementAction
+{
+public:
+    SladranStackOnTankAction(PlayerbotAI* ai) : MovementAction(ai, "slad'ran stack on tank") {}
+    bool Execute(Event event) override;
+};
+
+class SladranTankHoldAction : public AttackAction
+{
+public:
+    SladranTankHoldAction(PlayerbotAI* ai) : AttackAction(ai, "slad'ran tank hold") {}
+    bool Execute(Event event) override;
+};
+
 class AvoidWhirlingSlashAction : public MovementAction
 {
 public:
