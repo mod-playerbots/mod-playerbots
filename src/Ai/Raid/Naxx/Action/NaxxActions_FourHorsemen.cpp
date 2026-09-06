@@ -56,7 +56,8 @@ bool FourHorsemenAttackInOrderAction::Execute(Event /*event*/)
             return false;
 
         if (!bot->IsWithinLOSInMap(target))
-            return MoveNear(target, 22.0f, MovementPriority::MOVEMENT_COMBAT);
+            return MoveNear(target->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(),
+                            22.0f, MovementPriority::MOVEMENT_COMBAT);
 
         return Attack(target);
     }

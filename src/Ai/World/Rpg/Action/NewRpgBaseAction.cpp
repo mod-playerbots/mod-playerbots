@@ -42,12 +42,12 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     if (dest == WorldPosition())
         return false;
 
-    // Don't start a ground move while the bot is on a taxi: the MovePoint issued
-    // below would fight the active flight spline. Returning true consumes the tick
-    // instead of returning false, because the callers of MoveFarTo fall through to
-    // MoveRandomNear, which is also a ground move.
     if (bot->IsInFlight())
+    {
+        botAI->rpgInfo.stuckTs = getMSTime();
+        botAI->rpgInfo.stuckAttempts = 0;
         return true;
+    }
 
     if (dest != botAI->rpgInfo.moveFarPos)
     {
@@ -55,38 +55,19 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         botAI->rpgInfo.SetMoveFarTo(dest);
     }
 
-    // performance optimization
-    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL))
+    // First check if there is some activity where a bot being stationary does not
+    // mean they are stuck. Transport or waiting for a ship/zeppelin (taxi is
+    // handled by the early return above).
+    // A cross-map destination is exempt from stuck checks as the distance is random due
+    // to bot->GetDistance(dest) diffs doing raw coordinates with no map check.
+    bool const onTransport = bot->GetTransport() != nullptr;
+    bool const crossMap = bot->GetMapId() != dest.GetMapId();
+    bool const waitingAtDock = !onTransport && !crossMap && IsHoldingAtDockWait();
+    if (onTransport || crossMap || waitingAtDock)
     {
-        return false;
-    }
-
-    // Let previously committed movement finish before recomputing.
-    //
-    // MoveTo internally caps its stored delay at maxWaitForMove
-    // (default 5s), but a long path (200+ yd routed around a
-    // mountain) takes 30+ seconds to walk. After 5s
-    // IsWaitingForLastMove returns false and MoveFarTo re-enters.
-    // Without this gate, DoMovePoint would call mm->Clear() and
-    // reissue MovePoint from the new bot position — and from a new
-    // position mmap's partial-path endpoint often differs, so the
-    // bot gets clobbered mid-walk and ends up oscillating (e.g.
-    // cave entrance -> inside cave -> cave entrance -> mountain
-    // base -> cave entrance...) around an unreachable destination.
-    //
-    // If the bot is still actively walking toward its last
-    // committed point on the same map, just let the current spline
-    // finish. The stuck counter below continues to track real
-    // progress toward dest and triggers teleport recovery if the
-    // committed paths genuinely aren't closing the gap.
-    {
-        LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
-        if (bot->isMoving() && lastMove.lastMoveToMapId == bot->GetMapId())
-        {
-            float remaining = bot->GetExactDist(lastMove.lastMoveToX, lastMove.lastMoveToY, lastMove.lastMoveToZ);
-            if (remaining > 10.0f)
-                return true;
-        }
+        botAI->rpgInfo.stuckTs = getMSTime();
+        botAI->rpgInfo.stuckAttempts = 0;
+        return MoveTo2(dest);
     }
 
     // stuck check
@@ -119,96 +100,11 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
         return bot->TeleportTo(dest);
     }
-
-    float dis = bot->GetExactDist(dest);
-    if (dis < pathFinderDis)
-    {
-        return MoveTo(dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), false, false,
-                      false, true);
-    }
-
-    const uint32 typeOk = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY;
-
-    // Primary strategy: ask mmap for a route to the TRUE destination.
-    // If mmap can reach it directly (PATHFIND_NORMAL) or partially
-    // (PATHFIND_INCOMPLETE — destinations beyond the smooth-path cap
-    // of ~296 yards, or where local geometry blocks the final step),
-    // walk to the furthest reachable waypoint mmap computed. This
-    // lets bots follow the real route around obstacles (mountains,
-    // cave walls, cliffs) instead of trying to cut straight through.
-    // The spline system walks the whole returned path smoothly, so
-    // subsequent ticks early-out via IsWaitingForLastMove and no
-    // further PathGenerator calls fire until the bot arrives.
-    {
-        PathGenerator path(bot);
-        path.CalculatePath(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ());
-        PathType type = path.GetPathType();
-        bool canReach = !(type & (~typeOk));
-        if (canReach)
-        {
-            G3D::Vector3 const& endPos = path.GetActualEndPosition();
-            // Only commit if the mmap endpoint actually makes progress
-            // toward the destination. For pathological INCOMPLETE
-            // results (e.g. disconnected polys that still report
-            // INCOMPLETE) the endpoint can land right under the bot;
-            // fall through to cone sampling in that case.
-            float endDistToDest = dest.GetExactDist(endPos.x, endPos.y, endPos.z);
-            if (endDistToDest + 5.0f < disToDest)
-            {
-                return MoveTo(bot->GetMapId(), endPos.x, endPos.y, endPos.z, false, false, false, true);
-            }
-        }
-    }
-
-    // Fallback: mmap couldn't route to the destination. Sample the
-    // forward cone for a reachable stepping stone so the bot keeps
-    // moving and can try again from a new vantage point. Cap at 2
-    // samples — we already spent one PathGenerator call above and at
-    // 3000 bots every extra CalculatePath matters.
-    float minDelta = M_PI;
-    const float x = bot->GetPositionX();
-    const float y = bot->GetPositionY();
-    const float z = bot->GetPositionZ();
-    const float baseAngle = bot->GetAngle(&dest);
-    float rx, ry, rz;
-    bool found = false;
-    for (int attempt = 0; attempt < 2; ++attempt)
-    {
-        float delta = (rand_norm() - 0.5f) * static_cast<float>(M_PI);  // ±π/2, forward cone
-        float sampleDis = (0.5f + rand_norm() * 0.5f) * pathFinderDis;
-        float angle = baseAngle + delta;
-        float dx = x + cos(angle) * sampleDis;
-        float dy = y + sin(angle) * sampleDis;
-        float dz = z + 0.5f;
-        PathGenerator path(bot);
-        path.CalculatePath(dx, dy, dz);
-        PathType type = path.GetPathType();
-        bool canReach = !(type & (~typeOk));
-
-        if (canReach && fabs(delta) <= minDelta)
-        {
-            found = true;
-            G3D::Vector3 const& endPos = path.GetActualEndPosition();
-            rx = endPos.x;
-            ry = endPos.y;
-            rz = endPos.z;
-            minDelta = fabs(delta);
-        }
-    }
-    if (found)
-    {
-        return MoveTo(bot->GetMapId(), rx, ry, rz, false, false, false, true);
-    }
-    return false;
+    return MoveTo2(dest);
 }
 
 bool NewRpgBaseAction::MoveWorldObjectTo(ObjectGuid guid, float distance)
 {
-    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL))
-    {
-        return false;
-    }
-
     WorldObject* object = botAI->GetWorldObject(guid);
     if (!object)
         return false;
@@ -239,9 +135,6 @@ bool NewRpgBaseAction::MoveWorldObjectTo(ObjectGuid guid, float distance)
 
 bool NewRpgBaseAction::MoveRandomNear(float moveStep, MovementPriority priority, WorldObject*)
 {
-    if (IsWaitingForLastMove(priority))
-        return false;
-
     Map* map = bot->GetMap();
     const float x = bot->GetPositionX();
     const float y = bot->GetPositionY();
@@ -280,14 +173,6 @@ bool NewRpgBaseAction::MoveRandomNear(float moveStep, MovementPriority priority,
     }
 
     return false;
-}
-
-bool NewRpgBaseAction::ForceToWait(uint32 duration, MovementPriority priority)
-{
-    AI_VALUE(LastMovement&, "last movement")
-        .Set(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetOrientation(),
-             duration, priority);
-    return true;
 }
 
 /// @TODO: Fix redundant code
@@ -699,7 +584,7 @@ bool NewRpgBaseAction::SearchQuestGiverAndAcceptOrReward()
         if (bot->CanInteractWithQuestGiver(object))
         {
             InteractWithNpcOrGameObjectForQuest(npcOrGo);
-            ForceToWait(5000);
+            SetNextMovementDelay(questGiverStayTime, MovementPriority::MOVEMENT_NORMAL);
             return true;
         }
         return MoveWorldObjectTo(npcOrGo);

@@ -384,20 +384,32 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     if (!nextTransportCheck)
     {
         nextTransportCheck = 1000;
-        Transport* newTransport = bot->GetMap()->GetTransportForPos(bot->GetPhaseMask(), bot->GetPositionX(),
-                                                                    bot->GetPositionY(), bot->GetPositionZ(), bot);
 
-        if (newTransport != bot->GetTransport())
+        // Don't fight an intentional ride: while the movement funnel is
+        // riding a recorded transport (lastTransportEntry set, ride
+        // lifecycle owned by WaitForTransport), skip the positional
+        // re-sync entirely. GetTransportForPos raycasts the bot's stored
+        // world position against the hull, and on a moving/turning ship
+        // that stale position transiently misses the model — which used
+        // to RemovePassenger a mid-ocean rider and drop it overboard.
+        LastMovement& lastMove = aiObjectContext->GetValue<LastMovement&>("last movement")->Get();
+        bool const intentionalRide = bot->GetTransport() && lastMove.lastTransportEntry &&
+                                     bot->GetTransport()->GetEntry() == lastMove.lastTransportEntry;
+        if (!intentionalRide)
         {
-            LOG_DEBUG("playerbots", "Bot {} is on a transport", bot->GetName());
+            Transport* newTransport = bot->GetMap()->GetTransportForPos(bot->GetPhaseMask(), bot->GetPositionX(),
+                                                                        bot->GetPositionY(), bot->GetPositionZ(), bot);
 
-            if (bot->GetTransport())
-                bot->GetTransport()->RemovePassenger(bot, true);
+            if (newTransport != bot->GetTransport())
+            {
+                if (bot->GetTransport())
+                    bot->GetTransport()->RemovePassenger(bot, true);
 
-            if (newTransport)
-                newTransport->AddPassenger(bot, true);
+                if (newTransport)
+                    newTransport->AddPassenger(bot, true);
 
-            bot->StopMovingOnCurrentPos();
+                bot->StopMovingOnCurrentPos();
+            }
         }
     }
 
@@ -771,6 +783,21 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const& text, Player& fr
     }
 }
 
+void PlayerbotAI::TeleportTo(WorldLocation loc, bool resetAI)
+{
+    if (!bot || bot->IsBeingTeleported() || !bot->IsInWorld())
+        return;
+
+    bot->GetMotionMaster()->Clear();
+    if (resetAI)
+        Reset(true);
+    else
+        bot->CastStop();
+    bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
+    bot->TeleportTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), 0);
+    bot->SendMovementFlagUpdate();
+}
+
 void PlayerbotAI::HandleTeleportAck()
 {
     if (!bot || !bot->GetSession())
@@ -813,7 +840,7 @@ void PlayerbotAI::HandleTeleportAck()
             bot->StopMoving();
         }
 
-        // simulate far teleport latency (cmangos-style)
+        // simulate far teleport latency
         SetNextCheckDelay(urand(2000, 5000));
         return;
     }
@@ -1505,6 +1532,7 @@ void PlayerbotAI::DoNextAction(bool min)
         aiObjectContext->GetValue<ObjectGuid>("pull target")->Set(ObjectGuid::Empty);
         aiObjectContext->GetValue<ObjectGuid>("pull strategy target")->Set(ObjectGuid::Empty);
         aiObjectContext->GetValue<LootObject>("loot target")->Set(LootObject());
+        aiObjectContext->GetValue<LastMovement&>("last movement")->Get().Set(nullptr);
 
         ChangeEngine(BOT_STATE_DEAD);
         return;
@@ -5399,6 +5427,15 @@ float PlayerbotAI::GetRange(std::string const type)
 
     if (type == "melee")
         return sPlayerbotAIConfig.meleeDistance;
+
+    if (type == "follow")
+        return sPlayerbotAIConfig.followDistance;
+
+    if (type == "guard")
+        return sPlayerbotAIConfig.sightDistance;
+
+    if (type == "attack")
+        return 0;
 
     return 0;
 }

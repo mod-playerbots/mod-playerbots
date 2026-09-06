@@ -48,6 +48,16 @@ Then build the server following the platform-specific instructions in our **[Ins
 
 > **Testing branch:** A `test-staging` branch is available with the latest features and fixes before they are merged into `master`. To use it, clone with `--branch=test-staging` instead. Note that this branch may contain unstable or breaking changes — use it at your own risk and only if you are comfortable troubleshooting issues.
 
+### Required server configuration
+
+In `worldserver.conf` (AzerothCore core config), set:
+
+```ini
+PreloadAllNonInstancedMapGrids = 1
+```
+
+This is required for `mod-playerbots`.
+
 ### Detailed Guides
 
 | Guide | Description |

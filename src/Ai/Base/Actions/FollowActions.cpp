@@ -18,84 +18,6 @@
 #include <array>
 #include <cmath>
 
-namespace
-{
-    Transport* GetTransportForPosTolerant(Map* map, WorldObject* ref, uint32 phaseMask, float x, float y, float z)
-    {
-        if (!map || !ref)
-            return nullptr;
-
-        std::array<float, 4> const probes = { z, z + 0.5f, z + 1.5f, z - 0.5f };
-        for (float const pz : probes)
-        {
-            if (Transport* t = map->GetTransportForPos(phaseMask, x, y, pz, ref))
-                return t;
-        }
-
-        return nullptr;
-    }
-
-    // Attempts to find a point on the leader's transport that is closer to the bot,
-    // by probing along the segment from master -> bot and returning the last point
-    // that is still detected as being on the expected transport.
-    bool FindBoardingPointOnTransport(Map* map, Transport* expectedTransport, WorldObject* ref,
-        float masterX, float masterY, float masterZ,
-        float botX, float botY, float botZ,
-        float& outX, float& outY, float& outZ)
-    {
-        if (!map || !expectedTransport || !ref)
-            return false;
-
-        uint32 const phaseMask = ref->GetPhaseMask();
-
-        // Ensure master is actually detected on that transport (tolerant).
-        if (GetTransportForPosTolerant(map, ref, phaseMask, masterX, masterY, masterZ) != expectedTransport)
-            return false;
-
-        // The raycast in GetTransportForPos starts at (z + 2). Probe with a safe Z.
-        float const probeZ = std::max(masterZ, botZ);
-
-        // Adaptive step count: small platforms need tighter sampling.
-        float const dx2 = botX - masterX;
-        float const dy2 = botY - masterY;
-        float const dist2d = std::sqrt(dx2 * dx2 + dy2 * dy2);
-        int32 const steps = std::clamp(static_cast<int32>(dist2d / 0.75f), 10, 28);
-
-        float const dx = (botX - masterX) / static_cast<float>(steps);
-        float const dy = (botY - masterY) / static_cast<float>(steps);
-
-        // Master must actually be on the expected transport for this to work.
-        if (map->GetTransportForPos(ref->GetPhaseMask(), masterX, masterY, probeZ, ref) != expectedTransport)
-            return false;
-
-        float lastX = masterX;
-        float lastY = masterY;
-        bool found = false;
-
-        for (int32 i = 1; i <= steps; ++i)
-        {
-            float const px = masterX + dx * i;
-            float const py = masterY + dy * i;
-
-            Transport* const t = GetTransportForPosTolerant(map, ref, phaseMask, px, py, probeZ);
-            if (t != expectedTransport)
-                break;
-
-            lastX = px;
-            lastY = py;
-            found = true;
-        }
-
-        if (!found)
-            return false;
-
-        outX = lastX;
-        outY = lastY;
-        outZ = masterZ; // keep deck-level Z to encourage stepping onto the platform/boat
-        return true;
-    }
-}
-
 bool FollowAction::Execute(Event /*event*/)
 {
     Formation* formation = AI_VALUE(Formation*, "formation");
@@ -169,9 +91,8 @@ bool FollowAction::Execute(Event /*event*/)
 
                 bool const movingAllowed = IsMovingAllowed();
                 bool const dupMove = IsDuplicateMove(destX, destY, destZ);
-                bool const waiting = IsWaitingForLastMove(priority);
 
-                if (movingAllowed && !dupMove && !waiting)
+                if (movingAllowed && !dupMove)
                 {
                     if (bot->IsSitState())
                         bot->SetStandState(UNIT_STAND_STATE_STAND);
@@ -192,11 +113,8 @@ bool FollowAction::Execute(Event /*event*/)
                     else
                         return false;
 
-                    float delay = 1000.0f * MoveDelay(bot->GetExactDist(destX, destY, destZ));
-                    delay = std::clamp(delay, 0.0f, static_cast<float>(sPlayerbotAIConfig.maxWaitForMove));
-
                     AI_VALUE(LastMovement&, "last movement")
-                        .Set(mapId, destX, destY, destZ, bot->GetOrientation(), delay, priority);
+                        .Set(mapId, destX, destY, destZ, bot->GetOrientation(), priority);
                     ClearIdleState();
                     return true;
                 }

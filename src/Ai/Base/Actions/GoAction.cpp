@@ -124,7 +124,6 @@ bool GoAction::Execute(Event event)
         if (botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT))
         {
             PathGenerator path(bot);
-
             path.CalculatePath(x, y, z, false);
 
             Movement::Vector3 end = path.GetEndPosition();

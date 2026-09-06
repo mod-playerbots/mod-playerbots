@@ -1464,15 +1464,6 @@ bool HodirBitingColdJumpAction::Execute(Event /*event*/)
     // float speed = 7.96f;
 
     // UpdateMovementState();
-    // if (!IsMovingAllowed(mapId, x, y, z))
-    //{
-    //     return false;
-    // }
-    // MovementPriority priority;
-    // if (IsWaitingForLastMove(priority))
-    //{
-    //     return false;
-    // }
 
     // MotionMaster& mm = *bot->GetMotionMaster();
     // mm.Clear();
