@@ -288,7 +288,7 @@ uint32 GetKaelthasTkPhase(Unit* kaelthas)
         return PHASE_NONE;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    return kaelAI ? kaelAI->GetPhase() : PHASE_NONE;
+    return kaelAI ? kaelAI->GetPhase() : Id(PHASE_NONE);
 }
 
 // The non-attackable unit flag covers the period in phase 1 before the advisor activates.
@@ -450,7 +450,7 @@ bool HasEquippableItemForSlot(Player* bot, uint8 slot)
     {
         uint8 bag = (i == 0) ? INVENTORY_SLOT_BAG_0 : (INVENTORY_SLOT_BAG_START + i - 1);
         uint8 startSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_START : 0;
-        uint8 endSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_END
+        uint8 endSlot = (bag == INVENTORY_SLOT_BAG_0) ? uint8(INVENTORY_SLOT_ITEM_END)
             : (bot->GetBagByPos(bag) ? bot->GetBagByPos(bag)->GetBagSize() : uint8(0));
 
         for (uint8 bagSlot = startSlot; bagSlot < endSlot; ++bagSlot)

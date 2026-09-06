@@ -358,7 +358,7 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
 {
     if (bot->GetPositionZ() > ALAR_BALCONY_Z)
     {
-        Position const& ground = GetClosestGroundPosition(bot->GetPosition());
+        Position const ground = GetClosestGroundPosition(bot->GetPosition());
         bot->CastStop();
         return JumpTo(
             TK_MAP_ID, ground.GetPositionX(), ground.GetPositionY(), ground.GetPositionZ(),
@@ -421,7 +421,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
     // On the other hand, melee dps jumps off at 5% HP because TBC hates them.
     if (bot->GetPositionZ() > ALAR_BALCONY_Z)
     {
-        Position const& ground = GetClosestGroundPosition(bot->GetPosition());
+        Position const ground = GetClosestGroundPosition(bot->GetPosition());
         bot->CastStop();
         return JumpTo(
             TK_MAP_ID, ground.GetPositionX(), ground.GetPositionY(), ground.GetPositionZ(),
