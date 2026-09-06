@@ -399,7 +399,7 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValueInEncounter(
     if (!isDpsAssist && !dynamic_cast<TankAssistAction*>(action))
         return 1.0f;
 
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");;
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return 1.0f;
 
