@@ -124,6 +124,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class GruulTheDragonkillerControlAvoidanceMultiplier : public GruulsLairEncounterMultiplier
+{
+public:
+    GruulTheDragonkillerControlAvoidanceMultiplier(PlayerbotAI* botAI)
+        : GruulsLairEncounterMultiplier(botAI, "gruul the dragonkiller control avoidance") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class GruulTheDragonkillerHoldWhileSnaredMultiplier : public GruulsLairEncounterMultiplier
 {
 public:

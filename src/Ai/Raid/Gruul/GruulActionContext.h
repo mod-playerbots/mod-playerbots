@@ -51,6 +51,9 @@ public:
         creators["gruul the dragonkiller spread ranged"] =
             &RaidGruulsLairActionContext::gruul_the_dragonkiller_spread_ranged;
 
+        creators["gruul the dragonkiller get out of cave in"] =
+            &RaidGruulsLairActionContext::gruul_the_dragonkiller_get_out_of_cave_in;
+
         creators["gruul the dragonkiller shatter spread"] =
             &RaidGruulsLairActionContext::gruul_the_dragonkiller_shatter_spread;
     }
@@ -93,6 +96,9 @@ private:
     }
     static Action* gruul_the_dragonkiller_spread_ranged(PlayerbotAI* botAI) {
         return new GruulTheDragonkillerSpreadRangedAction(botAI);
+    }
+    static Action* gruul_the_dragonkiller_get_out_of_cave_in(PlayerbotAI* botAI) {
+        return new GruulTheDragonkillerGetOutOfCaveInAction(botAI);
     }
     static Action* gruul_the_dragonkiller_shatter_spread(PlayerbotAI* botAI) {
         return new GruulTheDragonkillerShatterSpreadAction(botAI);

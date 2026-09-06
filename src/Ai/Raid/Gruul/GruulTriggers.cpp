@@ -108,6 +108,20 @@ bool GruulTheDragonkillerRangedShouldSpreadTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 }
 
+bool GruulTheDragonkillerInCaveInTrigger::IsActiveInEncounter()
+{
+    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    if (!gruul)
+        return false;
+
+    // The tank holding Gruul eats it. Moving him messes up the spread and puts other bots in
+    // danger.
+    if (gruul->GetVictim() == bot)
+        return false;
+
+    return IsInCaveIn(botAI);
+}
+
 bool GruulTheDragonkillerIncomingShatterTrigger::IsActiveInEncounter()
 {
     return HasGroundSlam(bot);

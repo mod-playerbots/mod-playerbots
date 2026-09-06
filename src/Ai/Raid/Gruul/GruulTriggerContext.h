@@ -51,6 +51,9 @@ public:
         creators["gruul the dragonkiller ranged should spread"] =
             &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_ranged_should_spread;
 
+        creators["gruul the dragonkiller in cave in"] =
+            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_in_cave_in;
+
         creators["gruul the dragonkiller incoming shatter"] =
             &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_incoming_shatter;
     }
@@ -93,6 +96,9 @@ private:
     }
     static Trigger* gruul_the_dragonkiller_ranged_should_spread(PlayerbotAI* botAI) {
         return new GruulTheDragonkillerRangedShouldSpreadTrigger(botAI);
+    }
+    static Trigger* gruul_the_dragonkiller_in_cave_in(PlayerbotAI* botAI) {
+        return new GruulTheDragonkillerInCaveInTrigger(botAI);
     }
     static Trigger* gruul_the_dragonkiller_incoming_shatter(PlayerbotAI* botAI) {
         return new GruulTheDragonkillerIncomingShatterTrigger(botAI);

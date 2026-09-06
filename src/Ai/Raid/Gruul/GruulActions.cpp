@@ -427,6 +427,19 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
     return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), minSpreadDistance);
 }
 
+// This method attempts to have more preemptive avoidance and post-avoidance awareness for Cave-ins
+// as compared to avoid aoe (which recognizes the dynobj only once the bot actually has a damaging
+// aura applied to it and immediately forgets the dynobj once the bot is out of danger).
+bool GruulTheDragonkillerGetOutOfCaveInAction::Execute(Event /*event*/)
+{
+    Position pool;
+    if (!GetNearestCaveInPosition(botAI, pool))
+        return false;
+
+    constexpr uint32 minInterval = 0;
+    return FleePosition(pool, CAVE_IN_RADIUS, minInterval);
+}
+
 bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
 {
     Player* nearestPlayer = GetNearestPlayerInRadius(bot, GRUUL_SHATTER_SAFE_DISTANCE);

@@ -124,6 +124,14 @@ private:
     bool _hasReachedInitialPosition = false;
 };
 
+class GruulTheDragonkillerGetOutOfCaveInAction : public MovementAction
+{
+public:
+    GruulTheDragonkillerGetOutOfCaveInAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "gruul the dragonkiller get out of cave in") {}
+    bool Execute(Event event) override;
+};
+
 class GruulTheDragonkillerShatterSpreadAction : public MovementAction
 {
 public:

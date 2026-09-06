@@ -144,6 +144,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class GruulTheDragonkillerInCaveInTrigger : public GruulsLairEncounterTrigger
+{
+public:
+    GruulTheDragonkillerInCaveInTrigger(PlayerbotAI* botAI)
+        : GruulsLairEncounterTrigger(botAI, "gruul the dragonkiller in cave in") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class GruulTheDragonkillerIncomingShatterTrigger : public GruulsLairEncounterTrigger
 {
 public:
