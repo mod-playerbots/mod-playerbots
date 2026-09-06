@@ -75,7 +75,7 @@ private:
     static Strategy* onyxia(PlayerbotAI* botAI) { return new RaidOnyxiaStrategy(botAI); }
     static Strategy* ulduar(PlayerbotAI* botAI) { return new RaidUlduarStrategy(botAI); }
     static Strategy* icc(PlayerbotAI* botAI) { return new RaidIccStrategy(botAI); }
-    static Strategy* sunwell(PlayerbotAI* botAI) { return new RaidSunwellStrategy(botAI); }
+    static Strategy* sunwell(PlayerbotAI* botAI) { return new RaidSwpStrategy(botAI); }
     static Strategy* rs(PlayerbotAI* botAI) { return new RaidRsStrategy(botAI); }
 };
 
