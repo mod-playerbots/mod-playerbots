@@ -26,6 +26,10 @@ namespace EncounterHelpers
 inline constexpr float BOSS_ENGAGED_HEALTH_PCT = 95.0f;
 inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
 
+bool IsEncounterInProgress(Player* bot, uint32 mapId);
+bool CanTakeStepTowards(
+    Player* bot, float destinationX, float destinationY, float moveDist,
+    float& stepX, float& stepY, float& stepZ);
 bool GetStepToPosition(
     Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
     float& stepY, bool& backwards);
@@ -43,9 +47,10 @@ void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName);
 bool IsMechanicTrackerBot(Player* bot, uint32 mapId);
 Player* GetGroupMainTank(Player* bot);
 Player* GetGroupAssistTank(Player* bot, uint8 index);
-Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
+Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry); // DO NOT USE, WILL BE REMOVED
 Player* GetNearestPlayerInRadius(Player* bot, float radius);
 std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId);
+uint32 GetSelfImmunitySpell(Player* bot);
 bool IsDpsCooldownAction(Player* bot, Action* action);
 bool IsTauntAction(Player* bot, Action* action);
 bool IsAoeThreatAction(Player* bot, Action* action);
