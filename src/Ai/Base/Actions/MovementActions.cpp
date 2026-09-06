@@ -477,7 +477,7 @@ bool MovementAction::ReachCombatTo(Unit* target, float distance)
     path.ShortenPathUntilDist(G3D::Vector3(tx, ty, tz), shortenTo);
     G3D::Vector3 endPos = path.GetPath().back();
 
-    bool moved = MoveTo(target->GetMapId(), endPos.x, endPos.y, endPos.z, false, true, false, false,
+    bool moved = MoveTo(target->GetMapId(), endPos.x, endPos.y, endPos.z, false, false, false, false,
                         MovementPriority::MOVEMENT_COMBAT, true, false, true);
     if (moved)
         EmitDebugMove("ReachCombatTo", "mmap", endPos.x, endPos.y, endPos.z);
