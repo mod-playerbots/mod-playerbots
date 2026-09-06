@@ -2399,13 +2399,17 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos, WorldPosition
     }
 
     // Check if the new path is better than the old one in reaching the destination.
-    if (cacheUsable && !out.empty() &&
-            lastMove.lastPath.getBack().distance(endPos) + sPlayerbotAIConfig.targetPosRecalcDistance
-        < out.getBack().distance(endPos))
+    bool const keepCache = cacheUsable && !out.empty() &&
+        lastMove.lastPath.getBack().distance(endPos) + sPlayerbotAIConfig.targetPosRecalcDistance <
+            out.getBack().distance(endPos);
+
+    if (keepCache)
     {
         out = lastMove.lastPath;
         resolveMethod = "cache-kept";
     }
+    else if (!out.empty())
+        lastMove.lastCompletedTransportEntry = 0;
 
     // If no path is found between maps, then skip beeline.
     if (out.empty() && crossMap)
