@@ -9,18 +9,11 @@
 
 #include "ScriptedCreature.h"
 
+// This file mirrors the core's boss_kaelthas class so bots can read the encounter phase
+// The core's boss script is at src/server/scripts/Outland/TempestKeep/Eye/boss_kaelthas.cpp
+
 enum KTYells
 {
-};
-
-enum KTPhases
-{
-    PHASE_NONE                          = 0,
-    PHASE_SINGLE_ADVISOR                = 1,
-    PHASE_WEAPONS                       = 2,
-    PHASE_TRANSITION                    = 3,
-    PHASE_ALL_ADVISORS                  = 4,
-    PHASE_FINAL                         = 5
 };
 
 enum KTActions
@@ -49,7 +42,7 @@ struct boss_kaelthas : public BossAI
     bool CheckEvadeIfOutOfCombatArea() const override;
     void JustDied(Unit* killer) override;
 
-    uint32 GetPhase() const { return _phase; } // This is the only addition to the existing class
+    uint32 GetPhase() const { return _phase; } // This is the only addition to the class
 
 private:
     uint32 _phase;
