@@ -2673,7 +2673,6 @@ void TravelNodeMap::removeUselessPaths()
 uint32 TravelNodeMap::pruneCheatingWalkLinks(std::vector<TravelNode*> const& scanNodes)
 {
     uint32 removed = 0;
-    uint32 scanned = 0;
 
     for (auto& startNode : scanNodes)
     {
@@ -2696,8 +2695,6 @@ uint32 TravelNodeMap::pruneCheatingWalkLinks(std::vector<TravelNode*> const& sca
             // at an elevator/zeppelin/portal is the structure itself, not a cheat.
             if (startNode->isStructural() || link.first->isStructural())
                 continue;
-
-            ++scanned;
 
             float const endDist =
                 startNode->getPosition()->distance(link.first->getPosition());

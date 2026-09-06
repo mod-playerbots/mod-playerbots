@@ -213,6 +213,7 @@ protected:
     bool IsDuplicateMove(float x, float y, float z);
     bool IsMovingAllowed();
     bool CanOverrideMovement(MovementPriority priority);
+    bool IsWaitingForLastMove(MovementPriority priority);
     bool IsHoldingAtDockWait() const;
     bool Flee(Unit* target);
     void ClearIdleState();

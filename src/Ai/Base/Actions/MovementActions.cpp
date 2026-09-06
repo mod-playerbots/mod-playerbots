@@ -534,6 +534,11 @@ bool MovementAction::CanOverrideMovement(MovementPriority priority)
     return !lastMove.IsHoldActive() || priority > lastMove.priority;
 }
 
+bool MovementAction::IsWaitingForLastMove(MovementPriority priority)
+{
+    return !CanOverrideMovement(priority);
+}
+
 bool MovementAction::IsDuplicateMove(float x, float y, float z)
 {
     LastMovement& lastMove = *context->GetValue<LastMovement&>("last movement");
@@ -3216,7 +3221,7 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
 
 // Hands the resolved path to the motion master — spline for multi-point paths,
 // MovePoint for a single point — or teleport-advances low-activity bots.
-bool MovementAction::DispatchMovement(TravelPath path, WorldPosition dest, char const* label,
+bool MovementAction::DispatchMovement(TravelPath path, [[maybe_unused]] WorldPosition dest, char const* label,
                                       MovementPriority priority, [[maybe_unused]] bool lessDelay, bool react)
 {
     // Build the PointsArray from the TravelPath.
