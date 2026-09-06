@@ -9,7 +9,7 @@
 
 #include "ObjectGuid.h"
 #include "Position.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <unordered_map>
 #include <vector>
 
@@ -55,9 +55,9 @@ inline constexpr float MURU_MAX_DPS_HP_PERCENT = 97.0f;
 // For the "muru encounter targets" value. Only list membership is cached, not states read (like
 // auras, casting, health).
 inline constexpr uint32 MURU_ENCOUNTER_TARGETS_CACHE_INTERVAL_MS = 200;
-// Feeds the "muru void zones" value.
+// For the "muru void zones" value.
 inline constexpr uint32 VOID_ZONE_CACHE_INTERVAL_MS = 200;
-// Feeds the "muru singularity" value. Only one exists at a time: Entropius casts Black Hole every
+// For the "muru singularity" value. Only one exists at a time: Entropius casts Black Hole every
 // 29s, and Singularities despawn after 18s.
 inline constexpr uint32 SINGULARITY_CACHE_INTERVAL_MS = 200;
 
@@ -80,17 +80,22 @@ inline constexpr float MURU_TARGET_SWITCH_MARGIN = 10.0f;
 // Radius of Shadow Bolt Volley (46082), which is centred on the enslaved Void Spawn.
 inline constexpr float MURU_SHADOW_BOLT_VOLLEY_RADIUS = 20.0f;
 
-// Void Zones (25879) have aura 46262, ticking 46264 for 3k in a 3y radius, but more importantly
-// they spawn Dark Fiends. The wide safe distance is in anticipation of the Dark Fiend spawn.
+// Void Zones (25879) have aura 46262, ticking 46264 for 3k in a 3y radius, and spawn Dark Fiends.
+// The wide safe distance is in anticipation of the Dark Fiend spawn. Search is measured by
+// IsWithinDist, which adds both CombatReaches for a total of 14.5y.
 inline constexpr float VOID_ZONE_SEARCH_RADIUS = 12.0f;
-inline constexpr float VOID_ZONE_SAFE_DISTANCE = 8.0f;
+inline constexpr float VOID_ZONE_SAFE_DISTANCE = 10.0f;
 // Dark Fiend search radii for killing (dispelling) and avoiding, respectively.
 inline constexpr float DARK_FIEND_DISPEL_SEARCH_RADIUS = 50.0f;
 inline constexpr float DARK_FIEND_AVOID_SEARCH_RADIUS = 15.0f;
 // A Dark Fiend detonates within 2y of whoever it is chasing. The safe distance is deliberately
 // wide as touching a single Dark Fiend is almost a guaranteed wipe.
-inline constexpr float DARK_FIEND_SAFE_DISTANCE = 10.0f;
+inline constexpr float DARK_FIEND_SAFE_DISTANCE = 12.0f;
 inline constexpr float SINGULARITY_SEARCH_RADIUS = 30.0f;
+// Distance kept from a Singularity. The active tank's distance is greater in order to leave space
+// for melee on Entropius.
+inline constexpr float SINGULARITY_SAFE_DISTANCE = 15.0f;
+inline constexpr float SINGULARITY_TANK_SAFE_DISTANCE = 20.0f;
 
 inline Position const MURU_ENTRANCE_POSITION =             { 1840.567f, 605.769f, 71.250f };
 inline Position const MURU_CENTER_POSITION =               { 1816.250f, 625.484f, 69.604f };
@@ -106,16 +111,21 @@ bool IsMuruPhaseActive(Unit* muru);
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
 bool TryGetMuruDarknessEarlyState(
     Player* bot, Unit* muru, uint32 earlyWindowMs = MURU_DARKNESS_EARLY_WINDOW_MS);
+bool PeekMuruDarknessActiveState(Player* bot);
+bool PeekMuruDarknessEarlyState(
+    Player* bot, uint32 earlyWindowMs = MURU_DARKNESS_EARLY_WINDOW_MS);
 MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
 Unit* FindMuruBerserkerToStun(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToInterrupt(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI);
+Position const& GetAssignedVoidSentinelTankPosition(Unit* voidSentinel);
 bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI);
 GuidVector FindMuruVoidZoneGuids(Player* bot);
 ObjectGuid FindMuruSingularityGuid(Player* bot);
 Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI);
 Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI);
+bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target);
 
 }
 

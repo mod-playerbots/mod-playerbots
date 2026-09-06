@@ -8,13 +8,14 @@
 #define PLAYERBOTS_SWPVALUECONTEXT_H
 
 #include "NamedObjectContext.h"
-#include "SWPActions.h"
+#include "ObjectGuid.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
-#include "Value.h"
+#include "SWPShared.h"
 #include "Position.h"
+#include "Value.h"
 #include <vector>
 
 class EredarTwinsBlazePositionsValue : public CalculatedValue<std::vector<Position>>
@@ -112,19 +113,19 @@ protected:
     GuidVector Calculate() override { return SwpHelpers::FindKiljaedenHandGuids(bot); }
 };
 
-class RaidSunwellValueContext : public NamedObjectContext<UntypedValue>
+class RaidSwpValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
-    RaidSunwellValueContext()
+    RaidSwpValueContext()
     {
-        creators["eredar twins blaze"] = &RaidSunwellValueContext::eredar_twins_blaze;
-        creators["muru encounter targets"] = &RaidSunwellValueContext::muru_encounter_targets;
-        creators["muru void zones"] = &RaidSunwellValueContext::muru_void_zones;
-        creators["swp volatile fiend"] = &RaidSunwellValueContext::swp_volatile_fiend;
-        creators["kalecgos spectral rift"] = &RaidSunwellValueContext::kalecgos_spectral_rift;
-        creators["muru singularity"] = &RaidSunwellValueContext::muru_singularity;
-        creators["kiljaeden dragon orbs"] = &RaidSunwellValueContext::kiljaeden_dragon_orbs;
-        creators["kiljaeden hands"] = &RaidSunwellValueContext::kiljaeden_hands;
+        creators["eredar twins blaze"] = &RaidSwpValueContext::eredar_twins_blaze;
+        creators["muru encounter targets"] = &RaidSwpValueContext::muru_encounter_targets;
+        creators["muru void zones"] = &RaidSwpValueContext::muru_void_zones;
+        creators["swp volatile fiend"] = &RaidSwpValueContext::swp_volatile_fiend;
+        creators["kalecgos spectral rift"] = &RaidSwpValueContext::kalecgos_spectral_rift;
+        creators["muru singularity"] = &RaidSwpValueContext::muru_singularity;
+        creators["kiljaeden dragon orbs"] = &RaidSwpValueContext::kiljaeden_dragon_orbs;
+        creators["kiljaeden hands"] = &RaidSwpValueContext::kiljaeden_hands;
     }
 
 private:

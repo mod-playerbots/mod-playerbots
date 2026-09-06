@@ -7,6 +7,7 @@
 #include "SWPEncounter_KJ.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "SWPShared.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -19,50 +20,6 @@ namespace SwpHelpers
 
 namespace
 {
-
-float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
-{
-    if (slotCount <= 1)
-        return 0.0f;
-
-    float const angleStep = arcWidth / static_cast<float>(slotCount - 1);
-    if (slotCount % 2 == 1)
-    {
-        if (slotIndex == 0)
-            return 0.0f;
-
-        uint8 const stepIndex = (slotIndex + 1) / 2;
-        float angleOffset = angleStep * stepIndex;
-        if (slotIndex % 2 == 0)
-            angleOffset = -angleOffset;
-
-        return angleOffset;
-    }
-
-    float const halfStep = angleStep / 2.0f;
-    uint8 const pairIndex = slotIndex / 2;
-    float angleOffset = halfStep + angleStep * pairIndex;
-    if (slotIndex % 2 == 1)
-        angleOffset = -angleOffset;
-
-    return angleOffset;
-}
-
-uint32 GetDragonManualCooldown(uint32 spellId)
-{
-    constexpr uint32 globalCooldown = 1000;
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if (!spellInfo)
-        return globalCooldown;
-
-    uint32 cooldownMs = spellInfo->GetRecoveryTime();
-    if (spellInfo->CategoryRecoveryTime > cooldownMs)
-        cooldownMs = spellInfo->CategoryRecoveryTime;
-    if (spellInfo->StartRecoveryTime > cooldownMs)
-        cooldownMs = spellInfo->StartRecoveryTime;
-
-    return cooldownMs ? cooldownMs : globalCooldown;
-}
 
 bool IsDragonGroupTarget(Player* bot, Player* member)
 {
@@ -226,7 +183,7 @@ bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armagedd
         return false;
 
     bool foundArmageddon = false;
-    float bestDistance = 0.0f;
+    float bestDistance = std::numeric_limits<float>::max();
 
     for (KiljaedenArmageddon const& candidate : stateItr->second.armageddons)
     {
@@ -234,7 +191,7 @@ bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armagedd
         if (distance >= candidate.safeDistance)
             continue;
 
-        if (!foundArmageddon || distance < bestDistance)
+        if (distance < bestDistance)
         {
             armageddon = candidate;
             bestDistance = distance;
@@ -648,7 +605,19 @@ bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId)
         return false;
 
     dragon->CastSpell(dragon, spellId, true);
-    dragon->AddSpellCooldown(spellId, 0, GetDragonManualCooldown(spellId));
+    dragon->AddSpellCooldown(spellId, 0, GetManualCastCooldown(spellId));
+
+    // The engine records no global cooldown for a triggered cast, so hold the dragon's other
+    // abilities here. Without it, Haste and Revitalize go out on consecutive ticks.
+    if (uint32 const globalCooldownMs = GetManualCastGlobalCooldown(spellId))
+    {
+        for (uint32 otherSpellId : KILJAEDEN_DRAGON_SPELLS)
+        {
+            if (otherSpellId != spellId && !dragon->HasSpellCooldown(otherSpellId))
+                dragon->AddSpellCooldown(otherSpellId, 0, globalCooldownMs);
+        }
+    }
+
     return true;
 }
 
@@ -729,7 +698,7 @@ Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spell
         return nullptr;
 
     Player* closestTarget = nullptr;
-    float closestDistance = 0.0f;
+    float closestDistance = std::numeric_limits<float>::max();
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -738,7 +707,7 @@ Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spell
             continue;
 
         float const distance = dragon->GetExactDist2d(member);
-        if (!closestTarget || distance < closestDistance)
+        if (distance < closestDistance)
         {
             closestTarget = member;
             closestDistance = distance;

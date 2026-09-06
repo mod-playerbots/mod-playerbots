@@ -10,11 +10,14 @@
 #include "PlayerbotTextMgr.h"
 #include "RtiTargetValue.h"
 #include "SWPEncounter_KJ.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <limits>
 #include <map>
+#include <string>
+#include <vector>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -260,10 +263,10 @@ bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* re
 bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
 {
     Position position;
-    if (!TryGetPosition(position))
+    if (!TryGetMeleePosition(position))
         return false;
 
-    if (!TryAdjustForArmageddon(position))
+    if (!TryAdjustMeleeForArmageddon(position))
         return false;
 
     if (bot->GetExactDist2d(position) <= 2.0f)
@@ -274,7 +277,7 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool KiljaedenPositionMeleeAction::TryGetPosition(Position& position) const
+bool KiljaedenPositionMeleeAction::TryGetMeleePosition(Position& position) const
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -308,7 +311,7 @@ bool KiljaedenPositionMeleeAction::TryGetPosition(Position& position) const
     return true;
 }
 
-bool KiljaedenPositionMeleeAction::TryAdjustForArmageddon(Position& position)
+bool KiljaedenPositionMeleeAction::TryAdjustMeleeForArmageddon(Position& position)
 {
     PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
     auto armageddonItr = kiljaedenEncounterStates.find(bot->GetInstanceId());
@@ -366,10 +369,10 @@ bool KiljaedenPositionMeleeAction::TryAdjustForArmageddon(Position& position)
 bool KiljaedenPositionRangedAndAvoidArmageddonsAction::Execute(Event /*event*/)
 {
     Position position;
-    if (!TryGetPosition(position))
+    if (!TryGetRangedPosition(position))
         return false;
 
-    if (!TryAdjustForArmageddon(position))
+    if (!TryAdjustRangedForArmageddon(position))
         return false;
 
     if (bot->GetExactDist2d(position) <= 2.0f)
@@ -380,7 +383,7 @@ bool KiljaedenPositionRangedAndAvoidArmageddonsAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetPosition(Position& position) const
+bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetRangedPosition(Position& position) const
 {
     EnsureKiljaedenRangedAssignments(bot);
 
@@ -395,7 +398,7 @@ bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetPosition(Position& 
     return TryGetKiljaedenRangedSlotPosition(assignmentItr->second, position);
 }
 
-bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryAdjustForArmageddon(Position& position)
+bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryAdjustRangedForArmageddon(Position& position)
 {
     EnsureKiljaedenRangedArmageddonAssignments(bot);
     auto const armageddonAssignmentItr =
@@ -410,27 +413,6 @@ bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryAdjustForArmageddon(Po
         return true;
 
     return TryGetKiljaedenRangedSlotPosition(tempAssignmentItr->second, position);
-}
-
-bool KiljaedenRemoveFireBloomAction::Execute(Event /*event*/)
-{
-    switch (bot->getClass())
-    {
-        case CLASS_MAGE:
-            return botAI->CanCastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot) &&
-                botAI->CastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot);
-
-        case CLASS_PALADIN:
-            return botAI->CanCastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot) &&
-                botAI->CastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot);
-
-        case CLASS_ROGUE:
-            return botAI->CanCastSpell(Id(SwpSpells::SPELL_CLOAK_OF_SHADOWS), bot) &&
-                botAI->CastSpell(Id(SwpSpells::SPELL_CLOAK_OF_SHADOWS), bot);
-
-        default:
-            return false;
-    }
 }
 
 bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
@@ -469,8 +451,8 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
 {
     GameObject* closestOrb = nullptr;
     GameObject* closestInUseOrb = nullptr;
-    float closestDistance = 0.0f;
-    float closestInUseOrbDistance = 0.0f;
+    float closestDistance = std::numeric_limits<float>::max();
+    float closestInUseOrbDistance = std::numeric_limits<float>::max();
     bool orbInUse = false;
 
     for (ObjectGuid const& orbGuid : AI_VALUE(GuidVector, "kiljaeden dragon orbs"))
@@ -483,7 +465,7 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
         if (orb->HasGameObjectFlag(GO_FLAG_IN_USE))
         {
             orbInUse = true;
-            if (!closestInUseOrb || distance < closestInUseOrbDistance)
+            if (distance < closestInUseOrbDistance)
             {
                 closestInUseOrb = orb;
                 closestInUseOrbDistance = distance;
@@ -495,7 +477,7 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
         if (orb->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
             continue;
 
-        if (!closestOrb || distance < closestDistance)
+        if (distance < closestDistance)
         {
             closestOrb = orb;
             closestDistance = distance;

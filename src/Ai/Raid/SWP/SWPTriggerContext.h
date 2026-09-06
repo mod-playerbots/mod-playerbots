@@ -10,213 +10,216 @@
 #include "NamedObjectContext.h"
 #include "SWPTriggers.h"
 
-class RaidSunwellTriggerContext : public NamedObjectContext<Trigger>
+class RaidSwpTriggerContext : public NamedObjectContext<Trigger>
 {
 public:
-    RaidSunwellTriggerContext()
+    RaidSwpTriggerContext()
     {
         // General
         creators["sunwell plateau no encounter in progress"] =
-            &RaidSunwellTriggerContext::sunwell_plateau_no_encounter_in_progress;
+            &RaidSwpTriggerContext::sunwell_plateau_no_encounter_in_progress;
 
         creators["sunwell plateau bot has aura to remove"] =
-            &RaidSunwellTriggerContext::sunwell_plateau_bot_has_aura_to_remove;
+            &RaidSwpTriggerContext::sunwell_plateau_bot_has_aura_to_remove;
 
         // Trash
         creators["volatile fiend self destructs when near"] =
-            &RaidSunwellTriggerContext::volatile_fiend_self_destructs_when_near;
+            &RaidSwpTriggerContext::volatile_fiend_self_destructs_when_near;
 
         creators["apocalypse guard protected by infernal defense"] =
-            &RaidSunwellTriggerContext::apocalypse_guard_protected_by_infernal_defense;
+            &RaidSwpTriggerContext::apocalypse_guard_protected_by_infernal_defense;
 
         // Kalecgos
         creators["kalecgos should communicate boss health"] =
-            &RaidSunwellTriggerContext::kalecgos_should_communicate_boss_health;
+            &RaidSwpTriggerContext::kalecgos_should_communicate_boss_health;
 
         creators["kalecgos pulling boss"] =
-            &RaidSunwellTriggerContext::kalecgos_pulling_boss;
+            &RaidSwpTriggerContext::kalecgos_pulling_boss;
 
         creators["kalecgos requires tank rotation"] =
-            &RaidSunwellTriggerContext::kalecgos_requires_tank_rotation;
+            &RaidSwpTriggerContext::kalecgos_requires_tank_rotation;
 
         creators["kalecgos spectral rift is open"] =
-            &RaidSunwellTriggerContext::kalecgos_spectral_rift_is_open;
+            &RaidSwpTriggerContext::kalecgos_spectral_rift_is_open;
 
         creators["kalecgos bots take splash damage"] =
-            &RaidSunwellTriggerContext::kalecgos_bots_take_splash_damage;
+            &RaidSwpTriggerContext::kalecgos_bots_take_splash_damage;
 
         creators["kalecgos too many arcane buffet stacks"] =
-            &RaidSunwellTriggerContext::kalecgos_too_many_arcane_buffet_stacks;
+            &RaidSwpTriggerContext::kalecgos_too_many_arcane_buffet_stacks;
 
         creators["kalecgos humanoid kalec tanks sathrovarr"] =
-            &RaidSunwellTriggerContext::kalecgos_humanoid_kalec_tanks_sathrovarr;
+            &RaidSwpTriggerContext::kalecgos_humanoid_kalec_tanks_sathrovarr;
 
         creators["kalecgos bots don't observe gravity"] =
-            &RaidSunwellTriggerContext::kalecgos_bots_dont_observe_gravity;
+            &RaidSwpTriggerContext::kalecgos_bots_dont_observe_gravity;
 
         // Brutallus
         creators["brutallus pulling boss"] =
-            &RaidSunwellTriggerContext::brutallus_pulling_boss;
+            &RaidSwpTriggerContext::brutallus_pulling_boss;
 
         creators["brutallus requires two tanks"] =
-            &RaidSunwellTriggerContext::brutallus_requires_two_tanks;
+            &RaidSwpTriggerContext::brutallus_requires_two_tanks;
 
         creators["brutallus melee should stand in place"] =
-            &RaidSunwellTriggerContext::brutallus_melee_should_stand_in_place;
+            &RaidSwpTriggerContext::brutallus_melee_should_stand_in_place;
 
         creators["brutallus ranged should soak meteor slash"] =
-            &RaidSunwellTriggerContext::brutallus_ranged_should_soak_meteor_slash;
+            &RaidSwpTriggerContext::brutallus_ranged_should_soak_meteor_slash;
 
         creators["brutallus bot is burning"] =
-            &RaidSunwellTriggerContext::brutallus_bot_is_burning;
+            &RaidSwpTriggerContext::brutallus_bot_is_burning;
 
         // Felmyst
         creators["felmyst pulling boss"] =
-            &RaidSunwellTriggerContext::felmyst_pulling_boss;
+            &RaidSwpTriggerContext::felmyst_pulling_boss;
 
         creators["felmyst ground phase should be tanked"] =
-            &RaidSunwellTriggerContext::felmyst_ground_phase_should_be_tanked;
+            &RaidSwpTriggerContext::felmyst_ground_phase_should_be_tanked;
 
         creators["felmyst ranged should position to dispel and flee"] =
-            &RaidSunwellTriggerContext::felmyst_ranged_should_position_to_dispel_and_flee;
+            &RaidSwpTriggerContext::felmyst_ranged_should_position_to_dispel_and_flee;
 
         creators["felmyst melee should stay together"] =
-            &RaidSunwellTriggerContext::felmyst_melee_should_stay_together;
+            &RaidSwpTriggerContext::felmyst_melee_should_stay_together;
 
         creators["felmyst bot is encapsulated"] =
-            &RaidSunwellTriggerContext::felmyst_bot_is_encapsulated;
+            &RaidSwpTriggerContext::felmyst_bot_is_encapsulated;
 
         creators["felmyst bot near encapsulated player"] =
-            &RaidSunwellTriggerContext::felmyst_bot_near_encapsulated_player;
+            &RaidSwpTriggerContext::felmyst_bot_near_encapsulated_player;
 
         creators["felmyst player has gas nova"] =
-            &RaidSunwellTriggerContext::felmyst_player_has_gas_nova;
+            &RaidSwpTriggerContext::felmyst_player_has_gas_nova;
 
         creators["felmyst should avoid demonic vapor trails"] =
-            &RaidSunwellTriggerContext::felmyst_should_avoid_demonic_vapor_trails;
+            &RaidSwpTriggerContext::felmyst_should_avoid_demonic_vapor_trails;
 
         creators["felmyst bot is demonic vapor target"] =
-            &RaidSunwellTriggerContext::felmyst_bot_is_demonic_vapor_target;
+            &RaidSwpTriggerContext::felmyst_bot_is_demonic_vapor_target;
 
         creators["felmyst fog of corruption is active"] =
-            &RaidSunwellTriggerContext::felmyst_fog_of_corruption_is_active;
+            &RaidSwpTriggerContext::felmyst_fog_of_corruption_is_active;
 
         creators["felmyst melee cannot reach flying boss"] =
-            &RaidSunwellTriggerContext::felmyst_melee_cannot_reach_flying_boss;
+            &RaidSwpTriggerContext::felmyst_melee_cannot_reach_flying_boss;
 
         creators["felmyst player is charmed by fog"] =
-            &RaidSunwellTriggerContext::felmyst_player_is_charmed_by_fog;
+            &RaidSwpTriggerContext::felmyst_player_is_charmed_by_fog;
 
         creators["felmyst should hold dps while landing"] =
-            &RaidSunwellTriggerContext::felmyst_should_hold_dps_while_landing;
+            &RaidSwpTriggerContext::felmyst_should_hold_dps_while_landing;
 
         // Eredar Twins
         creators["eredar twins melee is at balcony"] =
-            &RaidSunwellTriggerContext::eredar_twins_melee_is_at_balcony;
+            &RaidSwpTriggerContext::eredar_twins_melee_is_at_balcony;
+
+        creators["eredar twins should announce alythess tank"] =
+            &RaidSwpTriggerContext::eredar_twins_should_announce_alythess_tank;
 
         creators["eredar twins pulling bosses"] =
-            &RaidSunwellTriggerContext::eredar_twins_pulling_bosses;
+            &RaidSwpTriggerContext::eredar_twins_pulling_bosses;
 
         creators["eredar twins sacrolash requires two tanks"] =
-            &RaidSunwellTriggerContext::eredar_twins_sacrolash_requires_two_tanks;
+            &RaidSwpTriggerContext::eredar_twins_sacrolash_requires_two_tanks;
 
         creators["eredar twins alythess casts blaze on tank"] =
-            &RaidSunwellTriggerContext::eredar_twins_alythess_casts_blaze_on_tank;
+            &RaidSwpTriggerContext::eredar_twins_alythess_casts_blaze_on_tank;
 
         creators["eredar twins ranged needs los"] =
-            &RaidSunwellTriggerContext::eredar_twins_ranged_needs_los;
+            &RaidSwpTriggerContext::eredar_twins_ranged_needs_los;
 
         creators["eredar twins only alythess remains"] =
-            &RaidSunwellTriggerContext::eredar_twins_only_alythess_remains;
+            &RaidSwpTriggerContext::eredar_twins_only_alythess_remains;
 
         creators["eredar twins too many flame touched stacks"] =
-            &RaidSunwellTriggerContext::eredar_twins_too_many_flame_touched_stacks;
+            &RaidSwpTriggerContext::eredar_twins_too_many_flame_touched_stacks;
 
         creators["eredar twins should focus dps"] =
-            &RaidSunwellTriggerContext::eredar_twins_should_focus_dps;
+            &RaidSwpTriggerContext::eredar_twins_should_focus_dps;
 
         creators["eredar twins active conflagration target"] =
-            &RaidSunwellTriggerContext::eredar_twins_active_conflagration_target;
+            &RaidSwpTriggerContext::eredar_twins_active_conflagration_target;
 
         creators["eredar twins sacrolash victim has conflagration"] =
-            &RaidSunwellTriggerContext::eredar_twins_sacrolash_victim_has_conflagration;
+            &RaidSwpTriggerContext::eredar_twins_sacrolash_victim_has_conflagration;
 
         // M'uru
         creators["m'uru void sentinel or entropius has appeared"] =
-            &RaidSunwellTriggerContext::muru_void_sentinel_or_entropius_has_appeared;
+            &RaidSwpTriggerContext::muru_void_sentinel_or_entropius_has_appeared;
 
         creators["m'uru boss transformed into entropius"] =
-            &RaidSunwellTriggerContext::muru_boss_transformed_into_entropius;
+            &RaidSwpTriggerContext::muru_boss_transformed_into_entropius;
 
         creators["m'uru ranged should stack or spread"] =
-            &RaidSunwellTriggerContext::muru_ranged_should_stack_or_spread;
+            &RaidSwpTriggerContext::muru_ranged_should_stack_or_spread;
 
         creators["m'uru determining dps priority"] =
-            &RaidSunwellTriggerContext::muru_determining_dps_priority;
+            &RaidSwpTriggerContext::muru_determining_dps_priority;
 
         creators["m'uru void sentinel pulses shadow"] =
-            &RaidSunwellTriggerContext::muru_void_sentinel_pulses_shadow;
+            &RaidSwpTriggerContext::muru_void_sentinel_pulses_shadow;
 
         creators["m'uru adds spawn at entrance"] =
-            &RaidSunwellTriggerContext::muru_adds_spawn_at_entrance;
+            &RaidSwpTriggerContext::muru_adds_spawn_at_entrance;
 
         creators["m'uru dark fiends spawned"] =
-            &RaidSunwellTriggerContext::muru_dark_fiends_spawned;
+            &RaidSwpTriggerContext::muru_dark_fiends_spawned;
 
         creators["m'uru darkness is coming"] =
-            &RaidSunwellTriggerContext::muru_darkness_is_coming;
+            &RaidSwpTriggerContext::muru_darkness_is_coming;
 
         creators["m'uru berserker is buffed with flurry"] =
-            &RaidSunwellTriggerContext::muru_berserker_is_buffed_with_flurry;
+            &RaidSwpTriggerContext::muru_berserker_is_buffed_with_flurry;
 
         creators["m'uru fury mage casting fel fireball"] =
-            &RaidSunwellTriggerContext::muru_fury_mage_casting_fel_fireball;
+            &RaidSwpTriggerContext::muru_fury_mage_casting_fel_fireball;
 
         creators["m'uru fury mage is buffed with spell fury"] =
-            &RaidSunwellTriggerContext::muru_fury_mage_is_buffed_with_spell_fury;
+            &RaidSwpTriggerContext::muru_fury_mage_is_buffed_with_spell_fury;
 
         creators["m'uru void spawn available for enslave"] =
-            &RaidSunwellTriggerContext::muru_void_spawn_available_for_enslave;
+            &RaidSwpTriggerContext::muru_void_spawn_available_for_enslave;
 
         creators["m'uru warlock has enslaved void spawn"] =
-            &RaidSunwellTriggerContext::muru_warlock_has_enslaved_void_spawn;
+            &RaidSwpTriggerContext::muru_warlock_has_enslaved_void_spawn;
 
         creators["m'uru entropius darkness pools spawn dark fiends"] =
-            &RaidSunwellTriggerContext::muru_entropius_darkness_pools_spawn_dark_fiends;
+            &RaidSwpTriggerContext::muru_entropius_darkness_pools_spawn_dark_fiends;
 
         creators["m'uru the singularity is near"] =
-            &RaidSunwellTriggerContext::muru_the_singularity_is_near;
+            &RaidSwpTriggerContext::muru_the_singularity_is_near;
 
         // Kil'jaeden <The Deceiver>
         creators["kil'jaeden should coordinate orb use"] =
-            &RaidSunwellTriggerContext::kiljaeden_should_coordinate_orb_use;
+            &RaidSwpTriggerContext::kiljaeden_should_coordinate_orb_use;
 
         creators["kil'jaeden hands of the deceiver are active"] =
-            &RaidSunwellTriggerContext::kiljaeden_hands_of_the_deceiver_are_active;
+            &RaidSwpTriggerContext::kiljaeden_hands_of_the_deceiver_are_active;
 
         creators["kil'jaeden tanks should hold boss and reflections"] =
-            &RaidSunwellTriggerContext::kiljaeden_tanks_should_hold_boss_and_reflections;
+            &RaidSwpTriggerContext::kiljaeden_tanks_should_hold_boss_and_reflections;
 
         creators["kil'jaeden boss engaged by melee"] =
-            &RaidSunwellTriggerContext::kiljaeden_boss_engaged_by_melee;
+            &RaidSwpTriggerContext::kiljaeden_boss_engaged_by_melee;
 
         creators["kil'jaeden boss engaged by ranged"] =
-            &RaidSunwellTriggerContext::kiljaeden_boss_engaged_by_ranged;
+            &RaidSwpTriggerContext::kiljaeden_boss_engaged_by_ranged;
 
         creators["kil'jaeden bot has fire bloom"] =
-            &RaidSunwellTriggerContext::kiljaeden_bot_has_fire_bloom;
+            &RaidSwpTriggerContext::kiljaeden_bot_has_fire_bloom;
 
         creators["kil'jaeden says: Chaos! Destruction! Oblivion!"] =
-            &RaidSunwellTriggerContext::kiljaeden_says_chaos_destruction_oblivion;
+            &RaidSwpTriggerContext::kiljaeden_says_chaos_destruction_oblivion;
 
         creators["kil'jaeden dragon orb is active"] =
-            &RaidSunwellTriggerContext::kiljaeden_dragon_orb_is_active;
+            &RaidSwpTriggerContext::kiljaeden_dragon_orb_is_active;
 
         creators["kil'jaeden bot has stale root after dragon"] =
-            &RaidSunwellTriggerContext::kiljaeden_bot_has_stale_root_after_dragon;
+            &RaidSwpTriggerContext::kiljaeden_bot_has_stale_root_after_dragon;
 
         creators["kil'jaeden bot controls dragon"] =
-            &RaidSunwellTriggerContext::kiljaeden_bot_controls_dragon;
+            &RaidSwpTriggerContext::kiljaeden_bot_controls_dragon;
     }
 
 private:
@@ -323,6 +326,9 @@ private:
     // Eredar Twins
     static Trigger* eredar_twins_melee_is_at_balcony(PlayerbotAI* botAI) {
         return new EredarTwinsMeleeIsAtBalconyTrigger(botAI);
+    }
+    static Trigger* eredar_twins_should_announce_alythess_tank(PlayerbotAI* botAI) {
+        return new EredarTwinsShouldAnnounceAlythessTankTrigger(botAI);
     }
     static Trigger* eredar_twins_pulling_bosses(PlayerbotAI* botAI) {
         return new EredarTwinsPullingBossesTrigger(botAI);

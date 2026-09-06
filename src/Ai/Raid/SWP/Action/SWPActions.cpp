@@ -15,7 +15,7 @@
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <list>
 
 using namespace SwpHelpers;
@@ -51,6 +51,8 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     }
 
     // Eredar Twins
+    reset |= alythessTankLastBlazeGuid.erase(guid) > 0;
+
     Action* twinsAction = context->GetAction("eredar twins alythess tank move out of blaze");
     if (twinsAction && static_cast<EredarTwinsAlythessTankMoveOutOfBlazeAction*>(
             twinsAction)->ResetAlythessTankStep())
@@ -82,6 +84,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0;
     reset |= eredarTwinsBlazeTargetStates.erase(instanceId) > 0;
     reset |= eredarTwinsDpsHoldStartMs.erase(instanceId) > 0;
+    reset |= eredarTwinsTankAssignments.erase(instanceId) > 0;
     reset |= muruDarknessStates.erase(instanceId) > 0;
     reset |= muruVoidSentinelTankAssignments.erase(instanceId) > 0;
     reset |= kiljaedenEncounterStates.erase(instanceId) > 0;
@@ -91,46 +94,35 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
+// Clear Kalecgos's Arcane Buffet, the Eredar Twins' Flame Sear, and Kil'jaeden's Fire Bloom.
+bool SunwellPlateauRemoveDebuffWithImmunityAction::Execute(Event /*event*/)
+{
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
+}
+
 bool SunwellPlateauRemoveAuraAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_MAGE && bot->HasAura(Id(SwpSpells::SPELL_ICE_BLOCK)))
+    // Only the immunities that stop the bot from contributing should be cancelled, so Cloak of
+    // Shadows and HPal bubbles are excluded.
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    if (spellId && bot->getClass() != CLASS_ROGUE && !PlayerbotAI::IsHeal(bot) &&
+        bot->HasAura(spellId))
     {
-        bot->RemoveAura(Id(SwpSpells::SPELL_ICE_BLOCK));
+        bot->RemoveAura(spellId);
         return true;
     }
 
-    if (bot->getClass() == CLASS_PALADIN && !PlayerbotAI::IsHeal(bot) &&
-        bot->HasAura(Id(SwpSpells::SPELL_DIVINE_SHIELD)))
-    {
-        bot->RemoveAura(Id(SwpSpells::SPELL_DIVINE_SHIELD));
-        return true;
-    }
-
-    InstanceScript* instance = bot->GetInstanceScript();
-    if (!instance || instance->IsEncounterInProgress())
+    if (IsEncounterInProgress(bot, SWP_MAP_ID))
         return false;
 
     // It is Blizzlike for Burn to persist after the kill, but bots will murder the raid without
-    // a dedicated non-combat strategy for it. It's no fun to do that and wait around for expiry
-    // so I'm just wiping the aura after the encounter.
+    // a dedicated non-combat strategy for it. That's a waste of time, so just wipe the aura.
     if (!HasBrutallusBurn(bot))
         return false;
 
     bot->RemoveAura(Id(SwpSpells::SPELL_BURN));
     return true;
-}
-
-namespace SwpHelpers
-{
-
-ObjectGuid FindSwpVolatileFiendGuid(Player* bot)
-{
-    Creature* fiend = bot->FindNearestCreature(
-        Id(SwpNpcs::NPC_VOLATILE_FIEND), VOLATILE_FIEND_SEARCH_RADIUS, true);
-
-    return fiend ? fiend->GetGUID() : ObjectGuid::Empty;
-}
-
 }
 
 bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
@@ -142,13 +134,12 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
     if (PlayerbotAI::IsTank(bot))
         return AI_VALUE(Unit*, "current target") != volatileFiend && Attack(volatileFiend);
 
-    constexpr float safeDistance = 20.0f;
-    float const currentDistance = bot->GetDistance(volatileFiend);
-    if (currentDistance >= safeDistance)
+    float const currentDistance = bot->GetExactDist2d(volatileFiend);
+    if (currentDistance >= VOLATILE_FIEND_SAFE_DISTANCE)
         return false;
 
     bot->CastStop();
-    return MoveAway(volatileFiend, safeDistance - currentDistance);
+    return MoveAway(volatileFiend, VOLATILE_FIEND_SAFE_DISTANCE - currentDistance);
 }
 
 // At low health, Infernal Defense is cast, granting immunity to all damage but holy
@@ -171,6 +162,9 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
         if (!target || apocalypseGuard->GetGUID() < target->GetGUID())
             target = apocalypseGuard;
     }
+
+    if (!target)
+        return false;
 
     if (bot->HasAura(Id(SwpSpells::SPELL_SHADOWFORM)))
         bot->RemoveAura(Id(SwpSpells::SPELL_SHADOWFORM));

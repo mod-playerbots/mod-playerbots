@@ -9,7 +9,7 @@
 
 #include "ObjectGuid.h"
 #include "Position.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <array>
 #include <unordered_map>
 #include <unordered_set>
@@ -60,11 +60,17 @@ inline std::array const KILJAEDEN_DRAGON_ORB_ENTRIES = {
     Id(SwpObjects::GO_DRAGON_ORB_4),
 };
 
+inline std::array const KILJAEDEN_DRAGON_SPELLS = {
+    Id(SwpSpells::SPELL_SHIELD_OF_THE_BLUE),
+    Id(SwpSpells::SPELL_DRAGON_BREATH_HASTE),
+    Id(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE),
+};
+
 inline constexpr float KILJAEDEN_PHASE3_HP_THRESHOLD = 85.0f;
 inline constexpr float KILJAEDEN_PHASE4_HP_THRESHOLD = 55.0f;
 inline constexpr float KILJAEDEN_PHASE5_HP_THRESHOLD = 25.0f;
 
-// Feeds the "kiljaeden hands" value.
+// For the "kiljaeden hands" value.
 inline constexpr uint32 HAND_CACHE_INTERVAL_MS = 200;
 // The presence of Dragon Orbs is cached, but GO_FLAG_IN_USE and GO_FLAG_NOT_SELECTABLE are not.
 inline constexpr uint32 DRAGON_ORB_CACHE_INTERVAL_MS = 200;

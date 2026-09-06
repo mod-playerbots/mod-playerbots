@@ -8,7 +8,7 @@
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "SWPEncounter_Brut.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <cmath>
 
 using namespace SwpHelpers;
@@ -149,9 +149,6 @@ bool BrutallusPositionMeleeAtRearCenterAction::TryGetBrutallusMeleePosition(
     }
     else
     {
-        float const assistTankAngle =
-            GetBrutallusAssistTankAngle(brutallus, assistTank, mainTankAngle);
-
         float const midpointX =
             (mainTank->GetPositionX() + assistTank->GetPositionX()) / 2.0f;
         float const midpointY =
@@ -159,6 +156,9 @@ bool BrutallusPositionMeleeAtRearCenterAction::TryGetBrutallusMeleePosition(
 
         if (brutallus->GetExactDist2d(midpointX, midpointY) <= 0.1f)
         {
+            float const assistTankAngle =
+                GetBrutallusAssistTankAngle(brutallus, assistTank, mainTankAngle);
+
             float assistAngleDelta =
                 Position::NormalizeOrientation(assistTankAngle - mainTankAngle);
             if (assistAngleDelta > static_cast<float>(M_PI))
@@ -176,7 +176,7 @@ bool BrutallusPositionMeleeAtRearCenterAction::TryGetBrutallusMeleePosition(
     }
 
     float const baseAngle = Position::NormalizeOrientation(midpointAngle + M_PI);
-    float const angleOffset = GetBrutallusCenteredArcSlotAngleOffset(
+    float const angleOffset = GetCenteredArcSlotAngleOffset(
         localMeleeIndex, maxMeleeSlots, BRUTALLUS_SHARED_SAFE_MELEE_ARC_WIDTH);
 
     float const angle = Position::NormalizeOrientation(baseAngle + angleOffset);
@@ -419,21 +419,6 @@ bool BrutallusIsolateBurnAction::Execute(Event /*event*/)
 
 bool BrutallusIsolateBurnAction::RemoveBurnWithCooldown()
 {
-    switch (bot->getClass())
-    {
-        case CLASS_MAGE:
-            return botAI->CanCastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot) &&
-                botAI->CastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot);
-
-        case CLASS_PALADIN:
-            return botAI->CanCastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot) &&
-                botAI->CastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot);
-
-        case CLASS_ROGUE:
-            return botAI->CanCastSpell(Id(SwpSpells::SPELL_CLOAK_OF_SHADOWS), bot) &&
-                botAI->CastSpell(Id(SwpSpells::SPELL_CLOAK_OF_SHADOWS), bot);
-
-        default:
-            return false;
-    }
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
 }

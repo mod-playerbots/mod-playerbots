@@ -9,7 +9,7 @@
 
 #include "ObjectGuid.h"
 #include "Position.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <array>
 #include <unordered_map>
 #include <vector>
@@ -34,10 +34,26 @@ struct EredarTwinsBlazeTargetState
     uint32 startMs = 0;
 };
 
+// Which branch of the Alythess tank assignment was taken (for the raid announcement).
+enum class AlythessTankSource : uint8
+{
+    Unresolved,
+    MainTankPaladin,  // (1) The main tank is a Paladin;
+    PaladinTank,      // (2) the Paladin tank with highest max HP; or
+    MainTankFallback, // (3) no Paladin tank at all, so the non-Paladin main tank
+};
+
+struct EredarTwinsTankAssignment
+{
+    ObjectGuid alythessTankGuid = ObjectGuid::Empty;
+    AlythessTankSource source = AlythessTankSource::Unresolved;
+    uint32 announcementMs = 0;
+};
+
 // Used to measure if a bot is on the balcony; deliberately a little below the actual balcony Z.
 inline constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
 
-// Feeds the "eredar twins blaze" value.
+// For the "eredar twins blaze" value.
 inline constexpr uint32 EREDAR_TWINS_BLAZE_CACHE_INTERVAL_MS = 200;
 // The Blaze trap GO casts 45246, dealing damage in a 3y radius; extra 1.5y is avoidance buffer.
 inline constexpr float BLAZE_DANGER_RADIUS = 4.5f;
@@ -49,7 +65,8 @@ inline constexpr uint32 EREDAR_TWINS_DPS_HOLD_MS = 8000;
 // fight due to Sacrolash dropping threat on tanks and Alythess targeting Conflagration based on
 // Sacrolash's threat table.
 inline constexpr float EREDAR_TWINS_MAX_DPS_HP_PERCENT = 80.0f;
-// Don't exceed this percentage of the tank's threat
+// Don't exceed this percentage of the tank's threat. For Sacrolash, the limit is based on the
+// second highest tank (unless there is only one Sacrolash tank).
 inline constexpr float SACROLASH_THREAT_HOLD_RATIO = 0.8f;
 inline constexpr float ALYTHESS_THREAT_HOLD_RATIO = 0.9f;
 
@@ -87,14 +104,21 @@ extern std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
 	eredarTwinsIncomingConflagrationStates;
 extern std::unordered_map<uint32, EredarTwinsBlazeTargetState> eredarTwinsBlazeTargetStates;
 extern std::unordered_map<uint32, uint32> eredarTwinsDpsHoldStartMs;
+extern std::unordered_map<uint32, EredarTwinsTankAssignment> eredarTwinsTankAssignments;
+// For the Alythess tank: the last Blaze it moved away from, so one Blaze moves it only one step.
+extern std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
 
 Position GetAlythessTankPosition(Unit* alythess, uint8 index);
 Position GetEredarTwinsP2MeleePosition(Unit* alythess);
 Position GetEredarTwinsP2RangedPosition(Unit* alythess);
-bool IsAnySacrolashTank(Player* bot);
+void ResolveEredarTwinsTankAssignment(Player* bot);
+Player* GetAlythessTank(Player* bot);
 bool IsAlythessTank(Player* bot);
-bool ShouldHoldTwinThreat(
-    Player* bot, Unit* boss, float threatHoldRatio, bool (*isTwinTank)(Player*));
+AlythessTankSource GetAlythessTankSource(Player* bot);
+Player* GetSacrolashTank(Player* bot, uint8 index);
+bool IsAnySacrolashTank(Player* bot);
+bool ShouldHoldAlythessThreat(Player* bot, Unit* alythess);
+bool ShouldHoldSacrolashThreat(Player* bot, Unit* sacrolash);
 std::vector<Position> FindEredarTwinsBlazePositions(Player* bot);
 bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position);
 bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
