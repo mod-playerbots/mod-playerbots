@@ -122,8 +122,7 @@ struct Position;
 // ALWAYS AWAKE. Walk movement never sleeps the AI. An early-out in the
 // action absorbs re-issues and lower-priority calls instead: still moving
 // toward a destination that hasn't meaningfully changed → nothing to do.
-// Combat callers pass react=true to opt out of that early-out, so a chase
-// re-aims every tick.
+// Combat callers leave react=false; the early-out still checks again when the target moves.
 //
 // CROSS-TRANSPORT FOLLOW. Following someone onto a different deck is not a
 // walk — there is no navmesh spanning two independently moving transports.
