@@ -62,7 +62,7 @@ bool CanReachPortalBeforeExpiry(Player* bot)
     if (!exhaustion)
         return true;
 
-    return exhaustion->GetDuration() <= static_cast<int32>(SPECTRAL_RIFT_ENTRY_WINDOW_MS);
+    return exhaustion->GetDuration() <= SPECTRAL_RIFT_ENTRY_WINDOW_MS;
 }
 
 bool IsPortalEligibleCandidate(Player* bot)
