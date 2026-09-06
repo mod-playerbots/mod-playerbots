@@ -13,6 +13,7 @@
 #include "GenericSpellActions.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "InstanceScript.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "PaladinActions.h"
@@ -28,6 +29,24 @@
 
 namespace EncounterHelpers
 {
+
+// Calling InstanceScript::IsEncounterInProgress is a very cheap check to use as an initial gate
+// for triggers and multipliers that should run only during a boss fight. This will not work for
+// every single encounter, as some bosses are not scripted to report IN_PROGRESS (but at least in
+// TBC raids, that is rare: only Terestian Illhoof and Illidari Council do not). It's also possible
+// for a boss script to set IN_PROGRESS upon an event other than the pull; that's at least the case
+// with Kil'jaeden, who is set to IN_PROGRESS only after 1 of the 3 Hands of the Deceiver is killed
+// in phase 1. To avoid spamming this check across each trigger and multiplier, you can create a
+// derived class of Trigger or Multiplier to call this helper and then derive your triggers and
+// multipliers from the intermediate class.
+bool IsEncounterInProgress(Player* bot, uint32 mapId)
+{
+    if (bot->GetMapId() != mapId)
+        return false;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    return instance && instance->IsEncounterInProgress();
+}
 
 // Calculate incremental movement to a position. No ground or collision is validated. The
 // Z position passed for the MoveTo() action using this helper should use the bot's Z, not the
