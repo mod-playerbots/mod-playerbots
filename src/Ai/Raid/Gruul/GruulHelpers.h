@@ -58,7 +58,6 @@ inline constexpr uint32 GRUUL_MAP_ID = 565;
 // Ogre combat reaches:
 // (1) Maulgar = 3.5y, (2) Olm = 2.2y, (3) Blindeye = 3.525y, (4) Krosh = 2y, (5) Kiggler = 3.3y
 
-
 // For the "high king maulgar krosh mage tank" and "high king maulgar kiggler moonkin tank" values.
 inline constexpr uint32 CASTER_TANK_CACHE_INTERVAL_MS = 1000;
 // Hold cooldowns until Blindeye is at this percent health.
