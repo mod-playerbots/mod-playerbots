@@ -630,12 +630,21 @@ bool TryFindSpotPastFogThreshold(
         (bestProjection.GetPositionX() - threshold.a.GetPositionX()) * alongX +
         (bestProjection.GetPositionY() - threshold.a.GetPositionY()) * alongY;
 
-    for (float clearance = minThresholdClearance; clearance <= maxClearance;
-            clearance += clearanceStep)
+    constexpr uint32 clearanceStepCount =
+        static_cast<uint32>((maxClearance - minThresholdClearance) / clearanceStep);
+    constexpr uint32 lateralStepCount =
+        static_cast<uint32>(2.0f * maxLateralOffset / lateralStep);
+
+    for (uint32 clearanceIndex = 0; clearanceIndex <= clearanceStepCount; ++clearanceIndex)
     {
-        for (float lateral = -maxLateralOffset; lateral <= maxLateralOffset;
-                lateral += lateralStep)
+        float const clearance =
+            minThresholdClearance + static_cast<float>(clearanceIndex) * clearanceStep;
+
+        for (uint32 lateralIndex = 0; lateralIndex <= lateralStepCount; ++lateralIndex)
         {
+            float const lateral =
+                -maxLateralOffset + static_cast<float>(lateralIndex) * lateralStep;
+
             float const along = projectionAlong + lateral;
             if (along < 0.0f || along > segmentLength)
                 continue;
