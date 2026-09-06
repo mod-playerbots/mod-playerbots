@@ -5,7 +5,10 @@ DELETE FROM ai_playerbot_texts WHERE name IN (
     'sathrovarr_health_when_kalecgos_below_twenty_percent_health',
     'felmyst_flight_leader',
     'kiljaeden_designated_dragon_orb_user',
-    'kiljaeden_no_designated_dragon_orb_user'
+    'kiljaeden_no_designated_dragon_orb_user',
+    'eredar_twins_alythess_tank_main_tank_paladin',
+    'eredar_twins_alythess_tank_paladin_tank',
+    'eredar_twins_alythess_tank_no_paladin'
 );
 
 DELETE FROM ai_playerbot_texts_chance WHERE name IN (
@@ -15,7 +18,10 @@ DELETE FROM ai_playerbot_texts_chance WHERE name IN (
     'sathrovarr_health_when_kalecgos_below_twenty_percent_health',
     'felmyst_flight_leader',
     'kiljaeden_designated_dragon_orb_user',
-    'kiljaeden_no_designated_dragon_orb_user'
+    'kiljaeden_no_designated_dragon_orb_user',
+    'eredar_twins_alythess_tank_main_tank_paladin',
+    'eredar_twins_alythess_tank_paladin_tank',
+    'eredar_twins_alythess_tank_no_paladin'
 );
 
 INSERT INTO ai_playerbot_texts
@@ -46,12 +52,27 @@ VALUES
 INSERT INTO ai_playerbot_texts
     (id, name, text, say_type, reply_type, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8)
 VALUES
-    (1918, 'kiljaeden_designated_dragon_orb_user', '%bot is the first assistant and the designated dragon orb user!', 0, 0, '', '', '', '', '', '', '', '');
+    (1918, 'kiljaeden_designated_dragon_orb_user', '%bot is the first assistant bot and the designated dragon orb user. If you would like only players to control dragons, please remove assistant flags from all bots.', 0, 0, '', '', '', '', '', '', '', '');
 
 INSERT INTO ai_playerbot_texts
     (id, name, text, say_type, reply_type, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8)
 VALUES
-    (1919, 'kiljaeden_no_designated_dragon_orb_user', 'No bot has been assigned as the designated dragon orb user, and therefore a player must control the dragons. If you would like a bot to use the dragon orbs, please set the assistant flag for a bot.', 0, 0, '', '', '', '', '', '', '', '');
+    (1919, 'kiljaeden_no_designated_dragon_orb_user', 'No bot has an assistant flag, and therefore a player must control the dragons. If you would like a bot to control the dragons, please set the assistant flag for a bot.', 0, 0, '', '', '', '', '', '', '', '');
+
+INSERT INTO ai_playerbot_texts
+    (id, name, text, say_type, reply_type, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8)
+VALUES
+    (1920, 'eredar_twins_alythess_tank_main_tank_paladin', 'Alythess requires a Paladin tank. %bot is the main tank and a Paladin and is assigned to tank Alythess.', 0, 0, '', '', '', '', '', '', '', '');
+
+INSERT INTO ai_playerbot_texts
+    (id, name, text, say_type, reply_type, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8)
+VALUES
+    (1921, 'eredar_twins_alythess_tank_paladin_tank', 'Alythess requires a Paladin tank. The main tank is not a Paladin. %bot is the best-geared Paladin tank and is assigned to tank Alythess.', 0, 0, '', '', '', '', '', '', '', '');
+
+INSERT INTO ai_playerbot_texts
+    (id, name, text, say_type, reply_type, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8)
+VALUES
+    (1922, 'eredar_twins_alythess_tank_no_paladin', 'Alythess requires a Paladin tank. However, no Paladin tank is present. Therefore, the main tank, %bot, is assigned to tank Alythess.', 0, 0, '', '', '', '', '', '', '', '');
 
 INSERT INTO ai_playerbot_texts_chance (name, probability) VALUES
     ('kalecgos_tank_sent_to_spectral_realm', 100),
@@ -60,4 +81,7 @@ INSERT INTO ai_playerbot_texts_chance (name, probability) VALUES
     ('sathrovarr_health_when_kalecgos_below_twenty_percent_health', 100),
     ('felmyst_flight_leader', 100),
     ('kiljaeden_designated_dragon_orb_user', 100),
-    ('kiljaeden_no_designated_dragon_orb_user', 100);
+    ('kiljaeden_no_designated_dragon_orb_user', 100),
+    ('eredar_twins_alythess_tank_main_tank_paladin', 100),
+    ('eredar_twins_alythess_tank_paladin_tank', 100),
+    ('eredar_twins_alythess_tank_no_paladin', 100);

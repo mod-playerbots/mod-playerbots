@@ -9,9 +9,12 @@
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
 #include "SWPEncounter_Felmyst.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <algorithm>
 #include <cmath>
+#include <limits>
+#include <string>
+#include <vector>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -88,14 +91,8 @@ bool FelmystMeleeStackBehindBossAction::Execute(Event /*event*/)
 
 bool FelmystRemoveEncapsulateAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_MAGE)
-    {
-        return botAI->CanCastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot) &&
-            botAI->CastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot);
-    }
-
-    return botAI->CanCastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot) &&
-        botAI->CastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot);
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
 }
 
 bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
@@ -201,11 +198,11 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor(bool unrestricted)
 {
     std::vector<Creature*> const hazards = GetDemonicVaporHazards(bot);
 
-    constexpr float hazardRadius = 13.5f;
+    constexpr float hazardRadius = 13.0f;
     bool inDanger = false;
     for (Creature* hazard : hazards)
     {
-        if (hazard && bot->GetDistance2d(hazard) < hazardRadius)
+        if (hazard && bot->GetExactDist2d(hazard) < hazardRadius)
         {
             inDanger = true;
             break;
@@ -250,7 +247,7 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor(bool unrestricted)
             bool isSafe = true;
             for (Creature* hazard : hazards)
             {
-                if (hazard && hazard->GetDistance2d(candidateX, candidateY) < hazardRadius)
+                if (hazard && hazard->GetExactDist2d(candidateX, candidateY) < hazardRadius)
                 {
                     isSafe = false;
                     break;
@@ -265,7 +262,7 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor(bool unrestricted)
                 bot, botX, botY, botZ, candidateX, candidateY, candidateZ, false);
 
             float const moveDistance = bot->GetExactDist2d(candidateX, candidateY);
-            if (!foundSafe || moveDistance < minMoveDistance)
+            if (moveDistance < minMoveDistance)
             {
                 bestPos = Position(candidateX, candidateY, candidateZ);
                 minMoveDistance = moveDistance;
@@ -288,8 +285,8 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor(bool unrestricted)
 
 bool FelmystAvoidDemonicVaporAction::MoveToFlightLeader(Player* leader)
 {
-    constexpr float followDist = 2.0f;
-    float const currentDistance = bot->GetDistance2d(leader);
+    constexpr float followDist = 5.0f;
+    float const currentDistance = bot->GetExactDist2d(leader);
     if (currentDistance <= followDist)
         return false;
 
@@ -392,12 +389,11 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
     }
 
     Position destination;
-    Position const referencePoint(
-        felmyst->GetPositionX(), felmyst->GetPositionY(), felmyst->GetPositionZ());
+    bool const foundDestination = shouldRepositionAfterThirdPass ?
+        TryGetFelmystLandingApproachDestination(bot, thirdPassLane, felmyst, destination) :
+        TryGetFelmystFogCrossingDestination(bot, fogState.lane, destination);
 
-    if (!TryGetFelmystFogSafeDestination(
-            bot, shouldRepositionAfterThirdPass ? thirdPassLane : fogState.lane,
-            destination, shouldRepositionAfterThirdPass ? &referencePoint : nullptr))
+    if (!foundDestination)
     {
         _fogCrateStuckSampleMs = 0;
         return false;

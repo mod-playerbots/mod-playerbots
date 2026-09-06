@@ -9,7 +9,7 @@
 
 #include "ObjectGuid.h"
 #include "Position.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <array>
 #include <limits>
 #include <unordered_map>
@@ -122,6 +122,10 @@ inline constexpr float FELMYST_CHARMED_TARGET_RANGE = 30.0f;
 inline constexpr uint32 FELMYST_GROUNDED_DPS_WAIT_MS = 3000;
 // How close Felmyst must be to a specified position to be considered there.
 inline constexpr float FELMYST_LOCATION_MATCH_DISTANCE = 2.0f;
+// How far a fog destination must be from any vapor. Vapor has a 3y radius and no real buffer is
+// needed since this distance is for a non-moving bot, but the visual looks much wider than 3y
+// so a bit of leeway allows for some more realism as players would not stand so close.
+inline constexpr float FOG_DESTINATION_VAPOR_CLEARANCE = 8.0f;
 
 inline Position const FOG_LEFT_SIDE =  { 1469.064f, 729.585f, 59.824f, 4.677f };
 inline Position const FOG_RIGHT_SIDE = { 1458.556f, 502.200f, 59.900f, 1.606f };
@@ -222,9 +226,9 @@ bool IsFelmystDemonicVaporHeadNearBot(Player* bot);
 std::vector<Creature*> GetDemonicVaporHazards(Player* bot);
 void ClearFelmystDemonicVaporKiteState(Player* bot);
 bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination);
-bool TryGetFelmystFogSafeDestination(
-    Player* bot, FogLane dangerLane, Position& destination,
-    Position const* referencePoint = nullptr);
+bool TryGetFelmystFogCrossingDestination(Player* bot, FogLane dangerLane, Position& destination);
+bool TryGetFelmystLandingApproachDestination(
+    Player* bot, FogLane lastCompletedLane, Unit* felmyst, Position& destination);
 bool IsFelmystLanding(Unit* felmyst);
 bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
 bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane);

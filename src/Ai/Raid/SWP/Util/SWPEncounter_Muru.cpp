@@ -6,6 +6,8 @@
 
 #include "SWPEncounter_Muru.h"
 #include "AiObjectContext.h"
+#include "CharmInfo.h"
+#include "CreatureAI.h"
 #include "Playerbots.h"
 #include <algorithm>
 #include <limits>
@@ -120,7 +122,7 @@ Unit* SelectNearestQualifying(
     Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
 
     Unit* best = nullptr;
-    float bestDistance = 0.0f;
+    float bestDistance = std::numeric_limits<float>::max();
 
     for (ObjectGuid const& guid : candidates)
     {
@@ -135,7 +137,7 @@ Unit* SelectNearestQualifying(
         if (candidate == currentTarget)
             return candidate;
 
-        if (!best || distance < bestDistance)
+        if (distance < bestDistance)
         {
             best = candidate;
             bestDistance = distance;
@@ -206,11 +208,25 @@ bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs)
     if (!TryGetMuruDarknessActiveState(bot, muru))
         return false;
 
+    return PeekMuruDarknessEarlyState(bot, earlyWindowMs);
+}
+
+bool PeekMuruDarknessActiveState(Player* bot)
+{
+    auto const stateItr = muruDarknessStates.find(bot->GetInstanceId());
+    return stateItr != muruDarknessStates.end() && stateItr->second.expireMs > getMSTime();
+}
+
+bool PeekMuruDarknessEarlyState(Player* bot, uint32 earlyWindowMs)
+{
     auto const stateItr = muruDarknessStates.find(bot->GetInstanceId());
     if (stateItr == muruDarknessStates.end())
         return false;
 
     uint32 const now = getMSTime();
+    if (stateItr->second.expireMs <= now)
+        return false;
+
     return stateItr->second.startMs < now && now - stateItr->second.startMs < earlyWindowMs;
 }
 
@@ -302,6 +318,26 @@ Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI)
         &IsSpellFuryBuffedFuryMage);
 }
 
+Position const& GetAssignedVoidSentinelTankPosition(Unit* voidSentinel)
+{
+    ObjectGuid const sentinelGuid = voidSentinel->GetGUID();
+    Position const& northPosition = MURU_VOID_SENTINEL_N_TANK_POSITION;
+    Position const& eastPosition = MURU_VOID_SENTINEL_E_TANK_POSITION;
+
+    auto& assignments = muruVoidSentinelTankAssignments[voidSentinel->GetInstanceId()];
+    auto assignmentItr = assignments.find(sentinelGuid);
+    if (assignmentItr == assignments.end())
+    {
+        float const northDistance = voidSentinel->GetExactDist2d(northPosition);
+        float const eastDistance = voidSentinel->GetExactDist2d(eastPosition);
+
+        uint8 const assignedIndex = northDistance <= eastDistance ? 0 : 1;
+        assignmentItr = assignments.emplace(sentinelGuid, assignedIndex).first;
+    }
+
+    return assignmentItr->second == 0 ? northPosition : eastPosition;
+}
+
 bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -355,7 +391,7 @@ Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI)
         if (!unit)
             continue;
 
-        float const distance = bot->GetDistance2d(unit);
+        float const distance = bot->GetExactDist2d(unit);
         if (distance >= nearestDistance)
             continue;
 
@@ -396,6 +432,37 @@ Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI)
     }
 
     return bestSpawn;
+}
+
+bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target)
+{
+    if (!controlled || !controlled->IsAlive() || !target || controlled->GetVictim() == target)
+        return false;
+
+    controlled->ClearUnitState(UNIT_STATE_FOLLOW);
+    controlled->AttackStop();
+    controlled->SetTarget(target->GetGUID());
+
+    if (CharmInfo* charmInfo = controlled->GetCharmInfo())
+    {
+        charmInfo->SetIsCommandAttack(true);
+        charmInfo->SetIsAtStay(false);
+        charmInfo->SetIsFollowing(false);
+        charmInfo->SetIsCommandFollow(false);
+        charmInfo->SetIsReturning(false);
+    }
+
+    if (!controlled->IsPlayer() && controlled->IsCreature() &&
+        controlled->ToCreature()->IsAIEnabled)
+    {
+        controlled->ToCreature()->AI()->AttackStart(target);
+    }
+    else
+    {
+        controlled->Attack(target, true);
+    }
+
+    return true;
 }
 
 }

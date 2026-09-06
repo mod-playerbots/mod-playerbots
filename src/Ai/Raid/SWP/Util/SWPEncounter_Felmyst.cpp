@@ -7,7 +7,7 @@
 #include "SWPEncounter_Felmyst.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <algorithm>
 #include <cmath>
 #include <list>
@@ -559,82 +559,146 @@ std::vector<Creature*> GetDemonicVaporHazards(Player* bot)
     return hazards;
 }
 
-bool TryGetFelmystFogSafeDestination(
-    Player* bot, FogLane dangerLane, Position& destination, Position const* referencePoint)
+namespace
 {
-    if (dangerLane == FogLane::None)
+
+bool TryFindSpotPastFogThreshold(
+    Player* bot, FogLane lane, Position const& projectFrom, Position& destination)
+{
+    if (lane == FogLane::None)
         return false;
 
-    uint8 const dangerIndex = static_cast<uint8>(dangerLane);
-    if (dangerIndex >= FOG_SAFE_THRESHOLDS.size())
+    uint8 const laneIndex = static_cast<uint8>(lane);
+    if (laneIndex >= FOG_SAFE_THRESHOLDS.size())
         return false;
 
-    Position const projectFrom = referencePoint ? *referencePoint :
-        Position(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
-
-    // During active fog, the bot takes the shortest route to a safe spot in another lane.
-    // After the third pass, the caller passes Felmyst's position instead so bots run parallel to
-    // the lands to the end that Felmyst is at in preparation for her landing.
     Position const bestProjection = ClosestPointOnSegment(
-        projectFrom, FOG_SAFE_THRESHOLDS[dangerIndex].a, FOG_SAFE_THRESHOLDS[dangerIndex].b);
+        projectFrom, FOG_SAFE_THRESHOLDS[laneIndex].a, FOG_SAFE_THRESHOLDS[laneIndex].b);
 
-    FogSafeThreshold const& threshold = FOG_SAFE_THRESHOLDS[dangerIndex];
+    FogSafeThreshold const& threshold = FOG_SAFE_THRESHOLDS[laneIndex];
 
-    // Offset past the threshold toward the safe side.
-    // For west→east segments: north = +X, south = -X.
     float const perpX = threshold.safeSideIsNorth ?
         -(threshold.b.GetPositionY() - threshold.a.GetPositionY()) :
          (threshold.b.GetPositionY() - threshold.a.GetPositionY());
     float const perpY = threshold.safeSideIsNorth ?
         (threshold.b.GetPositionX() - threshold.a.GetPositionX()) :
         -(threshold.b.GetPositionX() - threshold.a.GetPositionX());
-    float const perpLen = std::hypot(perpX, perpY);
-    if (perpLen <= 0.0f)
+
+    float const segmentLength = std::hypot(perpX, perpY);
+    if (segmentLength <= 0.0f)
         return false;
 
-    constexpr float minThresholdClearance = 3.0f;
-    float const unitX = perpX / perpLen;
-    float const unitY = perpY / perpLen;
+    float const unitX = perpX / segmentLength;
+    float const unitY = perpY / segmentLength;
+
+    float const alongX = (threshold.b.GetPositionX() - threshold.a.GetPositionX()) / segmentLength;
+    float const alongY = (threshold.b.GetPositionY() - threshold.a.GetPositionY()) / segmentLength;
+
+    auto const clearancePastThreshold = [&threshold, unitX, unitY](float x, float y)
+    {
+        return (x - threshold.a.GetPositionX()) * unitX +
+            (y - threshold.a.GetPositionY()) * unitY;
+    };
 
     std::vector<Creature*> const hazards = GetDemonicVaporHazards(bot);
-    constexpr float hazardRadius = 10.0f;
-    constexpr float maxClearance = 30.0f;
-    constexpr float clearanceStep = 3.0f;
-
-    uint32 const clearanceStepCount =
-        static_cast<uint32>((maxClearance - minThresholdClearance) / clearanceStep);
-    for (uint32 step = 0; step <= clearanceStepCount; ++step)
+    auto const isClearOfVapor = [&hazards](float x, float y)
     {
-        float const clearance = minThresholdClearance + static_cast<float>(step) * clearanceStep;
-        float x = bestProjection.GetPositionX() + unitX * clearance;
-        float y = bestProjection.GetPositionY() + unitY * clearance;
-
-        bool blocked = false;
         for (Creature* hazard : hazards)
         {
-            if (hazard && hazard->GetDistance2d(x, y) < hazardRadius)
-            {
-                blocked = true;
-                break;
-            }
+            if (hazard && hazard->GetExactDist2d(x, y) < FOG_DESTINATION_VAPOR_CLEARANCE)
+                return false;
         }
 
-        if (!blocked)
+        return true;
+    };
+
+    constexpr float minThresholdClearance = 3.0f;
+    constexpr float maxClearance = 30.0f;
+    constexpr float clearanceStep = 3.0f;
+    constexpr float maxLateralOffset = 20.0f;
+    constexpr float lateralStep = 5.0f;
+
+    struct FogCandidate
+    {
+        float x;
+        float y;
+        float distance;
+    };
+
+    std::vector<FogCandidate> candidates;
+    float const projectionAlong =
+        (bestProjection.GetPositionX() - threshold.a.GetPositionX()) * alongX +
+        (bestProjection.GetPositionY() - threshold.a.GetPositionY()) * alongY;
+
+    for (float clearance = minThresholdClearance; clearance <= maxClearance;
+            clearance += clearanceStep)
+    {
+        for (float lateral = -maxLateralOffset; lateral <= maxLateralOffset;
+                lateral += lateralStep)
         {
-            float z = bot->GetMapWaterOrGroundLevel(x, y, bot->GetPositionZ());
-            if (z <= INVALID_HEIGHT)
-                z = bot->GetPositionZ();
+            float const along = projectionAlong + lateral;
+            if (along < 0.0f || along > segmentLength)
+                continue;
 
-            bot->GetMap()->CheckCollisionAndGetValidCoords(
-                bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-                x, y, z, false);
-
-            destination = Position(x, y, z);
-            return true;
+            float const x = bestProjection.GetPositionX() + unitX * clearance + alongX * lateral;
+            float const y = bestProjection.GetPositionY() + unitY * clearance + alongY * lateral;
+            candidates.push_back({ x, y, projectFrom.GetExactDist2d(x, y) });
         }
     }
 
+    std::sort(candidates.begin(), candidates.end(),
+        [](FogCandidate const& first, FogCandidate const& second)
+        {
+            return first.distance < second.distance;
+        });
+
+    for (FogCandidate const& candidate : candidates)
+    {
+        if (!isClearOfVapor(candidate.x, candidate.y))
+            continue;
+
+        float x = candidate.x;
+        float y = candidate.y;
+        float z = bot->GetMapWaterOrGroundLevel(x, y, bot->GetPositionZ());
+        if (z <= INVALID_HEIGHT)
+            z = bot->GetPositionZ();
+
+        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+                bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), x, y, z, true))
+        {
+            continue;
+        }
+
+        if (clearancePastThreshold(x, y) < minThresholdClearance || !isClearOfVapor(x, y))
+            continue;
+
+        destination = Position(x, y, z);
+        return true;
+    }
+
     return false;
+}
+
+} // end anonymous namespace 2
+
+bool TryGetFelmystFogCrossingDestination(Player* bot, FogLane dangerLane, Position& destination)
+{
+    Position const projectFrom(
+        bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
+
+    return TryFindSpotPastFogThreshold(bot, dangerLane, projectFrom, destination);
+}
+
+bool TryGetFelmystLandingApproachDestination(
+    Player* bot, FogLane lastCompletedLane, Unit* felmyst, Position& destination)
+{
+    if (!felmyst)
+        return false;
+
+    Position const projectFrom(
+        felmyst->GetPositionX(), felmyst->GetPositionY(), felmyst->GetPositionZ());
+
+    return TryFindSpotPastFogThreshold(bot, lastCompletedLane, projectFrom, destination);
 }
 
 Position const& GetFelmystMainTankGroundPosition(Player* bot)
@@ -741,8 +805,11 @@ bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !PlayerbotAI::IsRanged(member))
+        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsRanged(member))
+        {
             continue;
+        }
 
         if (PlayerbotAI::IsHeal(member) == botIsHealer && member->GetGUID() < botGuid)
             ++stackIndex;
@@ -778,7 +845,7 @@ bool IsFelmystDemonicVaporHeadNearBot(Player* bot)
 {
     constexpr float kiteDistanceThreshold = 15.0f;
     Creature* vapor = GetFelmystDemonicVaporSummonedByBot(bot);
-    return vapor && bot->GetDistance2d(vapor) <= kiteDistanceThreshold;
+    return vapor && bot->GetExactDist2d(vapor) <= kiteDistanceThreshold;
 }
 
 bool IsFelmystLanding(Unit* felmyst)
@@ -1154,7 +1221,7 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
     }
 
     Player* closestTarget = nullptr;
-    float closestDistance = 0.0f;
+    float closestDistance = std::numeric_limits<float>::max();
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -1164,8 +1231,8 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
 
         felmystEncounterStates[bot->GetInstanceId()].encapsulateOccurredThisGroundPhase = true;
 
-        float distance = bot->GetDistance2d(member);
-        if (!closestTarget || distance < closestDistance)
+        float distance = bot->GetExactDist(member);
+        if (distance < closestDistance)
         {
             closestTarget = member;
             closestDistance = distance;
@@ -1189,7 +1256,7 @@ Player* GetFelmystGasNovaDispelTarget(Player* bot)
         return nullptr;
 
     Player* closestTarget = nullptr;
-    float closestDistance = 0.0f;
+    float closestDistance = std::numeric_limits<float>::max();
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -1197,8 +1264,8 @@ Player* GetFelmystGasNovaDispelTarget(Player* bot)
         if (!member || !member->HasAura(Id(SwpSpells::SPELL_GAS_NOVA)))
             continue;
 
-        float distance = bot->GetDistance(member);
-        if (!closestTarget || distance < closestDistance)
+        float distance = bot->GetExactDist(member);
+        if (distance < closestDistance)
         {
             closestTarget = member;
             closestDistance = distance;
@@ -1232,7 +1299,7 @@ Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
         if (PlayerbotAI::IsMelee(bot) && !felmyst->IsFlying() && !bot->IsWithinMeleeRange(member))
             continue;
 
-        if (PlayerbotAI::IsRanged(bot) && bot->GetDistance2d(member) > 30.0f)
+        if (PlayerbotAI::IsRanged(bot) && bot->GetDistance2d(member) > RANGED_ABILITY_REACH)
             continue;
 
         if (member->GetHealth() < lowestHp)

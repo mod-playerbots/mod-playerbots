@@ -9,9 +9,10 @@
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
 #include "SWPEncounter_Kalec.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <cmath>
 #include <map>
+#include <string>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -174,27 +175,6 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
         return false;
 
     return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
-}
-
-bool KalecgosRemoveArcaneBuffetAction::Execute(Event /*event*/)
-{
-    switch (bot->getClass())
-    {
-        case CLASS_MAGE:
-            return botAI->CanCastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot) &&
-                botAI->CastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot);
-
-        case CLASS_PALADIN:
-            return botAI->CanCastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot) &&
-                botAI->CastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot);
-
-        case CLASS_ROGUE:
-            return botAI->CanCastSpell(Id(SwpSpells::SPELL_CLOAK_OF_SHADOWS), bot) &&
-                botAI->CastSpell(Id(SwpSpells::SPELL_CLOAK_OF_SHADOWS), bot);
-
-        default:
-            return false;
-    }
 }
 
 bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)

@@ -9,7 +9,7 @@
 
 #include "ObjectGuid.h"
 #include "Position.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <array>
 #include <unordered_map>
 
@@ -98,7 +98,6 @@ inline Position const BRUTALLUS_MAIN_TANK_POSITION = { 1483.528f, 595.346f, 23.5
 float GetBrutallusMainTankAngle(Unit* brutallus, Player* mainTank);
 float GetBrutallusAssistTankAngle(Unit* brutallus, Player* assistTank, float mainTankAngle);
 Position GetBrutallusPositionAtAngle(Player* bot, Unit* brutallus, float angle, float radius);
-float GetBrutallusCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth);
 bool TryGetBrutallusAssignedPositionIndex(Player* bot, uint8& positionIndex);
 bool TryGetBrutallusRangedPosition(
     Player* bot, Unit* brutallus, Player* mainTank, Player* assistTank,

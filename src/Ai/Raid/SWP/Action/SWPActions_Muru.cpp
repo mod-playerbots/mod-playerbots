@@ -5,18 +5,17 @@
  */
 
 #include "SWPActions.h"
-#include "CharmInfo.h"
-#include "CreatureAI.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "SWPEncounter_Muru.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <iterator>
 #include <list>
 #include <utility>
+#include <vector>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -468,27 +467,6 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-Position const& MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentinelTankPosition(
-    Unit* voidSentinel)
-{
-    ObjectGuid const sentinelGuid = voidSentinel->GetGUID();
-    Position const& northPosition = MURU_VOID_SENTINEL_N_TANK_POSITION;
-    Position const& eastPosition = MURU_VOID_SENTINEL_E_TANK_POSITION;
-
-    auto& assignments = muruVoidSentinelTankAssignments[voidSentinel->GetInstanceId()];
-    auto assignmentItr = assignments.find(sentinelGuid);
-    if (assignmentItr == assignments.end())
-    {
-        float const northDistance = voidSentinel->GetExactDist2d(northPosition);
-        float const eastDistance = voidSentinel->GetExactDist2d(eastPosition);
-
-        uint8 const assignedIndex = northDistance <= eastDistance ? 0 : 1;
-        assignmentItr = assignments.emplace(sentinelGuid, assignedIndex).first;
-    }
-
-    return assignmentItr->second == 0 ? northPosition : eastPosition;
-}
-
 bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
 {
     Position const& position = MURU_ENTRANCE_POSITION;
@@ -655,38 +633,6 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetControlledVoidSpawn() const
     return voidSpawn;
 }
 
-bool MuruEnslavedVoidSpawnAttackAction::CommandControlledCreatureToAttack(
-    Unit* controlled, Unit* target) const
-{
-    if (!controlled || !controlled->IsAlive() || !target || controlled->GetVictim() == target)
-        return false;
-
-    controlled->ClearUnitState(UNIT_STATE_FOLLOW);
-    controlled->AttackStop();
-    controlled->SetTarget(target->GetGUID());
-
-    if (CharmInfo* charmInfo = controlled->GetCharmInfo())
-    {
-        charmInfo->SetIsCommandAttack(true);
-        charmInfo->SetIsAtStay(false);
-        charmInfo->SetIsFollowing(false);
-        charmInfo->SetIsCommandFollow(false);
-        charmInfo->SetIsReturning(false);
-    }
-
-    if (!controlled->IsPlayer() && controlled->IsCreature() &&
-        controlled->ToCreature()->IsAIEnabled)
-    {
-        controlled->ToCreature()->AI()->AttackStart(target);
-    }
-    else
-    {
-        controlled->Attack(target, true);
-    }
-
-    return true;
-}
-
 bool MuruVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
 {
     Unit* voidSpawn = GetControlledVoidSpawn();
@@ -699,16 +645,18 @@ bool MuruVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
 
     bool const commandedAttack = CommandControlledCreatureToAttack(voidSpawn, target);
 
-    if (voidSpawn->GetDistance(target) > MURU_SHADOW_BOLT_VOLLEY_RADIUS)
+    if (voidSpawn->GetExactDist2d(target) >
+        MURU_SHADOW_BOLT_VOLLEY_RADIUS + target->GetCombatReach())
+    {
         return commandedAttack;
+    }
 
     constexpr uint32 volleySpellId = Id(SwpSpells::SPELL_SHADOW_BOLT_VOLLEY);
     if (voidSpawn->HasSpellCooldown(volleySpellId))
         return commandedAttack;
 
-    constexpr uint32 globalCooldown = 1000;
     voidSpawn->CastSpell(target, volleySpellId, true);
-    voidSpawn->AddSpellCooldown(volleySpellId, 0, globalCooldown);
+    voidSpawn->AddSpellCooldown(volleySpellId, 0, GetManualCastCooldown(volleySpellId));
     return true;
 }
 
@@ -745,11 +693,12 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetVoidSpawnVolleyPriorityTarget(Unit* 
 
 bool MuruKeepDistanceFromDarkFiendsAction::Execute(Event /*event*/)
 {
-    bot->CastStop();
-
+    // The trigger's search radius is wider than the distance worth moving for, so the cast is
+    // only interrupted once there is somewhere to go.
     if (Creature* voidZone = FindMuruVoidZoneToAvoid(botAI))
     {
-        float const distFromVoidZone = bot->GetDistance2d(voidZone);
+        float const distFromVoidZone = bot->GetExactDist2d(voidZone);
+        bot->CastStop();
         return MoveAway(voidZone, VOID_ZONE_SAFE_DISTANCE - distFromVoidZone);
     }
 
@@ -758,10 +707,11 @@ bool MuruKeepDistanceFromDarkFiendsAction::Execute(Event /*event*/)
     if (!darkFiend)
         return false;
 
-    float const distFromFiend = bot->GetDistance2d(darkFiend);
+    float const distFromFiend = bot->GetExactDist2d(darkFiend);
     if (distFromFiend > DARK_FIEND_SAFE_DISTANCE)
         return false;
 
+    bot->CastStop();
     return MoveAway(darkFiend, DARK_FIEND_SAFE_DISTANCE - distFromFiend);
 }
 
@@ -775,7 +725,8 @@ bool MuruEscapeTheSingularityAction::Execute(Event /*event*/)
     if (!singularity || !singularity->IsAlive())
         return false;
 
-    float const safeDistance = entropius->GetVictim() == bot ? 20.0f : 15.0f;
+    float const safeDistance = entropius->GetVictim() == bot ?
+        SINGULARITY_TANK_SAFE_DISTANCE : SINGULARITY_SAFE_DISTANCE;
     float const currentDistance = bot->GetExactDist2d(singularity);
     if (currentDistance >= safeDistance)
         return false;
