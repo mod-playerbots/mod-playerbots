@@ -13,6 +13,7 @@
 #include "GenericSpellActions.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "InstanceScript.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "PaladinActions.h"
@@ -29,9 +30,80 @@
 namespace EncounterHelpers
 {
 
-// Calculate incremental movement to a position. No ground or collision is validated. The
-// Z position passed for the MoveTo() action using this helper should use the bot's Z, not the
-// position's. Returns false once the bot is within arrivalDist.
+// Calling InstanceScript::IsEncounterInProgress is a very cheap check to use as an initial gate
+// for triggers and multipliers that should run only during a boss fight. This will not work for
+// every single encounter, as some bosses are not scripted to report IN_PROGRESS (but at least in
+// TBC raids, that is rare: only Terestian Illhoof and Illidari Council do not). It's also possible
+// for a boss script to set IN_PROGRESS upon an event other than the pull; that's at least the case
+// with Kil'jaeden, who is set to IN_PROGRESS only after 1 of the 3 Hands of the Deceiver is killed
+// in phase 1. To avoid spamming this check across each trigger and multiplier, you can create a
+// derived class of Trigger or Multiplier to call this helper and then derive your triggers and
+// multipliers from the intermediate class.
+bool IsEncounterInProgress(Player* bot, uint32 mapId)
+{
+    if (bot->GetMapId() != mapId)
+        return false;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    return instance && instance->IsEncounterInProgress();
+}
+
+// For validating ground and collision in connection with issuing incremental movement. The caller
+// gives a destination and how far to travel towards it per tick. The helper projects that step,
+// checks whether the bot can actually take it, and returns where it lands. The returned stepZ is
+// snapped to the ground, so a MoveTo() using this helper should pass stepZ rather than the bot's Z.
+bool CanTakeStepTowards(
+    Player* bot, float destinationX, float destinationY, float moveDist,
+    float& stepX, float& stepY, float& stepZ)
+{
+    constexpr float minMoveDistance = 0.5f;
+
+    float const distance = bot->GetExactDist2d(destinationX, destinationY);
+    if (distance < minMoveDistance)
+        return false;
+
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const botZ = bot->GetPositionZ();
+
+    float const ratio = std::min(moveDist, distance) / distance;
+    float candidateX = botX + (destinationX - botX) * ratio;
+    float candidateY = botY + (destinationY - botY) * ratio;
+    float candidateZ = bot->GetMapWaterOrGroundLevel(candidateX, candidateY, botZ);
+
+    if (candidateZ <= INVALID_HEIGHT)
+        candidateZ = botZ;
+
+    // The 9th parameter of CanReachPositionAndGetValidCoords(), failOnSlopes, returns false for a
+    // non-walkable slope, but in my experience, walking downhill is always possible, and thus the
+    // check needlessly rejects descents. This variable gets around that problem.
+    bool const failOnSlopes = candidateZ > botZ;
+
+    // This helper will return false on collision rather than clamping to the contact point so that
+    // the caller can try a different path. Clamping is useless for avoidance since the bot will die
+    // just the same if it is in the middle of a hazard vs. halfway out and returning true.
+    float const requestedX = candidateX;
+    float const requestedY = candidateY;
+
+    if (!bot->GetMap()->CanReachPositionAndGetValidCoords(
+            bot, botX, botY, botZ, candidateX, candidateY, candidateZ, true, failOnSlopes))
+    {
+        return false;
+    }
+
+    constexpr float truncationTolerance = 1.0f;
+    if (std::hypot(candidateX - requestedX, candidateY - requestedY) > truncationTolerance)
+        return false;
+
+    stepX = candidateX;
+    stepY = candidateY;
+    stepZ = candidateZ;
+    return true;
+}
+
+// Calculate incremental movement to a position. No ground or collision is validated, unlike
+// CanTakeStepTowards(). The Z position passed for the MoveTo() action using this helper should
+// use the bot's Z, not the position's. Returns false once the bot is within arrivalDist.
 bool GetStepToPosition(
     Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
     float& stepY, bool& backwards)
@@ -138,7 +210,7 @@ bool MarkTargetWithMoon(Player* bot, Unit* target)
 }
 
 // For clearing marks outside of combat so bots don't Leeroy on sight. This is best used when gated
-// behind an out of combat check (such as with IsInCombatValue).
+// behind an out-of-combat check (such as with IsInCombatValue).
 bool ClearTargetIcon(Player* bot, uint8 iconId)
 {
     Group* group = bot->GetGroup();
@@ -252,8 +324,7 @@ Player* GetGroupAssistTank(Player* bot, uint8 index)
     return nullptr;
 }
 
-// Return the first matching alive unit from PossibleTargetsValue within .sightDistance from config
-// Note that PossibleTargetsValue picks up only hostile units
+// DO NOT USE. TO BE REMOVED HERE ONCE ALL CALL SITES ARE MODIFIED.
 Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
 {
     auto const& units =
@@ -321,6 +392,30 @@ std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius,
     }
 
     return dynObjs;
+}
+
+// Ice Block, Divine Shield, and/or Cloak of Shadows can be used to nullify or ignore several
+// dangerous boss mechanics.
+uint32 GetSelfImmunitySpell(Player* bot)
+{
+    constexpr uint32 iceBlock = 45438;
+    constexpr uint32 divineShield = 642;
+    constexpr uint32 cloakOfShadows = 31224;
+
+    switch (bot->getClass())
+    {
+        case CLASS_MAGE:
+            return iceBlock;
+
+        case CLASS_PALADIN:
+            return divineShield;
+
+        case CLASS_ROGUE:
+            return cloakOfShadows;
+
+        default:
+            return 0;
+    }
 }
 
 // This function is primarily for use in multipliers during encounters where it is desirable
