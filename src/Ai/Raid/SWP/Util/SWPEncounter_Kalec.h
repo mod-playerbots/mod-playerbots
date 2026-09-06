@@ -52,8 +52,9 @@ inline constexpr uint8 KALECGOS_GROUP_COUNT = 4;
 // Rifts remain active for 10s after spawning.
 inline constexpr uint32 SPECTRAL_RIFT_ACTIVE_WINDOW_MS = 10000;
 // Used to determine if Exhaustion will expire on a bot before the rift expires. Reduced to account
-// for AI tick delay + potential latency.
-inline constexpr uint32 SPECTRAL_RIFT_ENTRY_WINDOW_MS = SPECTRAL_RIFT_ACTIVE_WINDOW_MS - 200;
+// for AI tick delay + potential latency. Signed because it is compared against an aura duration.
+inline constexpr int32 SPECTRAL_RIFT_ENTRY_WINDOW_MS =
+    static_cast<int32>(SPECTRAL_RIFT_ACTIVE_WINDOW_MS) - 200;
 inline constexpr float SPECTRAL_RIFT_SEARCH_RADIUS = 75.0f;
 inline constexpr uint32 SPECTRAL_RIFT_CACHE_INTERVAL_MS = 200;
 // Approximate Z coordinate of the Spectral Realm, used to force teleport bots down if they are
