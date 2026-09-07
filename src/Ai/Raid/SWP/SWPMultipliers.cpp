@@ -102,11 +102,11 @@ float KalecgosWaitToDecurseMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     // Like Illidan's Shadowfiends, the spread from player-to-player is a separate spell
-    Aura* aura = target->GetAura(Id(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY));
-    if (!aura)
-        aura = target->GetAura(Id(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC));
+    Aura* curse = target->GetAura(Id(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY));
+    if (!curse)
+        curse = target->GetAura(Id(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC));
 
-    return aura && aura->GetDuration() >= KALECGOS_DISPEL_REMAINING_MS ? 0.0f : 1.0f;
+    return curse && curse->GetDuration() >= KALECGOS_DISPEL_REMAINING_MS ? 0.0f : 1.0f;
 }
 
 float KalecgosControlMovementMultiplier::GetValueInEncounter(Action* action)
