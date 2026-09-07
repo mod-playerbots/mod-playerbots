@@ -80,11 +80,14 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KalecgosPullingBossTrigger : public Trigger
+class KalecgosPullingBossTrigger : public SunwellPlateauEncounterTrigger
 {
 public:
-    KalecgosPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kalecgos pulling boss") {}
-    bool IsActive() override;
+    KalecgosPullingBossTrigger(PlayerbotAI* botAI)
+        : SunwellPlateauEncounterTrigger(botAI, "kalecgos pulling boss") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 class KalecgosRequiresTankRotationTrigger : public SunwellPlateauEncounterTrigger
@@ -149,11 +152,14 @@ protected:
 
 // Brutallus
 
-class BrutallusPullingBossTrigger : public Trigger
+class BrutallusPullingBossTrigger : public SunwellPlateauEncounterTrigger
 {
 public:
-    BrutallusPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "brutallus pulling boss") {}
-    bool IsActive() override;
+    BrutallusPullingBossTrigger(PlayerbotAI* botAI)
+        : SunwellPlateauEncounterTrigger(botAI, "brutallus pulling boss") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 class BrutallusRequiresTwoTanksTrigger : public SunwellPlateauEncounterTrigger
@@ -198,11 +204,14 @@ protected:
 
 // Felmyst
 
-class FelmystPullingBossTrigger : public Trigger
+class FelmystPullingBossTrigger : public SunwellPlateauEncounterTrigger
 {
 public:
-    FelmystPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "felmyst pulling boss") {}
-    bool IsActive() override;
+    FelmystPullingBossTrigger(PlayerbotAI* botAI)
+        : SunwellPlateauEncounterTrigger(botAI, "felmyst pulling boss") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 class FelmystGroundPhaseShouldBeTankedTrigger : public SunwellPlateauEncounterTrigger
@@ -219,7 +228,8 @@ class FelmystRangedShouldPositionToDispelAndFleeTrigger : public SunwellPlateauE
 {
 public:
     FelmystRangedShouldPositionToDispelAndFleeTrigger(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterTrigger(botAI, "felmyst ranged should position to dispel and flee") {}
+        : SunwellPlateauEncounterTrigger(
+            botAI, "felmyst ranged should position to dispel and flee") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -347,12 +357,14 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class EredarTwinsPullingBossesTrigger : public Trigger
+class EredarTwinsPullingBossesTrigger : public SunwellPlateauEncounterTrigger
 {
 public:
     EredarTwinsPullingBossesTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "eredar twins pulling bosses") {}
-    bool IsActive() override;
+        : SunwellPlateauEncounterTrigger(botAI, "eredar twins pulling bosses") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 class EredarTwinsSacrolashRequiresTwoTanksTrigger : public SunwellPlateauEncounterTrigger
@@ -429,7 +441,8 @@ class EredarTwinsSacrolashVictimHasConflagrationTrigger : public SunwellPlateauE
 {
 public:
     EredarTwinsSacrolashVictimHasConflagrationTrigger(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterTrigger(botAI, "eredar twins sacrolash victim has conflagration") {}
+        : SunwellPlateauEncounterTrigger(
+            botAI, "eredar twins sacrolash victim has conflagration") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -571,7 +584,8 @@ class MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger : public SunwellPlateauEn
 {
 public:
     MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterTrigger(botAI, "m'uru entropius darkness pools spawn dark fiends") {}
+        : SunwellPlateauEncounterTrigger(
+            botAI, "m'uru entropius darkness pools spawn dark fiends") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -592,8 +606,8 @@ protected:
 // Kil'jaeden is the one Sunwell encounter that does not report IN_PROGRESS on engage:
 // boss_kiljaeden does not chain BossAI::JustEngagedWith, and the controller sets the state only
 // once the first Hand of the Deceiver dies. The two triggers below are the ones that run before
-// that, so they cannot take SunwellPlateauEncounterTrigger. Every trigger after them needs
-// Kil'jaeden himself, who does not emerge until all three Hands are dead.
+// that, so they cannot inherit from SunwellPlateauEncounterTrigger. Every trigger after them needs
+// Kil'jaeden himself so they can be subclassed.
 
 class KiljaedenShouldCoordinateOrbUseTrigger : public Trigger
 {
@@ -615,7 +629,8 @@ class KiljaedenTanksShouldHoldBossAndReflectionsTrigger : public SunwellPlateauE
 {
 public:
     KiljaedenTanksShouldHoldBossAndReflectionsTrigger(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterTrigger(botAI, "kil'jaeden tanks should hold boss and reflections") {}
+        : SunwellPlateauEncounterTrigger(
+            botAI, "kil'jaeden tanks should hold boss and reflections") {}
 
 protected:
     bool IsActiveInEncounter() override;

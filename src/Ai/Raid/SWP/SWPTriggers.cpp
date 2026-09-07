@@ -109,7 +109,7 @@ bool KalecgosShouldCommunicateBossHealthTrigger::IsActiveInEncounter()
     return bot == spectralBot || bot == surfaceBot;
 }
 
-bool KalecgosPullingBossTrigger::IsActive()
+bool KalecgosPullingBossTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -193,7 +193,7 @@ bool KalecgosBotsDontObserveGravityTrigger::IsActiveInEncounter()
 
 // Brutallus
 
-bool BrutallusPullingBossTrigger::IsActive()
+bool BrutallusPullingBossTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -247,7 +247,7 @@ bool BrutallusBotIsBurningTrigger::IsActiveInEncounter()
 
 // Felmyst
 
-bool FelmystPullingBossTrigger::IsActive()
+bool FelmystPullingBossTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -484,7 +484,7 @@ bool EredarTwinsShouldAnnounceAlythessTankTrigger::IsActiveInEncounter()
         AI_VALUE2(Unit*, "find target", "lady sacrolash");
 }
 
-bool EredarTwinsPullingBossesTrigger::IsActive()
+bool EredarTwinsPullingBossesTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
