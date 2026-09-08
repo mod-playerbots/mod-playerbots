@@ -19,8 +19,6 @@ public:
     PlayerbotsSelfBotAfkServerScript()
         : ServerScript("PlayerbotsSelfBotAfkServerScript", { SERVERHOOK_CAN_PACKET_RECEIVE }) {}
 
-    using ServerScript::CanPacketReceive;
-
     bool CanPacketReceive(WorldSession* session, WorldPacket const& packet) override
     {
         if (packet.GetOpcode() != CMSG_LOGOUT_REQUEST)
