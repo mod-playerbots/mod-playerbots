@@ -85,6 +85,23 @@ bool DropTargetAction::Execute(Event /*event*/)
     return true;
 }
 
+bool TargetRequesterAction::Execute(Event event)
+{
+    Player* requester = event.getOwner();
+
+    if (!requester)
+    {
+        botAI->TellMasterNoFacing("target requester: no event owner");
+        return false;
+    }
+
+    bot->SetSelection(requester->GetGUID());
+
+    botAI->TellMasterNoFacing("Targeting " + requester->GetName());
+
+    return true;
+}
+
 bool AttackAnythingAction::Execute(Event event)
 {
     bool result = AttackAction::Execute(event);
