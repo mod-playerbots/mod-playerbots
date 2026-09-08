@@ -21,5 +21,4 @@ void AiObjectContext::BuildSharedValueContexts(
     valueContexts.Add(new TbcDungeonMgTValueContext());
     valueContexts.Add(new TbcDungeonUnderbogValueContext());
     valueContexts.Add(new WotlkDungeonGDValueContext());
-
 }
