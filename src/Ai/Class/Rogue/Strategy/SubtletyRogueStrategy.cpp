@@ -7,3 +7,29 @@
 #include "SubtletyRogueStrategy.h"
 
  // To be implemented. For now, Subtlety uses Assassination's strategy (poorly).
+/* class SubtletyRogueStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
+{
+public:
+    SubtletyRogueStrategyActionNodeFactory()
+    {
+    }
+
+private:
+};
+
+SubtletyRogueStrategy::SubtletyRogueStrategy(PlayerbotAI* botAI) : GenericRogueStrategy(botAI)
+{
+    actionNodeFactories.Add(new SubtletyRogueStrategyActionNodeFactory());
+}
+
+std::vector<NextAction> SubtletyRogueStrategy::getDefaultActions()
+{
+    return {
+    };
+}
+
+void SubtletyRogueStrategyRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+{
+    GenericRogueStrategy::InitTriggers(triggers);
+}
+*/

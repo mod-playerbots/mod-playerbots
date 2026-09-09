@@ -49,11 +49,13 @@ public:
     {
         creators["combat"] = &RogueCombatStrategyFactoryInternal::combat;
         creators["assassin"] = &RogueCombatStrategyFactoryInternal::assassin;
+        // creators["subtlety"] = &RogueCombatStrategyFactoryInternal::subtlety;
     }
 
 private:
     static Strategy* combat(PlayerbotAI* botAI) { return new CombatRogueStrategy(botAI); }
     static Strategy* assassin(PlayerbotAI* botAI) { return new AssassinationRogueStrategy(botAI); }
+    // static Strategy* subtlety(PlayerbotAI* botAI) { return new SubtletyRogueStrategy(botAI); }
 };
 
 class RogueTriggerFactoryInternal : public NamedObjectContext<Trigger>
