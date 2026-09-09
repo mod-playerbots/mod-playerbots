@@ -23,15 +23,15 @@ using namespace EncounterHelpers;
 
 bool SunwellPlateauNoEncounterInProgressTrigger::IsActive()
 {
-    if (bot->GetMapId() != SWP_MAP_ID)
-        return false;
-
     // InstanceScript reports IN_PROGRESS for every SWP boss from JustEngagedWith until kill/evade,
     // except for Kil'jaeden, which does not commence until the first Hand dies.
     if (IsEncounterInProgress(bot, SWP_MAP_ID))
         return false;
 
     // Use a distance gate to avoid searching for Hands through the entire instance.
+    if (bot->GetMapId() != SWP_MAP_ID)
+        return false;
+
     if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > SUNWELL_CENTER_RADIUS)
         return true;
 
