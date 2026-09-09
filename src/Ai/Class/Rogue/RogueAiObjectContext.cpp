@@ -7,7 +7,7 @@
 #include "RogueAiObjectContext.h"
 #include "AiObjectContext.h"
 #include "AssassinationRogueStrategy.h"
-#include "DpsRogueStrategy.h"
+#include "CombatRogueStrategy.h"
 #include "GenericRogueNonCombatStrategy.h"
 #include "NamedObjectContext.h"
 #include "Playerbots.h"
@@ -47,13 +47,13 @@ class RogueCombatStrategyFactoryInternal : public NamedObjectContext<Strategy>
 public:
     RogueCombatStrategyFactoryInternal() : NamedObjectContext<Strategy>(false, true)
     {
-        creators["dps"] = &RogueCombatStrategyFactoryInternal::dps;
-        creators["melee"] = &RogueCombatStrategyFactoryInternal::melee;
+        creators["combat"] = &RogueCombatStrategyFactoryInternal::combat;
+        creators["assassin"] = &RogueCombatStrategyFactoryInternal::assassin;
     }
 
 private:
-    static Strategy* dps(PlayerbotAI* botAI) { return new DpsRogueStrategy(botAI); }
-    static Strategy* melee(PlayerbotAI* botAI) { return new AssassinationRogueStrategy(botAI); }
+    static Strategy* combat(PlayerbotAI* botAI) { return new CombatRogueStrategy(botAI); }
+    static Strategy* assassin(PlayerbotAI* botAI) { return new AssassinationRogueStrategy(botAI); }
 };
 
 class RogueTriggerFactoryInternal : public NamedObjectContext<Trigger>
