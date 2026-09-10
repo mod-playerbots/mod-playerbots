@@ -81,7 +81,8 @@ public:
 class LastLongMoveValue : public CalculatedValue<WorldPosition>
 {
 public:
-    LastLongMoveValue(PlayerbotAI* botAI) : CalculatedValue<WorldPosition>(botAI, "last long move", 30 * 1000) {}
+    LastLongMoveValue(PlayerbotAI* botAI)
+        : CalculatedValue<WorldPosition>(botAI, "last long move", 30 * IN_MILLISECONDS) {}
 
     WorldPosition Calculate() override;
 };
@@ -89,7 +90,7 @@ public:
 class HomeBindValue : public CalculatedValue<WorldPosition>
 {
 public:
-    HomeBindValue(PlayerbotAI* botAI) : CalculatedValue<WorldPosition>(botAI, "home bind", 30 * 1000) {}
+    HomeBindValue(PlayerbotAI* botAI) : CalculatedValue<WorldPosition>(botAI, "home bind", 30 * IN_MILLISECONDS) {}
 
     WorldPosition Calculate() override;
 };
@@ -133,7 +134,7 @@ public:
 class FindTargetValue : public UnitCalculatedValue, public Qualified
 {
 public:
-    FindTargetValue(PlayerbotAI* botAI) : UnitCalculatedValue(botAI, "find target", /*2 * 1000*/ 1) {}
+    FindTargetValue(PlayerbotAI* botAI) : UnitCalculatedValue(botAI, "find target", /*2 * IN_MILLISECONDS*/ 1) {}
 
 public:
     Unit* Calculate();
@@ -149,7 +150,7 @@ public:
 class BossTargetValue : public TargetValue, public Qualified
 {
 public:
-    BossTargetValue(PlayerbotAI* botAI) : TargetValue(botAI, "boss target", 2 * 1000) {}
+    BossTargetValue(PlayerbotAI* botAI) : TargetValue(botAI, "boss target", 2 * IN_MILLISECONDS) {}
 
 public:
     Unit* Calculate();
