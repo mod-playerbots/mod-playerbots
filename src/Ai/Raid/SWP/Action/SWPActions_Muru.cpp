@@ -240,7 +240,7 @@ Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit* currentTarget, boo
 
     // Void Sentinel: Attack only if a tank has aggro or if it is below 10% health.
     bool const isVoidSentinelAllowed =
-        (voidSentinel && voidSentinel->GetHealthPct() < 10.0f ||
+        ((voidSentinel && voidSentinel->GetHealthPct() < 10.0f) ||
          (voidSentinelVictim && PlayerbotAI::IsTank(voidSentinelVictim)));
 
     auto const isAllowedPriorityTarget = [&](Unit* unit) -> bool
