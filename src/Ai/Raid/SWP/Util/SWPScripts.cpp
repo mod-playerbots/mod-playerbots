@@ -365,10 +365,10 @@ public:
     }
 };
 
-class SunwellPlateauBossUpdateScript : public AllCreatureScript
+class SunwellBossUpdateScript : public AllCreatureScript
 {
 public:
-    SunwellPlateauBossUpdateScript() : AllCreatureScript("SunwellPlateauBossUpdateScript") {}
+    SunwellBossUpdateScript() : AllCreatureScript("SunwellBossUpdateScript") {}
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
@@ -449,7 +449,7 @@ public:
     }
 };
 
-void AddSC_SunwellPlateauBotScripts()
+void AddSC_SunwellBotScripts()
 {
     // AllSpellScript
     new KalecgosPortalSpellListenerScript();
@@ -458,6 +458,6 @@ void AddSC_SunwellPlateauBotScripts()
     new MuruVoidZoneSpellListenerScript();
     new KiljaedenDarknessSpellListenerScript();
     // AllCreatureScript
-    new SunwellPlateauBossUpdateScript();
+    new SunwellBossUpdateScript();
     new KiljaedenArmageddonTargetCreatureScript();
 }

@@ -71,20 +71,23 @@ inline constexpr uint32 MURU_DARKNESS_AURA_MS = 20000;
 inline constexpr uint32 MURU_DARKNESS_EARLY_WINDOW_MS = 10000;
 // Darkness damages within 15 yards of M'uru; the rest is avoidance padding.
 inline constexpr float MURU_DARKNESS_SAFE_DISTANCE = 20.0f;
-// Tanks drag nothing further than this from the ranged stack.
-inline constexpr float MURU_MAX_TARGET_DIST_FROM_STACK = 25.0f;
+// Tanks won't try to pick up anything farther than this distance from the ranged stack.
+inline constexpr float MURU_MAX_TARGET_DIST_FROM_STACK = 30.0f;
 // The maximum distance from the melee dps holding spot that they wander to attack during Darkness.
-inline constexpr float MURU_HOLDING_POSITION_RADIUS = 20.0f;
+inline constexpr float MURU_HOLDING_POSITION_RADIUS = 25.0f;
 // Targeting is based on the nearest mob; this buffer is to keep targets sticky.
 inline constexpr float MURU_TARGET_SWITCH_MARGIN = 10.0f;
 // Radius of Shadow Bolt Volley (46082), which is centred on the enslaved Void Spawn.
 inline constexpr float MURU_SHADOW_BOLT_VOLLEY_RADIUS = 20.0f;
+// Shadow Pulse (46087) is a 10y AoE centered on the Void Sentinel, pulsed every 3s by 46086. Melee
+// end up ~4y from their target, and there's also some variability from the tanking moving adds.
+inline constexpr float MURU_MELEE_ADD_MIN_DIST_FROM_SENTINEL = 15.0f;
 
 // Void Zones (25879) have aura 46262, ticking 46264 for 3k in a 3y radius, and spawn Dark Fiends.
 // The wide safe distance is in anticipation of the Dark Fiend spawn. Search is measured by
 // IsWithinDist, which adds both CombatReaches for a total of 14.5y.
-inline constexpr float VOID_ZONE_SEARCH_RADIUS = 12.0f;
 inline constexpr float VOID_ZONE_SAFE_DISTANCE = 10.0f;
+inline constexpr float VOID_ZONE_SEARCH_RADIUS = VOID_ZONE_SAFE_DISTANCE + 2.0f;
 // Dark Fiend search radii for killing (dispelling) and avoiding, respectively.
 inline constexpr float DARK_FIEND_DISPEL_SEARCH_RADIUS = 50.0f;
 inline constexpr float DARK_FIEND_AVOID_SEARCH_RADIUS = 15.0f;
@@ -116,6 +119,10 @@ bool PeekMuruDarknessEarlyState(
     Player* bot, uint32 earlyWindowMs = MURU_DARKNESS_EARLY_WINDOW_MS);
 MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
+Unit* SelectNearestMuruTargetByEntry(
+    Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates,
+    Position const& origin);
+bool IsMuruAddInVoidSentinelPulse(Unit* add, std::vector<Unit*> const& voidSentinels);
 Unit* FindMuruBerserkerToStun(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToInterrupt(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI);

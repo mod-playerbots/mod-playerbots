@@ -14,10 +14,10 @@
 
 // General
 
-class SunwellPlateauEncounterMultiplier : public Multiplier
+class SunwellEncounterMultiplier : public Multiplier
 {
 public:
-    SunwellPlateauEncounterMultiplier(PlayerbotAI* botAI, std::string const name)
+    SunwellEncounterMultiplier(PlayerbotAI* botAI, std::string const name)
         : Multiplier(botAI, name) {}
 
     float GetValue(Action* action) final
@@ -30,12 +30,14 @@ protected:
     virtual float GetValueInEncounter(Action* action) = 0;
 };
 
-class SunwellPlateauNoEncounterDrinkingMultiplier : public Multiplier
+class SunwellNoEncounterDrinkingMultiplier : public SunwellEncounterMultiplier
 {
 public:
-    SunwellPlateauNoEncounterDrinkingMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "sunwell plateau no encounter drinking") {}
-    float GetValue(Action* action) override;
+    SunwellNoEncounterDrinkingMultiplier(PlayerbotAI* botAI)
+        : SunwellEncounterMultiplier(botAI, "sunwell no encounter drinking") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 // Trash
@@ -48,73 +50,75 @@ public:
     float GetValue(Action* action) override;
 };
 
-// Kalecgos
+// Shared Boss
 
-class KalecgosControlMisdirectionMultiplier : public SunwellPlateauEncounterMultiplier
+class SunwellControlMisdirectionMultiplier : public SunwellEncounterMultiplier
 {
 public:
-    KalecgosControlMisdirectionMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "kalecgos control misdirection") {}
+    SunwellControlMisdirectionMultiplier(PlayerbotAI* botAI)
+        : SunwellEncounterMultiplier(botAI, "sunwell control misdirection") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class KalecgosWaitToDecurseMultiplier : public SunwellPlateauEncounterMultiplier
+// Kalecgos
+
+class KalecgosWaitToDecurseMultiplier : public SunwellEncounterMultiplier
 {
 public:
     KalecgosWaitToDecurseMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "kalecgos wait to decurse") {}
+        : SunwellEncounterMultiplier(botAI, "kalecgos wait to decurse") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class KalecgosControlMovementMultiplier : public SunwellPlateauEncounterMultiplier
+class KalecgosControlMovementMultiplier : public SunwellEncounterMultiplier
 {
 public:
     KalecgosControlMovementMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "kalecgos control movement") {}
+        : SunwellEncounterMultiplier(botAI, "kalecgos control movement") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class KalecgosRestrictTauntMultiplier : public SunwellPlateauEncounterMultiplier
+class KalecgosRestrictTauntMultiplier : public SunwellEncounterMultiplier
 {
 public:
     KalecgosRestrictTauntMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "kalecgos restrict taunt") {}
+        : SunwellEncounterMultiplier(botAI, "kalecgos restrict taunt") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class KalecgosSuppressAssistTankPullThreatMultiplier : public SunwellPlateauEncounterMultiplier
+class KalecgosSuppressAssistTankPullThreatMultiplier : public SunwellEncounterMultiplier
 {
 public:
     KalecgosSuppressAssistTankPullThreatMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "kalecgos suppress assist tank pull threat") {}
+        : SunwellEncounterMultiplier(botAI, "kalecgos suppress assist tank pull threat") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class KalecgosEnterSpectralRiftMultiplier : public SunwellPlateauEncounterMultiplier
+class KalecgosEnterSpectralRiftMultiplier : public SunwellEncounterMultiplier
 {
 public:
     KalecgosEnterSpectralRiftMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "kalecgos enter spectral rift") {}
+        : SunwellEncounterMultiplier(botAI, "kalecgos enter spectral rift") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class KalecgosDelayCooldownsForSathrovarrMultiplier : public SunwellPlateauEncounterMultiplier
+class KalecgosDelayCooldownsForSathrovarrMultiplier : public SunwellEncounterMultiplier
 {
 public:
     KalecgosDelayCooldownsForSathrovarrMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "kalecgos delay cooldowns for sathrovarr") {}
+        : SunwellEncounterMultiplier(botAI, "kalecgos delay cooldowns for sathrovarr") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -122,51 +126,41 @@ protected:
 
 // Brutallus
 
-class BrutallusControlMisdirectionMultiplier : public SunwellPlateauEncounterMultiplier
-{
-public:
-    BrutallusControlMisdirectionMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "brutallus control misdirection") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
-class BrutallusControlMovementMultiplier : public SunwellPlateauEncounterMultiplier
+class BrutallusControlMovementMultiplier : public SunwellEncounterMultiplier
 {
 public:
     BrutallusControlMovementMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "brutallus control movement") {}
+        : SunwellEncounterMultiplier(botAI, "brutallus control movement") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class BrutallusNoKillingSpreeWhenNearbyBurnMultiplier : public SunwellPlateauEncounterMultiplier
+class BrutallusNoKillingSpreeWhenNearbyBurnMultiplier : public SunwellEncounterMultiplier
 {
 public:
     BrutallusNoKillingSpreeWhenNearbyBurnMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "brutallus no killing spree when nearby burn") {}
+        : SunwellEncounterMultiplier(botAI, "brutallus no killing spree when nearby burn") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class BrutallusRestrictTauntMultiplier : public SunwellPlateauEncounterMultiplier
+class BrutallusRestrictTauntMultiplier : public SunwellEncounterMultiplier
 {
 public:
     BrutallusRestrictTauntMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "brutallus restrict taunt") {}
+        : SunwellEncounterMultiplier(botAI, "brutallus restrict taunt") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class BrutallusDelayCooldownsMultiplier : public SunwellPlateauEncounterMultiplier
+class BrutallusDelayCooldownsMultiplier : public SunwellEncounterMultiplier
 {
 public:
     BrutallusDelayCooldownsMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "brutallus delay cooldowns") {}
+        : SunwellEncounterMultiplier(botAI, "brutallus delay cooldowns") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -174,81 +168,81 @@ protected:
 
 // Felmyst
 
-class FelmystControlMovementMultiplier : public SunwellPlateauEncounterMultiplier
+class FelmystControlMovementMultiplier : public SunwellEncounterMultiplier
 {
 public:
     FelmystControlMovementMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "felmyst control movement") {}
+        : SunwellEncounterMultiplier(botAI, "felmyst control movement") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class FelmystWaitForLandingDpsMultiplier : public SunwellPlateauEncounterMultiplier
+class FelmystWaitForLandingDpsMultiplier : public SunwellEncounterMultiplier
 {
 public:
     FelmystWaitForLandingDpsMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "felmyst wait for landing dps") {}
+        : SunwellEncounterMultiplier(botAI, "felmyst wait for landing dps") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class FelmystPrioritizeEncapsulateAvoidanceMultiplier : public SunwellPlateauEncounterMultiplier
+class FelmystPrioritizeEncapsulateAvoidanceMultiplier : public SunwellEncounterMultiplier
 {
 public:
     FelmystPrioritizeEncapsulateAvoidanceMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "felmyst prioritize encapsulate avoidance") {}
+        : SunwellEncounterMultiplier(botAI, "felmyst prioritize encapsulate avoidance") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class FelmystPrioritizeFogAvoidanceMultiplier : public SunwellPlateauEncounterMultiplier
+class FelmystPrioritizeFogAvoidanceMultiplier : public SunwellEncounterMultiplier
 {
 public:
     FelmystPrioritizeFogAvoidanceMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "felmyst prioritize fog avoidance") {}
+        : SunwellEncounterMultiplier(botAI, "felmyst prioritize fog avoidance") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class FelmystPrioritizeDemonicVaporAvoidanceMultiplier : public SunwellPlateauEncounterMultiplier
+class FelmystPrioritizeDemonicVaporAvoidanceMultiplier : public SunwellEncounterMultiplier
 {
 public:
     FelmystPrioritizeDemonicVaporAvoidanceMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "felmyst prioritize demonic vapor avoidance") {}
+        : SunwellEncounterMultiplier(botAI, "felmyst prioritize demonic vapor avoidance") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class FelmystFocusAttacksOnCharmedPlayerMultiplier : public SunwellPlateauEncounterMultiplier
+class FelmystFocusAttacksOnCharmedPlayerMultiplier : public SunwellEncounterMultiplier
 {
 public:
     FelmystFocusAttacksOnCharmedPlayerMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "felmyst focus attacks on charmed player") {}
+        : SunwellEncounterMultiplier(botAI, "felmyst focus attacks on charmed player") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class FelmystDontDotAddsMultiplier : public SunwellPlateauEncounterMultiplier
+class FelmystDontDotAddsMultiplier : public SunwellEncounterMultiplier
 {
 public:
     FelmystDontDotAddsMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "felmyst don't dot adds") {}
+        : SunwellEncounterMultiplier(botAI, "felmyst don't dot adds") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class FelmystDelayCooldownsMultiplier : public SunwellPlateauEncounterMultiplier
+class FelmystDelayCooldownsMultiplier : public SunwellEncounterMultiplier
 {
 public:
     FelmystDelayCooldownsMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "felmyst delay cooldowns") {}
+        : SunwellEncounterMultiplier(botAI, "felmyst delay cooldowns") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -256,71 +250,61 @@ protected:
 
 // Eredar Twins
 
-class EredarTwinsDisableAutomaticTargetingMultiplier : public SunwellPlateauEncounterMultiplier
+class EredarTwinsDisableAutomaticTargetingMultiplier : public SunwellEncounterMultiplier
 {
 public:
     EredarTwinsDisableAutomaticTargetingMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "eredar twins disable automatic targeting") {}
+        : SunwellEncounterMultiplier(botAI, "eredar twins disable automatic targeting") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class EredarTwinsControlMisdirectionMultiplier : public SunwellPlateauEncounterMultiplier
-{
-public:
-    EredarTwinsControlMisdirectionMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "eredar twins misdirect bosses to tanks") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
-class EredarTwinsHoldDpsAtStartMultiplier : public SunwellPlateauEncounterMultiplier
+class EredarTwinsHoldDpsAtStartMultiplier : public SunwellEncounterMultiplier
 {
 public:
     EredarTwinsHoldDpsAtStartMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "eredar twins hold dps at start") {}
+        : SunwellEncounterMultiplier(botAI, "eredar twins hold dps at start") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class EredarTwinsControlThreatMultiplier : public SunwellPlateauEncounterMultiplier
+class EredarTwinsControlThreatMultiplier : public SunwellEncounterMultiplier
 {
 public:
     EredarTwinsControlThreatMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "eredar twins control threat") {}
+        : SunwellEncounterMultiplier(botAI, "eredar twins control threat") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class EredarTwinsControlMovementMultiplier : public SunwellPlateauEncounterMultiplier
+class EredarTwinsControlMovementMultiplier : public SunwellEncounterMultiplier
 {
 public:
     EredarTwinsControlMovementMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "eredar twins control movement") {}
+        : SunwellEncounterMultiplier(botAI, "eredar twins control movement") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class EredarTwinsIsolateConflagrationMultiplier : public SunwellPlateauEncounterMultiplier
+class EredarTwinsIsolateConflagrationMultiplier : public SunwellEncounterMultiplier
 {
 public:
     EredarTwinsIsolateConflagrationMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "eredar twins isolate conflagration") {}
+        : SunwellEncounterMultiplier(botAI, "eredar twins isolate conflagration") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class EredarTwinsDelayCooldownsMultiplier : public SunwellPlateauEncounterMultiplier
+class EredarTwinsDelayCooldownsMultiplier : public SunwellEncounterMultiplier
 {
 public:
     EredarTwinsDelayCooldownsMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "eredar twins delay cooldowns") {}
+        : SunwellEncounterMultiplier(botAI, "eredar twins delay cooldowns") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -328,41 +312,31 @@ protected:
 
 // M'uru
 
-class MuruDisableDefaultTargetingMultiplier : public SunwellPlateauEncounterMultiplier
+class MuruDisableDefaultTargetingMultiplier : public SunwellEncounterMultiplier
 {
 public:
     MuruDisableDefaultTargetingMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "m'uru disable default targeting") {}
+        : SunwellEncounterMultiplier(botAI, "m'uru disable default targeting") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class MuruControlMisdirectionMultiplier : public SunwellPlateauEncounterMultiplier
-{
-public:
-    MuruControlMisdirectionMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "m'uru control misdirection") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
-class MuruControlMovementMultiplier : public SunwellPlateauEncounterMultiplier
+class MuruControlMovementMultiplier : public SunwellEncounterMultiplier
 {
 public:
     MuruControlMovementMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "m'uru control movement") {}
+        : SunwellEncounterMultiplier(botAI, "m'uru control movement") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class MuruDelayCooldownsMultiplier : public SunwellPlateauEncounterMultiplier
+class MuruDelayCooldownsMultiplier : public SunwellEncounterMultiplier
 {
 public:
     MuruDelayCooldownsMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "m'uru delay cooldowns") {}
+        : SunwellEncounterMultiplier(botAI, "m'uru delay cooldowns") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -391,31 +365,31 @@ public:
     float GetValue(Action* action) override;
 };
 
-class KiljaedenControlMovementAndTargetingMultiplier : public SunwellPlateauEncounterMultiplier
+class KiljaedenControlMovementAndTargetingMultiplier : public SunwellEncounterMultiplier
 {
 public:
     KiljaedenControlMovementAndTargetingMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "kil'jaeden control movement and targeting") {}
+        : SunwellEncounterMultiplier(botAI, "kil'jaeden control movement and targeting") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class KiljaedenPrioritizeDarknessProtectionMultiplier : public SunwellPlateauEncounterMultiplier
+class KiljaedenPrioritizeDarknessProtectionMultiplier : public SunwellEncounterMultiplier
 {
 public:
     KiljaedenPrioritizeDarknessProtectionMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "kil'jaeden prioritize darkness protection") {}
+        : SunwellEncounterMultiplier(botAI, "kil'jaeden prioritize darkness protection") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class KiljaedenControlDragonMultiplier : public SunwellPlateauEncounterMultiplier
+class KiljaedenControlDragonMultiplier : public SunwellEncounterMultiplier
 {
 public:
     KiljaedenControlDragonMultiplier(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterMultiplier(botAI, "kil'jaeden dragon buff and protect raid") {}
+        : SunwellEncounterMultiplier(botAI, "kil'jaeden dragon buff and protect raid") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

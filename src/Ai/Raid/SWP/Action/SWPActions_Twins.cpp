@@ -313,7 +313,8 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
 
 bool EredarTwinsDpsPrioritizeSacrolashAction::Execute(Event /*event*/)
 {
-    RecordEredarTwinsDpsHoldStart(bot);
+    // Start the 8s clock for tanks to get aggro first.
+    eredarTwinsDpsHoldStartMs.try_emplace(bot->GetInstanceId(), getMSTime());
 
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     Unit* twinTarget =
@@ -325,7 +326,7 @@ bool EredarTwinsDpsPrioritizeSacrolashAction::Execute(Event /*event*/)
     bool const shouldHoldThreat = sacrolash ?
         ShouldHoldSacrolashThreat(bot, twinTarget) : ShouldHoldAlythessThreat(bot, twinTarget);
 
-    if (!shouldHoldThreat)
+    if (shouldHoldThreat && bot->GetVictim())
     {
         bot->AttackStop();
         bot->InterruptSpell(CURRENT_MELEE_SPELL);

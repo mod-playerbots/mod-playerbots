@@ -122,7 +122,6 @@ bool ShouldHoldSacrolashThreat(Player* bot, Unit* sacrolash);
 std::vector<Position> FindEredarTwinsBlazePositions(Player* bot);
 bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position);
 bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
-void RecordEredarTwinsDpsHoldStart(Player* bot);
 void RecordIncomingEredarTwinsConflagrationTarget(Player* target);
 Player* GetEredarTwinsConflagrationTarget(Player* bot);
 void RecordEredarTwinsBlazeTarget(Player* target);

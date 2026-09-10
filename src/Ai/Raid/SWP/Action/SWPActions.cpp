@@ -21,7 +21,9 @@
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
 
-bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
+// General
+
+bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
 {
     ObjectGuid const guid = bot->GetGUID();
     uint32 const instanceId = bot->GetInstanceId();
@@ -94,14 +96,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
-// Clear Kalecgos's Arcane Buffet, the Eredar Twins' Flame Sear, and Kil'jaeden's Fire Bloom.
-bool SunwellPlateauRemoveDebuffWithImmunityAction::Execute(Event /*event*/)
-{
-    uint32 const spellId = GetSelfImmunitySpell(bot);
-    return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
-}
-
-bool SunwellPlateauRemoveAuraAction::Execute(Event /*event*/)
+bool SunwellRemoveAuraAction::Execute(Event /*event*/)
 {
     // Only the immunities that stop the bot from contributing should be cancelled, so Cloak of
     // Shadows and HPal bubbles are excluded.
@@ -124,6 +119,8 @@ bool SunwellPlateauRemoveAuraAction::Execute(Event /*event*/)
     bot->RemoveAura(Id(SwpSpells::SPELL_BURN));
     return true;
 }
+
+// Trash
 
 bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
 {
@@ -166,6 +163,9 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
+    if (bot->getClass() == CLASS_PALADIN)
+        return botAI->CanCastSpell("exorcism", target) && botAI->CastSpell("exorcism", target);
+
     if (bot->HasAura(Id(SwpSpells::SPELL_SHADOWFORM)))
     {
         bot->RemoveOwnedAura(
@@ -175,7 +175,16 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
     return botAI->CanCastSpell("smite", target) && botAI->CastSpell("smite", target);
 }
 
-bool SunwellPlateauMisdirectBossToMainTankAction::Execute(Event /*event*/)
+// Shared Bosses
+
+// Clear Kalecgos's Arcane Buffet, the Eredar Twins' Flame Sear, and Kil'jaeden's Fire Bloom.
+bool SunwellRemoveDebuffWithImmunityAction::Execute(Event /*event*/)
+{
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
+}
+
+bool SunwellMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
     if (!boss)

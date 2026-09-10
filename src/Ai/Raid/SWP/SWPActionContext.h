@@ -16,11 +16,11 @@ public:
     RaidSwpActionContext()
     {
         // General
-        creators["sunwell plateau reset encounter states"] =
-            &RaidSwpActionContext::sunwell_plateau_reset_encounter_states;
+        creators["sunwell reset encounter states"] =
+            &RaidSwpActionContext::sunwell_reset_encounter_states;
 
-        creators["sunwell plateau remove aura"] =
-            &RaidSwpActionContext::sunwell_plateau_remove_aura;
+        creators["sunwell remove aura"] =
+            &RaidSwpActionContext::sunwell_remove_aura;
 
         // Trash
         creators["volatile fiend keep enemy away from group"] =
@@ -230,11 +230,11 @@ public:
 
 private:
     // General
-    static Action* sunwell_plateau_reset_encounter_states(PlayerbotAI* botAI) {
-        return new SunwellPlateauResetEncounterStatesAction(botAI);
+    static Action* sunwell_reset_encounter_states(PlayerbotAI* botAI) {
+        return new SunwellResetEncounterStatesAction(botAI);
     }
-    static Action* sunwell_plateau_remove_aura(PlayerbotAI* botAI) {
-        return new SunwellPlateauRemoveAuraAction(botAI);
+    static Action* sunwell_remove_aura(PlayerbotAI* botAI) {
+        return new SunwellRemoveAuraAction(botAI);
     }
 
     // Trash
@@ -247,7 +247,7 @@ private:
 
     // Kalecgos
     static Action* kalecgos_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new SunwellPlateauMisdirectBossToMainTankAction(
+        return new SunwellMisdirectBossToMainTankAction(
             botAI, "kalecgos misdirect boss to main tank", "kalecgos");
     }
     static Action* kalecgos_announce_boss_health(PlayerbotAI* botAI) {
@@ -263,7 +263,7 @@ private:
         return new KalecgosDisperseRangedAction(botAI);
     }
     static Action* kalecgos_remove_arcane_buffet(PlayerbotAI* botAI) {
-        return new SunwellPlateauRemoveDebuffWithImmunityAction(
+        return new SunwellRemoveDebuffWithImmunityAction(
             botAI, "kalecgos remove arcane buffet");
     }
     static Action* kalecgos_sathrovarr_tank_stand_with_kalec(PlayerbotAI* botAI) {
@@ -275,7 +275,7 @@ private:
 
     // Brutallus
     static Action* brutallus_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new SunwellPlateauMisdirectBossToMainTankAction(
+        return new SunwellMisdirectBossToMainTankAction(
             botAI, "brutallus misdirect boss to main tank", "brutallus");
     }
     static Action* brutallus_tanks_position_and_swap(PlayerbotAI* botAI) {
@@ -293,7 +293,7 @@ private:
 
     // Felmyst
     static Action* felmyst_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new SunwellPlateauMisdirectBossToMainTankAction(
+        return new SunwellMisdirectBossToMainTankAction(
             botAI, "felmyst misdirect boss to main tank", "felmyst");
     }
     static Action* felmyst_main_tank_position_boss_on_ground(PlayerbotAI* botAI) {
@@ -356,7 +356,7 @@ private:
         return new EredarTwinsStackInRoomCenterAction(botAI);
     }
     static Action* eredar_twins_remove_flame_sear(PlayerbotAI* botAI) {
-        return new SunwellPlateauRemoveDebuffWithImmunityAction(
+        return new SunwellRemoveDebuffWithImmunityAction(
             botAI, "eredar twins remove flame sear");
     }
     static Action* eredar_twins_dps_prioritize_sacrolash(PlayerbotAI* botAI) {
@@ -439,7 +439,7 @@ private:
         return new KiljaedenPositionRangedAndAvoidArmageddonsAction(botAI);
     }
     static Action* kiljaeden_remove_fire_bloom(PlayerbotAI* botAI) {
-        return new SunwellPlateauRemoveDebuffWithImmunityAction(
+        return new SunwellRemoveDebuffWithImmunityAction(
             botAI, "kil'jaeden remove fire bloom");
     }
     static Action* kiljaeden_stack_for_shield_of_the_blue(PlayerbotAI* botAI) {

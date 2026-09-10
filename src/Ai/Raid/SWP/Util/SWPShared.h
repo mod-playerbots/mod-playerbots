@@ -167,13 +167,14 @@ inline constexpr float TAUNT_SHOUT_RADIUS = 10.0f;
 
 // For the "swp volatile fiend" value.
 inline constexpr uint32 VOLATILE_FIEND_CACHE_INTERVAL_MS = 200;
-inline constexpr float VOLATILE_FIEND_SEARCH_RADIUS = 25.0f;
 // Felfire Fission (45779), the fiend's death explosion, hits within 10y and just murders melee
-// bots (and me). This distance is a little farther since the fiends are running toward the raid.
-inline constexpr float VOLATILE_FIEND_SAFE_DISTANCE = 15.0f;
+// bots (and me). This distance is farther since the fiends are running toward the raid.
+inline constexpr float VOLATILE_FIEND_SAFE_DISTANCE = 20.0f;
 // Don't try to reach targets if within this distance of a fiend. Works fine in practice since the
 // gauntlet is always going forwards so nobody needs to go the other way to reach a target.
 inline constexpr float VOLATILE_FIEND_APPROACH_SUPPRESSION_RADIUS = 25.0f;
+inline constexpr float VOLATILE_FIEND_SEARCH_RADIUS =
+    VOLATILE_FIEND_APPROACH_SUPPRESSION_RADIUS + 2.0f;
 ObjectGuid FindSwpVolatileFiendGuid(Player* bot);
 // Offset from the center of an arc for assigning positioning slots, filling outward and
 // alternating sides. Slot 0 is the center when the count is odd and straddles it when even.

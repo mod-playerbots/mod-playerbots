@@ -95,12 +95,6 @@ bool HasClosedOnTankThreat(Unit* boss, Player* bot, float tankThreat, float thre
         boss->GetThreatMgr().GetThreat(bot) >= tankThreat * threatHoldRatio;
 }
 
-bool CanHoldTwinThreat(Player* bot, Unit* boss)
-{
-    return boss && bot->IsAlive() && !PlayerbotAI::IsHeal(bot) &&
-        boss->GetThreatMgr().IsThreatenedBy(bot);
-}
-
 } // end anonymous namespace
 
 std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
@@ -225,11 +219,11 @@ bool IsAnySacrolashTank(Player* bot)
 // One tank holds Alythess, so her ceiling is read directly rather than scanned for.
 bool ShouldHoldAlythessThreat(Player* bot, Unit* alythess)
 {
-    Player* const alythessTank = GetAlythessTank(bot);
-    if (!alythessTank || alythessTank == bot || !alythessTank->IsAlive())
+    if (PlayerbotAI::IsHeal(bot))
         return false;
 
-    if (!CanHoldTwinThreat(bot, alythess))
+    Player* const alythessTank = GetAlythessTank(bot);
+    if (!alythessTank || alythessTank == bot || !alythessTank->IsAlive())
         return false;
 
     auto& threatMgr = alythess->GetThreatMgr();
@@ -242,7 +236,7 @@ bool ShouldHoldAlythessThreat(Player* bot, Unit* alythess)
 
 bool ShouldHoldSacrolashThreat(Player* bot, Unit* sacrolash)
 {
-    if (IsAnySacrolashTank(bot) || !CanHoldTwinThreat(bot, sacrolash))
+    if (PlayerbotAI::IsHeal(bot) || IsAnySacrolashTank(bot))
         return false;
 
     Player* const alythessTank = GetAlythessTank(bot);
@@ -340,11 +334,6 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
 
     alythessTankLastBlazeGuid[botGuid] = blazeGuid;
     return true;
-}
-
-void RecordEredarTwinsDpsHoldStart(Player* bot)
-{
-    eredarTwinsDpsHoldStartMs.try_emplace(bot->GetInstanceId(), getMSTime());
 }
 
 void RecordIncomingEredarTwinsConflagrationTarget(Player* target)

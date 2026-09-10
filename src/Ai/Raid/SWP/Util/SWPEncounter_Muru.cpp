@@ -288,6 +288,58 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
     ResolveLivingUnits(botAI, guids.berserkers, targets.berserkers);
 }
 
+Unit* SelectNearestMuruTargetByEntry(
+    Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates, Position const& origin)
+{
+    Unit* selected = nullptr;
+    if (currentTarget && currentTarget->IsAlive() && currentTarget->GetEntry() == entry)
+        selected = currentTarget;
+
+    for (Unit* candidate : candidates)
+    {
+        if (!candidate || selected == candidate)
+            continue;
+
+        if (!selected)
+        {
+            selected = candidate;
+            continue;
+        }
+
+        if (candidate->GetExactDist2d(origin) + MURU_TARGET_SWITCH_MARGIN <
+            selected->GetExactDist2d(origin))
+        {
+            selected = candidate;
+        }
+    }
+
+    return selected;
+}
+
+bool IsMuruAddInVoidSentinelPulse(Unit* add, std::vector<Unit*> const& voidSentinels)
+{
+    if (!add)
+        return false;
+
+    if (add->GetEntry() != Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE) &&
+        add->GetEntry() != Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER) &&
+        add->GetEntry() != Id(SwpNpcs::NPC_VOID_SPAWN))
+    {
+        return false;
+    }
+
+    for (Unit* voidSentinel : voidSentinels)
+    {
+        if (voidSentinel &&
+            add->GetExactDist2d(voidSentinel) < MURU_MELEE_ADD_MIN_DIST_FROM_SENTINEL)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 Unit* FindMuruBerserkerToStun(PlayerbotAI* botAI)
 {
     float const reach = GetBerserkerStunReach(botAI->GetBot());

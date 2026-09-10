@@ -21,7 +21,7 @@ using namespace EncounterHelpers;
 
 // General
 
-bool SunwellPlateauNoEncounterInProgressTrigger::IsActive()
+bool SunwellNoEncounterInProgressTrigger::IsActive()
 {
     // InstanceScript reports IN_PROGRESS for every SWP boss from JustEngagedWith until kill/evade,
     // except for Kil'jaeden, which does not commence until the first Hand dies.
@@ -38,7 +38,7 @@ bool SunwellPlateauNoEncounterInProgressTrigger::IsActive()
     return AI_VALUE(GuidVector, "kiljaeden hands").empty();
 }
 
-bool SunwellPlateauBotHasAuraToRemoveTrigger::IsActive()
+bool SunwellBotHasAuraToRemoveTrigger::IsActive()
 {
     uint32 const spellId = GetSelfImmunitySpell(bot);
     if (spellId && bot->getClass() != CLASS_ROGUE && !PlayerbotAI::IsHeal(bot) &&
@@ -61,15 +61,18 @@ bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
     if (!fiend || !fiend->IsAlive())
         return false;
 
-    // Z-position comparison is so bots will go up the ramp to M'uru without getting stuck
-    // due to proximity to the volatile fiends below, in case the player decides to skip them.
+    // Z-position comparison is so bots will go up the ramp to M'uru without getting stuck due to
+    // proximity to the volatile fiends below (in case the player decides to skip them).
     constexpr float verticalOffset = 10.0f;
     return std::abs(bot->GetPositionZ() - fiend->GetPositionZ()) < verticalOffset;
 }
 
 bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
 {
-    return bot->getClass() == CLASS_PRIEST && AI_VALUE2(Unit*, "find target", "apocalypse guard");
+    if (bot->getClass() != CLASS_PALADIN && bot->getClass() != CLASS_PRIEST)
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "apocalypse guard");
 }
 
 // Kalecgos
@@ -573,6 +576,7 @@ bool EredarTwinsShouldFocusDpsTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return false;
 
+    // Healers are included to flip to their combat engines since dps assist is disabled.
     if (PlayerbotAI::IsDps(bot) || PlayerbotAI::IsHeal(bot))
         return true;
 

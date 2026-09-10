@@ -32,18 +32,19 @@ using namespace EncounterHelpers;
 
 // General
 
-float SunwellPlateauNoEncounterDrinkingMultiplier::GetValue(Action* action)
+// Without this, bots are able to drink after Kil'jaeden's Hands go down.
+float SunwellNoEncounterDrinkingMultiplier::GetValueInEncounter(Action* action)
 {
-    if (IsEncounterInProgress(bot, SWP_MAP_ID))
-        return 1.0f;
-
-    return dynamic_cast<DrinkAction*>(action) ? 0.0f : 1.0f;
+    return dynamic_cast<DrinkAction*>(action) || dynamic_cast<EatAction*>(action) ? 0.0f : 1.0f;
 }
 
 // Trash
 
 float VolatileFiendRestrictApproachMultiplier::GetValue(Action* action)
 {
+    if (IsEncounterInProgress(bot, SwpHelpers::SWP_MAP_ID))
+        return 1.0f;
+
     if (!dynamic_cast<CastReachTargetSpellAction*>(action) &&
         !dynamic_cast<ReachTargetAction*>(action))
     {
@@ -61,9 +62,9 @@ float VolatileFiendRestrictApproachMultiplier::GetValue(Action* action)
         0.0f : 1.0f;
 }
 
-// Kalecgos
+// Shared Boss
 
-float KalecgosControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
+float SunwellControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -74,7 +75,14 @@ float KalecgosControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
     if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "kalecgos") ? 0.0f : 1.0f;
+    if (AI_VALUE2(Unit*, "find target", "entropius"))
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "kalecgos") ||
+        AI_VALUE2(Unit*, "find target", "brutallus") ||
+        AI_VALUE2(Unit*, "find target", "grand warlock alythess") ||
+        AI_VALUE2(Unit*, "find target", "m'uru") ||
+        AI_VALUE2(Unit*, "find target", "kil'jaeden") ? 0.0f : 1.0f;
 }
 
 float KalecgosWaitToDecurseMultiplier::GetValueInEncounter(Action* action)
@@ -211,20 +219,6 @@ float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValueInEncounter(Action*
 }
 
 // Brutallus
-
-float BrutallusControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (bot->getClass() != CLASS_HUNTER)
-        return 1.0f;
-
-    if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "brutallus") ? 0.0f : 1.0f;
-}
 
 float BrutallusControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
@@ -490,26 +484,13 @@ float EredarTwinsDisableAutomaticTargetingMultiplier::GetValueInEncounter(Action
     return AI_VALUE2(Unit*, "find target", "grand warlock alythess") ? 0.0f : 1.0f;
 }
 
-float EredarTwinsControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (bot->getClass() != CLASS_HUNTER)
-        return 1.0f;
-
-    if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "grand warlock alythess") ? 0.0f : 1.0f;
-}
-
 float EredarTwinsHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
 {
     if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    // No AttackAction block. Commencing auto-attack gets bots positioned, but don't use abilities.
+    // No AttackAction block. Commencing auto-attack activates combat engines and gets bots
+    // positioned, but don't use abilities.
     if (!dynamic_cast<CastSpellAction*>(action))
         return 1.0f;
 
@@ -534,7 +515,7 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
 
 float EredarTwinsControlThreatMultiplier::GetValueInEncounter(Action* action)
 {
-    if (PlayerbotAI::IsHeal(bot)) // early return; the threat hold already excludes healers
+    if (PlayerbotAI::IsHeal(bot))
         return 1.0f;
 
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
@@ -618,7 +599,7 @@ float EredarTwinsIsolateConflagrationMultiplier::GetValueInEncounter(Action* act
     if (conflagTarget == bot)
         return bot->getClass() == CLASS_ROGUE && botAI->HasAura("vanish", bot) ? 1.0f : 0.0f;
 
-    if (IsAlythessTank(bot)) // This bot needs to keep doing its job.
+    if (IsAlythessTank(bot))
         return 1.0f;
 
     // If Sacrolash's victim is targeted by Conflagration, block actions that move toward Sacrolash.
@@ -674,23 +655,6 @@ float MuruDisableDefaultTargetingMultiplier::GetValueInEncounter(Action* action)
     // Disable secondary dots on void spawn
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
     return currentTarget && currentTarget->GetEntry() == Id(SwpNpcs::NPC_VOID_SPAWN) ? 0.0f : 1.0f;
-}
-
-float MuruControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (bot->getClass() != CLASS_HUNTER)
-        return 1.0f;
-
-    if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-        return 1.0f;
-
-    if (AI_VALUE2(Unit*, "find target", "entropius"))
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "m'uru") ? 0.0f : 1.0f;
 }
 
 float MuruControlMovementMultiplier::GetValueInEncounter(Action* action)
@@ -815,8 +779,8 @@ float KiljaedenSingleTargetHandsMultiplier::GetValue(Action* action)
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    // Shaman have no spreading DoTs, and their only spell classified as ActionThreatType::Aoe is
-    // Chain Lightning, which is a strong single-target spell in addition to providing AoE damage.
+    // The only Shaman spell classified as ActionThreatType::Aoe is Chain Lightning, which is a
+    // strong single-target spell in addition to providing AoE damage.
     if (bot->getClass() == CLASS_SHAMAN)
         return 1.0f;
 
