@@ -43,7 +43,7 @@ Any new feature needs maintainer approval and a clear understanding of runtime c
 
 - Every new name is registered and every consumer resolves (`ai-engine.md` checklist).
 - `InitTriggers()` chains the parent unless the override is deliberate.
-- Multipliers never suppress heals or emergency actions and never return a negative value.
+- Multipliers return 0 only for the actions that should not be taken.
 - No raw `new` without an owner; no `Player*` / `Unit*` held across ticks.
 - No synchronous database queries on the map thread; multi-statement writes use a transaction.
 - Shared state reachable from several map threads is protected.

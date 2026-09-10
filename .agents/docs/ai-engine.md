@@ -37,9 +37,11 @@ by racing existing actions, and nothing at or above the pull sequence.
 
 ## Multipliers and strategy groups
 
-- Multipliers are multiplicative: `relevance *= GetValue()`. Returning 0 kills the action and a
-  negative value is a bug. Whitelist heals and emergency actions before suppressing anything, and
-  never zero out every action a state can take.
+- Multipliers scale action relevance. Each strategy registers its multipliers in
+  `InitMultipliers()`. Before an action is queued, the engine multiplies its relevance by every
+  registered multiplier's `GetValue(action)`; the base class returns 1.0f. A result of 0 drops
+  the action for that tick. Encounter multipliers match action types with `dynamic_cast` and
+  return 0 for the actions a mechanic rules out.
 - Sibling strategy groups (`NamedObjectContext<Strategy>(shared, true)`, e.g. follow / stay /
   guard / flee) are mutually exclusive. A strategy outside the group must not queue the group's
   actions.
@@ -48,8 +50,15 @@ by racing existing actions, and nothing at or above the pull sequence.
   helpers.
 - One action, one job. An `Execute()` that cascades through unrelated fallbacks re-implements the
   relevance queue; split it into separate actions.
-- Boss phase triggers are mutually exclusive, and every default-action list ends in a terminal
-  fallback so the queue cannot spin.
+- Boss AI objects are tied to the boss phase. A trigger, action or multiplier written for one
+  phase checks that the phase is active, either through a shared helper or by bounding it on both sides in `IsActive()`. Objects that
+  are not tied to a phase may overlap across phases: queueing conflicting
+  actions.
+- `getDefaultActions()` is pushed every tick at its own relevance, below anything a trigger
+  queued. A combat strategy's list includes a lowest-relevance action that is almost always
+  castable (`melee` for melee specs, `shoot` for casters). Without one, a tick in which no
+  trigger fires and every rotation spell is on cooldown executes nothing, and a bot that has
+  not yet started auto-attack or wanding contributes nothing until a trigger fires.
 
 ## Wiring checklist
 

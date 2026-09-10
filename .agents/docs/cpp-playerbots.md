@@ -25,7 +25,7 @@ with `clang-format` (`.clang-format` in the module root); `code_format.sh` runs 
   read once at load into `sPlayerbotAIConfig`, and read from there. Never call `sConfigMgr` in bot
   code.
 - Bot chat goes through `GetBotTextOrDefault` with an English fallback; the translations ship as
-  an SQL update (see `sql-guidelines.md`).
+  a SQL update (see `sql-guidelines.md`).
 - Overload signatures are checked before copying a nearby call: `PlayerbotAI::CanCastSpell` has
   string, spell-id, GameObject, and coordinate forms, and they do not behave alike.
 
