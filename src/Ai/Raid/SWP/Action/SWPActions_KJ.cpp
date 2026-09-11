@@ -260,7 +260,7 @@ bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* re
     }
 }
 
-bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
+bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::Execute(Event /*event*/)
 {
     Position position;
     if (!TryGetMeleePosition(position))
@@ -277,7 +277,7 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool KiljaedenPositionMeleeAction::TryGetMeleePosition(Position& position) const
+bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::TryGetMeleePosition(Position& position) const
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -311,7 +311,8 @@ bool KiljaedenPositionMeleeAction::TryGetMeleePosition(Position& position) const
     return true;
 }
 
-bool KiljaedenPositionMeleeAction::TryAdjustMeleeForArmageddon(Position& position)
+bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::TryAdjustMeleeForArmageddon(
+    Position& position)
 {
     PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
     auto armageddonItr = kiljaedenEncounterStates.find(bot->GetInstanceId());
@@ -519,15 +520,6 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// There is an issue (maybe with the root packets) that causes bots to get stuck with the root
-// movement flag after using a dragon orb; this action is a workaround to remove the stale flag.
-bool KiljaedenReleaseStaleRootAction::Execute(Event /*event*/)
-{
-    bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ROOT);
-    bot->SendMovementFlagUpdate();
-    return true;
-}
-
 bool KiljaedenDragonBuffAndProtectRaidAction::Execute(Event /*event*/)
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
@@ -667,4 +659,11 @@ bool KiljaedenDragonBuffAndProtectRaidAction::ExecuteOutsideDarknessOfAThousandS
     dragon->SetFacingToObject(target);
 
     return CastKiljaedenDragonSpell(dragon, spellId);
+}
+
+// See ReleaseStaleRootFlag for the mechanism. This covers a drake lost mid-encounter; the same
+// release runs again from the Sunwell reset once the encounter is over.
+bool KiljaedenReleaseStaleRootAction::Execute(Event /*event*/)
+{
+    return ReleaseStaleRootFlag(bot);
 }

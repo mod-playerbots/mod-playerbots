@@ -573,13 +573,9 @@ bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
     return true;
 }
 
-bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs)
+bool HasUsedKiljaedenDragonOrb(Player* bot)
 {
-    auto const orbUseTime = kiljaedenDragonOrbUseTimes.find(bot->GetGUID().GetCounter());
-    if (orbUseTime == kiljaedenDragonOrbUseTimes.end())
-        return false;
-
-    return getMSTimeDiff(orbUseTime->second, getMSTime()) < recentMs;
+    return kiljaedenDragonOrbUseTimes.contains(bot->GetGUID().GetCounter());
 }
 
 bool HasKiljaedenDragonAura(Player* bot)
@@ -715,6 +711,24 @@ Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spell
     }
 
     return closestTarget;
+}
+
+bool HasStaleRootFlag(Player* bot)
+{
+    // This helper ensures no genuine roots are cleared because one of the unit states below is
+    // always present during a genuine root via Unit::SetRooted.
+    return bot->IsRooted() &&
+        !bot->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_LOGOUT_TIMER);
+}
+
+bool ReleaseStaleRootFlag(Player* bot)
+{
+    if (!HasStaleRootFlag(bot))
+        return false;
+
+    bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ROOT);
+    bot->SendMovementFlagUpdate();
+    return true;
 }
 
 }

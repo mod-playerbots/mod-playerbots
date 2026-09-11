@@ -206,8 +206,8 @@ public:
         creators["kil'jaeden position and move tanks"] =
             &RaidSwpActionContext::kiljaeden_position_and_move_tanks;
 
-        creators["kil'jaeden position melee"] =
-            &RaidSwpActionContext::kiljaeden_position_melee;
+        creators["kil'jaeden position melee and avoid armageddons"] =
+            &RaidSwpActionContext::kiljaeden_position_melee_and_avoid_armageddons;
 
         creators["kil'jaeden position ranged and avoid armageddons"] =
             &RaidSwpActionContext::kiljaeden_position_ranged_and_avoid_armageddons;
@@ -221,11 +221,11 @@ public:
         creators["kil'jaeden use dragon orb"] =
             &RaidSwpActionContext::kiljaeden_use_dragon_orb;
 
-        creators["kil'jaeden release stale root"] =
-            &RaidSwpActionContext::kiljaeden_release_stale_root;
-
         creators["kil'jaeden dragon buff and protect raid"] =
             &RaidSwpActionContext::kiljaeden_dragon_buff_and_protect_raid;
+
+        creators["kil'jaeden release stale root"] =
+            &RaidSwpActionContext::kiljaeden_release_stale_root;
     }
 
 private:
@@ -432,8 +432,8 @@ private:
     static Action* kiljaeden_position_and_move_tanks(PlayerbotAI* botAI) {
         return new KiljaedenPositionAndMoveTanksAction(botAI);
     }
-    static Action* kiljaeden_position_melee(PlayerbotAI* botAI) {
-        return new KiljaedenPositionMeleeAction(botAI);
+    static Action* kiljaeden_position_melee_and_avoid_armageddons(PlayerbotAI* botAI) {
+        return new KiljaedenPositionMeleeAndAvoidArmageddonsAction(botAI);
     }
     static Action* kiljaeden_position_ranged_and_avoid_armageddons(PlayerbotAI* botAI) {
         return new KiljaedenPositionRangedAndAvoidArmageddonsAction(botAI);
@@ -448,11 +448,11 @@ private:
     static Action* kiljaeden_use_dragon_orb(PlayerbotAI* botAI) {
         return new KiljaedenUseDragonOrbAction(botAI);
     }
-    static Action* kiljaeden_release_stale_root(PlayerbotAI* botAI) {
-        return new KiljaedenReleaseStaleRootAction(botAI);
-    }
     static Action* kiljaeden_dragon_buff_and_protect_raid(PlayerbotAI* botAI) {
         return new KiljaedenDragonBuffAndProtectRaidAction(botAI);
+    }
+    static Action* kiljaeden_release_stale_root(PlayerbotAI* botAI) {
+        return new KiljaedenReleaseStaleRootAction(botAI);
     }
 };
 

@@ -200,11 +200,11 @@ public:
         creators["kil'jaeden tanks should hold boss and reflections"] =
             &RaidSwpTriggerContext::kiljaeden_tanks_should_hold_boss_and_reflections;
 
-        creators["kil'jaeden boss engaged by melee"] =
-            &RaidSwpTriggerContext::kiljaeden_boss_engaged_by_melee;
+        creators["kil'jaeden melee should split into two groups"] =
+            &RaidSwpTriggerContext::kiljaeden_melee_should_split_into_two_groups;
 
-        creators["kil'jaeden boss engaged by ranged"] =
-            &RaidSwpTriggerContext::kiljaeden_boss_engaged_by_ranged;
+        creators["kil'jaeden ranged should spread in two arcs"] =
+            &RaidSwpTriggerContext::kiljaeden_ranged_should_spread_in_two_arcs;
 
         creators["kil'jaeden bot has fire bloom"] =
             &RaidSwpTriggerContext::kiljaeden_bot_has_fire_bloom;
@@ -215,11 +215,11 @@ public:
         creators["kil'jaeden dragon orb is active"] =
             &RaidSwpTriggerContext::kiljaeden_dragon_orb_is_active;
 
-        creators["kil'jaeden bot has stale root after dragon"] =
-            &RaidSwpTriggerContext::kiljaeden_bot_has_stale_root_after_dragon;
-
         creators["kil'jaeden bot controls dragon"] =
             &RaidSwpTriggerContext::kiljaeden_bot_controls_dragon;
+
+        creators["kil'jaeden bot has stale root after dragon"] =
+            &RaidSwpTriggerContext::kiljaeden_bot_has_stale_root_after_dragon;
     }
 
 private:
@@ -415,11 +415,11 @@ private:
     static Trigger* kiljaeden_tanks_should_hold_boss_and_reflections(PlayerbotAI* botAI) {
         return new KiljaedenTanksShouldHoldBossAndReflectionsTrigger(botAI);
     }
-    static Trigger* kiljaeden_boss_engaged_by_melee(PlayerbotAI* botAI) {
-        return new KiljaedenBossEngagedByMeleeTrigger(botAI);
+    static Trigger* kiljaeden_melee_should_split_into_two_groups(PlayerbotAI* botAI) {
+        return new KiljaedenMeleeShouldSplitIntoTwoGroupsTrigger(botAI);
     }
-    static Trigger* kiljaeden_boss_engaged_by_ranged(PlayerbotAI* botAI) {
-        return new KiljaedenBossEngagedByRangedTrigger(botAI);
+    static Trigger* kiljaeden_ranged_should_spread_in_two_arcs(PlayerbotAI* botAI) {
+        return new KiljaedenRangedShouldSpreadInTwoArcsTrigger(botAI);
     }
     static Trigger* kiljaeden_bot_has_fire_bloom(PlayerbotAI* botAI) {
         return new KiljaedenBotHasFireBloomTrigger(botAI);
@@ -430,11 +430,11 @@ private:
     static Trigger* kiljaeden_dragon_orb_is_active(PlayerbotAI* botAI) {
         return new KiljaedenDragonOrbIsActiveTrigger(botAI);
     }
-    static Trigger* kiljaeden_bot_has_stale_root_after_dragon(PlayerbotAI* botAI) {
-        return new KiljaedenBotHasStaleRootAfterDragonTrigger(botAI);
-    }
     static Trigger* kiljaeden_bot_controls_dragon(PlayerbotAI* botAI) {
         return new KiljaedenBotControlsDragonTrigger(botAI);
+    }
+    static Trigger* kiljaeden_bot_has_stale_root_after_dragon(PlayerbotAI* botAI) {
+        return new KiljaedenBotHasStaleRootAfterDragonTrigger(botAI);
     }
 };
 

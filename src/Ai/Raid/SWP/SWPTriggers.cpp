@@ -788,7 +788,10 @@ bool KiljaedenShouldCoordinateOrbUseTrigger::IsActive()
     if (stateItr != kiljaedenEncounterStates.end() && stateItr->second.dragonOrbAnnouncementMs)
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "hand of the deceiver");
+    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > SUNWELL_CENTER_RADIUS)
+        return false;
+
+    return !AI_VALUE(GuidVector, "kiljaeden hands").empty();
 }
 
 bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActive()
@@ -814,7 +817,7 @@ bool KiljaedenTanksShouldHoldBossAndReflectionsTrigger::IsActiveInEncounter()
     return !IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
 
-bool KiljaedenBossEngagedByMeleeTrigger::IsActiveInEncounter()
+bool KiljaedenMeleeShouldSplitIntoTwoGroupsTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot))
         return false;
@@ -829,7 +832,7 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActiveInEncounter()
     return !IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
 
-bool KiljaedenBossEngagedByRangedTrigger::IsActiveInEncounter()
+bool KiljaedenRangedShouldSpreadInTwoArcsTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -917,24 +920,6 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActiveInEncounter()
     return result;
 }
 
-bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActiveInEncounter()
-{
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || kiljaeden->GetHealthPct() > KILJAEDEN_PHASE3_HP_THRESHOLD)
-        return false;
-
-    if (GetKiljaedenDragonOrbUser(bot) != bot)
-        return false;
-
-    if (!bot->IsRooted() || bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
-        return false;
-
-    if (HasKiljaedenDragonAura(bot) || HasRecentKiljaedenDragonOrbUse(bot, DRAGON_ORB_USE_GRACE_MS))
-        return false;
-
-    return bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == NULL_MOTION_TYPE;
-}
-
 bool KiljaedenBotControlsDragonTrigger::IsActiveInEncounter()
 {
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
@@ -944,4 +929,16 @@ bool KiljaedenBotControlsDragonTrigger::IsActiveInEncounter()
         return false;
 
     return GetKiljaedenControlledDragon(bot);
+}
+
+bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActiveInEncounter()
+{
+    // Shield of the Blue stuns the drake it is cast from, and that stun is applied to the orb user
+    // bot as well. The drake dies on the last tick of the second Shield of the Blue cast, which
+    // occurs before the aura expires, so the drake dies still stunned, leaving the bot stunned as
+    // well and rooted mid-encounter.
+    if (!HasUsedKiljaedenDragonOrb(bot) || HasKiljaedenDragonAura(bot))
+        return false;
+
+    return HasStaleRootFlag(bot);
 }

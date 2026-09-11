@@ -201,10 +201,10 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kil'jaeden tanks should hold boss and reflections", {
         NextAction("kil'jaeden position and move tanks", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden boss engaged by melee", {
-        NextAction("kil'jaeden position melee", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("kil'jaeden melee should split into two groups", {
+        NextAction("kil'jaeden position melee and avoid armageddons", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden boss engaged by ranged", {
+    triggers.push_back(new TriggerNode("kil'jaeden ranged should spread in two arcs", {
         NextAction("kil'jaeden position ranged and avoid armageddons", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden bot has fire bloom", {
@@ -216,11 +216,11 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kil'jaeden dragon orb is active", {
         NextAction("kil'jaeden use dragon orb", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden bot has stale root after dragon", {
-        NextAction("kil'jaeden release stale root", ACTION_EMERGENCY + 10) }));
-
     triggers.push_back(new TriggerNode("kil'jaeden bot controls dragon", {
         NextAction("kil'jaeden dragon buff and protect raid", ACTION_RAID + 3) }));
+
+    triggers.push_back(new TriggerNode("kil'jaeden bot has stale root after dragon", {
+        NextAction("kil'jaeden release stale root", ACTION_EMERGENCY + 10) }));
 }
 
 void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

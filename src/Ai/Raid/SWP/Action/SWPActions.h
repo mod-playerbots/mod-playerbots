@@ -592,11 +592,11 @@ private:
     bool PickUpSinisterReflections(Creature* reflection);
 };
 
-class KiljaedenPositionMeleeAction : public MovementAction
+class KiljaedenPositionMeleeAndAvoidArmageddonsAction : public MovementAction
 {
 public:
-    KiljaedenPositionMeleeAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "kil'jaeden position melee") {}
+    KiljaedenPositionMeleeAndAvoidArmageddonsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "kil'jaeden position melee and avoid armageddons") {}
     bool Execute(Event event) override;
 
 private:
@@ -632,14 +632,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class KiljaedenReleaseStaleRootAction : public Action
-{
-public:
-    KiljaedenReleaseStaleRootAction(PlayerbotAI* botAI)
-        : Action(botAI, "kil'jaeden release stale root") {}
-    bool Execute(Event event) override;
-};
-
 class KiljaedenDragonBuffAndProtectRaidAction : public Action
 {
 public:
@@ -650,6 +642,14 @@ public:
 private:
     bool ExecuteDuringDarknessOfAThousandSouls(Unit* kiljaeden, Unit* dragon);
     bool ExecuteOutsideDarknessOfAThousandSouls(Unit* dragon);
+};
+
+class KiljaedenReleaseStaleRootAction : public Action
+{
+public:
+    KiljaedenReleaseStaleRootAction(PlayerbotAI* botAI)
+        : Action(botAI, "kil'jaeden release stale root") {}
+    bool Execute(Event event) override;
 };
 
 #endif

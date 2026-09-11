@@ -108,7 +108,6 @@ inline constexpr float KILJAEDEN_REFLECTION_SEARCH_RADIUS = 100.0f;
 inline constexpr float DRAGON_ORB_SEARCH_RADIUS = 200.0f;
 inline constexpr float DRAGON_ORB_IN_USE_HOLD_DISTANCE = 15.0f;
 // Grace after using an Orb before a lingering root is considered stale and is cleared.
-inline constexpr uint32 DRAGON_ORB_USE_GRACE_MS = 2000;
 inline constexpr uint32 DRAGON_ORB_ANNOUNCEMENT_RESET_MS = 10000;
 // Shield of the Blue (45848) lasts 5s and Darkness of a Thousand Souls (46605) is an 8s channel, so
 // the dragon casts once <4.5s remain.
@@ -149,12 +148,14 @@ bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
 GuidVector FindKiljaedenDragonOrbGuids(Player* bot);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
 bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId);
-bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs);
+bool HasUsedKiljaedenDragonOrb(Player* bot);
 bool HasKiljaedenDragonAura(Player* bot);
 Unit* GetKiljaedenControlledDragon(Player* bot);
 bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId);
 Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 spellId);
 Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spellId = 0);
+bool HasStaleRootFlag(Player* bot);
+bool ReleaseStaleRootFlag(Player* bot);
 
 }
 

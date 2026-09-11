@@ -73,6 +73,10 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
     // Kil'jaeden
     reset |= kiljaedenDragonOrbUseTimes.erase(guid.GetCounter()) > 0;
 
+    // A drake lost as Kil'jaeden dies leaves its rider stale-rooted after the encounter, when the
+    // in-combat release (KiljaedenReleaseStaleRootAction) can no longer run.
+    reset |= ReleaseStaleRootFlag(bot);
+
     // Records shared across the raid, so one bot clears them all
     if (!IsMechanicTrackerBot(bot, SWP_MAP_ID))
         return reset;

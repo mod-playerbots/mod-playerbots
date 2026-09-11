@@ -636,21 +636,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KiljaedenBossEngagedByMeleeTrigger : public SunwellEncounterTrigger
+class KiljaedenMeleeShouldSplitIntoTwoGroupsTrigger : public SunwellEncounterTrigger
 {
 public:
-    KiljaedenBossEngagedByMeleeTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden boss engaged by melee") {}
+    KiljaedenMeleeShouldSplitIntoTwoGroupsTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "kil'jaeden melee should split into two groups") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class KiljaedenBossEngagedByRangedTrigger : public SunwellEncounterTrigger
+class KiljaedenRangedShouldSpreadInTwoArcsTrigger : public SunwellEncounterTrigger
 {
 public:
-    KiljaedenBossEngagedByRangedTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden boss engaged by ranged") {}
+    KiljaedenRangedShouldSpreadInTwoArcsTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "kil'jaeden ranged should spread in two arcs") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -686,21 +686,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KiljaedenBotHasStaleRootAfterDragonTrigger : public SunwellEncounterTrigger
-{
-public:
-    KiljaedenBotHasStaleRootAfterDragonTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden bot has stale root after dragon") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class KiljaedenBotControlsDragonTrigger : public SunwellEncounterTrigger
 {
 public:
     KiljaedenBotControlsDragonTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(botAI, "kil'jaeden bot controls dragon") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class KiljaedenBotHasStaleRootAfterDragonTrigger : public SunwellEncounterTrigger
+{
+public:
+    KiljaedenBotHasStaleRootAfterDragonTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "kil'jaeden bot has stale root after dragon") {}
 
 protected:
     bool IsActiveInEncounter() override;
