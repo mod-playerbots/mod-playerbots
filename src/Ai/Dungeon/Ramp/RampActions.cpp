@@ -104,12 +104,12 @@ bool VazrudenTankPositionBossAction::Execute(Event /*event*/)
 
 bool VazrudenMarkBossAction::Execute(Event /*event*/)
 {
-    Unit* vaz = AI_VALUE2(Unit*, "find target", "vazruden");
-    if (!vaz)
+    Unit* vazruden = AI_VALUE2(Unit*, "find target", "vazruden");
+    if (!vazruden)
         return false;
 
     if (!IsMechanicTrackerBot(bot, RAMP_MAP_ID))
         return false;
 
-    return MarkTargetWithSkull(bot, vaz);
+    return MarkTargetWithSkull(bot, vazruden);
 }
