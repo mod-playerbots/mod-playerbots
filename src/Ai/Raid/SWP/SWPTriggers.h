@@ -40,13 +40,13 @@ public:
     bool IsActive() override;
 };
 
-class SunwellBotHasAuraToRemoveTrigger : public Trigger
+class SunwellAuraToRemoveTrigger : public Trigger
 {
 public:
     // Also throttled, though this can occur in combat (clear Ice Block and Divine Shield). A bit
     // of a delay here feels more realistic anyway.
-    SunwellBotHasAuraToRemoveTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "sunwell bot has aura to remove", 1000) {}
+    SunwellAuraToRemoveTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "sunwell aura to remove", 1000) {}
     bool IsActive() override;
 };
 
@@ -110,11 +110,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KalecgosBotsTakeSplashDamageTrigger : public SunwellEncounterTrigger
+class KalecgosRangedShouldSpreadTrigger : public SunwellEncounterTrigger
 {
 public:
-    KalecgosBotsTakeSplashDamageTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kalecgos bots take splash damage") {}
+    KalecgosRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "kalecgos ranged should spread") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -192,11 +192,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class BrutallusBotIsBurningTrigger : public SunwellEncounterTrigger
+class BrutallusBurnOnNonTankTrigger : public SunwellEncounterTrigger
 {
 public:
-    BrutallusBotIsBurningTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "brutallus bot is burning") {}
+    BrutallusBurnOnNonTankTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "brutallus burn on non-tank") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -245,21 +245,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class FelmystBotIsEncapsulatedTrigger : public SunwellEncounterTrigger
+class FelmystEncapsulateOnMageOrPaladinTrigger : public SunwellEncounterTrigger
 {
 public:
-    FelmystBotIsEncapsulatedTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst bot is encapsulated") {}
+    FelmystEncapsulateOnMageOrPaladinTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "felmyst encapsulate on mage or paladin") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class FelmystBotNearEncapsulatedPlayerTrigger : public SunwellEncounterTrigger
+class FelmystNearEncapsulatedPlayerTrigger : public SunwellEncounterTrigger
 {
 public:
-    FelmystBotNearEncapsulatedPlayerTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst bot near encapsulated player") {}
+    FelmystNearEncapsulatedPlayerTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "felmyst near encapsulated player") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -285,11 +285,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class FelmystBotIsDemonicVaporTargetTrigger : public SunwellEncounterTrigger
+class FelmystTargetedByDemonicVaporTrigger : public SunwellEncounterTrigger
 {
 public:
-    FelmystBotIsDemonicVaporTargetTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst bot is demonic vapor target") {}
+    FelmystTargetedByDemonicVaporTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "felmyst targeted by demonic vapor") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -460,11 +460,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MuruBossTransformedIntoEntropiusTrigger : public SunwellEncounterTrigger
+class MuruTransformedIntoEntropiusTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruBossTransformedIntoEntropiusTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru boss transformed into entropius") {}
+    MuruTransformedIntoEntropiusTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "m'uru transformed into entropius") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -656,11 +656,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KiljaedenBotHasFireBloomTrigger : public SunwellEncounterTrigger
+class KiljaedenFireBloomOnImmunityClassTrigger : public SunwellEncounterTrigger
 {
 public:
-    KiljaedenBotHasFireBloomTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden bot has fire bloom") {}
+    KiljaedenFireBloomOnImmunityClassTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "kil'jaeden fire bloom on immunity class") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -696,11 +696,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KiljaedenBotHasStaleRootAfterDragonTrigger : public SunwellEncounterTrigger
+class KiljaedenStaleRootAfterDragonTrigger : public SunwellEncounterTrigger
 {
 public:
-    KiljaedenBotHasStaleRootAfterDragonTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden bot has stale root after dragon") {}
+    KiljaedenStaleRootAfterDragonTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "kil'jaeden stale root after dragon") {}
 
 protected:
     bool IsActiveInEncounter() override;

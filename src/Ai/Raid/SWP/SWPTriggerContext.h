@@ -19,8 +19,7 @@ public:
         creators["sunwell no encounter in progress"] =
             &RaidSwpTriggerContext::sunwell_no_encounter_in_progress;
 
-        creators["sunwell bot has aura to remove"] =
-            &RaidSwpTriggerContext::sunwell_bot_has_aura_to_remove;
+        creators["sunwell aura to remove"] = &RaidSwpTriggerContext::sunwell_aura_to_remove;
 
         // Trash
         creators["volatile fiend self destructs when near"] =
@@ -33,8 +32,7 @@ public:
         creators["kalecgos should communicate boss health"] =
             &RaidSwpTriggerContext::kalecgos_should_communicate_boss_health;
 
-        creators["kalecgos pulling boss"] =
-            &RaidSwpTriggerContext::kalecgos_pulling_boss;
+        creators["kalecgos pulling boss"] = &RaidSwpTriggerContext::kalecgos_pulling_boss;
 
         creators["kalecgos requires tank rotation"] =
             &RaidSwpTriggerContext::kalecgos_requires_tank_rotation;
@@ -42,8 +40,8 @@ public:
         creators["kalecgos spectral rift is open"] =
             &RaidSwpTriggerContext::kalecgos_spectral_rift_is_open;
 
-        creators["kalecgos bots take splash damage"] =
-            &RaidSwpTriggerContext::kalecgos_bots_take_splash_damage;
+        creators["kalecgos ranged should spread"] =
+            &RaidSwpTriggerContext::kalecgos_ranged_should_spread;
 
         creators["kalecgos too many arcane buffet stacks"] =
             &RaidSwpTriggerContext::kalecgos_too_many_arcane_buffet_stacks;
@@ -55,8 +53,7 @@ public:
             &RaidSwpTriggerContext::kalecgos_bots_dont_observe_gravity;
 
         // Brutallus
-        creators["brutallus pulling boss"] =
-            &RaidSwpTriggerContext::brutallus_pulling_boss;
+        creators["brutallus pulling boss"] = &RaidSwpTriggerContext::brutallus_pulling_boss;
 
         creators["brutallus requires two tanks"] =
             &RaidSwpTriggerContext::brutallus_requires_two_tanks;
@@ -67,12 +64,10 @@ public:
         creators["brutallus ranged should soak meteor slash"] =
             &RaidSwpTriggerContext::brutallus_ranged_should_soak_meteor_slash;
 
-        creators["brutallus bot is burning"] =
-            &RaidSwpTriggerContext::brutallus_bot_is_burning;
+        creators["brutallus burn on non-tank"] = &RaidSwpTriggerContext::brutallus_burn_on_non_tank;
 
         // Felmyst
-        creators["felmyst pulling boss"] =
-            &RaidSwpTriggerContext::felmyst_pulling_boss;
+        creators["felmyst pulling boss"] = &RaidSwpTriggerContext::felmyst_pulling_boss;
 
         creators["felmyst ground phase should be tanked"] =
             &RaidSwpTriggerContext::felmyst_ground_phase_should_be_tanked;
@@ -83,11 +78,11 @@ public:
         creators["felmyst melee should stay together"] =
             &RaidSwpTriggerContext::felmyst_melee_should_stay_together;
 
-        creators["felmyst bot is encapsulated"] =
-            &RaidSwpTriggerContext::felmyst_bot_is_encapsulated;
+        creators["felmyst encapsulate on mage or paladin"] =
+            &RaidSwpTriggerContext::felmyst_encapsulate_on_mage_or_paladin;
 
-        creators["felmyst bot near encapsulated player"] =
-            &RaidSwpTriggerContext::felmyst_bot_near_encapsulated_player;
+        creators["felmyst near encapsulated player"] =
+            &RaidSwpTriggerContext::felmyst_near_encapsulated_player;
 
         creators["felmyst player has gas nova"] =
             &RaidSwpTriggerContext::felmyst_player_has_gas_nova;
@@ -95,8 +90,8 @@ public:
         creators["felmyst should avoid demonic vapor trails"] =
             &RaidSwpTriggerContext::felmyst_should_avoid_demonic_vapor_trails;
 
-        creators["felmyst bot is demonic vapor target"] =
-            &RaidSwpTriggerContext::felmyst_bot_is_demonic_vapor_target;
+        creators["felmyst targeted by demonic vapor"] =
+            &RaidSwpTriggerContext::felmyst_targeted_by_demonic_vapor;
 
         creators["felmyst fog of corruption is active"] =
             &RaidSwpTriggerContext::felmyst_fog_of_corruption_is_active;
@@ -148,8 +143,8 @@ public:
         creators["m'uru void sentinel or entropius has appeared"] =
             &RaidSwpTriggerContext::muru_void_sentinel_or_entropius_has_appeared;
 
-        creators["m'uru boss transformed into entropius"] =
-            &RaidSwpTriggerContext::muru_boss_transformed_into_entropius;
+        creators["m'uru transformed into entropius"] =
+            &RaidSwpTriggerContext::muru_transformed_into_entropius;
 
         creators["m'uru ranged should stack or spread"] =
             &RaidSwpTriggerContext::muru_ranged_should_stack_or_spread;
@@ -163,11 +158,9 @@ public:
         creators["m'uru adds spawn at entrance"] =
             &RaidSwpTriggerContext::muru_adds_spawn_at_entrance;
 
-        creators["m'uru dark fiends spawned"] =
-            &RaidSwpTriggerContext::muru_dark_fiends_spawned;
+        creators["m'uru dark fiends spawned"] = &RaidSwpTriggerContext::muru_dark_fiends_spawned;
 
-        creators["m'uru darkness is coming"] =
-            &RaidSwpTriggerContext::muru_darkness_is_coming;
+        creators["m'uru darkness is coming"] = &RaidSwpTriggerContext::muru_darkness_is_coming;
 
         creators["m'uru berserker is buffed with flurry"] =
             &RaidSwpTriggerContext::muru_berserker_is_buffed_with_flurry;
@@ -206,8 +199,8 @@ public:
         creators["kil'jaeden ranged should spread in two arcs"] =
             &RaidSwpTriggerContext::kiljaeden_ranged_should_spread_in_two_arcs;
 
-        creators["kil'jaeden bot has fire bloom"] =
-            &RaidSwpTriggerContext::kiljaeden_bot_has_fire_bloom;
+        creators["kil'jaeden fire bloom on immunity class"] =
+            &RaidSwpTriggerContext::kiljaeden_fire_bloom_on_immunity_class;
 
         creators["kil'jaeden says: Chaos! Destruction! Oblivion!"] =
             &RaidSwpTriggerContext::kiljaeden_says_chaos_destruction_oblivion;
@@ -218,8 +211,8 @@ public:
         creators["kil'jaeden bot controls dragon"] =
             &RaidSwpTriggerContext::kiljaeden_bot_controls_dragon;
 
-        creators["kil'jaeden bot has stale root after dragon"] =
-            &RaidSwpTriggerContext::kiljaeden_bot_has_stale_root_after_dragon;
+        creators["kil'jaeden stale root after dragon"] =
+            &RaidSwpTriggerContext::kiljaeden_stale_root_after_dragon;
     }
 
 private:
@@ -227,8 +220,8 @@ private:
     static Trigger* sunwell_no_encounter_in_progress(PlayerbotAI* botAI) {
         return new SunwellNoEncounterInProgressTrigger(botAI);
     }
-    static Trigger* sunwell_bot_has_aura_to_remove(PlayerbotAI* botAI) {
-        return new SunwellBotHasAuraToRemoveTrigger(botAI);
+    static Trigger* sunwell_aura_to_remove(PlayerbotAI* botAI) {
+        return new SunwellAuraToRemoveTrigger(botAI);
     }
 
     // Trash
@@ -252,8 +245,8 @@ private:
     static Trigger* kalecgos_spectral_rift_is_open(PlayerbotAI* botAI) {
         return new KalecgosSpectralRiftIsOpenTrigger(botAI);
     }
-    static Trigger* kalecgos_bots_take_splash_damage(PlayerbotAI* botAI) {
-        return new KalecgosBotsTakeSplashDamageTrigger(botAI);
+    static Trigger* kalecgos_ranged_should_spread(PlayerbotAI* botAI) {
+        return new KalecgosRangedShouldSpreadTrigger(botAI);
     }
     static Trigger* kalecgos_humanoid_kalec_tanks_sathrovarr(PlayerbotAI* botAI) {
         return new KalecgosHumanoidKalecTanksSathrovarrTrigger(botAI);
@@ -278,8 +271,8 @@ private:
     static Trigger* brutallus_ranged_should_soak_meteor_slash(PlayerbotAI* botAI) {
         return new BrutallusRangedShouldSoakMeteorSlashTrigger(botAI);
     }
-    static Trigger* brutallus_bot_is_burning(PlayerbotAI* botAI) {
-        return new BrutallusBotIsBurningTrigger(botAI);
+    static Trigger* brutallus_burn_on_non_tank(PlayerbotAI* botAI) {
+        return new BrutallusBurnOnNonTankTrigger(botAI);
     }
 
     // Felmyst
@@ -295,11 +288,11 @@ private:
     static Trigger* felmyst_melee_should_stay_together(PlayerbotAI* botAI) {
         return new FelmystMeleeShouldStayTogetherTrigger(botAI);
     }
-    static Trigger* felmyst_bot_is_encapsulated(PlayerbotAI* botAI) {
-        return new FelmystBotIsEncapsulatedTrigger(botAI);
+    static Trigger* felmyst_encapsulate_on_mage_or_paladin(PlayerbotAI* botAI) {
+        return new FelmystEncapsulateOnMageOrPaladinTrigger(botAI);
     }
-    static Trigger* felmyst_bot_near_encapsulated_player(PlayerbotAI* botAI) {
-        return new FelmystBotNearEncapsulatedPlayerTrigger(botAI);
+    static Trigger* felmyst_near_encapsulated_player(PlayerbotAI* botAI) {
+        return new FelmystNearEncapsulatedPlayerTrigger(botAI);
     }
     static Trigger* felmyst_player_has_gas_nova(PlayerbotAI* botAI) {
         return new FelmystPlayerHasGasNovaTrigger(botAI);
@@ -307,8 +300,8 @@ private:
     static Trigger* felmyst_should_avoid_demonic_vapor_trails(PlayerbotAI* botAI) {
         return new FelmystShouldAvoidDemonicVaporTrailsTrigger(botAI);
     }
-    static Trigger* felmyst_bot_is_demonic_vapor_target(PlayerbotAI* botAI) {
-        return new FelmystBotIsDemonicVaporTargetTrigger(botAI);
+    static Trigger* felmyst_targeted_by_demonic_vapor(PlayerbotAI* botAI) {
+        return new FelmystTargetedByDemonicVaporTrigger(botAI);
     }
     static Trigger* felmyst_fog_of_corruption_is_active(PlayerbotAI* botAI) {
         return new FelmystFogOfCorruptionIsActiveTrigger(botAI);
@@ -362,8 +355,8 @@ private:
     static Trigger* muru_void_sentinel_or_entropius_has_appeared(PlayerbotAI* botAI) {
         return new MuruVoidSentinelOrEntropiusHasAppearedTrigger(botAI);
     }
-    static Trigger* muru_boss_transformed_into_entropius(PlayerbotAI* botAI) {
-        return new MuruBossTransformedIntoEntropiusTrigger(botAI);
+    static Trigger* muru_transformed_into_entropius(PlayerbotAI* botAI) {
+        return new MuruTransformedIntoEntropiusTrigger(botAI);
     }
     static Trigger* muru_ranged_should_stack_or_spread(PlayerbotAI* botAI) {
         return new MuruRangedShouldStackOrSpreadTrigger(botAI);
@@ -421,8 +414,8 @@ private:
     static Trigger* kiljaeden_ranged_should_spread_in_two_arcs(PlayerbotAI* botAI) {
         return new KiljaedenRangedShouldSpreadInTwoArcsTrigger(botAI);
     }
-    static Trigger* kiljaeden_bot_has_fire_bloom(PlayerbotAI* botAI) {
-        return new KiljaedenBotHasFireBloomTrigger(botAI);
+    static Trigger* kiljaeden_fire_bloom_on_immunity_class(PlayerbotAI* botAI) {
+        return new KiljaedenFireBloomOnImmunityClassTrigger(botAI);
     }
     static Trigger* kiljaeden_says_chaos_destruction_oblivion(PlayerbotAI* botAI) {
         return new KiljaedenSaysChaosDestructionOblivionTrigger(botAI);
@@ -433,8 +426,8 @@ private:
     static Trigger* kiljaeden_bot_controls_dragon(PlayerbotAI* botAI) {
         return new KiljaedenBotControlsDragonTrigger(botAI);
     }
-    static Trigger* kiljaeden_bot_has_stale_root_after_dragon(PlayerbotAI* botAI) {
-        return new KiljaedenBotHasStaleRootAfterDragonTrigger(botAI);
+    static Trigger* kiljaeden_stale_root_after_dragon(PlayerbotAI* botAI) {
+        return new KiljaedenStaleRootAfterDragonTrigger(botAI);
     }
 };
 

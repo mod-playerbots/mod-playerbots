@@ -38,7 +38,7 @@ bool SunwellNoEncounterInProgressTrigger::IsActive()
     return AI_VALUE(GuidVector, "kiljaeden hands").empty();
 }
 
-bool SunwellBotHasAuraToRemoveTrigger::IsActive()
+bool SunwellAuraToRemoveTrigger::IsActive()
 {
     uint32 const spellId = GetSelfImmunitySpell(bot);
     if (spellId && bot->getClass() != CLASS_ROGUE && !PlayerbotAI::IsHeal(bot) &&
@@ -145,7 +145,7 @@ bool KalecgosSpectralRiftIsOpenTrigger::IsActiveInEncounter()
     return botAI->GetGameObject(AI_VALUE(ObjectGuid, "kalecgos spectral rift"));
 }
 
-bool KalecgosBotsTakeSplashDamageTrigger::IsActiveInEncounter()
+bool KalecgosRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -240,7 +240,7 @@ bool BrutallusRangedShouldSoakMeteorSlashTrigger::IsActiveInEncounter()
     return brutallus && brutallus->GetVictim() != bot;
 }
 
-bool BrutallusBotIsBurningTrigger::IsActiveInEncounter()
+bool BrutallusBurnOnNonTankTrigger::IsActiveInEncounter()
 {
     if (!HasBrutallusBurn(bot))
         return false;
@@ -346,7 +346,7 @@ bool FelmystMeleeShouldStayTogetherTrigger::IsActiveInEncounter()
     return !GetFelmystEncapsulateTarget(bot) && !DidEncapsulateOccurThisGroundPhase(bot);
 }
 
-bool FelmystBotIsEncapsulatedTrigger::IsActiveInEncounter()
+bool FelmystEncapsulateOnMageOrPaladinTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_PALADIN)
         return false;
@@ -357,7 +357,7 @@ bool FelmystBotIsEncapsulatedTrigger::IsActiveInEncounter()
     return !PlayerbotAI::IsMainTank(bot);
 }
 
-bool FelmystBotNearEncapsulatedPlayerTrigger::IsActiveInEncounter()
+bool FelmystNearEncapsulatedPlayerTrigger::IsActiveInEncounter()
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst || felmyst->IsFlying())
@@ -402,7 +402,7 @@ bool FelmystShouldAvoidDemonicVaporTrailsTrigger::IsActiveInEncounter()
     return !TryGetActiveFogOfCorruptionState(bot, felmyst, fogState);
 }
 
-bool FelmystBotIsDemonicVaporTargetTrigger::IsActiveInEncounter()
+bool FelmystTargetedByDemonicVaporTrigger::IsActiveInEncounter()
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst || !felmyst->IsFlying())
@@ -622,7 +622,7 @@ bool MuruVoidSentinelOrEntropiusHasAppearedTrigger::IsActiveInEncounter()
     return entropius && entropius->GetHealthPct() > MURU_MISDIRECT_MIN_TARGET_HP_PERCENT;
 }
 
-bool MuruBossTransformedIntoEntropiusTrigger::IsActiveInEncounter()
+bool MuruTransformedIntoEntropiusTrigger::IsActiveInEncounter()
 {
     return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "entropius");
 }
@@ -854,7 +854,7 @@ bool KiljaedenRangedShouldSpreadInTwoArcsTrigger::IsActiveInEncounter()
     return true;
 }
 
-bool KiljaedenBotHasFireBloomTrigger::IsActiveInEncounter()
+bool KiljaedenFireBloomOnImmunityClassTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
         bot->getClass() != CLASS_PALADIN)
@@ -931,7 +931,7 @@ bool KiljaedenBotControlsDragonTrigger::IsActiveInEncounter()
     return GetKiljaedenControlledDragon(bot);
 }
 
-bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActiveInEncounter()
+bool KiljaedenStaleRootAfterDragonTrigger::IsActiveInEncounter()
 {
     // Shield of the Blue stuns the drake it is cast from, and that stun is applied to the orb user
     // bot as well. The drake dies on the last tick of the second Shield of the Blue cast, which
