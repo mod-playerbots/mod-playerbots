@@ -34,21 +34,20 @@ bool GargolmarMarkHellfireWatchersAction::Execute(Event /*event*/)
 // Flee 15 yards from other players if you have Treacherous Aura or Bane of Treachery
 bool OmorTreacheryAuraFleeFromPlayersAction::Execute(Event /*event*/)
 {
-    constexpr float safeDistance = 15.0f;
+    constexpr float safeDistance = 20.0f;
 
     if (!GetNearestPlayerInRadius(bot, safeDistance))
         return false;
 
     bot->CastStop();
 
-    constexpr float buffer = 3.0f;
-    return MoveFromGroup(safeDistance + buffer);
+    return MoveFromGroup(safeDistance);
 }
 
-// ranged spread out 15 yards from each other
+// ranged spread out 20 yards from each other
 bool OmorRangedSpreadAction::Execute(Event /*event*/)
 {
-    constexpr float minDistance = 15.0f;
+    constexpr float minDistance = 20.0f;
 
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
         return FleePosition(nearestPlayer->GetPosition(), minDistance);
