@@ -11,29 +11,22 @@
 
 class OmorTreacheryAuraFleeFromPlayersMultiplier : public Multiplier
 {
-public:
-    OmorTreacheryAuraFleeFromPlayersMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "omor treachery aura flee from players")
-    {
-    }
-    float GetValue(Action* action) override;
-};
-
-class OmorTreacheryAuraFleeFromTankMultiplier : public Multiplier
-{
-public:
-    OmorTreacheryAuraFleeFromTankMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "omor treachery aura flee from tank")
-    {
-    }
-    float GetValue(Action* action) override;
+    public:
+        OmorTreacheryAuraFleeFromPlayersMultiplier(PlayerbotAI* botAI)
+            : Multiplier(botAI, "omor treachery aura flee from players")
+        {
+        }
+        float GetValue(Action* action) override;
 };
 
 class VazrudenDisableTankAssistMultiplier : public Multiplier
 {
-public:
-    VazrudenDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "vazruden disable tank assist") {}
-    float GetValue(Action* action) override;
+    public:
+        VazrudenDisableTankAssistMultiplier(PlayerbotAI* botAI) 
+            : Multiplier(botAI, "vazruden disable tank assist")
+        {            
+        }
+        float GetValue(Action* action) override;
 };
 
 #endif

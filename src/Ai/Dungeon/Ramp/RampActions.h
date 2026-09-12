@@ -16,8 +16,8 @@
 class GargolmarMarkHellfireWatchersAction : public Action
 {
     public:
-        GargolmarMarkHellfireWatchersAction(PlayerbotAI* botAI, std::string const name = "gargolmar mark hellfire watchers")
-            : Action(botAI, name)
+        GargolmarMarkHellfireWatchersAction(PlayerbotAI* botAI) 
+            : Action(botAI, "gargolmar mark hellfire watchers")
         {
         }
         bool Execute(Event event) override;
@@ -28,9 +28,8 @@ class GargolmarMarkHellfireWatchersAction : public Action
 class OmorTreacheryAuraFleeFromPlayersAction : public MovementAction
 {
     public:
-        OmorTreacheryAuraFleeFromPlayersAction(PlayerbotAI* botAI,
-                                               std::string const name = "omor treachery aura flee from players")
-            : MovementAction(botAI, name)
+        OmorTreacheryAuraFleeFromPlayersAction(PlayerbotAI* botAI)
+            : MovementAction(botAI, "omor treachery aura flee from players")
         {
         }
         bool Execute(Event event) override;
@@ -38,20 +37,19 @@ class OmorTreacheryAuraFleeFromPlayersAction : public MovementAction
 
 class OmorTreacheryAuraFleeFromTankAction : public MovementAction
 {
-public:
-    OmorTreacheryAuraFleeFromTankAction(PlayerbotAI* botAI,
-                                        std::string const name = "omor treachery aura flee from tank")
-        : MovementAction(botAI, name)
-    {
-    }
-    bool Execute(Event event) override;
+    public:
+        OmorTreacheryAuraFleeFromTankAction(PlayerbotAI* botAI)
+            : MovementAction(botAI, "omor treachery aura flee from tank")
+        {
+        }
+        bool Execute(Event event) override;
 };
 
 class OmorRangedSpreadAction : public MovementAction
 {
     public:
-        OmorRangedSpreadAction(PlayerbotAI* botAI, std::string const name = "omor ranged spread")
-            : MovementAction(botAI, name)
+        OmorRangedSpreadAction(PlayerbotAI* botAI)
+            : MovementAction(botAI, "omor ranged spread")
         {
         }
         bool Execute(Event event) override;
@@ -60,8 +58,8 @@ class OmorRangedSpreadAction : public MovementAction
 class OmorMarkFiendishHoundAction : public Action
 {
     public:
-        OmorMarkFiendishHoundAction(PlayerbotAI* botAI, std::string const name = "omor mark fiendish hound")
-            : Action(botAI, name)
+        OmorMarkFiendishHoundAction(PlayerbotAI* botAI)
+            : Action(botAI, "omor mark fiendish hound")
         {
         }
         bool Execute(Event event) override;
@@ -72,8 +70,8 @@ class OmorMarkFiendishHoundAction : public Action
 class VazrudenTankPositionBossAction : public AttackAction
 {
     public:
-        VazrudenTankPositionBossAction(PlayerbotAI* botAI, std::string const name = "vazruden tank position boss")
-            : AttackAction(botAI, name)
+        VazrudenTankPositionBossAction(PlayerbotAI* botAI)
+            : AttackAction(botAI, "vazruden tank position boss")
         {
         }
         bool Execute(Event event) override;
@@ -82,7 +80,10 @@ class VazrudenTankPositionBossAction : public AttackAction
 class VazrudenMarkBossAction : public Action
 {
     public:
-        VazrudenMarkBossAction(PlayerbotAI* botAI, std::string const name = "vazruden mark boss") : Action(botAI, name) {}
+        VazrudenMarkBossAction(PlayerbotAI* botAI) 
+            : Action(botAI, "vazruden mark boss")
+        {            
+        }
         bool Execute(Event event) override;
 };
 

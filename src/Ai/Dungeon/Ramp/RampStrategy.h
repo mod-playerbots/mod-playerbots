@@ -7,16 +7,18 @@
 #ifndef PLAYERBOTS_RAMPSTRATEGY_H
 #define PLAYERBOTS_RAMPSTRATEGY_H
 
-#include "AiObjectContext.h"
-#include "Multiplier.h"
 #include "Strategy.h"
+
+using namespace std;
 
 class TbcDungeonHellfireRampartsStrategy : public Strategy
 {
 public:
-    TbcDungeonHellfireRampartsStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
+    TbcDungeonHellfireRampartsStrategy(PlayerbotAI* botAI) : Strategy(botAI)
+    {        
+    }
 
-    std::string const getName() override { return "tbc-ramp"; }
+    string const getName() override { return "tbc-ramp"; }
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     void InitMultipliers(std::vector<Multiplier*>& multipliers) override;

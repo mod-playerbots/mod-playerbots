@@ -4,9 +4,9 @@
  * or (at your option) any later version.
  */
 
+#include "RampActions.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RampActions.h"
 
 using namespace EncounterHelpers;
 
@@ -31,7 +31,7 @@ bool GargolmarMarkHellfireWatchersAction::Execute(Event /*event*/)
 
 // Omor the Unscarred
 
-// Flee 15 yards from other players if you have Treacherous Aura or Bane of Treachery
+// Flee 20 yards from other players if you have Treacherous Aura or Bane of Treachery
 bool OmorTreacheryAuraFleeFromPlayersAction::Execute(Event /*event*/)
 {
     constexpr float safeDistance = 20.0f;
@@ -44,7 +44,7 @@ bool OmorTreacheryAuraFleeFromPlayersAction::Execute(Event /*event*/)
     return MoveFromGroup(safeDistance);
 }
 
-// Nearby bots should flee 15 yards from the tank if it has Treacherous Aura or Bane of Treachery
+// Nearby bots should flee 20 yards from the tank if it has Treacherous Aura or Bane of Treachery
 bool OmorTreacheryAuraFleeFromTankAction::Execute(Event /*event*/)
 {
     Player* tank = GetGroupMainTank(bot);
@@ -53,7 +53,7 @@ bool OmorTreacheryAuraFleeFromTankAction::Execute(Event /*event*/)
 
     constexpr float safeDistance = 20.0f;
 
-    if (bot->GetDistance2d(tank) >= safeDistance)
+    if (bot->GetExactDist2d(tank) >= safeDistance)
         return false;
 
     bot->CastStop();
@@ -81,7 +81,6 @@ bool OmorMarkFiendishHoundAction::Execute(Event /*event*/)
     if (!IsMechanicTrackerBot(bot, RAMP_MAP_ID))
         return false;
 
-    SetRtiTarget(botAI, "skull");
     return MarkTargetWithSkull(bot, hound);
 }
 
@@ -102,19 +101,20 @@ bool VazrudenTankPositionBossAction::Execute(Event /*event*/)
         return false;
 
     Position const& position = VAZRUDEN_TANK_POSITION;
-    float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+    constexpr float arrivalDist = 6.0f;
+    float distToPosition = bot->GetExactDist2d(position);
 
-    if (distToPosition <= 6.0f)
+    if (distToPosition <= arrivalDist)
         return false;
 
-    float dX = position.GetPositionX() - bot->GetPositionX();
-    float dY = position.GetPositionY() - bot->GetPositionY();
-    float moveDist = std::min(2.0f, distToPosition);
-    float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-    float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, vazruden, moveX, moveY, backwards))
+        return false;
 
     return MoveTo(RAMP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-                  MovementPriority::MOVEMENT_COMBAT, true, true);
+                  MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool VazrudenMarkBossAction::Execute(Event /*event*/)

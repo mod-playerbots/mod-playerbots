@@ -4,12 +4,11 @@
  * or (at your option) any later version.
  */
 
+#include "RampMultipliers.h"
 #include "ChooseTargetActions.h"
 #include "EncounterHelpers.h"
-#include "MovementActions.h"
 #include "Playerbots.h"
 #include "RampActions.h"
-#include "RampMultipliers.h"
 #include "RampTriggers.h"
 #include "ReachTargetActions.h"
 
@@ -23,25 +22,8 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
         !bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
         return 1.0f;
 
-    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-        (dynamic_cast<MovementAction*>(action) && !dynamic_cast<OmorTreacheryAuraFleeFromPlayersAction*>(action)))
-        return 0.0f;
-
-    return 1.0f;
-}
-
-float OmorTreacheryAuraFleeFromTankMultiplier::GetValue(Action* action)
-{
-    Player* tank = GetGroupMainTank(bot);
-    if (!tank)
-        return 1.0f;
-
-    if (!tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) &&
-        !tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
-        return 1.0f;
-
-    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-        (dynamic_cast<MovementAction*>(action) && !dynamic_cast<OmorTreacheryAuraFleeFromTankAction*>(action)))
+    if (dynamic_cast<CastReachTargetSpellAction*>(action) || 
+        !dynamic_cast<OmorTreacheryAuraFleeFromPlayersAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -51,21 +33,20 @@ float OmorTreacheryAuraFleeFromTankMultiplier::GetValue(Action* action)
 
 float VazrudenDisableTankAssistMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot) || !AI_VALUE2(Unit*, "find target", "vazruden"))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!PlayerbotAI::IsTank(bot) || !AI_VALUE2(Unit*, "find target", "vazruden"))
         return 1.0f;
 
     Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
     if (!nazan)
         return 1.0f;
 
-    Creature* nazanCreature = nazan->ToCreature();
-    if (!nazanCreature)
-        return 1.0f;
+    if (!nazan->IsFlying())
+        return 1.0f;  
 
-    if (!nazanCreature->CanFly())
-        return 1.0f;
-
-    if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
+    if (dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;

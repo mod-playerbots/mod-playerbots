@@ -7,13 +7,13 @@
 #ifndef PLAYERBOTS_RAMPACTIONCONTEXT_H
 #define PLAYERBOTS_RAMPACTIONCONTEXT_H
 
-#include "Action.h"
 #include "RampActions.h"
+#include "NamedObjectContext.h"
 
 class TbcDungeonHellfireRampartsActionContext : public NamedObjectContext<Action>
 {
     public:
-        TbcDungeonHellfireRampartsActionContext() : NamedObjectContext<Action>(false, true)
+        TbcDungeonHellfireRampartsActionContext()
         {
             // Watchkeeper Gargolmar
             creators["gargolmar mark hellfire watchers"] =

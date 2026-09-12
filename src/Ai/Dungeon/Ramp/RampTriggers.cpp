@@ -4,11 +4,9 @@
  * or (at your option) any later version.
  */
 
-#include "AiObject.h"
-#include "AiObjectContext.h"
+#include "RampTriggers.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RampTriggers.h"
 
 using namespace EncounterHelpers;
 
@@ -16,20 +14,20 @@ using namespace EncounterHelpers;
 
 bool GargolmarHellfireWatchersAreActiveTrigger::IsActive()
 {
-    return botAI->IsDps(bot) && AI_VALUE2(Unit*, "find target", "hellfire watcher");
+    return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "hellfire watcher");
 }
 
 // Omor the Unscarred
 
 bool OmorTreacheryAuraTrigger::IsActive()
 {
-    return !botAI->IsTank(bot) && (bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
+    return !PlayerbotAI::IsTank(bot) && (bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
                                    bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)));
 }
 
 bool OmorTankHasTreacheryAuraTrigger::IsActive()
 {
-    if (botAI->IsTank(bot))
+    if (PlayerbotAI::IsTank(bot))
         return false;
 
     Player* tank = GetGroupMainTank(bot);
@@ -47,22 +45,22 @@ bool OmorTankHasTreacheryAuraTrigger::IsActive()
 
 bool OmorRangedSpreadTrigger::IsActive()
 {
-    return botAI->IsRanged(bot) && AI_VALUE2(Unit*, "find target", "omor the unscarred");
+    return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "omor the unscarred");
 }
 
 bool OmorFiendishHoundIsActiveTrigger::IsActive()
 {
-    return botAI->IsDps(bot) && AI_VALUE2(Unit*, "find target", "fiendish hound");
+    return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "fiendish hound");
 }
 
 // Vazruden
 
 bool VazrudenTankPositionBossTrigger::IsActive()
 {
-    return botAI->IsTank(bot) && AI_VALUE2(Unit*, "find target", "vazruden");
+    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "vazruden");
 }
 
 bool VazrudenBossIsActiveTrigger::IsActive()
 {
-    return botAI->IsDps(bot) && AI_VALUE2(Unit*, "find target", "vazruden");
+    return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "vazruden");
 }
