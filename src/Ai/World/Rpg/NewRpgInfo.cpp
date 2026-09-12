@@ -146,8 +146,6 @@ std::string NewRpgInfo::ToString()
         else if constexpr (std::is_same_v<T, WanderNpc>)
         {
             out << "WANDER_NPC";
-            // GetCounter() is the runtime low guid, which resolves to nothing outside this
-            // process; the entry is what identifies the target. Print both, labelled.
             out << "\nnpcOrGo: entry " << arg.npcOrGo.GetEntry() << " (guid " << arg.npcOrGo.GetCounter()
                 << ")";
             out << "\nlastWanderNpc: " << startT;
