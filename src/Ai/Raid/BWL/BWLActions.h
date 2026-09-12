@@ -64,7 +64,6 @@ class BwlBroodlordRangedMoveAwayAction : public MovementAction
 {
 public:
     BwlBroodlordRangedMoveAwayAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl broodlord ranged move away") {}
-    bool isUseful() override;
     bool Execute(Event event) override;
 };
 

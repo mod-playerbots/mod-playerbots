@@ -52,6 +52,8 @@ namespace BlackwingLairHelpers
         NPC_DEATH_TALON_WYRMGUARD = 12460
     };
 
+    constexpr float BROODLORD_SAFE_DISTANCE = 18.0f;
+
     bool IsActiveSuppressionDeviceInRange(GameObject const* go, Player const* bot);
     bool AreRazorgoreEggsAlive(PlayerbotAI* botAI);
     bool IsRazorgoreOffTank(Player* bot);

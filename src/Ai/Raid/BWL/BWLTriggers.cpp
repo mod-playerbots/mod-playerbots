@@ -56,9 +56,18 @@ bool BwlVaelastraszBurningAdrenalineTrigger::IsActive()
 
 // Broodlord Lashlayer
 
-bool BwlBroodlordRangedTrigger::IsActive()
+bool BwlBroodlordRangedTooCloseTrigger::IsActive()
 {
-    return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "broodlord lashlayer");
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
+    if (Unit* boss = AI_VALUE2(Unit*, "find target", "broodlord lashlayer"))
+    {
+        // In case the bot pulled aggro, prevent it from kiting the boss through the room.
+        if (boss->GetVictim() != bot)
+            return bot->GetDistance2d(boss) < BROODLORD_SAFE_DISTANCE;
+    }
+    return false;
 }
 
 // Firemaw / Ebonroc / Flamegor

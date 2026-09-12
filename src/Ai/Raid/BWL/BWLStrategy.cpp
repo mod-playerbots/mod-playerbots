@@ -33,7 +33,7 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("bwl broodlord fire resistance", {
         NextAction("bwl broodlord fire resistance", ACTION_RAID) }));
-    triggers.push_back(new TriggerNode("bwl broodlord ranged", {
+    triggers.push_back(new TriggerNode("bwl broodlord ranged too close", {
         NextAction("bwl broodlord ranged move away", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("bwl firemaw fire resistance", {

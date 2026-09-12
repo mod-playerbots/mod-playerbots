@@ -266,16 +266,6 @@ bool BwlVaelastraszMoveAwayAction::MoveAlongFleeDirection(Unit const* boss, floa
 
 // Broodlord Lashlayer
 
-static constexpr float BROODLORD_SAFE_DISTANCE = 18.0f;
-
-bool BwlBroodlordRangedMoveAwayAction::isUseful()
-{
-    // In case the bot pulled aggro, prevent it from kiting the boss through the room.
-    if (Unit* boss = AI_VALUE2(Unit*, "find target", "broodlord lashlayer"))
-        return boss->GetVictim() != bot;
-    return false;
-}
-
 bool BwlBroodlordRangedMoveAwayAction::Execute(Event /*event*/)
 {
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "broodlord lashlayer"))

@@ -45,10 +45,10 @@ public:
 
 // Broodlord Lashlayer
 
-class BwlBroodlordRangedTrigger : public Trigger
+class BwlBroodlordRangedTooCloseTrigger : public Trigger
 {
 public:
-    BwlBroodlordRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl broodlord ranged") {}
+    BwlBroodlordRangedTooCloseTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl broodlord ranged too close") {}
     bool IsActive() override;
 };
 
