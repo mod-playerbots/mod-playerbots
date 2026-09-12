@@ -17,6 +17,8 @@
 #include "ServerFacade.h"
 #include "StatsWeightCalculator.h"
 
+#include <unordered_set>
+
 ItemUsage ItemUsageValue::Calculate()
 {
     ParsedItemUsage const parsed = GetItemIdFromQualifier();
@@ -668,8 +670,47 @@ bool ItemUsageValue::IsItemUsefulForSkill(ItemTemplate const* proto)
     return false;
 }
 
+namespace
+{
+    // Crafting chains can be cyclic: the alchemy transmutes turn Essence of Earth into Water into
+    // Air into Fire and back into Earth, and Earth into Life and back again. Asking whether one
+    // essence is needed asks for the usage of the essence it crafts, which lands right back here.
+    // "item usage" is recalculated on every Get(), so nothing breaks the cycle on its own and the
+    // recursion runs until the stack overflows. Remember which items are already being evaluated
+    // further up the stack and stop as soon as a cycle closes.
+    thread_local std::unordered_set<uint32> itemsBeingEvaluated;
+
+    class UsefullSpellRecursionGuard
+    {
+    public:
+        explicit UsefullSpellRecursionGuard(uint32 itemId)
+            : _itemId(itemId), _entered(itemsBeingEvaluated.insert(itemId).second)
+        {
+        }
+
+        ~UsefullSpellRecursionGuard()
+        {
+            if (_entered)
+                itemsBeingEvaluated.erase(_itemId);
+        }
+
+        UsefullSpellRecursionGuard(UsefullSpellRecursionGuard const&) = delete;
+        UsefullSpellRecursionGuard& operator=(UsefullSpellRecursionGuard const&) = delete;
+
+        bool Entered() const { return _entered; }
+
+    private:
+        uint32 _itemId;
+        bool _entered;
+    };
+}
+
 bool ItemUsageValue::IsItemNeededForUsefullSpell(ItemTemplate const* proto, bool checkAllReagents)
 {
+    UsefullSpellRecursionGuard guard(proto->ItemId);
+    if (!guard.Entered())
+        return false;
+
     for (auto spellId : SpellsUsingItem(proto->ItemId, bot))
     {
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
