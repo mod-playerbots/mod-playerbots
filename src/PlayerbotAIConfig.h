@@ -96,7 +96,7 @@ public:
 
     bool Initialize();
     void LoadRandomBotLevelConfig();
-    bool IsInRandomAccountList(uint32 id);
+    bool IsInBotAccountList(uint32 id);
     bool IsInRandomQuestItemList(uint32 id);
     bool IsPvpProhibited(uint32 zoneId, uint32 areaId);
     bool IsInPvpProhibitedZone(uint32 id);
@@ -149,7 +149,7 @@ public:
     int weightTeleToDalaran;
     std::vector<uint32> randomBotMaps;
     std::vector<uint32> randomBotQuestItems;
-    std::vector<uint32> randomBotAccounts;
+    std::vector<uint32> botAccounts;
     std::vector<uint32> randomBotSpellIds;
     std::vector<uint32> randomBotQuestIds;
     uint32 randomBotTeleportDistance;

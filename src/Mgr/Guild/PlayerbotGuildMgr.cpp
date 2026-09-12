@@ -225,7 +225,7 @@ void PlayerbotGuildMgr::ValidateGuildCache()
         ObjectGuid leaderGuid = guild->GetLeaderGUID();
         CharacterCacheEntry const* leaderEntry = sCharacterCache->GetCharacterCacheByGuid(leaderGuid);
         uint32 leaderAccount = leaderEntry->AccountId;
-        cache.hasRealPlayer = !(sPlayerbotAIConfig.IsInRandomAccountList(leaderAccount));
+        cache.hasRealPlayer = !(sPlayerbotAIConfig.IsInBotAccountList(leaderAccount));
         cache.faction = Player::TeamIdForRace(leaderEntry->Race);
         if (cache.memberCount == 0)
             cache.status = 0; // empty

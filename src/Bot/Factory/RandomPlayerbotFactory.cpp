@@ -553,7 +553,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         CharacterDatabase.Execute("DELETE FROM petition_sign WHERE ownerguid NOT IN (SELECT guid FROM characters) OR playerguid NOT IN (SELECT guid FROM characters)");
 
         // Finally, delete the bot accounts themselves
-        LOG_INFO("playerbots", "Deleting random bot accounts...");
+        LOG_INFO("playerbots", "Deleting bot accounts...");
         QueryResult results = LoginDatabase.Query("SELECT id FROM account WHERE username LIKE '{}%%'",
                                              sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
         int32 deletion_count = 0;
@@ -587,13 +587,13 @@ void RandomPlayerbotFactory::CreateRandomBots()
         CharacterDatabase.Execute("FLUSH TABLES");
         PlayerbotsDatabase.Execute("FLUSH TABLES");
 
-        LOG_INFO("playerbots", ">> Random bot accounts and data deleted in {} ms", GetMSTimeDiffToNow(timer));
+        LOG_INFO("playerbots", ">> Bot accounts and data deleted in {} ms", GetMSTimeDiffToNow(timer));
         LOG_INFO("playerbots", "Please reset the AiPlayerbot.DeleteRandomBotAccounts to 0 and restart the server...");
         World::StopNow(SHUTDOWN_EXIT_CODE);
         return;
     }
 
-    LOG_INFO("playerbots", "Creating random bot accounts...");
+    LOG_INFO("playerbots", "Creating bot accounts...");
     std::unordered_map<NameRaceAndGender, std::vector<std::string>> nameCache;
     std::vector<std::future<void>> account_creations;
     int account_creation = 0;
@@ -665,7 +665,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         Field* fields = result->Fetch();
         uint32 accountId = fields[0].Get<uint32>();
 
-        sPlayerbotAIConfig.randomBotAccounts.push_back(accountId);
+        sPlayerbotAIConfig.botAccounts.push_back(accountId);
 
         uint32 count = AccountMgr::GetCharactersCount(accountId);
         if (count >= 10)
@@ -750,13 +750,13 @@ void RandomPlayerbotFactory::CreateRandomBots()
     for (WorldSession* session : sessionBots)
         delete session;
 
-    for (uint32 accountId : sPlayerbotAIConfig.randomBotAccounts)
+    for (uint32 accountId : sPlayerbotAIConfig.botAccounts)
     {
         totalRandomBotChars += AccountMgr::GetCharactersCount(accountId);
     }
 
-    LOG_INFO("server.loading", ">> {} random bot accounts with {} characters available",
-            sPlayerbotAIConfig.randomBotAccounts.size(), totalRandomBotChars);
+    LOG_INFO("server.loading", ">> {} bot accounts with {} characters available",
+            sPlayerbotAIConfig.botAccounts.size(), totalRandomBotChars);
 }
 
 std::string const RandomPlayerbotFactory::CreateRandomGuildName()
@@ -800,7 +800,7 @@ bool RandomPlayerbotFactory::IsBotArenaTeam(ArenaTeam const* team)
         return false;
 
     uint32 accountId = sCharacterCache->GetCharacterAccountIdByGuid(captainGuid);
-    return accountId && sPlayerbotAIConfig.IsInRandomAccountList(accountId);
+    return accountId && sPlayerbotAIConfig.IsInBotAccountList(accountId);
 }
 
 void RandomPlayerbotFactory::LoadArenaTeamData()
@@ -856,7 +856,7 @@ void RandomPlayerbotFactory::LoadArenaTeamData()
 
 void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
 {
-    if (!sPlayerbotAIConfig.IsInRandomAccountList(bot->GetSession()->GetAccountId()))
+    if (!sPlayerbotAIConfig.IsInBotAccountList(bot->GetSession()->GetAccountId()))
         return;
 
     if (sPlayerbotAIConfig.deleteRandomBotArenaTeams)

@@ -47,7 +47,7 @@ PlayerbotSecurityLevel PlayerbotSecurity::LevelFor(Player* from, DenyReason* rea
         return PLAYERBOT_SECURITY_DENY_ALL;
     }
 
-    if (sPlayerbotAIConfig.IsInRandomAccountList(account))
+    if (sPlayerbotAIConfig.IsInBotAccountList(account))
     {
         // (duplicate check in case of faction change)
         if (botAI->IsOpposing(from))
