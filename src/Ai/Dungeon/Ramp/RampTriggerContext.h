@@ -20,13 +20,13 @@ public:
             &TbcDungeonHellfireRampartsTriggerContext::gargolmar_hellfire_watchers_are_active;
 
         // Omor the Unscarred
-        creators["omor treachery aura"] = 
+        creators["omor treachery aura"] =
             &TbcDungeonHellfireRampartsTriggerContext::omor_treachery_aura;
 
         creators["omor tank has treachery aura"] =
             &TbcDungeonHellfireRampartsTriggerContext::omor_tank_has_treachery_aura;
 
-        creators["omor ranged spread"] = 
+        creators["omor ranged spread"] =
             &TbcDungeonHellfireRampartsTriggerContext::omor_ranged_spread;
 
         creators["omor fiendish hound is active"] =
@@ -36,7 +36,7 @@ public:
         creators["vazruden tank position boss"] =
             &TbcDungeonHellfireRampartsTriggerContext::vazruden_tank_position_boss;
 
-        creators["vazruden boss is active"] = 
+        creators["vazruden boss is active"] =
             &TbcDungeonHellfireRampartsTriggerContext::vazruden_boss_is_active;
     }
 

@@ -54,7 +54,7 @@ bool OmorTreacheryAuraFleeFromTankAction::Execute(Event /*event*/)
     constexpr float safeDistance = 20.0f;
 
     if (bot->GetDistance2d(tank) >= safeDistance)
-        return false;  
+        return false;
 
     bot->CastStop();
     return MoveAway(tank, safeDistance);
@@ -101,7 +101,7 @@ bool VazrudenTankPositionBossAction::Execute(Event /*event*/)
     if (vazruden->GetVictim() != bot || !bot->IsWithinMeleeRange(vazruden) || bot->GetHealthPct() <= 30.0f)
         return false;
 
-    const Position& position = VAZRUDEN_TANK_POSITION;
+    Position const& position = VAZRUDEN_TANK_POSITION;
     float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
     if (distToPosition <= 6.0f)

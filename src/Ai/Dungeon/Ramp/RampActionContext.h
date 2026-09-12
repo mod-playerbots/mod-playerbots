@@ -26,17 +26,17 @@ class TbcDungeonHellfireRampartsActionContext : public NamedObjectContext<Action
             creators["omor treachery aura flee from tank"] =
                 &TbcDungeonHellfireRampartsActionContext::omor_treachery_aura_flee_from_tank;
 
-            creators["omor ranged spread"] = 
+            creators["omor ranged spread"] =
                 &TbcDungeonHellfireRampartsActionContext::omor_ranged_spread;
 
-            creators["omor mark fiendish hound"] = 
+            creators["omor mark fiendish hound"] =
                 &TbcDungeonHellfireRampartsActionContext::omor_mark_fiendish_hound;
 
             // Vazruden
-            creators["vazruden tank position boss"] = 
+            creators["vazruden tank position boss"] =
                 &TbcDungeonHellfireRampartsActionContext::vazruden_tank_position_boss;
 
-            creators["vazruden mark boss"] = 
+            creators["vazruden mark boss"] =
                 &TbcDungeonHellfireRampartsActionContext::vazruden_mark_boss;
         }
 
@@ -77,7 +77,7 @@ class TbcDungeonHellfireRampartsActionContext : public NamedObjectContext<Action
         static Action* vazruden_mark_boss(PlayerbotAI* botAI)
         {
             return new VazrudenMarkBossAction(botAI);
-        }    
+        }
 };
 
 #endif

@@ -39,7 +39,6 @@ public:
     bool IsActive() override;
 };
 
-
 class OmorTankHasTreacheryAuraTrigger : public Trigger
 {
 public:

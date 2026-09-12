@@ -55,7 +55,7 @@ float VazrudenDisableTankAssistMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
-    if (!nazan) 
+    if (!nazan)
         return 1.0f;
 
     Creature* nazanCreature = nazan->ToCreature();
@@ -63,7 +63,7 @@ float VazrudenDisableTankAssistMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (!nazanCreature->CanFly())
-        return 1.0f;    
+        return 1.0f;
 
     if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
