@@ -20,9 +20,14 @@ public:
             &TbcDungeonHellfireRampartsTriggerContext::gargolmar_hellfire_watchers_are_active;
 
         // Omor the Unscarred
-        creators["omor treachery aura"] = &TbcDungeonHellfireRampartsTriggerContext::omor_treachery_aura;
+        creators["omor treachery aura"] = 
+            &TbcDungeonHellfireRampartsTriggerContext::omor_treachery_aura;
 
-        creators["omor ranged spread"] = &TbcDungeonHellfireRampartsTriggerContext::omor_ranged_spread;
+        creators["omor tank has treachery aura"] =
+            &TbcDungeonHellfireRampartsTriggerContext::omor_tank_has_treachery_aura;
+
+        creators["omor ranged spread"] = 
+            &TbcDungeonHellfireRampartsTriggerContext::omor_ranged_spread;
 
         creators["omor fiendish hound is active"] =
             &TbcDungeonHellfireRampartsTriggerContext::omor_fiendish_hound_is_active;
@@ -31,7 +36,8 @@ public:
         creators["vazruden tank position boss"] =
             &TbcDungeonHellfireRampartsTriggerContext::vazruden_tank_position_boss;
 
-        creators["vazruden boss is active"] = &TbcDungeonHellfireRampartsTriggerContext::vazruden_boss_is_active;
+        creators["vazruden boss is active"] = 
+            &TbcDungeonHellfireRampartsTriggerContext::vazruden_boss_is_active;
     }
 
 private:
@@ -42,9 +48,20 @@ private:
     }
 
     // Omor the Unscarred
-    static Trigger* omor_treachery_aura(PlayerbotAI* botAI) { return new OmorTreacheryAuraTrigger(botAI); }
+    static Trigger* omor_treachery_aura(PlayerbotAI* botAI)
+    {
+        return new OmorTreacheryAuraTrigger(botAI);
+    }
 
-    static Trigger* omor_ranged_spread(PlayerbotAI* botAI) { return new OmorRangedSpreadTrigger(botAI); }
+    static Trigger* omor_tank_has_treachery_aura(PlayerbotAI* botAI)
+    {
+        return new OmorTankHasTreacheryAuraTrigger(botAI);
+    }
+
+    static Trigger* omor_ranged_spread(PlayerbotAI* botAI)
+    {
+        return new OmorRangedSpreadTrigger(botAI);
+    }
 
     static Trigger* omor_fiendish_hound_is_active(PlayerbotAI* botAI)
     {

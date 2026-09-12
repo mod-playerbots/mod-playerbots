@@ -44,7 +44,26 @@ bool OmorTreacheryAuraFleeFromPlayersAction::Execute(Event /*event*/)
     return MoveFromGroup(safeDistance);
 }
 
-// ranged spread out 20 yards from each other
+// Nearby bots should flee 15 yards from the tank if it has Treacherous Aura or Bane of Treachery
+bool OmorTreacheryAuraFleeFromTankAction::Execute(Event /*event*/)
+{
+    Player* tank = GetGroupMainTank(bot);
+    if (!tank)
+        return false;
+
+    if (tank->GetGUID() == bot->GetGUID())
+        return false;
+
+    constexpr float safeDistance = 20.0f;
+
+    if (bot->GetDistance2d(tank) >= safeDistance)
+        return false;  
+
+    bot->CastStop();
+    return MoveAway(tank, safeDistance);
+}
+
+// Ranged spread out 20 yards from each other
 bool OmorRangedSpreadAction::Execute(Event /*event*/)
 {
     constexpr float minDistance = 20.0f;

@@ -19,6 +19,16 @@ public:
     float GetValue(Action* action) override;
 };
 
+class OmorTreacheryAuraFleeFromTankMultiplier : public Multiplier
+{
+public:
+    OmorTreacheryAuraFleeFromTankMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "omor treachery aura flee from tank")
+    {
+    }
+    float GetValue(Action* action) override;
+};
+
 class VazrudenDisableTankAssistMultiplier : public Multiplier
 {
 public:

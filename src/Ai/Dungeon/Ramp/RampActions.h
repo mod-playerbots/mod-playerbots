@@ -36,6 +36,17 @@ class OmorTreacheryAuraFleeFromPlayersAction : public MovementAction
         bool Execute(Event event) override;
 };
 
+class OmorTreacheryAuraFleeFromTankAction : public MovementAction
+{
+public:
+    OmorTreacheryAuraFleeFromTankAction(PlayerbotAI* botAI,
+                                        std::string const name = "omor treachery aura flee from tank")
+        : MovementAction(botAI, name)
+    {
+    }
+    bool Execute(Event event) override;
+};
+
 class OmorRangedSpreadAction : public MovementAction
 {
     public:

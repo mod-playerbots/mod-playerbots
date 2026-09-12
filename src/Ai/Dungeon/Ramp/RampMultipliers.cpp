@@ -5,6 +5,7 @@
  */
 
 #include "ChooseTargetActions.h"
+#include "EncounterHelpers.h"
 #include "MovementActions.h"
 #include "Playerbots.h"
 #include "RampActions.h"
@@ -22,6 +23,23 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
         (dynamic_cast<MovementAction*>(action) && !dynamic_cast<OmorTreacheryAuraFleeFromPlayersAction*>(action)))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float OmorTreacheryAuraFleeFromTankMultiplier::GetValue(Action* action)
+{
+    Player* tank = GetGroupMainTank(bot);
+    if (!tank)
+        return 1.0f;
+
+    if (!tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) &&
+        !tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
+        return 1.0f;
+
+    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+        (dynamic_cast<MovementAction*>(action) && !dynamic_cast<OmorTreacheryAuraFleeFromTankAction*>(action)))
         return 0.0f;
 
     return 1.0f;

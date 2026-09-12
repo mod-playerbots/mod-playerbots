@@ -39,6 +39,15 @@ public:
     bool IsActive() override;
 };
 
+
+class OmorTankHasTreacheryAuraTrigger : public Trigger
+{
+public:
+    OmorTankHasTreacheryAuraTrigger(PlayerbotAI* botAI) : Trigger(botAI, "omor tank has treachery aura") {}
+
+    bool IsActive() override;
+};
+
 class OmorRangedSpreadTrigger : public Trigger
 {
 public:
