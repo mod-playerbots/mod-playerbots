@@ -10,6 +10,8 @@
 #include "Playerbots.h"
 #include "RampTriggers.h"
 
+using namespace EncounterHelpers;
+
 // Watchkeeper Gargolmar
 
 bool GargolmarHellfireWatchersAreActiveTrigger::IsActive()
@@ -30,7 +32,7 @@ bool OmorTankHasTreacheryAuraTrigger::IsActive()
     if (botAI->IsTank(bot))
         return false;
 
-    Player* tank = EncounterHelpers::GetGroupMainTank(bot);
+    Player* tank = GetGroupMainTank(bot);
     if (!tank)
         return false;
 

@@ -13,6 +13,8 @@
 #include "RampTriggers.h"
 #include "ReachTargetActions.h"
 
+using namespace EncounterHelpers;
+
 // Omor the Unscarred
 
 float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
@@ -30,7 +32,7 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
 
 float OmorTreacheryAuraFleeFromTankMultiplier::GetValue(Action* action)
 {
-    Player* tank = EncounterHelpers::GetGroupMainTank(bot);
+    Player* tank = GetGroupMainTank(bot);
     if (!tank)
         return 1.0f;
 
