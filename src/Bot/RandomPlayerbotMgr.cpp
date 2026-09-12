@@ -2590,7 +2590,8 @@ void RandomPlayerbotMgr::HandleCommand(uint32 type, std::string const text, Play
             }
         }
 
-        GET_PLAYERBOT_AI(bot)->HandleCommand(type, text, fromPlayer);
+        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+            botAI->HandleCommand(type, text, fromPlayer);
     }
 }
 

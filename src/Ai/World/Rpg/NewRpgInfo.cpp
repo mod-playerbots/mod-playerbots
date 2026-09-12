@@ -146,7 +146,8 @@ std::string NewRpgInfo::ToString()
         else if constexpr (std::is_same_v<T, WanderNpc>)
         {
             out << "WANDER_NPC";
-            out << "\nnpcOrGoEntry: " << arg.npcOrGo.GetCounter();
+            out << "\nnpcOrGo: entry " << arg.npcOrGo.GetEntry() << " (guid " << arg.npcOrGo.GetCounter()
+                << ")";
             out << "\nlastWanderNpc: " << startT;
             out << "\nlastReachNpcOrGo: " << arg.lastReach;
         }
