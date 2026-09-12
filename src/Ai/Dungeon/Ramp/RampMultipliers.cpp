@@ -30,7 +30,7 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
 
 float OmorTreacheryAuraFleeFromTankMultiplier::GetValue(Action* action)
 {
-    Player* tank = GetGroupMainTank(bot);
+    Player* tank = EncounterHelpers::GetGroupMainTank(bot);
     if (!tank)
         return 1.0f;
 
