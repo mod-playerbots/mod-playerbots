@@ -7,9 +7,9 @@
 #ifndef PLAYERBOTS_RAMPACTIONS_H
 #define PLAYERBOTS_RAMPACTIONS_H
 
+#include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
-#include "Action.h"
 
 // Watchkeeper Gargolmar
 
