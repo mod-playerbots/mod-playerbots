@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#ifndef PLAYERBOTS_HFRTRIGGERS_H
-#define PLAYERBOTS_HFRTRIGGERS_H
+#ifndef PLAYERBOTS_RAMPTRIGGERS_H
+#define PLAYERBOTS_RAMPTRIGGERS_H
 
 #include "Trigger.h"
 
