@@ -22,8 +22,7 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
         !bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
         return 1.0f;
 
-    if (dynamic_cast<CastReachTargetSpellAction*>(action) || 
-        !dynamic_cast<OmorTreacheryAuraFleeFromPlayersAction*>(action))
+    if (dynamic_cast<CastReachTargetSpellAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -36,7 +35,7 @@ float VazrudenDisableTankAssistMultiplier::GetValue(Action* action)
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!PlayerbotAI::IsTank(bot) || !AI_VALUE2(Unit*, "find target", "vazruden"))
+    if (!AI_VALUE2(Unit*, "find target", "vazruden"))
         return 1.0f;
 
     Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
@@ -46,8 +45,9 @@ float VazrudenDisableTankAssistMultiplier::GetValue(Action* action)
     if (!nazan->IsFlying())
         return 1.0f;  
 
-    if (dynamic_cast<TankAssistAction*>(action))
+    Unit* target = action->GetTarget();
+    if (target->GetName() == "nazan")
         return 0.0f;
 
-    return 1.0f;
+    return 1.0f;   
 }
