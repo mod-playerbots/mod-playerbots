@@ -6,6 +6,7 @@
 
 #include "AiObject.h"
 #include "AiObjectContext.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "RampTriggers.h"
 
@@ -22,6 +23,24 @@ bool OmorTreacheryAuraTrigger::IsActive()
 {
     return !botAI->IsTank(bot) && (bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
                                    bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)));
+}
+
+bool OmorTankHasTreacheryAuraTrigger::IsActive()
+{
+    if (botAI->IsTank(bot))
+        return false;
+
+    Player* tank = GetGroupMainTank(bot);
+    if (!tank)
+        return false;
+
+    if (tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
+        tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
+    {
+        return true;
+    }
+
+    return false;
 }
 
 bool OmorRangedSpreadTrigger::IsActive()

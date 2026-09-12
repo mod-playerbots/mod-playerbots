@@ -51,9 +51,6 @@ bool OmorTreacheryAuraFleeFromTankAction::Execute(Event /*event*/)
     if (!tank)
         return false;
 
-    if (tank->GetGUID() == bot->GetGUID())
-        return false;
-
     constexpr float safeDistance = 20.0f;
 
     if (bot->GetDistance2d(tank) >= safeDistance)
