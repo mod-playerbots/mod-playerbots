@@ -1669,7 +1669,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         case 534:
             strategyName = "hyjal";  // The Battle for Mount Hyjal (Hyjal Summit)
-            break;        
+            break;
         case 543:
             strategyName = "tbc-ramp";  // Hellfire Citadel: Hellfire Ramparts
             break;
