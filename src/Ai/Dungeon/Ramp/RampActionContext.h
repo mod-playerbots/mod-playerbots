@@ -53,14 +53,31 @@ class TbcDungeonHellfireRampartsActionContext : public NamedObjectContext<Action
             return new OmorTreacheryAuraFleeFromPlayersAction(botAI);
         }
 
-        static Action* omor_ranged_spread(PlayerbotAI* botAI) { return new OmorRangedSpreadAction(botAI); }
+        static Action* omor_treachery_aura_flee_from_tank(PlayerbotAI* botAI)
+        {
+            return new OmorTreacheryAuraFleeFromTankAction(botAI);
+        }
 
-        static Action* omor_mark_fiendish_hound(PlayerbotAI* botAI) { return new OmorMarkFiendishHoundAction(botAI); }
+        static Action* omor_ranged_spread(PlayerbotAI* botAI)
+        {
+            return new OmorRangedSpreadAction(botAI);
+        }
+
+        static Action* omor_mark_fiendish_hound(PlayerbotAI* botAI)
+        {
+            return new OmorMarkFiendishHoundAction(botAI);
+        }
 
         // Vazruden
-        static Action* vazruden_tank_position_boss(PlayerbotAI* botAI) { return new VazrudenTankPositionBossAction(botAI); }
+        static Action* vazruden_tank_position_boss(PlayerbotAI* botAI)
+        {
+            return new VazrudenTankPositionBossAction(botAI);
+        }
 
-        static Action* vazruden_mark_boss(PlayerbotAI* botAI) { return new VazrudenMarkBossAction(botAI); }    
+        static Action* vazruden_mark_boss(PlayerbotAI* botAI)
+        {
+            return new VazrudenMarkBossAction(botAI);
+        }    
 };
 
 #endif
