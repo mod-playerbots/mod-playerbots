@@ -16,7 +16,7 @@
 class GargolmarMarkHellfireWatchersAction : public Action
 {
     public:
-        GargolmarMarkHellfireWatchersAction(PlayerbotAI* botAI) 
+        GargolmarMarkHellfireWatchersAction(PlayerbotAI* botAI)
             : Action(botAI, "gargolmar mark hellfire watchers")
         {
         }
@@ -80,9 +80,9 @@ class VazrudenTankPositionBossAction : public AttackAction
 class VazrudenMarkBossAction : public Action
 {
     public:
-        VazrudenMarkBossAction(PlayerbotAI* botAI) 
+        VazrudenMarkBossAction(PlayerbotAI* botAI)
             : Action(botAI, "vazruden mark boss")
-        {            
+        {
         }
         bool Execute(Event event) override;
 };

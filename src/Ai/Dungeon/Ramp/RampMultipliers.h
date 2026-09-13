@@ -22,9 +22,9 @@ class OmorTreacheryAuraFleeFromPlayersMultiplier : public Multiplier
 class VazrudenDisableTankAssistMultiplier : public Multiplier
 {
     public:
-        VazrudenDisableTankAssistMultiplier(PlayerbotAI* botAI) 
+        VazrudenDisableTankAssistMultiplier(PlayerbotAI* botAI)
             : Multiplier(botAI, "vazruden disable tank assist")
-        {            
+        {
         }
         float GetValue(Action* action) override;
 };

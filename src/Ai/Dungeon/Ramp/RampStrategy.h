@@ -15,7 +15,7 @@ class TbcDungeonHellfireRampartsStrategy : public Strategy
 {
 public:
     TbcDungeonHellfireRampartsStrategy(PlayerbotAI* botAI) : Strategy(botAI)
-    {        
+    {
     }
 
     string const getName() override { return "tbc-ramp"; }

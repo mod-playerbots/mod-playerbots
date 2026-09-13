@@ -19,10 +19,10 @@ using namespace EncounterHelpers;
 
 float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<OmorRangedSpreadAction*>(action) || 
+    if (dynamic_cast<OmorRangedSpreadAction*>(action) ||
         dynamic_cast<OmorTreacheryAuraFleeFromPlayersAction*>(action) ||
         dynamic_cast<OmorTreacheryAuraFleeFromTankAction*>(action) ||
-        dynamic_cast<OmorMarkFiendishHoundAction*>(action) ||        
+        dynamic_cast<OmorMarkFiendishHoundAction*>(action) ||
         dynamic_cast<ReachPartyMemberToHealAction*>(action))
         return 1.0f;
 
@@ -38,24 +38,22 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
     if (!omor)
         return 1.0f;
 
-    Unit* omorVictim = omor->GetVictim();
-    if (omorVictim && omorVictim->GetGUID() == bot->GetGUID())
-        return 1.0f;
-
-    // If bot is tank and trying to taunt Omor - continue
-    if (PlayerbotAI::IsMainTank(bot) && IsTauntAction(bot, action))
+    if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
     if (PlayerbotAI::IsRanged(bot) && dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    if (bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
+    if (PlayerbotAI::IsMelee(bot) &&
+        bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
         bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
         return 0.0f;
 
-    if (PlayerbotAI::IsMelee(bot) &&
-        (omorVictim->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
-         omorVictim->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA))))
+    Player* tank = PlayerbotAI::GetMainTank(bot);
+
+    if (tank &&
+        (tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
+         tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA))))
         return 0.0f;
 
      return 1.0f;
@@ -78,11 +76,11 @@ float VazrudenDisableTankAssistMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (!nazan->IsFlying())
-        return 1.0f;  
+        return 1.0f;
 
     Unit* target = action->GetTarget();
     if (target->GetName() == "nazan")
         return 0.0f;
 
-    return 1.0f;   
+    return 1.0f;
 }
