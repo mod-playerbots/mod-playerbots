@@ -74,7 +74,7 @@ bool VazrudenTankPositionBossTrigger::IsActive()
     return
         PlayerbotAI::IsTank(bot) &&
         AI_VALUE2(Unit*, "find target", "vazruden") &&
-        (!nazan || nazan->IsFlying())
+        (!nazan || nazan->IsFlying());
 }
 
 bool VazrudenBossIsActiveTrigger::IsActive()
