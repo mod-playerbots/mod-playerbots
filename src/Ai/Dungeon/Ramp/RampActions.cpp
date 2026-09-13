@@ -89,7 +89,7 @@ bool OmorMarkFiendishHoundAction::Execute(Event /*event*/)
     return MarkTargetWithSkull(bot, hound);
 }
 
-// Tank Omor in the middle of the platform
+// Tank Omor towards the middle of the platform
 bool OmorTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
@@ -116,10 +116,9 @@ bool OmorTankPositionBossAction::Execute(Event /*event*/)
                   MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Vazruden
+// Vazruden & Nazan
 
-// Tank positions Vazruden on the middle of the platform (for some reason bots try to grab the dragon flying around the
-// platform. This is to help prevent that.)
+// Tank Vazruden in the middle of the platform
 bool VazrudenTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* vazruden = AI_VALUE2(Unit*, "find target", "vazruden");
@@ -149,6 +148,7 @@ bool VazrudenTankPositionBossAction::Execute(Event /*event*/)
                   MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
+// Mark Vazruden with 'Skull'
 bool VazrudenMarkBossAction::Execute(Event /*event*/)
 {
     Unit* vazruden = AI_VALUE2(Unit*, "find target", "vazruden");
@@ -160,14 +160,18 @@ bool VazrudenMarkBossAction::Execute(Event /*event*/)
     return MarkTargetWithSkull(bot, vazruden);
 }
 
+// Shamans use Tremor totem when Nazan is active
 bool NazanSetTremorTotemAction::Execute(Event /*event*/)
 {
     return botAI->CanCastSpell(Id(RampSpells::SPELL_TREMOR_TOTEM), bot) &&
-           botAI->CastSpell(Id(RampSpells::SPELL_TREMOR_TOTEM), bot);
+           botAI->CastSpell(Id(RampSpells::SPELL_TREMOR_TOTEM), bot) &&
+           !AI_VALUE2(bool, "has totem", "tremor totem");
 }
 
+// Shamans use Fire Resistance totem when Nazan is active
 bool NazanSetFireResistanceTotemAction::Execute(Event /*event*/)
 {
     return botAI->CanCastSpell(Id(RampSpells::SPELL_FIRE_RESISTANCE_TOTEM_RANK_1), bot) &&
-           botAI->CastSpell(Id(RampSpells::SPELL_FIRE_RESISTANCE_TOTEM_RANK_1), bot);
+           botAI->CastSpell(Id(RampSpells::SPELL_FIRE_RESISTANCE_TOTEM_RANK_1), bot) &&
+           !AI_VALUE2(bool, "has totem", "fire resistance totem");
 }

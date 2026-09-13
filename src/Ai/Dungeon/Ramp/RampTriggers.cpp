@@ -7,8 +7,11 @@
 #include "RampTriggers.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include "RampShared.h"
 
 using namespace EncounterHelpers;
+using namespace RampShared;
+using namespace std;
 
 // Watchkeeper Gargolmar
 
@@ -27,8 +30,8 @@ bool OmorTreacheryAuraTrigger::IsActive()
         return false;
 
     return (!PlayerbotAI::IsMainTank(bot) &&
-            (bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
-             bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA))));
+            (bot->HasAura(static_cast<uint32>(RampSpells::SPELL_BANE_OF_TREACHERY)) ||
+                                              bot->HasAura(static_cast<uint32>(RampSpells::SPELL_TREACHEROUS_AURA))));
 }
 
 bool OmorTankHasTreacheryAuraTrigger::IsActive()
@@ -46,8 +49,8 @@ bool OmorTankHasTreacheryAuraTrigger::IsActive()
     if (!tank)
         return false;
 
-    return tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
-           tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA));
+    return tank->HasAura(static_cast<uint32>(RampSpells::SPELL_BANE_OF_TREACHERY)) ||
+           tank->HasAura(static_cast<uint32>(RampSpells::SPELL_TREACHEROUS_AURA));
 }
 
 bool OmorRangedSpreadTrigger::IsActive()
@@ -82,12 +85,28 @@ bool VazrudenBossIsActiveTrigger::IsActive()
     return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "vazruden");
 }
 
-bool NazanBossIsActiveTrigger::IsActive()
+bool NazanBossTremorTotemTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_SHAMAN)
         return false;
 
     Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
 
-    return nazan && !nazan->IsFlying();
+    if (!nazan || nazan->IsFlying())
+        return false;
+
+    return !AI_VALUE2(bool, "has totem", "tremor totem");
+}
+
+bool NazanBossFireResistanceTotemTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return false;
+
+    Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
+
+    if (!nazan || nazan->IsFlying())
+        return false;
+
+    return !AI_VALUE2(bool, "has totem", "fire resistance totem");
 }

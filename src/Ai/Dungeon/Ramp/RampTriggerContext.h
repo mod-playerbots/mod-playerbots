@@ -42,8 +42,11 @@ public:
         creators["vazruden boss is active"] =
             &TbcDungeonHellfireRampartsTriggerContext::vazruden_boss_is_active;
 
-        creators["nazan boss is active"] =
-            &TbcDungeonHellfireRampartsTriggerContext::nazan_boss_is_active;
+        creators["nazan boss tremor totem"] =
+            &TbcDungeonHellfireRampartsTriggerContext::nazan_boss_tremor_totem;
+
+        creators["nazan boss fire resistance totem"] =
+            &TbcDungeonHellfireRampartsTriggerContext::nazan_boss_fire_resistance_totem;
     }
 
 private:
@@ -90,9 +93,14 @@ private:
         return new VazrudenBossIsActiveTrigger(botAI);
     }
 
-    static Trigger* nazan_boss_is_active(PlayerbotAI* botAI)
+    static Trigger* nazan_boss_tremor_totem(PlayerbotAI* botAI)
     {
-        return new NazanBossIsActiveTrigger(botAI);
+        return new NazanBossTremorTotemTrigger(botAI);
+    }
+
+    static Trigger* nazan_boss_fire_resistance_totem(PlayerbotAI* botAI)
+    {
+        return new NazanBossFireResistanceTotemTrigger(botAI);
     }
 };
 

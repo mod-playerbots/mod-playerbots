@@ -9,13 +9,6 @@
 
 #include "Trigger.h"
 
-enum class HellfireRampartsIDs : uint32
-{
-    // Omor the Unscarred
-    SPELL_TREACHEROUS_AURA = 30695,
-    SPELL_BANE_OF_TREACHERY = 37566,
-};
-
 // Watchkeeper Gargolmar
 
 class GargolmarHellfireWatchersAreActiveTrigger : public Trigger
@@ -89,10 +82,20 @@ public:
     bool IsActive() override;
 };
 
-class NazanBossIsActiveTrigger : public Trigger
+class NazanBossTremorTotemTrigger : public Trigger
 {
 public:
-    NazanBossIsActiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "nazan boss is active") {}
+    NazanBossTremorTotemTrigger(PlayerbotAI* botAI) : Trigger(botAI, "nazan boss tremor totem")
+    {
+    }
+
+    bool IsActive() override;
+};
+
+class NazanBossFireResistanceTotemTrigger : public Trigger
+{
+public:
+    NazanBossFireResistanceTotemTrigger(PlayerbotAI* botAI) : Trigger(botAI, "nazan boss fire resistance totem") {}
 
     bool IsActive() override;
 };
