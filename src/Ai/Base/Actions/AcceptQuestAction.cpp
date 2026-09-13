@@ -123,7 +123,7 @@ bool AcceptQuestShareAction::Execute(Event event)
         return false;
     }
 
-    if (!bot->CanTakeQuest(qInfo, false))
+    if (!QuestAction::CanAcceptQuest(bot, qInfo))
     {
         // can't take quest
         bot->SetDivider(ObjectGuid::Empty);
@@ -179,7 +179,7 @@ bool ConfirmQuestAction::Execute(Event event)
         return false;
 
     quest = qInfo->GetQuestId();
-    if (!bot->CanTakeQuest(qInfo, false))
+    if (!QuestAction::CanAcceptQuest(bot, qInfo))
     {
         // can't take quest
         // botAI->TellError("quest_cant_take");

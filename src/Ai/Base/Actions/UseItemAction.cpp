@@ -5,6 +5,7 @@
  */
 
 #include "UseItemAction.h"
+#include "AcceptQuestAction.h"
 #include "ChatHelper.h"
 #include "Event.h"
 #include "ItemPackets.h"
@@ -168,18 +169,13 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
         targetSelected = true;
     }
 
-    if (uint32 questid = item->GetTemplate()->StartQuest)
+    if (uint32 questId = item->GetTemplate()->StartQuest)
     {
-        if (Quest const* qInfo = sObjectMgr->GetQuestTemplate(questid))
+        if (Quest const* qInfo = sObjectMgr->GetQuestTemplate(questId))
         {
-            WorldPacket packet(CMSG_QUESTGIVER_ACCEPT_QUEST, 8 + 4 + 4);
-            packet << item_guid;
-            packet << questid;
-            packet << uint32(0);
-            bot->GetSession()->HandleQuestgiverAcceptQuestOpcode(packet);
-
-            botAI->TellMasterNoFacing("Got quest " + chat->FormatQuest(qInfo));
-            return true;
+            // Same acceptance path as NPC/creature quest givers (guards, grey filter, sync fallback and broadcast included)
+            AcceptQuestAction acceptQuestAction(botAI);
+            return acceptQuestAction.AcceptQuest(qInfo, item_guid);
         }
     }
 
@@ -452,7 +448,7 @@ bool UseRandomRecipe::isUseful()
 
 bool UseRandomRecipe::isPossible() { return AI_VALUE2(uint32, "item count", "recipe") > 0; }
 
-bool UseRandomQuestItem::Execute(Event /*event*/)
+bool UseStartQuestItem::Execute(Event /*event*/)
 {
     Unit* unitTarget = nullptr;
     ObjectGuid goTarget;
@@ -472,7 +468,7 @@ bool UseRandomQuestItem::Execute(Event /*event*/)
         if (proto->StartQuest)
         {
             Quest const* qInfo = sObjectMgr->GetQuestTemplate(proto->StartQuest);
-            if (bot->CanTakeQuest(qInfo, false))
+            if (QuestAction::CanAcceptQuest(bot, qInfo))
             {
                 item = questItem;
                 break;
@@ -490,9 +486,9 @@ bool UseRandomQuestItem::Execute(Event /*event*/)
     return used;
 }
 
-bool UseRandomQuestItem::isUseful()
+bool UseStartQuestItem::isUseful()
 {
     return !IsRealPlayer(botAI->GetMaster()) && !bot->InBattleground() && !bot->HasUnitState(UNIT_STATE_IN_FLIGHT);
 }
 
-bool UseRandomQuestItem::isPossible() { return AI_VALUE2(uint32, "item count", "quest") > 0; }
+bool UseStartQuestItem::isPossible() { return AI_VALUE2(uint32, "item count", "quest") > 0; }
