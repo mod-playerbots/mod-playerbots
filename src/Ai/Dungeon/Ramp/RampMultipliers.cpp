@@ -49,7 +49,7 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
         bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
         return 0.0f;
 
-    Player* tank = PlayerbotAI::GetMainTank(bot);
+    Player* tank = GetGroupMainTank(bot);
 
     if (tank &&
         (tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
