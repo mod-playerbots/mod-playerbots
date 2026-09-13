@@ -31,10 +31,10 @@ bool GargolmarMarkHellfireWatchersAction::Execute(Event /*event*/)
 
 // Omor the Unscarred
 
-// Flee 20 yards from other players if you have Treacherous Aura or Bane of Treachery
+// Flee 15 yards from other players if you have Treacherous Aura or Bane of Treachery
 bool OmorTreacheryAuraFleeFromPlayersAction::Execute(Event /*event*/)
 {
-    constexpr float safeDistance = 20.0f;
+    constexpr float safeDistance = 15.0f;
 
     if (!GetNearestPlayerInRadius(bot, safeDistance))
         return false;
@@ -44,20 +44,26 @@ bool OmorTreacheryAuraFleeFromPlayersAction::Execute(Event /*event*/)
     return MoveFromGroup(safeDistance);
 }
 
-// Nearby bots should flee 20 yards from the tank if it has Treacherous Aura or Bane of Treachery
+// Nearby bots should flee 15 yards from the tank if it has Treacherous Aura or Bane of Treachery
 bool OmorTreacheryAuraFleeFromTankAction::Execute(Event /*event*/)
 {
-    Player* tank = GetGroupMainTank(bot);
-    if (!tank)
+    Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
+
+    if (!omor)
         return false;
 
-    constexpr float safeDistance = 20.0f;
+    Unit* omorVictim = omor->GetVictim();
 
-    if (bot->GetExactDist2d(tank) >= safeDistance)
+    if (!omorVictim || omorVictim->GetGUID() == bot->GetGUID())
+        return false;
+
+    constexpr float safeDistance = 15.0f;
+
+    if (bot->GetExactDist2d(omorVictim) >= safeDistance)
         return false;
 
     bot->CastStop();
-    return MoveAway(tank, safeDistance);
+    return MoveAway(omorVictim, safeDistance);
 }
 
 // Ranged spread out 20 yards from each other

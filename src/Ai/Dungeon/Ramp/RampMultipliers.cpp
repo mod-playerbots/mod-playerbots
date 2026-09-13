@@ -7,6 +7,8 @@
 #include "RampMultipliers.h"
 #include "ChooseTargetActions.h"
 #include "EncounterHelpers.h"
+#include "HunterActions.h"
+#include "MageActions.h"
 #include "Playerbots.h"
 #include "RampActions.h"
 #include "RampTriggers.h"
@@ -18,14 +20,30 @@ using namespace EncounterHelpers;
 
 float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
 {
-    if (!bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) &&
-        !bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
+    if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<CastReachTargetSpellAction*>(action))
-        return 0.0f;
+    bool const isMovementSpell = dynamic_cast<CastReachTargetSpellAction*>(action) ||
+                                 dynamic_cast<CastBlinkBackAction*>(action) ||
+                                 dynamic_cast<CastDisengageAction*>(action);
 
-    return 1.0f;
+    if (!isMovementSpell && !dynamic_cast<MovementAction*>(action))
+        return 1.0f;
+
+    Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
+
+    if (!omor)
+        return 1.0f;
+
+    Unit* omorVictim = omor->GetVictim();
+    if (omorVictim && omorVictim->GetGUID() == bot->GetGUID())
+        return 1.0f;
+
+    // If bot is tank and trying to taunt Omor - continue
+    if (PlayerbotAI::IsMainTank(bot) && IsTauntAction(bot, action))
+        return 1.0f;
+
+     return 0.0f;
 }
 
 // Vazruden
@@ -35,7 +53,9 @@ float VazrudenDisableTankAssistMultiplier::GetValue(Action* action)
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "vazruden"))
+    Unit* vazruden = AI_VALUE2(Unit*, "find target", "vazruden");
+
+    if (!vazruden)
         return 1.0f;
 
     Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");

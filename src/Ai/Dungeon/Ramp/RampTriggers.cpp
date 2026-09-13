@@ -21,26 +21,33 @@ bool GargolmarHellfireWatchersAreActiveTrigger::IsActive()
 
 bool OmorTreacheryAuraTrigger::IsActive()
 {
-    return !PlayerbotAI::IsTank(bot) && (bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
-                                   bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)));
+    Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
+
+    if (!omor)
+        return false;
+
+    Unit* omorVictim = omor->GetVictim();
+
+    bool botIsOmorVictim = omorVictim && omorVictim->GetGUID() == bot->GetGUID();
+
+    return !botIsOmorVictim && (bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
+                                bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)));
 }
 
 bool OmorTankHasTreacheryAuraTrigger::IsActive()
 {
-    if (PlayerbotAI::IsTank(bot))
+    Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
+
+    if (!omor)
         return false;
 
-    Player* tank = GetGroupMainTank(bot);
-    if (!tank)
+    Unit* omorVictim = omor->GetVictim();
+
+    if (!omorVictim || omorVictim->GetGUID() != bot->GetGUID())
         return false;
 
-    if (tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
-        tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
-    {
-        return true;
-    }
-
-    return false;
+    return  bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
+            bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA));
 }
 
 bool OmorRangedSpreadTrigger::IsActive()
