@@ -60,6 +60,11 @@ bool OmorFiendishHoundIsActiveTrigger::IsActive()
     return AI_VALUE2(Unit*, "find target", "fiendish hound");
 }
 
+bool OmorTankPositionBossTrigger::IsActive()
+{
+    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "omor the unscarred");
+}
+
 // Vazruden
 
 bool VazrudenTankPositionBossTrigger::IsActive()

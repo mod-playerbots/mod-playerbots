@@ -25,6 +25,9 @@ void TbcDungeonHellfireRampartsStrategy::InitTriggers(std::vector<TriggerNode*>&
     triggers.push_back(
         new TriggerNode("omor fiendish hound is active", {NextAction("omor mark fiendish hound", ACTION_RAID)}));
 
+    triggers.push_back(
+        new TriggerNode("omor tank position boss", {NextAction("omor tank position boss", ACTION_RAID)}));
+
     // Vazruden
     triggers.push_back(
         new TriggerNode("vazruden tank position boss", {NextAction("vazruden tank position boss", ACTION_RAID)}));

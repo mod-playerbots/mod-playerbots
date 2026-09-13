@@ -63,6 +63,14 @@ public:
     bool IsActive() override;
 };
 
+class OmorTankPositionBossTrigger : public Trigger
+{
+public:
+    OmorTankPositionBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "omor tank position boss") {}
+
+    bool IsActive() override;
+};
+
 // Vazruden
 
 class VazrudenTankPositionBossTrigger : public Trigger

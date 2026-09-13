@@ -65,6 +65,16 @@ class OmorMarkFiendishHoundAction : public Action
         bool Execute(Event event) override;
 };
 
+class OmorTankPositionBossAction : public AttackAction
+{
+    public:
+        OmorTankPositionBossAction(PlayerbotAI* botAI) 
+            : AttackAction(botAI, "omor tank position boss")
+        {        
+        }
+        bool Execute(Event event) override;
+};
+
 // Vazruden
 
 class VazrudenTankPositionBossAction : public AttackAction

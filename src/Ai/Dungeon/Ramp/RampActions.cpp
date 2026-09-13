@@ -12,6 +12,7 @@ using namespace EncounterHelpers;
 
 constexpr uint32 RAMP_MAP_ID = 543;
 static const Position VAZRUDEN_TANK_POSITION = {-1407.405f, 1744.521f, 81.075f};
+static const Position OMOR_TANK_POSITION = {-1123.08f, 1708.307f, 89.664f};
 
 // Watchkeeper Gargolmar
 
@@ -90,6 +91,33 @@ bool OmorMarkFiendishHoundAction::Execute(Event /*event*/)
     return MarkTargetWithSkull(bot, hound);
 }
 
+// Tank Omor in the middle of the platform
+bool OmorTankPositionBossAction::Execute(Event /*event*/)
+{
+    Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
+    if (!omor)
+        return false;
+
+    if (omor->GetVictim() != bot || !bot->IsWithinMeleeRange(omor) || bot->GetHealthPct() <= 25.0f)
+        return false;
+
+    Position const& position = OMOR_TANK_POSITION;
+    constexpr float arrivalDist = 5.0f;
+    float distToPosition = bot->GetExactDist2d(position);
+
+    if (distToPosition <= arrivalDist)
+        return false;
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, omor, moveX, moveY, backwards))
+        return false;
+
+    return MoveTo(RAMP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT, true, backwards);
+}
+
 // Vazruden
 
 // Tank positions Vazruden on the middle of the platform (for some reason bots try to grab the dragon flying around the
@@ -103,11 +131,11 @@ bool VazrudenTankPositionBossAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != vazruden)
         return Attack(vazruden);
 
-    if (vazruden->GetVictim() != bot || !bot->IsWithinMeleeRange(vazruden) || bot->GetHealthPct() <= 30.0f)
+    if (vazruden->GetVictim() != bot || !bot->IsWithinMeleeRange(vazruden) || bot->GetHealthPct() <= 25.0f)
         return false;
 
     Position const& position = VAZRUDEN_TANK_POSITION;
-    constexpr float arrivalDist = 6.0f;
+    constexpr float arrivalDist = 10.0f;
     float distToPosition = bot->GetExactDist2d(position);
 
     if (distToPosition <= arrivalDist)
