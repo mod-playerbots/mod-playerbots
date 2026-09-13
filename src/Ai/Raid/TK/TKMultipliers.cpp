@@ -12,6 +12,7 @@
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "Playerbots.h"
+#include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
@@ -49,7 +50,7 @@ float AlarSuppressGapClosersMultiplier::GetValueInEncounter(Action* action)
     if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    // Block Charge, etc. for non-tanks when not at a platform
+    // Block Charge, etc. for non-tanks when not at a platform.
     int8 const currentLocationIndex = GetAlarCurrentLocationIndex(alar);
     return currentLocationIndex < PLATFORM_0_IDX ||
         currentLocationIndex > PLATFORM_3_IDX ? 0.0f : 1.0f;
@@ -229,8 +230,11 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValueInEncounter(Action* action
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<CastHealingSpellAction*>(action))
+    if (dynamic_cast<CastHealingSpellAction*>(action) ||
+        dynamic_cast<CastFearWardOnMainTankAction*>(action))
+    {
         return 1.0f;
+    }
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
@@ -247,12 +251,12 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValueInEncounter(Action* action
         return 1.0f;
     }
 
-    // Only the applicable tank may attack during the first 10 seconds of an advisor in phase 1
+    // Only the applicable tank may attack during the first 10 seconds of an advisor in phase 1.
     if (IsAdvisorActive(AI_VALUE2(Unit*, "find target", "lord sanguinar")))
         return PlayerbotAI::IsMainTank(bot) ? 1.0f : 0.0f;
 
     if (IsAdvisorActive(AI_VALUE2(Unit*, "find target", "grand astromancer capernian")))
-        return bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot ? 1.0f : 0.0f;
+        return IsCapernianTank(bot) ? 1.0f : 0.0f;
 
     if (IsAdvisorActive(AI_VALUE2(Unit*, "find target", "master engineer telonicus")))
         return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ? 1.0f : 0.0f;
@@ -306,33 +310,33 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValueInEncounter(Actio
 }
 
 // This multiplier is not needed right now because Soulshatter is cast only when there are
-// multiple enemies. That's probably not the right approach and should be fixed, so this
-// multiplier remains in place in anticipation of a future correction to Soulshatter usage.
-float KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (bot->getClass() != CLASS_WARLOCK)
-        return 1.0f;
-
-    if (!dynamic_cast<CastSoulshatterAction*>(action))
-        return 1.0f;
-
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
-        return 1.0f;
-
-    uint32 const phase = GetKaelthasTkPhase(kaelthas);
-    if (phase != PHASE_SINGLE_ADVISOR && phase != PHASE_ALL_ADVISORS)
-        return 1.0f;
-
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (!IsAdvisorActive(capernian))
-        return 1.0f;
-
-    return GetCapernianTank(bot) == bot ? 0.0f : 1.0f;
-}
+// multiple enemies. That's probably not the right approach and should be fixed, so this multiplier
+// remains here but commented out in anticipation of a future correction to Soulshatter usage.
+// float KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier::GetValueInEncounter(Action* action)
+// {
+//     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+//         return 1.0f;
+//
+//     if (bot->getClass() != CLASS_WARLOCK)
+//         return 1.0f;
+//
+//     if (!dynamic_cast<CastSoulshatterAction*>(action))
+//         return 1.0f;
+//
+//     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+//     if (!kaelthas)
+//         return 1.0f;
+//
+//     uint32 const phase = GetKaelthasTkPhase(kaelthas);
+//     if (phase != PHASE_SINGLE_ADVISOR && phase != PHASE_ALL_ADVISORS)
+//         return 1.0f;
+//
+//     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+//     if (!IsAdvisorActive(capernian))
+//         return 1.0f;
+//
+//     return IsCapernianTank(bot) ? 0.0f : 1.0f;
+// }
 
 float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValueInEncounter(Action* action)
 {
@@ -367,7 +371,7 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValueInEncounter(Actio
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    // Try to keep main tank from grabbing aggro on any weapon other than the axe
+    // Try to keep main tank from grabbing aggro on any weapon other than the axe.
     if (!IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action))
         return 1.0f;
 
@@ -464,14 +468,11 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValueInEncounter(Action* 
         return sanguinar && sanguinar->IsAlive() ? 0.0f : 1.0f;
     }
 
-    // The Sanguinar check is a proxy for the revival/Kael talk phase (any non-selectable advisor
-    // would do, since all four revive together, but Sanguinar is already needed for the healer).
     if (!sanguinar || !sanguinar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
         return 1.0f;
 
-    if (PlayerbotAI::IsMainTank(bot) ||
-        PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ||
-        (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot))
+    if (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ||
+        IsCapernianTank(bot))
     {
         return 0.0f;
     }
@@ -508,7 +509,7 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValueInEncounter(Action* ac
 
 float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
+    if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE_AURA)))
         return 1.0f;
 
     if (!dynamic_cast<MovementAction*>(action) &&

@@ -33,7 +33,7 @@ constexpr uint32 Id(T value)
 
 enum class TkSpells : uint32
 {
-    // Trash
+    // Crimson Hand Centurion
     SPELL_ARCANE_FLURRY             = 37268,
 
     // Al'ar
@@ -51,13 +51,12 @@ enum class TkSpells : uint32
 
     // Kael'thas Sunstrider
     SPELL_PERMANENT_FEIGN_DEATH     = 29266,
-    SPELL_GRAVITY_LAPSE             = 39432,
+    SPELL_GRAVITY_LAPSE_AURA        = 39432, // AC uses this name (SPELL_GRAVITY_LAPSE is 35941)
     SPELL_KAEL_FULL_POWER           = 36187,
     SPELL_MENTAL_PROTECTION_FIELD   = 36480, // Staff of Disintegration
     SPELL_ARCANE_BARRIER            = 36481, // Phaseshift Bulwark
     SPELL_KAELTHAS_MIND_CONTROL     = 36797,
     SPELL_SHOCK_BARRIER             = 36815,
-    SPELL_STAFF_FROSTBOLT           = 36990,
 
     // Hunter
     SPELL_MISDIRECTION              = 35079,
@@ -65,7 +64,7 @@ enum class TkSpells : uint32
 
 enum class TkNpcs : uint32
 {
-    // General
+    // Trash
     NPC_CRIMSON_HAND_CENTURION      = 20048,
 
     // Al'ar
@@ -111,6 +110,10 @@ inline constexpr uint32 TK_MAP_ID = 550;
 std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry);
 Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
 
+// Trash
+
+Unit* GetCenturionCastingArcaneFlurry(PlayerbotAI* botAI);
+
 // Al'ar <Phoenix God>
 // CombatReach is 15 yards
 
@@ -126,7 +129,7 @@ enum AlarLocationIndex
 };
 
 // 17.0f is intentionally a little lower than the actual balcony positions to capture melee that
-// may be slightly down the ramps to Platform 0 or 3
+// may be slightly down the ramps from Platform 0 or 3.
 inline constexpr float ALAR_BALCONY_Z = 17.0f;
 inline constexpr uint8 TOTAL_ALAR_LOCATIONS = 6;
 
@@ -177,6 +180,8 @@ inline Position const ALAR_SE_RAMP_BASE        = { 281.064f, -36.590f, -2.389f }
 inline Position const ALAR_SW_RAMP_BASE        = { 281.064f,  36.590f, -2.389f };
 inline Position const ALAR_ROOM_S_CENTER       = { 281.064f,   0.000f, -2.389f };
 
+inline constexpr float ALAR_FLAME_PATCH_SEARCH_DISTANCE = 40.0f;
+
 extern std::unordered_map<uint32, bool> lastRebirthState;
 extern std::unordered_map<uint32, bool> isAlarInPhase2;
 
@@ -189,7 +194,8 @@ bool IsPrimaryEmberTank(Player* bot);
 bool IsFirstAlarTank(Player* bot);
 bool IsSecondAlarTank(Player* bot);
 Player* GetSecondaryEmberTank(Player* bot);
-std::vector<Unit*> GetFlamePatches(Player* bot, float searchRadius);
+GuidVector FindFlamePatchGuids(Player* bot);
+std::vector<Unit*> GetFlamePatches(PlayerbotAI* botAI);
 
 // Void Reaver
 // CombatReach is 15 yards
@@ -201,7 +207,7 @@ struct ArcaneOrbData
 };
 
 inline constexpr uint32 ARCANE_ORB_DURATION_MS = 7000;
-// Actual hazard range is 20 yards; the rest is buffer for escape & multiplier.
+// Actual hazard range is 20 yards; the rest is buffer for the escape & multiplier.
 inline constexpr float ARCANE_ORB_SAFE_DISTANCE = 22.0f;
 inline constexpr float ARCANE_ORB_BUFFER_DISTANCE = 30.0f;
 
@@ -232,20 +238,20 @@ enum KTPhases
     PHASE_FINAL          = 5
 };
 
-// About the exact distance from Kael to the entrances to his room
+// About the exact distance from Kael to the entrances to his room.
 inline constexpr float KAELTHAS_ROOM_SEARCH_DISTANCE = 125.0f;
 inline constexpr uint32 KAELTHAS_DB_GUID = 158218;
 
-// To the left of the advisors' starting position (when facing them), up against the wall
+// To the left of the advisors' starting position (when facing them), up against the wall.
 inline Position const SANGUINAR_TANK_POSITION    = { 775.478f,  39.888f, 46.780f };
 inline Position const SANGUINAR_WAITING_POSITION = { 761.850f,  27.459f, 46.779f };
 // Next to Sanguinar
 inline Position const TELONICUS_TANK_POSITION    = { 773.717f,  44.091f, 46.780f };
 inline Position const TELONICUS_WAITING_POSITION = { 754.347f,  31.739f, 46.796f };
 inline Position const CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f };
-// A bit aways from the Sanguinar and Telonicus tanking positions
+// A bit aways from the Sanguinar and Telonicus tanking positions.
 inline Position const ADVISOR_HEAL_POSITION      = { 752.171f,  19.494f, 46.779f };
-// Towards the front-center of the platform to ensure an open area for Gravity Lapse
+// Towards the front-center of the platform to ensure an open area for Gravity Lapse.
 inline Position const KAELTHAS_TANK_POSITION     = { 774.008f,  -0.631f, 48.729f };
 
 inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
@@ -254,11 +260,12 @@ extern std::unordered_map<uint32, uint32> advisorDpsWaitTimer;
 uint32 GetKaelthasTkPhase(Unit* kaelthas);
 bool IsAdvisorActive(Unit* advisor);
 Player* GetCapernianTank(Player* bot);
+bool IsCapernianTank(Player* bot);
 bool IsSanguinarDebuffHunter(Player* bot);
-Unit* GetLegendaryWeapon(Player* bot, uint32 weaponEntry);
-GuidVector FindDeadLegendaryWeaponGuids(Player* bot);
-GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI);
+GuidVector FindLegendaryWeaponGuids(Player* bot);
+Unit* GetLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry);
 Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry);
+bool HasDeadLegendaryWeapon(PlayerbotAI* botAI);
 bool IsLegendaryWeaponItem(uint32 itemId);
 bool HasEquippableItemForSlot(Player* bot, uint8 slot);
 Item* GetEquippedItemInSlot(Player* bot, uint8 slot, uint32 itemId);

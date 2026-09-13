@@ -9,16 +9,9 @@
 
 #include "ScriptedCreature.h"
 
-// This file mirrors the core's boss_kaelthas class so bots can read the encounter phase
-// The core's boss script is at src/server/scripts/Outland/TempestKeep/Eye/boss_kaelthas.cpp
-
-enum KTYells
-{
-};
-
-enum KTActions
-{
-};
+// This file mirrors the core's boss_kaelthas class so bots can read the encounter phase.
+// The core's boss script is at src/server/scripts/Outland/TempestKeep/Eye/boss_kaelthas.cpp.
+// IntroduceNewAdvisor and its two enums are not needed and are omitted.
 
 struct boss_kaelthas : public BossAI
 {
@@ -34,7 +27,6 @@ struct boss_kaelthas : public BossAI
     void SpellHit(Unit* caster, SpellInfo const* spell) override;
     void MovementInform(uint32 type, uint32 point) override;
     void ExecuteMiddleEvent();
-    void IntroduceNewAdvisor(KTYells talkIntroduction, KTActions kaelAction);
     void PhaseEnchantedWeaponsExecute();
     void PhaseAllAdvisorsExecute();
     void PhaseKaelExecute();
@@ -42,7 +34,7 @@ struct boss_kaelthas : public BossAI
     bool CheckEvadeIfOutOfCombatArea() const override;
     void JustDied(Unit* killer) override;
 
-    uint32 GetPhase() const { return _phase; } // This is the only addition to the class
+    uint32 GetPhase() const { return _phase; } // This is the only addition to the class.
 
 private:
     uint32 _phase;

@@ -148,16 +148,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier : public TempestKeepEncounterMultiplier
-{
-public:
-    KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier(PlayerbotAI* botAI)
-        : TempestKeepEncounterMultiplier(
-            botAI, "kael'thas sunstrider disable warlock tank soulshatter") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
+// class KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier : public TempestKeepEncounterMultiplier
+// {
+// public:
+//     KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier(PlayerbotAI* botAI)
+//         : TempestKeepEncounterMultiplier(
+//             botAI, "kael'thas sunstrider disable warlock tank soulshatter") {}
+//
+// protected:
+//     float GetValueInEncounter(Action* action) override;
+// };
 
 class KaelthasSunstriderKeepDistanceFromCapernianMultiplier : public TempestKeepEncounterMultiplier
 {

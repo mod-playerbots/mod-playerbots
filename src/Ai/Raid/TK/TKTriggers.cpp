@@ -39,8 +39,7 @@ bool TempestKeepStuckFallingTrigger::IsActive()
 
 bool CrimsonHandCenturionCastsArcaneFlurryTrigger::IsActive()
 {
-    return bot->getClass() == CLASS_MAGE &&
-        AI_VALUE2(Unit*, "find target", "crimson hand centurion");
+    return bot->getClass() == CLASS_MAGE && GetCenturionCastingArcaneFlurry(botAI);
 }
 
 // Al'ar <Phoenix God>
@@ -233,7 +232,7 @@ bool KaelthasSunstriderSanguinarOrTelonicusShouldBeTankedTrigger::IsActiveInEnco
 
 bool KaelthasSunstriderCapernianShouldBeTankedByWarlockTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_WARLOCK || GetCapernianTank(bot) != bot)
+    if (!IsCapernianTank(bot))
         return false;
 
     return IsAdvisorActive(AI_VALUE2(Unit*, "find target", "grand astromancer capernian"));
@@ -244,10 +243,7 @@ bool KaelthasSunstriderShouldStandBackFromCapernianTrigger::IsActiveInEncounter(
     if (!IsAdvisorActive(AI_VALUE2(Unit*, "find target", "grand astromancer capernian")))
         return false;
 
-    if (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot)
-        return false;
-
-    return true;
+    return !IsCapernianTank(bot);
 }
 
 bool KaelthasSunstriderShouldHoldPhase3PositionsTrigger::IsActiveInEncounter()
@@ -260,8 +256,8 @@ bool KaelthasSunstriderShouldHoldPhase3PositionsTrigger::IsActiveInEncounter()
         return false;
 
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-    // The healer holds its spot from the start of the revival until Sanguinar dies, since that
-    // spot is what keeps both melee tanks in range.
+    // The designated healer stays in position by the melee tanks while the rest of the raid runs
+    // all over the place to kite and kill Thaladred.
     if (PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
         return sanguinar && sanguinar->IsAlive();
 
@@ -270,9 +266,8 @@ bool KaelthasSunstriderShouldHoldPhase3PositionsTrigger::IsActiveInEncounter()
     if (!sanguinar || !sanguinar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
         return false;
 
-    return PlayerbotAI::IsMainTank(bot) ||
-        PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ||
-        (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot);
+    return PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ||
+        IsCapernianTank(bot);
 }
 
 bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActiveInEncounter()
@@ -314,8 +309,18 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActiveInEncounter()
 
 bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsMainTank(bot) &&
-        GetLegendaryWeapon(bot, Id(TkNpcs::NPC_DEVASTATION)) != nullptr;
+    if (!PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
+    if (phase < PHASE_WEAPONS || phase > PHASE_ALL_ADVISORS)
+        return false;
+
+    return GetLegendaryWeapon(botAI, Id(TkNpcs::NPC_DEVASTATION)) != nullptr;
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreDeadTrigger::IsActiveInEncounter()
@@ -328,11 +333,11 @@ bool KaelthasSunstriderLegendaryWeaponsAreDeadTrigger::IsActiveInEncounter()
     if (phase < PHASE_WEAPONS || phase > PHASE_ALL_ADVISORS)
         return false;
 
-    Unit* axe = GetLegendaryWeapon(bot, Id(TkNpcs::NPC_DEVASTATION));
+    Unit* axe = GetLegendaryWeapon(botAI, Id(TkNpcs::NPC_DEVASTATION));
     if (axe && axe->GetVictim() == bot)
         return false;
 
-    return !GetDeadLegendaryWeaponGuids(botAI).empty();
+    return HasDeadLegendaryWeapon(botAI);
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActiveInEncounter()

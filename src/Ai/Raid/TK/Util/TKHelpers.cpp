@@ -24,10 +24,10 @@ std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry)
     Unit* highest = nullptr;
 
     AiObjectContext* context = botAI->GetAiObjectContext();
-    for (auto const& targetGuid : AI_VALUE(GuidVector, "possible targets no los"))
+    for (ObjectGuid const targetGuid : AI_VALUE(GuidVector, "attackers"))
     {
         Unit* unit = botAI->GetUnit(targetGuid);
-        if (unit && unit->GetEntry() == entry)
+        if (unit && unit->IsAlive() && unit->GetEntry() == entry)
         {
             if (!lowest || unit->GetGUID().GetRawValue() < lowest->GetGUID().GetRawValue())
                 lowest = unit;
@@ -64,6 +64,30 @@ Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
     }
 
     return nearestPlayer;
+}
+
+// Trash
+
+// "attackers" already drops polymorphed units so no check for it is necessary.
+Unit* GetCenturionCastingArcaneFlurry(PlayerbotAI* botAI)
+{
+    Unit* target = nullptr;
+
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    for (ObjectGuid const attackerGuid : AI_VALUE(GuidVector, "attackers"))
+    {
+        Unit* attacker = botAI->GetUnit(attackerGuid);
+        if (!attacker || attacker->GetEntry() != Id(TkNpcs::NPC_CRIMSON_HAND_CENTURION) ||
+            !attacker->HasAura(Id(TkSpells::SPELL_ARCANE_FLURRY)))
+        {
+            continue;
+        }
+
+        if (!target || attacker->GetGUID() < target->GetGUID())
+            target = attacker;
+    }
+
+    return target;
 }
 
 // Al'ar <Phoenix God>
@@ -181,23 +205,23 @@ Position const& GetClosestGroundPosition(Position const& botPos)
     return ALAR_GROUND_POSITIONS[closestPlatform];
 }
 
-// Main tank rotates between W (where Al'ar initially lands) and NE platforms in phase 1
+// The main tank rotates between the W (where Al'ar initially lands) and NE platforms in phase 1
 // and starts on Al'ar in phase 2.
 bool IsFirstAlarTank(Player* bot)
 {
     return PlayerbotAI::IsMainTank(bot);
 }
 
-// First assist tank rotates between NW and E platforms in phase 1.
+// The first assist tank rotates between the NW and E platforms in phase 1.
 bool IsSecondAlarTank(Player* bot)
 {
     return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
 }
 
-// Second assist tank is the primary ember tank
+// The second assist tank is the primary ember tank.
 bool IsPrimaryEmberTank(Player* bot)
 {
-    return PlayerbotAI::IsAssistTankOfIndex(bot, 1, false);
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
 }
 
 // The secondary Ember Tank is needed only during phase 2, and it is initially the first assist
@@ -217,17 +241,35 @@ Player* GetSecondaryEmberTank(Player* bot)
     return assistTank;
 }
 
-std::vector<Unit*> GetFlamePatches(Player* bot, float searchRadius)
+GuidVector FindFlamePatchGuids(Player* bot)
 {
     std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(creatureList, Id(TkNpcs::NPC_FLAME_PATCH), searchRadius);
+    bot->GetCreatureListWithEntryInGrid(
+        creatureList, Id(TkNpcs::NPC_FLAME_PATCH), ALAR_FLAME_PATCH_SEARCH_DISTANCE);
 
-    std::vector<Unit*> flamePatches;
-    flamePatches.reserve(creatureList.size());
+    GuidVector guids;
+    guids.reserve(creatureList.size());
     for (Creature* creature : creatureList)
     {
         if (creature && creature->IsAlive())
-            flamePatches.push_back(creature);
+            guids.push_back(creature->GetGUID());
+    }
+
+    return guids;
+}
+
+std::vector<Unit*> GetFlamePatches(PlayerbotAI* botAI)
+{
+    GuidVector const& guids =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("tk flame patches")->RefGet();
+
+    std::vector<Unit*> flamePatches;
+    flamePatches.reserve(guids.size());
+    for (ObjectGuid const guid : guids)
+    {
+        Unit* flamePatch = botAI->GetUnit(guid);
+        if (flamePatch && flamePatch->IsAlive())
+            flamePatches.push_back(flamePatch);
     }
 
     return flamePatches;
@@ -280,6 +322,28 @@ bool HasWrathOfTheAstromancer(Player* bot)
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
+namespace
+{
+
+GuidVector const& GetLegendaryWeaponGuids(PlayerbotAI* botAI)
+{
+    return botAI->GetAiObjectContext()->GetValue<GuidVector>("tk legendary weapons")->RefGet();
+}
+
+Creature* GetLegendaryWeaponByState(PlayerbotAI* botAI, uint32 weaponEntry, bool alive)
+{
+    for (ObjectGuid const guid : GetLegendaryWeaponGuids(botAI))
+    {
+        Creature* weapon = botAI->GetCreature(guid);
+        if (weapon && weapon->GetEntry() == weaponEntry && weapon->IsAlive() == alive)
+            return weapon;
+    }
+
+    return nullptr;
+}
+
+} // end anonymous namespace
+
 std::unordered_map<uint32, uint32> advisorDpsWaitTimer;
 
 uint32 GetKaelthasTkPhase(Unit* kaelthas)
@@ -300,8 +364,8 @@ bool IsAdvisorActive(Unit* advisor)
         !advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
 }
 
-// (1) First priority is an assistant Warlock (real player or bot)
-// (2) If no assistant Warlock, then look for any Warlock bot
+// (1) First priority is an assistant Warlock (real player or bot).
+// (2) If no assistant Warlock, then look for any Warlock bot.
 Player* GetCapernianTank(Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -329,10 +393,15 @@ Player* GetCapernianTank(Player* bot)
     return fallbackWarlock;
 }
 
+bool IsCapernianTank(Player* bot)
+{
+    return bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot;
+}
+
 // One Hunter will start on Sanguinar in phase 3 (with melee) to apply Armor Disruption from the
 // Netherstrand Longbow.
-// (1) First priority is an assistant Hunter (real player or bot)
-// (2) If no assistant Hunter, then look for any Hunter bot
+// (1) First priority is an assistant Hunter (real player or bot).
+// (2) If no assistant Hunter, then look for any Hunter bot.
 bool IsSanguinarDebuffHunter(Player* bot)
 {
     if (bot->getClass() != CLASS_HUNTER)
@@ -363,24 +432,7 @@ bool IsSanguinarDebuffHunter(Player* bot)
     return fallbackHunter == bot;
 }
 
-// Threat-scoped lookups such as "find target" cannot be used for the weapons. A bot that was dead
-// when they called SetInCombatWithZone, or that died and was resurrected afterwards, holds no
-// threat entry on them and never regains one, so it sees a different set of weapons from everyone
-// else, which leaves the raid disagreeing on the kill order and dragging the icon between two
-// weapons
-Unit* GetLegendaryWeapon(Player* bot, uint32 weaponEntry)
-{
-    std::list<Creature*> weapons;
-    bot->GetCreatureListWithEntryInGrid(weapons, weaponEntry, KAELTHAS_ROOM_SEARCH_DISTANCE);
-
-    for (Creature* weapon : weapons)
-        if (weapon && weapon->IsAlive())
-            return weapon;
-
-    return nullptr;
-}
-
-GuidVector FindDeadLegendaryWeaponGuids(Player* bot)
+GuidVector FindLegendaryWeaponGuids(Player* bot)
 {
     static std::vector<uint32> const weaponEntries = {
         Id(TkNpcs::NPC_STAFF_OF_DISINTEGRATION),
@@ -399,28 +451,33 @@ GuidVector FindDeadLegendaryWeaponGuids(Player* bot)
     guids.reserve(weapons.size());
     for (Creature* weapon : weapons)
     {
-        if (weapon && !weapon->IsAlive())
+        if (weapon)
             guids.push_back(weapon->GetGUID());
     }
 
     return guids;
 }
 
-GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI)
+Unit* GetLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry)
 {
-    return botAI->GetAiObjectContext()->GetValue<GuidVector>("tk dead legendary weapons")->RefGet();
+    return GetLegendaryWeaponByState(botAI, weaponEntry, true);
 }
 
 Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry)
 {
-    for (ObjectGuid const guid : GetDeadLegendaryWeaponGuids(botAI))
+    return GetLegendaryWeaponByState(botAI, weaponEntry, false);
+}
+
+bool HasDeadLegendaryWeapon(PlayerbotAI* botAI)
+{
+    for (ObjectGuid const guid : GetLegendaryWeaponGuids(botAI))
     {
         Creature* weapon = botAI->GetCreature(guid);
-        if (weapon && weapon->GetEntry() == weaponEntry)
-            return weapon;
+        if (weapon && !weapon->IsAlive())
+            return true;
     }
 
-    return nullptr;
+    return false;
 }
 
 bool IsLegendaryWeaponItem(uint32 itemId)
