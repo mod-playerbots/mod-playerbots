@@ -7,12 +7,10 @@
 #include "RampActions.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include "RampShared.h"
 
 using namespace EncounterHelpers;
-
-constexpr uint32 RAMP_MAP_ID = 543;
-static const Position VAZRUDEN_TANK_POSITION = {-1407.405f, 1744.521f, 81.075f};
-static const Position OMOR_TANK_POSITION = {-1132.252f, 1710.033f, 89.914f};
+using namespace RampShared;
 
 // Watchkeeper Gargolmar
 
@@ -154,10 +152,22 @@ bool VazrudenTankPositionBossAction::Execute(Event /*event*/)
 bool VazrudenMarkBossAction::Execute(Event /*event*/)
 {
     Unit* vazruden = AI_VALUE2(Unit*, "find target", "vazruden");
-    if (!vazruden || 
-        !IsMechanicTrackerBot(bot, RAMP_MAP_ID) || 
+    if (!vazruden ||
+        !IsMechanicTrackerBot(bot, RAMP_MAP_ID) ||
         !vazruden->IsAlive())
         return false;
 
     return MarkTargetWithSkull(bot, vazruden);
+}
+
+bool NazanSetTremorTotemAction::Execute(Event /*event*/)
+{
+    return botAI->CanCastSpell(Id(RampSpells::SPELL_TREMOR_TOTEM), bot) &&
+           botAI->CastSpell(Id(RampSpells::SPELL_TREMOR_TOTEM), bot);
+}
+
+bool NazanSetFireResistanceTotemAction::Execute(Event /*event*/)
+{
+    return botAI->CanCastSpell(Id(RampSpells::SPELL_FIRE_RESISTANCE_TOTEM_RANK_1), bot) &&
+           botAI->CastSpell(Id(RampSpells::SPELL_FIRE_RESISTANCE_TOTEM_RANK_1), bot);
 }

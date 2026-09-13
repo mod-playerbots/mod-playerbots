@@ -68,14 +68,14 @@ class OmorMarkFiendishHoundAction : public Action
 class OmorTankPositionBossAction : public AttackAction
 {
     public:
-        OmorTankPositionBossAction(PlayerbotAI* botAI) 
+        OmorTankPositionBossAction(PlayerbotAI* botAI)
             : AttackAction(botAI, "omor tank position boss")
-        {        
+        {
         }
         bool Execute(Event event) override;
 };
 
-// Vazruden
+// Vazruden & Nazan
 
 class VazrudenTankPositionBossAction : public AttackAction
 {
@@ -94,6 +94,22 @@ class VazrudenMarkBossAction : public Action
             : Action(botAI, "vazruden mark boss")
         {
         }
+        bool Execute(Event event) override;
+};
+
+class NazanSetTremorTotemAction : public Action
+{
+    public:
+        NazanSetTremorTotemAction(PlayerbotAI* botAI)
+            : Action(botAI, "nazan set tremor totem") {}
+        bool Execute(Event event) override;
+};
+
+class NazanSetFireResistanceTotemAction : public Action
+{
+    public:
+        NazanSetFireResistanceTotemAction(PlayerbotAI* botAI)
+            : Action(botAI, "nazan set fire resistance totem") {}
         bool Execute(Event event) override;
 };
 

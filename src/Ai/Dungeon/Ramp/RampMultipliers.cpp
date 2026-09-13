@@ -12,6 +12,7 @@
 #include "RampActions.h"
 #include "RampTriggers.h"
 #include "ReachTargetActions.h"
+#include "ShamanActions.h"
 
 using namespace EncounterHelpers;
 
@@ -75,28 +76,44 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
     return 0.0f;
 }
 
-// Vazruden
+// Vazruden & Nazan
 
-float VazrudenDisableTankAssistMultiplier::GetValue(Action* action)
+float NazanSetTremorTotemMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    Unit* vazruden = AI_VALUE2(Unit*, "find target", "vazruden");
-
-    if (!vazruden || !PlayerbotAI::IsTank(bot))
+    if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
+
+    if (!dynamic_cast<CastStrengthOfEarthTotemAction*>(action) &&
+        !dynamic_cast<CastStoneskinTotemAction*>(action) &&
+        !dynamic_cast<CastStoneclawTotemAction*>(action) &&
+        !dynamic_cast<CastEarthbindTotemAction*>(action))
+    {
+        return 1.0f;
+    }
 
     Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
-    if (!nazan)
+    return nazan && !nazan->IsFlying() ? 0.0f : 1.0f;
+}
+
+float NazanSetFireResistanceTotemMultiplier::GetValue(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!nazan->IsFlying())
+    if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    Unit* target = action->GetTarget();
-    if (target->GetName() == "nazan")
-        return 0.0f;
+    if (!dynamic_cast<CastCleansingTotemAction*>(action) &&
+        !dynamic_cast<CastHealingStreamTotemAction*>(action) &&
+        !dynamic_cast<CastManaSpringTotemAction*>(action) &&
+        !dynamic_cast<CastManaTideTotemAction*>(action))
+    {
+        return 1.0f;
+    }
 
-    return 1.0f;
+    Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
+    return nazan && !nazan->IsFlying() ? 0.0f : 1.0f;
 }

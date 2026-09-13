@@ -9,6 +9,8 @@
 
 #include "Multiplier.h"
 
+// Omor the Unscarred
+
 class OmorTreacheryAuraFleeFromPlayersMultiplier : public Multiplier
 {
     public:
@@ -19,11 +21,23 @@ class OmorTreacheryAuraFleeFromPlayersMultiplier : public Multiplier
         float GetValue(Action* action) override;
 };
 
-class VazrudenDisableTankAssistMultiplier : public Multiplier
+// Vazruden & Nazan
+
+class NazanSetTremorTotemMultiplier : public Multiplier
 {
     public:
-        VazrudenDisableTankAssistMultiplier(PlayerbotAI* botAI)
-            : Multiplier(botAI, "vazruden disable tank assist")
+        NazanSetTremorTotemMultiplier(PlayerbotAI* botAI)
+            : Multiplier(botAI, "nazan set tremor totem")
+        {
+        }
+        float GetValue(Action* action) override;
+};
+
+class NazanSetFireResistanceTotemMultiplier : public Multiplier
+{
+    public:
+        NazanSetFireResistanceTotemMultiplier(PlayerbotAI* botAI)
+            : Multiplier(botAI, "nazan set fire resistance totem")
         {
         }
         float GetValue(Action* action) override;

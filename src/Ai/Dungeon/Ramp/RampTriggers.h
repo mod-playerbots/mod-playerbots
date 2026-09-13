@@ -71,7 +71,7 @@ public:
     bool IsActive() override;
 };
 
-// Vazruden
+// Vazruden & Nazan
 
 class VazrudenTankPositionBossTrigger : public Trigger
 {
@@ -85,6 +85,14 @@ class VazrudenBossIsActiveTrigger : public Trigger
 {
 public:
     VazrudenBossIsActiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "vazruden boss is active") {}
+
+    bool IsActive() override;
+};
+
+class NazanBossIsActiveTrigger : public Trigger
+{
+public:
+    NazanBossIsActiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "nazan boss is active") {}
 
     bool IsActive() override;
 };

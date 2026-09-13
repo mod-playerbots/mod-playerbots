@@ -41,6 +41,9 @@ public:
 
         creators["vazruden boss is active"] =
             &TbcDungeonHellfireRampartsTriggerContext::vazruden_boss_is_active;
+
+        creators["nazan boss is active"] =
+            &TbcDungeonHellfireRampartsTriggerContext::nazan_boss_is_active;
     }
 
 private:
@@ -85,6 +88,11 @@ private:
     static Trigger* vazruden_boss_is_active(PlayerbotAI* botAI)
     {
         return new VazrudenBossIsActiveTrigger(botAI);
+    }
+
+    static Trigger* nazan_boss_is_active(PlayerbotAI* botAI)
+    {
+        return new NazanBossIsActiveTrigger(botAI);
     }
 };
 

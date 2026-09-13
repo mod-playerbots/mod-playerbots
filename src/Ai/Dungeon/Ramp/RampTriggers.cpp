@@ -65,7 +65,7 @@ bool OmorTankPositionBossTrigger::IsActive()
     return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "omor the unscarred");
 }
 
-// Vazruden / Nazan
+// Vazruden & Nazan
 
 bool VazrudenTankPositionBossTrigger::IsActive()
 {
@@ -80,4 +80,14 @@ bool VazrudenTankPositionBossTrigger::IsActive()
 bool VazrudenBossIsActiveTrigger::IsActive()
 {
     return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "vazruden");
+}
+
+bool NazanBossIsActiveTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return false;
+
+    Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
+
+    return nazan && !nazan->IsFlying();
 }

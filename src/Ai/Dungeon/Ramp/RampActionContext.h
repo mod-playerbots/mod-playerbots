@@ -32,12 +32,18 @@ class TbcDungeonHellfireRampartsActionContext : public NamedObjectContext<Action
             creators["omor mark fiendish hound"] =
                 &TbcDungeonHellfireRampartsActionContext::omor_mark_fiendish_hound;
 
-            // Vazruden
+            // Vazruden & Nazan
             creators["vazruden tank position boss"] =
                 &TbcDungeonHellfireRampartsActionContext::vazruden_tank_position_boss;
 
             creators["vazruden mark boss"] =
                 &TbcDungeonHellfireRampartsActionContext::vazruden_mark_boss;
+
+            creators["nazan set tremor totem"] =
+                &TbcDungeonHellfireRampartsActionContext::nazan_set_tremor_totem;
+
+            creators["nazan set fire resistance totem"] =
+                &TbcDungeonHellfireRampartsActionContext::nazan_set_fire_resistance_totem;
         }
 
     private:
@@ -68,7 +74,7 @@ class TbcDungeonHellfireRampartsActionContext : public NamedObjectContext<Action
             return new OmorMarkFiendishHoundAction(botAI);
         }
 
-        // Vazruden
+        // Vazruden & Nazan
         static Action* vazruden_tank_position_boss(PlayerbotAI* botAI)
         {
             return new VazrudenTankPositionBossAction(botAI);
@@ -77,6 +83,16 @@ class TbcDungeonHellfireRampartsActionContext : public NamedObjectContext<Action
         static Action* vazruden_mark_boss(PlayerbotAI* botAI)
         {
             return new VazrudenMarkBossAction(botAI);
+        }
+
+        static Action* nazan_set_tremor_totem(PlayerbotAI* botAI)
+        {
+            return new NazanSetTremorTotemAction(botAI);
+        }
+
+        static Action* nazan_set_fire_resistance_totem(PlayerbotAI* botAI)
+        {
+            return new NazanSetFireResistanceTotemAction(botAI);
         }
 };
 
