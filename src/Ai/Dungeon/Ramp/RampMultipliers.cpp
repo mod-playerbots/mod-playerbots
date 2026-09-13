@@ -22,8 +22,7 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
     if (dynamic_cast<OmorRangedSpreadAction*>(action) || 
         dynamic_cast<OmorTreacheryAuraFleeFromPlayersAction*>(action) ||
         dynamic_cast<OmorTreacheryAuraFleeFromTankAction*>(action) ||
-        dynamic_cast<OmorMarkFiendishHoundAction*>(action) ||
-        dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<OmorMarkFiendishHoundAction*>(action) ||        
         dynamic_cast<ReachPartyMemberToHealAction*>(action))
         return 1.0f;
 
@@ -45,6 +44,9 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
 
     // If bot is tank and trying to taunt Omor - continue
     if (PlayerbotAI::IsMainTank(bot) && IsTauntAction(bot, action))
+        return 1.0f;
+
+    if (PlayerbotAI::IsRanged(bot) && dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
     if (bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
