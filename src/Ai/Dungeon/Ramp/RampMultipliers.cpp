@@ -44,19 +44,29 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
     if (PlayerbotAI::IsRanged(bot) && dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    if (PlayerbotAI::IsMelee(bot) &&
-        bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
-        bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
-        return 0.0f;
+    if (PlayerbotAI::IsMelee(bot))
+    {
+        if (bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
+            bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
+            return 0.0f;
 
-    Player* tank = GetGroupMainTank(bot);
+        Player* tank = GetGroupMainTank(bot);
+        if (tank &&
+            (tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
+            tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA))))
+            return 0.0f;
 
-    if (tank &&
-        (tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
-         tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA))))
-        return 0.0f;
+        // Edge-case to try and prevent wipes if there is no main tank, or Omor is focusing a non-tank
+        Unit* omorVictim = omor->GetVictim();
+        if (omorVictim &&
+            (omorVictim->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
+            omorVictim->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA))))
+            return 0.0f;
 
-     return 1.0f;
+        return 1.0f;
+    }    
+
+    return 0.0f;
 }
 
 // Vazruden
