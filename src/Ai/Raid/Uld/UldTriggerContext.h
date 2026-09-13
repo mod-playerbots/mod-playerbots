@@ -27,6 +27,10 @@ public:
         creators["razorscale fuse armor trigger"] = &RaidUlduarTriggerContext::razorscale_fuse_armor_trigger;
         creators["razorscale fire resistance trigger"] = &RaidUlduarTriggerContext::razorscale_fire_resistance_trigger;
         creators["ignis fire resistance trigger"] = &RaidUlduarTriggerContext::ignis_fire_resistance_trigger;
+        creators["xt-002 deconstructor target trigger"] = &RaidUlduarTriggerContext::xt002_deconstructor_target_trigger;
+        creators["xt-002 deconstructor position trigger"] = &RaidUlduarTriggerContext::xt002_deconstructor_position_trigger;
+        creators["xt-002 deconstructor searing light trigger"] = &RaidUlduarTriggerContext::xt002_deconstructor_searing_light_trigger;
+        creators["xt-002 deconstructor gravity bomb trigger"] = &RaidUlduarTriggerContext::xt002_deconstructor_gravity_bomb_trigger;
         creators["iron assembly lightning tendrils trigger"] = &RaidUlduarTriggerContext::iron_assembly_lightning_tendrils_trigger;
         creators["iron assembly overload trigger"] = &RaidUlduarTriggerContext::iron_assembly_overload_trigger;
         creators["iron assembly rune of power trigger"] = &RaidUlduarTriggerContext::iron_assembly_rune_of_power_trigger;
@@ -99,6 +103,10 @@ private:
     static Trigger* razorscale_fuse_armor_trigger(PlayerbotAI* ai) { return new RazorscaleFuseArmorTrigger(ai); }
     static Trigger* razorscale_fire_resistance_trigger(PlayerbotAI* ai) { return new BossFireResistanceTrigger(ai, "razorscale"); }
     static Trigger* ignis_fire_resistance_trigger(PlayerbotAI* ai) { return new BossFireResistanceTrigger(ai, "ignis the furnace master"); }
+    static Trigger* xt002_deconstructor_searing_light_trigger(PlayerbotAI* ai) { return new Xt002DeconstructorSearingLightTrigger(ai); }
+    static Trigger* xt002_deconstructor_gravity_bomb_trigger(PlayerbotAI* ai) { return new Xt002DeconstructorGravityBombTrigger(ai); }
+    static Trigger* xt002_deconstructor_target_trigger(PlayerbotAI* ai) { return new Xt002DeconstructorTargetTrigger(ai); }
+    static Trigger* xt002_deconstructor_position_trigger(PlayerbotAI* ai) { return new Xt002DeconstructorPositionTrigger(ai); }
     static Trigger* iron_assembly_lightning_tendrils_trigger(PlayerbotAI* ai) { return new IronAssemblyLightningTendrilsTrigger(ai); }
     static Trigger* iron_assembly_overload_trigger(PlayerbotAI* ai) { return new IronAssemblyOverloadTrigger(ai); }
     static Trigger* iron_assembly_rune_of_power_trigger(PlayerbotAI* ai) { return new IronAssemblyRuneOfPowerTrigger(ai); }
