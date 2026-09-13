@@ -14,7 +14,7 @@ using namespace EncounterHelpers;
 
 bool GargolmarHellfireWatchersAreActiveTrigger::IsActive()
 {
-    return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "hellfire watcher");
+    return AI_VALUE2(Unit*, "find target", "hellfire watcher");
 }
 
 // Omor the Unscarred
