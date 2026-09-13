@@ -2355,7 +2355,7 @@ bool BGTactics::selectObjective(bool reset)
             bool hasValidTarget = false;
             for (uint32 nodeId : AB_AttackObjectives)
             {
-                uint8 state = ab->GetCapturePointInfo(nodeId)._state;
+                uint8 state = ab->GetCapturePointState(nodeId);
                 if (state == BG_AB_NODE_STATE_NEUTRAL ||
                     (team == TEAM_ALLIANCE &&
                      (state == BG_AB_NODE_STATE_HORDE_OCCUPIED || state == BG_AB_NODE_STATE_HORDE_CONTESTED)) ||
@@ -2400,7 +2400,7 @@ bool BGTactics::selectObjective(bool reset)
                 float closestDist = FLT_MAX;
                 for (uint32 nodeId : AB_AttackObjectives)
                 {
-                    uint8 state = ab->GetCapturePointInfo(nodeId)._state;
+                    uint8 state = ab->GetCapturePointState(nodeId);
 
                     bool isContested = (team == TEAM_ALLIANCE && state == BG_AB_NODE_STATE_HORDE_CONTESTED) ||
                                        (team == TEAM_HORDE && state == BG_AB_NODE_STATE_ALLY_CONTESTED);
@@ -2435,7 +2435,7 @@ bool BGTactics::selectObjective(bool reset)
 
                     for (uint32 nodeId : AB_AttackObjectives)
                     {
-                        uint8 state = ab->GetCapturePointInfo(nodeId)._state;
+                        uint8 state = ab->GetCapturePointState(nodeId);
 
                         bool isNeutral = state == BG_AB_NODE_STATE_NEUTRAL;
                         bool isEnemyOccupied = (team == TEAM_ALLIANCE && state == BG_AB_NODE_STATE_HORDE_OCCUPIED) ||
@@ -2498,7 +2498,7 @@ bool BGTactics::selectObjective(bool reset)
             EYBotStrategy strategy = (team == TEAM_ALLIANCE) ? strategyAlliance : strategyHorde;
 
             auto IsOwned = [&](uint32 nodeId) -> bool
-            { return eyeOfTheStormBG->GetCapturePointInfo(nodeId)._ownerTeamId == team; };
+            { return eyeOfTheStormBG->GetCapturePointOwner(nodeId) == team; };
 
             uint8 defendersProhab = 4;
             switch (strategy)

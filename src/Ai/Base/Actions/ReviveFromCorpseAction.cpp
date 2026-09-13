@@ -239,7 +239,7 @@ GraveyardStruct const* SpiritHealerAction::GetGrave(bool startZone)
                                           travelPos.GetPositionY(), travelPos.GetPositionZ());
                 ClosestGrave = sGraveyard->GetClosestGraveyard(travelPos.GetMapId(), travelPos.GetPositionX(), travelPos.GetPositionY(),
                                                                travelPos.GetPositionZ(), bot->GetTeamId(), areaId, zoneId,
-                                                               bot->getClass() == CLASS_DEATH_KNIGHT);
+                                                               bot->IsClass(CLASS_DEATH_KNIGHT, CLASS_CONTEXT_GRAVEYARD));
 
                 if (ClosestGrave)
                     return ClosestGrave;
