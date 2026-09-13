@@ -46,8 +46,8 @@ bool OmorTankHasTreacheryAuraTrigger::IsActive()
     if (!omorVictim || omorVictim->GetGUID() != bot->GetGUID())
         return false;
 
-    return  bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
-            bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA));
+    return omorVictim->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
+           omorVictim->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA));
 }
 
 bool OmorRangedSpreadTrigger::IsActive()
