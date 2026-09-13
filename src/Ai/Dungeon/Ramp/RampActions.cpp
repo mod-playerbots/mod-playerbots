@@ -52,18 +52,18 @@ bool OmorTreacheryAuraFleeFromTankAction::Execute(Event /*event*/)
     if (!omor)
         return false;
 
-    Unit* omorVictim = omor->GetVictim();
+    Unit* tank = GetGroupMainTank(bot);
 
-    if (!omorVictim || omorVictim->GetGUID() == bot->GetGUID())
+    if (!tank)
         return false;
 
     constexpr float safeDistance = 20.0f;
 
-    if (bot->GetExactDist2d(omorVictim) >= safeDistance)
+    if (bot->GetExactDist2d(tank) >= safeDistance)
         return false;
 
     bot->CastStop();
-    return MoveAway(omorVictim, safeDistance);
+    return MoveAway(tank, safeDistance);
 }
 
 // Ranged spread out 20 yards from each other
