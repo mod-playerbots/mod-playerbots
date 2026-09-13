@@ -35,7 +35,7 @@ public:
         creators["omor tank position boss"] =
             &TbcDungeonHellfireRampartsTriggerContext::omor_tank_position_boss;
 
-        // Vazruden
+        // Vazruden & Nazan
         creators["vazruden tank position boss"] =
             &TbcDungeonHellfireRampartsTriggerContext::vazruden_tank_position_boss;
 
@@ -76,13 +76,16 @@ private:
         return new OmorTankPositionBossTrigger(botAI);
     }
 
-    // Vazruden
+    // Vazruden & Nazan
     static Trigger* vazruden_tank_position_boss(PlayerbotAI* botAI)
     {
         return new VazrudenTankPositionBossTrigger(botAI);
     }
 
-    static Trigger* vazruden_boss_is_active(PlayerbotAI* botAI) { return new VazrudenBossIsActiveTrigger(botAI); }
+    static Trigger* vazruden_boss_is_active(PlayerbotAI* botAI)
+    {
+        return new VazrudenBossIsActiveTrigger(botAI);
+    }
 };
 
 #endif

@@ -84,7 +84,7 @@ float VazrudenDisableTankAssistMultiplier::GetValue(Action* action)
 
     Unit* vazruden = AI_VALUE2(Unit*, "find target", "vazruden");
 
-    if (!vazruden)
+    if (!vazruden || !PlayerbotAI::IsTank(bot))
         return 1.0f;
 
     Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
