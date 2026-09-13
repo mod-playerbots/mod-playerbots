@@ -23,7 +23,8 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
     if (dynamic_cast<OmorRangedSpreadAction*>(action) ||
         dynamic_cast<OmorTreacheryAuraFleeFromPlayersAction*>(action) ||
         dynamic_cast<OmorTreacheryAuraFleeFromTankAction*>(action) ||
-        dynamic_cast<OmorMarkFiendishHoundAction*>(action))
+        dynamic_cast<OmorMarkFiendishHoundAction*>(action) ||
+        dynamic_cast<OmorTankPositionBossAction*>(action))
         return 1.0f;
 
     bool const isMovementSpell = dynamic_cast<CastReachTargetSpellAction*>(action) ||

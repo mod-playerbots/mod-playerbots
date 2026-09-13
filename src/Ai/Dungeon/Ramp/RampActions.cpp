@@ -102,7 +102,7 @@ bool OmorTankPositionBossAction::Execute(Event /*event*/)
         return false;
 
     Position const& position = OMOR_TANK_POSITION;
-    constexpr float arrivalDist = 5.0f;
+    constexpr float arrivalDist = 3.0f;
     float distToPosition = bot->GetExactDist2d(position);
 
     if (distToPosition <= arrivalDist)
