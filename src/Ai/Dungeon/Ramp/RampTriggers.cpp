@@ -57,7 +57,7 @@ bool OmorRangedSpreadTrigger::IsActive()
 
 bool OmorFiendishHoundIsActiveTrigger::IsActive()
 {
-    return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "fiendish hound");
+    return AI_VALUE2(Unit*, "find target", "fiendish hound");
 }
 
 // Vazruden

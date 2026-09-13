@@ -10,6 +10,7 @@
 #include "MageActions.h"
 #include "Playerbots.h"
 #include "RampActions.h"
+#include "RampTriggers.h"
 #include "ReachTargetActions.h"
 
 using namespace EncounterHelpers;
@@ -22,7 +23,8 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
         dynamic_cast<OmorTreacheryAuraFleeFromPlayersAction*>(action) ||
         dynamic_cast<OmorTreacheryAuraFleeFromTankAction*>(action) ||
         dynamic_cast<OmorMarkFiendishHoundAction*>(action) ||
-        dynamic_cast<AttackAction*>(action))
+        dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<ReachPartyMemberToHealAction*>(action))
         return 1.0f;
 
     bool const isMovementSpell = dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -45,7 +47,16 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
     if (PlayerbotAI::IsMainTank(bot) && IsTauntAction(bot, action))
         return 1.0f;
 
-     return 0.0f;
+    if (bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
+        bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
+        return 0.0f;
+
+    if (PlayerbotAI::IsMelee(bot) &&
+        (omorVictim->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
+         omorVictim->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA))))
+        return 0.0f;
+
+     return 1.0f;
 }
 
 // Vazruden
