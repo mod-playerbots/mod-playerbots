@@ -27,6 +27,9 @@ inline constexpr float BOSS_ENGAGED_HEALTH_PCT = 95.0f;
 inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
 
 bool IsEncounterInProgress(Player* bot, uint32 mapId);
+bool CanTakeStepTowards(
+    Player* bot, float destinationX, float destinationY, float moveDist,
+    float& stepX, float& stepY, float& stepZ);
 bool GetStepToPosition(
     Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
     float& stepY, bool& backwards);
