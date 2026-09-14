@@ -125,7 +125,7 @@ float NazanSetFireResistanceAuraMultiplier::GetValue(Action* action)
         !dynamic_cast<CastRetributionAuraAction*>(action) &&
         !dynamic_cast<CastFrostResistanceAuraAction*>(action) &&
         !dynamic_cast<CastCrusaderAuraAction*>(action) &&
-        !dynamic_cast<CastCrusaderAuraAction*>(action))
+        !dynamic_cast<CastSanctityAuraAction*>(action))
     {
         return 1.0f;
     }
