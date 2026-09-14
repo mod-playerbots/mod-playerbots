@@ -12,7 +12,7 @@
 class OmorBossHelper
 {
 public:
-    bool HasTreacheryAura(const Player* bot);
+    bool HasTreacheryAura(Player const* bot);
 };
 
 #endif

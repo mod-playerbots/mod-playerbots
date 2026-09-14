@@ -10,7 +10,7 @@
 
 using namespace RampShared;
 
-bool OmorBossHelper::HasTreacheryAura(const Player* bot) {
+bool OmorBossHelper::HasTreacheryAura(Player const* bot) {
     return bot->HasAura(static_cast<uint32>(RampSpells::SPELL_BANE_OF_TREACHERY)) ||
            bot->HasAura(static_cast<uint32>(RampSpells::SPELL_TREACHEROUS_AURA));
 }
