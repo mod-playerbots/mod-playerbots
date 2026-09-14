@@ -44,6 +44,9 @@ public:
 
         creators["nazan boss fire resistance totem"] =
             &TbcDungeonHellfireRampartsTriggerContext::nazan_boss_fire_resistance_totem;
+
+        creators["nazan boss fire resistance aura"] =
+            &TbcDungeonHellfireRampartsTriggerContext::nazan_boss_fire_resistance_aura;
     }
 
 private:
@@ -93,6 +96,11 @@ private:
     static Trigger* nazan_boss_fire_resistance_totem(PlayerbotAI* botAI)
     {
         return new NazanBossFireResistanceTotemTrigger(botAI);
+    }
+
+    static Trigger* nazan_boss_fire_resistance_aura(PlayerbotAI* botAI)
+    {
+        return new NazanBossFireResistanceAuraTrigger(botAI);
     }
 };
 

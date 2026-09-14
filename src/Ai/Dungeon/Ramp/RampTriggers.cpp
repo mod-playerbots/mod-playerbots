@@ -107,3 +107,16 @@ bool NazanBossFireResistanceTotemTrigger::IsActive()
 
     return !AI_VALUE2(bool, "has totem", "fire resistance totem");
 }
+
+bool NazanBossFireResistanceAuraTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_PALADIN)
+        return false;
+
+    Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
+
+    if (!nazan || nazan->IsFlying())
+        return false;
+
+    return botAI->HasAura("fire resistance aura", bot);
+}

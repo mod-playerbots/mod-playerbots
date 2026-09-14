@@ -38,6 +38,9 @@ void TbcDungeonHellfireRampartsStrategy::InitTriggers(std::vector<TriggerNode*>&
 
     triggers.push_back(new TriggerNode("nazan boss fire resistance totem",
                                         {NextAction("nazan set fire resistance totem", ACTION_RAID)}));
+
+    triggers.push_back(new TriggerNode("nazan boss fire resistance aura",
+                                       {NextAction("nazan set fire resistance aura", ACTION_RAID)}));
 }
 
 void TbcDungeonHellfireRampartsStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

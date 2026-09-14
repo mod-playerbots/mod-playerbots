@@ -99,4 +99,12 @@ public:
     bool IsActive() override;
 };
 
+class NazanBossFireResistanceAuraTrigger : public Trigger
+{
+public:
+    NazanBossFireResistanceAuraTrigger(PlayerbotAI* botAI) : Trigger(botAI, "nazan boss fire resistance aura") {}
+
+    bool IsActive() override;
+};
+
 #endif

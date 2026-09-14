@@ -91,7 +91,9 @@ class NazanSetTremorTotemAction : public Action
 {
 public:
     NazanSetTremorTotemAction(PlayerbotAI* botAI)
-        : Action(botAI, "nazan set tremor totem") {}
+        : Action(botAI, "nazan set tremor totem")
+    {
+    }
     bool Execute(Event event) override;
 };
 
@@ -99,7 +101,18 @@ class NazanSetFireResistanceTotemAction : public Action
 {
 public:
     NazanSetFireResistanceTotemAction(PlayerbotAI* botAI)
-        : Action(botAI, "nazan set fire resistance totem") {}
+        : Action(botAI, "nazan set fire resistance totem")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class NazanSetFireResistanceAuraAction : public Action
+{
+public:
+    NazanSetFireResistanceAuraAction(PlayerbotAI* botAI) : Action(botAI, "nazan set fire resistance aura")
+    {
+    }
     bool Execute(Event event) override;
 };
 
