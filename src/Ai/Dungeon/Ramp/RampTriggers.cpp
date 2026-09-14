@@ -118,5 +118,5 @@ bool NazanBossFireResistanceAuraTrigger::IsActive()
     if (!nazan || nazan->IsFlying())
         return false;
 
-    return botAI->HasAura("fire resistance aura", bot);
+    return !botAI->HasAura("fire resistance aura", bot);
 }
