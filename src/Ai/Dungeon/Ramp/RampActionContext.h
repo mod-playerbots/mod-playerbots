@@ -51,8 +51,7 @@ public:
 
 private:
     // Watchkeeper Gargolmar
-    static Action* gargolmar_mark_hellfire_watchers(PlayerbotAI* botAI)
-    {
+    static Action* gargolmar_mark_hellfire_watchers(PlayerbotAI* botAI) {
         return new GargolmarMarkHellfireWatchersAction(botAI);
     }
 
