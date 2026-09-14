@@ -47,4 +47,14 @@ public:
     float GetValue(Action* action) override;
 };
 
+class NazanSetFireResistanceAuraMultiplier : public Multiplier
+{
+public:
+    NazanSetFireResistanceAuraMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "nazan set fire resistance aura")
+    {
+    }
+    float GetValue(Action* action) override;
+};
+
 #endif

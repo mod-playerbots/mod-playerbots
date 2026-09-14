@@ -6,6 +6,7 @@
 
 #include "RampMultipliers.h"
 #include "EncounterHelpers.h"
+#include "PaladinActions.h"
 #include "Playerbots.h"
 #include "RampActions.h"
 #include "RampBossHelper.h"
@@ -102,6 +103,29 @@ float NazanSetFireResistanceTotemMultiplier::GetValue(Action* action)
         !dynamic_cast<CastHealingStreamTotemAction*>(action) &&
         !dynamic_cast<CastManaSpringTotemAction*>(action) &&
         !dynamic_cast<CastManaTideTotemAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
+    return nazan && !nazan->IsFlying() ? 0.0f : 1.0f;
+}
+
+float NazanSetFireResistanceAuraMultiplier::GetValue(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (bot->getClass() != CLASS_PALADIN)
+        return 1.0f;
+
+    if (!dynamic_cast<CastDevotionAuraAction*>(action) &&
+        !dynamic_cast<CastConcentrationAuraAction*>(action) &&
+        !dynamic_cast<CastShadowResistanceAuraAction*>(action) &&
+        !dynamic_cast<CastRetributionAuraAction*>(action) &&
+        !dynamic_cast<CastFrostResistanceAuraAction*>(action) &&
+        !dynamic_cast<CastCrusaderAuraAction*>(action) &&
+        !dynamic_cast<CastCrusaderAuraAction*>(action))
     {
         return 1.0f;
     }

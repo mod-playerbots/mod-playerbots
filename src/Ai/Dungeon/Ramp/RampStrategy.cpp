@@ -50,4 +50,6 @@ void TbcDungeonHellfireRampartsStrategy::InitMultipliers(std::vector<Multiplier*
     multipliers.push_back(new NazanSetTremorTotemMultiplier(botAI));
 
     multipliers.push_back(new NazanSetFireResistanceTotemMultiplier(botAI));
+
+    multipliers.push_back(new NazanSetFireResistanceAuraMultiplier(botAI));
 }
