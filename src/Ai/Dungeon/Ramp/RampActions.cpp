@@ -22,28 +22,23 @@ bool GargolmarMarkHellfireWatchersAction::Execute(Event /*event*/)
     if (!watcher)
         return false;
 
-    if (!IsMechanicTrackerBot(bot, RAMP_MAP_ID))
-        return false;
-
     return MarkTargetWithSkull(bot, watcher);
 }
 
 // Omor the Unscarred
 
-// Flee 20 yards from other players if you have Treacherous Aura or Bane of Treachery
+// Flee from other players if you have Treacherous Aura or Bane of Treachery
 bool OmorTreacheryAuraFleeFromPlayersAction::Execute(Event /*event*/)
 {
-    constexpr float safeDistance = 20.0f;
-
-    if (!GetNearestPlayerInRadius(bot, safeDistance))
+    if (!GetNearestPlayerInRadius(bot, OMOR_TREACHERY_AURA_SAFE_DISTANCE))
         return false;
 
     bot->CastStop();
 
-    return MoveFromGroup(safeDistance);
+    return MoveFromGroup(OMOR_TREACHERY_AURA_SAFE_DISTANCE);
 }
 
-// Nearby bots should flee 20 yards from the tank if it has Treacherous Aura or Bane of Treachery
+// Nearby bots should flee from the tank if it has Treacherous Aura or Bane of Treachery
 bool OmorTreacheryAuraFleeFromTankAction::Execute(Event /*event*/)
 {
     Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
@@ -56,19 +51,17 @@ bool OmorTreacheryAuraFleeFromTankAction::Execute(Event /*event*/)
     if (!tank)
         return false;
 
-    constexpr float safeDistance = 20.0f;
-
-    if (bot->GetExactDist2d(tank) >= safeDistance)
+    if (bot->GetExactDist2d(tank) >= OMOR_TREACHERY_AURA_SAFE_DISTANCE)
         return false;
 
     bot->CastStop();
-    return MoveAway(tank, safeDistance);
+    return MoveAway(tank, OMOR_TREACHERY_AURA_SAFE_DISTANCE);
 }
 
-// Ranged spread out 20 yards from each other
+// Ranged spread out from each other
 bool OmorRangedSpreadAction::Execute(Event /*event*/)
 {
-    constexpr float minDistance = 20.0f;
+    constexpr float minDistance = OMOR_TREACHERY_AURA_SAFE_DISTANCE;
 
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
         return FleePosition(nearestPlayer->GetPosition(), minDistance);
@@ -83,37 +76,7 @@ bool OmorMarkFiendishHoundAction::Execute(Event /*event*/)
     if (!hound)
         return false;
 
-    if (!IsMechanicTrackerBot(bot, RAMP_MAP_ID))
-        return false;
-
     return MarkTargetWithSkull(bot, hound);
-}
-
-// Tank Omor towards the middle of the platform
-bool OmorTankPositionBossAction::Execute(Event /*event*/)
-{
-    Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
-    if (!omor)
-        return false;
-
-    if (omor->GetVictim() != bot || !bot->IsWithinMeleeRange(omor) || bot->GetHealthPct() <= 25.0f)
-        return false;
-
-    Position const& position = OMOR_TANK_POSITION;
-    constexpr float arrivalDist = 3.0f;
-    float distToPosition = bot->GetExactDist2d(position);
-
-    if (distToPosition <= arrivalDist)
-        return false;
-
-    float moveX;
-    float moveY;
-    bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDist, omor, moveX, moveY, backwards))
-        return false;
-
-    return MoveTo(RAMP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-                  MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // Vazruden & Nazan
@@ -152,9 +115,7 @@ bool VazrudenTankPositionBossAction::Execute(Event /*event*/)
 bool VazrudenMarkBossAction::Execute(Event /*event*/)
 {
     Unit* vazruden = AI_VALUE2(Unit*, "find target", "vazruden");
-    if (!vazruden ||
-        !IsMechanicTrackerBot(bot, RAMP_MAP_ID) ||
-        !vazruden->IsAlive())
+    if (!vazruden || !vazruden->IsAlive())
         return false;
 
     return MarkTargetWithSkull(bot, vazruden);
@@ -163,15 +124,15 @@ bool VazrudenMarkBossAction::Execute(Event /*event*/)
 // Shamans use Tremor totem when Nazan is active
 bool NazanSetTremorTotemAction::Execute(Event /*event*/)
 {
-    return botAI->CanCastSpell(Id(RampSpells::SPELL_TREMOR_TOTEM), bot) &&
-           botAI->CastSpell(Id(RampSpells::SPELL_TREMOR_TOTEM), bot) &&
-           !AI_VALUE2(bool, "has totem", "tremor totem");
+    return !AI_VALUE2(bool, "has totem", "tremor totem") &&
+            botAI->CanCastSpell("tremor totem", bot) &&
+            botAI->CastSpell("tremor totem", bot);
 }
 
 // Shamans use Fire Resistance totem when Nazan is active
 bool NazanSetFireResistanceTotemAction::Execute(Event /*event*/)
 {
-    return botAI->CanCastSpell(Id(RampSpells::SPELL_FIRE_RESISTANCE_TOTEM_RANK_1), bot) &&
-           botAI->CastSpell(Id(RampSpells::SPELL_FIRE_RESISTANCE_TOTEM_RANK_1), bot) &&
-           !AI_VALUE2(bool, "has totem", "fire resistance totem");
+    return !AI_VALUE2(bool, "has totem", "fire resistance totem") &&
+            botAI->CanCastSpell("fire resistance totem", bot) &&
+            botAI->CastSpell("fire resistance totem", bot);
 }

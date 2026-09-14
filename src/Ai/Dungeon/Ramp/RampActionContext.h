@@ -20,14 +20,14 @@ class TbcDungeonHellfireRampartsActionContext : public NamedObjectContext<Action
                 &TbcDungeonHellfireRampartsActionContext::gargolmar_mark_hellfire_watchers;
 
             // Omor the Unscarred
+            creators["omor ranged spread"] =
+                &TbcDungeonHellfireRampartsActionContext::omor_ranged_spread;
+
             creators["omor treachery aura flee from players"] =
                 &TbcDungeonHellfireRampartsActionContext::omor_treachery_aura_flee_from_players;
 
             creators["omor treachery aura flee from tank"] =
                 &TbcDungeonHellfireRampartsActionContext::omor_treachery_aura_flee_from_tank;
-
-            creators["omor ranged spread"] =
-                &TbcDungeonHellfireRampartsActionContext::omor_ranged_spread;
 
             creators["omor mark fiendish hound"] =
                 &TbcDungeonHellfireRampartsActionContext::omor_mark_fiendish_hound;
@@ -54,6 +54,11 @@ class TbcDungeonHellfireRampartsActionContext : public NamedObjectContext<Action
         }
 
         // Omor the Unscarred
+        static Action* omor_ranged_spread(PlayerbotAI* botAI)
+        {
+            return new OmorRangedSpreadAction(botAI);
+        }
+
         static Action* omor_treachery_aura_flee_from_players(PlayerbotAI* botAI)
         {
             return new OmorTreacheryAuraFleeFromPlayersAction(botAI);
@@ -62,11 +67,6 @@ class TbcDungeonHellfireRampartsActionContext : public NamedObjectContext<Action
         static Action* omor_treachery_aura_flee_from_tank(PlayerbotAI* botAI)
         {
             return new OmorTreacheryAuraFleeFromTankAction(botAI);
-        }
-
-        static Action* omor_ranged_spread(PlayerbotAI* botAI)
-        {
-            return new OmorRangedSpreadAction(botAI);
         }
 
         static Action* omor_mark_fiendish_hound(PlayerbotAI* botAI)

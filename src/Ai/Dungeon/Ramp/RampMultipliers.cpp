@@ -11,7 +11,6 @@
 #include "Playerbots.h"
 #include "RampActions.h"
 #include "RampShared.h"
-#include "RampTriggers.h"
 #include "ReachTargetActions.h"
 #include "ShamanActions.h"
 
@@ -22,12 +21,14 @@ using namespace RampShared;
 
 float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
 {
-    // Allow all Omor fight specific actions
+    // Allow all Omor fight specific actions & any flee/runaway actions
     if (dynamic_cast<OmorRangedSpreadAction*>(action) ||
         dynamic_cast<OmorTreacheryAuraFleeFromPlayersAction*>(action) ||
         dynamic_cast<OmorTreacheryAuraFleeFromTankAction*>(action) ||
         dynamic_cast<OmorMarkFiendishHoundAction*>(action) ||
-        dynamic_cast<OmorTankPositionBossAction*>(action))
+        dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<FleeWithPetAction*>(action) ||
+        dynamic_cast<RunAwayAction*>(action))
         return 1.0f;
 
     bool const isMovementSpell = dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -73,7 +74,7 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    return 0.0f;
+    return 1.0f;
 }
 
 // Vazruden & Nazan

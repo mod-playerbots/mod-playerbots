@@ -32,9 +32,6 @@ public:
         creators["omor fiendish hound is active"] =
             &TbcDungeonHellfireRampartsTriggerContext::omor_fiendish_hound_is_active;
 
-        creators["omor tank position boss"] =
-            &TbcDungeonHellfireRampartsTriggerContext::omor_tank_position_boss;
-
         // Vazruden & Nazan
         creators["vazruden tank position boss"] =
             &TbcDungeonHellfireRampartsTriggerContext::vazruden_tank_position_boss;
@@ -75,11 +72,6 @@ private:
     static Trigger* omor_fiendish_hound_is_active(PlayerbotAI* botAI)
     {
         return new OmorFiendishHoundIsActiveTrigger(botAI);
-    }
-
-    static Trigger* omor_tank_position_boss(PlayerbotAI* botAI)
-    {
-        return new OmorTankPositionBossTrigger(botAI);
     }
 
     // Vazruden & Nazan

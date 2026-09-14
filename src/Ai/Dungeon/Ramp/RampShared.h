@@ -11,8 +11,6 @@
 #include "Position.h"
 #include <type_traits>
 
-using namespace std;
-
 namespace RampShared
 {
 
@@ -24,16 +22,15 @@ constexpr uint32 Id(T value)
 
 enum class RampSpells : uint32
 {
-    SPELL_TREMOR_TOTEM                  = 8143,
-    SPELL_FIRE_RESISTANCE_TOTEM_RANK_1  = 8184,
-    SPELL_TREACHEROUS_AURA              = 30695,
-    SPELL_BANE_OF_TREACHERY             = 37566,
+    SPELL_TREACHEROUS_AURA  = 30695,
+    SPELL_BANE_OF_TREACHERY = 37566,
 };
 
 inline constexpr uint32 RAMP_MAP_ID = 543;
 
 inline Position const VAZRUDEN_TANK_POSITION   = { -1407.405f, 1744.521f, 81.075f };
-inline Position const OMOR_TANK_POSITION = { -1132.252f, 1710.033f, 89.914f };
+
+inline constexpr float OMOR_TREACHERY_AURA_SAFE_DISTANCE = 20.0f;
 
 }
 

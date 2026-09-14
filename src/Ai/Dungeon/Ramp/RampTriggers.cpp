@@ -11,13 +11,13 @@
 
 using namespace EncounterHelpers;
 using namespace RampShared;
-using namespace std;
 
 // Watchkeeper Gargolmar
 
 bool GargolmarHellfireWatchersAreActiveTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "hellfire watcher");
+    return  IsMechanicTrackerBot(bot, RAMP_MAP_ID) &&
+            AI_VALUE2(Unit*, "find target", "hellfire watcher");
 }
 
 // Omor the Unscarred
@@ -55,17 +55,15 @@ bool OmorTankHasTreacheryAuraTrigger::IsActive()
 
 bool OmorRangedSpreadTrigger::IsActive()
 {
-    return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "omor the unscarred");
+    return  PlayerbotAI::IsRanged(bot) &&
+            GetNearestPlayerInRadius(bot, OMOR_TREACHERY_AURA_SAFE_DISTANCE) &&
+            AI_VALUE2(Unit*, "find target", "omor the unscarred");
 }
 
 bool OmorFiendishHoundIsActiveTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "fiendish hound");
-}
-
-bool OmorTankPositionBossTrigger::IsActive()
-{
-    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "omor the unscarred");
+    return  IsMechanicTrackerBot(bot, RAMP_MAP_ID) &&
+            AI_VALUE2(Unit*, "find target", "fiendish hound");
 }
 
 // Vazruden & Nazan
@@ -75,14 +73,15 @@ bool VazrudenTankPositionBossTrigger::IsActive()
     Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
 
     return
-        PlayerbotAI::IsTank(bot) &&
+        PlayerbotAI::IsMainTank(bot) &&
         AI_VALUE2(Unit*, "find target", "vazruden") &&
         (!nazan || nazan->IsFlying());
 }
 
 bool VazrudenBossIsActiveTrigger::IsActive()
 {
-    return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "vazruden");
+    return  IsMechanicTrackerBot(bot, RAMP_MAP_ID) &&
+            AI_VALUE2(Unit*, "find target", "vazruden");
 }
 
 bool NazanBossTremorTotemTrigger::IsActive()
@@ -93,6 +92,10 @@ bool NazanBossTremorTotemTrigger::IsActive()
     Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
 
     if (!nazan || nazan->IsFlying())
+        return false;
+
+    Map* map = nazan->GetMap();
+    if (!map || !map->IsHeroic())
         return false;
 
     return !AI_VALUE2(bool, "has totem", "tremor totem");
