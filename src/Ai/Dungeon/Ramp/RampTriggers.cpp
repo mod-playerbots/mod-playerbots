@@ -7,6 +7,7 @@
 #include "RampTriggers.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include "RampBossHelper.h"
 #include "RampShared.h"
 
 using namespace EncounterHelpers;
@@ -24,33 +25,26 @@ bool GargolmarHellfireWatchersAreActiveTrigger::IsActive()
 
 bool OmorTreacheryAuraTrigger::IsActive()
 {
-    Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
-
-    if (!omor)
+    if (!AI_VALUE2(Unit*, "find target", "omor the unscarred"))
         return false;
 
-    return (!PlayerbotAI::IsMainTank(bot) &&
-            (bot->HasAura(static_cast<uint32>(RampSpells::SPELL_BANE_OF_TREACHERY)) ||
-                                              bot->HasAura(static_cast<uint32>(RampSpells::SPELL_TREACHEROUS_AURA))));
+    if (!helper.HasTreacheryAura(bot))
+        return false;
+
+    return !PlayerbotAI::IsMainTank(bot);
 }
 
 bool OmorTankHasTreacheryAuraTrigger::IsActive()
 {
-    Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
-
-    if (!omor)
-        return false;
-
-    if (PlayerbotAI::IsMainTank(bot))
+    if (!AI_VALUE2(Unit*, "find target", "omor the unscarred"))
         return false;
 
     Player* tank = GetGroupMainTank(bot);
 
-    if (!tank)
+    if (!tank || tank == bot)
         return false;
 
-    return tank->HasAura(static_cast<uint32>(RampSpells::SPELL_BANE_OF_TREACHERY)) ||
-           tank->HasAura(static_cast<uint32>(RampSpells::SPELL_TREACHEROUS_AURA));
+    return helper.HasTreacheryAura(tank);
 }
 
 bool OmorRangedSpreadTrigger::IsActive()

@@ -9,8 +9,6 @@
 
 #include "Strategy.h"
 
-using namespace std;
-
 class TbcDungeonHellfireRampartsStrategy : public Strategy
 {
 public:
@@ -18,7 +16,7 @@ public:
     {
     }
 
-    string const getName() override { return "tbc-ramp"; }
+    std::string const getName() override { return "tbc-ramp"; }
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     void InitMultipliers(std::vector<Multiplier*>& multipliers) override;

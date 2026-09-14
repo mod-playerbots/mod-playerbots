@@ -34,7 +34,7 @@ void TbcDungeonHellfireRampartsStrategy::InitTriggers(std::vector<TriggerNode*>&
                                         {NextAction("vazruden mark boss", ACTION_RAID + 1)}));
 
     triggers.push_back(new TriggerNode("nazan boss tremor totem",
-                                        {NextAction("nazan set tremor totem", ACTION_RAID)}));
+                                        {NextAction("nazan set tremor totem", ACTION_RAID + 1)}));
 
     triggers.push_back(new TriggerNode("nazan boss fire resistance totem",
                                         {NextAction("nazan set fire resistance totem", ACTION_RAID)}));

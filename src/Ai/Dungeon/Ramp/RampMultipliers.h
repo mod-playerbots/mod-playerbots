@@ -8,39 +8,43 @@
 #define PLAYERBOTS_RAMPMULTIPLIERS_H
 
 #include "Multiplier.h"
+#include "RampBossHelper.h"
 
 // Omor the Unscarred
 
 class OmorTreacheryAuraFleeFromPlayersMultiplier : public Multiplier
 {
-    public:
-        OmorTreacheryAuraFleeFromPlayersMultiplier(PlayerbotAI* botAI)
-            : Multiplier(botAI, "omor treachery aura flee from players")
-        {
-        }
-        float GetValue(Action* action) override;
+public:
+    OmorTreacheryAuraFleeFromPlayersMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "omor treachery aura flee from players")
+    {
+    }
+    float GetValue(Action* action) override;
+
+private:
+    OmorBossHelper helper;
 };
 
 // Vazruden & Nazan
 
 class NazanSetTremorTotemMultiplier : public Multiplier
 {
-    public:
-        NazanSetTremorTotemMultiplier(PlayerbotAI* botAI)
-            : Multiplier(botAI, "nazan set tremor totem")
-        {
-        }
-        float GetValue(Action* action) override;
+public:
+    NazanSetTremorTotemMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "nazan set tremor totem")
+    {
+    }
+    float GetValue(Action* action) override;
 };
 
 class NazanSetFireResistanceTotemMultiplier : public Multiplier
 {
-    public:
-        NazanSetFireResistanceTotemMultiplier(PlayerbotAI* botAI)
-            : Multiplier(botAI, "nazan set fire resistance totem")
-        {
-        }
-        float GetValue(Action* action) override;
+public:
+    NazanSetFireResistanceTotemMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "nazan set fire resistance totem")
+    {
+    }
+    float GetValue(Action* action) override;
 };
 
 #endif

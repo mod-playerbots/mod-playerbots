@@ -8,6 +8,7 @@
 #define PLAYERBOTS_RAMPTRIGGERS_H
 
 #include "Trigger.h"
+#include "RampBossHelper.h"
 
 // Watchkeeper Gargolmar
 
@@ -30,6 +31,9 @@ public:
     OmorTreacheryAuraTrigger(PlayerbotAI* botAI) : Trigger(botAI, "omor treachery aura") {}
 
     bool IsActive() override;
+
+private:
+    OmorBossHelper helper;
 };
 
 class OmorTankHasTreacheryAuraTrigger : public Trigger
@@ -38,6 +42,9 @@ public:
     OmorTankHasTreacheryAuraTrigger(PlayerbotAI* botAI) : Trigger(botAI, "omor tank has treachery aura") {}
 
     bool IsActive() override;
+
+private:
+    OmorBossHelper helper;
 };
 
 class OmorRangedSpreadTrigger : public Trigger

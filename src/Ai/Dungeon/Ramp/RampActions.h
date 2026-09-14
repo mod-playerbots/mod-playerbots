@@ -15,92 +15,92 @@
 
 class GargolmarMarkHellfireWatchersAction : public Action
 {
-    public:
-        GargolmarMarkHellfireWatchersAction(PlayerbotAI* botAI)
-            : Action(botAI, "gargolmar mark hellfire watchers")
-        {
-        }
-        bool Execute(Event event) override;
+public:
+    GargolmarMarkHellfireWatchersAction(PlayerbotAI* botAI)
+        : Action(botAI, "gargolmar mark hellfire watchers")
+    {
+    }
+    bool Execute(Event event) override;
 };
 
 // Omor the Unscarred
 
 class OmorTreacheryAuraFleeFromPlayersAction : public MovementAction
 {
-    public:
-        OmorTreacheryAuraFleeFromPlayersAction(PlayerbotAI* botAI)
-            : MovementAction(botAI, "omor treachery aura flee from players")
-        {
-        }
-        bool Execute(Event event) override;
+public:
+    OmorTreacheryAuraFleeFromPlayersAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "omor treachery aura flee from players")
+    {
+    }
+    bool Execute(Event event) override;
 };
 
 class OmorTreacheryAuraFleeFromTankAction : public MovementAction
 {
-    public:
-        OmorTreacheryAuraFleeFromTankAction(PlayerbotAI* botAI)
-            : MovementAction(botAI, "omor treachery aura flee from tank")
-        {
-        }
-        bool Execute(Event event) override;
+public:
+    OmorTreacheryAuraFleeFromTankAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "omor treachery aura flee from tank")
+    {
+    }
+    bool Execute(Event event) override;
 };
 
 class OmorRangedSpreadAction : public MovementAction
 {
-    public:
-        OmorRangedSpreadAction(PlayerbotAI* botAI)
-            : MovementAction(botAI, "omor ranged spread")
-        {
-        }
-        bool Execute(Event event) override;
+public:
+    OmorRangedSpreadAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "omor ranged spread")
+    {
+    }
+    bool Execute(Event event) override;
 };
 
 class OmorMarkFiendishHoundAction : public Action
 {
-    public:
-        OmorMarkFiendishHoundAction(PlayerbotAI* botAI)
-            : Action(botAI, "omor mark fiendish hound")
-        {
-        }
-        bool Execute(Event event) override;
+public:
+    OmorMarkFiendishHoundAction(PlayerbotAI* botAI)
+        : Action(botAI, "omor mark fiendish hound")
+    {
+    }
+    bool Execute(Event event) override;
 };
 
 // Vazruden & Nazan
 
 class VazrudenTankPositionBossAction : public AttackAction
 {
-    public:
-        VazrudenTankPositionBossAction(PlayerbotAI* botAI)
-            : AttackAction(botAI, "vazruden tank position boss")
-        {
-        }
-        bool Execute(Event event) override;
+public:
+    VazrudenTankPositionBossAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "vazruden tank position boss")
+    {
+    }
+    bool Execute(Event event) override;
 };
 
 class VazrudenMarkBossAction : public Action
 {
-    public:
-        VazrudenMarkBossAction(PlayerbotAI* botAI)
-            : Action(botAI, "vazruden mark boss")
-        {
-        }
-        bool Execute(Event event) override;
+public:
+    VazrudenMarkBossAction(PlayerbotAI* botAI)
+        : Action(botAI, "vazruden mark boss")
+    {
+    }
+    bool Execute(Event event) override;
 };
 
 class NazanSetTremorTotemAction : public Action
 {
-    public:
-        NazanSetTremorTotemAction(PlayerbotAI* botAI)
-            : Action(botAI, "nazan set tremor totem") {}
-        bool Execute(Event event) override;
+public:
+    NazanSetTremorTotemAction(PlayerbotAI* botAI)
+        : Action(botAI, "nazan set tremor totem") {}
+    bool Execute(Event event) override;
 };
 
 class NazanSetFireResistanceTotemAction : public Action
 {
-    public:
-        NazanSetFireResistanceTotemAction(PlayerbotAI* botAI)
-            : Action(botAI, "nazan set fire resistance totem") {}
-        bool Execute(Event event) override;
+public:
+    NazanSetFireResistanceTotemAction(PlayerbotAI* botAI)
+        : Action(botAI, "nazan set fire resistance totem") {}
+    bool Execute(Event event) override;
 };
 
 #endif

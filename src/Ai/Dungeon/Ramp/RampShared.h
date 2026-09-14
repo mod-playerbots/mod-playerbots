@@ -9,16 +9,9 @@
 
 #include "Common.h"
 #include "Position.h"
-#include <type_traits>
 
 namespace RampShared
 {
-
-template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
-constexpr uint32 Id(T value)
-{
-    return static_cast<uint32>(value);
-}
 
 enum class RampSpells : uint32
 {
@@ -28,7 +21,7 @@ enum class RampSpells : uint32
 
 inline constexpr uint32 RAMP_MAP_ID = 543;
 
-inline Position const VAZRUDEN_TANK_POSITION   = { -1407.405f, 1744.521f, 81.075f };
+inline Position const VAZRUDEN_TANK_POSITION = { -1407.405f, 1744.521f, 81.075f };
 
 inline constexpr float OMOR_TREACHERY_AURA_SAFE_DISTANCE = 20.0f;
 

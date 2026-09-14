@@ -9,8 +9,8 @@
 #include "Playerbots.h"
 #include "RampShared.h"
 
-using namespace EncounterHelpers;
 using namespace RampShared;
+using namespace EncounterHelpers;
 
 // Watchkeeper Gargolmar
 
@@ -115,7 +115,7 @@ bool VazrudenTankPositionBossAction::Execute(Event /*event*/)
 bool VazrudenMarkBossAction::Execute(Event /*event*/)
 {
     Unit* vazruden = AI_VALUE2(Unit*, "find target", "vazruden");
-    if (!vazruden || !vazruden->IsAlive())
+    if (!vazruden)
         return false;
 
     return MarkTargetWithSkull(bot, vazruden);
@@ -124,15 +124,13 @@ bool VazrudenMarkBossAction::Execute(Event /*event*/)
 // Shamans use Tremor totem when Nazan is active
 bool NazanSetTremorTotemAction::Execute(Event /*event*/)
 {
-    return !AI_VALUE2(bool, "has totem", "tremor totem") &&
-            botAI->CanCastSpell("tremor totem", bot) &&
-            botAI->CastSpell("tremor totem", bot);
+    return !AI_VALUE2(bool, "has totem", "tremor totem") && botAI->CanCastSpell("tremor totem", bot) &&
+           botAI->CastSpell("tremor totem", bot);
 }
 
 // Shamans use Fire Resistance totem when Nazan is active
 bool NazanSetFireResistanceTotemAction::Execute(Event /*event*/)
 {
     return !AI_VALUE2(bool, "has totem", "fire resistance totem") &&
-            botAI->CanCastSpell("fire resistance totem", bot) &&
-            botAI->CastSpell("fire resistance totem", bot);
+           botAI->CanCastSpell("fire resistance totem", bot) && botAI->CastSpell("fire resistance totem", bot);
 }

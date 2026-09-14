@@ -6,10 +6,9 @@
 
 #include "RampMultipliers.h"
 #include "EncounterHelpers.h"
-#include "HunterActions.h"
-#include "MageActions.h"
 #include "Playerbots.h"
 #include "RampActions.h"
+#include "RampBossHelper.h"
 #include "RampShared.h"
 #include "ReachTargetActions.h"
 #include "ShamanActions.h"
@@ -24,16 +23,12 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
     // Allow all Omor fight specific actions & any flee/runaway actions
     if (dynamic_cast<OmorRangedSpreadAction*>(action) ||
         dynamic_cast<OmorTreacheryAuraFleeFromPlayersAction*>(action) ||
-        dynamic_cast<OmorTreacheryAuraFleeFromTankAction*>(action) ||
-        dynamic_cast<OmorMarkFiendishHoundAction*>(action) ||
-        dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<FleeWithPetAction*>(action) ||
-        dynamic_cast<RunAwayAction*>(action))
+        dynamic_cast<OmorTreacheryAuraFleeFromTankAction*>(action))
         return 1.0f;
 
-    bool const isMovementSpell = dynamic_cast<CastReachTargetSpellAction*>(action) ||
-                                 dynamic_cast<CastBlinkBackAction*>(action) ||
-                                 dynamic_cast<CastDisengageAction*>(action);
+    bool const isMovementSpell =
+        dynamic_cast<CastReachTargetSpellAction*>(action) ||
+        dynamic_cast<ReachTargetAction*>(action);
 
     // Allow non-movement based Actions
     if (!isMovementSpell && !dynamic_cast<MovementAction*>(action))
@@ -45,35 +40,31 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
     if (!omor)
         return 1.0f;
 
-    // Let the tank bot do anything
+    // Let non-melee bots do anything
     if (PlayerbotAI::IsMainTank(bot) ||
         PlayerbotAI::IsRanged(bot))
         return 1.0f;
 
     // Melee bots try to kill themselves more so need more logic
-    if (PlayerbotAI::IsMelee(bot))
-    {
-        // If melee bot has Aura - don't attack
-        if (bot->HasAura(static_cast<uint32>(RampSpells::SPELL_BANE_OF_TREACHERY)) ||
-            bot->HasAura(static_cast<uint32>(RampSpells::SPELL_TREACHEROUS_AURA)))
-            return 0.0f;
+    // If melee bot has Aura - don't attack
+    if (helper.HasTreacheryAura(bot))
+        return 0.0f;
 
-        // If tank exists and has Aura - don't attack
-        Player* tank = GetGroupMainTank(bot);
-        if (tank && (tank->HasAura(static_cast<uint32>(RampSpells::SPELL_BANE_OF_TREACHERY)) ||
-                     tank->HasAura(static_cast<uint32>(RampSpells::SPELL_TREACHEROUS_AURA))))
-            return 0.0f;
+    // If tank exists and has Aura - don't attack
+    Player* tank = GetGroupMainTank(bot);
+    if (tank && helper.HasTreacheryAura(tank))
+        return 0.0f;
 
-        // Edge-case to try and prevent wipes if there is no main tank, or Omor is focusing a non-tank - don't attack
-        Unit* omorVictim = omor->GetVictim();
-        if (omorVictim && (omorVictim->HasAura(static_cast<uint32>(RampSpells::SPELL_BANE_OF_TREACHERY)) ||
-                           omorVictim->HasAura(static_cast<uint32>(RampSpells::SPELL_TREACHEROUS_AURA))))
-            return 0.0f;
-
-        // It should be safe to attack
+    // Edge-case to try and prevent wipes if there is no main tank, or Omor is focusing a non-tank - don't attack
+    Unit* omorVictim = omor->GetVictim();
+    if (!omorVictim)
         return 1.0f;
-    }
 
+    Player* victimPlayer = dynamic_cast<Player*>(omorVictim);
+    if (victimPlayer && helper.HasTreacheryAura(victimPlayer))
+        return 0.0f;
+
+    // It should be safe to attack
     return 1.0f;
 }
 
