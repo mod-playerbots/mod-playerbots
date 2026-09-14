@@ -90,14 +90,15 @@ bool TargetRequesterAction::Execute(Event event)
     Player* requester = event.getOwner();
 
     if (!requester)
-    {
-        botAI->TellMasterNoFacing("target requester: no event owner");
         return false;
-    }
 
     bot->SetSelection(requester->GetGUID());
 
-    botAI->TellMasterNoFacing("Targeting " + requester->GetName());
+    botAI->TellMasterNoFacing(
+        PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "target_requester_success",
+            "Targeting %target",
+            {{"%target", requester->GetName()}}));
 
     return true;
 }
