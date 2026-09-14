@@ -1576,6 +1576,27 @@ AiPlayerbot.RandomBotMaps = 0,1,530,571
 # Default: 0.25
 AiPlayerbot.ProbTeleToBankers = 0.25
 
+# When an idle bot picks a random destination it makes ONE weighted roll across three classes,
+# so each value is an exact share of the roll (peers, not nested gates):
+#     quest giver   : ProbTeleToQuestGivers
+#     city/banker   : ProbTeleToBankers (level >= 10 only; falls through below level 10)
+#     innkeeper/hub : 1 - ProbTeleToQuestGivers - ProbTeleToBankers (the remainder)
+# A branch that cannot produce a destination (no currently-valid quest giver, below level 10, or
+# an empty city cache) falls through to the innkeeper/hub path, which absorbs the unused share.
+
+# Probability an idle random bot's random move targets a quest giver it can accept a quest from
+# right now (level/faction valid, no unmet prereq, not in progress, quest-log + item room).
+# Falls back to the city/hub destination when no valid giver exists.
+# Default: 0.25
+AiPlayerbot.ProbTeleToQuestGivers = 0.25
+
+# When building the quest-giver teleport index, a quest is bucketed for bots from its MinLevel up
+# to (QuestLevel + this window). This is how many levels ABOVE the quest's level a bot may still be
+# and be offered it. Slightly tighter than the core Quests.LowLevelHideDiff (= 4), so bots are not
+# teleported across the world for nearly-grey quests.
+# Default: 3
+AiPlayerbot.QuestGiverTeleportLevelWindow = 3
+
 # Control probability weights for bots teleporting to Capital city bankers
 # Sum of weights need not be 100. Set to 0 to disable teleporting to the city.
 AiPlayerbot.EnableWeightTeleToCityBankers = 1
