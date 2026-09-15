@@ -34,6 +34,7 @@
 #include <cstdio>
 #include <cstring>
 #include <iomanip>
+#include <memory>
 #include <openssl/sha.h>
 #include <string>
 #include <unordered_set>
@@ -202,7 +203,7 @@ void PlayerbotHolder::HandlePlayerBotLoginCallback(PlayerbotLoginQueryHolder con
     // allows channels to work as intended)
     WorldSession* botSession =
         new WorldSession(botAccountId, "", 0x0, nullptr, SEC_PLAYER, EXPANSION_WRATH_OF_THE_LICH_KING, time_t(0),
-                         sWorld->GetDefaultDbcLocale(), 0, false, false, 0, true);
+                         sWorld->GetDefaultDbcLocale(), 0, false, false, 0);
 
     botSession->HandlePlayerLoginFromDB(holder);  // will delete lqh
 
@@ -258,19 +259,16 @@ void PlayerbotHolder::UpdateSessions()
 
 void PlayerbotHolder::HandleBotPackets(WorldSession* session)
 {
-    WorldPacket* packet;
-    while (session->GetPacketQueue().next(packet))
+    while (std::unique_ptr<WorldPacket> packet = session->NextQueuedPacket())
     {
         OpcodeClient opcode = static_cast<OpcodeClient>(packet->GetOpcode());
         ClientOpcodeHandler const* opHandle = opcodeTable[opcode];
         if (!opHandle)
         {
             LOG_ERROR("playerbots", "Unhandled opcode {} queued for bot session {}. Packet dropped.", static_cast<uint32>(opcode), session->GetAccountId());
-            delete packet;
             continue;
         }
         opHandle->Call(session, *packet);
-        delete packet;
     }
 }
 
