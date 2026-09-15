@@ -2917,7 +2917,7 @@ bool PlayerbotFactory::CanEquipUnseenItem(uint8 slot, uint16& dest, uint32 item)
 {
     dest = 0;
 
-    if (Item* pItem = Item::CreateItem(item, 1, bot, false, 0, true))
+    if (Item* pItem = Item::CreateItem(item, 1, bot))
     {
         InventoryResult result = botAI ? botAI->CanEquipItem(slot, dest, pItem, true, true)
                                        : bot->CanEquipItem(slot, dest, pItem, true, true);
