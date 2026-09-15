@@ -1020,12 +1020,12 @@ bool PlayerbotAIConfig::openLog(std::string const fileName, char const* mode)
     }
 
     file = fopen((m_logsDir + fileName).c_str(), mode);
-    fileOpen = true;
+    fileOpen = file != nullptr;
 
     logFileIt->second.first = file;
     logFileIt->second.second = fileOpen;
 
-    return true;
+    return fileOpen;
 }
 
 void PlayerbotAIConfig::log(std::string const fileName, char const* str, ...)
