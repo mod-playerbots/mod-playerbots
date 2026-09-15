@@ -200,8 +200,13 @@ ItemUsage ItemUsageValue::Calculate()
                         isBest = oil->GetEntry() == proto->ItemId;
             }
             if (!isBest && offHand)
+            {
                 if (Item* stone = botAI->FindStoneFor(offHand))
                     isBest = stone->GetEntry() == proto->ItemId;
+                if (!isBest)
+                    if (Item* oil = botAI->FindOilFor(offHand))
+                        isBest = oil->GetEntry() == proto->ItemId;
+            }
 
             if (isBest)
                 return ITEM_USAGE_USE;

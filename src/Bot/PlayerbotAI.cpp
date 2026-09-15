@@ -5862,10 +5862,24 @@ void PlayerbotAI::ConsolidateItems()
             uint32 const moveCount = std::min(space, source->GetCount());
 
             // Move `moveCount` from the source stack to the target stack. The items are not
-            // consumed, only re-stacked, so no quest-progress adjustment (unlike
-            // Player::DestroyItemCount).
+            // consumed, only re-stacked, so no quest-progress adjustment.
             if (source->GetCount() <= moveCount)
-                bot->DestroyItem(source->GetBagSlot(), source->GetSlot(), true);
+            {
+                // Do NOT use Player::DestroyItem here: it fires ItemRemovedQuestCheck, which
+                // decrements delivery-quest progress even though the items aren't consumed
+                // (the total count is unchanged after the merge). RemoveItem unlinks the
+                // stack without firing the quest hook; finish the removal the same way the
+                // core's stack-merge path does (Player::_StoreItem).
+                bot->RemoveItem(source->GetBagSlot(), source->GetSlot(), true);
+                if (source->IsInWorld())
+                {
+                    source->RemoveFromWorld();
+                    source->DestroyForPlayer(bot);
+                }
+                source->SetNotRefundable(bot);
+                source->ClearSoulboundTradeable(bot);
+                source->SetState(ITEM_REMOVED, bot);
+            }
             else
             {
                 source->SetCount(source->GetCount() - moveCount);
