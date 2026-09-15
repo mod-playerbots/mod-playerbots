@@ -128,8 +128,8 @@ reviews:
           ACTION_HIGH 20, ACTION_MOVE 30, ACTION_INTERRUPT 40, ACTION_DISPEL 50, ACTION_RAID
           60, ACTION_EMERGENCY 90) plus a small offset. Flag bare floats that sit between bands
           and any comment that justifies a number by listing competing actions.
-        - Multipliers are multiplicative (`relevance *= GetValue()`); returning 0 kills the
-          action. A multiplier must whitelist heals and emergency actions before suppressing.
+        - Multipliers scale relevance (`relevance *= GetValue(action)`; the base class returns
+          1.0f) and a result of 0 drops the action for that tick.
         - Shared code (base actions, shared values, engine helpers) must not branch on
           `botAI->HasStrategy("name")`; express variation as a trigger, multiplier, relevance,
           or virtual override the strategy owns.

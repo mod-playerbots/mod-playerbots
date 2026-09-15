@@ -2,15 +2,14 @@
 
 Project-specific rules for
 [/self-review](https://github.com/eai-org/agent-toolkit/blob/main/skills/self-review/SKILL.md),
-run on a PR before it is submitted or updated. PRs are human-authored; the reviewer checks, it
-does not write. Generic improvements to the review process itself belong to the skill, not here.
+run on a PR before it is submitted or updated. Generic improvements to the review process itself belong to the skill, not here.
 The [code-review.md](code-review.md) rules apply on top, as do the core's
 `../../.agents/docs/self-review-rules.md` rules on pinning the review to a commit.
 
 ## Regression risk
 
-Automated test coverage is near zero and every bot runs the same code, so one change reaches
-every bot on the server. Go deeper the farther it can reach:
+Automated test coverage has not been implemented, and every bot runs an instance of the ai
+so one change reaches impacts every bot on the server.
 
 - `src/Bot/`, `src/Ai/Base/`, and shared values: one change alters every class and every
   strategy — examine how the changed code is used elsewhere, not just the change itself.
@@ -26,8 +25,7 @@ every bot on the server. Go deeper the farther it can reach:
 - New per-tick work is behind a gate or a cached value; a trigger that scans is a finding.
 - No synchronous database query on a map-thread path.
 - New `GetBotTextOrDefault` keys ship with their translation SQL.
-- New config options are in `conf/playerbots.conf.dist` with a default, a comment, and the
-  feature off by default when it is expensive or changes behaviour.
+- New config options are in `conf/playerbots.conf.dist` with a default and a comment.
 - The PR body's Feature Evaluation and Impact Assessment match the diff: per-tick work added, a
   default strategy set or default config value changed, or a new decision branch is not ticked
   "No".
@@ -36,9 +34,6 @@ every bot on the server. Go deeper the farther it can reach:
 
 ## In-game testing
 
-The author tests in-game, which the reviewer cannot. Never guess what was tested — ask, and record
-the answer in the report. Then name what else to test, especially side effects the author might
-not expect: a change that adds per-tick work is tested with `playerbot pmon` before and after; a
-fix on one class's rotation is checked against the other specs of that class; a change to a shared
-action is checked in solo, group, and instance play. When the tested scenario matches the change's
-main path, probe the branches it does not take.
+The author tests their change as reviewers cannot. Review for potential impact areas that
+the author has not considered. Changes that can lead to increased per-tick work need to be
+measured with `playerbot pmon stack` before and after.

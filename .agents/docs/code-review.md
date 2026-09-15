@@ -17,7 +17,6 @@ Any new feature needs maintainer approval and a clear understanding of runtime c
   special-casing of shared code.
 - The minimal implementation for the feature implemented.
 - Run cost is known: what now runs per bot per tick, and what gates it.
-- A maintainer signs off.
 - No existing mechanism already covers it, orphaned ones included. Grep `creators["..."]` for
   names in the same area, then grep for their consumers; zero consumers is an orphan the PR must
   wire up, remove, or explain. Check the base classes the new code inherits, too.
@@ -31,20 +30,16 @@ Any new feature needs maintainer approval and a clear understanding of runtime c
 
 - Shared code does not branch on strategy names.
 - One action, one job; no fallback cascades inside `Execute()`.
-- Expensive work sits behind a cheap gate (`isUseful()` / `isPossible()` / cached values).
-- Relevance values are a named band plus a small offset, not raced floats.
-- Loops iterate the question, not the data: nesting order follows the decision being made.
-- First-match-wins over a container only when the container's order is the selection criterion;
-  otherwise collect candidates and choose.
-- A comment describing a workaround marks a defect to fix, not a design to keep.
-- Every new config knob is a deferred decision; ask whether the default should just be right.
+- Expensive work sits two gates. `isUseful()` for the first and cheapest check, followed by
+  `isPossible()`, which can be more expensive. Cached values can be used to minimize per tick costs. Code found in isUseful and in isPossible should not also be found in the action.
+- Relevance values are a named band plus a small offset, not bare floats.
 
 ## Wiring and lifetime
 
 - Every new name is registered and every consumer resolves (`ai-engine.md` checklist).
 - `InitTriggers()` chains the parent unless the override is deliberate.
 - Multipliers return 0 only for the actions that should not be taken.
-- No raw `new` without an owner; no `Player*` / `Unit*` held across ticks.
+- No raw `new` without an owner; pointers should not be held across ticks.
 - No synchronous database queries on the map thread; multi-statement writes use a transaction.
 - Shared state reachable from several map threads is protected.
 

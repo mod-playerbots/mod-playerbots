@@ -21,7 +21,7 @@ and stop. When the user names an existing PR, use `gh pr diff <N>` instead.
 
 `type(Scope/Subscope): short summary`, per `.agents/docs/pull-requests.md`:
 
-- imperative, capitalised, no trailing period, max 50 characters;
+- imperative, capitalised, no trailing period, max 72 characters;
 - type from `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`, chosen from what the diff
   does, not from what the branch is called;
 - scope and subscope copied from recent commits touching the same paths

@@ -9,8 +9,7 @@ PRs target `test-staging`, never `master`. `master` only receives promotion PRs 
 
 `.git_commit_template.txt` is the format:
 
-- Subject: `type(Scope/Subscope): short summary`, imperative, capitalised, no trailing period,
-  max 50 characters. Types: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`. Copy
+- Subject: `type(Scope/Subscope): short summary`, imperative, capitalised, no trailing period, max 72 characters. Types: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`. Copy
   scope and subscope naming from recent commits touching the same files
   (`git log --oneline -- <paths>`).
 - Blank line, then the why (what was wrong, what changes), wrapped at 72 columns.

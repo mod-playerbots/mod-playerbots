@@ -19,12 +19,14 @@ to the module. Where module and core docs differ, the module docs win for paths 
 
 ## Hooking up your agent
 
-- **Claude Code** — reads `CLAUDE.md`, which imports `AGENTS.md`. Skills are exposed by a relative
-  symlink: `.claude/skills/<name> -> ../../.agents/skills/<name>`.
+- **Claude Code** — reads `CLAUDE.md`, which imports `AGENTS.md`. It discovers skills under
+  `.claude/skills/`, not `.agents/skills/`, so each skill ships a `.claude/skills/<name>/SKILL.md`
+  stub carrying the frontmatter and one line pointing at `.agents/skills/<name>/SKILL.md`. The core
+  uses a symlink for this; the module does not, because a Windows clone without
+  `core.symlinks true` and Developer Mode checks the link out as a plain text file and the skill
+  silently never loads.
 - **GitHub Copilot** — reads `AGENTS.md` natively.
 - **Any other agent** — point it at `AGENTS.md` through its own entry file, or tell it to read
   `AGENTS.md` first.
 
-On Windows, symlinks need `git config core.symlinks true` plus Developer Mode or an elevated shell;
-without them git checks the links out as plain text files. A one-line `SKILL.md` that says
-"read `.agents/skills/<name>/SKILL.md`" works everywhere.
+A new skill is therefore two files: the real one under `.agents/skills/<name>/`, and the stub.

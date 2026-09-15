@@ -20,9 +20,9 @@ The fork's SQL placement, `--author` attribution, and e2e rules do not apply her
   `python apps/codestyle/codestyle-cpp.py` from the module root (the CI check),
   `clang-format --dry-run --Werror <file>` on touched files, and grep the creator
   tables for every new action, trigger, or strategy name.
-- Only build inside the custom core. This module requires
-  [mod-playerbots/azerothcore-wotlk, branch `Playerbot`](https://github.com/mod-playerbots/azerothcore-wotlk/tree/Playerbot);
-  upstream AzerothCore will not compile it.
+- Only build inside the custom core,
+  [mod-playerbots/azerothcore-wotlk](https://github.com/mod-playerbots/azerothcore-wotlk); upstream
+  AzerothCore will not compile this module. Branches pair up: module `test-staging` builds against core `test-staging`, module `master` against core `Playerbot`.
 - PRs target `test-staging`, never `master`; `check_pr_source.yml` enforces it.
 - **Never edit SQL under `data/sql/*/base/`, `data/sql/playerbots/create/`, or
   `data/sql/playerbots/archive/`.** Those are snapshots maintainers regenerate. New
