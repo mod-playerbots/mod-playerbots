@@ -5827,6 +5827,8 @@ void PlayerbotAI::ConsolidateItems()
         if (!proto || proto->GetMaxStackSize() <= 1)
             continue;
 
+        LOG_DEBUG("playerbots", "{}: consolidating item {} ({} stacks, max {})", bot->GetName(), entry, entryCount.second, proto->GetMaxStackSize());
+
         // Merge partial stacks into the fullest stack, one move per pass, until at most one
         // partial stack remains. Each pass re-collects the stacks: a move can delete a stack
         // (source emptied) or fill one (target full).
@@ -5860,6 +5862,9 @@ void PlayerbotAI::ConsolidateItems()
 
             uint32 const space = proto->GetMaxStackSize() - target->GetCount();
             uint32 const moveCount = std::min(space, source->GetCount());
+
+            LOG_DEBUG("playerbots", "{}: consolidate item {}: move {} from bag {} slot {} to bag {} slot {} ({} -> {})",
+                bot->GetName(), entry, moveCount, source->GetBagSlot(), source->GetSlot(), target->GetBagSlot(), target->GetSlot(), target->GetCount(), target->GetCount() + moveCount);
 
             // Move `moveCount` from the source stack to the target stack. The items are not
             // consumed, only re-stacked, so no quest-progress adjustment.

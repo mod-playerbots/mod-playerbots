@@ -156,7 +156,10 @@ ItemUsage ItemUsageValue::Calculate()
                 uint32 requiredCount = quest->RequiredItemCount[i];
 
                 if (currentCount == requiredCount)
+                {
+                    LOG_DEBUG("playerbots", "{}: {} at exact quest requirement {} (quest {}), keeping", bot->GetName(), proto->Name1, requiredCount, entry);
                     return ITEM_USAGE_KEEP;  // Have exact amount needed, keep it
+                }
             }
         }
     }
