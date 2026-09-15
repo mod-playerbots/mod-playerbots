@@ -241,7 +241,7 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
                         std::min(1.0f, (float)spellInfo->GetDuration() / (spellInfo->GetDuration() + spellCooldown.count()));
 
                 multiplier *= coverage;
-                HandleApplyAura(effectInfo, multiplier, canNextTrigger, triggerCooldown);
+                HandleApplyAura(effectInfo, spellInfo, multiplier, canNextTrigger, triggerCooldown);
                 break;
             }
             case SPELL_EFFECT_HEAL:
@@ -250,7 +250,7 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
                 if (!spellCooldown.count())
                     break;
                 float normalizedCd = std::max((float)spellCooldown.count() / 1000, 5.0f);
-                int32 val = AverageValue(effectInfo);
+                int32 val = AverageValue(effectInfo, spellInfo);
                 float transfer_multiplier = 1;
                 stats[STATS_TYPE_HEAL_POWER] += (float)val / normalizedCd * multiplier * transfer_multiplier;
                 break;
@@ -263,7 +263,7 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
                 if (effectInfo.MiscValue != POWER_MANA)
                     break;
                 float normalizedCd = std::max((float)spellCooldown.count() / 1000, 5.0f);
-                int32 val = AverageValue(effectInfo);
+                int32 val = AverageValue(effectInfo, spellInfo);
                 float transfer_multiplier = 0.2;
                 stats[STATS_TYPE_MANA_REGENERATION] += (float)val / normalizedCd * multiplier * transfer_multiplier;
                 break;
@@ -274,7 +274,7 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
                 if (!spellCooldown.count())
                     break;
                 float normalizedCd = std::max((float)spellCooldown.count() / 1000, 5.0f);
-                int32 val = AverageValue(effectInfo);
+                int32 val = AverageValue(effectInfo, spellInfo);
                 if (type_ & (CollectorType::MELEE | CollectorType::RANGED))
                 {
                     float transfer_multiplier = 1;
@@ -657,13 +657,13 @@ void StatsCollector::CollectByItemStatType(uint32 itemStatType, int32 val)
     }
 }
 
-void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, float multiplier, bool canNextTrigger,
-                                     Milliseconds triggerCooldown)
+void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInfo const* spellInfo, float multiplier,
+                                     bool canNextTrigger, Milliseconds triggerCooldown)
 {
     if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA)
         return;
 
-    int32 val = AverageValue(effectInfo);
+    int32 val = AverageValue(effectInfo, spellInfo);
 
     switch (effectInfo.ApplyAuraName)
     {
@@ -875,9 +875,8 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, float mu
     }
 }
 
-float StatsCollector::AverageValue(SpellEffectInfo const& effectInfo)
+float StatsCollector::AverageValue(SpellEffectInfo const& effectInfo, SpellInfo const* spellInfo)
 {
-    // float basePointsPerLevel = effectInfo.RealPointsPerLevel; //not used, line marked for removal.
     float basePoints = effectInfo.BasePoints;
     int32 randomPoints = effectInfo.DieSides;
 
@@ -893,6 +892,19 @@ float StatsCollector::AverageValue(SpellEffectInfo const& effectInfo)
             basePoints += randvalue;
             break;
     }
+
+    // Level-scaled effects (mirrors SpellEffectInfo::CalcValue in the core)
+    if (spellInfo && lvl_ > 0 && effectInfo.RealPointsPerLevel != 0.0f)
+    {
+        int32 level = lvl_;
+        if (spellInfo->MaxLevel > 0 && level > int32(spellInfo->MaxLevel))
+            level = int32(spellInfo->MaxLevel);
+        else if (level < int32(spellInfo->BaseLevel))
+            level = int32(spellInfo->BaseLevel);
+        level -= int32(std::max(spellInfo->BaseLevel, spellInfo->SpellLevel));
+        basePoints += level * effectInfo.RealPointsPerLevel;
+    }
+
     return basePoints;
 }
 
