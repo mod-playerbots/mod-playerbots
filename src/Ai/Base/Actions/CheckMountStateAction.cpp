@@ -5,6 +5,7 @@
  */
 
 #include "CheckMountStateAction.h"
+#include "PlayerbotsDatabase.h"
 #include "AreaDefines.h"
 #include "BattleGroundTactics.h"
 #include "BattlegroundEY.h"

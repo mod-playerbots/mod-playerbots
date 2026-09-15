@@ -5,6 +5,7 @@
  */
 
 #include "PlayerbotMgr.h"
+#include "PlayerbotsDatabase.h"
 #include "BroadcastHelper.h"
 #include "ChannelMgr.h"
 #include "CharacterCache.h"

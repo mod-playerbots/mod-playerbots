@@ -5,6 +5,7 @@
  */
 
 #include "PlayerbotTextMgr.h"
+#include "PlayerbotsDatabase.h"
 #include "DatabaseEnv.h"
 #include "QueryResult.h"    // Required due to a poor implementation by AC
 #include "Random.h"

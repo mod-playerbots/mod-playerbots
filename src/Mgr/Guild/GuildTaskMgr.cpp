@@ -5,6 +5,7 @@
  */
 
 #include "GuildTaskMgr.h"
+#include "PlayerbotsDatabase.h"
 #include "ChatHelper.h"
 #include "Group.h"
 #include "GuildMgr.h"

@@ -5,6 +5,7 @@
  */
 
 #include "PlayerbotFactory.h"
+#include "PlayerbotsDatabase.h"
 #include "AccountMgr.h"
 #include "AiFactory.h"
 #include "AiObjectContext.h"
