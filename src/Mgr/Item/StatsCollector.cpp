@@ -275,6 +275,15 @@ void StatsCollector::CollectEnchantStats(SpellItemEnchantmentEntry const* enchan
 }
 
 /// @todo Special case for some spell that hard to calculate, like trinket, relic, etc.
+
+// Classes whose Death's Choice / Deathbringer's Will proc buff is Strength.
+// The core script (spell_item_death_choice / spell_item_deathbringers_will_*) picks the buff
+// from max(str, agi) or a per-class pool; Strength users get the STR variant.
+static bool UsesStrengthProcBuff(uint32 cls)
+{
+    return cls == CLASS_WARRIOR || cls == CLASS_PALADIN || cls == CLASS_DEATH_KNIGHT;
+}
+
 bool StatsCollector::SpecialSpellFilter(uint32 spellId)
 {
     // trinket
@@ -290,19 +299,20 @@ bool StatsCollector::SpecialSpellFilter(uint32 spellId)
         case 55381:  // Insightful Earthsiege Diamond
             stats[STATS_TYPE_MANA_REGENERATION] += 40;
             return true;
-        case 39442:  // Darkmoon Card: Wrath
+        case 39442:  // Darkmoon Card: Wrath - proc buff 39443 grants +17 crit rating (mask 1792) for 10 sec, up to 20 stacks
+            // ~17 rating * ~15 sustained stacks
             if (!(type_ & CollectorType::SPELL_HEAL))
-                stats[STATS_TYPE_CRIT] += 50;
+                stats[STATS_TYPE_CRIT] += 250;
             return true;
-        case 59620:  // Berserk
+        case 59620:  // Berserking weapon enchant proc (enchant 3789): +400 AP for 15 sec, ~1.2 PPM -> ~120 AP sustained
             if (type_ & CollectorType::MELEE)
                 stats[STATS_TYPE_ATTACK_POWER] += 120;
             return true;
-        case 67702:  // Death's Verdict
-            stats[STATS_TYPE_ATTACK_POWER] += 225;
+        case 67702:  // Death's Verdict/Choice (normal): script casts +450 STR or AGI (67708/67703) for 15 sec, 35% on hit, 45 sec ICD -> ~140 sustained
+            stats[UsesStrengthProcBuff(cls_) ? STATS_TYPE_STRENGTH : STATS_TYPE_AGILITY] += 140;
             return true;
-        case 67771:  // Death's Verdict (heroic)
-            stats[STATS_TYPE_ATTACK_POWER] += 260;
+        case 67771:  // Death's Verdict/Choice (heroic): +510 STR or AGI (67773/67772) -> ~160 sustained
+            stats[UsesStrengthProcBuff(cls_) ? STATS_TYPE_STRENGTH : STATS_TYPE_AGILITY] += 160;
             return true;
         case 71406:  // Tiny Abomination in a Jar
             if (cls_ == CLASS_PALADIN)
@@ -316,11 +326,11 @@ bool StatsCollector::SpecialSpellFilter(uint32 spellId)
             else
                 stats[STATS_TYPE_ATTACK_POWER] += 200;
             return true;
-        case 71519:  // Deathbringer's Will
-            stats[STATS_TYPE_ATTACK_POWER] += 350;
+        case 71519:  // Deathbringer's Will (normal): script picks a random +600 class buff (71484 STR / 71485 AGI / 71491 crit / 71486 AP / 71492 haste) for 30 sec, 105 sec ICD -> ~170 sustained
+            stats[UsesStrengthProcBuff(cls_) ? STATS_TYPE_STRENGTH : STATS_TYPE_AGILITY] += 170;
             return true;
-        case 71562:  // Deathbringer's Will (heroic)
-            stats[STATS_TYPE_ATTACK_POWER] += 400;
+        case 71562:  // Deathbringer's Will (heroic): +700 class buffs (71561/71556/...) -> ~195 sustained
+            stats[UsesStrengthProcBuff(cls_) ? STATS_TYPE_STRENGTH : STATS_TYPE_AGILITY] += 195;
             return true;
         case 71602:  // Dislodged Foreign Object
             /// @todo The item can be triggered by heal spell, which mismatch with it's description
@@ -328,7 +338,8 @@ bool StatsCollector::SpecialSpellFilter(uint32 spellId)
             if (type_ & CollectorType::SPELL_HEAL)
                 return true;
             break;
-        case 71903:  // Shadowmourne
+        case 71903:  // Shadowmourne - soul fragment 71905 (+30 STR, 10 stacks) -> Chaos Bane 73422 (+270 STR for 10 sec)
+            // average of the stacking mechanic, ~5-6 fragments up
             stats[STATS_TYPE_STRENGTH] += 200;
             return true;
         default:
