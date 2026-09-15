@@ -64,6 +64,7 @@ constexpr uint32 SPELL_TITAN_GRIP = 49152;
 constexpr uint32 SPELL_DK_FROST_PRESENCE = 48263;
 constexpr uint32 SPELL_GRAVITY_LAPSE_TK = 39432;
 constexpr uint32 SPELL_GRAVITY_LAPSE_MGT = 44226;
+constexpr uint32 VEHICLE_FLAG_FIXED_POSITION = 0x00200000;
 }
 
 std::vector<std::string> PlayerbotAI::dispel_whitelist = {
