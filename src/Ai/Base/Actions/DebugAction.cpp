@@ -77,6 +77,13 @@ bool DebugAction::Execute(Event event)
             if (points.empty())
                 return false;
 
+            std::shared_lock<std::shared_timed_mutex> guard(TravelNodeMap::instance().m_nMapMtx, std::try_to_lock);
+            if (!guard.owns_lock())
+            {
+                botAI->TellMasterNoFacing("Travel node map is being reloaded, try again later.");
+                return true;
+            }
+
             std::vector<WorldPosition> beginPath, endPath;
             TravelNodeRoute route = TravelNodeMap::instance().FindRouteNearestNodes(botPos, *points.front(), beginPath, bot);
 
@@ -287,6 +294,12 @@ bool DebugAction::Execute(Event event)
     else if (text.find("show node") != std::string::npos)
     {
         WorldPosition pos(bot);
+        std::shared_lock<std::shared_timed_mutex> guard(TravelNodeMap::instance().m_nMapMtx, std::try_to_lock);
+        if (!guard.owns_lock())
+        {
+            botAI->TellMasterNoFacing("Travel node map is being reloaded, try again later.");
+            return true;
+        }
 
         std::vector<TravelNode*> nodes = TravelNodeMap::instance().getNodes(pos, 500);
 

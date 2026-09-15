@@ -191,6 +191,14 @@ public:
         uint32 zoneId = player->GetZoneId();
         uint32 const phaseMask = player->GetPhaseMask();
         uint32 const mapId = player->GetMapId();
+
+        std::shared_lock<std::shared_timed_mutex> guard(sTravelNodeMap.m_nMapMtx, std::try_to_lock);
+        if (!guard.owns_lock())
+        {
+            handler->PSendSysMessage("Travel node map is being reloaded, try again later.");
+            return true;
+        }
+
         std::vector<TravelNode*> nodes;
         for (TravelNode* n : sTravelNodeMap.getNodes())
         {
