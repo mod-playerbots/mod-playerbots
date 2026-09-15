@@ -73,14 +73,15 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto)
                 CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(0));
                 break;
             case ITEM_SPELLTRIGGER_CHANCE_ON_HIT:
-                if (type_ & CollectorType::MELEE)
-                {
-                    if (proto->Spells[j].SpellPPMRate > 0.01f)
-                        CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(static_cast<int>(60000 / proto->Spells[j].SpellPPMRate)));
-                    else
-                        CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(static_cast<int>(60000 / 1.8f)));  // Default PPM = 1.8
-                }
+            {
+                // CanBeTriggeredByType inside CollectSpellStats gates which collector types a proc can trigger
+                // for, so caster on-hit procs are valued for spell damage dealers too.
+                if (proto->Spells[j].SpellPPMRate > 0.01f)
+                    CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(static_cast<int>(60000 / proto->Spells[j].SpellPPMRate)));
+                else
+                    CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(static_cast<int>(60000 / 1.8f)));  // Default PPM = 1.8
                 break;
+            }
             default:
                 break;
         }
@@ -286,6 +287,13 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
                 }
                 break;
             }
+            case SPELL_EFFECT_TRIGGER_SPELL:
+            {
+                // Follow the trigger spell, mirroring SPELL_AURA_PROC_TRIGGER_SPELL
+                if (canNextTrigger)
+                    CollectSpellStats(effectInfo.TriggerSpell, multiplier, triggerCooldown);
+                break;
+            }
             default:
                 break;
         }
@@ -309,6 +317,13 @@ void StatsCollector::CollectEnchantStats(SpellItemEnchantmentEntry const* enchan
             {
                 if (type_ & CollectorType::MELEE)
                     CollectSpellStats(enchant_spell_id, 0.25f);
+                break;
+            }
+            case ITEM_ENCHANTMENT_TYPE_DAMAGE:
+            {
+                // Flat weapon-damage enchant; approximated as raw DPS (true gain depends on weapon speed)
+                if (type_ & CollectorType::MELEE)
+                    stats[STATS_TYPE_MELEE_DPS] += enchant_amount;
                 break;
             }
             case ITEM_ENCHANTMENT_TYPE_EQUIP_SPELL:
@@ -464,6 +479,7 @@ bool StatsCollector::CanBeTriggeredByType(SpellInfo const* spellInfo, uint32 pro
             triggerMask |= MELEE_PROC_FLAG_MASK;
             triggerMask |= SPELL_PROC_FLAG_MASK;
             triggerMask |= PROC_FLAG_DONE_PERIODIC;
+            triggerMask |= PROC_FLAG_KILL;
             if (procFlags & triggerMask)
                 return true;
             break;
@@ -473,6 +489,7 @@ bool StatsCollector::CanBeTriggeredByType(SpellInfo const* spellInfo, uint32 pro
             triggerMask |= MELEE_PROC_FLAG_MASK;
             triggerMask |= SPELL_PROC_FLAG_MASK;
             triggerMask |= PERIODIC_PROC_FLAG_MASK;
+            triggerMask |= PROC_FLAG_KILL;
             if (procFlags & triggerMask)
                 return true;
             break;
@@ -482,6 +499,7 @@ bool StatsCollector::CanBeTriggeredByType(SpellInfo const* spellInfo, uint32 pro
             triggerMask |= RANGED_PROC_FLAG_MASK;
             triggerMask |= SPELL_PROC_FLAG_MASK;
             triggerMask |= PROC_FLAG_DONE_PERIODIC;
+            triggerMask |= PROC_FLAG_KILL;
             if (procFlags & triggerMask)
                 return true;
             break;
@@ -490,6 +508,7 @@ bool StatsCollector::CanBeTriggeredByType(SpellInfo const* spellInfo, uint32 pro
         {
             triggerMask |= SPELL_PROC_FLAG_MASK;
             triggerMask |= PROC_FLAG_DONE_PERIODIC;
+            triggerMask |= PROC_FLAG_KILL;
             // Healing spell cannot trigger
             triggerMask &= ~PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
             triggerMask &= ~PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
@@ -800,6 +819,27 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, float mu
                 default:
                     break;
             }
+            break;
+        }
+        case SPELL_AURA_MOD_REGEN:
+            // Health regeneration (mana is handled by SPELL_AURA_MOD_POWER_REGEN); per-5s value like ITEM_MOD_HEALTH_REGEN
+            stats[STATS_TYPE_HEALTH_REGENERATION] += val * multiplier;
+            break;
+        case SPELL_AURA_MOD_HEALTH_REGEN_IN_COMBAT:
+            stats[STATS_TYPE_HEALTH_REGENERATION] += val * multiplier;
+            break;
+        case SPELL_AURA_MOD_INCREASE_HEALTH_2:
+            // Same as SPELL_AURA_MOD_INCREASE_HEALTH: flat max health -> stamina (15 hp per stamina)
+            stats[STATS_TYPE_STAMINA] += val * multiplier / 15;
+            break;
+        case SPELL_AURA_MOD_TARGET_RESISTANCE:
+        {
+            // Mirrors AuraEffect::HandleModTargetResistance: physical -> armor pen, full spell -> spell pen
+            int32 schoolType = effectInfo.MiscValue;
+            if (schoolType & SPELL_SCHOOL_MASK_NORMAL)
+                stats[STATS_TYPE_ARMOR_PENETRATION] += val * multiplier;
+            if ((schoolType & SPELL_SCHOOL_MASK_SPELL) == SPELL_SCHOOL_MASK_SPELL)
+                stats[STATS_TYPE_SPELL_PENETRATION] += val * multiplier;
             break;
         }
         case SPELL_AURA_PROC_TRIGGER_SPELL:
