@@ -83,6 +83,12 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
     GameObject* go = botAI->GetGameObject(lootGUID);
     if (go && go->isSpawned() && go->GetGoState() == GO_STATE_READY)
     {
+        // Leave quest objects to the player the quests are synced with. Skipping the quest item alone is not
+        // enough: releasing a consumable chest despawns it even with the quest item still inside.
+        Player* questLootReceiver = GetQuestLootReceiver(bot);
+        if (questLootReceiver && (go->ActivateToQuest(bot) || go->ActivateToQuest(questLootReceiver)))
+            return;
+
         bool onlyHasQuestItems = true;
         bool hasAnyQuestItems = false;
         bool neededQuestItem = false;
@@ -99,7 +105,13 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
 
             hasAnyQuestItems = true;
 
-            if (IsNeededForQuest(bot, itemId))
+            bool const botNeedsItem = IsNeededForQuest(bot, itemId);
+
+            // Covers gameobject_questitem entries that ActivateToQuest does not see in the loot template.
+            if (questLootReceiver && (botNeedsItem || IsNeededForQuest(questLootReceiver, itemId)))
+                return;
+
+            if (botNeedsItem)
             {
                 // A gathering node can also drop a needed quest item (e.g.
                 // Root Sample off Barrens herbs); gathering yields both, so
@@ -247,6 +259,25 @@ bool LootObject::IsNeededForQuest(Player* bot, uint32 itemId)
     }
 
     return false;
+}
+
+// With AiPlayerbot.SyncQuestWithPlayer a bot completes a quest the moment its master hands it in, so quest loot is
+// of no use to it and would only be taken from the player. Returns the player a grouped bot leaves quest loot to,
+// or nullptr when the bot loots for itself.
+Player* LootObject::GetQuestLootReceiver(Player* bot)
+{
+    if (!sPlayerbotAIConfig.syncQuestWithPlayer)
+        return nullptr;
+
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    if (!botAI)
+        return nullptr;
+
+    Player* master = botAI->GetMaster();
+    if (!IsRealPlayer(master) || !bot->IsInSameRaidWith(master))
+        return nullptr;
+
+    return master;
 }
 
 WorldObject* LootObject::GetWorldObject(Player* bot)
