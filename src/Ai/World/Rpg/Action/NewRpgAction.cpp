@@ -24,6 +24,7 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
+#include "Playerbots.h"
 #include "QuestDef.h"
 #include "Random.h"
 #include "SharedDefines.h"
@@ -404,6 +405,27 @@ bool NewRpgWanderNpcAction::Execute(Event /*event*/)
             data.lastReach = getMSTime();
             if (bot->CanInteractWithQuestGiver(object))
                 InteractWithNpcOrGameObjectForQuest(data.npcOrGo);
+
+            if (Creature* creature = object->ToCreature())
+            {
+                uint32 npcFlags = creature->GetCreatureTemplate()->npcflag;
+
+                // Vendors: sell junk then buy useful items (gated by config)
+                if (npcFlags & UNIT_NPC_FLAG_VENDOR)
+                {
+                    if (sPlayerbotAIConfig.enableAutoSell)
+                        botAI->DoSpecificAction("sell", Event("sell", "vendor"));
+                    if (sPlayerbotAIConfig.enableAutoBuy)
+                        botAI->DoSpecificAction("buy", Event("buy", "vendor"));
+                }
+
+                // Repair: repair gear below full durability
+                if ((npcFlags & UNIT_NPC_FLAG_REPAIR) && AI_VALUE(uint8, "durability") < 100)
+                {
+                    bot->SetSelection(data.npcOrGo);
+                    botAI->DoSpecificAction("repair", Event("repair"));
+                }
+            }
             return true;
         }
 

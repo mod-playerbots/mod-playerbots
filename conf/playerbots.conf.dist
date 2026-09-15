@@ -779,6 +779,18 @@ AiPlayerbot.LimitTalentsExpansion = 0
 # Default: 1 (enabled)
 AiPlayerbot.EnableRandomBotTrading = 1
 
+# Enable automatic buying of useful items at vendors via the NewRpg strategy.
+# Manual 'b vendor' commands are unaffected. When disabled, bots will not buy
+# items from vendors automatically.
+# Default: 0 (disabled)
+AiPlayerbot.EnableAutoBuy = 0
+
+# Enable automatic selling of items to vendors via the NewRpg strategy.
+# Manual 's vendor' commands are unaffected. When disabled, bots will not sell
+# items to vendors automatically.
+# Default: 0 (disabled)
+AiPlayerbot.EnableAutoSell = 0
+
 # Configure message prefixes which will be excluded in analysis in trade action to open trade window
 AiPlayerbot.TradeActionExcludedPrefixes = "RPLL_H_,DBMv4,{звезда} Questie,{rt1} Questie"
 
