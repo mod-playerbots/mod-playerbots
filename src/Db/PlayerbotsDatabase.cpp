@@ -102,6 +102,33 @@ void PlayerbotsDatabaseConnection::DoPrepareStatements()
             "scale_16, scale_17, scale_18, scale_19, scale_20, scale_21, scale_22, scale_23, scale_24, scale_25, scale_26, scale_27, scale_28, scale_29, scale_30, scale_31, scale_32) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_SYNCH);
     PrepareStatement(PLAYERBOTS_DEL_EQUIP_CACHE_NEW, "DELETE FROM playerbots_item_info_cache WHERE id = ?", CONNECTION_SYNCH);
+
+    PrepareStatement(PLAYERBOTS_SEL_ACCOUNT_KEY, "SELECT security_key FROM playerbots_account_keys WHERE account_id = ?", CONNECTION_SYNCH);
+    PrepareStatement(PLAYERBOTS_REP_ACCOUNT_KEY, "REPLACE INTO playerbots_account_keys (account_id, security_key) VALUES (?, ?)", CONNECTION_SYNCH);
+
+    PrepareStatement(PLAYERBOTS_SEL_ACCOUNT_LINK, "SELECT 1 FROM playerbots_account_links WHERE account_id = ? AND linked_account_id = ?", CONNECTION_SYNCH);
+    PrepareStatement(PLAYERBOTS_SEL_ACCOUNT_LINKS_BY_ACCOUNT, "SELECT linked_account_id FROM playerbots_account_links WHERE account_id = ?", CONNECTION_SYNCH);
+    PrepareStatement(PLAYERBOTS_INS_ACCOUNT_LINK, "INSERT IGNORE INTO playerbots_account_links (account_id, linked_account_id) VALUES (?, ?)", CONNECTION_SYNCH);
+    PrepareStatement(PLAYERBOTS_DEL_ACCOUNT_LINK, "DELETE FROM playerbots_account_links WHERE (account_id = ? AND linked_account_id = ?) OR (account_id = ? AND linked_account_id = ?)", CONNECTION_SYNCH);
+
+    PrepareStatement(PLAYERBOTS_SEL_ACCOUNT_TYPE, "SELECT account_id, account_type FROM playerbots_account_type", CONNECTION_SYNCH);
+    PrepareStatement(PLAYERBOTS_SEL_ACCOUNT_TYPE_BY_ACCOUNT_AND_TYPE, "SELECT 1 FROM playerbots_account_type WHERE account_id = ? AND account_type = ?", CONNECTION_SYNCH);
+    PrepareStatement(PLAYERBOTS_SEL_ACCOUNT_TYPE_COUNT_BY_TYPE, "SELECT account_type, COUNT(*) FROM playerbots_account_type GROUP BY account_type", CONNECTION_SYNCH);
+    PrepareStatement(PLAYERBOTS_SEL_ACCOUNT_TYPE_COUNT_BY_TYPES, "SELECT COUNT(*) FROM playerbots_account_type WHERE account_type IN (?, ?)", CONNECTION_SYNCH);
+    PrepareStatement(PLAYERBOTS_INS_ACCOUNT_TYPE, "INSERT INTO playerbots_account_type (account_id, account_type) VALUES (?, ?) ON DUPLICATE KEY UPDATE account_type = account_type", CONNECTION_SYNCH);
+    PrepareStatement(PLAYERBOTS_UPD_ACCOUNT_TYPE, "UPDATE playerbots_account_type SET account_type = ?, assignment_date = NOW() WHERE account_id = ?", CONNECTION_SYNCH);
+    PrepareStatement(PLAYERBOTS_UPD_ACCOUNT_TYPE_UNASSIGN, "UPDATE playerbots_account_type SET account_type = 0 WHERE account_type = ?", CONNECTION_SYNCH);
+    PrepareStatement(PLAYERBOTS_DEL_ACCOUNT_TYPE, "DELETE FROM playerbots_account_type", CONNECTION_SYNCH);
+
+    PrepareStatement(PLAYERBOTS_SEL_BIS_GEAR, "SELECT class, tab, slot, faction, auto_gear_score_limit, item_id FROM playerbots_bis_gear", CONNECTION_SYNCH);
+
+    PrepareStatement(PLAYERBOTS_DEL_GUILD_TASKS_ALL, "DELETE FROM playerbots_guild_tasks", CONNECTION_SYNCH);
+
+    PrepareStatement(PLAYERBOTS_SEL_PREFERRED_MOUNTS, "SELECT guid, spellid, type FROM playerbots_preferred_mounts", CONNECTION_SYNCH);
+
+    PrepareStatement(PLAYERBOTS_DEL_RANDOM_BOTS_BY_EVENT, "DELETE FROM playerbots_random_bots WHERE event = ?", CONNECTION_SYNCH);
+
+    PrepareStatement(PLAYERBOTS_SEL_TEXT_CHANCE, "SELECT name, probability FROM ai_playerbot_texts_chance", CONNECTION_SYNCH);
 }
 PlayerbotsDatabaseConnection::PlayerbotsDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)
 {

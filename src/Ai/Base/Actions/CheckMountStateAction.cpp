@@ -340,49 +340,30 @@ bool CheckMountStateAction::TryPreferredMount(Player* master) const
 {
     uint32 botGUID = bot->GetGUID().GetRawValue();
 
-    // Build cache (only once)
     if (!preferredMountTableChecked)
     {
-        // Verify preferred mounts table existance in the database
-        QueryResult checkTable = PlayerbotsDatabase.Query(
-            "SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_schema = 'acore_playerbots' AND table_name = 'playerbots_preferred_mounts')");
+        preferredMountTableChecked = true;
 
-        if (checkTable && checkTable->Fetch()[0].Get<uint32>() == 1)
+        PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_PREFERRED_MOUNTS);
+        if (PreparedQueryResult result = PlayerbotsDatabase.Query(stmt))
         {
-            preferredMountTableChecked = true;
-
-            // Cache all mounts of both types globally, for all entries
-            QueryResult result = PlayerbotsDatabase.Query("SELECT guid, spellid, type FROM playerbots_preferred_mounts");
-
-            if (result)
+            uint32 totalResults = 0;
+            do
             {
-                uint32 totalResults = 0;
-                while (auto row = result->Fetch())
-                {
-                    uint32 guid = row[0].Get<uint32>();
-                    uint32 spellId = row[1].Get<uint32>();
-                    uint32 mountType = row[2].Get<uint32>();
+                Field* fields = result->Fetch();
+                uint32 guid = fields[0].Get<uint32>();
+                uint32 spellId = fields[1].Get<uint32>();
+                uint32 mountType = fields[2].Get<uint32>();
 
-                    if (mountType == 0)
-                        mountCache[guid].groundMounts.push_back(spellId);
+                if (mountType == 0)
+                    mountCache[guid].groundMounts.push_back(spellId);
+                else if (mountType == 1)
+                    mountCache[guid].flightMounts.push_back(spellId);
 
-                    else if (mountType == 1)
-                        mountCache[guid].flightMounts.push_back(spellId);
+                totalResults++;
+            } while (result->NextRow());
 
-                    totalResults++;
-
-                    result->NextRow();
-                }
-                LOG_INFO("playerbots", "Preferred mounts initialized | Total records: {}", totalResults);
-            }
-        }
-        else // If the SQL table is missing, log an error and return false
-        {
-            preferredMountTableChecked = true;
-
-            LOG_DEBUG("playerbots", "Preferred mounts SQL table playerbots_preferred_mounts does not exist!");
-
-            return false;
+            LOG_INFO("playerbots", "Preferred mounts initialized | Total records: {}", totalResults);
         }
     }
 

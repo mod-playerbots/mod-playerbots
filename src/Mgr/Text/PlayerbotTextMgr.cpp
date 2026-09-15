@@ -56,7 +56,8 @@ void PlayerbotTextMgr::LoadBotTextChance()
 {
     if (botTextChance.empty())
     {
-        QueryResult results = PlayerbotsDatabase.Query("SELECT name, probability FROM ai_playerbot_texts_chance");
+        PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_TEXT_CHANCE);
+        PreparedQueryResult results = PlayerbotsDatabase.Query(stmt);
         if (results)
         {
             do
