@@ -50,6 +50,7 @@ public:
 
     void CalculateRandomProperty(int32 randomPropertyId, uint32 itemId);
     void CalculateItemSetMod(Player* player, ItemTemplate const* proto);
+    void CollectItemSetBonus(Player* player, ItemTemplate const* proto);
     void CalculateSocketBonus(Player* player, ItemTemplate const* proto);
 
     void CalculateItemTypePenalty(ItemTemplate const* proto);
