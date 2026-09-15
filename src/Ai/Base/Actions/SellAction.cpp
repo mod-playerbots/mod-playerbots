@@ -169,7 +169,10 @@ uint32 SellAction::GetQuestItemRequirement(uint32 itemId)
         for (uint8 i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; i++)
         {
             if (quest->RequiredItemId[i] == itemId && quest->RequiredItemCount[i] > maxRequirement)
+            {
                 maxRequirement = quest->RequiredItemCount[i];
+                LOG_DEBUG("playerbots", "{}: item {} required {}x by active quest {}", bot->GetName(), itemId, maxRequirement, questId);
+            }
         }
     }
 
@@ -205,6 +208,8 @@ void SellAction::Sell(Item* item, bool force)
 
     uint32 countToSell = item->GetCount();
 
+    LOG_DEBUG("playerbots", "{} selling {} (force: {}), keep requirement {}", bot->GetName(), proto->Name1, force ? "yes" : "no", keepRequirement);
+
     if (keepRequirement > 0)
     {
         QueryItemCountVisitor countVisitor(itemId);
@@ -221,6 +226,8 @@ void SellAction::Sell(Item* item, bool force)
         uint32 excessCount = totalCount - keepRequirement;
         if (item->GetCount() > excessCount)
             countToSell = excessCount;
+
+        LOG_DEBUG("playerbots", "{} has {} of {} (this stack {}), keeping {}, selling {}", bot->GetName(), totalCount, proto->Name1, item->GetCount(), keepRequirement, countToSell);
     }
 
     GuidVector vendors = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
