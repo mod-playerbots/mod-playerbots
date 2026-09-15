@@ -721,8 +721,9 @@ std::vector<WorldPosition> WorldPosition::getPathStepFrom(WorldPosition startPos
 {
     // Explicit-start overload. Without this, the chain begins from the
     // unit's current position every step and never advances.
-    path.CalculatePath(startPos.GetPositionX(), startPos.GetPositionY(), startPos.GetPositionZ(),
-                       GetPositionX(), GetPositionY(), GetPositionZ(), false);
+    if (!path.CalculatePath(startPos.GetPositionX(), startPos.GetPositionY(), startPos.GetPositionZ(),
+                            GetPositionX(), GetPositionY(), GetPositionZ(), false))
+        return {};
 
     Movement::PointsArray points = path.GetPath();
     PathType type = path.GetPathType();
@@ -743,6 +744,8 @@ std::vector<WorldPosition> WorldPosition::getPathStepFrom(WorldPosition startPos
         return {};
 
     std::vector<WorldPosition> retvec = fromPointsArray(points);
+    if (retvec.empty())
+        return {};
 
     // Underwater path-extension. When PATHFIND_INCOMPLETE ends within
     // 50y of dest and both endpoints are underwater with LOS, extend
