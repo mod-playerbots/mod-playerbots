@@ -352,7 +352,7 @@ class PlayerbotsServerScript : public ServerScript
 public:
     PlayerbotsServerScript() : ServerScript("PlayerbotsServerScript", {
         SERVERHOOK_ON_PACKET_SENT,
-        SERVERHOOK_ON_PACKET_RECEIVED
+        SERVERHOOK_CAN_PACKET_RECEIVE
     }) {}
 
     void OnPacketSent(WorldSession* session, WorldPacket const& packet) override
@@ -371,11 +371,13 @@ public:
             playerbotMgr->HandleMasterOutgoingPacket(packet);
     }
 
-    void OnPacketReceived(WorldSession* session, WorldPacket const& packet) override
+    bool CanPacketReceive(WorldSession* session, WorldPacket const& packet) override
     {
         if (Player* player = session->GetPlayer())
             if (PlayerbotMgr* playerbotMgr = GET_PLAYERBOT_MGR(player))
                 playerbotMgr->HandleMasterIncomingPacket(packet);
+
+        return true;
     }
 };
 
