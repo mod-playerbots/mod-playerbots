@@ -849,7 +849,7 @@ bool DebugAction::Execute(Event event)
                     if (!target)
                         target = master;
 
-                    master->SendPlaySpellVisual(caster->GetGUID(), 5036);
+                    caster->SendPlaySpellVisual(5036);
                     FakeSpell(effect, realCaster, caster, target->GetGUID(), hits, miss, WorldPosition(caster),
                               WorldPosition(target));
 
