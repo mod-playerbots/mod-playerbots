@@ -1,6 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
+/*
+ * Ported from cmangos/playerbots (ReactionEngine) with modifications.
  */
 
 #ifndef _PLAYERBOT_REACTIONENGINE_H
@@ -22,7 +27,6 @@ struct Reaction
     void SetEvent(Event const& inEvent) { event = Event(inEvent); }
     Event& GetEvent() { return event; }
 
-    uint32 GetDuration() const { return duration; }
     void SetDuration(uint32 inDuration) { duration = inDuration; }
     bool ShouldInterruptCast() const { return action ? action->ShouldReactionInterruptCast() : false; }
     bool ShouldInterruptMovement() const { return action ? action->ShouldReactionInterruptMovement() : false; }
@@ -47,14 +51,13 @@ public:
     Reaction const* GetReaction() const;
 
 private:
-    bool FindReaction(bool isStunned);
+    bool FindReaction(bool minimal, bool isStunned);
     bool StartReaction();
     void StopReaction();
 
     bool CanUpdateAIReaction() const;
 
     Action* InitializeAction(ActionNode* actionNode) override;
-    bool ListenAndExecute(Action* action, Event event) override;
 
 protected:
     Reaction incomingReaction;

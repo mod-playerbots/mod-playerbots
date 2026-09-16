@@ -6,8 +6,6 @@
 
 #include "AiFactory.h"
 #include "BattlegroundMgr.h"
-#include "ReactionEngine.h"
-#include "ReactionStrategy.h"
 #include "DKAiObjectContext.h"
 #include "DruidAiObjectContext.h"
 #include "Engine.h"
@@ -743,7 +741,13 @@ Engine* AiFactory::createDeadEngine(Player* player, PlayerbotAI* const facade, A
 
 void AiFactory::AddDefaultReactionStrategies(Player* player, PlayerbotAI* const facade, ReactionEngine* reactionEngine)
 {
-    reactionEngine->addStrategies("react", "chat", "avoid aoe", "potions", nullptr);
+    (void)player;  // unused and remove warning
+    reactionEngine->addStrategies("react", "chat", "potions", nullptr);
+
+    // Same gate as the combat engine (AddDefaultCombatStrategies), so AutoAvoidAoe and the
+    // real-master requirement keep meaning what they mean.
+    if (sPlayerbotAIConfig.autoAvoidAoe && facade->HasGameClientMaster())
+        reactionEngine->addStrategy("avoid aoe", false);
 
     if (facade->IsRealPlayer() || facade->HasRealPlayerMaster())
         reactionEngine->ChangeStrategy(sPlayerbotAIConfig.reactStrategies);

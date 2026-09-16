@@ -16,7 +16,6 @@
 #include "DBCStores.h"
 #include "EmoteAction.h"
 #include "Engine.h"
-#include "ReactionEngine.h"
 #include "EventProcessor.h"
 #include "ExternalEventHelper.h"
 #include "GameObjectData.h"
@@ -251,10 +250,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     if (nextAICheckDelay > elapsed)
         nextAICheckDelay -= elapsed;
     else
-    {
         nextAICheckDelay = 0;
-        isWaiting = false;
-    }
 
     // Early return if bot is in invalid state
     if (!bot || !bot->GetSession() || !bot->IsInWorld() || bot->IsBeingTeleported() ||
@@ -277,18 +273,19 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
     AllowActivity();
 
-    // Wake up if combat state changed (unless explicitly waiting or casting)
+    // Wake up if combat state changed (unless casting). Applies to every bot: a bot eating,
+    // drinking or sitting out a long GetReactDelay reacts to being attacked on this tick.
     bool isCasting = bot->IsNonMeleeSpellCast(true);
     if (bot->IsInCombat())
     {
-        if (!inCombat && !isCasting && !isWaiting)
+        if (!inCombat && !isCasting)
             ResetActionDuration();
 
         inCombat = true;
     }
     else
     {
-        if (inCombat && !isCasting && !isWaiting)
+        if (inCombat && !isCasting)
             ResetActionDuration();
 
         inCombat = false;
@@ -296,6 +293,8 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
     // Reaction engine: runs even when main engines are paused (e.g. during eat/drink).
     // Only update the main AI when no reaction is running and the internal delay allows it.
+    // Taxi flight is passed as the "stunned" state, as upstream does: only chat actions that
+    // opt in with isUsefulWhenStunned run in flight; the rest stay queued for the main engine.
     bool doMinimalReaction = minimal || !AllowActivity(REACT_ACTIVITY);
     if (UpdateAIReaction(elapsed, doMinimalReaction, bot->IsTaxiFlying()))
         return;

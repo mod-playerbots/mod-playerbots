@@ -53,7 +53,6 @@
 #include "ThreatStrategy.h"
 #include "TravelStrategy.h"
 #include "UseFoodStrategy.h"
-#include "ReactionStrategy.h"
 #include "UsePotionsStrategy.h"
 #include "WaitForAttackStrategy.h"
 #include "WorldPacketHandlerStrategy.h"

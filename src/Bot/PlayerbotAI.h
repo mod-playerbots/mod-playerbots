@@ -399,7 +399,6 @@ public:
     bool UpdateAIReaction(uint32 elapsed, bool minimal, bool isStunned);
     void SetActionDuration(Action const* action);
     using PlayerbotAIBase::SetActionDuration;
-    ReactionEngine* GetReactionEngine() { return reactionEngine; }
 
     std::string const HandleRemoteCommand(std::string const command);
     void HandleCommand(uint32 type, std::string const text, Player* fromPlayer);
@@ -659,7 +658,6 @@ protected:
     time_t allowActiveCheckTimer[MAX_ACTIVITY_TYPE];
     ReactionEngine* reactionEngine = nullptr;
     bool inCombat = false;
-    bool isWaiting = false;
     BotCheatMask cheatMask = BotCheatMask::none;
     Position jumpDestination = Position();
     uint32 nextTransportCheck = 0;

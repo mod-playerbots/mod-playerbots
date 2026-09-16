@@ -1,6 +1,13 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
+/*
+ * Ported from cmangos/playerbots (ReactionEngine) with modifications for the AzerothCore
+ * engine: no AiObjectContext::Update pass, Engine::ListenAndExecute is reused, and the
+ * update gate waits for the full react delay.
  */
 
 #include "ReactionEngine.h"
@@ -52,15 +59,18 @@ void ReactionEngine::Init()
     }
 }
 
-bool ReactionEngine::FindReaction(bool isStunned)
+bool ReactionEngine::FindReaction(bool minimal, bool isStunned)
 {
     if (!IsReacting())
     {
-        aiObjectContext->Update();
+        // Chat triggers are shared with the main engines; once this engine marks and resets
+        // them the main engine never sees the command. While stunned most reactions are
+        // rejected below, so leave the commands queued for the main engine instead of
+        // consuming and dropping them here.
+        if (!isStunned)
+            botAI->HandleCommands();
 
-        botAI->HandleCommands();
-
-        ProcessTriggers(false);
+        ProcessTriggers(minimal);
 
         ActionBasket* reactionItem = nullptr;
 
@@ -75,7 +85,8 @@ bool ReactionEngine::FindReaction(bool isStunned)
                 float reactionRelevance = reactionItem->getRelevance();
                 Event const reactionEvent = reactionItem->getEvent();
 
-                ActionNode* reactionNode = queue.Pop(reactionItem);
+                // Pop() removes the basket Peek() returned and deletes it; the node is ours.
+                ActionNode* reactionNode = queue.Pop();
                 if (reactionNode)
                 {
                     Action* reaction = InitializeAction(reactionNode);
@@ -136,6 +147,9 @@ bool ReactionEngine::StartReaction()
     bool reactionExecuted = false;
     if (incomingReaction.IsValid())
     {
+        // Engine::ListenAndExecute runs the listeners and the debug output, then hands the
+        // action's duration to PlayerbotAI::SetActionDuration, which routes reactions back
+        // to SetReactionDuration below.
         reactionExecuted = ListenAndExecute(incomingReaction.GetAction(), incomingReaction.GetEvent());
         if (reactionExecuted)
             ongoingReaction = incomingReaction;
@@ -180,7 +194,7 @@ bool ReactionEngine::Update(uint32 elapsed, bool minimal, bool isStunned, bool& 
             }
             else
             {
-                if (FindReaction(isStunned))
+                if (FindReaction(minimal, isStunned))
                     reactionFound = true;
             }
         }
@@ -193,20 +207,6 @@ bool ReactionEngine::Update(uint32 elapsed, bool minimal, bool isStunned, bool& 
     }
 
     return HasIncomingReaction() || IsReacting();
-}
-
-bool ReactionEngine::ListenAndExecute(Action* action, Event event)
-{
-    bool actionExecuted = action->Execute(event);
-    if (actionExecuted)
-    {
-        if (!incomingReaction.GetAction())
-            incomingReaction.SetAction(action);
-
-        botAI->SetActionDuration(action);
-    }
-
-    return actionExecuted;
 }
 
 Action* ReactionEngine::InitializeAction(ActionNode* actionNode)
@@ -249,8 +249,10 @@ void ReactionEngine::ResetReactions()
 
 bool ReactionEngine::CanUpdateAIReaction() const
 {
+    // The delay is reset to reactDelay after every empty search; only search again once it
+    // has fully elapsed, otherwise the trigger pass runs on every world tick.
     Player* bot = botAI->GetBot();
-    return (aiReactionUpdateDelay < 100U) &&
+    return (aiReactionUpdateDelay == 0U) &&
            bot->IsInWorld() &&
            !bot->IsBeingTeleported();
 }

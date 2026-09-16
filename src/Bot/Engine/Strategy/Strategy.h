@@ -64,7 +64,9 @@ static constexpr float ACTION_LIGHT_HEAL = 10.0f;
 static constexpr float ACTION_MEDIUM_HEAL = 20.0f;
 static constexpr float ACTION_CRITICAL_HEAL = 30.0f;
 static constexpr float ACTION_EMERGENCY = 90.0f;
-static constexpr float ACTION_PASSTROUGH = 100.0f;
+// Reaction engine only: chat commands and engine housekeeping. Same value as the
+// PassThroughStrategy default so it survives minimal mode; never used in the main engines.
+static constexpr float ACTION_PASSTHROUGH = 100.0f;
 
 class Strategy : public PlayerbotAIAware
 {

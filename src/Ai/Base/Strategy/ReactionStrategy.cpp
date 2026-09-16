@@ -1,6 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
+/*
+ * Ported from cmangos/playerbots (ReactionStrategy) with modifications.
  */
 
 #include "ReactionStrategy.h"
@@ -9,15 +14,17 @@
 
 void ReactionStrategy::InitReactionTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // Upstream cmangos also routes combat end, death and resurrect through here; this port
-    // keeps those transitions inline in PlayerbotAI and only promotes combat start, so bots
-    // enter the combat engine within reactDelay even while the main AI is delayed
-    // (eating, drinking, casting, long action durations).
+    // Upstream cmangos switches engines from here (combat start/end, death, resurrect). This
+    // port keeps every engine switch on the existing paths (AttackAction, DropTargetAction,
+    // PlayerbotAI::DoNextAction) because entering the combat engine without a current target
+    // gets bounced straight back by "invalid target" -> "drop target". The reaction only wakes
+    // the main AI when the group's attackers first appear, so a bot that is eating, drinking
+    // or sitting out a long delay picks a target through "dps assist"/"tank assist" right away.
     triggers.push_back(
         new TriggerNode(
             "combat start",
             {
-                NextAction("set combat state", ACTION_PASSTROUGH + 10)
+                NextAction("wake on combat start", ACTION_PASSTHROUGH)
             }
         )
     );

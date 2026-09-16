@@ -1386,12 +1386,13 @@ AiPlayerbot.NonCombatStrategies = ""
 
 # Reaction engine strategy overrides.
 # Comma-separated +strategy/-strategy modifiers applied to the reaction engine after the defaults
-# are added ("react", "chat", "avoid aoe", "potions"). Empty string = use defaults unchanged.
+# are added ("react", "chat", "potions", plus "avoid aoe" when AutoAvoidAoe is enabled and the bot
+# has a real player master). Empty string = use defaults unchanged.
 # ReactStrategies applies to bots with a real player master or that are real players themselves.
 # RandomBotReactStrategies applies to all other bots (random bots without a real player master).
-# Example: "-avoid aoe" disables AoE dodging; "+custom_react" adds a custom reaction strategy.
-# AiPlayerbot.ReactStrategies = ""
-# AiPlayerbot.RandomBotReactStrategies = ""
+# Example: "-potions" stops potion use as a reaction; "+custom_react" adds a custom reaction strategy.
+AiPlayerbot.ReactStrategies = ""
+AiPlayerbot.RandomBotReactStrategies = ""
 
 # Remove "healer dps" strategy on the maps specified below.
 # Default: 1 (enabled)
