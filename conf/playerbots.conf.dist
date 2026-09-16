@@ -1404,8 +1404,8 @@ AiPlayerbot.EnableNewRpgStrategy = 1
 # Use pre-computed travel node paths for long-distance movement (>300 yards).
 # When enabled, bots use the travel node graph (A*, flight paths, transports)
 # instead of repeated mmap hops. Experimental.
-# Default: 0 (disabled)
-AiPlayerbot.EnableTravelNodes = 0
+# Default: 1 (enabled)
+AiPlayerbot.EnableTravelNodes = 1
 
 # Travel-node router tiering (same-map journeys):
 #   dist <= TravelNodeDirectDistance : direct mmap path preferred (cheap)
