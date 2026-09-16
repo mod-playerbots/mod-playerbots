@@ -44,6 +44,7 @@
 #include "RTSCStrategy.h"
 #include "RacialsStrategy.h"
 #include "RangedCombatStrategy.h"
+#include "ReactionStrategy.h"
 #include "ReturnStrategy.h"
 #include "RpgStrategy.h"
 #include "RunawayStrategy.h"

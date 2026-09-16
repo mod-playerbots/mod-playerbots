@@ -18,6 +18,7 @@
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "PriestAiObjectContext.h"
+#include "ReactionEngine.h"
 #include "RogueAiObjectContext.h"
 #include "ShamanAiObjectContext.h"
 #include "SharedDefines.h"
@@ -741,7 +742,6 @@ Engine* AiFactory::createDeadEngine(Player* player, PlayerbotAI* const facade, A
 
 void AiFactory::AddDefaultReactionStrategies(Player* player, PlayerbotAI* const facade, ReactionEngine* reactionEngine)
 {
-    (void)player;  // unused and remove warning
     reactionEngine->addStrategies("react", "chat", "potions", nullptr);
 
     // Same gate as the combat engine (AddDefaultCombatStrategies), so AutoAvoidAoe and the
@@ -749,10 +749,10 @@ void AiFactory::AddDefaultReactionStrategies(Player* player, PlayerbotAI* const 
     if (sPlayerbotAIConfig.autoAvoidAoe && facade->HasGameClientMaster())
         reactionEngine->addStrategy("avoid aoe", false);
 
-    if (facade->IsRealPlayer() || facade->HasRealPlayerMaster())
-        reactionEngine->ChangeStrategy(sPlayerbotAIConfig.reactStrategies);
-    else
+    if (sRandomPlayerbotMgr.IsRandomBot(player))
         reactionEngine->ChangeStrategy(sPlayerbotAIConfig.randomBotReactStrategies);
+    else
+        reactionEngine->ChangeStrategy(sPlayerbotAIConfig.reactStrategies);
 }
 
 ReactionEngine* AiFactory::createReactionEngine(Player* player, PlayerbotAI* const facade, AiObjectContext* aiObjectContext)

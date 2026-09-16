@@ -42,6 +42,7 @@
 #include "PositionValue.h"
 #include "RBAC.h"
 #include "RandomPlayerbotMgr.h"
+#include "ReactionEngine.h"
 #include "SayAction.h"
 #include "ScriptMgr.h"
 #include "ServerFacade.h"
@@ -296,7 +297,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     // Taxi flight is passed as the "stunned" state, as upstream does: only chat actions that
     // opt in with isUsefulWhenStunned run in flight; the rest stay queued for the main engine.
     bool doMinimalReaction = minimal || !AllowActivity(REACT_ACTIVITY);
-    if (UpdateAIReaction(elapsed, doMinimalReaction, bot->IsTaxiFlying()))
+    if (UpdateAIReaction(elapsed, doMinimalReaction, bot->IsInFlight()))
         return;
 
     if (!CanUpdateAI())
@@ -450,7 +451,7 @@ bool PlayerbotAI::UpdateAIReaction(uint32 elapsed, bool minimal, bool isStunned)
         if (reaction)
         {
             if (reaction->ShouldInterruptCast())
-                InterruptSpell();
+                bot->InterruptNonMeleeSpells(true);
 
             if (reaction->ShouldInterruptMovement())
                 bot->StopMoving();

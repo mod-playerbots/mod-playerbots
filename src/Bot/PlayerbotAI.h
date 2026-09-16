@@ -389,6 +389,9 @@ private:
 
 class PlayerbotAI : public PlayerbotAIBase
 {
+    // Consumes queued chat commands from FindReaction(); needs HandleCommands().
+    friend class ReactionEngine;
+
 public:
     PlayerbotAI();
     PlayerbotAI(Player* bot);
