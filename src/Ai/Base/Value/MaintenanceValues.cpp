@@ -191,7 +191,7 @@ bool AhBuyListValue::IsSlotWeak(uint8 slot) const
         return true;
 
     //TODO: The criteria for what qualifies as a bad slot is not great atm.
-    return item->GetTemplate()->RequiredLevel < bot->GetLevel() - 2;
+    return item->GetTemplate()->RequiredLevel + 2 < static_cast<uint32>(bot->GetLevel());
 }
 
 AhListMap& AhBuyListValue::Get()

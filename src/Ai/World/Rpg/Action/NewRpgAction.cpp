@@ -818,7 +818,6 @@ bool NewRpgGoCityAction::ExecuteAuctioneerTask(NewRpgInfo::GoCity& data)
     return false;
 }
 
-
 void NewRpgTravelFlightAction::ContinueCrossMapTaxi()
 {
     if (bot->IsBeingTeleported())

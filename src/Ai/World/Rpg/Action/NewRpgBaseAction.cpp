@@ -1203,7 +1203,6 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             if (!BuildCityTasks(taskList))
                 return false;
 
-
             //if the only task is visiting a city, make sure we arent already in one.
             if (taskList.size() <= 1)
             {

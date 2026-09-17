@@ -91,7 +91,6 @@ public:
     bool Execute(Event event) override;
 };
 
-
 class AhBidderNotificationAction : public Action
 {
 public:
