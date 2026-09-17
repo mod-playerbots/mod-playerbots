@@ -52,6 +52,7 @@ public:
 
 private:
     bool FindReaction(bool minimal, bool isStunned);
+    float ApplyMainEngineMultipliers(Action* reaction, float relevance);
     bool StartReaction();
     void StopReaction();
 

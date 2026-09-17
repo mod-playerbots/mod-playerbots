@@ -104,6 +104,9 @@ bool ReactionEngine::FindReaction(bool minimal, bool isStunned)
                                     break;
                             }
 
+                            if (reactionRelevance > 0.0f)
+                                reactionRelevance = ApplyMainEngineMultipliers(reaction, reactionRelevance);
+
                             if (!skipReactionPrerequisites)
                             {
                                 if (MultiplyAndPush(reactionNode->getPrerequisites(), reactionRelevance + 0.02f,
@@ -140,6 +143,27 @@ bool ReactionEngine::FindReaction(bool minimal, bool isStunned)
     }
 
     return false;
+}
+
+float ReactionEngine::ApplyMainEngineMultipliers(Action* reaction, float relevance)
+{
+    Engine const* mainEngine = botAI->GetCurrentEngine();
+    if (!mainEngine || mainEngine == this)
+        return relevance;
+
+    for (Multiplier* multiplier : mainEngine->GetMultipliers())
+    {
+        relevance *= multiplier->GetValue(reaction);
+        reaction->setRelevance(relevance);
+        if (relevance <= 0.0f)
+        {
+            LogAction("Multiplier %s made reaction %s useless", multiplier->getName().c_str(),
+                      reaction->getName().c_str());
+            break;
+        }
+    }
+
+    return relevance;
 }
 
 bool ReactionEngine::StartReaction()

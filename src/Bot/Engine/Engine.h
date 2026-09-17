@@ -87,6 +87,7 @@ public:
     void removeActionExecutionListener(ActionExecutionListener* listener) { actionExecutionListeners.Remove(listener); }
     bool HasStrategyType(StrategyType type) { return strategyTypeMask & type; }
     bool HasTargetExclusions() const { return hasTargetExclusions; }
+    std::vector<Multiplier*> const& GetMultipliers() const { return multipliers; }
     virtual ~Engine(void);
 
     bool testMode;
@@ -95,12 +96,12 @@ private:
     void PushDefaultActions();
     ActionNode* CreateActionNode(std::string const name);
 
-    void LogAction(char const* format, ...);
     void LogValues();
 
     ActionExecutionListeners actionExecutionListeners;
 
 protected:
+    void LogAction(char const* format, ...);
     bool MultiplyAndPush(std::vector<NextAction> actions, float forceRelevance, bool skipPrerequisites, Event event,
                          char const* pushType);
     void Reset();
