@@ -7,7 +7,11 @@
 #include "QuestStrategies.h"
 #include "Playerbots.h"
 
-QuestStrategy::QuestStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI) { supported.push_back("accept quest"); }
+QuestStrategy::QuestStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI)
+{
+    supported.push_back("accept quest");
+    supported.push_back("accept auto quest");
+}
 
 void QuestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {

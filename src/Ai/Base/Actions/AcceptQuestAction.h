@@ -31,6 +31,18 @@ public:
     bool Execute(Event event) override;
 };
 
+// An auto-accept quest is taken by the core inside the handler for
+// CMSG_QUESTGIVER_QUERY_QUEST, so no CMSG_QUESTGIVER_ACCEPT_QUEST is ever sent
+// and the bots have nothing to mirror. This listens to the query instead, and
+// only acts when the quest really carries QUEST_FLAGS_AUTO_ACCEPT, so merely
+// opening the dialog on an ordinary quest still decides nothing.
+class AcceptAutoQuestAction : public AcceptAllQuestsAction
+{
+public:
+    AcceptAutoQuestAction(PlayerbotAI* botAI) : AcceptAllQuestsAction(botAI, "accept auto quest") {}
+    bool Execute(Event event) override;
+};
+
 class AcceptQuestShareAction : public Action
 {
 public:

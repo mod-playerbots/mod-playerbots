@@ -79,12 +79,21 @@ bool AcceptQuestAction::Execute(Event event)
         p >> guid >> quest;
     }
 
+    // These two used to return in silence, which made a bot that never saw the
+    // master's packet look exactly like one that refused the quest. Every other
+    // way out of AcceptQuest tells the master what happened.
     if (!quest || !guid)
+    {
+        botAI->TellMaster("No quest giver or quest id in the request.");
         return false;
+    }
 
     Quest const* qInfo = sObjectMgr->GetQuestTemplate(quest);
     if (!qInfo)
+    {
+        botAI->TellMaster("Quest " + std::to_string(quest) + " has no template.");
         return false;
+    }
 
     hasAccept |= AcceptQuest(qInfo, ObjectGuid(guid));
 
@@ -97,6 +106,29 @@ bool AcceptQuestAction::Execute(Event event)
     }
 
     return hasAccept;
+}
+
+bool AcceptAutoQuestAction::Execute(Event event)
+{
+    // CMSG_QUESTGIVER_QUERY_QUEST carries the same two fields as the accept
+    // opcode: the quest giver and the quest.
+    WorldPacket& p = event.getPacket();
+    if (p.empty())
+        return false;
+
+    p.rpos(0);
+    uint64_t guid = 0;
+    uint32 questId = 0;
+    p >> guid >> questId;
+
+    if (!guid || !questId)
+        return false;
+
+    Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+    if (!quest || !quest->IsAutoAccept())
+        return false;   // an ordinary quest: wait for the master's accept
+
+    return AcceptQuest(quest, ObjectGuid(guid));
 }
 
 bool AcceptQuestShareAction::Execute(Event event)

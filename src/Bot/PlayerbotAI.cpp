@@ -219,6 +219,9 @@ PlayerbotAI::PlayerbotAI(Player* bot)
     // quest packet
     masterIncomingPacketHandlers.AddHandler(CMSG_QUESTGIVER_COMPLETE_QUEST, "complete quest");
     masterIncomingPacketHandlers.AddHandler(CMSG_QUESTGIVER_ACCEPT_QUEST, "accept quest");
+    // Auto-accept quests never send the accept opcode - the core takes them
+    // inside the query handler. See AcceptAutoQuestAction.
+    masterIncomingPacketHandlers.AddHandler(CMSG_QUESTGIVER_QUERY_QUEST, "accept auto quest");
     masterIncomingPacketHandlers.AddHandler(CMSG_QUEST_CONFIRM_ACCEPT, "confirm quest");
     masterIncomingPacketHandlers.AddHandler(CMSG_PUSHQUESTTOPARTY, "quest share");
     botOutgoingPacketHandlers.AddHandler(SMSG_QUESTUPDATE_COMPLETE, "quest update complete");

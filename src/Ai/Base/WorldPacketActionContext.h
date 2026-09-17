@@ -79,6 +79,7 @@ public:
         // quest
         creators["talk to quest giver"] = &WorldPacketActionContext::turn_in_quest;
         creators["accept quest"] = &WorldPacketActionContext::accept_quest;
+        creators["accept auto quest"] = &WorldPacketActionContext::accept_auto_quest;
         creators["confirm quest"] = &WorldPacketActionContext::confirm_quest;
         creators["accept all quests"] = &WorldPacketActionContext::accept_all_quests;
         creators["accept quest share"] = &WorldPacketActionContext::accept_quest_share;
@@ -161,6 +162,7 @@ private:
 
     static Action* turn_in_quest(PlayerbotAI* botAI) { return new TalkToQuestGiverAction(botAI); }
     static Action* accept_quest(PlayerbotAI* botAI) { return new AcceptQuestAction(botAI); }
+    static Action* accept_auto_quest(PlayerbotAI* botAI) { return new AcceptAutoQuestAction(botAI); }
     static Action* confirm_quest(PlayerbotAI* ai) { return new ConfirmQuestAction(ai); }
     static Action* accept_all_quests(PlayerbotAI* botAI) { return new AcceptAllQuestsAction(botAI); }
     static Action* accept_quest_share(PlayerbotAI* botAI) { return new AcceptQuestShareAction(botAI); }

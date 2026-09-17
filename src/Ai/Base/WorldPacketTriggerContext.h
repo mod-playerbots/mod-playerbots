@@ -38,6 +38,7 @@ public:
         // quest
         creators["complete quest"] = &WorldPacketTriggerContext::complete_quest;
         creators["accept quest"] = &WorldPacketTriggerContext::accept_quest;
+        creators["accept auto quest"] = &WorldPacketTriggerContext::accept_auto_quest;
         creators["confirm quest"] = &WorldPacketTriggerContext::quest_confirm_accept;
         creators["quest share"] = &WorldPacketTriggerContext::quest_share;
         creators["quest update add kill"] = &WorldPacketTriggerContext::quest_update_add_kill;
@@ -105,6 +106,7 @@ private:
     static Trigger* quest_update_complete(PlayerbotAI* ai) { return new WorldPacketTrigger(ai, "quest update complete"); }
     static Trigger* complete_quest(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "complete quest"); }
     static Trigger* accept_quest(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "accept quest"); }
+    static Trigger* accept_auto_quest(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "accept auto quest"); }
     static Trigger* quest_confirm_accept(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "confirm quest"); }
     static Trigger* quest_share(PlayerbotAI* ai) { return new WorldPacketTrigger(ai, "quest share"); }
     static Trigger* questgiver_quest_details(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "questgiver quest details"); }
