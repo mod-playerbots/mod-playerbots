@@ -570,8 +570,7 @@ Action* Engine::InitializeAction(ActionNode* actionNode)
     if (action)
     {
         action->SetReaction(false);
-        // Not all actions set a duration; clear leftovers from earlier runs so
-        // ListenAndExecute doesn't re-apply a stale delay from a previous execution.
+        // Clear duration leftovers so ListenAndExecute doesn't re-apply a stale delay
         action->ResetDuration();
     }
 

@@ -744,8 +744,6 @@ void AiFactory::AddDefaultReactionStrategies(Player* player, PlayerbotAI* const 
 {
     reactionEngine->addStrategies("react", "chat", "potions", nullptr);
 
-    // Same gate as the combat engine (AddDefaultCombatStrategies), so AutoAvoidAoe and the
-    // real-master requirement keep meaning what they mean.
     if (sPlayerbotAIConfig.autoAvoidAoe && facade->HasGameClientMaster())
         reactionEngine->addStrategy("avoid aoe", false);
 

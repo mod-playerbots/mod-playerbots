@@ -274,8 +274,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
     AllowActivity();
 
-    // Wake up if combat state changed (unless casting). Applies to every bot: a bot eating,
-    // drinking or sitting out a long GetReactDelay reacts to being attacked on this tick.
+    // Wake up if combat state changed (unless casting).
     bool isCasting = bot->IsNonMeleeSpellCast(true);
     if (bot->IsInCombat())
     {
@@ -292,10 +291,6 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         inCombat = false;
     }
 
-    // Reaction engine: runs even when main engines are paused (e.g. during eat/drink).
-    // Only update the main AI when no reaction is running and the internal delay allows it.
-    // Taxi flight is passed as the "stunned" state, as upstream does: only chat actions that
-    // opt in with isUsefulWhenStunned run in flight; the rest stay queued for the main engine.
     bool doMinimalReaction = minimal || !AllowActivity(REACT_ACTIVITY);
     if (UpdateAIReaction(elapsed, doMinimalReaction, bot->IsInFlight()))
         return;
