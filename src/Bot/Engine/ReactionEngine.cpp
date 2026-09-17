@@ -2,12 +2,8 @@
  * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
- */
-
-/*
- * Ported from cmangos/playerbots (ReactionEngine) with modifications for the AzerothCore
- * engine: no AiObjectContext::Update pass, Engine::ListenAndExecute is reused, and the
- * update gate waits for the full react delay.
+ *
+ * Ported from cmangos/playerbots
  */
 
 #include "ReactionEngine.h"
