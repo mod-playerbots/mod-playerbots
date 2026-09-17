@@ -5361,6 +5361,12 @@ std::string const PlayerbotAI::HandleRemoteCommand(std::string const command)
                 case NeedMoneyFor::guild:
                     out << "guild";
                     break;
+                case NeedMoneyFor::tradeskill:
+                    out << "tradeskill";
+                    break;
+                case NeedMoneyFor::ah:
+                    out << "auction deposits";
+                    break;
                 default:
                     break;
             }
