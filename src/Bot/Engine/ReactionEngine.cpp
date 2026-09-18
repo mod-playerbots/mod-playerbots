@@ -59,10 +59,7 @@ bool ReactionEngine::FindReaction(bool minimal, bool isStunned)
 {
     if (!IsReacting())
     {
-        // Chat triggers are shared with the main engines; once this engine marks and resets
-        // them the main engine never sees the command. While stunned most reactions are
-        // rejected below, so leave the commands queued for the main engine instead of
-        // consuming and dropping them here.
+        // Skip on a taxi: handling commands here would consume them, and most reactions can't run anyway.
         if (!isStunned)
             botAI->HandleCommands();
 
