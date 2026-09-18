@@ -672,11 +672,7 @@ bool ItemUsageValue::IsItemUsefulForSkill(ItemTemplate const* proto)
 
 namespace
 {
-    // Crafting chains can be cyclic: the alchemy transmutes turn Essence of Earth into Water into
-    // Air into Fire and back into Earth, and Earth into Life and back again. Asking whether one
-    // essence is needed asks for the usage of the essence it crafts, which lands right back here.
-    // "item usage" is recalculated on every Get(), so nothing breaks the cycle on its own and the
-    // recursion runs until the stack overflows. Remember which items are already being evaluated
+    // Crafting chains can be cyclic: Remember which items are already being evaluated
     // further up the stack and stop as soon as a cycle closes.
     thread_local std::unordered_set<uint32> itemsBeingEvaluated;
 
