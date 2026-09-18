@@ -6,6 +6,7 @@
 
 #include "VHActions.h"
 #include "Playerbots.h"
+#include "VHTriggers.h"
 
 bool AttackErekemAction::Execute(Event /*event*/)
 {
