@@ -1367,7 +1367,7 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event /*event*/)
     if (axe->GetVictim() != bot || !bot->IsWithinMeleeRange(axe))
         return false;
 
-    // Devastation's CombatReach is 0y (so it defaults to DEFAULT_WORLD_OBJECT_SIZE, or 0.389y)
+    // Devastation's CombatReach is 0y (so it is set to DEFAULT_COMBAT_REACH, or 1.5y).
     constexpr float safeDistance = 15.0f;
     if (!GetNearestNonTankPlayerInRadius(bot, safeDistance))
         return false;
