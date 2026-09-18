@@ -437,6 +437,7 @@ public:
 
     void OnPlayerbotUpdate(uint32 /*diff*/) override
     {
+        PlayerbotHolder::UpdatePendingLogins();  // Headless sessions whose login holder is in flight
         sRandomPlayerbotMgr.UpdateSessions();  // Per-bot updates only
     }
 
@@ -464,6 +465,7 @@ public:
     {
         LOG_INFO("playerbots", "Logging out all bots...");
         sRandomPlayerbotMgr.LogoutAllBots();
+        PlayerbotHolder::ClearPendingLogins();
     }
 };
 
