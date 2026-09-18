@@ -29,7 +29,7 @@ void WotlkDungeonVHStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 
     // Zuramat the Obliterator
     triggers.push_back(new TriggerNode("shroud of darkness",
-        { NextAction("stop attack", ACTION_HIGH + 5) }));
+        { NextAction("zuramat stop attack", ACTION_HIGH + 5) }));
     triggers.push_back(new TriggerNode("void shift",
         { NextAction("attack void sentry", ACTION_RAID + 1) }));
 

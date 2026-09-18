@@ -9,22 +9,11 @@
 
 #include "Action.h"
 #include "AttackAction.h"
-#include "GenericSpellActions.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
-#include "VHTriggers.h"
 
 class AttackErekemAction : public AttackAction
 {
 public:
     AttackErekemAction(PlayerbotAI* ai) : AttackAction(ai, "attack erekem") {}
-    bool Execute(Event event) override;
-};
-
-class AttackIchoronElementalsAction : public AttackAction
-{
-public:
-    AttackIchoronElementalsAction(PlayerbotAI* ai) : AttackAction(ai, "attack ichoron elementals") {}
     bool Execute(Event event) override;
 };
 
@@ -42,10 +31,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class StopAttackAction : public Action
+class ZuramatStopAttackAction : public Action
 {
 public:
-    StopAttackAction(PlayerbotAI* ai) : Action(ai, "stop attack") {}
+    ZuramatStopAttackAction(PlayerbotAI* ai) : Action(ai, "zuramat stop attack") {}
     bool Execute(Event event) override;
 };
 
