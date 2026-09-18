@@ -285,6 +285,8 @@ void CheckMountStateAction::CompleteDismount(Player* bot)
     bot->SetFallInformation(0, startZ);
     fallInfo.pos.Relocate(x, y, groundZ);
     bot->HandleFall(fallInfo);
+    // Re-anchor at the ground: Player::IsFalling() compares standing Z to this, so startZ reads as a fall.
+    bot->SetFallInformation(0, groundZ);
     bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
 }
 

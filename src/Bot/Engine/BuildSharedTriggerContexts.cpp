@@ -60,6 +60,7 @@ void AiObjectContext::BuildSharedTriggerContexts(
     triggerContexts.Add(new TbcDungeonMechanarTriggerContext());
     triggerContexts.Add(new TbcDungeonUnderbogTriggerContext());
     triggerContexts.Add(new TbcDungeonMagistersTerraceTriggerContext());
+    triggerContexts.Add(new TbcDungeonHellfireRampartsTriggerContext());
     triggerContexts.Add(new WotlkDungeonUKTriggerContext());
     triggerContexts.Add(new WotlkDungeonNexTriggerContext());
     triggerContexts.Add(new WotlkDungeonANTriggerContext());

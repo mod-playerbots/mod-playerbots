@@ -60,6 +60,7 @@ void AiObjectContext::BuildSharedActionContexts(
     actionContexts.Add(new TbcDungeonMechanarActionContext());
     actionContexts.Add(new TbcDungeonUnderbogActionContext());
     actionContexts.Add(new TbcDungeonMagistersTerraceActionContext());
+    actionContexts.Add(new TbcDungeonHellfireRampartsActionContext());
     actionContexts.Add(new WotlkDungeonUKActionContext());
     actionContexts.Add(new WotlkDungeonNexActionContext());
     actionContexts.Add(new WotlkDungeonANActionContext());
