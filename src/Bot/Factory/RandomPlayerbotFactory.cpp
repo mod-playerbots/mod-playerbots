@@ -457,36 +457,42 @@ void RandomPlayerbotFactory::CreateRandomBots()
 
     if (sPlayerbotAIConfig.deleteRandomBotAccounts)
     {
+        // Collect bot account ids from the login database so the cleanup below
+        // never needs a cross-database subquery (the login database may live on
+        // a different server than the character database)
         std::vector<uint32> botAccounts;
-        std::vector<uint32> botFriends;
-
-        // Calculates the total number of required accounts.
-        uint32 totalAccountCount = CalculateTotalAccountCount();
-
-        for (uint32 accountNumber = 0; accountNumber < totalAccountCount; ++accountNumber)
+        QueryResult accountResult = LoginDatabase.Query("SELECT id FROM account WHERE username LIKE '{}%%' ORDER BY id",
+            sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
+        if (accountResult)
         {
-            std::ostringstream out;
-            out << sPlayerbotAIConfig.randomBotAccountPrefix << accountNumber;
-            std::string const accountName = out.str();
-
-            if (uint32 accountId = AccountMgr::GetId(accountName))
-                botAccounts.push_back(accountId);
+            do
+            {
+                botAccounts.push_back(accountResult->Fetch()->Get<uint32>());
+            } while (accountResult->NextRow());
         }
 
-        LOG_INFO("playerbots", "Deleting all random bot characters and accounts...");
+        std::string botAccountIds;
+        for (uint32 accountId : botAccounts)
+        {
+            if (!botAccountIds.empty())
+                botAccountIds += ", ";
+            botAccountIds += std::to_string(accountId);
+        }
+        if (botAccountIds.empty())
+            botAccountIds = "0";    // account ids start at 1, so this matches nothing
+
+        LOG_INFO("playerbots", "Deleting all random bot characters and accounts ({} bot accounts found)...", botAccounts.size());
 
         // First execute all the cleanup SQL commands
         // Clear playerbots_random_bots and playerbots_account_type
         PlayerbotsDatabase.Execute("DELETE FROM playerbots_random_bots");
         PlayerbotsDatabase.Execute("DELETE FROM playerbots_account_type");
 
-        // Get the database names dynamically
-        std::string loginDBName = LoginDatabase.GetConnectionInfo()->database;
+        // Get the character database name dynamically (used in same-server subqueries below)
         std::string characterDBName = CharacterDatabase.GetConnectionInfo()->database;
 
-        // Delete all characters from bot accounts
-        CharacterDatabase.Execute("DELETE FROM characters WHERE account IN (SELECT id FROM " + loginDBName + ".account WHERE username LIKE '{}%%')",
-            sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
+        // Delete all characters from bot accounts (by explicit id list, no cross-database subquery)
+        CharacterDatabase.Execute("DELETE FROM characters WHERE account IN (" + botAccountIds + ")");
 
         // Wait for the characters to be deleted before proceeding to dependent deletes
         while (CharacterDatabase.QueueSize())
@@ -498,9 +504,8 @@ void RandomPlayerbotFactory::CreateRandomBots()
         // Clean up orphaned entries in playerbots_guild_tasks
         PlayerbotsDatabase.Execute("DELETE FROM playerbots_guild_tasks WHERE owner NOT IN (SELECT guid FROM " + characterDBName + ".characters)");
 
-        // Clean up orphaned entries in playerbots_db_store
-        PlayerbotsDatabase.Execute("DELETE FROM playerbots_db_store WHERE guid NOT IN (SELECT guid FROM " + characterDBName + ".characters WHERE account IN (SELECT id FROM " + loginDBName + ".account WHERE username NOT LIKE '{}%%'))",
-            sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
+        // Clean up orphaned entries in playerbots_db_store (explicit id list, no cross-database subquery)
+        PlayerbotsDatabase.Execute("DELETE FROM playerbots_db_store WHERE guid NOT IN (SELECT guid FROM " + characterDBName + ".characters WHERE account NOT IN (" + botAccountIds + "))");
 
         // Clean up orphaned records in character-related tables
         CharacterDatabase.Execute("DELETE FROM arena_team_member WHERE guid NOT IN (SELECT guid FROM characters)");
