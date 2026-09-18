@@ -21,9 +21,8 @@
 static constexpr uint32 SPELL_COLD_WEATHER_FLYING = 54197;
 static constexpr float PARACHUTE_LAND_THRESHOLD = 15.0f;
 
-// Define the static map / init bool for caching bot preferred mount data globally
+// Preferred mounts per bot, loaded once at startup by LoadPreferredMounts()
 std::unordered_map<uint32, PreferredMountCache> CheckMountStateAction::mountCache;
-bool CheckMountStateAction::preferredMountTableChecked = false;
 
 MountData CollectMountData(Player const* bot)
 {
@@ -336,50 +335,58 @@ bool CheckMountStateAction::TryForms(Player* master, int32 masterMountType, int3
     return false;
 }
 
+void CheckMountStateAction::LoadPreferredMounts()
+{
+    mountCache.clear();
+
+    PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_PREFERRED_MOUNTS);
+    PreparedQueryResult result = PlayerbotsDatabase.Query(stmt);
+    if (!result)
+        return;
+
+    uint32 totalResults = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+        uint32 guid = fields[0].Get<uint32>();
+        uint32 spellId = fields[1].Get<uint32>();
+        uint32 mountType = fields[2].Get<uint32>();
+
+        if (mountType == 0)
+            mountCache[guid].groundMounts.push_back(spellId);
+        else if (mountType == 1)
+            mountCache[guid].flightMounts.push_back(spellId);
+
+        totalResults++;
+    } while (result->NextRow());
+
+    LOG_INFO("playerbots", "Preferred mounts initialized | Total records: {}", totalResults);
+}
+
 bool CheckMountStateAction::TryPreferredMount(Player* master) const
 {
     uint32 botGUID = bot->GetGUID().GetRawValue();
 
-    if (!preferredMountTableChecked)
-    {
-        preferredMountTableChecked = true;
+    // mountCache is filled once on the world thread at startup and only read afterwards
+    auto itr = mountCache.find(botGUID);
+    if (itr == mountCache.end())
+        return false;
 
-        PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_PREFERRED_MOUNTS);
-        if (PreparedQueryResult result = PlayerbotsDatabase.Query(stmt))
-        {
-            uint32 totalResults = 0;
-            do
-            {
-                Field* fields = result->Fetch();
-                uint32 guid = fields[0].Get<uint32>();
-                uint32 spellId = fields[1].Get<uint32>();
-                uint32 mountType = fields[2].Get<uint32>();
-
-                if (mountType == 0)
-                    mountCache[guid].groundMounts.push_back(spellId);
-                else if (mountType == 1)
-                    mountCache[guid].flightMounts.push_back(spellId);
-
-                totalResults++;
-            } while (result->NextRow());
-
-            LOG_INFO("playerbots", "Preferred mounts initialized | Total records: {}", totalResults);
-        }
-    }
+    PreferredMountCache const& preferred = itr->second;
 
     // Pick a random preferred mount from the selection, if available
     uint32 chosenMountId = 0;
 
-    if (GetMountType(master) == 0 && !mountCache[botGUID].groundMounts.empty())
+    if (GetMountType(master) == 0 && !preferred.groundMounts.empty())
     {
-        uint32 index = urand(0, mountCache[botGUID].groundMounts.size() - 1);
-        chosenMountId = mountCache[botGUID].groundMounts[index];
+        uint32 index = urand(0, preferred.groundMounts.size() - 1);
+        chosenMountId = preferred.groundMounts[index];
     }
 
-    else if (GetMountType(master) == 1 && !mountCache[botGUID].flightMounts.empty())
+    else if (GetMountType(master) == 1 && !preferred.flightMounts.empty())
     {
-        uint32 index = urand(0, mountCache[botGUID].flightMounts.size() - 1);
-        chosenMountId = mountCache[botGUID].flightMounts[index];
+        uint32 index = urand(0, preferred.flightMounts.size() - 1);
+        chosenMountId = preferred.flightMounts[index];
     }
 
     // No suitable preferred mount found

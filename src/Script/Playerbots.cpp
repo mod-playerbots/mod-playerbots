@@ -8,6 +8,7 @@
 #include "BattleGroundTactics.h"
 #include "BattlefieldScript.h"
 #include "Channel.h"
+#include "CheckMountStateAction.h"
 #include "Config.h"
 #include "BuiltInConfig.h"
 #include "DBUpdater.h"
@@ -414,6 +415,7 @@ public:
         LOG_INFO("server.loading", " ");
 
         PlayerbotSpellRepository::Instance().Initialize();
+        CheckMountStateAction::LoadPreferredMounts();
 
         LOG_INFO("server.loading", "Playerbots World Thread Processor initialized");
     }
