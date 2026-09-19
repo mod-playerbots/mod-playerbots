@@ -192,6 +192,8 @@ bool PlayerbotAIConfig::Initialize()
     randomBotMapsAsString = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotMaps", "0,1,530,571");
     LoadList<std::vector<uint32>>(randomBotMapsAsString, randomBotMaps);
     probTeleToBankers = sConfigMgr->GetOption<float>("AiPlayerbot.ProbTeleToBankers", 0.25f);
+    probTeleToQuestGivers = sConfigMgr->GetOption<float>("AiPlayerbot.ProbTeleToQuestGivers", 0.25f);
+    questGiverTeleportLevelWindow = sConfigMgr->GetOption<int32>("AiPlayerbot.QuestGiverTeleportLevelWindow", 3);
     enableWeightTeleToCityBankers = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableWeightTeleToCityBankers", false);
     weightTeleToStormwind = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToStormwindWeight", 2);
     weightTeleToIronforge = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToIronforgeWeight", 1);
