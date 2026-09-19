@@ -135,7 +135,7 @@ public:
 
     void OnPlayerLogin(Player* player) override
     {
-        if (!player->GetSession()->IsBot())
+        if (!player->GetSession()->IsHeadless())
         {
             PlayerbotsMgr::instance().AddPlayerbotData(player, false);
             sRandomPlayerbotMgr.OnPlayerLogin(player);
@@ -325,7 +325,7 @@ public:
             return;
 
         // no XP multiplier, when player is no bot.
-        if (!player->GetSession()->IsBot() || !sRandomPlayerbotMgr.IsRandomBot(player))
+        if (!player->GetSession()->IsHeadless() || !sRandomPlayerbotMgr.IsRandomBot(player))
             return;
 
         // no XP multiplier, when bot is in a group with a real player.
@@ -337,7 +337,7 @@ public:
                 if (!member)
                     continue;
 
-                if (!member->GetSession()->IsBot())
+                if (!member->GetSession()->IsHeadless())
                     return;
             }
         }
@@ -491,6 +491,7 @@ public:
 
     void OnPlayerbotUpdate(uint32 /*diff*/) override
     {
+        PlayerbotHolder::UpdatePendingLogins();  // Headless sessions whose login holder is in flight
         sRandomPlayerbotMgr.UpdateSessions();  // Per-bot updates only
     }
 
@@ -518,6 +519,7 @@ public:
     {
         LOG_INFO("playerbots", "Logging out all bots...");
         sRandomPlayerbotMgr.LogoutAllBots();
+        PlayerbotHolder::ClearPendingLogins();
     }
 };
 

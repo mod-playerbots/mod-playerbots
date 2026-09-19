@@ -718,7 +718,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         RandomPlayerbotFactory factory;
 
         WorldSession* session = new WorldSession(accountId, "", 0x0, nullptr, SEC_PLAYER, EXPANSION_WRATH_OF_THE_LICH_KING,
-                                                time_t(0), LOCALE_enUS, 0, false, false, 0, true);
+                                                time_t(0), LOCALE_enUS, 0, false, false, 0);
         sessionBots.push_back(session);
 
         for (uint8 cls = CLASS_WARRIOR; cls < MAX_CLASSES - count; ++cls)
@@ -967,11 +967,11 @@ void RandomPlayerbotFactory::CreateBotArenaTeam(Player* bot, ArenaType type)
     arenateam->SetRatingForAll(
         urand(sPlayerbotAIConfig.randomBotArenaTeamMinRating, sPlayerbotAIConfig.randomBotArenaTeamMaxRating));
 
-    uint32 backgroundColor = urand(0xFF000000, 0xFFFFFFFF);
-    uint32 emblemStyle = urand(0, 101);
-    uint32 emblemColor = urand(0xFF000000, 0xFFFFFFFF);
-    uint32 borderStyle = urand(0, 5);
-    uint32 borderColor = urand(0xFF000000, 0xFFFFFFFF);
+    uint32 const backgroundColor = urand(0xFF000000, 0xFFFFFFFF);
+    uint8 const emblemStyle = urand(0, 101);
+    uint32 const emblemColor = urand(0xFF000000, 0xFFFFFFFF);
+    uint8 const borderStyle = urand(0, 5);
+    uint32 const borderColor = urand(0xFF000000, 0xFFFFFFFF);
     arenateam->SetEmblem(backgroundColor, emblemStyle, emblemColor, borderStyle, borderColor);
 
     arenateam->SaveToDB();

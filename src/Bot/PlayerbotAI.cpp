@@ -1329,8 +1329,9 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
             bot->GetMotionMaster()->Clear();
 
             // Unit* currentTarget = GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
-            bot->GetMotionMaster()->MoveKnockbackFromForPlayer(bot->GetPositionX() - vcos, bot->GetPositionY() - vsin,
-                                                               horizontalSpeed, verticalSpeed);
+            // Bots are client-controlled players, so opt past the guard that protects real clients.
+            bot->GetMotionMaster()->MoveKnockbackFrom(bot->GetPositionX() - vcos, bot->GetPositionY() - vsin,
+                                                      horizontalSpeed, verticalSpeed, true);
 
             // bot->AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
             // bot->AddUnitMovementFlag(MOVEMENTFLAG_FORWARD);
@@ -2469,7 +2470,7 @@ bool PlayerbotAI::IsBotMainTank(Player* player)
         return false;
 
     WorldSession* session = player->GetSession();
-    if (!session || !session->IsBot())
+    if (!session || !session->IsHeadless())
         return false;
 
     if (!IsTank(player))
@@ -2499,7 +2500,7 @@ bool PlayerbotAI::IsBotMainTank(Player* player)
         if (memberAssistTankIndex == botAssistTankIndex && player == member)
             return true;
 
-        if (memberAssistTankIndex < botAssistTankIndex && member->GetSession()->IsBot())
+        if (memberAssistTankIndex < botAssistTankIndex && member->GetSession()->IsHeadless())
             return false;
     }
 
