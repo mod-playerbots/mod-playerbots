@@ -161,13 +161,13 @@ public:
     float randomBotMinLevelChance, randomBotMaxLevelChance;
     float randomBotRpgChance;
     uint32 minRandomBots, maxRandomBots;
+    uint32 randomBotCountMode;
     uint32 randomBotUpdateInterval, randomBotCountChangeMinInterval, randomBotCountChangeMaxInterval;
-    uint32 minRandomBotInWorldTime, maxRandomBotInWorldTime;
+    uint32 randomBotCountMinTime, randomBotCountMaxTime;
     uint32 minRandomBotRandomizeTime, maxRandomBotRandomizeTime;
     uint32 minRandomBotChangeStrategyTime, maxRandomBotChangeStrategyTime;
     uint32 minRandomBotReviveTime, maxRandomBotReviveTime;
     uint32 minRandomBotTeleportInterval, maxRandomBotTeleportInterval;
-    uint32 permanentlyInWorldTime;
     uint32 minRandomBotPvpTime, maxRandomBotPvpTime;
     uint32 randomBotsPerInterval;
     uint32 randomBotPrintStatsInterval;
@@ -309,8 +309,6 @@ public:
     uint32 limitEnchantExpansion;
     uint32 limitGearExpansion;
     uint32 randombotStartingLevel;
-    bool enablePeriodicOnlineOffline;
-    float periodicOnlineOfflineRatio;
     bool gearscorecheck;
     bool randomBotPreQuests;
     bool botSendMailEnabled;

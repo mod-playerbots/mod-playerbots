@@ -12,6 +12,7 @@
 #include "Cell.h"
 #include "CellImpl.h"
 #include "ChannelMgr.h"
+#include "Common.h" // Included for TimeConstants. Using DAY to mark a long time, and YEAR to mark permanence.
 #include "DBCStores.h"
 #include "DBCStructure.h"
 #include "DatabaseEnv.h"
@@ -37,6 +38,7 @@
 #include "RandomPlayerbotFactory.h"
 #include "ServerFacade.h"
 #include "SharedDefines.h"
+#include "Timer.h"
 #include "TravelMgr.h"
 #include "Unit.h"
 #include "World.h"
@@ -299,13 +301,41 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
     }*/
 
     uint32 maxAllowedBotCount = GetEventValue(0, "bot_count");
-    if (!maxAllowedBotCount || (maxAllowedBotCount < sPlayerbotAIConfig.minRandomBots ||
-                                maxAllowedBotCount > sPlayerbotAIConfig.maxRandomBots))
+    switch (sPlayerbotAIConfig.randomBotCountMode)
     {
-        maxAllowedBotCount = urand(sPlayerbotAIConfig.minRandomBots, sPlayerbotAIConfig.maxRandomBots);
-        SetEventValue(0, "bot_count", maxAllowedBotCount,
-                      urand(sPlayerbotAIConfig.randomBotCountChangeMinInterval,
-                            sPlayerbotAIConfig.randomBotCountChangeMaxInterval));
+        case 1:
+            // Mode 1 (variable): roll a count at server start and re-roll it every randomBotCountChangeMin/MaxInterval.
+            if (!maxAllowedBotCount || (maxAllowedBotCount < sPlayerbotAIConfig.minRandomBots ||
+                                        maxAllowedBotCount > sPlayerbotAIConfig.maxRandomBots))
+            {
+                maxAllowedBotCount = urand(sPlayerbotAIConfig.minRandomBots, sPlayerbotAIConfig.maxRandomBots);
+                SetEventValue(0, "bot_count", maxAllowedBotCount,
+                              urand(sPlayerbotAIConfig.randomBotCountChangeMinInterval,
+                                    sPlayerbotAIConfig.randomBotCountChangeMaxInterval));
+            }
+            break;
+        case 2:
+        {
+            // Mode 2 (scheduled): population count is set according to a schedule from GetScheduledBotCount, that
+            // changes on a fixed timing, every randomBotCountChangeMinInterval.
+            time_t now = GameTime::GetGameTime().count();
+            if (now >= _nextScheduledCountUpdate)
+            {
+                maxAllowedBotCount = GetScheduledBotCount();
+                SetEventValue(0, "bot_count", maxAllowedBotCount, DAY);
+                _nextScheduledCountUpdate = now + sPlayerbotAIConfig.randomBotCountChangeMinInterval;
+            }
+            break;
+        }
+        default:
+            // Mode 0 (static): roll a count once at server start and hold it for the whole run.
+            if (!_staticBotCountRolled)
+            {
+                maxAllowedBotCount = urand(sPlayerbotAIConfig.minRandomBots, sPlayerbotAIConfig.maxRandomBots);
+                SetEventValue(0, "bot_count", maxAllowedBotCount, YEAR);
+                _staticBotCountRolled = true;
+            }
+            break;
     }
 
     GetBots();
@@ -372,6 +402,12 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
     {
         AddRandomBots();
     }
+
+    // If the randombot population requires a trim this cycle, it is not executed when DisabledWithoutRealPlayer is
+    // enabled and there are no real players logged-in. In that case, DisabledWithoutRealPlayer handles logouts.
+    if (availableBotCount > maxAllowedBotCount &&
+        (!sPlayerbotAIConfig.disabledWithoutRealPlayer || realPlayerIsLogged))
+        RemoveRandomBots();
 
     if (sPlayerbotAIConfig.syncLevelWithPlayers && !players.empty())
     {
@@ -485,10 +521,9 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
 //     setActivityPercentage(activityPercentage);
 // }
 
-// Assigns accounts as RNDbot accounts (type 1) based on MaxRandomBots and EnablePeriodicOnlineOffline and its ratio,
-// and assigns accounts as AddClass accounts (type 2) based AddClassAccountPoolSize. Type 1 and 2 assignments are
-// permenant, unless MaxRandomBots or AddClassAccountPoolSize are set to 0. If so, their associated accounts will
-// be unassigned (type 0)
+// Assigns accounts as RNDbot accounts (type 1) based on MaxRandomBots, and assigns accounts as AddClass
+// accounts (type 2) based AddClassAccountPoolSize. Type 1 and 2 assignments are permenant, unless MaxRandomBots
+// or AddClassAccountPoolSize are set to 0. If so, their associated accounts will be unassigned (type 0)
 void RandomPlayerbotMgr::AssignAccountTypes()
 {
     LOG_INFO("playerbots", "Assigning account types for random bot accounts...");
@@ -551,12 +586,6 @@ void RandomPlayerbotMgr::AssignAccountTypes()
         int divisor = RandomPlayerbotFactory::CalculateAvailableCharsPerAccount();
         int maxBots = sPlayerbotAIConfig.maxRandomBots;
 
-        // Take periodic online-offline into account
-        if (sPlayerbotAIConfig.enablePeriodicOnlineOffline)
-        {
-            maxBots *= sPlayerbotAIConfig.periodicOnlineOfflineRatio;
-        }
-
         // Calculate base accounts needed for RNDbots, ensuring round up for maxBots not cleanly divisible by the divisor
         neededRndBotAccounts = (maxBots + divisor - 1) / divisor;
     }
@@ -567,8 +596,10 @@ void RandomPlayerbotMgr::AssignAccountTypes()
 
     for (auto const& [accountId, accountType] : currentAssignments)
     {
-        if (accountType == 1) existingRndBotAccounts++;
-        else if (accountType == 2) existingAddClassAccounts++;
+        if (accountType == 1)
+            existingRndBotAccounts++;
+        else if (accountType == 2)
+            existingAddClassAccounts++;
     }
 
     // Assign RNDbot accounts from lowest position if needed
@@ -592,9 +623,7 @@ void RandomPlayerbotMgr::AssignAccountTypes()
         }
 
         if (assigned < toAssign)
-        {
             LOG_ERROR("playerbots", "Not enough unassigned accounts to fulfill RNDbot requirements. Need {} more accounts.", toAssign - assigned);
-        }
     }
 
     // Assign AddClass accounts from highest position if needed
@@ -620,16 +649,16 @@ void RandomPlayerbotMgr::AssignAccountTypes()
         }
 
         if (assigned < toAssign)
-        {
             LOG_ERROR("playerbots", "Not enough unassigned accounts to fulfill AddClass requirements. Need {} more accounts.", toAssign - assigned);
-        }
     }
 
     // Populate filtered account lists with ALL accounts of each type
     for (auto const& [accountId, accountType] : currentAssignments)
     {
-        if (accountType == 1) rndBotTypeAccounts.push_back(accountId);
-        else if (accountType == 2) addClassTypeAccounts.push_back(accountId);
+        if (accountType == 1)
+            rndBotTypeAccounts.push_back(accountId);
+        else if (accountType == 2)
+            addClassTypeAccounts.push_back(accountId);
     }
 
     LOG_INFO("playerbots", "Account type assignment complete: {} RNDbot accounts, {} AddClass accounts, {} unassigned",
@@ -648,8 +677,8 @@ bool RandomPlayerbotMgr::IsAccountType(uint32 accountId, uint8 accountType)
 // Logs-in bots in 4 phases. Phase 1 logs Alliance bots up to how much is expected according to the faction ratio,
 // and Phase 2 logs-in the remainder Horde bots to reach the total maxAllowedBotCount. If maxAllowedBotCount is not
 // reached after Phase 2, the function goes back to log-in Alliance bots and reach maxAllowedBotCount. This is done
-// because not every account is guaranteed 5A/5H bots, so the true ratio might be skewed by few percentages. Finally,
-// Phase 4 is reached if and only if the value of RandomBotAccountCount is lower than it should.
+// because not every account is guaranteed 5A/5H bots, so the true ratio might be skewed by a few percentages.
+// Finally, Phase 4 is reached if and only if the value of RandomBotAccountCount is lower than it should.
 uint32 RandomPlayerbotMgr::AddRandomBots()
 {
     uint32 maxAllowedBotCount = GetEventValue(0, "bot_count");
@@ -672,35 +701,9 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
 
         // Fix #1082: Randomly add one based on reminder
         if (remainder && urand(1, totalRatio) <= remainder)
-        {
             allowedAllianceCount++;
-        }
 
-        // Determine which accounts to use based on EnablePeriodicOnlineOffline
-        std::vector<uint32> accountsToUse;
-        if (sPlayerbotAIConfig.enablePeriodicOnlineOffline)
-        {
-
-            // Calculate how many accounts can be used
-            // With enablePeriodicOnlineOffline, don't use all of rndBotTypeAccounts right away. Fraction results are rounded up
-            uint32 accountsToUseCount = (rndBotTypeAccounts.size() + sPlayerbotAIConfig.periodicOnlineOfflineRatio - 1)
-                                        / sPlayerbotAIConfig.periodicOnlineOfflineRatio;
-
-            // Randomly select accounts
-            std::vector<uint32> shuffledAccounts = rndBotTypeAccounts;
-            std::shuffle(shuffledAccounts.begin(), shuffledAccounts.end(), rng);
-
-            for (uint32 i = 0; i < accountsToUseCount && i < shuffledAccounts.size(); i++)
-            {
-                accountsToUse.push_back(shuffledAccounts[i]);
-            }
-        }
-        else
-        {
-            accountsToUse = rndBotTypeAccounts;
-        }
-
-        // Pre-map all characters from selected accounts
+        // Pre-map all characters from every RNDbot account.
         struct CharacterInfo
         {
             uint32 guid;
@@ -710,7 +713,7 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
         };
         std::vector<CharacterInfo> allCharacters;
 
-        for (uint32 accountId : accountsToUse)
+        for (uint32 accountId : rndBotTypeAccounts)
         {
             CharacterDatabasePreparedStatement* stmt =
                 CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARS_BY_ACCOUNT_ID);
@@ -751,7 +754,7 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
         auto tryLoginBot = [&](CharacterInfo const& charInfo) -> bool
         {
             if (GetEventValue(charInfo.guid, "add") ||
-                GetEventValue(charInfo.guid, "logout") ||
+                // GetEventValue(charInfo.guid, "logout") ||    // Deprecated.
                 GetPlayerBot(charInfo.guid) ||
                 currentBots.contains(charInfo.guid) ||
                 (sPlayerbotAIConfig.disableDeathKnightLogin && charInfo.rClass == CLASS_DEATH_KNIGHT))
@@ -759,13 +762,10 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
                 return false;
             }
 
-            uint32 add_time = sPlayerbotAIConfig.enablePeriodicOnlineOffline
-                                ? urand(sPlayerbotAIConfig.minRandomBotInWorldTime,
-                                        sPlayerbotAIConfig.maxRandomBotInWorldTime)
-                                : sPlayerbotAIConfig.permanentlyInWorldTime;
+            uint32 add_time = YEAR;
 
             SetEventValue(charInfo.guid, "add", 1, add_time);
-            SetEventValue(charInfo.guid, "logout", 0, 0);
+            // SetEventValue(charInfo.guid, "logout", 0, 0);    // Deprecated.
             currentBots.insert(charInfo.guid);
 
             return true;
@@ -817,20 +817,144 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
                 LOG_ERROR("playerbots",
                           "Can't log-in all the requested bots. Try increasing RandomBotAccountCount in your conf file.\n"
                           "{} more accounts needed.", moreAccountsNeeded);
-                missingBotsTimer = 0;    // Reset timer so error is not spammed every tick
+                missingBotsTimer = 0;   // Reset timer so error is not spammed every tick
             }
         }
         else
-        {
             missingBotsTimer = 0;       // Reset timer if logins for this interval were successful
-        }
     }
     else
-    {
         missingBotsTimer = 0;           // Reset timer if there's enough bots
-    }
 
     return currentBots.size();
+}
+
+// Whether a randombot can be safely logged out right now for a population downsize. Ineligible Bots are skipped
+// and simply get trimmed on a later tick, if they become free and there's still unfulfilled demand for logouts.
+bool RandomPlayerbotMgr::IsRemovableBot(Player* bot)
+{
+    if (!bot || !bot->IsInWorld() || !IsRandomBot(bot))
+        return false;
+
+    // In-flight or mid-teleport.
+    if (bot->HasUnitState(UNIT_STATE_IN_FLIGHT) || bot->IsBeingTeleported())
+        return false;
+
+    // In a battleground, battlefield (Wintergrasp), arena or any of their queues.
+    if (bot->InBattleground() || bot->InBattlefield() || bot->InArena() || bot->InBattlegroundQueue())
+        return false;
+
+    // In a dungeon or raid (IsDungeon() covers both).
+    if (bot->GetMap() && bot->GetMap()->IsDungeon())
+        return false;
+
+    // Controlled by a real player. IsRandomBot is not enough if a real player is logged into a randombot.
+    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+        if (botAI->HasGameClientMaster())
+            return false;
+
+    // Grouped with a real player. (PR #2592 may fold this into the master check above.)
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member != bot && !GET_PLAYERBOT_AI(member))
+                return false;
+        }
+    }
+
+    return true;
+}
+
+// Logs out randombots when the online population is above the target count for this cycle.
+uint32 RandomPlayerbotMgr::RemoveRandomBots()
+{
+    uint32 maxAllowedBotCount = GetEventValue(0, "bot_count");
+
+    if (currentBots.size() <= maxAllowedBotCount)
+        return 0;
+
+    // Per-tick cap keeps the downsize gradual, matching how AddRandomBots throttles logins.
+    uint32 toRemove = std::min(sPlayerbotAIConfig.randomBotsPerInterval,
+                               (uint32)(currentBots.size() - maxAllowedBotCount));
+
+    // Collect the online bots that are safe to log out, split by faction.
+    std::vector<ObjectGuid> allianceBots;
+    std::vector<ObjectGuid> hordeBots;
+    for (auto const& [guid, bot] : playerBots)
+    {
+        if (!IsRemovableBot(bot))
+            continue;
+
+        if (IsAlliance(bot->getRace()))
+            allianceBots.push_back(guid);
+        else
+            hordeBots.push_back(guid);
+    }
+
+    // Split the removal across factions by the configured ratio. The resulting ratio might be skewed by a few
+    // percentages, as the approach used here is the same approach as AddRandomBots.
+    uint32 totalRatio = sPlayerbotAIConfig.randomBotAllianceRatio + sPlayerbotAIConfig.randomBotHordeRatio;
+    uint32 removeAlliance = toRemove * sPlayerbotAIConfig.randomBotAllianceRatio / totalRatio;
+    uint32 remainder = toRemove * sPlayerbotAIConfig.randomBotAllianceRatio % totalRatio;
+    if (remainder && urand(1, totalRatio) <= remainder)
+        removeAlliance++;
+    uint32 removeHorde = toRemove - removeAlliance;
+
+    // Never remove more than are actually available in each faction this tick.
+    removeAlliance = std::min(removeAlliance, (uint32)allianceBots.size());
+    removeHorde = std::min(removeHorde, (uint32)hordeBots.size());
+
+    std::vector<ObjectGuid> toLogout;
+    toLogout.insert(toLogout.end(), allianceBots.begin(), allianceBots.begin() + removeAlliance);
+    toLogout.insert(toLogout.end(), hordeBots.begin(), hordeBots.begin() + removeHorde);
+
+    // Reuse the same teardown as the 'add' event expiry path from ProcessBot.
+    for (ObjectGuid guid : toLogout)
+    {
+        uint32 bot = guid.GetCounter();
+        SetEventValue(bot, "add", 0, 0);
+        currentBots.erase(bot);
+        LogoutPlayerBot(guid);
+    }
+
+    if (!toLogout.empty())
+        LOG_DEBUG("playerbots", "Logged-out {} randombots to match target count of {}", toLogout.size(),
+                  maxAllowedBotCount);
+
+    return toLogout.size();
+}
+
+// Population target for RandomBotCountMode 2: a 24 hour cycle ramping from MinRandomBots at RandomBotCountMinTime
+// up to MaxRandomBots at RandomBotCountMaxTime, then back down. The target population count is calculated from the
+// clock at each interval, so the count is never desynced by a server shutdown/restart.
+uint32 RandomPlayerbotMgr::GetScheduledBotCount()
+{
+    uint32 minCount = sPlayerbotAIConfig.minRandomBots;
+    uint32 maxCount = sPlayerbotAIConfig.maxRandomBots;
+
+    // No variation if either of the min/max values are equal to each other.
+    if (sPlayerbotAIConfig.randomBotCountMinTime == sPlayerbotAIConfig.randomBotCountMaxTime || minCount == maxCount)
+        return maxCount;
+
+    // Timings are tracked by the second for accurate ramping.
+    std::tm localTime = Acore::Time::TimeBreakdown(GameTime::GetGameTime().count());
+    uint32 localTimeOfDay = localTime.tm_hour * HOUR + localTime.tm_min * MINUTE + localTime.tm_sec;
+    uint32 minCountTime = sPlayerbotAIConfig.randomBotCountMinTime * HOUR;
+    uint32 maxCountTime = sPlayerbotAIConfig.randomBotCountMaxTime * HOUR;
+
+    // Offsets run forward from minCountTime and wrap, so a maxCountTime earlier in the day needs no separate case.
+    uint32 sinceMinCount = (localTimeOfDay + DAY - minCountTime) % DAY;
+    uint32 riseDuration = (maxCountTime + DAY - minCountTime) % DAY;
+    uint32 fallDuration = DAY - riseDuration;
+
+    uint64 range = maxCount - minCount; // uint64, for a cursed server with more than 49710 bots.
+
+    if (sinceMinCount < riseDuration)
+        return static_cast<uint32>(minCount + range * sinceMinCount / riseDuration);
+
+    return static_cast<uint32>(maxCount - range * (sinceMinCount - riseDuration) / fallDuration);
 }
 
 void RandomPlayerbotMgr::LoadBattleMastersCache()
@@ -1440,6 +1564,11 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
         return true;
     }
 
+    /*
+    // Deprecated per-bot logout rotation timer code, part of the old EnablePeriodicOnlineOffline.
+    // Current login/logout system is based on population count, rather than based on an individual bot.
+    // Related code blocks here in ProcessBot, RandomizeFirst, and RandomizeMin remain commented-out
+    // for future reference.
     uint32 logout = GetEventValue(bot, "logout");
     if (player && !logout && !isValid)
     {
@@ -1447,10 +1576,10 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
                   player->GetLevel(), player->GetName().c_str());
         LogoutPlayerBot(botGUID);
         currentBots.erase(bot);
-        SetEventValue(bot, "logout", 1,
-                      urand(sPlayerbotAIConfig.minRandomBotInWorldTime, sPlayerbotAIConfig.maxRandomBotInWorldTime));
+        SetEventValue(bot, "logout", 1, DAY);
         return true;
     }
+    */
 
     return false;
 }
@@ -1479,7 +1608,7 @@ bool RandomPlayerbotMgr::ProcessBot(Player* bot)
                 urand(sPlayerbotAIConfig.minRandomBotReviveTime, sPlayerbotAIConfig.maxRandomBotReviveTime);
             LOG_DEBUG("playerbots", "Mark bot {} as dead, will be revived in {}s.", bot->GetName().c_str(),
                       randomTime);
-            SetEventValue(botId, "dead", 1, sPlayerbotAIConfig.maxRandomBotInWorldTime);
+            SetEventValue(botId, "dead", 1, DAY);
             SetEventValue(botId, "revive", 1, randomTime);
             return false;
         }
@@ -2016,37 +2145,34 @@ void RandomPlayerbotMgr::RandomizeFirst(Player* bot)
     if (sPlayerbotAIConfig.downgradeMaxLevelBot && bot->GetLevel() >= sPlayerbotAIConfig.randomBotMaxLevel)
     {
         if (bot->getClass() == CLASS_DEATH_KNIGHT)
-        {
             level = sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL);
-        }
         else
-        {
             level = sPlayerbotAIConfig.randomBotMinLevel;
-        }
     }
     else
     {
+        // Roll for the top or the bottom of the level range, otherwise land anywhere in between.
+        float maxLevelChance = sPlayerbotAIConfig.randomBotMaxLevelChance;
+        float minLevelChance = sPlayerbotAIConfig.randomBotMinLevelChance;
         uint32 roll = urand(1, 100);
-        if (roll <= 100 * sPlayerbotAIConfig.randomBotMaxLevelChance)
-        {
+
+        if (roll <= 100 * maxLevelChance)
             level = maxLevel;
-        }
-        else if (roll <=
-                 (100 * (sPlayerbotAIConfig.randomBotMaxLevelChance + sPlayerbotAIConfig.randomBotMinLevelChance)))
-        {
+        else if (roll <= 100 * (maxLevelChance + minLevelChance))
             level = minLevel;
-        }
         else
-        {
             level = urand(minLevel, maxLevel);
-        }
     }
 
     if (sPlayerbotAIConfig.disableRandomLevels)
     {
-        level = bot->getClass() == CLASS_DEATH_KNIGHT ? std::max(sPlayerbotAIConfig.randombotStartingLevel,
-                                                                 sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL))
-                                                      : sPlayerbotAIConfig.randombotStartingLevel;
+        // Death knights cannot exist below the heroic starting level.
+        if (bot->getClass() == CLASS_DEATH_KNIGHT)
+            level = std::max(sPlayerbotAIConfig.randombotStartingLevel,
+                             sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL));
+
+        else
+            level = sPlayerbotAIConfig.randombotStartingLevel;
     }
 
     SetValue(bot, "level", level);
@@ -2055,8 +2181,6 @@ void RandomPlayerbotMgr::RandomizeFirst(Player* bot)
 
     uint32 randomTime =
         urand(sPlayerbotAIConfig.minRandomBotRandomizeTime, sPlayerbotAIConfig.maxRandomBotRandomizeTime);
-    uint32 inworldTime =
-        urand(sPlayerbotAIConfig.minRandomBotInWorldTime, sPlayerbotAIConfig.maxRandomBotInWorldTime);
 
     PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_RANDOM_BOTS);
     stmt->SetData(0, randomTime);
@@ -2064,11 +2188,14 @@ void RandomPlayerbotMgr::RandomizeFirst(Player* bot)
     stmt->SetData(2, bot->GetGUID().GetCounter());
     PlayerbotsDatabase.Execute(stmt);
 
+    /*
+    // Deprecated per-bot logout rotation timer code. Full details in ProcessBot.
     stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_RANDOM_BOTS);
-    stmt->SetData(0, inworldTime);
+    stmt->SetData(0, DAY);
     stmt->SetData(1, "logout");
     stmt->SetData(2, bot->GetGUID().GetCounter());
     PlayerbotsDatabase.Execute(stmt);
+    */
 
     // teleport to a random inn for bot level
     botAI->Reset(true);
@@ -2096,8 +2223,6 @@ void RandomPlayerbotMgr::RandomizeMin(Player* bot)
 
     uint32 randomTime =
         urand(sPlayerbotAIConfig.minRandomBotRandomizeTime, sPlayerbotAIConfig.maxRandomBotRandomizeTime);
-    uint32 inworldTime =
-        urand(sPlayerbotAIConfig.minRandomBotInWorldTime, sPlayerbotAIConfig.maxRandomBotInWorldTime);
 
     PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_RANDOM_BOTS);
     stmt->SetData(0, randomTime);
@@ -2105,11 +2230,14 @@ void RandomPlayerbotMgr::RandomizeMin(Player* bot)
     stmt->SetData(2, bot->GetGUID().GetCounter());
     PlayerbotsDatabase.Execute(stmt);
 
+    /*
+    // Deprecated per-bot logout rotation timer code. Full details in ProcessBot.
     stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_RANDOM_BOTS);
-    stmt->SetData(0, inworldTime);
+    stmt->SetData(0, DAY);
     stmt->SetData(1, "logout");
     stmt->SetData(2, bot->GetGUID().GetCounter());
     PlayerbotsDatabase.Execute(stmt);
+    */
 
     // teleport to a random inn for bot level
     botAI->Reset(true);
@@ -2457,7 +2585,7 @@ std::string RandomPlayerbotMgr::GetData(uint32 bot, std::string const& type) { r
 
 void RandomPlayerbotMgr::SetValue(uint32 bot, std::string const& type, uint32 value, std::string const& data)
 {
-    SetEventValue(bot, type, value, sPlayerbotAIConfig.maxRandomBotInWorldTime, data);
+    SetEventValue(bot, type, value, DAY, data);
 }
 
 void RandomPlayerbotMgr::SetValue(Player* bot, std::string const& type, uint32 value, std::string const& data)
@@ -3052,7 +3180,7 @@ void RandomPlayerbotMgr::SetTradeDiscount(Player* bot, Player* master, uint32 va
 
     std::ostringstream name;
     name << "trade_discount_" << masterId;
-    SetEventValue(botId, name.str(), value, sPlayerbotAIConfig.maxRandomBotInWorldTime);
+    SetEventValue(botId, name.str(), value, DAY);
 }
 
 uint32 RandomPlayerbotMgr::GetTradeDiscount(Player* bot, Player* master)
@@ -3105,7 +3233,7 @@ void RandomPlayerbotMgr::ChangeStrategy(Player* player)
         LOG_INFO("playerbots", "Changing strategy for bot #{} <{}> to RPG", bot, player->GetName().c_str());
         LOG_INFO("playerbots", "Bot #{} <{}>: sent to inn", bot, player->GetName().c_str());
         RandomTeleportForLevel(player);
-        SetEventValue(bot, "teleport", 1, sPlayerbotAIConfig.maxRandomBotInWorldTime);
+        SetEventValue(bot, "teleport", 1, sPlayerbotAIConfig.maxRandomBotTeleportInterval);
     }
 
     ScheduleChangeStrategy(bot);

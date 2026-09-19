@@ -17,9 +17,11 @@
 #include "RandomPlayerbotMgr.h"
 #include "Talentspec.h"
 #include "TravelMgr.h"
+#include <algorithm>
 #include <cctype>
 #include <iostream>
 #include <sstream>
+#include <utility>
 
 template <class T>
 void LoadList(std::string const value, T& list)
@@ -242,15 +244,27 @@ bool PlayerbotAIConfig::Initialize()
 
     botAutologin = sConfigMgr->GetOption<bool>("AiPlayerbot.BotAutologin", false);
     randomBotAutologin = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotAutologin", true);
+
     minRandomBots = sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBots", 500);
     maxRandomBots = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBots", 500);
+    if (minRandomBots > maxRandomBots)
+    {
+        LOG_ERROR("server.loading",
+                  "AiPlayerbot.MinRandomBots ({}) is higher than AiPlayerbot.MaxRandomBots ({}). Swapping them.",
+                  minRandomBots, maxRandomBots);
+        std::swap(minRandomBots, maxRandomBots);
+    }
+
+    randomBotCountMode = sConfigMgr->GetOption<uint32>("AiPlayerbot.RandomBotCountMode", 0);
     randomBotUpdateInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotUpdateInterval", 20);
     randomBotCountChangeMinInterval =
         sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotCountChangeMinInterval", 30 * MINUTE);
     randomBotCountChangeMaxInterval =
         sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotCountChangeMaxInterval", 2 * HOUR);
-    minRandomBotInWorldTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBotInWorldTime", 2 * HOUR);
-    maxRandomBotInWorldTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBotInWorldTime", 14 * 24 * HOUR);
+    randomBotCountMinTime =
+        std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.RandomBotCountMinTime", 5), 23);
+    randomBotCountMaxTime =
+        std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.RandomBotCountMaxTime", 20), 23);
     minRandomBotRandomizeTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBotRandomizeTime", 2 * HOUR);
     maxRandomBotRandomizeTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBotRandomizeTime", 14 * 24 * HOUR);
     minRandomBotChangeStrategyTime =
@@ -261,8 +275,6 @@ bool PlayerbotAIConfig::Initialize()
     maxRandomBotReviveTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBotReviveTime", 5 * MINUTE);
     minRandomBotTeleportInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBotTeleportInterval", 1 * HOUR);
     maxRandomBotTeleportInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBotTeleportInterval", 5 * HOUR);
-    permanentlyInWorldTime =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.PermanentlyInWorldTime", 1 * YEAR);
     randomBotTeleportDistance = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotTeleportDistance", 100);
     randomBotsPerInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotsPerInterval", 60);
     randomBotPrintStatsInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotPrintStatsInterval", 300);
@@ -696,9 +708,7 @@ bool PlayerbotAIConfig::Initialize()
     limitEnchantExpansion = sConfigMgr->GetOption<int32>("AiPlayerbot.LimitEnchantExpansion", 1);
     limitGearExpansion = sConfigMgr->GetOption<int32>("AiPlayerbot.LimitGearExpansion", 1);
     randombotStartingLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.RandombotStartingLevel", 1);
-    enablePeriodicOnlineOffline = sConfigMgr->GetOption<bool>("AiPlayerbot.EnablePeriodicOnlineOffline", false);
     enableRandomBotTrading = sConfigMgr->GetOption<int32>("AiPlayerbot.EnableRandomBotTrading", 1);
-    periodicOnlineOfflineRatio = sConfigMgr->GetOption<float>("AiPlayerbot.PeriodicOnlineOfflineRatio", 2.0);
     gearscorecheck = sConfigMgr->GetOption<bool>("AiPlayerbot.GearScoreCheck", false);
     randomBotPreQuests = sConfigMgr->GetOption<bool>("AiPlayerbot.PreQuests", false);
 
