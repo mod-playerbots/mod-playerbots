@@ -35,6 +35,8 @@ std::string MetricName(PerformanceMetric metric)
             return "Value";
         case PERF_MON_ACTION:
             return "Action";
+        case PERF_MON_MULTIPLIER:
+            return "Mult";
         case PERF_MON_RNDBOT:
             return "RndBot";
         case PERF_MON_TOTAL:
@@ -150,6 +152,7 @@ PerformanceData* PerfMonitor::GetOrCreate(PerformanceMetric metric, std::string 
         pd->maxTime = 0;
         pd->totalTime = 0;
         pd->count = 0;
+        pd->blocks = 0;
     }
 
     return pd;
@@ -161,6 +164,15 @@ PerformanceData* PerfMonitor::acquire(PerformanceMetric metric, std::string cons
         return nullptr;
 
     return GetOrCreate(metric, name);
+}
+
+void PerfMonitor::CountBlock(PerformanceData* data)
+{
+    if (!data)
+        return;
+
+    std::lock_guard<std::mutex> guard(data->lock);
+    ++data->blocks;
 }
 
 PerfMonitorOperation* PerfMonitor::start(PerformanceMetric metric, std::string const name,
@@ -238,11 +250,13 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
             uint64 typeMinTime = 0xffffffffu;
             uint64 typeMaxTime = 0;
             uint32 typeCount = 0;
+            uint32 typeBlocks = 0;
             for (auto& name : names)
             {
                 PerformanceData* pd = pdMap[name];
                 typeTotalTime += pd->totalTime;
                 typeCount += pd->count;
+                typeBlocks += pd->blocks;
                 if (typeMinTime > pd->minTime)
                     typeMinTime = pd->minTime;
                 if (typeMaxTime < pd->maxTime)
@@ -256,7 +270,16 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
                 if (!fullStack && disName.find("|") != std::string::npos)
                     disName = disName.substr(0, disName.find("|")) + "]";
 
-                if (perc >= 0.1f || avg >= 0.25f || pd->maxTime > 1000)
+                bool show = perc >= 0.1f || avg >= 0.25f || pd->maxTime > 1000;
+                if (i->first == PERF_MON_MULTIPLIER)
+                {
+                    if (pd->blocks)
+                        disName += " [blocked " + std::to_string(pd->blocks) + "]";
+
+                    show = show || pd->blocks > 0 || perc >= 0.01f;
+                }
+
+                if (show)
                 {
                     LOG_INFO("playerbots",
                              "{:7.3f}% {:10.3f}s | {:7.1f} .. {:7.1f} ({:10.3f} of {:10d}) - {:6}    : {}", perc, time,
@@ -268,8 +291,12 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
             float tMinTime = (float)typeMinTime / 1000.0f;
             float tMaxTime = (float)typeMaxTime / 1000.0f;
             float tAvg = (float)typeTotalTime / (float)typeCount / 1000.0f;
+            std::string totalName = "Total";
+            if (i->first == PERF_MON_MULTIPLIER && typeBlocks)
+                totalName += " [blocked " + std::to_string(typeBlocks) + "]";
+
             LOG_INFO("playerbots", "{:7.3f}% {:10.3f}s | {:7.1f} .. {:7.1f} ({:10.3f} of {:10d}) - {:6}    : {}", tPerc,
-                     tTime, tMinTime, tMaxTime, tAvg, typeCount, key.c_str(), "Total");
+                     tTime, tMinTime, tMaxTime, tAvg, typeCount, key.c_str(), totalName.c_str());
             LOG_INFO("playerbots", " ");
         }
     }
@@ -309,11 +336,13 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
             uint64 typeMinTime = 0xffffffffu;
             uint64 typeMaxTime = 0;
             uint32 typeCount = 0;
+            uint32 typeBlocks = 0;
             for (auto& name : names)
             {
                 PerformanceData* pd = pdMap[name];
                 typeTotalTime += pd->totalTime;
                 typeCount += pd->count;
+                typeBlocks += pd->blocks;
                 if (typeMinTime > pd->minTime)
                     typeMinTime = pd->minTime;
                 if (typeMaxTime < pd->maxTime)
@@ -327,7 +356,16 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
                 std::string disName = name;
                 if (!fullStack && disName.find("|") != std::string::npos)
                     disName = disName.substr(0, disName.find("|")) + "]";
-                if (perc >= 0.1f || avg >= 0.25f || pd->maxTime > 1000)
+                bool show = perc >= 0.1f || avg >= 0.25f || pd->maxTime > 1000;
+                if (i->first == PERF_MON_MULTIPLIER)
+                {
+                    if (pd->blocks)
+                        disName += " [blocked " + std::to_string(pd->blocks) + "]";
+
+                    show = show || pd->blocks > 0 || perc >= 0.01f;
+                }
+
+                if (show)
                 {
                     LOG_INFO("playerbots",
                              "{:7.3f}% {:9.3f}ms | {:7.1f} .. {:7.1f} ({:10.3f} of {:10.2f}) - {:6}    : {}", perc,
@@ -342,8 +380,12 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
                 float tMaxTime = (float)typeMaxTime / 1000.0f;
                 float tAvg = (float)typeTotalTime / (float)typeCount / 1000.0f;
                 float tAmount = (float)typeCount / fullTickCount;
+                std::string totalName = "Total";
+                if (i->first == PERF_MON_MULTIPLIER && typeBlocks)
+                    totalName += " [blocked " + std::to_string(typeBlocks) + "]";
+
                 LOG_INFO("playerbots", "{:7.3f}% {:9.3f}ms | {:7.1f} .. {:7.1f} ({:10.3f} of {:10.2f}) - {:6}    : {}",
-                         tPerc, tTime, tMinTime, tMaxTime, tAvg, tAmount, key.c_str(), "Total");
+                         tPerc, tTime, tMinTime, tMaxTime, tAvg, tAmount, key.c_str(), totalName.c_str());
             }
             LOG_INFO("playerbots", " ");
         }
@@ -546,6 +588,7 @@ void PerfMonitor::Reset()
             pd->maxTime = 0;
             pd->totalTime = 0;
             pd->count = 0;
+            pd->blocks = 0;
         }
     }
 }
