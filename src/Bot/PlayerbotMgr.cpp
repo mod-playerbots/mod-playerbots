@@ -11,6 +11,7 @@
 #include "CharacterCache.h"
 #include "CharacterPackets.h"
 #include "Common.h"
+#include "Containers.h"
 #include "DatabaseEnv.h"
 #include "Define.h"
 #include "Group.h"
@@ -1162,7 +1163,10 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
         }
         uint8 teamId = master->GetTeamId(true);
         std::unordered_set<ObjectGuid> const& guidCache = sRandomPlayerbotMgr.addclassCache[RandomPlayerbotMgr::GetTeamClassIdx(teamId == TEAM_ALLIANCE, claz)];
-        for (ObjectGuid const& guid: guidCache)
+        // unordered_set iteration order is stable: shuffle so the same character is not picked every time.
+        std::vector<ObjectGuid> candidates(guidCache.begin(), guidCache.end());
+        Acore::Containers::RandomShuffle(candidates);
+        for (ObjectGuid const& guid : candidates)
         {
             // If the user requested a specific gender, skip any character that doesn't match.
             if (gender != -1 && GetOfflinePlayerGender(guid) != gender)
