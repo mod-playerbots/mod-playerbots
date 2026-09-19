@@ -12,6 +12,11 @@
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 
+// Generic "Learning" spells used by item_template's special learning format.
+// The actual taught spell lives in Spells[1], never in Spells[0] itself.
+static constexpr uint32 SPELL_LEARNING_1 = 483;
+static constexpr uint32 SPELL_LEARNING_2 = 55884;
+
 bool UseItemAction::Execute(Event event)
 {
     std::string name = event.getParam();
@@ -80,23 +85,40 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
     uint32 targetFlag = TARGET_FLAG_NONE;
     uint32 spellId = 0;
     ItemTemplate const* itemProto = item->GetTemplate();
-    bool const isGenericLearnItem = itemProto->Spells[0].SpellId == 483 || itemProto->Spells[0].SpellId == 55884;
+    bool const isGenericLearnItem = itemProto->Spells[0].SpellId == SPELL_LEARNING_1
+        || itemProto->Spells[0].SpellId == SPELL_LEARNING_2;
 
     // Don't waste a skill book/recipe the bot already knows (mirrors AuctionHouseSearcher::CanBeUseful).
     if (isGenericLearnItem)
     {
-        // Generic-learn layout: Spells[0] is the trigger (483/55884), Spells[1] is the actual spell learned.
+        // Generic-learn layout: Spells[0] is the trigger, Spells[1] is the actual spell learned.
         if (bot->HasSpell(itemProto->Spells[1].SpellId))
             return false;
     }
     else if (itemProto->Spells[0].SpellId)
     {
-        // Older/direct layout: Spells[0] itself is the learned spell.
-        SpellInfo const* learnSpellInfo = sSpellMgr->GetSpellInfo(itemProto->Spells[0].SpellId);
-        if (learnSpellInfo && learnSpellInfo->Effects[0].Effect == SPELL_EFFECT_LEARN_SPELL &&
-            learnSpellInfo->Effects[0].TriggerSpell &&
-            bot->HasSpell(learnSpellInfo->Effects[0].TriggerSpell))
-            return false;
+        // Older/direct layout: Spells[0] itself teaches the spell(s), via one or
+        // more SPELL_EFFECT_LEARN_SPELL effects (not necessarily in effect slot 0).
+        if (SpellInfo const* learnSpellInfo = sSpellMgr->GetSpellInfo(itemProto->Spells[0].SpellId))
+        {
+            bool foundLearnEffect = false;
+            bool allKnown = true;
+            for (auto const& effect : learnSpellInfo->Effects)
+            {
+                if (effect.Effect != SPELL_EFFECT_LEARN_SPELL || !effect.TriggerSpell)
+                    continue;
+
+                foundLearnEffect = true;
+                if (!bot->HasSpell(effect.TriggerSpell))
+                {
+                    allKnown = false;
+                    break;
+                }
+            }
+
+            if (foundLearnEffect && allKnown)
+                return false;
+        }
     }
 
     // Only check index 0 for generic-learn items; slot 1 is the taught spell id
