@@ -5,6 +5,7 @@
  */
 
 #include "RandomPlayerbotMgr.h"
+#include "PlayerbotsDatabase.h"
 #include "AiFactory.h"
 #include "Battleground.h"
 #include "BattlegroundMgr.h"
@@ -515,7 +516,8 @@ void RandomPlayerbotMgr::AssignAccountTypes()
     LOG_INFO("playerbots", "Found {} total randombot accounts in database", allRandomBotAccounts.size());
 
     // Check existing assignments
-    QueryResult existingAssignments = PlayerbotsDatabase.Query("SELECT account_id, account_type FROM playerbots_account_type");
+    PlayerbotsDatabasePreparedStatement* assignmentsStmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_ACCOUNT_TYPE);
+    PreparedQueryResult existingAssignments = PlayerbotsDatabase.Query(assignmentsStmt);
     std::map<uint32, uint8> currentAssignments;
 
     if (existingAssignments)
@@ -534,7 +536,10 @@ void RandomPlayerbotMgr::AssignAccountTypes()
     {
         if (currentAssignments.find(accountId) == currentAssignments.end())
         {
-            PlayerbotsDatabase.Execute("INSERT INTO playerbots_account_type (account_id, account_type) VALUES ({}, 0) ON DUPLICATE KEY UPDATE account_type = account_type", accountId);
+            PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_INS_ACCOUNT_TYPE);
+            stmt->SetData(0, accountId);
+            stmt->SetData(1, uint8(0));
+            PlayerbotsDatabase.Execute(stmt);
             currentAssignments[accountId] = 0;
         }
     }
@@ -577,7 +582,10 @@ void RandomPlayerbotMgr::AssignAccountTypes()
             uint32 accountId = allRandomBotAccounts[i];
             if (currentAssignments[accountId] == 0) // Unassigned
             {
-                PlayerbotsDatabase.Execute("UPDATE playerbots_account_type SET account_type = 1, assignment_date = NOW() WHERE account_id = {}", accountId);
+                PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_ACCOUNT_TYPE);
+                stmt->SetData(0, uint8(1));
+                stmt->SetData(1, accountId);
+                PlayerbotsDatabase.Execute(stmt);
                 currentAssignments[accountId] = 1;
                 assigned++;
             }
@@ -602,7 +610,10 @@ void RandomPlayerbotMgr::AssignAccountTypes()
             uint32 accountId = allRandomBotAccounts[idx];
             if (currentAssignments[accountId] == 0) // Unassigned
             {
-                PlayerbotsDatabase.Execute("UPDATE playerbots_account_type SET account_type = 2, assignment_date = NOW() WHERE account_id = {}", accountId);
+                PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_ACCOUNT_TYPE);
+                stmt->SetData(0, uint8(2));
+                stmt->SetData(1, accountId);
+                PlayerbotsDatabase.Execute(stmt);
                 currentAssignments[accountId] = 2;
                 assigned++;
             }
@@ -628,8 +639,10 @@ void RandomPlayerbotMgr::AssignAccountTypes()
 
 bool RandomPlayerbotMgr::IsAccountType(uint32 accountId, uint8 accountType)
 {
-    QueryResult result = PlayerbotsDatabase.Query("SELECT 1 FROM playerbots_account_type WHERE account_id = {} AND account_type = {}", accountId, accountType);
-    return result != nullptr;
+    PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_ACCOUNT_TYPE_BY_ACCOUNT_AND_TYPE);
+    stmt->SetData(0, accountId);
+    stmt->SetData(1, accountType);
+    return PlayerbotsDatabase.Query(stmt) != nullptr;
 }
 
 // Logs-in bots in 4 phases. Phase 1 logs Alliance bots up to how much is expected according to the faction ratio,
@@ -1761,7 +1774,9 @@ void RandomPlayerbotMgr::Init()
     if (sPlayerbotAIConfig.randomBotJoinBG)
         sRandomPlayerbotMgr.LoadBattleMastersCache();
 
-    PlayerbotsDatabase.Execute("DELETE FROM playerbots_random_bots WHERE event = 'add'");
+    PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_RANDOM_BOTS_BY_EVENT);
+    stmt->SetData(0, std::string("add"));
+    PlayerbotsDatabase.Execute(stmt);
 }
 
 void RandomPlayerbotMgr::InitArenaTeams()

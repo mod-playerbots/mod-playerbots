@@ -20,6 +20,7 @@
 #include <ctime>
 #include <map>
 #include <mutex>
+#include <string>
 #include <vector>
 
 typedef std::vector<std::string> PerformanceStack;
@@ -68,6 +69,7 @@ public:
     PerfMonitorOperation* start(PerformanceMetric metric, std::string const name,
                                        PerformanceStack* stack = nullptr);
     void PrintStats(bool perTick = false, bool fullStack = false);
+    void DumpJson(bool perTick = false);
     void Reset();
 
 private:

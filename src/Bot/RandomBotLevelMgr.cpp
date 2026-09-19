@@ -40,7 +40,7 @@ static bool IsNameInExcludeList(Player* bot, std::vector<std::string> const& exc
 // Checks if the given bot is present in any real player's friends list.
 static bool BotInFriendList(Player* bot, std::vector<uint32> const& socialFriendsList)
 {
-    if (!bot || !bot->IsInWorld() || !bot->GetSession() || bot->GetSession()->isLogingOut() ||
+    if (!bot || !bot->IsInWorld() || !bot->GetSession() || bot->GetSession()->IsLoggingOut() ||
         bot->IsDuringRemoveFromWorld())
         return false;
 
@@ -70,7 +70,7 @@ static bool BotInArenaTeam(Player* bot)
 // in a battleground/arena/dungeon queue or flight, and grouped only with other bots).
 static bool IsBotSafeForLevelReset(Player* bot)
 {
-    if (!bot || !bot->GetSession() || bot->GetSession()->isLogingOut() || bot->IsDuringRemoveFromWorld())
+    if (!bot || !bot->GetSession() || bot->GetSession()->IsLoggingOut() || bot->IsDuringRemoveFromWorld())
         return false;
 
     if (!bot->IsInWorld())
@@ -293,7 +293,7 @@ int RandomBotLevelMgr::GetLevelRangeIndex(uint8 level, TeamId team)
 // be resized on a config reload.
 void RandomBotLevelMgr::AdjustBotToRange(Player* bot, int targetRangeIndex, TeamId team)
 {
-    if (!bot || !bot->IsInWorld() || !bot->GetSession() || bot->GetSession()->isLogingOut() ||
+    if (!bot || !bot->IsInWorld() || !bot->GetSession() || bot->GetSession()->IsLoggingOut() ||
         bot->IsDuringRemoveFromWorld())
         return;
 
@@ -725,7 +725,7 @@ void RandomBotLevelMgr::ProcessPendingLevelResets()
 
         Player* bot = ObjectAccessor::FindPlayer(it->botGuid);
 
-        if (!bot || !bot->IsInWorld() || !bot->GetSession() || bot->GetSession()->isLogingOut() ||
+        if (!bot || !bot->IsInWorld() || !bot->GetSession() || bot->GetSession()->IsLoggingOut() ||
             bot->IsDuringRemoveFromWorld())
         {
             it = _pendingLevelResets.erase(it);
