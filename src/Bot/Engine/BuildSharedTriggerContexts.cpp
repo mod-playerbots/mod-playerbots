@@ -31,7 +31,8 @@
 #include "WotlkDungeonTriggerContext.h"
 #include "ZATriggerContext.h"
 
-void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
+void AiObjectContext::BuildSharedTriggerContexts(
+    SharedNamedObjectContextList<Trigger>& triggerContexts)
 {
     triggerContexts.Add(new TriggerContext());
     triggerContexts.Add(new ChatTriggerContext());
@@ -45,7 +46,7 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidNaxxTriggerContext());
     triggerContexts.Add(new RaidSSCTriggerContext());
     triggerContexts.Add(new RaidTempestKeepTriggerContext());
-    triggerContexts.Add(new RaidHyjalSummitTriggerContext());
+    triggerContexts.Add(new RaidHyjalTriggerContext());
     triggerContexts.Add(new RaidBlackTempleTriggerContext());
     triggerContexts.Add(new RaidZulAmanTriggerContext());
     triggerContexts.Add(new RaidSwpTriggerContext());
@@ -61,6 +62,7 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new TbcDungeonMechanarTriggerContext());
     triggerContexts.Add(new TbcDungeonUnderbogTriggerContext());
     triggerContexts.Add(new TbcDungeonMagistersTerraceTriggerContext());
+    triggerContexts.Add(new TbcDungeonHellfireRampartsTriggerContext());
     triggerContexts.Add(new WotlkDungeonUKTriggerContext());
     triggerContexts.Add(new WotlkDungeonNexTriggerContext());
     triggerContexts.Add(new WotlkDungeonANTriggerContext());
