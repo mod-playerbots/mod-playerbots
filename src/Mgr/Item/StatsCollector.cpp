@@ -36,6 +36,9 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto)
     {
         float val = (proto->Damage[0].DamageMin + proto->Damage[0].DamageMax) * 1000 / 2 / proto->Delay;
         stats[STATS_TYPE_MELEE_DPS] += val;
+        // Feral forms convert weapon DPS into attack power, so treat it as attack power for Feral Druids.
+        if (cls_ == CLASS_DRUID && (type_ & CollectorType::MELEE))
+            stats[STATS_TYPE_ATTACK_POWER] += proto->getFeralBonus();
     }
     stats[STATS_TYPE_ARMOR] += proto->Armor;
     stats[STATS_TYPE_BLOCK_VALUE] += proto->Block;
@@ -84,6 +87,10 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
         return;
 
     if (SpecialSpellFilter(spellId))
+        return;
+
+    // Form-restricted item auras (e.g., feral attack power, idol boosts) should be considered by Druids only.
+    if (spellInfo->Stances && cls_ != CLASS_DRUID)
         return;
 
     SpellProcEntry const* eventEntry = sSpellMgr->GetSpellProcEntry(spellInfo->Id);
