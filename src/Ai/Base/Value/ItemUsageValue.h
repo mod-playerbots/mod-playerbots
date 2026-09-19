@@ -67,6 +67,7 @@ public:
     static std::vector<uint32> SpellsUsingItem(uint32 itemId, Player* bot);
     static bool SpellGivesSkillUp(uint32 spellId, Player* bot);
 
+    static bool IsSpellReagentItem(ItemTemplate const* proto);
     static std::string const GetConsumableType(ItemTemplate const* proto, bool hasMana);
 };
 

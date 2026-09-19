@@ -195,6 +195,9 @@ PlayerbotAI::PlayerbotAI(Player* bot)
     botOutgoingPacketHandlers.AddHandler(SMSG_LOOT_RESPONSE, "loot response");
     botOutgoingPacketHandlers.AddHandler(SMSG_ITEM_PUSH_RESULT, "item push result");
     botOutgoingPacketHandlers.AddHandler(SMSG_LOOT_ROLL_WON, "loot roll won");
+    botOutgoingPacketHandlers.AddHandler(SMSG_AUCTION_LIST_RESULT, "ah search result");
+    botOutgoingPacketHandlers.AddHandler(SMSG_AUCTION_COMMAND_RESULT, "ah command result");
+    botOutgoingPacketHandlers.AddHandler(SMSG_AUCTION_BIDDER_NOTIFICATION, "ah bidder notification");
     botOutgoingPacketHandlers.AddHandler(SMSG_PARTY_COMMAND_RESULT, "party command");
     botOutgoingPacketHandlers.AddHandler(SMSG_LEVELUP_INFO, "levelup");
     botOutgoingPacketHandlers.AddHandler(SMSG_LOG_XPGAIN, "xpgain");
@@ -5364,6 +5367,12 @@ std::string const PlayerbotAI::HandleRemoteCommand(std::string const command)
                     break;
                 case NeedMoneyFor::guild:
                     out << "guild";
+                    break;
+                case NeedMoneyFor::tradeskill:
+                    out << "tradeskill";
+                    break;
+                case NeedMoneyFor::ah:
+                    out << "auction deposits";
                     break;
                 default:
                     break;

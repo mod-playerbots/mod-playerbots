@@ -23,7 +23,8 @@ enum class NeedMoneyFor : uint32
     gear = 6,
     guild = 7,
     tradeskill = 8,
-    anything = 9
+    ah = 9,
+    anything = 10
 };
 
 class MaxGearRepairCostValue : public Uint32CalculatedValue

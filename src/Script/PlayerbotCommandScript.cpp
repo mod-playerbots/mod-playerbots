@@ -11,6 +11,7 @@
 #include "PlayerbotMgr.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
+#include "TravelNode.h"
 
 using namespace Acore::ChatCommands;
 
@@ -32,11 +33,16 @@ public:
             {"unlink", HandleUnlinkAccountCommand, SEC_PLAYER, Console::No},
         };
 
+        static ChatCommandTable playerbotsTravelCommandTable = {
+            {"generatenode", HandleGenerateTravelNodesCommand, SEC_GAMEMASTER, Console::Yes},
+        };
+
         static ChatCommandTable playerbotsCommandTable = {
             {"bot", HandlePlayerbotCommand, SEC_PLAYER, Console::No},
             {"gtask", HandleGuildTaskCommand, SEC_GAMEMASTER, Console::Yes},
             {"pmon", HandlePerfMonCommand, SEC_GAMEMASTER, Console::Yes},
             {"rndbot", HandleRandomPlayerbotCommand, SEC_GAMEMASTER, Console::Yes},
+            {"travel", playerbotsTravelCommandTable},
             {"debug", playerbotsDebugCommandTable},
             {"account", playerbotsAccountCommandTable},
         };
@@ -97,6 +103,15 @@ public:
 
         sPerfMonitor.PrintStats();
         sPerfMonitor.DumpJson(false);
+        return true;
+    }
+
+    static bool HandleGenerateTravelNodesCommand(ChatHandler* handler, char const* /*args*/)
+    {
+        handler->PSendSysMessage("Regenerating travel node paths...");
+        LOG_INFO("playerbots", "Manual travel node regeneration started via console command.");
+        sTravelNodeMap.generateAll();
+        handler->PSendSysMessage("Travel node regeneration complete. Paths saved to database.");
         return true;
     }
 
