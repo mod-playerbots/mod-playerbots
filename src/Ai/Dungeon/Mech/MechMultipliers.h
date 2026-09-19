@@ -4,7 +4,7 @@
  * or (at your option) any later version.
  */
 
- #ifndef PLAYERBOTS_MECHMULTIPLIERS_H
+#ifndef PLAYERBOTS_MECHMULTIPLIERS_H
 #define PLAYERBOTS_MECHMULTIPLIERS_H
 
 #include "Multiplier.h"

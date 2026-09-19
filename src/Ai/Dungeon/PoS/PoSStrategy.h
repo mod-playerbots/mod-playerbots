@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_POSSTRATEGY_H
 #define PLAYERBOTS_POSSTRATEGY_H
 
-#include "Multiplier.h"
 #include "Strategy.h"
 
 class WotlkDungeonPoSStrategy : public Strategy

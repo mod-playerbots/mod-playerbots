@@ -31,11 +31,4 @@ public:
     bool Execute(Event event) override;
 };
 
-class ZuramatStopAttackAction : public Action
-{
-public:
-    ZuramatStopAttackAction(PlayerbotAI* ai) : Action(ai, "zuramat stop attack") {}
-    bool Execute(Event event) override;
-};
-
 #endif

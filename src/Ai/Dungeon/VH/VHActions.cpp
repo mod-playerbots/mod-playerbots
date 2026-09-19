@@ -101,8 +101,3 @@ bool AttackVoidSentryAction::Execute(Event /*event*/)
 
     return false;
 }
-
-bool ZuramatStopAttackAction::Execute(Event /*event*/)
-{
-    return bot->AttackStop();
-}
