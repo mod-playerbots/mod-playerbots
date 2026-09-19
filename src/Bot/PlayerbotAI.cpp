@@ -3708,7 +3708,8 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
             bot->GetSession()->HandleGameObjectUseOpcode(packetgouse);
             targets.SetGOTarget(go);
             faceTo = go;
-            if (itemTarget && spellInfo->Effects[0].Effect == SPELL_EFFECT_OPEN_LOCK)
+            if (itemTarget && spellInfo->Effects[0].Effect == SPELL_EFFECT_OPEN_LOCK &&
+                itemTarget->GetEntry() == loot.reqItem)
                 spell->m_CastItem = itemTarget;
         }
         else if (itemTarget)

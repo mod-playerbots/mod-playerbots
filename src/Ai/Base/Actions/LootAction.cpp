@@ -5,7 +5,6 @@
  */
 
 #include "LootAction.h"
-#include "Bag.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "Event.h"
@@ -165,64 +164,11 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
     // item's own use spell (Spell::CanOpenLock checks m_CastItem), so look up the
     // key's OPEN_LOCK spell from its template and cast it with the key as the cast
     // item, GO-targeted. This mirrors the client's CMSG_USE_ITEM.
-    if (lootObject.reqItem && bot->HasItemCount(lootObject.reqItem, 1))
+    if (lootObject.reqItem && go)
     {
-        uint32 keySpell = GetKeySpell(lootObject.reqItem);
-        if (keySpell)
+        if (uint32 keySpell = GetKeySpell(lootObject.reqItem))
         {
-            Item* keyItem = nullptr;
-
-            for (uint8 slot = KEYRING_SLOT_START; slot < KEYRING_SLOT_END; ++slot)
-            {
-                if (Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-                {
-                    if (item->GetEntry() == lootObject.reqItem)
-                    {
-                        keyItem = item;
-                        break;
-                    }
-                }
-            }
-
-            if (!keyItem)
-            {
-                for (uint8 slot = INVENTORY_SLOT_ITEM_START; slot < INVENTORY_SLOT_ITEM_END; ++slot)
-                {
-                    if (Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-                    {
-                        if (item->GetEntry() == lootObject.reqItem)
-                        {
-                            keyItem = item;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!keyItem)
-            {
-                for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
-                {
-                    if (Bag* pBag = bot->GetBagByPos(bag))
-                    {
-                        for (uint8 slot = 0; slot < pBag->GetBagSize(); ++slot)
-                        {
-                            if (Item* item = pBag->GetItemByPos(slot))
-                            {
-                                if (item->GetEntry() == lootObject.reqItem)
-                                {
-                                    keyItem = item;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (keyItem)
-                        break;
-                }
-            }
-
-            if (keyItem && go)
+            if (Item* keyItem = bot->GetItemByEntry(lootObject.reqItem))
                 return botAI->CastSpell(keySpell, bot, keyItem);
         }
     }
@@ -286,7 +232,8 @@ uint32 OpenLootAction::GetKeySpell(uint32 keyItemId)
         return 0;
 
     // A key opens a lock through its own on-use spell (e.g. Dead-Tooth's Key ->
-    // spell 8517 "Opening"). Find the first spell with an OPEN_LOCK effect.
+    // spell 8517 "Opening"). Only effect 0 counts: PlayerbotAI::CastSpell routes
+    // OPEN_LOCK casts off Effects[0].
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
     {
         uint32 spellId = keyItem->Spells[i].SpellId;
@@ -297,9 +244,8 @@ uint32 OpenLootAction::GetKeySpell(uint32 keyItemId)
         if (!spellInfo)
             continue;
 
-        for (uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
-            if (spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_OPEN_LOCK)
-                return spellId;
+        if (spellInfo->Effects[0].Effect == SPELL_EFFECT_OPEN_LOCK)
+            return spellId;
     }
 
     return 0;
