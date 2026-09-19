@@ -2,6 +2,14 @@
  * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
+ *
+ * Movement funnel declarations (MoveTo2, ResolveMovePath, DispatchMovement, WaitForTransport,
+ * HandleSpecialMovement, FollowOnTransport) ported from the CMaNGOS playerbots project
+ * (https://github.com/cmangos/playerbots), GPL v2, with modifications for AzerothCore.
+ * Original authors:
+ *   Sebastiaan Keek (mostlikely4r) <sebastiaan.keek@gmail.com>
+ *   celguar <celguar@gmail.com>
+ *   David Parra Ausina (davidonete/Flekz) <davidparraausina@gmail.com>
  */
 
 #ifndef PLAYERBOTS_MOVEMENTACTIONS_H
@@ -9,6 +17,7 @@
 
 #include "Action.h"
 #include "LastMovementValue.h"
+#include "PathGenerator.h"
 #include "PlayerbotAIConfig.h"
 #include <cmath>
 
@@ -19,9 +28,132 @@ class WorldObject;
 
 struct Position;
 
-#define ANGLE_45_DEG (static_cast<float>(M_PI) / 4.f)
+// ============================================================================
+// MOVEMENT DESIGN INTENT
+//
+// The goal is the most natural bot movement achievable while maintaining
+// responsiveness and low server cost — any approach must scale across
+// thousands of bots. Cheating (teleports, skipped travel) is minimized, and
+// generates a debug log to identify areas for improvement.
+//
+// The pipeline is a port of the cmangos playerbot movement code (MoveTo /
+// MoveTo2 / DispatchMovement / ResolveMovePath). Throughout this header and
+// MovementActions.cpp, "the reference" means that implementation — those
+// comments record where this port deliberately follows it or diverges.
+//
+// --- MoveTo ----------------------------------------------------
+//  1. CAN WE MOVE AT ALL?  UpdateMovementState + IsMovingAllowed — dead,
+//     CC'd, mid-flight, uncontrolled.
+//  2. WHO IS THE MOVER?  A bot in a controlling vehicle seat drives the
+//     vehicle base. A passenger without control refuses.
+//  3. IS THIS ACTION ALLOWED RIGHT NOW?  MovementPriority dictates
+//     replacement: while the bot is still executing a walk, a
+//     lower-priority action does not replace it; higher or equal does
+//     (newest wins). Then deduplicate so identical re-issues dont change.
+//  4. LITERAL OR ROUTED?  Some moves must be taken exactly as given — exact
+//     waypoints (formations), flying/swimming movers, backward steps,
+//     vehicles (the route planner has no notion of a non-bot mover), and the
+//     disableMoveSplinePath config — those go straight to a plain point
+//     dispatch (DoMovePoint) and never enter MoveTo2. Everything else runs
+//     the routing pipeline.
+//
+// --- MoveTo2: the routing pipeline ------------------------------------------
+//  5. ALREADY RIDING?  (WaitForTransport) On a transport the only decisions are "
+//     stay aboard" or "this is my stop." Resolve and then continue.
+//  6. TRAVEL SKIPPING.  A config-gated cheat that lets bots no player
+//     can see advance by teleport instead of walking, cutting server cost.
+//  7. CLOSE ENOUGH TO DESTINATION? (short-stop, targetPosRecalcDistance) Arriving is a
+//     decision too: within the threshold the journey ends — stop, clear state.
+//  8. GET A ROUTE.  (ResolveMovePath)
+//       - reuse the cached path while the destination has barely moved
+//         (<10% of the journey). Avoid re-planning every tick;
+//       - near + same map (within sightDistance): direct navmesh query —
+//         no mental map needed to cross a field;
+//       - far or cross-map: the travel-node graph (roads, boats, flights, portals),
+//         plans the trip leg by leg. The graph is built at server start and is IMMUTABLE at
+//         runtime (map threads read it concurrently; live mutation is a
+//         data race). No route on the map? Probe in bounded stretches
+//         toward the goal, give up LOUDLY the first stretch that gains
+//         nothing — quitting fast and visibly beats flailing forever;
+//       - regression guard: a fresh plan that ends no closer to the goal
+//         than the cached one loses to the cached one. A re-plan has to earn
+//         its replacement;
+//       - last resort: a single-point beeline, so something is always
+//         attempted and failure surfaces as "no progress", never silence.
+//     Planning only — ResolveMovePath reads lastMove and dispatches nothing.
+//  9. TRIM IT.  (makeShortCut) Drop waypoints the bot can already walk
+//     straight to; if trimming ate the whole path, bridge back to the
+//     nearest reachable on-path anchor — a plan you can't stand on is not
+//     a plan.
+// 10. SPECIAL FIRST LEG?  (UpcomingSpecialMovement / HandleSpecialMovement)
+//     When the next path element isn't plain ground it needs an
+//     interaction, not a walk: click the portal, step through the area
+//     trigger, board or leave the transport, talk to the flight master and
+//     take the taxi. Each converts one special leg into game actions, then
+//     the pipeline resumes on the far side. UpcomingSpecialMovement runs
+//     first and cuts the path so the head IS the special leg —
+//     HandleSpecialMovement only ever looks at the head, so the two are
+//     always called as a pair.
+// 11. TRANSPORT LOGISTICS.  Approaching a dock: ship present → board; absent →
+//     walk to the water's edge and hold.
+// 12. DANGER ON THE PATH.  (ClipPath) Cut the walk short before hostile
+//     camps unless the caller explicitly accepts the risk — stopping short
+//     beats delivering the bot into a pull it didn't choose.
+// 13. WATER SURFACE.  (surfaceSnapWaypoints) Swimmable waypoints snap to
+//     the surface so swimming bots travel on top of the water, not along
+//     floor-level path points.
+// 14. DISPATCH.  (DispatchMovement) The only place legs actually move:
+//     exactly one motion generator per dispatch (multi-point spline, or a
+//     single-point fallback), the target + priority are recorded for the
+//     dedup/replacement gates, and unwatched bots may teleport-advance
+//     (logged). The AI is never put to sleep for movement.
+//
+// --- The rules the pipeline enforces ----------------------------------------
+//
+// REPLACEMENT (stage 3). Movement replacement is dictated by MovementPriority.
+// Walk in progress: a lower-priority wish never replaces it, higher or
+// equal does (newest wins). Position hold (SetNextMovementDelay): STRICT —
+// only strictly higher priority breaks it, so a FORCED encounter hold is
+// absolute while a NORMAL hold (RPG reading/patrol pause) blocks the
+// bot's own walks but yields to combat movement. Holds are movement-only:
+// the brain stays awake and keeps fighting. Movement never sleeps the
+// brain.
+//
+// ALWAYS AWAKE. Walk movement never sleeps the AI. An early-out in the
+// action absorbs re-issues and lower-priority calls instead: still moving
+// toward a destination that hasn't meaningfully changed → nothing to do.
+// Combat callers leave react=false; the early-out still checks again when the target moves.
+//
+// CROSS-TRANSPORT FOLLOW. Following someone onto a different deck is not a
+// walk — there is no navmesh spanning two independently moving transports.
+// When bot and target are on different transports (or one is off-transport)
+// and within sight, the bot disembarks, teleports to the target, and boards
+// the target's transport, all in one tick, ahead of the engine-level follow.
+//
+// STUCK & RESCUE. Stuck = ~90 seconds of honest no-progress while NOT
+// legitimately waiting. A botched map crossing teleports the
+// bot to its intended arrival. Teleports are logged.
+//
+// MOVENEAR SEMANTICS. MoveNear(WorldObject*, dist) means TOUCH RANGE — dist
+// is clamped to GetRange("follow"), so "near a thing" is walking-up-to-it
+// distance regardless of what the caller passes. Callers needing a real
+// standoff (spread mechanics: "stand 22y from the marked player") must use
+// the coordinate overload MoveNear(mapId, x, y, z, dist), which applies the
+// raw offset. One primitive per meaning, instead of one primitive whose
+// behavior depends on a clamp the caller can't see.
+// ============================================================================
+
 #define ANGLE_90_DEG M_PI_2
 #define ANGLE_120_DEG (2.f * static_cast<float>(M_PI) / 3.f)
+
+// Default acceptable path types for GeneratePath
+constexpr uint32 DEFAULT_PATH_ACCEPT_MASK = PATHFIND_NORMAL | PATHFIND_INCOMPLETE;
+
+struct PathResult
+{
+    Movement::PointsArray points;
+    bool reachable;
+};
 
 class MovementAction : public Action
 {
@@ -29,14 +161,39 @@ public:
     MovementAction(PlayerbotAI* botAI, std::string const name);
 
 protected:
+    // Emit a one-line trace describing the imminent movement. No-op
+    // unless the bot has the "debug move" non-combat strategy.
+    // Subclasses (e.g. NewRpgBaseAction) may override to append richer
+    // context such as RPG status and target name. Optional `extra`
+    // is appended verbatim (use it to attach hop labels like
+    // "node:Stormwind innkeeper" or fallback reasons).
+    virtual void EmitDebugMove(char const* method, char const* generator, float x, float y, float z, char const* extra = nullptr);
+
     bool JumpTo(uint32 mapId, float x, float y, float z, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
     bool MoveNear(uint32 mapId, float x, float y, float z, float distance = sPlayerbotAIConfig.contactDistance,
                   MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
     bool MoveToLOS(WorldObject* target, bool ranged = false);
+    // Stages 5-14 of the funnel above: the routing pipeline. Reached from
+    // MoveTo(mapId,...) unless a stage-4 bypass sends the move straight to
+    // DoMovePoint. `react=true` opts this move out of the awake early-out.
     bool MoveTo(uint32 mapId, float x, float y, float z, bool idle = false, bool react = false,
                 bool normal_only = false, bool exact_waypoint = false,
                 MovementPriority priority = MovementPriority::MOVEMENT_NORMAL, bool lessDelay = false,
-                bool backwards = false);
+                bool backwards = false, bool ignoreEnemyTargets = false);
+
+    bool MoveTo2(WorldPosition endPos,
+                 bool idle = false, bool react = false,
+                 bool ignoreEnemyTargets = false,
+                 MovementPriority priority = MovementPriority::MOVEMENT_NORMAL,
+                 bool lessDelay = false);
+
+    // Stage 14: Centralized walking dispatch.
+    bool DispatchMovement(TravelPath path,
+                          WorldPosition dest,
+                          char const* label,
+                          MovementPriority priority = MovementPriority::MOVEMENT_NORMAL,
+                          bool lessDelay = false,
+                          bool react = false);
     bool MoveTo(WorldObject* target, float distance = 0.0f,
                 MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
     bool MoveNear(WorldObject* target, float distance = sPlayerbotAIConfig.contactDistance,
@@ -44,15 +201,20 @@ protected:
     float GetFollowAngle();
     bool Follow(Unit* target, float distance = sPlayerbotAIConfig.followDistance);
     bool Follow(Unit* target, float distance, float angle);
-    bool ChaseTo(WorldObject* obj, float distance = 0.0f);
+    // Cross-transport follow (see the rule above). Returns true if the
+    // transport transition was performed this tick — the caller must then
+    // skip the engine-level follow for this tick.
+    bool FollowOnTransport(Unit* target);
     bool ReachCombatTo(Unit* target, float distance = 0.0f);
     float MoveDelay(float distance, bool backwards = false);
-    void WaitForReach(float distance);
-    void SetNextMovementDelay(float delayMillis);
+    void SetNextMovementDelay(float delayMillis,
+                              MovementPriority priority = MovementPriority::MOVEMENT_FORCED);
     bool IsMovingAllowed(WorldObject* target);
     bool IsDuplicateMove(float x, float y, float z);
-    bool IsWaitingForLastMove(MovementPriority priority);
     bool IsMovingAllowed();
+    bool CanOverrideMovement(MovementPriority priority);
+    bool IsWaitingForLastMove(MovementPriority priority);
+    bool IsHoldingAtDockWait() const;
     bool Flee(Unit* target);
     void ClearIdleState();
     void UpdateMovementState();
@@ -67,6 +229,37 @@ protected:
     bool FleePosition(Position pos, float radius, uint32 minInterval = 1000);
     bool CheckLastFlee(float curAngle, std::list<FleeInfo>& infoList);
 
+    PathResult GeneratePath(float x, float y, float z, uint32 acceptMask = DEFAULT_PATH_ACCEPT_MASK, bool forceDestination = false);
+
+    // Stage 8: returns a unified TravelPath for the move. Stateless —
+    // `lastMove` is read (cache reuse, regression guard) and never written,
+    // and nothing is dispatched.
+    TravelPath ResolveMovePath(WorldPosition startPos,
+                               WorldPosition endPos,
+                               LastMovement& lastMove);
+
+    // Stage 10: dispatches the head-of-path special segment. Precondition:
+    // the caller must first call TravelPath::UpcomingSpecialMovement.
+    // Returns true if a movement-consuming action was dispatched this tick;
+    // false for AREA_TRIGGER-with-entry, where the caller still dispatches
+    // the walk into the trigger volume.
+    bool HandleSpecialMovement(TravelPath& path);
+
+    // Stage 5: returns true if the bot is still on the transport we last
+    // boarded — the caller skips the rest of MoveTo2 this tick. Clears
+    // lastTransportEntry and returns false once the bot has disembarked or
+    // is no longer on the expected transport.
+    bool WaitForTransport();
+
+    // Transport boarding helpers (shared by FollowAction and travel plan)
+    static Transport* GetTransportForPosTolerant(Map* map, WorldObject* ref,
+        uint32 phaseMask, float x, float y, float z);
+    static bool FindBoardingPointOnTransport(Map* map, Transport* transport,
+        WorldObject* ref, float refX, float refY, float refZ,
+        float botX, float botY, float botZ,
+        float& outX, float& outY, float& outZ);
+    bool BoardTransport(Transport* transport);
+
 protected:
     struct CheckAngle
     {
@@ -75,12 +268,9 @@ protected:
     };
 
 private:
-    // float SearchBestGroundZForPath(float x, float y, float z, bool generatePath, float range = 20.0f, bool
-    // normal_only = false, float step = 8.0f);
-    const Movement::PointsArray SearchForBestPath(float x, float y, float z, float& modified_z, int maxSearchCount = 5,
-                                                  bool normal_only = false, float step = 8.0f);
     bool wasMovementRestricted = false;
     void DoMovePoint(Unit* unit, float x, float y, float z, bool generatePath, bool backwards);
+
 };
 
 class FleeAction : public MovementAction
