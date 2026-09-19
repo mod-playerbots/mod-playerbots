@@ -43,6 +43,15 @@ public:
     bool IsActive() override;
 };
 
+// Ebonroc
+
+class BwlEbonrocShadowTrigger : public Trigger
+{
+public:
+    BwlEbonrocShadowTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl ebonroc shadow") {}
+    bool IsActive() override;
+};
+
 // Chromaggus
 
 class BwlAfflictionBronzeTrigger : public Trigger
@@ -70,10 +79,10 @@ public:
 
 // Trash
 
-class BwlDeathTalonWyrmguardTankTrigger : public Trigger
+class BwlDeathTalonWyrmguardActiveTankTrigger : public Trigger
 {
 public:
-    BwlDeathTalonWyrmguardTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl death talon wyrmguard tank") {}
+    BwlDeathTalonWyrmguardActiveTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl death talon wyrmguard active tank") {}
     bool IsActive() override;
 };
 

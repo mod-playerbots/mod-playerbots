@@ -33,4 +33,12 @@ public:
     float GetValue(Action* action) override;
 };
 
+class EbonrocShadowMultiplier : public Multiplier
+{
+public:
+    EbonrocShadowMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "ebonroc shadow multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 #endif
