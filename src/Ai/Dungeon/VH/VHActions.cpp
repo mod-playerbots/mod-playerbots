@@ -6,6 +6,7 @@
 
 #include "VHActions.h"
 #include "Playerbots.h"
+#include "VHTriggers.h"
 
 bool AttackErekemAction::Execute(Event /*event*/)
 {
@@ -99,9 +100,4 @@ bool AttackVoidSentryAction::Execute(Event /*event*/)
     }
 
     return false;
-}
-
-bool StopAttackAction::Execute(Event /*event*/)
-{
-    return bot->AttackStop();
 }

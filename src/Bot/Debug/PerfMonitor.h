@@ -56,6 +56,20 @@ private:
     std::chrono::microseconds started;
 };
 
+class PerfMonitorScope
+{
+public:
+    explicit PerfMonitorScope(PerformanceData* data);
+    ~PerfMonitorScope();
+
+    PerfMonitorScope(PerfMonitorScope const&) = delete;
+    PerfMonitorScope& operator=(PerfMonitorScope const&) = delete;
+
+private:
+    PerformanceData* data;
+    std::chrono::microseconds started{};
+};
+
 class PerfMonitor
 {
 public:
@@ -66,8 +80,11 @@ public:
         return instance;
     }
 
+    static bool IsEnabled();
+
     PerfMonitorOperation* start(PerformanceMetric metric, std::string const name,
                                        PerformanceStack* stack = nullptr);
+    PerformanceData* acquire(PerformanceMetric metric, std::string const& name);
     void PrintStats(bool perTick = false, bool fullStack = false);
     void DumpJson(bool perTick = false);
     void Reset();
@@ -81,6 +98,8 @@ private:
 
     PerfMonitor(PerfMonitor&&) = delete;
     PerfMonitor& operator=(PerfMonitor&&) = delete;
+
+    PerformanceData* GetOrCreate(PerformanceMetric metric, std::string const& name);
 
     std::map<PerformanceMetric, std::map<std::string, PerformanceData*> > data;
     std::mutex lock;

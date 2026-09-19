@@ -9,6 +9,7 @@
 
 #include "AiObject.h"
 #include "ObjectGuid.h"
+#include "PerfMonitor.h"
 #include "Timer.h"
 #include "Unit.h"
 #include <time.h>
@@ -71,13 +72,17 @@ public:
     T Get() override
     {
         if (checkInterval < 2)
+        {
+            PerfMonitorScope scope(GetPerfData());
             value = Calculate();
+        }
         else
         {
             time_t now = getMSTime();
             if (!lastCheckTime || now - lastCheckTime >= checkInterval)
             {
                 lastCheckTime = now;
+                PerfMonitorScope scope(GetPerfData());
                 value = Calculate();
             }
         }
@@ -94,13 +99,17 @@ public:
     T& RefGet() override
     {
         if (checkInterval < 2)
+        {
+            PerfMonitorScope scope(GetPerfData());
             value = Calculate();
+        }
         else
         {
             time_t now = getMSTime();
             if (!lastCheckTime || now - lastCheckTime >= checkInterval)
             {
                 lastCheckTime = now;
+                PerfMonitorScope scope(GetPerfData());
                 value = Calculate();
             }
         }
@@ -113,9 +122,21 @@ public:
 protected:
     virtual T Calculate() = 0;
 
+    PerformanceData* GetPerfData()
+    {
+        if (!PerfMonitor::IsEnabled())
+            return nullptr;
+
+        if (!perfData)
+            perfData = sPerfMonitor.acquire(PERF_MON_VALUE, getName());
+
+        return perfData;
+    }
+
     uint32 checkInterval;
     uint32 lastCheckTime;
     T value;
+    PerformanceData* perfData = nullptr;
 };
 
 template <class T>
@@ -133,6 +154,7 @@ public:
         if (!this->lastCheckTime)
         {
             this->lastCheckTime = now;
+            PerfMonitorScope scope(this->GetPerfData());
             this->value = this->Calculate();
         }
 
