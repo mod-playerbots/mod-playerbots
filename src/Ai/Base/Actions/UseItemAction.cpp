@@ -9,6 +9,9 @@
 #include "Event.h"
 #include "ItemPackets.h"
 #include "ItemUsageValue.h"
+#include "LootObjectStack.h"
+#include "PlayerbotAIConfig.h"
+#include "ServerFacade.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 
@@ -43,17 +46,93 @@ bool UseItemAction::Execute(Event event)
 
 bool UseItemAction::UseGameObject(ObjectGuid guid)
 {
-    GameObject* go = botAI->GetGameObject(guid);
-    if (!go || !go->isSpawned() /* || go->GetGoState() != GO_STATE_READY*/)
+    auto fail = [this](char const* reason)
+    {
+        botAI->TellError(reason);
         return false;
+    };
 
-    go->Use(bot);
+    GameObject* go = botAI->GetGameObject(guid);
+    if (!go || !go->isSpawned())
+        return fail("Game object is no longer available");
 
-    std::ostringstream out;
-    botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-        "use_gameobject",
-        "Using %gameobject",
-        {{"%gameobject", chat->FormatGameobject(go)}}));
+    if (sPlayerbotAIConfig.disallowedGameObjects.contains(go->GetEntry()))
+        return fail("Game object is disallowed by configuration");
+
+    if (sPlayerbotAIConfig.lootDistance && bot->GetDistance(go) > sPlayerbotAIConfig.lootDistance)
+        return fail("Game object is outside the configured loot distance");
+
+    if (go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE) ||
+        (go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND) && !go->ActivateToQuest(bot)))
+        return fail("Game object is not currently eligible for interaction");
+
+    if (!bot->IsAlive() || bot->IsInFlight() || bot->m_mover != bot || bot->IsNonMeleeSpellCast(false) ||
+        bot->GetLootGUID())
+        return fail("Cannot interact while dead, flying, remotely controlled, casting, or looting");
+
+    if (go->GetGoType() == GAMEOBJECT_TYPE_CHEST || go->GetGOInfo()->GetLootId())
+    {
+        LootObject loot(bot, guid);
+        if (!loot.IsLootPossible(bot))
+            return fail("Cannot loot this object: check quest, skill, tools, key, and object state");
+
+        bool inRange = bot->GetDistance(go) <= INTERACTION_DISTANCE - 2.0f;
+        if (botAI->HasStrategy("stay", BOT_STATE_NON_COMBAT) && bot->GetDistance(go) > CONTACT_DISTANCE)
+            return fail("Game object is out of reach while staying");
+
+        bool canContinue = botAI->HasStrategy("loot", BOT_STATE_NON_COMBAT) ||
+                           botAI->HasStrategy("gather", BOT_STATE_NON_COMBAT);
+        if (!inRange && !canContinue)
+            return fail("Move closer or enable the loot or gather strategy to approach this object");
+
+        LootObject previous = AI_VALUE(LootObject, "loot target");
+        LootObjectStack* availableLoot = AI_VALUE(LootObjectStack*, "available loot");
+        bool added = availableLoot->Add(guid);
+        context->GetValue<LootObject>("loot target")->Set(loot);
+
+        // OpenLootAction deliberately returns false while stopping movement or
+        // removing a mount, but schedules the normal retry path in those cases.
+        // Preserve that target only for those specific retry-producing states;
+        // a general false result must not report success with stale loot state.
+        bool retryGuaranteed = inRange && (bot->isMoving() || bot->IsMounted());
+        std::string objectName = chat->FormatGameobject(go);
+        bool requested = botAI->DoSpecificAction(inRange ? "open loot" : "move to loot", Event(), true);
+        if (!requested && !retryGuaranteed)
+        {
+            if (added)
+                availableLoot->Remove(guid);
+            context->GetValue<LootObject>("loot target")->Set(previous);
+            return fail("Could not approach or open the game object");
+        }
+
+        botAI->TellMasterNoFacing(std::string(inRange && requested ? "Opening requested: " : "Queued for looting: ") +
+                                 objectName);
+        return true;
+    }
+
+    if (go->GetGOInfo()->GetLockId() && go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED))
+        return fail("This non-loot object requires an opening spell or key");
+
+    if (!go->IsWithinDistInMap(bot, go->GetInteractionDistance()))
+        return fail("Move closer to interact with this game object");
+
+    if (bot->isMoving())
+        bot->StopMoving();
+    ServerFacade::instance().SetFacingTo(bot, go);
+
+    WorldPacket use(CMSG_GAMEOBJ_USE, 8);
+    use << guid;
+    bot->GetSession()->HandleGameObjectUseOpcode(use);
+
+    go = botAI->GetGameObject(guid);
+    if (go && go->isSpawned() && go->IsWithinDistInMap(bot, INTERACTION_DISTANCE))
+    {
+        WorldPacket report(CMSG_GAMEOBJ_REPORT_USE, 8);
+        report << guid;
+        bot->GetSession()->HandleGameobjectReportUse(report);
+    }
+
+    botAI->TellMasterNoFacing("Game object interaction requested");
     return true;
 }
 

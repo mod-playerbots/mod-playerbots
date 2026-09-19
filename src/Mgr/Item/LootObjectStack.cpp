@@ -373,7 +373,52 @@ void LootObjectStack::Remove(ObjectGuid guid)
         availableLoot.erase(i);
 }
 
-void LootObjectStack::Clear() { availableLoot.clear(); }
+void LootObjectStack::Clear()
+{
+    availableLoot.clear();
+    CancelLoot(pendingLoot);
+}
+
+bool LootObjectStack::IsLootPending()
+{
+    if (!pendingLoot)
+        return false;
+
+    if ((awaitingRelease && bot->GetLootGUID() != pendingLoot) ||
+        (std::chrono::steady_clock::now() >= pendingUntil && !bot->IsNonMeleeSpellCast(false)))
+    {
+        CancelLoot(pendingLoot);
+        return false;
+    }
+
+    return true;
+}
+
+void LootObjectStack::BeginLoot(ObjectGuid guid)
+{
+    pendingLoot = guid;
+    awaitingRelease = false;
+    pendingUntil = std::chrono::steady_clock::now() + std::chrono::seconds(15);
+}
+
+bool LootObjectStack::LootOpened(ObjectGuid guid)
+{
+    if (pendingLoot != guid)
+        return false;
+
+    awaitingRelease = true;
+    pendingUntil = std::chrono::steady_clock::now() + std::chrono::seconds(15);
+    return true;
+}
+
+void LootObjectStack::CancelLoot(ObjectGuid guid)
+{
+    if (pendingLoot == guid)
+    {
+        pendingLoot.Clear();
+        awaitingRelease = false;
+    }
+}
 
 bool LootObjectStack::CanLoot(float maxDistance)
 {
@@ -394,27 +439,35 @@ LootObject LootObjectStack::GetNearest(float maxDistance)
     LootObject nearest;
     float nearestDistance = std::numeric_limits<float>::max();
 
-    LootTargetList safeCopy(availableLoot);
-    for (LootTargetList::iterator i = safeCopy.begin(); i != safeCopy.end(); i++)
+    for (LootTargetList::iterator i = availableLoot.begin(); i != availableLoot.end();)
     {
         ObjectGuid guid = i->guid;
 
         WorldObject* worldObj = ObjectAccessor::GetWorldObject(*bot, guid);
         if (!worldObj)
+        {
+            i = availableLoot.erase(i);
             continue;
+        }
 
         float distance = bot->GetDistance(worldObj);
 
         if (distance >= nearestDistance || (maxDistance && distance > maxDistance))
+        {
+            ++i;
             continue;
+        }
 
         LootObject lootObject(bot, guid);
-
         if (!lootObject.IsLootPossible(bot))
+        {
+            ++i;
             continue;
+        }
 
         nearestDistance = distance;
         nearest = lootObject;
+        ++i;
     }
 
     return nearest;

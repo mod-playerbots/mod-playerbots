@@ -9,7 +9,9 @@
 #include "Event.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "GameObject.h"
 #include "LootObjectStack.h"
+#include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
@@ -17,6 +19,15 @@ bool AddLootAction::Execute(Event event)
 {
     ObjectGuid guid = event.getObject();
     if (!guid)
+        return false;
+
+    GameObject* go = botAI->GetGameObject(guid);
+    if (!go || go->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER ||
+        sPlayerbotAIConfig.disallowedGameObjects.contains(go->GetEntry()))
+        return false;
+
+    LootObject loot(bot, guid);
+    if (loot.IsEmpty() || !loot.IsLootPossible(bot))
         return false;
 
     return AI_VALUE(LootObjectStack*, "available loot")->Add(guid);
@@ -41,7 +52,13 @@ bool AddLootAction::isUseful() { return true; }
 
 bool AddAllLootAction::isUseful() { return true; }
 
-bool AddAllLootAction::AddLoot(ObjectGuid guid) { return AI_VALUE(LootObjectStack*, "available loot")->Add(guid); }
+bool AddAllLootAction::AddLoot(ObjectGuid guid)
+{
+    if (guid.IsGameObject() && sPlayerbotAIConfig.disallowedGameObjects.contains(guid.GetEntry()))
+        return false;
+
+    return AI_VALUE(LootObjectStack*, "available loot")->Add(guid);
+}
 
 bool AddGatheringLootAction::AddLoot(ObjectGuid guid)
 {
@@ -51,10 +68,7 @@ bool AddGatheringLootAction::AddLoot(ObjectGuid guid)
     if (loot.IsEmpty() || !wo)
         return false;
 
-    if (loot.skillId == SKILL_NONE)
-        return false;
-
-    if (!loot.IsLootPossible(bot))
+    if (loot.skillId == SKILL_NONE || !loot.IsLootPossible(bot))
         return false;
 
     return AddAllLootAction::AddLoot(guid);

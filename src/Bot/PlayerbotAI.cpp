@@ -3712,11 +3712,29 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
         GameObject* go = GetGameObject(loot.guid);
         if (go && go->isSpawned())
         {
-            WorldPacket packetgouse(CMSG_GAMEOBJ_USE, 8);
-            packetgouse << loot.guid;
-            bot->GetSession()->HandleGameObjectUseOpcode(packetgouse);
+            switch (go->GetGoType())
+            {
+                case GAMEOBJECT_TYPE_DOOR:
+                case GAMEOBJECT_TYPE_BUTTON:
+                case GAMEOBJECT_TYPE_QUESTGIVER:
+                case GAMEOBJECT_TYPE_CHEST:
+                case GAMEOBJECT_TYPE_GENERIC:
+                case GAMEOBJECT_TYPE_SPELL_FOCUS:
+                case GAMEOBJECT_TYPE_GOOBER:
+                case GAMEOBJECT_TYPE_FLAGSTAND:
+                    break;
+                default:
+                {
+                    WorldPacket packetgouse(CMSG_GAMEOBJ_USE, 8);
+                    packetgouse << loot.guid;
+                    bot->GetSession()->HandleGameObjectUseOpcode(packetgouse);
+                    break;
+                }
+            }
+
             targets.SetGOTarget(go);
             faceTo = go;
+            ServerFacade::instance().SetFacingTo(bot, go);
         }
         else if (itemTarget)
         {

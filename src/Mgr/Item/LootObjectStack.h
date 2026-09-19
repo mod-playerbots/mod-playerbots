@@ -9,6 +9,8 @@
 
 #include "ObjectGuid.h"
 
+#include <chrono>
+
 class AiObjectContext;
 class Player;
 class WorldObject;
@@ -78,11 +80,19 @@ public:
     bool CanLoot(float maxDistance);
     LootObject GetLoot(float maxDistance = 0);
 
+    bool IsLootPending();
+    void BeginLoot(ObjectGuid guid);
+    bool LootOpened(ObjectGuid guid);
+    void CancelLoot(ObjectGuid guid);
+
 private:
     LootObject GetNearest(float maxDistance = 0);
 
     Player* bot;
     LootTargetList availableLoot;
+    ObjectGuid pendingLoot;
+    std::chrono::steady_clock::time_point pendingUntil;
+    bool awaitingRelease = false;
 };
 
 #endif
