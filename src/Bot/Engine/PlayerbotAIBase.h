@@ -25,6 +25,10 @@ public:
     bool IsActive();
     bool IsBotAI() const;
 
+    void SetActionDuration(uint32 duration);
+    void ResetActionDuration();
+    bool IsActionDurationActive() const { return nextAICheckDelay > 0; }
+
 protected:
     uint32 nextAICheckDelay;
     class PerfMonitorOperation* totalPmo = nullptr;

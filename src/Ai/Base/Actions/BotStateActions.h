@@ -4,20 +4,20 @@
  * or (at your option) any later version.
  */
 
-#ifndef PLAYERBOTS_CHANGECHATACTION_H
-#define PLAYERBOTS_CHANGECHATACTION_H
+#ifndef _PLAYERBOT_BOTSTATEACTIONS_H
+#define _PLAYERBOT_BOTSTATEACTIONS_H
 
 #include "Action.h"
 
 class PlayerbotAI;
 
-class ChangeChatAction : public Action
+class WakeOnCombatStartAction : public Action
 {
 public:
-    ChangeChatAction(PlayerbotAI* botAI) : Action(botAI, "chat") {}
+    WakeOnCombatStartAction(PlayerbotAI* botAI) : Action(botAI, "wake on combat start") {}
 
     bool Execute(Event event) override;
-    bool isUsefulWhenStunned() override { return true; }
+    bool isUseful() override;
 };
 
 #endif

@@ -7,6 +7,7 @@
 #ifndef PLAYERBOTS_TRIGGERCONTEXT_H
 #define PLAYERBOTS_TRIGGERCONTEXT_H
 
+#include "BotStateTriggers.h"
 #include "CureTriggers.h"
 #include "FishingTriggers.h"
 #include "GenericTriggers.h"
@@ -106,6 +107,8 @@ public:
         creators["medium aoe and healer should attack"] = &TriggerContext::medium_aoe_and_healer_should_attack;
 
         creators["has area debuff"] = &TriggerContext::HasAreaDebuff;
+
+        creators["combat start"] = &TriggerContext::combat_start;
 
         creators["enemy out of melee"] = &TriggerContext::EnemyOutOfMelee;
         creators["enemy out of spell"] = &TriggerContext::EnemyOutOfSpell;
@@ -312,6 +315,7 @@ private:
     static Trigger* healer_should_attack(PlayerbotAI* botAI) { return new HealerShouldAttackTrigger(botAI); }
     static Trigger* medium_aoe_and_healer_should_attack(PlayerbotAI* botAI) { return new TwoTriggers(botAI, "medium aoe", "healer should attack"); }
     static Trigger* HasAreaDebuff(PlayerbotAI* botAI) { return new HasAreaDebuffTrigger(botAI); }
+    static Trigger* combat_start(PlayerbotAI* botAI) { return new CombatStartTrigger(botAI); }
     static Trigger* LoseAggro(PlayerbotAI* botAI) { return new LoseAggroTrigger(botAI); }
     static Trigger* HasAggro(PlayerbotAI* botAI) { return new HasAggroTrigger(botAI); }
     static Trigger* LowHealth(PlayerbotAI* botAI) { return new LowHealthTrigger(botAI); }
