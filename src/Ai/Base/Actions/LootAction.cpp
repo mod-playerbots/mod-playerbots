@@ -357,6 +357,15 @@ proto->Name1.c_str(), 1, bidPrice, buyoutPrice);
 }
 */
 
+// Loot a bot leaves to its quest loot receiver (see LootObject::GetQuestLootReceiver): quest items, quest
+// starters and anything the bot or the receiver still collects for a quest.
+static bool IsQuestLoot(ItemTemplate const* proto, Player* bot, Player* receiver)
+{
+    return proto->Class == ITEM_CLASS_QUEST || proto->Bonding == BIND_QUEST_ITEM ||
+           proto->Bonding == BIND_QUEST_ITEM1 || proto->StartQuest || bot->HasQuestForItem(proto->ItemId) ||
+           receiver->HasQuestForItem(proto->ItemId);
+}
+
 bool StoreLootAction::Execute(Event event)
 {
     WorldPacket p(event.getPacket());  // (8+1+4+1+1+4+4+4+4+4+1)
@@ -376,6 +385,7 @@ bool StoreLootAction::Execute(Event event)
     }
 
     bot->SetLootGUID(guid);
+    Player* questLootReceiver = LootObject::GetQuestLootReceiver(bot);
 
     if (gold > 0)
     {
@@ -407,6 +417,10 @@ bool StoreLootAction::Execute(Event event)
 
         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemid);
         if (!proto)
+            continue;
+
+        // Opening spells deliver gameobject loot as LOOT_SKINNING, which skips IsLootAllowed above.
+        if (loot_type == LOOT_SKINNING && questLootReceiver && IsQuestLoot(proto, bot, questLootReceiver))
             continue;
 
         if (!IsRealPlayer(botAI->GetMaster()) && AI_VALUE(uint8, "bag space") > 80)
@@ -482,6 +496,11 @@ bool StoreLootAction::IsLootAllowed(uint32 itemid, PlayerbotAI* botAI)
     std::set<uint32>& lootItems = AI_VALUE(std::set<uint32>&, "always loot list");
     if (lootItems.find(itemid) != lootItems.end())
         return true;
+
+    Player* bot = botAI->GetBot();
+    Player* questLootReceiver = LootObject::GetQuestLootReceiver(bot);
+    if (questLootReceiver && IsQuestLoot(proto, bot, questLootReceiver))
+        return false;
 
     uint32 max = proto->MaxCount;
     if (max > 0 && botAI->GetBot()->HasItemCount(itemid, max, true))
