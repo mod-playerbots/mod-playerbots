@@ -79,15 +79,36 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
     uint8 castFlags = 0;
     uint32 targetFlag = TARGET_FLAG_NONE;
     uint32 spellId = 0;
-    for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+    ItemTemplate const* itemProto = item->GetTemplate();
+    bool const isGenericLearnItem = itemProto->Spells[0].SpellId == 483 || itemProto->Spells[0].SpellId == 55884;
+
+    // Don't waste a skill book/recipe the bot already knows (mirrors AuctionHouseSearcher::CanBeUseful).
+    if (isGenericLearnItem)
     {
-        if (item->GetTemplate()->Spells[i].SpellId > 0)
+        // Check for tbc/wotlk recipies: Spells are learned through 483 and 55884, the second spell in the item will be the actual spell learned.
+        if (bot->HasSpell(itemProto->Spells[1].SpellId))
+            return false;
+    }
+    else if (itemProto->Spells[0].SpellId)
+    {
+        // Check for vanilla recipies: Spells are learned through individual learning spells instead of spell 483 and 55884.
+        SpellInfo const* learnSpellInfo = sSpellMgr->GetSpellInfo(itemProto->Spells[0].SpellId);
+        if (learnSpellInfo && learnSpellInfo->Effects[0].Effect == SPELL_EFFECT_LEARN_SPELL &&
+            learnSpellInfo->Effects[0].TriggerSpell &&
+            bot->HasSpell(learnSpellInfo->Effects[0].TriggerSpell))
+            return false;
+    }
+
+    // Only check index 0 for generic-learn items; slot 1 is the taught spell id
+    uint8 const spellSlotLimit = isGenericLearnItem ? 1 : MAX_ITEM_PROTO_SPELLS;
+
+    for (uint8 i = 0; i < spellSlotLimit; ++i)
+    {
+        if (itemProto->Spells[i].SpellId > 0)
         {
-            spellId = item->GetTemplate()->Spells[i].SpellId;
+            spellId = itemProto->Spells[i].SpellId;
             if (!botAI->CanCastSpell(spellId, bot, false, itemTarget, item))
-            {
                 return false;
-            }
         }
     }
 
