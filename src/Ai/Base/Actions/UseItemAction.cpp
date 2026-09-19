@@ -173,7 +173,11 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
     {
         if (Quest const* qInfo = sObjectMgr->GetQuestTemplate(questId))
         {
-            // Same acceptance path as NPC/creature quest givers (guards, grey filter, sync fallback and broadcast included)
+            // Same acceptance path as NPC/creature quest givers, with the module's grey-quest
+            // band enforced here so every caller of UseItem is covered.
+            if (!QuestAction::CanAcceptQuest(bot, qInfo))
+                return false;
+
             AcceptQuestAction acceptQuestAction(botAI);
             return acceptQuestAction.AcceptQuest(qInfo, item_guid);
         }
@@ -450,40 +454,20 @@ bool UseRandomRecipe::isPossible() { return AI_VALUE2(uint32, "item count", "rec
 
 bool UseStartQuestItem::Execute(Event /*event*/)
 {
-    Unit* unitTarget = nullptr;
-    ObjectGuid goTarget;
-
-    std::vector<Item*> questItems = AI_VALUE2(std::vector<Item*>, "inventory items", "quest");
-    if (questItems.empty())
-        return false;
-
-    Item* item = nullptr;
-    for (uint8 i = 0; i < 5; i++)
+    for (Item* questItem : AI_VALUE2(std::vector<Item*>, "inventory items", "start quest"))
     {
-        auto itr = questItems.begin();
-        std::advance(itr, urand(0, questItems.size() - 1));
-        Item* questItem = *itr;
+        Quest const* qInfo = sObjectMgr->GetQuestTemplate(questItem->GetTemplate()->StartQuest);
+        if (!QuestAction::CanAcceptQuest(bot, qInfo))
+            continue;
 
-        ItemTemplate const* proto = questItem->GetTemplate();
-        if (proto->StartQuest)
-        {
-            Quest const* qInfo = sObjectMgr->GetQuestTemplate(proto->StartQuest);
-            if (QuestAction::CanAcceptQuest(bot, qInfo))
-            {
-                item = questItem;
-                break;
-            }
-        }
+        bool used = UseItem(questItem, ObjectGuid::Empty, nullptr, nullptr);
+        if (used)
+            botAI->SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
+
+        return used;
     }
 
-    if (!item)
-        return false;
-
-    bool used = UseItem(item, goTarget, nullptr, unitTarget);
-    if (used)
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
-
-    return used;
+    return false;
 }
 
 bool UseStartQuestItem::isUseful()
@@ -491,4 +475,4 @@ bool UseStartQuestItem::isUseful()
     return !IsRealPlayer(botAI->GetMaster()) && !bot->InBattleground() && !bot->HasUnitState(UNIT_STATE_IN_FLIGHT);
 }
 
-bool UseStartQuestItem::isPossible() { return AI_VALUE2(uint32, "item count", "quest") > 0; }
+bool UseStartQuestItem::isPossible() { return AI_VALUE2(uint32, "item count", "start quest") > 0; }
