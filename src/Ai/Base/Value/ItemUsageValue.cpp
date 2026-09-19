@@ -13,6 +13,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
+#include "QuestAction.h"
 #include "RandomItemMgr.h"
 #include "ServerFacade.h"
 #include "StatsWeightCalculator.h"
@@ -532,6 +533,16 @@ bool ItemUsageValue::IsItemUsefulForQuest(Player* player, ItemTemplate const* pr
                     }
                 }
             }
+        }
+    }
+
+    // Keep items that start a quest the bot can take, so they are not sold or destroyed
+    if (uint32 startQuestId = proto->StartQuest)
+    {
+        if (Quest const* quest = sObjectMgr->GetQuestTemplate(startQuestId))
+        {
+            if (player->GetQuestStatus(startQuestId) == QUEST_STATUS_NONE && QuestAction::CanAcceptQuest(player, quest))
+                return true; // Item starts a quest the bot can take
         }
     }
 
