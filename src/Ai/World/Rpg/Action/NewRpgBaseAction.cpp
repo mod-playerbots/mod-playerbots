@@ -702,6 +702,8 @@ bool NewRpgBaseAction::SearchQuestGiverAndAcceptOrReward()
             ForceToWait(5000);
             return true;
         }
+        LOG_DEBUG("playerbots", "[New RPG] {} questgiver {} at {} yd not interactable yet, closing in",
+                  bot->GetName(), npcOrGo.ToString(), uint32(bot->GetDistance(object)));
         return MoveWorldObjectTo(npcOrGo);
     }
     return false;
@@ -870,14 +872,13 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
                 continue;
 
             float dz = std::max(bot->GetMap()->GetHeight(dx, dy, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(dx, dy));
-
             if (dz == INVALID_HEIGHT || dz == VMAP_INVALID_HEIGHT_VALUE)
-                continue;
+                dz = bot->GetPositionZ();
 
             if (bot->GetZoneId() != bot->GetMap()->GetZoneId(bot->GetPhaseMask(), dx, dy, dz))
                 continue;
 
-            poiInfo.push_back({{dx, dy}, qPoi.ObjectiveIndex});
+            poiInfo.push_back({{dx, dy}, qPoi.ObjectiveIndex, dz});
         }
 
         if (poiInfo.empty())
@@ -949,7 +950,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
         if (bot->GetZoneId() != bot->GetMap()->GetZoneId(bot->GetPhaseMask(), dx, dy, dz))
             continue;
 
-        poiInfo.push_back({{dx, dy}, qPoi.ObjectiveIndex});
+        poiInfo.push_back({{dx, dy}, qPoi.ObjectiveIndex, dz});
     }
 
     if (poiInfo.size() == 0)
