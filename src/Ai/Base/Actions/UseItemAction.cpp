@@ -85,13 +85,13 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
     // Don't waste a skill book/recipe the bot already knows (mirrors AuctionHouseSearcher::CanBeUseful).
     if (isGenericLearnItem)
     {
-        // Check for tbc/wotlk recipies: Spells are learned through 483 and 55884, the second spell in the item will be the actual spell learned.
+        // Generic-learn layout: Spells[0] is the trigger (483/55884), Spells[1] is the actual spell learned.
         if (bot->HasSpell(itemProto->Spells[1].SpellId))
             return false;
     }
     else if (itemProto->Spells[0].SpellId)
     {
-        // Check for vanilla recipies: Spells are learned through individual learning spells instead of spell 483 and 55884.
+        // Older/direct layout: Spells[0] itself is the learned spell.
         SpellInfo const* learnSpellInfo = sSpellMgr->GetSpellInfo(itemProto->Spells[0].SpellId);
         if (learnSpellInfo && learnSpellInfo->Effects[0].Effect == SPELL_EFFECT_LEARN_SPELL &&
             learnSpellInfo->Effects[0].TriggerSpell &&
