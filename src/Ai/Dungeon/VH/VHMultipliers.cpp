@@ -5,10 +5,8 @@
  */
 
 #include "VHMultipliers.h"
-#include "Action.h"
 #include "ChooseTargetActions.h"
-#include "GenericSpellActions.h"
-#include "MovementActions.h"
+#include "Playerbots.h"
 #include "VHActions.h"
 #include "VHTriggers.h"
 
