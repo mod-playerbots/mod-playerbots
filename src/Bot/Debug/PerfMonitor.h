@@ -20,6 +20,7 @@
 #include <ctime>
 #include <map>
 #include <mutex>
+#include <string>
 #include <vector>
 
 typedef std::vector<std::string> PerformanceStack;
@@ -68,7 +69,7 @@ public:
 
 private:
     PerformanceData* data;
-    std::chrono::microseconds started;
+    std::chrono::microseconds started{};
 };
 
 class PerfMonitor
@@ -88,6 +89,7 @@ public:
     PerformanceData* acquire(PerformanceMetric metric, std::string const& name);
     static void CountBlock(PerformanceData* data);
     void PrintStats(bool perTick = false, bool fullStack = false);
+    void DumpJson(bool perTick = false);
     void Reset();
 
 private:

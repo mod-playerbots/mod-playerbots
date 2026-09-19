@@ -212,25 +212,32 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
         if (bot->GetGroup() && botAI->GetMaster())
             leaderHasThreat = attacker->GetThreatMgr().GetThreat(botAI->GetMaster());
 
-        bool isMemberBotGroup = false;
-        if (bot->GetGroup() && botAI->GetMaster())
+        // A player claims a creature by damaging it or landing a hostile spell on it, which is what
+        // sets its loot recipient. The below code covers anti-kill-stealing mechanics.
+        //
+        // (1) Whatever the claim, the bot may attack if it (a) is in a raid/group and has a master
+        //     holding nonzero threat on the creature, (b) has, or has a raid/group member that has,
+        //     already tapped it, or (c) is already in combat with the creature.
+        if (leaderHasThreat || c->isTappedBy(bot) || c->IsInCombatWith(bot))
+            return true;
+
+        // (2) Nobody has claimed the creature, so ask who it is attacking. If it is not attacking
+        //     anything, or if it is attacking (a) something with no player behind it (e.g., a
+        //     critter), (b) the bot, (c) the bot's master, or (d) a member of the bot's raid/group,
+        //     then the victim is considered to belong to the bot and may be attacked. Clauses (b)
+        //     through (d) also include a player's pets, guardians, totems, and charms.
+        if (!c->hasLootRecipient())
         {
-            PlayerbotAI* masterBotAI = GET_PLAYERBOT_AI(botAI->GetMaster());
-            if (masterBotAI && !IsSelfBot(botAI->GetMaster()))
-                isMemberBotGroup = true;
+            Unit* victim = c->GetVictim();
+            Player* victimOwner = victim ? victim->GetCharmerOrOwnerPlayerOrPlayerItself() : nullptr;
+            if (!victim || !victimOwner || victimOwner == bot || victimOwner == botAI->GetMaster() ||
+                (bot->GetGroup() && bot->GetGroup() == victimOwner->GetGroup()))
+                return true;
         }
 
-        bool canAttack = (!isMemberBotGroup && botAI->HasStrategy("attack tagged", BOT_STATE_NON_COMBAT)) ||
-            leaderHasThreat ||
-            (!c->hasLootRecipient() &&
-                (!c->GetVictim() ||
-                    (c->GetVictim() &&
-                        ((!c->GetVictim()->IsPlayer() || bot->IsInSameGroupWith(c->GetVictim()->ToPlayer())) ||
-                            (botAI->GetMaster() && c->GetVictim() == botAI->GetMaster()))))) ||
-            c->isTappedBy(bot);
-
-        if (!canAttack)
-            return false;
+        // (3) Last because it is applied automatically only in battlegrounds and arenas: the
+        //     "attack tagged" strategy always allows for attacking of creatures.
+        return botAI->HasStrategy("attack tagged", BOT_STATE_NON_COMBAT);
     }
 
     return true;

@@ -9,6 +9,8 @@
 
 #include "ACActionContext.h"
 #include "MechActionContext.h"
+#include "MgTActionContext.h"
+#include "RampActionContext.h"
 #include "SethActionContext.h"
 #include "UBActionContext.h"
 

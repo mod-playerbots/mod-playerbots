@@ -4,23 +4,21 @@
  * or (at your option) any later version.
  */
 
-#ifndef PLAYERBOTS_DPSROGUESTRATEGY_H
-#define PLAYERBOTS_DPSROGUESTRATEGY_H
+#ifndef PLAYERBOTS_COMBATROGUESTRATEGY_H
+#define PLAYERBOTS_COMBATROGUESTRATEGY_H
 
-#include "CombatStrategy.h"
-#include "MeleeCombatStrategy.h"
+#include "GenericRogueStrategy.h"
 
 class PlayerbotAI;
 
-class DpsRogueStrategy : public MeleeCombatStrategy
+class CombatRogueStrategy : public GenericRogueStrategy
 {
 public:
-    DpsRogueStrategy(PlayerbotAI* botAI);
+    CombatRogueStrategy(PlayerbotAI* botAI);
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
-    std::string const getName() override { return "dps"; }
+    std::string const getName() override { return "combat"; }
     std::vector<NextAction> getDefaultActions() override;
-    uint32 GetType() const override { return MeleeCombatStrategy::GetType() | STRATEGY_TYPE_DPS; }
 };
 
 class StealthedRogueStrategy : public Strategy

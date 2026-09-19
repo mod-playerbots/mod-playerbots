@@ -17,11 +17,15 @@ class WotlkDungeonGDTriggerContext : public NamedObjectContext<Trigger>
         {
             creators["poison nova"] = &WotlkDungeonGDTriggerContext::poison_nova;
             creators["snake wrap"] = &WotlkDungeonGDTriggerContext::snake_wrap;
+            creators["slad'ran stack on tank"] = &WotlkDungeonGDTriggerContext::sladran_stack_on_tank;
+            creators["slad'ran tank hold"] = &WotlkDungeonGDTriggerContext::sladran_tank_hold;
             creators["whirling slash"] = &WotlkDungeonGDTriggerContext::whirling_slash;
         }
     private:
         static Trigger* poison_nova(PlayerbotAI* ai) { return new SladranPoisonNovaTrigger(ai); }
         static Trigger* snake_wrap(PlayerbotAI* ai) { return new SladranSnakeWrapTrigger(ai); }
+        static Trigger* sladran_stack_on_tank(PlayerbotAI* ai) { return new SladranStackOnTankTrigger(ai); }
+        static Trigger* sladran_tank_hold(PlayerbotAI* ai) { return new SladranTankHoldTrigger(ai); }
         static Trigger* whirling_slash(PlayerbotAI* ai) { return new GaldarahWhirlingSlashTrigger(ai); }
 };
 

@@ -5,6 +5,7 @@
  */
 
 #include "RandomPlayerbotMgr.h"
+#include "PlayerbotsDatabase.h"
 #include "AiFactory.h"
 #include "Battleground.h"
 #include "BattlegroundMgr.h"
@@ -46,6 +47,8 @@
 #include <ctime>
 #include <iomanip>
 #include <random>
+#include <set>
+#include <utility>
 
 struct GuidClassRaceInfo
 {
@@ -513,7 +516,8 @@ void RandomPlayerbotMgr::AssignAccountTypes()
     LOG_INFO("playerbots", "Found {} total randombot accounts in database", allRandomBotAccounts.size());
 
     // Check existing assignments
-    QueryResult existingAssignments = PlayerbotsDatabase.Query("SELECT account_id, account_type FROM playerbots_account_type");
+    PlayerbotsDatabasePreparedStatement* assignmentsStmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_ACCOUNT_TYPE);
+    PreparedQueryResult existingAssignments = PlayerbotsDatabase.Query(assignmentsStmt);
     std::map<uint32, uint8> currentAssignments;
 
     if (existingAssignments)
@@ -532,7 +536,10 @@ void RandomPlayerbotMgr::AssignAccountTypes()
     {
         if (currentAssignments.find(accountId) == currentAssignments.end())
         {
-            PlayerbotsDatabase.Execute("INSERT INTO playerbots_account_type (account_id, account_type) VALUES ({}, 0) ON DUPLICATE KEY UPDATE account_type = account_type", accountId);
+            PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_INS_ACCOUNT_TYPE);
+            stmt->SetData(0, accountId);
+            stmt->SetData(1, uint8(0));
+            PlayerbotsDatabase.Execute(stmt);
             currentAssignments[accountId] = 0;
         }
     }
@@ -575,7 +582,10 @@ void RandomPlayerbotMgr::AssignAccountTypes()
             uint32 accountId = allRandomBotAccounts[i];
             if (currentAssignments[accountId] == 0) // Unassigned
             {
-                PlayerbotsDatabase.Execute("UPDATE playerbots_account_type SET account_type = 1, assignment_date = NOW() WHERE account_id = {}", accountId);
+                PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_ACCOUNT_TYPE);
+                stmt->SetData(0, uint8(1));
+                stmt->SetData(1, accountId);
+                PlayerbotsDatabase.Execute(stmt);
                 currentAssignments[accountId] = 1;
                 assigned++;
             }
@@ -600,7 +610,10 @@ void RandomPlayerbotMgr::AssignAccountTypes()
             uint32 accountId = allRandomBotAccounts[idx];
             if (currentAssignments[accountId] == 0) // Unassigned
             {
-                PlayerbotsDatabase.Execute("UPDATE playerbots_account_type SET account_type = 2, assignment_date = NOW() WHERE account_id = {}", accountId);
+                PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_ACCOUNT_TYPE);
+                stmt->SetData(0, uint8(2));
+                stmt->SetData(1, accountId);
+                PlayerbotsDatabase.Execute(stmt);
                 currentAssignments[accountId] = 2;
                 assigned++;
             }
@@ -626,8 +639,10 @@ void RandomPlayerbotMgr::AssignAccountTypes()
 
 bool RandomPlayerbotMgr::IsAccountType(uint32 accountId, uint8 accountType)
 {
-    QueryResult result = PlayerbotsDatabase.Query("SELECT 1 FROM playerbots_account_type WHERE account_id = {} AND account_type = {}", accountId, accountType);
-    return result != nullptr;
+    PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_ACCOUNT_TYPE_BY_ACCOUNT_AND_TYPE);
+    stmt->SetData(0, accountId);
+    stmt->SetData(1, accountType);
+    return PlayerbotsDatabase.Query(stmt) != nullptr;
 }
 
 // Logs-in bots in 4 phases. Phase 1 logs Alliance bots up to how much is expected according to the faction ratio,
@@ -1759,7 +1774,9 @@ void RandomPlayerbotMgr::Init()
     if (sPlayerbotAIConfig.randomBotJoinBG)
         sRandomPlayerbotMgr.LoadBattleMastersCache();
 
-    PlayerbotsDatabase.Execute("DELETE FROM playerbots_random_bots WHERE event = 'add'");
+    PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_RANDOM_BOTS_BY_EVENT);
+    stmt->SetData(0, std::string("add"));
+    PlayerbotsDatabase.Execute(stmt);
 }
 
 void RandomPlayerbotMgr::InitArenaTeams()
@@ -1793,11 +1810,85 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
         }
     }
     std::vector<WorldLocation> locs = sTravelMgr.GetTeleportLocations(bot);
+
+    if (sPlayerbotAIConfig.randomBotConcentrateInPlayerZone && !locs.empty())
+    {
+        std::vector<WorldLocation> playerZoneLocs = GetPlayerZoneTeleportLocations(locs, bot);
+        if (!playerZoneLocs.empty())
+            locs = std::move(playerZoneLocs);
+    }
+
     if (!locs.empty())
     {
         RandomTeleport(bot, locs, false);
         return;
     }
+}
+
+// Returns the subset of teleport locations that lie in a zone currently occupied by a real
+// (non-GM) player, so random bots can be gathered where players actually are. Returns an empty
+// vector when no player is online or none of the locations match, letting the caller fall back
+// to the default world-wide behaviour.
+std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocations(std::vector<WorldLocation> const& locs,
+                                                                              Player* bot)
+{
+    std::set<uint32> playerMaps;
+    std::set<std::pair<uint32, uint32>> playerMapZones;
+
+    // players only ever holds real (non random bot) players and is maintained on login/logout, so
+    // this is a pass over the online player list, not a world-wide scan.
+    for (Player* player : players)
+    {
+        if (!player || !player->IsInWorld() || player->IsGameMaster())
+            continue;
+
+        Map* map = player->GetMap();
+        if (!map)
+            continue;
+
+        // Instanceable maps (dungeons, raids, battlegrounds, arenas) are never valid targets: a
+        // WorldLocation carries no instance id, so a bot would be sent to another instance of the
+        // same map rather than to the player.
+        if (map->Instanceable())
+            continue;
+
+        // Resolve the player zone the same way as the candidate locations below (unphased terrain),
+        // so a player standing in a phased area still matches its underlying zone.
+        uint32 zoneId = map->GetZoneId(PHASEMASK_NORMAL, player->GetPositionX(), player->GetPositionY(),
+                                       player->GetPositionZ());
+        playerMaps.insert(map->GetId());
+        playerMapZones.insert(std::make_pair(map->GetId(), zoneId));
+    }
+
+    std::vector<WorldLocation> filtered;
+    if (playerMapZones.empty())
+        return filtered;
+
+    for (WorldLocation const& loc : locs)
+    {
+        if (playerMaps.find(loc.GetMapId()) == playerMaps.end())
+            continue;
+
+        uint32 zoneId = sMapMgr->GetZoneId(PHASEMASK_NORMAL, loc);
+        if (playerMapZones.find(std::make_pair(loc.GetMapId(), zoneId)) == playerMapZones.end())
+            continue;
+
+        // Skip enemy-faction zones, matching the check in RandomTeleport. This has to be done here:
+        // the caller only falls back to normal teleporting when the filtered set is empty, so keeping
+        // a hostile location would let the downstream team check drain the set and strand the bot.
+        if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(zoneId))
+        {
+            if (zone->team == 4 && bot->GetTeamId() == TEAM_ALLIANCE)
+                continue;
+
+            if (zone->team == 2 && bot->GetTeamId() == TEAM_HORDE)
+                continue;
+        }
+
+        filtered.push_back(loc);
+    }
+
+    return filtered;
 }
 
 void RandomPlayerbotMgr::RandomTeleportGrindForLevel(Player* bot)
@@ -2514,7 +2605,8 @@ void RandomPlayerbotMgr::HandleCommand(uint32 type, std::string const text, Play
             }
         }
 
-        GET_PLAYERBOT_AI(bot)->HandleCommand(type, text, fromPlayer);
+        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+            botAI->HandleCommand(type, text, fromPlayer);
     }
 }
 

@@ -371,10 +371,12 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             engine->addStrategiesNoInit("cc", "dps assist", "aoe", "bdps", nullptr);
             break;
         case CLASS_ROGUE:
-            if (tab == ROGUE_TAB_ASSASSINATION || tab == ROGUE_TAB_SUBTLETY)
-                engine->addStrategiesNoInit("melee", "dps assist", "aoe", nullptr);
-            else // if (tab == ROGUE_TAB_COMBAT)
-                engine->addStrategiesNoInit("dps", "dps assist", "aoe", nullptr);
+            if (tab == ROGUE_TAB_COMBAT)
+                engine->addStrategiesNoInit("combat", nullptr);
+            else // if (tab == ROGUE_TAB_ASSASSINATION || tab == ROGUE_TAB_SUBTLETY)
+                engine->addStrategiesNoInit("assassin", nullptr);
+
+            engine->addStrategiesNoInit("dps assist", "aoe", nullptr);
             break;
         case CLASS_WARLOCK:
             if (tab == WARLOCK_TAB_AFFLICTION)

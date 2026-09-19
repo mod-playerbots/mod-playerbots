@@ -42,6 +42,13 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     if (dest == WorldPosition())
         return false;
 
+    // Don't start a ground move while the bot is on a taxi: the MovePoint issued
+    // below would fight the active flight spline. Returning true consumes the tick
+    // instead of returning false, because the callers of MoveFarTo fall through to
+    // MoveRandomNear, which is also a ground move.
+    if (bot->IsInFlight())
+        return true;
+
     if (dest != botAI->rpgInfo.moveFarPos)
     {
         // clear stuck information if it's a new dest
