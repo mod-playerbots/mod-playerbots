@@ -14,8 +14,8 @@ class WotlkDungeonFoSStrategy : public Strategy
 public:
     WotlkDungeonFoSStrategy(PlayerbotAI* ai) : Strategy(ai) {}
     std::string const getName() override { return "wotlk-fos"; }
-    void InitTriggers(std::vector<TriggerNode*> &triggers) override;
-    void InitMultipliers(std::vector<Multiplier*> &multipliers) override;
+    void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+    void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
 };
 
 #endif
