@@ -155,6 +155,7 @@ public:
         creators["set behind"] = &ActionContext::set_behind;
         creators["attack duel opponent"] = &ActionContext::attack_duel_opponent;
         creators["drop target"] = &ActionContext::drop_target;
+        creators["target requester"] = &ActionContext::target_requester;
         creators["check mail"] = &ActionContext::check_mail;
         creators["say"] = &ActionContext::say;
         creators["reveal gathering item"] = &ActionContext::reveal_gathering_item;
@@ -300,6 +301,7 @@ private:
     static Action* greet(PlayerbotAI* botAI) { return new GreetAction(botAI); }
     static Action* check_mail(PlayerbotAI* botAI) { return new CheckMailAction(botAI); }
     static Action* drop_target(PlayerbotAI* botAI) { return new DropTargetAction(botAI); }
+    static Action* target_requester(PlayerbotAI* botAI) { return new TargetRequesterAction(botAI); }
     static Action* attack_duel_opponent(PlayerbotAI* botAI) { return new AttackDuelOpponentAction(botAI); }
     static Action* guard(PlayerbotAI* botAI) { return new GuardAction(botAI); }
     static Action* return_to_stay_position(PlayerbotAI* botAI) { return new ReturnToStayPositionAction(botAI); }
