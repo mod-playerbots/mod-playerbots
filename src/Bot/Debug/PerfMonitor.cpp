@@ -410,6 +410,7 @@ void PerfMonitor::DumpJson(bool perTick)
         uint64 minTime;
         uint64 maxTime;
         uint64 count;
+        uint64 blocks;
     };
 
     std::map<PerformanceMetric, std::vector<Sample>> samples;
@@ -423,7 +424,7 @@ void PerfMonitor::DumpJson(bool perTick)
                 continue;
 
             std::lock_guard<std::mutex> guard(pd->lock);
-            rows.push_back({entry.first, pd->totalTime, pd->minTime, pd->maxTime, pd->count});
+            rows.push_back({entry.first, pd->totalTime, pd->minTime, pd->maxTime, pd->count, pd->blocks});
         }
 
         std::sort(rows.begin(), rows.end(),
@@ -484,11 +485,13 @@ void PerfMonitor::DumpJson(bool perTick)
             uint64 typeMinTime = 0;
             uint64 typeMaxTime = 0;
             uint64 typeCount = 0;
+            uint64 typeBlocks = 0;
             bool firstSample = true;
             for (Sample const& row : metric.second)
             {
                 typeTotalTime += row.totalTime;
                 typeCount += row.count;
+                typeBlocks += row.blocks;
                 if (firstSample || typeMinTime > row.minTime)
                     typeMinTime = row.minTime;
                 if (typeMaxTime < row.maxTime)
@@ -498,6 +501,7 @@ void PerfMonitor::DumpJson(bool perTick)
 
             out << "      \"totalTime\": " << typeTotalTime << ",\n";
             out << "      \"count\": " << typeCount << ",\n";
+            out << "      \"blocks\": " << typeBlocks << ",\n";
             out << "      \"minTime\": " << typeMinTime << ",\n";
             out << "      \"maxTime\": " << typeMaxTime << ",\n";
             out << "      \"avgTime\": "
@@ -521,6 +525,7 @@ void PerfMonitor::DumpJson(bool perTick)
             out << "        {\"name\": \"" << JsonEscape(row.name) << "\"";
             out << ", \"totalTime\": " << row.totalTime;
             out << ", \"count\": " << row.count;
+            out << ", \"blocks\": " << row.blocks;
             out << ", \"minTime\": " << row.minTime;
             out << ", \"maxTime\": " << row.maxTime;
             out << ", \"avgTime\": " << JsonRatio(static_cast<double>(row.totalTime), static_cast<double>(row.count));
