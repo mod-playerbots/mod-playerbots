@@ -12,6 +12,9 @@
 
 namespace
 {
+// Percent of bag slots used at or above which smart destroy keeps going.
+constexpr uint8 BAG_SPACE_DESTROY_THRESHOLD = 90;
+
 std::vector<uint32> DistinctItemIds(std::vector<Item*> const& items)
 {
     std::vector<uint32> itemIds;
@@ -60,7 +63,7 @@ bool SmartDestroyItemAction::Execute(Event /*event*/)
 {
     uint8 bagSpace = AI_VALUE(uint8, "bag space");
 
-    if (bagSpace < 90)
+    if (bagSpace < BAG_SPACE_DESTROY_THRESHOLD)
         return false;
 
     // Only destroy grey items when the master is a real player or selfbot, and the bot is in a real guild.
@@ -110,7 +113,7 @@ bool SmartDestroyItemAction::DestroyUntilBagSpace(std::vector<uint32> const& ite
         FindItemByIdVisitor visitor(itemId);
         DestroyItem(&visitor);
 
-        if (AI_VALUE(uint8, "bag space") < 90)
+        if (AI_VALUE(uint8, "bag space") < BAG_SPACE_DESTROY_THRESHOLD)
             return true;
     }
 
