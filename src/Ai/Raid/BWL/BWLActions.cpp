@@ -287,7 +287,7 @@ bool BwlBlackDrakeAvoidBreathAction::isUseful()
 
     // Only reposition while standing in the frontal breath cone.
     // No tail-swipe check: unlike RearFlankAction there is no rear danger zone here.
-    return boss->HasInArc(2.f * minAngle, bot);
+    return boss->HasInArc(2.0f * minAngle, bot);
 }
 
 // Chromaggus

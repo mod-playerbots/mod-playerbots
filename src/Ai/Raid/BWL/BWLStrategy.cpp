@@ -5,7 +5,6 @@
  */
 
 #include "BWLStrategy.h"
-
 #include "BWLHelpers.h"
 #include "BWLMultipliers.h"
 #include "Playerbots.h"
