@@ -399,8 +399,8 @@ public:
     bool AutoTeleportForLevel;
     bool RandomBotGroupNearby;
     int32 EnableRandomBotTrading;
-    bool EnableAutoBuy;
-    bool EnableAutoSell;
+    bool EnableAltBotAutoBuy;
+    int32 AltBotAutoSellLevel;
     uint32 TweakValue;  // Debugging config
 
     uint32 RandomBotArenaTeamMaxRating;
