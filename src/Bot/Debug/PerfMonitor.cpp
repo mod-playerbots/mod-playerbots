@@ -249,8 +249,8 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
             uint64 typeTotalTime = 0;
             uint64 typeMinTime = 0xffffffffu;
             uint64 typeMaxTime = 0;
-            uint32 typeCount = 0;
-            uint32 typeBlocks = 0;
+            uint64 typeCount = 0;
+            uint64 typeBlocks = 0;
             for (auto& name : names)
             {
                 PerformanceData* pd = pdMap[name];
@@ -335,8 +335,8 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
             uint64 typeTotalTime = 0;
             uint64 typeMinTime = 0xffffffffu;
             uint64 typeMaxTime = 0;
-            uint32 typeCount = 0;
-            uint32 typeBlocks = 0;
+            uint64 typeCount = 0;
+            uint64 typeBlocks = 0;
             for (auto& name : names)
             {
                 PerformanceData* pd = pdMap[name];
@@ -409,7 +409,7 @@ void PerfMonitor::DumpJson(bool perTick)
         uint64 totalTime;
         uint64 minTime;
         uint64 maxTime;
-        uint32 count;
+        uint64 count;
     };
 
     std::map<PerformanceMetric, std::vector<Sample>> samples;

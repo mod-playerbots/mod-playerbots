@@ -30,8 +30,8 @@ struct PerformanceData
     uint64_t minTime;
     uint64_t maxTime;
     uint64_t totalTime;
-    uint32_t count;
-    uint32_t blocks;
+    uint64_t count;
+    uint64_t blocks;
     std::mutex lock;
 };
 
