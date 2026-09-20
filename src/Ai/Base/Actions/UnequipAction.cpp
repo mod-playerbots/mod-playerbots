@@ -70,13 +70,15 @@ void UnequipAction::UnequipItem(Item* item)
     uint8 slot = item->GetSlot();
     uint8 dstBag = NULL_BAG;
 
+    // With nothing equipped to match, item can be a stackable one the autostore merges away.
+    std::ostringstream out;
+    out << chat->FormatItem(item->GetTemplate()) << " unequipped";
+
     WorldPacket packet(CMSG_AUTOSTORE_BAG_ITEM, 3);
     packet << bagIndex << slot << dstBag;
     WorldPackets::Item::AutoStoreBagItem nicePacket(std::move(packet));
     nicePacket.Read();
     bot->GetSession()->HandleAutoStoreBagItemOpcode(nicePacket);
 
-    std::ostringstream out;
-    out << chat->FormatItem(item->GetTemplate()) << " unequipped";
     botAI->TellMaster(out);
 }
