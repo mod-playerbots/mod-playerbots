@@ -1163,26 +1163,46 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
         }
         uint8 teamId = master->GetTeamId(true);
         std::unordered_set<ObjectGuid> const& guidCache = sRandomPlayerbotMgr.addclassCache[RandomPlayerbotMgr::GetTeamClassIdx(teamId == TEAM_ALLIANCE, claz)];
-        // unordered_set iteration order is stable: shuffle so the same character is not picked every time.
-        std::vector<ObjectGuid> candidates(guidCache.begin(), guidCache.end());
-        Acore::Containers::RandomShuffle(candidates);
-        for (ObjectGuid const& guid : candidates)
+        auto const pickFirstEligible = [&](auto const& pool) -> ObjectGuid
         {
-            // If the user requested a specific gender, skip any character that doesn't match.
-            if (gender != -1 && GetOfflinePlayerGender(guid) != gender)
-                continue;
-            if (botLoading.find(guid) != botLoading.end())
-                continue;
-            if (ObjectAccessor::FindConnectedPlayer(guid))
-                continue;
-            uint32 guildId = sCharacterCache->GetCharacterGuildIdByGuid(guid);
-            if (guildId && PlayerbotGuildMgr::instance().IsRealGuild(guildId))
-                continue;
-            AddPlayerBot(guid, master->GetSession()->GetAccountId());
-            messages.push_back("Add class " + std::string(charname));
+            for (ObjectGuid const& guid : pool)
+            {
+                // If the user requested a specific gender, skip any character that doesn't match.
+                if (gender != -1 && GetOfflinePlayerGender(guid) != gender)
+                    continue;
+                if (botLoading.find(guid) != botLoading.end())
+                    continue;
+                if (ObjectAccessor::FindConnectedPlayer(guid))
+                    continue;
+                uint32 guildId = sCharacterCache->GetCharacterGuildIdByGuid(guid);
+                if (guildId && PlayerbotGuildMgr::instance().IsRealGuild(guildId))
+                    continue;
+                return guid;
+            }
+            return ObjectGuid::Empty;
+        };
+
+        // The cache is an unordered_set: its iteration order does not change between calls, so the first
+        // eligible character is always the same one. Walk a shuffled copy when a random one is wanted,
+        // and the cache itself otherwise, so the default path copies nothing.
+        ObjectGuid picked = ObjectGuid::Empty;
+        if (sPlayerbotAIConfig.addClassRandomCharacter)
+        {
+            std::vector<ObjectGuid> candidates(guidCache.begin(), guidCache.end());
+            Acore::Containers::RandomShuffle(candidates);
+            picked = pickFirstEligible(candidates);
+        }
+        else
+            picked = pickFirstEligible(guidCache);
+
+        if (picked.IsEmpty())
+        {
+            messages.push_back("Add class failed, no available characters!");
             return messages;
         }
-        messages.push_back("Add class failed, no available characters!");
+
+        AddPlayerBot(picked, master->GetSession()->GetAccountId());
+        messages.push_back("Add class " + std::string(charname));
         return messages;
     }
 
