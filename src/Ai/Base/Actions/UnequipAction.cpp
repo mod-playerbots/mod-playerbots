@@ -70,7 +70,6 @@ void UnequipAction::UnequipItem(Item* item)
     uint8 slot = item->GetSlot();
     uint8 dstBag = NULL_BAG;
 
-    // With nothing equipped to match, item can be a stackable one the autostore merges away.
     std::ostringstream out;
     out << chat->FormatItem(item->GetTemplate()) << " unequipped";
 

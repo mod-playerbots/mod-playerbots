@@ -40,7 +40,7 @@ bool BankAction::ExecuteBank(std::string const text, Unit* /*bank*/)
     bool result = false;
     if (text[0] == '-')
     {
-        // A withdrawal can merge a bank stack into the bags and free it, so read every id up front.
+        // A withdrawal can free a later entry, so read every id first.
         std::vector<uint32> itemIds;
         for (Item* item : parseItems(text.substr(1), ITERATE_ITEMS_IN_BANK))
             itemIds.push_back(item->GetEntry());
@@ -81,7 +81,6 @@ bool BankAction::Withdraw(uint32 itemid)
         return false;
     }
 
-    // StoreItem can merge pItem into a stack and delete it, so describe it first.
     std::ostringstream out;
     out << "got " << chat->FormatItem(pItem->GetTemplate(), pItem->GetCount()) << " from bank";
 
@@ -102,7 +101,6 @@ bool BankAction::Deposit(Item* pItem)
         return false;
     }
 
-    // BankItem can merge pItem into a stack and delete it, so describe it first.
     std::ostringstream out;
     out << "put " << chat->FormatItem(pItem->GetTemplate(), pItem->GetCount()) << " to bank";
 

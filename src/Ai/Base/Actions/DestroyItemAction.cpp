@@ -104,7 +104,7 @@ bool SmartDestroyItemAction::Execute(Event /*event*/)
 
 bool SmartDestroyItemAction::DestroyUntilBagSpace(std::vector<uint32> const& itemIds)
 {
-    // Takes ids, not Item*: one destroy removes every stack of an id, and unsaved stacks are freed at once.
+    // Ids, not Item*: one destroy frees every stack of an id, including later entries.
     for (uint32 const itemId : itemIds)
     {
         FindItemByIdVisitor visitor(itemId);

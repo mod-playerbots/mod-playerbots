@@ -639,7 +639,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
     targetFlag = TARGET_FLAG_NONE;
     packet << targetFlag << bot->GetPackGUID();
 
-    // Spending the last charge of an expendable trinket destroys it, so read the entry first.
+    // HandleUseItemOpcode can destroy the trinket on its last charge.
     uint32 const itemId = item->GetEntry();
     bot->GetSession()->HandleUseItemOpcode(packet);
 

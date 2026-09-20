@@ -38,7 +38,6 @@ bool GiveItemAction::Execute(Event /*event*/)
         InventoryResult msg = receiver->CanStoreItem(NULL_BAG, NULL_SLOT, dest, item, false);
         if (msg == EQUIP_ERR_OK)
         {
-            // The receiver can merge item into a stack it already holds and delete it, so describe it first.
             std::ostringstream out;
             out << "Got " << chat->FormatItem(item->GetTemplate(), item->GetCount()) << " from " << bot->GetName();
 

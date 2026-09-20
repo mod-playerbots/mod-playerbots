@@ -20,7 +20,7 @@ public:
     bool Execute(Event event) override;
 
 protected:
-    // Destroys every match. An Item not saved yet is deleted on the spot, so callers must not hold Item* across this.
+    // Destroys every match. An unsaved Item is deleted here, so callers must not hold Item* across this.
     void DestroyItem(FindItemVisitor* visitor);
 };
 
