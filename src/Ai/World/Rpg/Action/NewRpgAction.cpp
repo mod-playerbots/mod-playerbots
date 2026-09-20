@@ -410,13 +410,25 @@ bool NewRpgWanderNpcAction::Execute(Event /*event*/)
             {
                 uint32 npcFlags = creature->GetCreatureTemplate()->npcflag;
 
-                // Vendors: sell junk then buy useful items (gated by config)
+                // Vendors: random bots sell junk then buy useful items unconditionally;
+                // alt/self bots only when the matching EnableAltBot* flag is set.
                 if (npcFlags & UNIT_NPC_FLAG_VENDOR)
                 {
-                    if (sPlayerbotAIConfig.enableAutoSell)
+                    if (sRandomPlayerbotMgr.IsRandomBot(bot))
+                    {
                         botAI->DoSpecificAction("sell", Event("sell", "vendor"));
-                    if (sPlayerbotAIConfig.enableAutoBuy)
                         botAI->DoSpecificAction("buy", Event("buy", "vendor"));
+                    }
+                    else
+                    {
+                        int32 const altBotAutoSellLevel = sPlayerbotAIConfig.altBotAutoSellLevel;
+                        if (altBotAutoSellLevel >= 2)
+                            botAI->DoSpecificAction("sell", Event("sell", "vendor"));
+                        else if (altBotAutoSellLevel == 1)
+                            botAI->DoSpecificAction("sell", Event("sell", "gray"));
+                        if (sPlayerbotAIConfig.enableAltBotAutoBuy)
+                            botAI->DoSpecificAction("buy", Event("buy", "vendor"));
+                    }
                 }
 
                 // Repair: repair gear below full durability
