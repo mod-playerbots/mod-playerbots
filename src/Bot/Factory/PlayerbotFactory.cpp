@@ -49,54 +49,38 @@
 namespace
 {
     // WotLK Eternal Belt Buckle mechanics
-    constexpr uint32 ITEM_ETERNAL_BELT_BUCKLE = 41611;          // Eternal Belt Buckle (consommable)
-    constexpr uint32 ENCHANT_SOCKET_BELT      = 3729;           // "Socket Belt" -> adds 1 prismatic socket
+    constexpr uint32 ITEM_ETERNAL_BELT_BUCKLE = 41611;  // Eternal Belt Buckle (consumable)
+    constexpr uint32 ENCHANT_SOCKET_BELT = 3729;        // "Socket Belt" -> adds 1 prismatic socket
+    constexpr uint8 ETERNAL_BELT_BUCKLE_LEVEL = 70;     // required level of the buckle
 }
 
-// Small helper: belt has a prismatic socket available or already gemmed?
-// either the buckle marker is present (enchant 3729),
-// or the prismatic slot already holds a gem enchant (GemID != 0).
+// A non-zero prismatic enchantment is the socket marker, so the belt already has its extra socket.
 static bool HasBeltBuckleSocket(Item* waist)
 {
-    if (!waist)
-        return false;
-
-    uint32 const enchantId = waist->GetEnchantmentId(PRISMATIC_ENCHANTMENT_SLOT);
-    if (enchantId == ENCHANT_SOCKET_BELT)
-        return true; // Buckle installed, free slot
-
-    if (enchantId != 0)
-    {
-        if (SpellItemEnchantmentEntry const* ench = sSpellItemEnchantmentStore.LookupEntry(enchantId))
-        {
-            if (ench->GemID != 0)
-                return true; // already a gem in prismatic slot
-        }
-    }
-    return false;
+    return waist && waist->GetEnchantmentId(PRISMATIC_ENCHANTMENT_SLOT) != 0;
 }
 
-// Apply the buckle (adds a prismatic socket) without requiring the physical item in bags.
-// We keep it minimal & blizzlike: one buckle per belt, level req handled upstream.
+// Add the prismatic socket to a belt, granted free like the enchants and gems around it.
 static bool TryApplyBeltBuckle(Player* bot, Item* waist)
 {
     if (!bot || !waist)
         return false;
     if (HasBeltBuckleSocket(waist))
         return false;
-
-    // WotLK: The buckle is relevant from level 70 (safeguard).
-    if (bot->GetLevel() < 70)
+    if (bot->GetLevel() < ETERNAL_BELT_BUCKLE_LEVEL)
         return false;
 
-    // If it has a buckle in bag, consume 1 and apply the prismatic enchantment.
-    if (!bot->HasItemCount(ITEM_ETERNAL_BELT_BUCKLE, 1))
+    // The buckle is a WotLK item; leave it alone when the bot is held back to an earlier expansion.
+    if (sPlayerbotAIConfig.limitEnchantExpansion && bot->GetLevel() <= 70)
         return false;
 
-    // Apply the "Socket Belt" enchantment and then notify the core.
-    waist->SetEnchantment(PRISMATIC_ENCHANTMENT_SLOT, ENCHANT_SOCKET_BELT, 0, 0);
+    bot->ApplyEnchantment(waist, PRISMATIC_ENCHANTMENT_SLOT, false);
+    waist->SetEnchantment(PRISMATIC_ENCHANTMENT_SLOT, ENCHANT_SOCKET_BELT, 0, 0, bot->GetGUID());
     bot->ApplyEnchantment(waist, PRISMATIC_ENCHANTMENT_SLOT, true);
-    bot->DestroyItemCount(ITEM_ETERNAL_BELT_BUCKLE, 1, true);
+
+    if (bot->HasItemCount(ITEM_ETERNAL_BELT_BUCKLE, 1))
+        bot->DestroyItemCount(ITEM_ETERNAL_BELT_BUCKLE, 1, true);
+
     return true;
 }
 
@@ -5267,46 +5251,31 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool /*destroyOld*/)
             item->SetEnchantment(PERM_ENCHANTMENT_SLOT, bestEnchantId, 0, 0, bot->GetGUID());
             bot->ApplyEnchantment(item, PERM_ENCHANTMENT_SLOT, true);
         }
-        // Before gemming: if we are on the belt, make sure to add the prismatic belt buckle.
+        // Before gemming: on the belt, make sure the buckle socket is there.
         if (slot == EQUIPMENT_SLOT_WAIST)
-        {
-            // No, if already present or if the bot is not eligible (see TryApplyBeltBuckle)
             TryApplyBeltBuckle(bot, item);
-        }
-        // Sockets to consider:
-        //  - "proto" sockets (in the template),
-        //  - prismatic socket added by the belt buckle (3729) on the belt.
-        const bool hasTemplateSockets = item->HasSocket();
-        const bool hasFreePrismaticOnBelt =
-            (slot == EQUIPMENT_SLOT_WAIST) &&
-            (item->GetEnchantmentId(PRISMATIC_ENCHANTMENT_SLOT) == ENCHANT_SOCKET_BELT);
-        if (!hasTemplateSockets && !hasFreePrismaticOnBelt)
+
+        // HasSocket() covers both the template sockets and the one a buckle adds.
+        if (!item->HasSocket())
             continue;
 
-        // Now scans the 3 "normal" sockets + the prismatic slot if present.
-        for (uint32 enchant_slot = SOCK_ENCHANTMENT_SLOT; enchant_slot <= PRISMATIC_ENCHANTMENT_SLOT; ++enchant_slot)
+        // A buckle's gem goes into the first colourless template socket - see WorldSession::HandleSocketOpcode.
+        uint8 firstPrismatic = 0;
+        while (firstPrismatic < MAX_GEM_SOCKETS && item->GetTemplate()->Socket[firstPrismatic].Color)
+            ++firstPrismatic;
+
+        bool const hasPrismaticSocket = item->GetEnchantmentId(PRISMATIC_ENCHANTMENT_SLOT) != 0;
+
+        for (uint32 enchant_slot = SOCK_ENCHANTMENT_SLOT; enchant_slot < SOCK_ENCHANTMENT_SLOT + MAX_GEM_SOCKETS;
+             ++enchant_slot)
         {
-            uint8 socketColor = 0;
+            uint32 socketIndex = enchant_slot - SOCK_ENCHANTMENT_SLOT;
+            uint8 socketColor = item->GetTemplate()->Socket[socketIndex].Color;
 
-            // Prismatic slot management (only relevant for the belt)
-            if (enchant_slot == PRISMATIC_ENCHANTMENT_SLOT)
-            {
-                if (slot != EQUIPMENT_SLOT_WAIST)
-                    continue; // not a belt -> ignore
-
-                // If the prismatic slot is not supported by enchantment 3729, then it is either missing or already gemmed
-                if (item->GetEnchantmentId(PRISMATIC_ENCHANTMENT_SLOT) != ENCHANT_SOCKET_BELT)
-                    continue;
-
-                // Prismatic: accepts all colors
-                socketColor = 0xFF; // mask "any"
-            }
-            else
-            {
-                socketColor = item->GetTemplate()->Socket[enchant_slot - SOCK_ENCHANTMENT_SLOT].Color;
-                if (!socketColor)
-                    continue;
-            }
+            // The buckle socket takes any gem the meta check below lets through.
+            bool const isPrismatic = !socketColor && hasPrismaticSocket && socketIndex == firstPrismatic;
+            if (!socketColor && !isPrismatic)
+                continue;
 
             int32 enchantIdChosen = -1;
             bool jewelersGemChosen;
@@ -5350,8 +5319,7 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool /*destroyOld*/)
                         }
                     }
                 }
-                // Score bonus if the color matches (except for prismatic, which accepts all colors)
-                if (socketColor != 0xFF && (socketColor & gemProperties->color))
+                if (socketColor & gemProperties->color)
                     score *= 1.2f;
                 if (score > bestGemScore)
                 {
