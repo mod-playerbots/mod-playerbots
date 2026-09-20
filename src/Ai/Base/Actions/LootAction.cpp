@@ -378,6 +378,8 @@ bool StoreLootAction::Execute(Event event)
     if (loot_type == LOOT_NONE)
     {
         availableLoot->RetryLoot(guid);
+        if (AI_VALUE(LootObject, "loot target").guid == guid)
+            context->GetValue<LootObject>("loot target")->Set(LootObject());
         return false;
     }
 
