@@ -99,9 +99,12 @@ bool UseItemAction::UseGameObject(ObjectGuid guid)
         bool requested = botAI->DoSpecificAction(inRange ? "open loot" : "move to loot", Event(), true);
         if (!requested && !retryGuaranteed)
         {
-            if (added)
+            if (added && availableLoot->CanAttemptLoot(guid))
                 availableLoot->Remove(guid);
-            context->GetValue<LootObject>("loot target")->Set(previous);
+            if (previous.guid != guid || availableLoot->CanAttemptLoot(previous.guid))
+                context->GetValue<LootObject>("loot target")->Set(previous);
+            else
+                context->GetValue<LootObject>("loot target")->Set(LootObject());
             return fail("gameobject_open_failed_error", "Could not approach or open the game object");
         }
 

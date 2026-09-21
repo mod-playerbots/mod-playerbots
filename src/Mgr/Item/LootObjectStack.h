@@ -34,6 +34,7 @@ struct LootLockRequirement
     uint32 skillId = 0;
     uint32 reqSkillValue = 0;
     uint32 reqItem = 0;
+    uint32 lockType = 0;
 };
 
 class LootObject
@@ -48,6 +49,7 @@ public:
     bool IsLootPossible(Player* bot);
     void Refresh(Player* bot, ObjectGuid guid);
     WorldObject* GetWorldObject(Player* bot);
+    uint32 GetLockType() const { return _lockType; }
     ObjectGuid guid;
 
     uint32 skillId;
@@ -59,6 +61,8 @@ private:
 
     std::array<LootLockRequirement, MAX_LOOT_LOCK_REQUIREMENTS> lockRequirements;
     uint8 lockRequirementCount = 0;
+    uint32 _lockType = 0;
+    bool _hasUnsupportedLockRequirement = false;
     static bool IsNeededForQuest(Player* bot, uint32 itemId);
 };
 
@@ -72,10 +76,16 @@ public:
 public:
     LootTarget& operator=(LootTarget const& other);
     bool operator<(LootTarget const& other) const;
+    bool IsReady() const;
+    void Defer();
 
 public:
     ObjectGuid guid;
     time_t asOfTime;
+
+private:
+    std::chrono::steady_clock::time_point _retryUntil;
+    uint8 _retryCount = 0;
 };
 
 class LootTargetList : public std::set<LootTarget>
@@ -100,6 +110,8 @@ public:
     bool LootOpened(ObjectGuid guid);
     void CancelLoot(ObjectGuid guid);
     void RetryLoot(ObjectGuid guid);
+    void DeferLoot(ObjectGuid guid);
+    bool CanAttemptLoot(ObjectGuid guid) const;
 
 private:
     LootObject GetNearest(float maxDistance = 0);

@@ -5,6 +5,7 @@
  */
 
 #include "LootAction.h"
+
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "Event.h"
@@ -14,6 +15,7 @@
 #include "LootObjectStack.h"
 #include "LootStrategyValue.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotSpellRepository.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
@@ -38,8 +40,7 @@ bool LootAction::Execute(Event /*event*/)
         // bot->GetSession()->HandleLootReleaseOpcode(packet);
     }
 
-    if (lootObject.guid.IsGameObject() &&
-        sPlayerbotAIConfig.disallowedGameObjects.contains(lootObject.guid.GetEntry()))
+    if (lootObject.guid.IsGameObject() && sPlayerbotAIConfig.disallowedGameObjects.contains(lootObject.guid.GetEntry()))
     {
         return false;  // Game object ID is disallowed, so do not proceed
     }
@@ -52,8 +53,8 @@ bool LootAction::Execute(Event /*event*/)
 
 bool LootAction::isUseful()
 {
-    return sPlayerbotAIConfig.freeMethodLoot || !bot->GetGroup() ||
-    bot->GetGroup()->GetLootMethod() != FREE_FOR_ALL || IsSelfBot(bot);
+    return sPlayerbotAIConfig.freeMethodLoot || !bot->GetGroup() || bot->GetGroup()->GetLootMethod() != FREE_FOR_ALL ||
+           IsSelfBot(bot);
 }
 
 enum ProfessionSpells
@@ -80,16 +81,25 @@ bool OpenLootAction::Execute(Event /*event*/)
         return false;
 
     LootObject lootObject = AI_VALUE(LootObject, "loot target");
+    if (!availableLoot->CanAttemptLoot(lootObject.guid))
+        return false;
+
     bool result = DoLoot(lootObject);
     if (result)
         availableLoot->BeginLoot(lootObject.guid);
+    else if (!lootObject.IsEmpty() && !bot->isMoving() && !bot->IsMounted())
+    {
+        availableLoot->DeferLoot(lootObject.guid);
+        if (AI_VALUE(LootObject, "loot target").guid == lootObject.guid)
+            context->GetValue<LootObject>("loot target")->Set(LootObject());
+    }
 
     return result;
 }
 
 bool OpenLootAction::DoLoot(LootObject& lootObject)
 {
-    if (lootObject.IsEmpty())
+    if (lootObject.IsEmpty() || !lootObject.IsLootPossible(bot))
         return false;
 
     Creature* creature = botAI->GetCreature(lootObject.guid);
@@ -197,60 +207,32 @@ uint32 OpenLootAction::GetOpeningSpell(LootObject& lootObject, GameObject* go)
             return spellId;
     }
 
-    for (uint32 spellId = 0; spellId < sSpellMgr->GetSpellInfoStoreSize(); spellId++)
+    for (uint32 spellId : PlayerbotSpellRepository::Instance().GetOpeningSpells(lootObject.GetLockType()))
     {
         if (spellId == MINING || spellId == HERB_GATHERING)
             continue;
 
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-        if (!spellInfo)
-            continue;
-
-        if (CanOpenLock(lootObject, spellInfo, go))
+        if (spellInfo && CanOpenLock(lootObject, spellInfo, go))
             return spellId;
     }
 
     return sPlayerbotAIConfig.openGoSpell;
 }
 
-bool OpenLootAction::CanOpenLock(LootObject& /*lootObject*/, SpellInfo const* spellInfo, GameObject* go)
+bool OpenLootAction::CanOpenLock(LootObject& lootObject, SpellInfo const* spellInfo, GameObject* /*go*/)
 {
+    if (!lootObject.GetLockType())
+        return false;
+
     for (uint8 effIndex = 0; effIndex <= EFFECT_2; effIndex++)
     {
         if (spellInfo->Effects[effIndex].Effect != SPELL_EFFECT_OPEN_LOCK &&
             spellInfo->Effects[effIndex].Effect != SPELL_EFFECT_SKINNING)
             continue;
 
-        uint32 lockId = go->GetGOInfo()->GetLockId();
-        if (!lockId)
-            return false;
-
-        LockEntry const* lockInfo = sLockStore.LookupEntry(lockId);
-        if (!lockInfo)
-            return false;
-
-        for (uint8 j = 0; j < 8; ++j)
-        {
-            switch (lockInfo->Type[j])
-            {
-                /*
-                case LOCK_KEY_ITEM:
-                    return true;
-                */
-                case LOCK_KEY_SKILL:
-                {
-                    if (uint32(spellInfo->Effects[effIndex].MiscValue) != lockInfo->Index[j])
-                        continue;
-
-                    uint32 skillId = SkillByLockType(LockType(lockInfo->Index[j]));
-                    if (skillId == SKILL_NONE)
-                        return true;
-
-                    if (CanOpenLock(skillId, lockInfo->Skill[j]))
-                        return true;
-                }
-            }
-        }
+        if (uint32(spellInfo->Effects[effIndex].MiscValue) == lootObject.GetLockType())
+            return CanOpenLock(lootObject.skillId, lootObject.reqSkillValue);
     }
 
     return false;
@@ -258,6 +240,9 @@ bool OpenLootAction::CanOpenLock(LootObject& /*lootObject*/, SpellInfo const* sp
 
 bool OpenLootAction::CanOpenLock(uint32 skillId, uint32 reqSkillValue)
 {
+    if (skillId == SKILL_NONE)
+        return true;
+
     uint32 skillValue = bot->GetSkillValue(skillId);
     return skillValue >= reqSkillValue || !reqSkillValue;
 }
@@ -477,10 +462,12 @@ bool StoreLootAction::Execute(Event event)
         // bot->GetSession()->HandleAutostoreLootItemOpcode(packet);
         botAI->SetNextCheckDelay(sPlayerbotAIConfig.lootDelay);
 
-        if (proto->Quality > ITEM_QUALITY_NORMAL && !urand(0, 50) && botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig.randomBotEmote)
+        if (proto->Quality > ITEM_QUALITY_NORMAL && !urand(0, 50) &&
+            botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig.randomBotEmote)
             botAI->PlayEmote(TEXT_EMOTE_CHEER);
 
-        if (proto->Quality >= ITEM_QUALITY_RARE && !urand(0, 1) && botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig.randomBotEmote)
+        if (proto->Quality >= ITEM_QUALITY_RARE && !urand(0, 1) && botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) &&
+            sPlayerbotAIConfig.randomBotEmote)
             botAI->PlayEmote(TEXT_EMOTE_CHEER);
 
         BroadcastHelper::BroadcastLootingItem(botAI, bot, proto);

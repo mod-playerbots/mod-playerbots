@@ -5,11 +5,12 @@
  */
 
 #include "AddLootAction.h"
+
 #include "CellImpl.h"
 #include "Event.h"
+#include "GameObject.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
-#include "GameObject.h"
 #include "LootObjectStack.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
@@ -63,12 +64,7 @@ bool AddAllLootAction::AddLoot(ObjectGuid guid)
 bool AddGatheringLootAction::AddLoot(ObjectGuid guid)
 {
     LootObject loot(bot, guid);
-
-    WorldObject* wo = loot.GetWorldObject(bot);
-    if (loot.IsEmpty() || !wo)
-        return false;
-
-    if (!loot.IsLootPossible(bot) || loot.skillId == SKILL_NONE)
+    if (loot.IsEmpty() || !loot.IsLootPossible(bot) || loot.skillId == SKILL_NONE)
         return false;
 
     return AddAllLootAction::AddLoot(guid);
