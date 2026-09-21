@@ -210,7 +210,7 @@ UPDATE `playerbots_arena_team_names` SET `name_frFR` = 'Aléatoires' WHERE `name
 UPDATE `playerbots_arena_team_names` SET `name_frFR` = 'Razerium' WHERE `name_id` = 208;
 UPDATE `playerbots_arena_team_names` SET `name_frFR` = 'Razor' WHERE `name_id` = 209;
 UPDATE `playerbots_arena_team_names` SET `name_frFR` = 'Ambition Folle' WHERE `name_id` = 210;
-UPDATE `playerbots_arena_team_names` SET `name_frFR` = 'Témérité' WHERE `name_id` = 211;
+UPDATE `playerbots_arena_team_names` SET `name_frFR` = 'Quintessence' WHERE `name_id` = 211;
 UPDATE `playerbots_arena_team_names` SET `name_frFR` = 'Regret' WHERE `name_id` = 212;
 UPDATE `playerbots_arena_team_names` SET `name_frFR` = 'Restreint' WHERE `name_id` = 213;
 UPDATE `playerbots_arena_team_names` SET `name_frFR` = 'Révoquer' WHERE `name_id` = 214;

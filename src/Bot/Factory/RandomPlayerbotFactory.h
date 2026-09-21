@@ -56,6 +56,7 @@ public:
     static std::string const CreateRandomGuildName();
     static uint32 CalculateTotalAccountCount();
     static uint32 CalculateAvailableCharsPerAccount();
+    static std::string GetLocalizedNameSelector(std::string const& column);
 
     // Arena team management
     static void AssignBotToArenaTeam(Player* bot);

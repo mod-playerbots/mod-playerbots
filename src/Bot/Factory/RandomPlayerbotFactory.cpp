@@ -8,9 +8,7 @@
 #include "PlayerbotsDatabase.h"
 #include "AccountMgr.h"
 #include "ArenaTeamMgr.h"
-#include "BroadcastHelper.h"
 #include "CharacterCache.h"
-#include "Config.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "DatabaseEnv.h"
@@ -23,25 +21,18 @@
 #include "ScriptMgr.h"
 #include "SharedDefines.h"
 #include "SocialMgr.h"
+#include "StringFormat.h"
 #include "Timer.h"
+#include "World.h"
 
-#include <array>
-
-namespace
+std::string RandomPlayerbotFactory::GetLocalizedNameSelector(std::string const& column)
 {
-std::string SelectLocalizedNameFromFields(Field* fields)
-{
-    std::array<std::string, MAX_LOCALES> localizedNames;
-    for (uint8 locale = 0; locale < MAX_LOCALES; ++locale)
-        localizedNames[locale] = fields[locale].Get<std::string>();
+    LocaleConstant locale = sWorld->GetDefaultDbcLocale();
+    if (locale == LOCALE_enUS || locale >= TOTAL_LOCALES)
+        return column;
 
-    uint8 locale = BroadcastHelper::GetConfiguredDbcLocale();
-    std::string selectedName = localizedNames[locale];
-    if (selectedName.empty())
-        selectedName = localizedNames[LOCALE_enUS];
-
-    return selectedName;
-}
+    // Fall back to the enUS column when the localized one is NULL or empty
+    return Acore::StringFormat("COALESCE(NULLIF({}_{}, ''), {})", column, localeNames[locale], column);
 }
 
 constexpr RandomPlayerbotFactory::NameRaceAndGender RandomPlayerbotFactory::CombineRaceAndGender(uint8 race,
@@ -807,21 +798,12 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
     uint32 maxId = fields[0].Get<uint32>();
 
     uint32 id = urand(0, maxId);
+    std::string nameExpr = GetLocalizedNameSelector("n.name");
     result = CharacterDatabase.Query(
-        "SELECT "
-        "  n.name, "        // 0  enUS (base)
-        "  n.name_koKR, "   // 1  koKR
-        "  n.name_frFR, "   // 2  frFR
-        "  n.name_deDE, "   // 3  deDE
-        "  n.name_zhCN, "   // 4  zhCN
-        "  n.name_zhTW, "   // 5  zhTW
-        "  n.name_esES, "   // 6  esES
-        "  n.name_esMX, "   // 7  esMX
-        "  n.name_ruRU "    // 8  ruRU
-        "FROM playerbots_guild_names n "
-        "LEFT OUTER JOIN guild e ON e.name = n.name "
+        "SELECT {} FROM playerbots_guild_names n "
+        "LEFT OUTER JOIN guild e ON e.name = {} "
         "WHERE e.guildid IS NULL AND n.name_id >= {} LIMIT 1",
-        id);
+        nameExpr, nameExpr, id);
     if (!result)
     {
         LOG_ERROR("playerbots", "No more names left for random guilds");
@@ -829,8 +811,7 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
     }
 
     fields = result->Fetch();
-
-    guildName = SelectLocalizedNameFromFields(fields);
+    guildName = fields[0].Get<std::string>();
 
     return guildName;
 }
@@ -873,10 +854,13 @@ void RandomPlayerbotFactory::LoadArenaTeamData()
 
     _availableArenaTeamNames.clear();
 
+    // Join on the localized name so already-taken localized names are filtered out
+    std::string nameExpr = GetLocalizedNameSelector("n.name");
     QueryResult result = CharacterDatabase.Query(
-        "SELECT n.name FROM playerbots_arena_team_names n "
-        "LEFT OUTER JOIN arena_team e ON e.name = n.name "
-        "WHERE e.arenateamid IS NULL");
+        "SELECT {} FROM playerbots_arena_team_names n "
+        "LEFT OUTER JOIN arena_team e ON e.name = {} "
+        "WHERE e.arenateamid IS NULL",
+        nameExpr, nameExpr);
 
     if (!result)
     {

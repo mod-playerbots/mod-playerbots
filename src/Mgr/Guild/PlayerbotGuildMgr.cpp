@@ -5,16 +5,14 @@
  */
 
 #include "PlayerbotGuildMgr.h"
-#include "BroadcastHelper.h"
 #include "CharacterCache.h"
 #include "DatabaseEnv.h"
 #include "Guild.h"
 #include "GuildMgr.h"
 #include "Player.h"
 #include "PlayerbotAIConfig.h"
+#include "RandomPlayerbotFactory.h"
 #include "ScriptMgr.h"
-
-#include <array>
 
 void PlayerbotGuildMgr::Init()
 {
@@ -174,17 +172,8 @@ void PlayerbotGuildMgr::LoadGuildNames()
     _shuffled_guild_keys.clear();
 
     QueryResult result = CharacterDatabase.Query(
-        "SELECT "
-        "  name, "
-        "  name_koKR, "
-        "  name_frFR, "
-        "  name_deDE, "
-        "  name_zhCN, "
-        "  name_zhTW, "
-        "  name_esES, "
-        "  name_esMX, "
-        "  name_ruRU "
-        "FROM playerbots_guild_names");
+        "SELECT {} FROM playerbots_guild_names",
+        RandomPlayerbotFactory::GetLocalizedNameSelector("name"));
 
     if (!result)
     {
@@ -196,17 +185,9 @@ void PlayerbotGuildMgr::LoadGuildNames()
     {
         Field* fields = result->Fetch();
 
-        std::array<std::string, MAX_LOCALES> localizedNames;
-        for (uint8 locale = 0; locale < MAX_LOCALES; ++locale)
-            localizedNames[locale] = fields[locale].Get<std::string>();
-
-        uint8 locale = BroadcastHelper::GetConfiguredDbcLocale();
-        std::string selectedName = localizedNames[locale];
-        if (selectedName.empty())
-            selectedName = localizedNames[LOCALE_enUS];
-
-        if (!selectedName.empty())
-            _guildNames[selectedName] = true;
+        std::string name = fields[0].Get<std::string>();
+        if (!name.empty())
+            _guildNames[name] = true;
     } while (result->NextRow());
 
     for (auto& pair : _guildNames)
