@@ -55,8 +55,8 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto, uint8 playerLev
         if (uint32 ssvArmor = ssv->getArmorMod(proto->ScalingStatValue))
             armor = ssvArmor;
     }
-    else if (armor && proto->ArmorDamageModifier)
-        armor -= uint32(proto->ArmorDamageModifier);
+    else if (armor && proto->ArmorDamageModifier > 0.0f)
+        armor -= std::min(armor, uint32(proto->ArmorDamageModifier));
 
     stats[STATS_TYPE_ARMOR] += armor;
     stats[STATS_TYPE_BLOCK_VALUE] += proto->Block;
