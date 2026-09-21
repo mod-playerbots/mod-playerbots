@@ -108,6 +108,7 @@ NewRpgStatus NewRpgInfo::StatusFromString(std::string const& name)
     if (name == "do quest")       return RPG_DO_QUEST;
     if (name == "travel flight")  return RPG_TRAVEL_FLIGHT;
     if (name == "outdoor pvp")    return RPG_OUTDOOR_PVP;
+    if (name == "do gather")      return RPG_DO_GATHER;
     return RPG_STATUS_END;
 }
 

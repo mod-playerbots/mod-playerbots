@@ -13,6 +13,7 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 #include "SpellAuraDefines.h"
@@ -35,21 +36,29 @@ bool StartRpgDoGatherAction::Execute(Event event)
 
     if (!botAI->HasSkill(SKILL_HERBALISM) && !botAI->HasSkill(SKILL_MINING))
     {
-        bot->Whisper("I have neither Herbalism nor Mining, so I can't gather", LANG_UNIVERSAL, owner);
+        std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "rpg_gather_no_profession_error", "I have neither Herbalism nor Mining, so I can't gather.", {});
+        bot->Whisper(msg, LANG_UNIVERSAL, owner);
         return false;
     }
 
     if (!botAI->HasStrategy("new rpg", BOT_STATE_NON_COMBAT))
-        bot->Whisper("Note: my 'new rpg' strategy is off - run 'nc +new rpg' or I won't act on this",
-                     LANG_UNIVERSAL, owner);
+    {
+        std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "rpg_gather_strategy_off_warning",
+            "Note: my 'new rpg' strategy is off - run 'nc +new rpg' or I won't act on this.", {});
+        bot->Whisper(msg, LANG_UNIVERSAL, owner);
+    }
 
     botAI->rpgInfo.ChangeToDoGather();
 
-    if (sGatherNodeMgr.HasUsableNodes(bot))
-        bot->Whisper("Starting to gather nodes in this zone", LANG_UNIVERSAL, owner);
-    else
-        bot->Whisper("Starting to gather, but I see no harvestable nodes in this zone right now",
-                     LANG_UNIVERSAL, owner);
+    std::string msg = sGatherNodeMgr.HasUsableNodes(bot)
+        ? PlayerbotTextMgr::instance().GetBotTextOrDefault(
+              "rpg_gather_started", "Starting to gather nodes in this zone.", {})
+        : PlayerbotTextMgr::instance().GetBotTextOrDefault(
+              "rpg_gather_started_no_nodes",
+              "Starting to gather, but I see no harvestable nodes in this zone right now.", {});
+    bot->Whisper(msg, LANG_UNIVERSAL, owner);
 
     return true;
 }
