@@ -18,6 +18,7 @@
 #include "PlayerbotSpellRepository.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
+#include "UseItemAction.h"
 
 bool LootAction::Execute(Event /*event*/)
 {
@@ -164,6 +165,16 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
     // This prevents raid chests like Gunship Armory (ICC) from being ninja'd by the bots
     if (go && go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE))
         return false;
+
+    if (lootObject.reqItem)
+    {
+        Item* key = bot->GetItemByEntry(lootObject.reqItem);
+        if (!key)
+            return false;
+
+        UseItemAction useItem(botAI);
+        return useItem.UseItemOnGameObject(key, lootObject.guid);
+    }
 
     if (lootObject.skillId == SKILL_MINING)
         return botAI->HasSkill(SKILL_MINING) ? botAI->CastSpell(MINING, bot) : false;

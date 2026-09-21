@@ -163,16 +163,20 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
     uint32 glyphIndex = 0;
     uint8 castFlags = 0;
     uint32 targetFlag = TARGET_FLAG_NONE;
+    GameObject* goTarget = goGuid ? botAI->GetGameObject(goGuid) : nullptr;
+    if (goGuid && (!goTarget || !goTarget->isSpawned()))
+        return false;
+
     uint32 spellId = 0;
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
     {
         if (item->GetTemplate()->Spells[i].SpellId > 0)
         {
             spellId = item->GetTemplate()->Spells[i].SpellId;
-            if (!botAI->CanCastSpell(spellId, bot, false, itemTarget, item))
-            {
+            bool canCast = goTarget ? botAI->CanCastSpell(spellId, goTarget, false, item)
+                                    : botAI->CanCastSpell(spellId, bot, false, itemTarget, item);
+            if (!canCast)
                 return false;
-            }
         }
     }
 
@@ -193,17 +197,13 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
             itemText += " (the last one!)";
     }
 
-    if (goGuid)
+    if (goTarget)
     {
-        GameObject* go = botAI->GetGameObject(goGuid);
-        if (!go || !go->isSpawned())
-            return false;
-
         targetFlag = TARGET_FLAG_GAMEOBJECT;
 
         packet << targetFlag;
         packet << goGuid.WriteAsPacked();
-        targetText = chat->FormatGameobject(go);
+        targetText = chat->FormatGameobject(goTarget);
         targetSelected = true;
     }
 
