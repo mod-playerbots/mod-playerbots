@@ -18,7 +18,8 @@ reviews:
   assess_linked_issues: false
   related_issues: false
   related_prs: false
-  suggested_labels: false
+  suggested_labels: true
+  auto_apply_labels: true
   suggested_reviewers: false
   review_status: false
   review_details: false
@@ -26,6 +27,19 @@ reviews:
   poem: false
   enable_prompt_for_ai_agents: false
   collapse_walkthrough: true
+
+  labeling_instructions:
+    - label: "Multibot requires update"
+      instructions: |
+        Apply this label when changes in code require modifying the MultiBot-Chatless addon
+        (https://github.com/Wishmaster117/MultiBot-Chatless) or its companion server module mod-multibot-bridge
+        (https://github.com/Wishmaster117/mod-multibot-bridge).
+        Most importantly, apply when there are new, modified, renamed, or removed playerbot chat commands,
+        command syntax, subcommands, arguments, aliases, or chat command output formats (e.g. in
+        ChatActionContext, ChatTriggerContext, ChatCommandHandlerStrategy, ChatShortcutActions, ChatFilter,
+        ChatHelper, ListSpellsAction, or any chat action/trigger/handler files).
+        Also apply when changes affect bot strategies, states, stances, inventory/item/equipment handling,
+        or bot lifecycle/roster/management APIs that MultiBot or mod-multibot-bridge interact with or expose.
 
   pre_merge_checks:
     docstrings:
