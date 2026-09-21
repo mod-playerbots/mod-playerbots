@@ -1,12 +1,18 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "OCMultipliers.h"
-#include "OCActions.h"
-#include "GenericSpellActions.h"
 #include "ChooseTargetActions.h"
-#include "MovementActions.h"
-#include "OCTriggers.h"
 #include "FollowActions.h"
-#include "ReachTargetActions.h"
+#include "GenericSpellActions.h"
+#include "MovementActions.h"
+#include "OCActions.h"
+#include "OCTriggers.h"
 #include "Playerbots.h"
+#include "ReachTargetActions.h"
 
 float MountingDrakeMultiplier::GetValue(Action* action)
 {

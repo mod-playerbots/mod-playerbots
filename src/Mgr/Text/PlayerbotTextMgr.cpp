@@ -1,16 +1,17 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
-#include "DatabaseEnv.h"
-#include "WorldSessionMgr.h"
-#include "Random.h"
-// Required due to a poor implementation by AC
-#include "QueryResult.h"
 
 #include "PlayerbotTextMgr.h"
+#include "PlayerbotsDatabase.h"
+#include "DatabaseEnv.h"
+#include "QueryResult.h"    // Required due to a poor implementation by AC
+#include "Random.h"
+#include "WorldSessionMgr.h"
 
-void PlayerbotTextMgr::replaceAll(std::string& str, const std::string& from, const std::string& to)
+void PlayerbotTextMgr::replaceAll(std::string& str, std::string const& from, std::string const& to)
 {
     if (from.empty())
         return;
@@ -55,7 +56,8 @@ void PlayerbotTextMgr::LoadBotTextChance()
 {
     if (botTextChance.empty())
     {
-        QueryResult results = PlayerbotsDatabase.Query("SELECT name, probability FROM ai_playerbot_texts_chance");
+        PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_TEXT_CHANCE);
+        PreparedQueryResult results = PlayerbotsDatabase.Query(stmt);
         if (results)
         {
             do

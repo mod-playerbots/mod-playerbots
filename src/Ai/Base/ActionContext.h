@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_ACTIONCONTEXT_H
@@ -8,12 +9,11 @@
 
 #include "AddLootAction.h"
 #include "AttackAction.h"
-#include "ShareQuestAction.h"
-#include "BattleGroundTactics.h"
 #include "AutoMaintenanceOnLevelupAction.h"
 #include "BattleGroundJoinAction.h"
 #include "BattleGroundTactics.h"
 #include "BuyAction.h"
+#include "CancelChannelAction.h"
 #include "CastCustomSpellAction.h"
 #include "ChangeStrategyAction.h"
 #include "ChangeTalentsAction.h"
@@ -25,9 +25,10 @@
 #include "CombatActions.h"
 #include "DelayAction.h"
 #include "DestroyItemAction.h"
+#include "DropQuestAction.h"
 #include "EmoteAction.h"
+#include "FishingAction.h"
 #include "FollowActions.h"
-#include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "GiveItemAction.h"
 #include "GreetAction.h"
@@ -42,11 +43,13 @@
 #include "MoveToRpgTargetAction.h"
 #include "MoveToTravelTargetAction.h"
 #include "MovementActions.h"
+#include "NewRpgAction.h"
+#include "NewRpgOutdoorPvP.h"
 #include "NonCombatActions.h"
 #include "OutfitAction.h"
+#include "PetsAction.h"
 #include "PositionAction.h"
 #include "PullActions.h"
-#include "DropQuestAction.h"
 #include "RandomBotUpdateAction.h"
 #include "ReachTargetActions.h"
 #include "ReleaseSpiritAction.h"
@@ -57,17 +60,15 @@
 #include "RpgSubActions.h"
 #include "RtiAction.h"
 #include "SayAction.h"
+#include "ShareQuestAction.h"
 #include "StayActions.h"
 #include "SuggestWhatToDoAction.h"
 #include "TravelAction.h"
+#include "UseItemAction.h"
 #include "VehicleActions.h"
+#include "WaitForAttackAction.h"
 #include "WorldBuffAction.h"
 #include "XpGainAction.h"
-#include "NewRpgAction.h"
-#include "NewRpgOutdoorPvP.h"
-#include "FishingAction.h"
-#include "CancelChannelAction.h"
-#include "WaitForAttackAction.h"
 
 class PlayerbotAI;
 
@@ -330,7 +331,6 @@ private:
     static Action* pull_end(PlayerbotAI* botAI) { return new PullEndAction(botAI); }
     static Action* return_to_pull_position(PlayerbotAI* botAI) { return new ReturnToPullPositionAction(botAI); }
     static Action* reach_pull(PlayerbotAI* botAI) { return new ReachPullAction(botAI); }
-    static Action* mana_tap(PlayerbotAI* botAI) { return new CastManaTapAction(botAI); }
     static Action* end_pull(PlayerbotAI* botAI) { return new ChangeCombatStrategyAction(botAI, "-pull"); }
     static Action* cancel_channel(PlayerbotAI* botAI) { return new CancelChannelAction(botAI); }
 

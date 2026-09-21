@@ -1,17 +1,26 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_BROADCASTHELPER_H
 #define PLAYERBOTS_BROADCASTHELPER_H
 
+#include "Define.h"
+#include <cstdint>
+#include <list>
+#include <string>
+#include <utility>
+#include <vector>
+
 class PlayerbotAI;
 class Player;
-class ItemTemplate;
 class Quest;
 class Creature;
 class Group;
+
+struct ItemTemplate;
 
 class BroadcastHelper
 {
@@ -45,12 +54,12 @@ public:
     static bool BroadcastLootingItem(
         PlayerbotAI* ai,
         Player* bot,
-        const ItemTemplate* proto
+        ItemTemplate const* proto
     );
     static bool BroadcastQuestAccepted(
         PlayerbotAI* ai,
         Player* bot,
-        const Quest* quest
+        Quest const* quest
     );
     static bool BroadcastQuestUpdateAddKill(
         PlayerbotAI* ai,
@@ -66,7 +75,7 @@ public:
         Quest const* quest,
         uint32_t availableCount,
         uint32_t requiredCount,
-        const ItemTemplate* proto
+        ItemTemplate const* proto
     );
     static bool BroadcastQuestUpdateFailedTimer(
         PlayerbotAI* ai,
@@ -131,7 +140,7 @@ public:
     );
     static bool BroadcastSuggestSell(
         PlayerbotAI* ai,
-        const ItemTemplate* proto,
+        ItemTemplate const* proto,
         uint32_t count,
         uint32_t price,
         Player* bot

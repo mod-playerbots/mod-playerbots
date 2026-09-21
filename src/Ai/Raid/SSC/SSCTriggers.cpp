@@ -1,24 +1,26 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "SSCTriggers.h"
-#include "SSCHelpers.h"
-#include "SSCActions.h"
 #include "AiFactory.h"
 #include "Corpse.h"
+#include "EncounterHelpers.h"
 #include "LootObjectStack.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
+#include "SSCActions.h"
+#include "SSCHelpers.h"
 
 using namespace SerpentShrineCavernHelpers;
+using namespace EncounterHelpers;
 
 // General
 bool SerpentShrineCavernBotIsNotInCombatTrigger::IsActive()
 {
-    return !bot->IsInCombat();
+    return bot->GetMapId() == SSC_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
 }
 
 // Trash Mobs
@@ -89,7 +91,7 @@ bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActive()
 
 bool HydrossTheUnstableNeedToManageTimersTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "hydross the unstable");
 }
 
@@ -149,9 +151,9 @@ bool TheLurkerBelowBossIsSubmergedTrigger::IsActive()
     if (!lurker || lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
+    Player* mainTank = GetGroupMainTank(bot);
+    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
+    Player* secondAssistTank = GetGroupAssistTank(bot, 1);
 
     if (!mainTank || !firstAssistTank || !secondAssistTank)
         return false;
@@ -161,7 +163,7 @@ bool TheLurkerBelowBossIsSubmergedTrigger::IsActive()
 
 bool TheLurkerBelowNeedToPrepareTimerForSpoutTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "the lurker below");
 }
 
@@ -169,7 +171,7 @@ bool TheLurkerBelowNeedToPrepareTimerForSpoutTrigger::IsActive()
 
 bool LeotherasTheBlindBossIsInactiveTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "greyheart spellbinder");
 }
 
@@ -294,7 +296,7 @@ bool LeotherasTheBlindDemonFormTankNeedsAggro::IsActive()
 
 bool LeotherasTheBlindBossWipesAggroUponPhaseChangeTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "leotheras the blind");
 }
 
@@ -361,7 +363,7 @@ bool FathomLordKarathressDeterminingKillOrderTrigger::IsActive()
 
 bool FathomLordKarathressTanksNeedToEstablishAggroTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
 }
 

@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "WarriorActions.h"
-
 #include "AiFactory.h"
 #include "Playerbots.h"
 
@@ -14,6 +14,7 @@ constexpr uint32 SPELL_RETALIATION = 20230;
 constexpr uint32 SPELL_DIVINE_SHIELD = 642;
 constexpr uint32 SPELL_ICE_BLOCK = 45438;
 constexpr uint32 SPELL_BLESSING_OF_PROTECTION = 41450;
+constexpr uint32 SPELL_VIGILANCE = 50720;
 constexpr uint32 SPELL_SHATTERING_THROW = 64382;
 }
 
@@ -75,89 +76,41 @@ Unit* CastVigilanceAction::GetTarget()
 {
     Group* group = bot->GetGroup();
     if (!group)
-    {
         return nullptr;
-    }
 
-    Player* currentVigilanceTarget = nullptr;
-    Player* mainTank = nullptr;
-    Player* assistTank1 = nullptr;
-    Player* assistTank2 = nullptr;
-    Player* highestGearScorePlayer = nullptr;
+    Player* vigilanceTarget = nullptr;
     uint32 highestGearScore = 0;
 
-    // Iterate once through the group to gather all necessary information
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
         if (!member || member == bot || !member->IsAlive())
             continue;
 
-        // Check if member has Vigilance applied by the bot
-        if (!currentVigilanceTarget && botAI->HasAura("vigilance", member, false, true))
+        // Same as trigger: early return if the bot's own Vigilance is already applied to a member.
+        if (member->HasAura(SPELL_VIGILANCE, bot->GetGUID()))
+            return nullptr;
+
+        // A valid target must not have Vigilance from any source, not just the bot...
+        if (member->HasAura(SPELL_VIGILANCE))
+            continue;
+
+        // And it must be in range and be a dps.
+        if (member->GetMapId() != bot->GetMapId() || !PlayerbotAI::IsDps(member) ||
+            bot->GetDistance(member) > sPlayerbotAIConfig.spellDistance)
         {
-            currentVigilanceTarget = member;
+            continue;
         }
 
-        // Identify Main Tank
-        if (!mainTank && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-        }
-
-        // Identify Assist Tanks
-        if (assistTank1 == nullptr && botAI->IsAssistTankOfIndex(member, 0))
-        {
-            assistTank1 = member;
-        }
-        else if (assistTank2 == nullptr && botAI->IsAssistTankOfIndex(member, 1))
-        {
-            assistTank2 = member;
-        }
-
-        // Determine Highest Gear Score
-        uint32 gearScore = botAI->GetEquipGearScore(member/*, false, false*/);
+        uint32 gearScore = botAI->GetEquipGearScore(member);
         if (gearScore > highestGearScore)
         {
             highestGearScore = gearScore;
-            highestGearScorePlayer = member;
+            vigilanceTarget = member;
         }
     }
 
-    // Determine the highest-priority target
-    Player* highestPriorityTarget = mainTank ? mainTank :
-                                      (assistTank1 ? assistTank1 :
-                                      (assistTank2 ? assistTank2 : highestGearScorePlayer));
-
-    // If no valid target, return nullptr
-    if (!highestPriorityTarget)
-    {
-        return nullptr;
-    }
-
-    // If the current target is already the highest-priority target, do nothing
-    if (currentVigilanceTarget == highestPriorityTarget)
-    {
-        return nullptr;
-    }
-
-    // Assign the new target
-    Unit* targetUnit = highestPriorityTarget->ToUnit();
-    if (targetUnit)
-    {
-        return targetUnit;
-    }
-
-    return nullptr;
-}
-
-bool CastVigilanceAction::Execute(Event /*event*/)
-{
-    Unit* target = GetTarget();
-    if (!target || target == bot)
-        return false;
-
-    return botAI->CastSpell("vigilance", target);
+    return vigilanceTarget;
 }
 
 bool CastRetaliationAction::isUseful()

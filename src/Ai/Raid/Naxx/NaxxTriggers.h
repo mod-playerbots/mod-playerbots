@@ -1,11 +1,16 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
 #ifndef PLAYERBOTS_NAXXTRIGGERS_H
 #define PLAYERBOTS_NAXXTRIGGERS_H
 
 #include "EventMap.h"
 #include "GenericTriggers.h"
-#include "PlayerbotAIConfig.h"
 #include "NaxxBossHelper.h"
+#include "PlayerbotAIConfig.h"
 #include "Trigger.h"
 
 class MutatingInjectionTrigger : public HasAuraTrigger
@@ -59,19 +64,25 @@ private:
     static constexpr uint32 CloudRotationDelayMs = 15000;
 };
 
-//class HeiganMeleeTrigger : public Trigger
-//{
-//public:
-//    HeiganMeleeTrigger(PlayerbotAI* ai) : Trigger(ai, "heigan melee") {}
-//    virtual bool IsActive();
-//};
-//
-//class HeiganRangedTrigger : public Trigger
-//{
-//public:
-//    HeiganRangedTrigger(PlayerbotAI* ai) : Trigger(ai, "heigan ranged") {}
-//    bool IsActive() override;
-//};
+class HeiganMeleeTrigger : public Trigger
+{
+public:
+    explicit HeiganMeleeTrigger(PlayerbotAI* ai) : Trigger(ai, "heigan melee"), helper(ai) {}
+    bool IsActive() override;
+
+private:
+    HeiganBossHelper helper;
+};
+
+class HeiganRangedTrigger : public Trigger
+{
+public:
+    explicit HeiganRangedTrigger(PlayerbotAI* ai) : Trigger(ai, "heigan ranged"), helper(ai) {}
+    bool IsActive() override;
+
+private:
+    HeiganBossHelper helper;
+};
 
 class RazuviousTankTrigger : public Trigger
 {

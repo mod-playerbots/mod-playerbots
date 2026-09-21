@@ -1,17 +1,17 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_SSCHELPERS_H
 #define PLAYERBOTS_SSCHELPERS_H
 
-#include <ctime>
-#include <unordered_map>
-
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
+#include <ctime>
+#include <unordered_map>
 
 namespace SerpentShrineCavernHelpers
 {
@@ -181,10 +181,10 @@ namespace SerpentShrineCavernHelpers
     struct GeneratorInfo { ObjectGuid guid; float x, y, z; };
     extern const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS;
     std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
-        Map* map, const std::vector<uint32>& generatorDbGuids);
+        Map* map, std::vector<uint32> const& generatorDbGuids);
     Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference);
-    const GeneratorInfo* GetNearestGeneratorToBot(
-        Player* bot, const std::vector<GeneratorInfo>& generators);
+    GeneratorInfo const* GetNearestGeneratorToBot(
+        Player* bot, std::vector<GeneratorInfo> const& generators);
 }
 
 #endif

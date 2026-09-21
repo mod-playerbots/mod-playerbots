@@ -7,12 +7,12 @@
 #ifndef PLAYERBOTS_RSSCRIPTS_H
 #define PLAYERBOTS_RSSCRIPTS_H
 
+#include "ObjectGuid.h"
+#include "Position.h"
 #include <map>
 #include <set>
 #include <unordered_map>
 #include <utility>
-#include "ObjectGuid.h"
-#include "Position.h"
 
 namespace RubySanctumHelpers
 {

@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "NearestGameObjects.h"
-
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
@@ -48,7 +48,7 @@ GuidVector NearestTrapWithDamageValue::Calculate()
         {
             continue;
         }
-        const GameObjectTemplate* goInfo = go->GetGOInfo();
+        GameObjectTemplate const* goInfo = go->GetGOInfo();
         if (!goInfo)
         {
             continue;
@@ -58,7 +58,7 @@ GuidVector NearestTrapWithDamageValue::Calculate()
         {
             continue;
         }
-        const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
         if (!spellInfo || spellInfo->IsPositive())
         {
             continue;

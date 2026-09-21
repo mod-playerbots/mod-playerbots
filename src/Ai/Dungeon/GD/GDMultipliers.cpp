@@ -1,10 +1,18 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "GDMultipliers.h"
-#include "GDActions.h"
-#include "GenericSpellActions.h"
-#include "ChooseTargetActions.h"
-#include "MovementActions.h"
-#include "GDTriggers.h"
 #include "Action.h"
+#include "ChooseTargetActions.h"
+#include "GDActions.h"
+#include "GDTriggers.h"
+#include "GenericSpellActions.h"
+#include "MovementActions.h"
+#include "Playerbots.h"
+#include "ReachTargetActions.h"
 
 float SladranMultiplier::GetValue(Action* action)
 {
@@ -13,32 +21,54 @@ float SladranMultiplier::GetValue(Action* action)
 
     if (boss->FindCurrentSpellBySpellId(SPELL_POISON_NOVA))
     {
-        if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AvoidPoisonNovaAction*>(action))
+        if (dynamic_cast<AvoidPoisonNovaAction*>(action)) { return 1.0f; }
+
+        if (dynamic_cast<MovementAction*>(action))
         {
             return 0.0f;
         }
     }
 
-    if (!botAI->IsDps(bot)) { return 1.0f; }
-
-    if (action->getThreatType() == Action::ActionThreatType::Aoe)
+    if (dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<RunAwayAction*>(action) ||
+        dynamic_cast<MoveRandomAction*>(action) ||
+        dynamic_cast<MoveFromGroupAction*>(action))
     {
         return 0.0f;
     }
 
-    Unit* snakeWrap = nullptr;
-    GuidVector targets = AI_VALUE(GuidVector, "possible targets no los");
-    for (auto& target : targets)
+    if (PlayerbotAI::IsTank(bot))
     {
-        Unit* unit = botAI->GetUnit(target);
-        if (unit && unit->GetEntry() == NPC_SNAKE_WRAP)
+        if (dynamic_cast<TankAssistAction*>(action))
         {
-            snakeWrap = unit;
-            break;
+            Unit* tankTarget = AI_VALUE(Unit*, "tank target");
+            if (tankTarget && GundrakSladran::IsAdd(tankTarget) &&
+                bot->GetExactDist2d(tankTarget) > GundrakSladran::TANK_PICKUP_YD)
+            {
+                return 0.0f;
+            }
         }
+
+        if (dynamic_cast<ReachTargetAction*>(action))
+        {
+            Unit* currentTarget = AI_VALUE(Unit*, "current target");
+            if (currentTarget && GundrakSladran::IsAdd(currentTarget) &&
+                bot->GetExactDist2d(currentTarget) > GundrakSladran::TANK_PICKUP_YD)
+            {
+                return 0.0f;
+            }
+        }
+
+        return 1.0f;
     }
-    // Prevent auto-target acquisition during snake wraps
-    if (snakeWrap && dynamic_cast<DpsAssistAction*>(action))
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    if (dynamic_cast<DpsAssistAction*>(action) && GundrakSladran::GetAssignedSnakeWrap(botAI))
     {
         return 0.0f;
     }

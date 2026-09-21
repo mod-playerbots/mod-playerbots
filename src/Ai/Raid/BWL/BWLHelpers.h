@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_BWLHELPERS_H
 #define PLAYERBOTS_BWLHELPERS_H
 
@@ -40,10 +46,10 @@ namespace BlackwingLairHelpers
         NPC_DEATH_TALON_WYRMGUARD = 12460
     };
 
-    bool IsActiveSuppressionDeviceInRange(const GameObject* go, const Player* bot);
+    bool IsActiveSuppressionDeviceInRange(GameObject const* go, Player const* bot);
     bool AreRazorgoreEggsAlive(PlayerbotAI* botAI);
     bool IsRazorgoreOffTank(Player* bot);
-    bool IsNonBABotNearPosition(const Player* bot, Position const& position, float distance);
+    bool IsNonBABotNearPosition(Player const* bot, Position const& position, float distance);
 }
 
 #endif

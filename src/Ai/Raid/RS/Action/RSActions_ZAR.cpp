@@ -4,12 +4,11 @@
  * or (at your option) any later version.
  */
 
-#include <limits>
-#include <vector>
-
 #include "NearestNpcsValue.h"
 #include "Playerbots.h"
 #include "RSActions.h"
+#include <limits>
+#include <vector>
 
 bool RsZarithrianAddsAction::Execute(Event )
 {

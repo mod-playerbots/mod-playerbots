@@ -1,7 +1,13 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "NexStrategy.h"
 #include "NexMultipliers.h"
 
-void WotlkDungeonNexStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void WotlkDungeonNexStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Horde Commander (Alliance N)/Commander Kolurg (Alliance H)
     // or
@@ -43,7 +49,7 @@ void WotlkDungeonNexStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
     // TODO: Add frost resist aura for paladins?
 }
 
-void WotlkDungeonNexStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+void WotlkDungeonNexStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new FactionCommanderMultiplier(botAI));
     multipliers.push_back(new TelestraMultiplier(botAI));

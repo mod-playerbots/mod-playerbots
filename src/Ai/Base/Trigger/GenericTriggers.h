@@ -1,17 +1,17 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_GENERICTRIGGERS_H
 #define PLAYERBOTS_GENERICTRIGGERS_H
 
-#include <utility>
-
 #include "HealthTriggers.h"
+#include "Player.h"
 #include "RangeTriggers.h"
 #include "Trigger.h"
-#include "Player.h"
+#include <utility>
 
 class PlayerbotAI;
 class Unit;
@@ -321,6 +321,7 @@ public:
 
 public:
     std::string const GetTargetName() override { return "self target"; }
+    bool IsBuffTrigger() override { return true; }
     bool IsActive() override;
 
 protected:
@@ -389,6 +390,7 @@ public:
         : BuffTrigger(botAI, spell, checkInterval, checkIsOwner, false, beforeDuration), needLifeTime(needLifeTime) {}
 
     std::string const GetTargetName() override { return "current target"; }
+    bool IsDebuffTrigger() override { return true; }
     bool IsActive() override;
 
 protected:
@@ -686,6 +688,9 @@ public:
     HasCcTargetTrigger(PlayerbotAI* botAI, std::string const name) : Trigger(botAI, name) {}
 
     bool IsActive() override;
+
+protected:
+    bool IsCcTargetFree(Unit* ccTarget, Unit* rtiCcTarget);
 };
 
 class NoMovementTrigger : public Trigger
@@ -969,6 +974,14 @@ public:
 private:
     ObjectGuid lastPetGuid;
     bool triggered;
+};
+
+class ForceRebuffPendingTrigger : public Trigger
+{
+public:
+    ForceRebuffPendingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "force rebuff pending") {}
+
+    bool IsActive() override;
 };
 
 #endif

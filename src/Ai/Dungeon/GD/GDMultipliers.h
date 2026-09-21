@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_GDMULTIPLIERS_H
 #define PLAYERBOTS_GDMULTIPLIERS_H
 
@@ -9,7 +15,7 @@ class SladranMultiplier : public Multiplier
         SladranMultiplier(PlayerbotAI* ai) : Multiplier(ai, "slad'ran") {}
 
     public:
-        virtual float GetValue(Action* action);
+        float GetValue(Action* action) override;
 };
 
 class GaldarahMultiplier : public Multiplier
@@ -18,7 +24,7 @@ class GaldarahMultiplier : public Multiplier
         GaldarahMultiplier(PlayerbotAI* ai) : Multiplier(ai, "gal'darah") {}
 
     public:
-        virtual float GetValue(Action* action);
+        float GetValue(Action* action) override;
 };
 
 #endif

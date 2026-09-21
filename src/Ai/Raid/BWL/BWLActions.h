@@ -1,9 +1,15 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_BWLACTIONS_H
 #define PLAYERBOTS_BWLACTIONS_H
 
 #include "Action.h"
-#include "MovementActions.h"
 #include "AttackAction.h"
+#include "MovementActions.h"
 
 // General
 
@@ -48,8 +54,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool CalculateFleeDirection(const Unit* boss, float& fleeX, float& fleeY) const;
-    bool MoveAlongFleeDirection(const Unit* boss, float fleeX, float fleeY);
+    bool CalculateFleeDirection(Unit const* boss, float& fleeX, float& fleeY) const;
+    bool MoveAlongFleeDirection(Unit const* boss, float fleeX, float fleeY);
 };
 
 // Chromaggus

@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "LootAction.h"
-
+#include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "Event.h"
 #include "GuildMgr.h"
@@ -15,8 +16,6 @@
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "GuildMgr.h"
-#include "BroadcastHelper.h"
 
 bool LootAction::Execute(Event /*event*/)
 {
@@ -35,9 +34,8 @@ bool LootAction::Execute(Event /*event*/)
         // bot->GetSession()->HandleLootReleaseOpcode(packet);
     }
 
-    // Provide a system to check if the game object id is disallowed in the user configurable list or not.
-    // Check if the game object id is disallowed in the user configurable list or not.
-    if (sPlayerbotAIConfig.disallowedGameObjects.find(lootObject.guid.GetEntry()) != sPlayerbotAIConfig.disallowedGameObjects.end())
+    if (lootObject.guid.IsGameObject() &&
+        sPlayerbotAIConfig.disallowedGameObjects.contains(lootObject.guid.GetEntry()))
     {
         return false;  // Game object ID is disallowed, so do not proceed
     }
@@ -50,7 +48,8 @@ bool LootAction::Execute(Event /*event*/)
 
 bool LootAction::isUseful()
 {
-    return sPlayerbotAIConfig.freeMethodLoot || !bot->GetGroup() || bot->GetGroup()->GetLootMethod() != FREE_FOR_ALL;
+    return sPlayerbotAIConfig.freeMethodLoot || !bot->GetGroup() ||
+    bot->GetGroup()->GetLootMethod() != FREE_FOR_ALL || IsSelfBot(bot);
 }
 
 enum ProfessionSpells
@@ -108,9 +107,16 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
         return true;
     }
 
+    // Everything below this point casts, and every opening or gathering spell has a cast
+    // time -- PlayerbotAI::CastSpell refuses outright while isMoving(). StopMoving() only
+    // asks the spline to end, so casting in the same tick burns the attempt and the bot
+    // walks off and comes back: measured at seven refused casts in one second, all with
+    // isMoving() still true. Stop, then retry on a later tick, standing still.
     if (bot->isMoving())
     {
         bot->StopMoving();
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.lootDelay);
+        return false;
     }
 
     if (creature)
@@ -139,8 +145,9 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
     if (go && (go->GetGoState() != GO_STATE_READY))
         return false;
 
-    // This prevents dungeon chests like Tribunal Chest (Halls of Stone) from being ninja'd by the bots
-    if (go && go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND))
+    // This prevents dungeon chests like Tribunal Chest (Halls of Stone) from being ninja'd by the bots.
+    // Quest objects carry the same flag but are gated on quest state, which ActivateToQuest answers.
+    if (go && go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND) && !go->ActivateToQuest(bot))
         return false;
 
     // This prevents raid chests like Gunship Armory (ICC) from being ninja'd by the bots
@@ -402,7 +409,7 @@ bool StoreLootAction::Execute(Event event)
         if (!proto)
             continue;
 
-        if (!botAI->HasActivePlayerMaster() && AI_VALUE(uint8, "bag space") > 80)
+        if (!IsRealPlayer(botAI->GetMaster()) && AI_VALUE(uint8, "bag space") > 80)
         {
             uint32 maxStack = proto->GetMaxStackSize();
             if (maxStack == 1)
@@ -513,7 +520,7 @@ bool StoreLootAction::IsLootAllowed(uint32 itemid, PlayerbotAI* botAI)
     //{
 
     bool canLoot = lootStrategy->CanLoot(proto, context);
-    // if (canLoot && proto->Bonding == BIND_WHEN_PICKED_UP && botAI->HasActivePlayerMaster())
+    // if (canLoot && proto->Bonding == BIND_WHEN_PICKED_UP && IsRealPlayer(botAI->GetMaster()))
     // canLoot = sPlayerbotAIConfig.IsInRandomAccountList(botAI->GetBot()->GetSession()->GetAccountId());
 
     return canLoot;

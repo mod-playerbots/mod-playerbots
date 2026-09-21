@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_UKACTIONS_H
 #define PLAYERBOTS_UKACTIONS_H
 
@@ -19,13 +25,6 @@ class AttackDalronnAction : public AttackAction
 {
 public:
     AttackDalronnAction(PlayerbotAI* ai) : AttackAction(ai, "attack dalronn") {}
-    bool Execute(Event event) override;
-};
-
-class IngvarStopCastingAction : public Action
-{
-public:
-    IngvarStopCastingAction(PlayerbotAI* ai) : Action(ai, "ingvar stop casting") {}
     bool Execute(Event event) override;
 };
 

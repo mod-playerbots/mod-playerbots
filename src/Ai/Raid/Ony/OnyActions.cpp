@@ -1,5 +1,10 @@
-#include "OnyActions.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
+#include "OnyActions.h"
 #include "GenericSpellActions.h"
 #include "LastMovementValue.h"
 #include "MovementActions.h"
@@ -99,9 +104,9 @@ bool RaidOnyxiaMoveToSafeZoneAction::Execute(Event /*event*/)
     if (bot->IsWithinDist2d(bestZone->pos.GetPositionX(), bestZone->pos.GetPositionY(), bestZone->radius))
         return false;  // Already safe
 
-    // Stop current spell first
+    // Stop channeling spell first
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
 
     // bot->Yell("Moving to Safe Zone!", LANG_UNIVERSAL);
     return MoveTo(bot->GetMapId(), bestZone->pos.GetPositionX(), bestZone->pos.GetPositionY(), bestZone->pos.GetPositionZ(),

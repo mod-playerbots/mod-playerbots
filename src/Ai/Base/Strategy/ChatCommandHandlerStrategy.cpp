@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "ChatCommandHandlerStrategy.h"
@@ -70,6 +71,7 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(new TriggerNode("pull back", { NextAction("pull my target", relevance) }));
     triggers.push_back(new TriggerNode("pull rti", { NextAction("pull rti target", relevance) }));
     triggers.push_back(new TriggerNode("ready", { NextAction("ready check", relevance) }));
+    triggers.push_back(new TriggerNode("rebuff", { NextAction("force rebuff", relevance) }));
     triggers.push_back(new TriggerNode("naxx", {NextAction("naxx chat shortcut", relevance) }));
     triggers.push_back(new TriggerNode("bwl", { NextAction("bwl chat shortcut", relevance) }));
     triggers.push_back(new TriggerNode("dps", { NextAction("tell estimated dps", relevance) }));

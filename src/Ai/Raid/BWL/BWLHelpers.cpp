@@ -1,11 +1,16 @@
-#include "BWLHelpers.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
+#include "BWLHelpers.h"
 #include "AiObjectContext.h"
 #include "Group.h"
 
 namespace BlackwingLairHelpers
 {
-    bool IsActiveSuppressionDeviceInRange(const GameObject* go, const Player* bot)
+    bool IsActiveSuppressionDeviceInRange(GameObject const* go, Player const* bot)
     {
         constexpr float suppressionDeviceInteractionDistance = 15.0f;
         return go &&
@@ -19,7 +24,7 @@ namespace BlackwingLairHelpers
         GuidVector gos = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects")->Get();
         for (auto const& guid : gos)
         {
-            const GameObject* go = botAI->GetGameObject(guid);
+            GameObject const* go = botAI->GetGameObject(guid);
             if (go && go->GetEntry() == static_cast<uint32>(BlackwingLairGameObjects::GO_BLACK_DRAGON_EGG))
                 return true;
         }
@@ -31,15 +36,15 @@ namespace BlackwingLairHelpers
         return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
     }
 
-    bool IsNonBABotNearPosition(const Player* bot, Position const& position, float distance)
+    bool IsNonBABotNearPosition(Player const* bot, Position const& position, float distance)
     {
-        const Group* group = bot->GetGroup();
+        Group const* group = bot->GetGroup();
         if (!group)
             return false;
 
-        for (const GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+        for (GroupReference const* gref = group->GetFirstMember(); gref; gref = gref->next())
         {
-            const Player* p = gref->GetSource();
+            Player const* p = gref->GetSource();
             if (!p || p == bot || !p->IsAlive() || p->GetMapId() != bot->GetMapId())
                 continue;
 

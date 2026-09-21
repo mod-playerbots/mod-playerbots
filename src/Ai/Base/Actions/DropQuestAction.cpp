@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "DropQuestAction.h"
-
 #include "ChatHelper.h"
 #include "Event.h"
 #include "PlayerbotTextMgr.h"
@@ -49,7 +49,7 @@ bool DropQuestAction::Execute(Event event)
 
     if (botAI->HasStrategy("debug quest", BotState::BOT_STATE_NON_COMBAT) || botAI->HasStrategy("debug rpg", BotState::BOT_STATE_COMBAT))
     {
-        const Quest* pQuest = sObjectMgr->GetQuestTemplate(entry);
+        Quest const* pQuest = sObjectMgr->GetQuestTemplate(entry);
         const std::string text_quest = ChatHelper::FormatQuest(pQuest);
         LOG_INFO("playerbots", "{} => Quest [ {} ] removed", bot->GetName(), pQuest->GetTitle());
         std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
@@ -88,7 +88,7 @@ bool CleanQuestLogAction::Execute(Event event)
         if (!questId)
             continue;
 
-        const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
+        Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
         if (!quest)
             continue;
 

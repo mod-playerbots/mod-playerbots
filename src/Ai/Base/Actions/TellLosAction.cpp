@@ -1,11 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "TellLosAction.h"
-#include <sstream>
-
 #include "ChatHelper.h"
 #include "Event.h"
 #include "ItemTemplate.h"
@@ -13,6 +12,7 @@
 #include "Playerbots.h"
 #include "StatsWeightCalculator.h"
 #include "World.h"
+#include <sstream>
 
 bool TellLosAction::Execute(Event event)
 {
@@ -140,7 +140,7 @@ bool TellCalculateItemAction::Execute(Event event)
     ItemWithRandomProperty item = chat->parseItemWithRandomProperty(text);
     StatsWeightCalculator calculator(bot);
 
-    const ItemTemplate* proto = sObjectMgr->GetItemTemplate(item.itemId);
+    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item.itemId);
     if (!proto)
         return false;
     float score = calculator.CalculateItem(item.itemId, item.randomPropertyId);

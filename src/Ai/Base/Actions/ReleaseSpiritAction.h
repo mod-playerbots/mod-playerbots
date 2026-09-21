@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_RELEASESPIRITACTION_H
@@ -14,11 +15,11 @@ class PlayerbotAI;
 class ReleaseSpiritAction : public Action
 {
 public:
-    ReleaseSpiritAction(PlayerbotAI* botAI, const std::string& name = "release")
+    ReleaseSpiritAction(PlayerbotAI* botAI, std::string const& name = "release")
         : Action(botAI, name) {}
 
     bool Execute(Event event) override;
-    void LogRelease(const std::string& releaseType) const;
+    void LogRelease(std::string const& releaseType) const;
 
 protected:
     void IncrementDeathCount() const;
@@ -27,7 +28,7 @@ protected:
 class AutoReleaseSpiritAction : public ReleaseSpiritAction
 {
 public:
-    AutoReleaseSpiritAction(PlayerbotAI* botAI, const std::string& name = "auto release")
+    AutoReleaseSpiritAction(PlayerbotAI* botAI, std::string const& name = "auto release")
         : ReleaseSpiritAction(botAI, name) {}
 
     bool Execute(Event event) override;
@@ -44,7 +45,7 @@ private:
 class RepopAction : public SpiritHealerAction
 {
 public:
-    RepopAction(PlayerbotAI* botAI, const std::string& name = "repop")
+    RepopAction(PlayerbotAI* botAI, std::string const& name = "repop")
         : SpiritHealerAction(botAI, name) {}
 
     bool Execute(Event event) override;
@@ -52,7 +53,7 @@ public:
 
 private:
     int64 CalculateDeadTime() const;
-    void PerformGraveyardTeleport(const GraveyardStruct* graveyard) const;
+    void PerformGraveyardTeleport(GraveyardStruct const* graveyard) const;
 };
 
 // SelfResurrectAction action registration

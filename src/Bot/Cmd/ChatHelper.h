@@ -1,17 +1,17 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_CHATHELPER_H
 #define PLAYERBOTS_CHATHELPER_H
 
-#include <map>
-
 #include "Common.h"
 #include "ObjectGuid.h"
 #include "PlayerbotAIAware.h"
 #include "SharedDefines.h"
+#include <map>
 
 class GameObject;
 class Quest;
@@ -40,7 +40,7 @@ public:
     static ItemIds parseItems(std::string const text);
     static ItemWithRandomProperty parseItemWithRandomProperty(std::string const text);
     uint32 parseSpell(std::string const text);
-    static std::string parseValue(const std::string& type, const std::string& text);
+    static std::string parseValue(std::string const& type, std::string const& text);
 
     static std::string const FormatQuest(Quest const* quest);
     static std::string const FormatItem(ItemTemplate const* proto, uint32 count = 0, uint32 total = 0);
@@ -62,6 +62,7 @@ public:
     static std::string const FormatBoolean(bool flag);
 
     static uint32 parseItemQuality(std::string const text);
+    static std::string const FormatItemQuality(uint32 quality);
     static bool parseItemClass(std::string const text, uint32* itemClass, uint32* itemSubClass);
     static uint32 parseSlot(std::string const text);
     uint32 parseSkill(std::string const text);
@@ -70,8 +71,8 @@ public:
 
     void eraseAllSubStr(std::string& mainStr, std::string const toErase);
 
-    static std::set<uint32> ExtractAllQuestIds(const std::string& text);
-    static std::set<uint32> ExtractAllItemIds(const std::string& text);
+    static std::set<uint32> ExtractAllQuestIds(std::string const& text);
+    static std::set<uint32> ExtractAllItemIds(std::string const& text);
 
 private:
     static std::map<std::string, uint32> consumableSubClasses;

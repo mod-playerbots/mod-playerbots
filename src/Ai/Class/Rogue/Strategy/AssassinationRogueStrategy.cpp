@@ -1,6 +1,10 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
 #include "AssassinationRogueStrategy.h"
-
 #include "Playerbots.h"
 
 class AssassinationRogueStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -53,7 +57,8 @@ private:
     }
 };
 
-AssassinationRogueStrategy::AssassinationRogueStrategy(PlayerbotAI* ai) : MeleeCombatStrategy(ai)
+AssassinationRogueStrategy::AssassinationRogueStrategy(PlayerbotAI* botAI)
+    : GenericRogueStrategy(botAI)
 {
     actionNodeFactories.Add(new AssassinationRogueStrategyActionNodeFactory());
 }
@@ -67,7 +72,7 @@ std::vector<NextAction> AssassinationRogueStrategy::getDefaultActions()
 
 void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    MeleeCombatStrategy::InitTriggers(triggers);
+    GenericRogueStrategy::InitTriggers(triggers);
 
     triggers.push_back(
         new TriggerNode(

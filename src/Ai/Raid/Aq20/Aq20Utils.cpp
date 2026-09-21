@@ -1,5 +1,10 @@
-#include "Aq20Utils.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
+#include "Aq20Utils.h"
 #include "SpellAuras.h"
 
 uint32 const OSSIRIAN_BUFF = 25176;

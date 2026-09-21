@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_SSCACTIONS_H
@@ -441,8 +442,8 @@ public:
     static std::vector<Unit*> GetAllSporeDropTriggers(Player* bot);
 
 private:
-    Position FindSafestNearbyPosition(const std::vector<Unit*>& spores, const Position& position, float maxRadius, float hazardRadius);
-    bool IsPathSafeFromSpores(const Position& start, const Position& end, const std::vector<Unit*>& spores, float hazardRadius);
+    Position FindSafestNearbyPosition(std::vector<Unit*> const& spores, Position const& position, float maxRadius, float hazardRadius);
+    bool IsPathSafeFromSpores(Position const& start, Position const& end, std::vector<Unit*> const& spores, float hazardRadius);
 };
 
 class LadyVashjUseFreeActionAbilitiesAction : public Action

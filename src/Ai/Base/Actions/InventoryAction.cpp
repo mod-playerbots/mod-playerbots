@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "InventoryAction.h"
-
 #include "Event.h"
 #include "ItemCountValue.h"
 #include "ItemVisitors.h"
@@ -14,7 +14,7 @@ namespace
 {
 bool isReservedQualifier(std::string const& text)
 {
-    static std::array<std::string_view, 13> const exactQualifiers = {
+    static std::array<std::string_view, 14> const exactQualifiers = {
         "ammo",
         "conjured drink",
         "conjured food",
@@ -22,6 +22,7 @@ bool isReservedQualifier(std::string const& text)
         "drink",
         "food",
         "healing potion",
+        "materials",
         "mount",
         "mana potion",
         "pet",
@@ -303,6 +304,15 @@ std::vector<Item*> InventoryAction::parseItems(std::string const text, IterateIt
         found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
     }
 
+    // "recipe" keeps the usable-only filter (used by the bot's own recipe-learning);
+    // "recipe all" matches every recipe in the bags, for moving/trading them in bulk.
+    if (text == "recipe all")
+    {
+        FindAnyRecipeVisitor visitor;
+        IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
+        found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
+    }
+
     if (text == "quest")
     {
         FindQuestItemVisitor visitor(bot);
@@ -310,11 +320,26 @@ std::vector<Item*> InventoryAction::parseItems(std::string const text, IterateIt
         found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
     }
 
-    if (text.find("usage ") != std::string::npos)
+    if (text == "materials")
     {
-        FindItemUsageVisitor visitor(bot, ItemUsage(stoi(text.substr(6))));
-        IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
+        FindTradeMaterialsVisitor visitor(count);
+        IterateItems(&visitor, mask);
         found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
+    }
+
+    // "usage <n>" is only meaningful at the start of the qualifier, which is how
+    // isReservedQualifier() reads it. Matching it anywhere handed stoi() the text at a fixed
+    // offset instead of the number, so "bandage usage 3" ended up in stoi("ge usage 3").
+    // At most nine digits so the value always fits an int.
+    if (text.rfind("usage ", 0) == 0)
+    {
+        std::string const usage = text.substr(6, text.find(' ', 6) - 6);
+        if (!usage.empty() && usage.size() <= 9 && usage.find_first_not_of("0123456789") == std::string::npos)
+        {
+            FindItemUsageVisitor visitor(bot, ItemUsage(stoi(usage)));
+            IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
+            found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
+        }
     }
 
     if (!isReservedQualifier(text))

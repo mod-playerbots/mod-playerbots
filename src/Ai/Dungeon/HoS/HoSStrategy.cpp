@@ -1,7 +1,13 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "HoSStrategy.h"
 #include "HoSMultipliers.h"
 
-void WotlkDungeonHoSStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void WotlkDungeonHoSStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Maiden of Grief
     // TODO: Jump into damage during shock of sorrow?
@@ -22,7 +28,7 @@ void WotlkDungeonHoSStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
         { NextAction("avoid lightning ring", ACTION_RAID + 5) }));
 }
 
-void WotlkDungeonHoSStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+void WotlkDungeonHoSStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new KrystallusMultiplier(botAI));
     multipliers.push_back(new SjonnirMultiplier(botAI));

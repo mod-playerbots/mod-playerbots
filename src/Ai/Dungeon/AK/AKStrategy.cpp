@@ -1,7 +1,13 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "AKStrategy.h"
 #include "AKMultipliers.h"
 
-void WotlkDungeonOKStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void WotlkDungeonOKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Elder Nadox
     triggers.push_back(new TriggerNode("nadox guardian",
@@ -27,7 +33,7 @@ void WotlkDungeonOKStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
     // TODO: once I get to heroics
 }
 
-void WotlkDungeonOKStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+void WotlkDungeonOKStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new ElderNadoxMultiplier(botAI));
     multipliers.push_back(new JedogaShadowseekerMultiplier(botAI));

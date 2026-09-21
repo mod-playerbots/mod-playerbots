@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "WarriorTriggers.h"
@@ -31,45 +32,19 @@ bool VigilanceTrigger::IsActive()
     if (!group)
         return false;
 
-    Player* currentVigilanceTarget = nullptr;
-    Player* mainTank = nullptr;
-    Player* assistTank1 = nullptr;
-    Player* assistTank2 = nullptr;
-    Player* highestGearScorePlayer = nullptr;
-    uint32 highestGearScore = 0;
-
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
         if (!member || member == bot || !member->IsAlive())
             continue;
 
-        if (!currentVigilanceTarget && botAI->HasAura("vigilance", member, false, true))
-            currentVigilanceTarget = member;
-
-        if (!mainTank && botAI->IsMainTank(member))
-            mainTank = member;
-        else if (!assistTank1 && botAI->IsAssistTankOfIndex(member, 0))
-            assistTank1 = member;
-        else if (!assistTank2 && botAI->IsAssistTankOfIndex(member, 1))
-            assistTank2 = member;
-
-        uint32 gearScore = botAI->GetEquipGearScore(member);
-        if (gearScore > highestGearScore)
-        {
-            highestGearScore = gearScore;
-            highestGearScorePlayer = member;
-        }
+        // The action casts Vigilance on dps, but the trigger fails if any party member has
+        // Vigilance from the bot (so the player can have a bot cast Vigilance on any group member).
+        if (member->HasAura(SPELL_VIGILANCE, bot->GetGUID()))
+            return false;
     }
 
-    Player* highestPriorityTarget = mainTank ? mainTank :
-                                      (assistTank1 ? assistTank1 :
-                                      (assistTank2 ? assistTank2 : highestGearScorePlayer));
-
-    if (!currentVigilanceTarget || currentVigilanceTarget != highestPriorityTarget)
-        return true;
-
-    return false;
+    return true;
 }
 
 bool ShatteringThrowTrigger::IsActive()
@@ -136,7 +111,7 @@ bool BattleShoutTrigger::IsActive()
     }
     int32 effectiveBsAp = int32(bsApValue * (1.0f + cpBonus));
 
-    static const char* blessingNames[] = {
+    static char const* blessingNames[] = {
         "blessing of might", "greater blessing of might", nullptr
     };
     for (int i = 0; blessingNames[i] != nullptr; ++i)

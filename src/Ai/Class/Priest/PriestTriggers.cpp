@@ -1,11 +1,12 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "PriestTriggers.h"
-#include "PlayerbotAI.h"
 #include "Player.h"
+#include "PlayerbotAI.h"
 #include "Playerbots.h"
 
 bool ShadowProtectionTrigger::IsActive()
@@ -29,6 +30,15 @@ bool InnerFireTrigger::IsActive()
 {
     Unit* target = GetTarget();
     return SpellTrigger::IsActive() && !botAI->HasAura(spell, target);
+}
+
+bool FearWardOnMainTankTrigger::IsActive()
+{
+    uint32 const spellId = AI_VALUE2(uint32, "spell id", spell);
+    if (!spellId || bot->HasSpellCooldown(spellId))
+        return false;
+
+    return BuffOnMainTankTrigger::IsActive();
 }
 
 bool ShadowformTrigger::IsActive() { return !botAI->HasAura("shadowform", bot); }

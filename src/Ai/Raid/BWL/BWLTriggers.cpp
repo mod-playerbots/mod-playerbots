@@ -1,7 +1,12 @@
-#include "BWLTriggers.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
-#include "Playerbots.h"
+#include "BWLTriggers.h"
 #include "BWLHelpers.h"
+#include "Playerbots.h"
 
 using namespace BlackwingLairHelpers;
 
@@ -16,7 +21,7 @@ bool BwlSuppressionDeviceTrigger::IsActive()
         GuidVector gos = AI_VALUE(GuidVector, "nearest game objects");
         for (auto i = gos.begin(); i != gos.end(); ++i)
         {
-            const GameObject* go = botAI->GetGameObject(*i);
+            GameObject const* go = botAI->GetGameObject(*i);
             if (IsActiveSuppressionDeviceInRange(go, bot))
                 return true;
         }

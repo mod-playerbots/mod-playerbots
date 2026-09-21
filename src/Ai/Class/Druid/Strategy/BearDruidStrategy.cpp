@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "BearDruidStrategy.h"
-
 #include "Playerbots.h"
 
 class BearDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -16,8 +16,9 @@ public:
         creators["dire bear form"] = &dire_bear_form;
         creators["maul"] = &maul;
         creators["bash"] = &bash;
-        creators["swipe"] = &swipe;
+        creators["swipe (bear)"] = &swipe_bear;
         creators["lacerate"] = &lacerate;
+        creators["taunt spell"] = &growl; // Empty ActionNode needed to register as taunt spell
     }
 
 private:
@@ -61,10 +62,10 @@ private:
         );
     }
 
-    static ActionNode* swipe([[maybe_unused]] PlayerbotAI* botAI)
+    static ActionNode* swipe_bear([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "swipe",
+            "swipe (bear)",
             /*P*/ {},
             /*A*/ { NextAction("melee") },
             /*C*/ {}
@@ -77,6 +78,16 @@ private:
             "lacerate",
             /*P*/ {},
             /*A*/ { NextAction("maul") },
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* growl([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "growl",
+            /*P*/ {},
+            /*A*/ {},
             /*C*/ {}
         );
     }

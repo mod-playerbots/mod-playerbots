@@ -1,15 +1,22 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_NAXXSPELLIDS_H
 #define PLAYERBOTS_NAXXSPELLIDS_H
 
-#include <initializer_list>
-
 #include "PlayerbotAI.h"
+#include <initializer_list>
 
 // use src/server/scripts/Northrend/Naxxramas/naxxramas.h for CreatureId, NaxxramasSay, NaxxramasEvent, NaxxramasMisc
 namespace NaxxSpellIds
 {
     // Heigan
-    static constexpr uint32 Eruption10 = 29371;
+    static constexpr uint32 Eruption10 = 29371;      // cast by the floor gameobjects, not by the boss
+    static constexpr uint32 PlagueCloud = 29350;     // 45s self-channel while Heigan is on his platform (fast dance)
+    static constexpr uint32 TeleportSelf = 30211;
 /*
     SPELL_SPELL_DISRUPTION          = 29310,
     SPELL_DECREPIT_FEVER            = 29998,

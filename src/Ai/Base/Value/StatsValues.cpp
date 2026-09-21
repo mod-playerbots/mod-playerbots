@@ -1,15 +1,16 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "StatsValues.h"
 #include "AiObjectContext.h"
 #include "Group.h"
 #include "Pet.h"
+#include "Player.h"
 #include "PlayerbotAIConfig.h"
 #include "ServerFacade.h"
-#include "Player.h"
 
 Unit* HealthValue::GetTarget()
 {
@@ -210,7 +211,7 @@ uint8 BagSpaceValue::Calculate()
 
     for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
     {
-        const Bag* const pBag = (Bag*)bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag);
+        Bag const* const pBag = (Bag*)bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag);
         if (pBag)
         {
             ItemTemplate const* pBagProto = pBag->GetTemplate();

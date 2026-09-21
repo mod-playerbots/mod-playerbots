@@ -1,18 +1,17 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "PlayerbotCommandServer.h"
-
+#include "IoContext.h"
+#include "RandomPlayerbotMgr.h"
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/thread/thread.hpp>
 #include <cstdlib>
-#include "RandomPlayerbotMgr.h"
-
-#include "IoContext.h"
 
 using boost::asio::ip::tcp;
 typedef boost::shared_ptr<tcp::socket> socket_ptr;

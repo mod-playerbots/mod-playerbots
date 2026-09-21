@@ -1,7 +1,12 @@
-#include "Playerbots.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "UKTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
+#include "Playerbots.h"
 
 bool KelesethFrostTombTrigger::IsActive()
 {
@@ -24,18 +29,6 @@ bool DalronnDpsTrigger::IsActive()
 
     // This doesn't cause issues with healers currently and they will continue to heal even when included here
     return !botAI->IsTank(bot);
-}
-
-bool IngvarStaggeringRoarTrigger::IsActive()
-{
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
-    if (!boss) { return false; }
-
-    if (boss->FindCurrentSpellBySpellId(SPELL_STAGGERING_ROAR))
-    {
-        return true;
-    }
-    return false;
 }
 
 bool IngvarDreadfulRoarTrigger::IsActive()

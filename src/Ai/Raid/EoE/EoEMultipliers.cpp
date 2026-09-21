@@ -1,16 +1,20 @@
-#include "EoEMultipliers.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
+#include "EoEMultipliers.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
+#include "EoEActions.h"
+#include "EoETriggers.h"
 #include "FollowActions.h"
-#include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "MovementActions.h"
 #include "PaladinActions.h"
-#include "EoEActions.h"
-#include "EoETriggers.h"
 #include "ReachTargetActions.h"
 #include "ScriptedCreature.h"
 #include "WarriorActions.h"

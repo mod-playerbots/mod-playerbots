@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "ChangeStrategyAction.h"
-
 #include "Event.h"
 #include "PlayerbotRepository.h"
 #include "Playerbots.h"
@@ -15,7 +15,7 @@ static void HandleStrategyCommon(PlayerbotAI* botAI, std::string const& text, Bo
     std::vector<std::string> splitted = split(text, ',');
     for (std::vector<std::string>::iterator i = splitted.begin(); i != splitted.end(); i++)
     {
-        const char* name = i->c_str();
+        char const* name = i->c_str();
         switch (name[0])
         {
             case '+':

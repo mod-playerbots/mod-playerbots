@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_ROGUETRIGGERS_H
@@ -36,10 +37,16 @@ public:
     // bool isPossible();
 };
 
-class BladeFuryTrigger : public BoostTrigger
+class BladeFlurryTrigger : public BoostTrigger
 {
 public:
-    BladeFuryTrigger(PlayerbotAI* botAI) : BoostTrigger(botAI, "blade fury") {}
+    BladeFlurryTrigger(PlayerbotAI* botAI) : BoostTrigger(botAI, "blade flurry") {}
+};
+
+class RiposteAvailableTrigger : public SpellCanBeCastTrigger
+{
+public:
+    RiposteAvailableTrigger(PlayerbotAI* botAI) : SpellCanBeCastTrigger(botAI, "riposte") {}
 };
 
 class RuptureTrigger : public DebuffTrigger
@@ -109,21 +116,21 @@ public:
 class MainHandWeaponNoEnchantTrigger : public BuffTrigger
 {
 public:
-    MainHandWeaponNoEnchantTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "main hand", 1) {}
+    MainHandWeaponNoEnchantTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "main hand", 1) {}
     virtual bool IsActive();
 };
 
 class OffHandWeaponNoEnchantTrigger : public BuffTrigger
 {
 public:
-    OffHandWeaponNoEnchantTrigger(PlayerbotAI* ai) : BuffTrigger(ai, "off hand", 1) {}
+    OffHandWeaponNoEnchantTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "off hand", 1) {}
     virtual bool IsActive();
 };
 
 class TricksOfTheTradeOnMainTankTrigger : public BuffOnMainTankTrigger
 {
 public:
-    TricksOfTheTradeOnMainTankTrigger(PlayerbotAI* ai) : BuffOnMainTankTrigger(ai, "tricks of the trade", true) {}
+    TricksOfTheTradeOnMainTankTrigger(PlayerbotAI* botAI) : BuffOnMainTankTrigger(botAI, "tricks of the trade", true) {}
 };
 
 #endif

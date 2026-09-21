@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_STATSWEIGHTCALCULATOR_H
@@ -34,7 +35,6 @@ public:
 
     void SetOverflowPenalty(bool apply) { enable_overflow_penalty_ = apply; }
     void SetItemSetBonus(bool apply) { enable_item_set_bonus_ = apply; }
-    void SetQualityBlend(bool apply) { enable_quality_blend_ = apply; }
     void SetPvpSpec(bool isPvp) { pvpSpec_ = isPvp; }
     void SetExcludeResilience(bool exclude) { exclude_resilience_ = exclude; }
 
@@ -65,7 +65,6 @@ private:
     int tab;
     bool enable_overflow_penalty_;
     bool enable_item_set_bonus_;
-    bool enable_quality_blend_;
 
     float weight_;
     float stats_weights_[STATS_TYPE_MAX];

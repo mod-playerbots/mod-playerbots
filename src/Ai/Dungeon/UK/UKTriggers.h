@@ -1,10 +1,16 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_UKTRIGGERS_H
 #define PLAYERBOTS_UKTRIGGERS_H
 
-#include "Trigger.h"
-#include "PlayerbotAIConfig.h"
-#include "GenericTriggers.h"
 #include "DungeonStrategyUtils.h"
+#include "GenericTriggers.h"
+#include "PlayerbotAIConfig.h"
+#include "Trigger.h"
 
 enum UtgardeKeepIDs
 {
@@ -41,13 +47,6 @@ class DalronnDpsTrigger : public Trigger
 {
 public:
     DalronnDpsTrigger(PlayerbotAI* ai) : Trigger(ai, "dalronn dps") {}
-    bool IsActive() override;
-};
-
-class IngvarStaggeringRoarTrigger : public Trigger
-{
-public:
-    IngvarStaggeringRoarTrigger(PlayerbotAI* ai) : Trigger(ai, "ingvar staggering roar") {}
     bool IsActive() override;
 };
 

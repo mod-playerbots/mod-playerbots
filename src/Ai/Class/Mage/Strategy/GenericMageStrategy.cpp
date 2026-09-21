@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "GenericMageStrategy.h"
@@ -167,14 +168,6 @@ void MageBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void MageCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("polymorph", { NextAction("polymorph", 30.0f) }));
-
-    Player* bot = botAI->GetBot();
-    int tab = AiFactory::GetPlayerSpecTab(bot);
-    if (tab == MAGE_TAB_FIRE)
-    {
-        triggers.push_back(new TriggerNode("enemy too close for spell", {NextAction("dragon's breath", ACTION_INTERRUPT + 1)}));
-        triggers.push_back(new TriggerNode("enemy is close", {NextAction("blast wave", ACTION_INTERRUPT)}));
-    }
 }
 
 void MageAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

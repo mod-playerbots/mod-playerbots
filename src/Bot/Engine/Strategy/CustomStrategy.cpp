@@ -1,14 +1,14 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "CustomStrategy.h"
-
+#include "PlayerbotsDatabase.h"
+#include "Playerbots.h"
 #include <regex>
 #include <stdexcept>
-
-#include "Playerbots.h"
 
 std::map<std::string, std::string> CustomStrategy::actionLinesCache;
 
@@ -35,7 +35,7 @@ std::vector<NextAction> toNextActionArray(const std::string actions)
     const std::vector<std::string> tokens = split(actions, ',');
     std::vector<NextAction> res = {};
 
-    for (const std::string& token : tokens)
+    for (std::string const& token : tokens)
         res.push_back(toNextAction(token));
 
     return res;

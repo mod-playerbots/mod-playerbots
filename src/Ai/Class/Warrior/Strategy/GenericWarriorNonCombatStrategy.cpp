@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "GenericWarriorNonCombatStrategy.h"
-
 #include "Playerbots.h"
 
 class GenericWarriorNonCombatStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -34,6 +34,7 @@ void GenericWarriorNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tr
     NonCombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode("often", { NextAction("apply stone", 1.0f) }));
+    triggers.push_back(new TriggerNode("vigilance", { NextAction("vigilance", 10.0f) }));
     triggers.push_back(new TriggerNode(
         "fear sleep sap", { NextAction("berserker rage", ACTION_EMERGENCY + 1) }));
 }

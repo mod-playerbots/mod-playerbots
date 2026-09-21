@@ -1,11 +1,17 @@
-#include "BWLActions.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
-#include "RtiTargetValue.h"
-#include "Playerbots.h"
+#include "BWLActions.h"
 #include "BWLHelpers.h"
-#include "RaidBossHelpers.h"
+#include "EncounterHelpers.h"
+#include "Playerbots.h"
+#include "RtiTargetValue.h"
 
 using namespace BlackwingLairHelpers;
+using namespace EncounterHelpers;
 
 static constexpr float INCREMENTAL_MOVE_STEP_DISTANCE = 3.0f;
 
@@ -109,8 +115,10 @@ bool BwlRazorgoreMarkBossAction::Execute(Event /*event*/)
     {
         if (IsRazorgoreOffTank(bot))
         {
-            MarkTargetWithMoon(bot, boss);
-            SetRtiTarget(botAI, "moon", boss);
+            if (MarkTargetWithMoon(bot, boss))
+                return true;
+
+            SetRtiTarget(botAI, "moon");
 
             if (AI_VALUE(Unit*, "current target") != boss)
                 return Attack(boss);
@@ -146,15 +154,15 @@ bool BwlVaelastraszMoveAwayAction::Execute(Event /*event*/)
     return MoveAlongFleeDirection(boss, fleeX, fleeY);
 }
 
-bool BwlVaelastraszMoveAwayAction::CalculateFleeDirection(const Unit* boss, float& fleeX, float& fleeY) const
+bool BwlVaelastraszMoveAwayAction::CalculateFleeDirection(Unit const* boss, float& fleeX, float& fleeY) const
 {
     fleeX = 0.0f;
     fleeY = 0.0f;
     bool bossDead = !boss || !boss->IsAlive();
 
-    if (const Group* group = bot->GetGroup())
+    if (Group const* group = bot->GetGroup())
     {
-        for (const GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+        for (GroupReference const* gref = group->GetFirstMember(); gref; gref = gref->next())
         {
             Player* p = gref->GetSource();
             if (!p || p == bot || !p->IsAlive() || p->GetMapId() != bot->GetMapId())
@@ -222,7 +230,7 @@ bool BwlVaelastraszMoveAwayAction::CalculateFleeDirection(const Unit* boss, floa
     return true;
 }
 
-bool BwlVaelastraszMoveAwayAction::MoveAlongFleeDirection(const Unit* boss, float fleeX, float fleeY)
+bool BwlVaelastraszMoveAwayAction::MoveAlongFleeDirection(Unit const* boss, float fleeX, float fleeY)
 {
     bool bossDead = !boss || !boss->IsAlive();
     float baseAngle = atan2(fleeY, fleeX);

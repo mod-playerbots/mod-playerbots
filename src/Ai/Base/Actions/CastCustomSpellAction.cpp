@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "CastCustomSpellAction.h"
-
 #include "ChatHelper.h"
 #include "Event.h"
 #include "ItemUsageValue.h"
@@ -345,8 +345,8 @@ bool DisEnchantRandomItemAction::Execute(Event /*event*/)
 
     for (auto& item : items)
     {
-        // don't touch rare+ items if with real player/guild
-        if ((botAI->HasRealPlayerMaster() || botAI->IsInRealGuild()) &&
+        // Don't touch rare+ items if with real player/guild
+        if ((botAI->HasGameClientMaster() || botAI->IsInRealGuild()) &&
             item->GetTemplate()->Quality > ITEM_QUALITY_UNCOMMON)
             return false;
 

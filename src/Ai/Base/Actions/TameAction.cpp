@@ -1,14 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "TameAction.h"
-#include <algorithm>
-#include <cctype>
-#include <random>
-#include <set>
-#include <sstream>
 #include "DBCStructure.h"
 #include "ObjectMgr.h"
 #include "Pet.h"
@@ -18,8 +14,13 @@
 #include "PlayerbotTextMgr.h"
 #include "SpellMgr.h"
 #include "WorldSession.h"
+#include <algorithm>
+#include <cctype>
+#include <random>
+#include <set>
+#include <sstream>
 
-bool IsExoticPet(const CreatureTemplate* creature)
+bool IsExoticPet(CreatureTemplate const* creature)
 {
     // Use the IsExotic() method from CreatureTemplate
     return creature && creature->IsExotic();
@@ -57,7 +58,7 @@ bool TameAction::Execute(Event event)
         CreatureTemplateContainer const* creatures = sObjectMgr->GetCreatureTemplates();
         for (auto itr = creatures->begin(); itr != creatures->end(); ++itr)
         {
-            const CreatureTemplate& creature = itr->second;
+            CreatureTemplate const& creature = itr->second;
             if (!creature.IsTameable(true))
                 continue;
 
@@ -176,7 +177,7 @@ bool TameAction::Execute(Event event)
     return true;
 }
 
-bool TameAction::SetPetByName(const std::string& name)
+bool TameAction::SetPetByName(std::string const& name)
 {
     // Make a lowercase copy of the input name for case-insensitive comparison
     std::string lowerName = name;
@@ -189,7 +190,7 @@ bool TameAction::SetPetByName(const std::string& name)
     // Iterate through all creature templates
     for (auto itr = creatures->begin(); itr != creatures->end(); ++itr)
     {
-        const CreatureTemplate& creature = itr->second;
+        CreatureTemplate const& creature = itr->second;
         std::string creatureName = creature.Name;
         // Convert creature's name to lowercase for comparison
         std::transform(creatureName.begin(), creatureName.end(), creatureName.begin(), ::tolower);
@@ -278,7 +279,7 @@ bool TameAction::SetPetById(uint32 id)
     return false;
 }
 
-bool TameAction::SetPetByFamily(const std::string& family)
+bool TameAction::SetPetByFamily(std::string const& family)
 {
     // Convert the input family name to lowercase for case-insensitive comparison
     std::string lowerFamily = family;
@@ -289,13 +290,13 @@ bool TameAction::SetPetByFamily(const std::string& family)
     Player* bot = botAI->GetBot();
 
     // Prepare a list of candidate creatures and track if any exotic pet is found
-    std::vector<const CreatureTemplate*> candidates;
+    std::vector<CreatureTemplate const*> candidates;
     bool foundExotic = false;
 
     // Iterate through all creature templates
     for (auto itr = creatures->begin(); itr != creatures->end(); ++itr)
     {
-        const CreatureTemplate& creature = itr->second;
+        CreatureTemplate const& creature = itr->second;
 
         // Skip if this creature is never tameable
         if (!creature.IsTameable(true))
@@ -347,7 +348,7 @@ bool TameAction::SetPetByFamily(const std::string& family)
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, candidates.size() - 1);
 
-    const CreatureTemplate* selected = candidates[dis(gen)];
+    CreatureTemplate const* selected = candidates[dis(gen)];
 
     // Save the selected pet's name and id for feedback
     lastPetName = selected->Name;
@@ -356,7 +357,7 @@ bool TameAction::SetPetByFamily(const std::string& family)
     return CreateAndSetPet(selected->Entry);
 }
 
-bool TameAction::RenamePet(const std::string& newName)
+bool TameAction::RenamePet(std::string const& newName)
 {
     Player* bot = botAI->GetBot();
     Pet* pet = bot->GetPet();

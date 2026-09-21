@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "BisListMgr.h"
-
+#include "PlayerbotsDatabase.h"
 #include "DatabaseEnv.h"
 #include "Field.h"
 #include "Log.h"
@@ -14,8 +15,8 @@ void BisListMgr::LoadAll()
 {
     _bis.clear();
 
-    QueryResult result = PlayerbotsDatabase.Query(
-        "SELECT class, tab, slot, faction, auto_gear_score_limit, item_id FROM playerbots_bis_gear");
+    PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_BIS_GEAR);
+    PreparedQueryResult result = PlayerbotsDatabase.Query(stmt);
     if (!result)
     {
         LOG_INFO("server.loading", "playerbots_bis_gear table missing or empty");

@@ -1,18 +1,20 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_HYJALSTRATEGY_H
 #define PLAYERBOTS_HYJALSTRATEGY_H
 
 #include "Strategy.h"
+#include <string>
+#include <vector>
 
-class RaidHyjalSummitStrategy : public Strategy
+class RaidHyjalStrategy : public Strategy
 {
 public:
-    RaidHyjalSummitStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
-
+    RaidHyjalStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
     std::string const getName() override { return "hyjal"; }
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;

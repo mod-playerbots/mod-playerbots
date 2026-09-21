@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_UPMULTIPLIERS_H
 #define PLAYERBOTS_UPMULTIPLIERS_H
 
@@ -9,7 +15,7 @@ class SkadiMultiplier : public Multiplier
         SkadiMultiplier(PlayerbotAI* ai) : Multiplier(ai, "skadi the ruthless") {}
 
     public:
-        virtual float GetValue(Action* action);
+        float GetValue(Action* action) override;
 };
 
 class YmironMultiplier : public Multiplier
@@ -18,7 +24,7 @@ class YmironMultiplier : public Multiplier
         YmironMultiplier(PlayerbotAI* ai) : Multiplier(ai, "king ymiron") {}
 
     public:
-        virtual float GetValue(Action* action);
+        float GetValue(Action* action) override;
 };
 
 #endif

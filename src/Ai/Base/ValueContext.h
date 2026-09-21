@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_VALUECONTEXT_H
@@ -31,8 +32,8 @@
 #include "FishValues.h"
 #include "Formations.h"
 #include "GrindTargetValue.h"
-#include "GroupValues.h"
 #include "GroupLeaderValue.h"
+#include "GroupValues.h"
 #include "GuildValues.h"
 #include "HasAvailableLootValue.h"
 #include "HasTotemValue.h"
@@ -63,10 +64,11 @@
 #include "NearestNpcsValue.h"
 #include "NewPlayerNearbyValue.h"
 #include "OutfitListValue.h"
+#include "PartyMemberSnaredTargetValue.h"
 #include "PartyMemberToDispel.h"
 #include "PartyMemberToHeal.h"
 #include "PartyMemberToResurrect.h"
-#include "PartyMemberSnaredTargetValue.h"
+#include "PartyMemberValue.h"
 #include "PartyMemberWithoutAuraValue.h"
 #include "PartyMemberWithoutItemValue.h"
 #include "PetTargetValue.h"
@@ -89,6 +91,7 @@
 #include "Stances.h"
 #include "StatsValues.h"
 #include "TankTargetValue.h"
+#include "TargetValue.h"
 #include "ThreatValues.h"
 #include "TradeValues.h"
 #include "Value.h"

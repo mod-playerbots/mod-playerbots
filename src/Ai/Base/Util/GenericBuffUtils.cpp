@@ -1,17 +1,17 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "GenericBuffUtils.h"
-
 #include "AiObjectContext.h"
-
 #include "GameTime.h"
 #include "Group.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
+#include "SpellAuras.h"
 #include "SpellMgr.h"
 #include "Unit.h"
 #include "Value.h"
@@ -33,6 +33,15 @@ namespace ai::buff
         }
     }
 
+    bool BuffBelowRefreshTarget(PlayerbotAI* botAI, Aura* aura, uint32 baseBeforeDuration)
+    {
+        if (!aura)
+            return true;
+
+        return botAI->forceRebuff.BuffBelowRefreshTarget(
+            aura->GetDuration(), aura->GetMaxDuration(), baseBeforeDuration);
+    }
+
     static bool HasEnoughSameMapMissingPlayersForGroupVariant(
         Player* bot, PlayerbotAI* botAI, std::string const& baseName,
         std::string const& groupName, uint32 requiredCount = 3)
@@ -51,7 +60,8 @@ namespace ai::buff
                 continue;
             }
 
-            if (botAI->HasAura(baseName, member) || botAI->HasAura(groupName, member))
+            if (!BuffBelowRefreshTarget(botAI, botAI->GetAura(baseName, member), 0) ||
+                !BuffBelowRefreshTarget(botAI, botAI->GetAura(groupName, member), 0))
                 continue;
 
             if (++missingCount >= requiredCount)

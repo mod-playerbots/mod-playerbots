@@ -1,17 +1,27 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
+/*
+ * Ported from the CMaNGOS playerbots project (https://github.com/cmangos/playerbots), GPL v2,
+ * with modifications for AzerothCore.
+ * Original authors:
+ *   ike3 <ike@email.org> - original author
+ *   Sebastiaan Keek (mostlikely4r) <sebastiaan.keek@gmail.com>
  */
 
 #ifndef PLAYERBOTS_PERFMONITOR_H
 #define PLAYERBOTS_PERFMONITOR_H
 
 #include <chrono>
+#include <cstdint>
 #include <ctime>
 #include <map>
 #include <mutex>
+#include <string>
 #include <vector>
-#include <cstdint>
 
 typedef std::vector<std::string> PerformanceStack;
 
@@ -46,6 +56,20 @@ private:
     std::chrono::microseconds started;
 };
 
+class PerfMonitorScope
+{
+public:
+    explicit PerfMonitorScope(PerformanceData* data);
+    ~PerfMonitorScope();
+
+    PerfMonitorScope(PerfMonitorScope const&) = delete;
+    PerfMonitorScope& operator=(PerfMonitorScope const&) = delete;
+
+private:
+    PerformanceData* data;
+    std::chrono::microseconds started{};
+};
+
 class PerfMonitor
 {
 public:
@@ -56,20 +80,26 @@ public:
         return instance;
     }
 
+    static bool IsEnabled();
+
     PerfMonitorOperation* start(PerformanceMetric metric, std::string const name,
                                        PerformanceStack* stack = nullptr);
+    PerformanceData* acquire(PerformanceMetric metric, std::string const& name);
     void PrintStats(bool perTick = false, bool fullStack = false);
+    void DumpJson(bool perTick = false);
     void Reset();
 
 private:
     PerfMonitor() = default;
     virtual ~PerfMonitor() = default;
 
-    PerfMonitor(const PerfMonitor&) = delete;
-    PerfMonitor& operator=(const PerfMonitor&) = delete;
+    PerfMonitor(PerfMonitor const&) = delete;
+    PerfMonitor& operator=(PerfMonitor const&) = delete;
 
     PerfMonitor(PerfMonitor&&) = delete;
     PerfMonitor& operator=(PerfMonitor&&) = delete;
+
+    PerformanceData* GetOrCreate(PerformanceMetric metric, std::string const& name);
 
     std::map<PerformanceMetric, std::map<std::string, PerformanceData*> > data;
     std::mutex lock;

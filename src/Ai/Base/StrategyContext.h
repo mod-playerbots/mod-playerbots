@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_STRATEGYCONTEXT_H
@@ -11,6 +12,7 @@
 #include "BattlegroundStrategy.h"
 #include "CastTimeStrategy.h"
 #include "ChatCommandHandlerStrategy.h"
+#include "CombatStrategy.h"
 #include "ConserveManaStrategy.h"
 #include "CustomStrategy.h"
 #include "DeadStrategy.h"
@@ -21,6 +23,7 @@
 #include "FleeStrategy.h"
 #include "FocusTargetStrategy.h"
 #include "FollowMasterStrategy.h"
+#include "ForceRebuff.h"
 #include "GrindingStrategy.h"
 #include "GroupStrategy.h"
 #include "GuardStrategy.h"
@@ -70,6 +73,7 @@ public:
         creators["chat"] = &StrategyContext::chat;
         creators["default"] = &StrategyContext::world_packet;
         creators["ready check"] = &StrategyContext::ready_check;
+        creators["force rebuff"] = &StrategyContext::force_rebuff;
         creators["dead"] = &StrategyContext::dead;
         creators["flee"] = &StrategyContext::flee;
         creators["duel"] = &StrategyContext::duel;
@@ -158,6 +162,7 @@ private:
     static Strategy* chat(PlayerbotAI* botAI) { return new ChatCommandHandlerStrategy(botAI); }
     static Strategy* world_packet(PlayerbotAI* botAI) { return new WorldPacketHandlerStrategy(botAI); }
     static Strategy* ready_check(PlayerbotAI* botAI) { return new ReadyCheckStrategy(botAI); }
+    static Strategy* force_rebuff(PlayerbotAI* botAI) { return new ForceRebuffStrategy(botAI); }
     static Strategy* pvp(PlayerbotAI* botAI) { return new AttackEnemyPlayersStrategy(botAI); }
     static Strategy* _return(PlayerbotAI* botAI) { return new ReturnStrategy(botAI); }
     static Strategy* lfg(PlayerbotAI* botAI) { return new LfgStrategy(botAI); }

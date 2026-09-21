@@ -1,7 +1,13 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "OCStrategy.h"
 #include "OCMultipliers.h"
 
-void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Drakos the Interrogator
     // TODO: May need work, TBA.
@@ -32,7 +38,7 @@ void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
     // Ley-Guardian Eregos
 }
 
-void WotlkDungeonOccStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+void WotlkDungeonOccStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new MountingDrakeMultiplier(botAI));
     multipliers.push_back(new OccFlyingMultiplier(botAI));

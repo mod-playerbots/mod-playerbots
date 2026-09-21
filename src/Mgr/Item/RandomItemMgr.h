@@ -1,21 +1,21 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_RANDOMITEMMGR_H
 #define PLAYERBOTS_RANDOMITEMMGR_H
 
+#include "AiFactory.h"
+#include "ItemTemplate.h"
+#include "Player.h"
 #include <array>
 #include <atomic>
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-#include "Player.h"
-#include "AiFactory.h"
-#include "ItemTemplate.h"
 
 class ChatHandler;
 
@@ -245,8 +245,8 @@ private:
     RandomItemMgr();
     ~RandomItemMgr();
 
-    RandomItemMgr(const RandomItemMgr&) = delete;
-    RandomItemMgr& operator=(const RandomItemMgr&) = delete;
+    RandomItemMgr(RandomItemMgr const&) = delete;
+    RandomItemMgr& operator=(RandomItemMgr const&) = delete;
 
     RandomItemMgr(RandomItemMgr&&) = delete;
     RandomItemMgr& operator=(RandomItemMgr&&) = delete;

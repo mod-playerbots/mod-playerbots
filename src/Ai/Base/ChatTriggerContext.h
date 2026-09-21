@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_CHATTRIGGERCONTEXT_H
@@ -121,6 +122,7 @@ public:
         creators["outfit"] = &ChatTriggerContext::outfit;
         creators["go"] = &ChatTriggerContext::go;
         creators["ready"] = &ChatTriggerContext::ready_check;
+        creators["rebuff"] = &ChatTriggerContext::rebuff;
         creators["debug"] = &ChatTriggerContext::debug;
         creators["cdebug"] = &ChatTriggerContext::cdebug;
         creators["cs"] = &ChatTriggerContext::cs;
@@ -261,6 +263,7 @@ private:
     static Trigger* reset_ai(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "reset botAI"); }
     static Trigger* spell(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "spell"); }
     static Trigger* ready_check(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "ready check"); }
+    static Trigger* rebuff(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "rebuff"); }
     static Trigger* give_leader(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "give leader"); }
     static Trigger* cheat(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "cheat"); }
     static Trigger* ginvite(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "ginvite"); }

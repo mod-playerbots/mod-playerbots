@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_TRIGGER_H
@@ -26,6 +27,8 @@ public:
     virtual void ExternalEvent([[maybe_unused]] std::string const param, [[maybe_unused]] Player* owner = nullptr) {}
     virtual void ExternalEvent([[maybe_unused]] WorldPacket& packet, [[maybe_unused]] Player* owner = nullptr) {}
     virtual bool IsActive() { return false; }
+    virtual bool IsBuffTrigger() { return false; }
+    virtual bool IsDebuffTrigger() { return false; }
     virtual std::vector<NextAction> getHandlers() { return {}; }
     void Update() {}
     virtual void Reset() {}
@@ -44,7 +47,7 @@ class TriggerNode
 {
 public:
     TriggerNode(
-        const std::string& name,
+        std::string const& name,
         std::vector<NextAction> handlers = {}
     ) :
     trigger(nullptr),

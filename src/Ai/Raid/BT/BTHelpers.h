@@ -1,20 +1,20 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_BTHELPERS_H
 #define PLAYERBOTS_BTHELPERS_H
 
+#include "Common.h"
+#include "ObjectGuid.h"
+#include "Position.h"
 #include <array>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-#include "Common.h"
-#include "ObjectGuid.h"
-#include "Position.h"
 
 class GameObject;
 class Player;
@@ -162,7 +162,7 @@ extern const Position SHAHRAZ_TANK_POSITION;
 extern const Position SHAHRAZ_TRANSITION_POSITION;
 extern const Position SHAHRAZ_RANGED_POSITION;
 extern std::unordered_map<ObjectGuid, TankPositionState> shahrazTankStep;
-TankPositionState GetShahrazTankPositionState(PlayerbotAI* botAI, Player* bot);
+TankPositionState GetShahrazTankPositionState(Player* bot);
 
 // Illidari Council
 constexpr float COUNCIL_FLOOR_Z_THRESHOLD = 270.000f;
@@ -208,7 +208,7 @@ struct EyeBlastDangerArea
     float width;
 };
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot);
-bool IsPositionInEyeBlastDangerArea(const Position& pos, const EyeBlastDangerArea& area);
+bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area);
 GameObject* FindNearestTrap(PlayerbotAI* botAI, Player* bot);
 
 }

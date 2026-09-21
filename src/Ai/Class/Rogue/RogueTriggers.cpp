@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "RogueTriggers.h"
-
 #include "GenericTriggers.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
@@ -25,12 +25,15 @@ bool UnstealthTrigger::IsActive()
     if (!botAI->HasAura("stealth", bot))
         return false;
 
-    return botAI->HasAura("stealth", bot) && !AI_VALUE(uint8, "attacker count") &&
-           (AI_VALUE2(bool, "moving", "self target") &&
-            ((botAI->GetMaster() &&
-              ServerFacade::instance().IsDistanceGreaterThan(AI_VALUE2(float, "distance", "group leader"), 10.0f) &&
-              AI_VALUE2(bool, "moving", "group leader")) ||
-             !AI_VALUE(uint8, "attacker count")));
+    if (!AI_VALUE2(bool, "moving", "self target"))
+        return false;
+
+    if (!AI_VALUE(uint8, "attacker count"))
+        return true;
+
+    return botAI->GetMaster() &&
+           ServerFacade::instance().IsDistanceGreaterThan(AI_VALUE2(float, "distance", "group leader"), 10.0f) &&
+           AI_VALUE2(bool, "moving", "group leader");
 }
 
 bool StealthTrigger::IsActive()

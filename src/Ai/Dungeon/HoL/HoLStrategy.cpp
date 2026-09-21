@@ -1,7 +1,13 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "HoLStrategy.h"
 #include "HoLMultipliers.h"
 
-void WotlkDungeonHoLStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void WotlkDungeonHoLStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General Bjarngrim
     triggers.push_back(new TriggerNode("stormforged lieutenant",
@@ -31,7 +37,7 @@ void WotlkDungeonHoLStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
         { NextAction("loken stack", ACTION_MOVE + 4) }));
 }
 
-void WotlkDungeonHoLStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+void WotlkDungeonHoLStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new BjarngrimMultiplier(botAI));
     multipliers.push_back(new VolkhanMultiplier(botAI));

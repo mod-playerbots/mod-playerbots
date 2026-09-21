@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "TalkToQuestGiverAction.h"
-
+#include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "Event.h"
 #include "ItemUsageValue.h"
@@ -13,7 +14,6 @@
 #include "QuestDef.h"
 #include "StatsWeightCalculator.h"
 #include "WorldPacket.h"
-#include "BroadcastHelper.h"
 
 bool TalkToQuestGiverAction::ProcessQuest(Quest const* quest, Object* questGiver)
 {
@@ -27,7 +27,7 @@ bool TalkToQuestGiverAction::ProcessQuest(Quest const* quest, Object* questGiver
     if (sPlayerbotAIConfig.syncQuestForPlayer && master)
     {
         PlayerbotAI* masterBotAI = GET_PLAYERBOT_AI(master);
-        if (!masterBotAI || masterBotAI->IsRealPlayer())
+        if (!masterBotAI || IsSelfBot(master))
         {
             QuestStatus masterStatus = master->GetQuestStatus(quest->GetQuestId());
             if (masterStatus == QUEST_STATUS_INCOMPLETE || masterStatus == QUEST_STATUS_FAILED)
@@ -89,7 +89,7 @@ bool TalkToQuestGiverAction::TurnInQuest(Quest const* quest, Object* questGiver,
 
     if (botAI->HasStrategy("debug quest", BotState::BOT_STATE_NON_COMBAT) || botAI->HasStrategy("debug rpg", BotState::BOT_STATE_COMBAT))
     {
-        const Quest* pQuest = sObjectMgr->GetQuestTemplate(questID);
+        Quest const* pQuest = sObjectMgr->GetQuestTemplate(questID);
         const std::string text_quest = ChatHelper::FormatQuest(pQuest);
         LOG_INFO("playerbots", "{} => Quest [ {} ] completed", bot->GetName(), pQuest->GetTitle());
         bot->Say("Quest [ " + text_quest + " ] completed", LANG_UNIVERSAL);
@@ -171,7 +171,7 @@ void TalkToQuestGiverAction::RewardMultipleItem(Quest const* quest, Object* ques
     std::set<uint32> bestIds;
 
     std::ostringstream outid;
-    if (!botAI->IsAlt() || sPlayerbotAIConfig.autoPickReward == "yes")
+    if (!botAI->IsAltBot() || sPlayerbotAIConfig.autoPickReward == "yes")
     {
         bestIds = BestRewards(quest);
         if (!bestIds.empty())
@@ -261,7 +261,7 @@ bool TurnInQueryQuestAction::Execute(Event event)
     if (sPlayerbotAIConfig.syncQuestForPlayer && master)
     {
         PlayerbotAI* masterBotAI = GET_PLAYERBOT_AI(master);
-        if (!masterBotAI || masterBotAI->IsRealPlayer())
+        if (!masterBotAI || IsSelfBot(master))
         {
             QuestStatus masterStatus = master->GetQuestStatus(quest->GetQuestId());
             if (masterStatus == QUEST_STATUS_INCOMPLETE || masterStatus == QUEST_STATUS_FAILED)

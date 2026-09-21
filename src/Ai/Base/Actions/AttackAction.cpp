@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "AttackAction.h"
-
 #include "CreatureAI.h"
 #include "Event.h"
 #include "LastMovementValue.h"
@@ -13,7 +13,6 @@
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "SharedDefines.h"
 #include "Unit.h"
 #include "WaitForAttackStrategy.h"
 
@@ -221,3 +220,15 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
 bool AttackDuelOpponentAction::isUseful() { return AI_VALUE(Unit*, "duel target"); }
 
 bool AttackDuelOpponentAction::Execute(Event /*event*/) { return Attack(AI_VALUE(Unit*, "duel target")); }
+
+bool MeleeAction::isUseful()
+{
+    // do not allow if can't attack from vehicle
+    if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
+        return false;
+
+    // Do not start autoattack while prowled — let opener spells break stealth intentionally.
+    // Future rogue stealth implementation should use this instead:
+    // return !(botAI->HasAura("stealth", bot) || botAI->HasAura("prowl", bot));
+    return !botAI->HasAura("prowl", bot);
+}

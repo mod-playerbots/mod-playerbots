@@ -1,5 +1,11 @@
-#include "Playerbots.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "PoSActions.h"
+#include "Playerbots.h"
 
 bool IckAndKrickAction::Execute(Event /*event*/)
 {
@@ -220,7 +226,7 @@ bool IckAndKrickAction::ExplosiveBarrage(bool /*explosiveBarrage*/, Unit* boss)
             score += minOrbDist * 2.0f;  // Weight orb distance more heavily
 
             // Check distance from other players
-            for (const Position& playerPos : playerPositions)
+            for (Position const& playerPos : playerPositions)
             {
                 float playerDist = sqrt(pow(potentialPos.GetPositionX() - playerPos.GetPositionX(), 2) +
                                         pow(potentialPos.GetPositionY() - playerPos.GetPositionY(), 2));

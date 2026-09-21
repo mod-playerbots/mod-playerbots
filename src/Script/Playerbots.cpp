@@ -1,69 +1,108 @@
 /*
- * This file is part of the AzerothCore Project. See AUTHORS file for Copyright information
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Affero General Public License as published by the
- * Free Software Foundation; either version 3 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "Playerbots.h"
-
+#include "BattleGroundTactics.h"
 #include "BattlefieldScript.h"
 #include "Channel.h"
+#include "CheckMountStateAction.h"
 #include "Config.h"
+#include "BuiltInConfig.h"
+#include "DBUpdater.h"
 #include "DatabaseEnv.h"
-#include "DatabaseLoader.h"
+#include "PlayerbotsDatabase.h"
+#include <mysqld_error.h>
 #include "GuildTaskMgr.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotCommandScript.h"
 #include "PlayerbotGuildMgr.h"
 #include "PlayerbotSpellRepository.h"
 #include "PlayerbotWorldThreadProcessor.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
-#include "PlayerbotCommandScript.h"
 #include "cmath"
-#include "BattleGroundTactics.h"
 
 class PlayerbotsDatabaseScript : public DatabaseScript
 {
 public:
     PlayerbotsDatabaseScript() : DatabaseScript("PlayerbotsDatabaseScript") {}
 
-    bool OnDatabasesLoading() override
+    bool OnModuleDatabasesLoading() override
     {
-        DatabaseLoader playerbotLoader("server.playerbots");
-        playerbotLoader.SetUpdateFlags(sConfigMgr->GetOption<bool>("Playerbots.Updates.EnableDatabases", true)
-                                           ? DatabaseLoader::DATABASE_PLAYERBOTS
-                                           : 0);
-        playerbotLoader.AddDatabase(PlayerbotsDatabase, "Playerbots");
+        std::string const dbString = sConfigMgr->GetOption<std::string>("PlayerbotsDatabaseInfo", "");
+        if (dbString.empty())
+        {
+            LOG_ERROR("server.playerbots", "Playerbots database is not specified in configuration file");
+            return false;
+        }
 
-        return playerbotLoader.Load();
+        uint8 const synchThreads = sConfigMgr->GetOption<uint8>("PlayerbotsDatabase.SynchThreads", 2);
+        PlayerbotsDatabase.SetConnectionInfo(dbString, synchThreads);
+
+        bool const updatesEnabled = sConfigMgr->GetOption<bool>("Playerbots.Updates.EnableDatabases", true);
+        if (updatesEnabled && !DBUpdaterUtil::CheckExecutable())
+            return false;
+
+        uint32 error = PlayerbotsDatabase.Open();
+        if (error == ER_BAD_DB_ERROR && updatesEnabled)
+        {
+            // Database missing: create it through the mysql CLI and connect again
+            if (!ModuleDBUpdater::Create(PlayerbotsDatabase))
+                return false;
+
+            error = PlayerbotsDatabase.Open();
+        }
+
+        if (error)
+        {
+            LOG_ERROR("server.playerbots", "Cannot connect to the playerbots database, error {}", error);
+            return false;
+        }
+
+        if (updatesEnabled)
+        {
+            DBUpdaterInfo const info = {
+                "Playerbots",
+                BuiltInConfig::GetSourceDirectory() + "/modules/mod-playerbots",
+                BuiltInConfig::GetSourceDirectory() + "/modules/mod-playerbots/data/sql/playerbots/base/",
+                "db_playerbot"
+            };
+
+            if (!ModuleDBUpdater::Populate(PlayerbotsDatabase, info))
+            {
+                LOG_ERROR("server.playerbots", "Could not populate the playerbots database, see log for details.");
+                return false;
+            }
+
+            if (!ModuleDBUpdater::Update(PlayerbotsDatabase, info))
+            {
+                LOG_ERROR("server.playerbots", "Could not update the playerbots database, see log for details.");
+                return false;
+            }
+        }
+
+        if (!PlayerbotsDatabase.PrepareStatements())
+        {
+            LOG_ERROR("server.playerbots", "Could not prepare statements of the playerbots database, see log for details.");
+            return false;
+        }
+
+        return true;
     }
 
-    void OnDatabasesKeepAlive() override { PlayerbotsDatabase.KeepAlive(); }
+    void OnModuleDatabasesKeepAlive() override { PlayerbotsDatabase.KeepAlive(); }
 
-    void OnDatabasesClosing() override { PlayerbotsDatabase.Close(); }
+    void OnModuleDatabasesClosing() override { PlayerbotsDatabase.Close(); }
 
     void OnDatabaseWarnAboutSyncQueries(bool apply) override { PlayerbotsDatabase.WarnAboutSyncQueries(apply); }
 
-    void OnDatabaseSelectIndexLogout(Player* player, uint32& statementIndex, uint32& statementParam) override
+    void OnDatabaseGetDBRevision(std::map<std::string, std::string>& revisions) override
     {
-        statementIndex = CHAR_UPD_CHAR_OFFLINE;
-        statementParam = player->GetGUID().GetCounter();
-    }
-
-    void OnDatabaseGetDBRevision(std::string& revision) override
-    {
+        std::string revision;
         if (QueryResult resultPlayerbot =
                 PlayerbotsDatabase.Query("SELECT date FROM version_db_playerbots ORDER BY date DESC LIMIT 1"))
         {
@@ -73,6 +112,8 @@ public:
 
         if (revision.empty())
             revision = "Unknown Playerbots Database Revision";
+
+        revisions["Playerbots"] = revision;
     }
 };
 
@@ -99,8 +140,8 @@ public:
             PlayerbotsMgr::instance().AddPlayerbotData(player, false);
             sRandomPlayerbotMgr.OnPlayerLogin(player);
 
-            // Before modifying the following messages, please make sure it does not violate the AGPLv3.0 license
-            // especially if you are distributing a repack or hosting a public server
+            // Before modifying the following messages, please make sure it does not violate the GNU GPLv2
+            // license especially if you are distributing a repack or hosting a public server
             // e.g. you can replace the URL with your own repository,
             // but it should be publicly accessible and include all modifications you've made
             if (sPlayerbotAIConfig.enabled)
@@ -134,9 +175,9 @@ public:
         if (!player->IsInWorld() || player->GetMapId() == mapid)
             return true;
 
-        // If real player do nothing
+        // If this is a selfbot, do nothing
         PlayerbotAI* ai = GET_PLAYERBOT_AI(player);
-        if (!ai || ai->IsRealPlayer())
+        if (!ai || IsSelfBot(player))
             return true;
 
         // Cross-map bot teleport: defer visibility reference cleanup.
@@ -180,6 +221,8 @@ public:
             playerbotMgr->UpdateAI(diff);
         }
     }
+
+    using PlayerScript::OnPlayerCanUseChat;  // keep the base overloads visible
 
     bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Player* receiver) override
     {
@@ -346,8 +389,8 @@ public:
 
     void OnBeforeWorldInitialized() override
     {
-        // Before modifying the following messages, please make sure it does not violate the AGPLv3.0 license
-        // especially if you are distributing a repack or hosting a public server
+        // Before modifying the following messages, please make sure it does not violate the GNU GPLv2
+        // license especially if you are distributing a repack or hosting a public server
         // e.g. you can replace the URL with your own repository,
         // but it should be publicly accessible and include all modifications you've made
         LOG_INFO("server.loading", "╔══════════════════════════════════════════════════════════╗");
@@ -356,9 +399,9 @@ public:
         LOG_INFO("server.loading", "║                                                          ║");
         LOG_INFO("server.loading", "╟──────────────────────────────────────────────────────────╢");
         LOG_INFO("server.loading", "║     mod-playerbots is a community-driven open-source     ║");
-        LOG_INFO("server.loading", "║  project based on AzerothCore, licensed under AGPLv3.0   ║");
+        LOG_INFO("server.loading", "║  project based on AzerothCore, licensed under GNU GPLv2  ║");
         LOG_INFO("server.loading", "╟──────────────────────────────────────────────────────────╢");
-        LOG_INFO("server.loading", "║      https://github.com/mod-playerbots/mod-playerbots    ║");
+        LOG_INFO("server.loading", "║     https://github.com/mod-playerbots/mod-playerbots     ║");
         LOG_INFO("server.loading", "╚══════════════════════════════════════════════════════════╝");
 
         uint32 oldMSTime = getMSTime();
@@ -372,6 +415,7 @@ public:
         LOG_INFO("server.loading", " ");
 
         PlayerbotSpellRepository::Instance().Initialize();
+        CheckMountStateAction::LoadPreferredMounts();
 
         LOG_INFO("server.loading", "Playerbots World Thread Processor initialized");
     }
@@ -396,7 +440,7 @@ public:
         {
             Player* player = ObjectAccessor::FindPlayer(guid);
 
-            if (guid.IsGroup() || (player && !PlayerbotsMgr::instance().GetPlayerbotAI(player)))
+            if (guid.IsGroup() || IsRealPlayer(player) || IsSelfBot(player))
             {
                 nonBotFound = true;
                 break;
@@ -428,7 +472,7 @@ public:
         if (botAI == nullptr)
             return true;
 
-        return botAI->IsRealPlayer();
+        return IsSelfBot(player);
     }
 
     void OnPlayerbotPacketSent(Player* player, WorldPacket const* packet) override
@@ -463,10 +507,8 @@ public:
         {
             PlayerbotAI* botAI = PlayerbotsMgr::instance().GetPlayerbotAI(player);
 
-            if (botAI == nullptr || botAI->IsRealPlayer())
-            {
+            if (botAI == nullptr || IsSelfBot(player))
                 playerbotMgr->LogoutAllBots();
-            }
         }
 
         sRandomPlayerbotMgr.OnPlayerLogout(player);
@@ -524,12 +566,14 @@ public:
 };
 
 void AddPlayerbotsSecureLoginScripts();
+void AddPlayerbotsSelfBotAfkScripts();
 
 void AddSC_MagtheridonBotScripts();
 void AddSC_TempestKeepBotScripts();
-void AddSC_HyjalSummitBotScripts();
+void AddSC_HyjalBotScripts();
 void AddSC_IcecrownBotScripts();
 void AddSC_RubySanctumBotScripts();
+void AddSC_randombot_level_mgr();
 
 void AddPlayerbotsScripts()
 {
@@ -542,11 +586,13 @@ void AddPlayerbotsScripts()
     new PlayerbotsScript();
     new PlayerBotsBGScript();
     AddPlayerbotsSecureLoginScripts();
+    AddPlayerbotsSelfBotAfkScripts();
     AddPlayerbotsCommandscripts();
     PlayerBotsGuildValidationScript();
     AddSC_MagtheridonBotScripts();
     AddSC_TempestKeepBotScripts();
-    AddSC_HyjalSummitBotScripts();
+    AddSC_HyjalBotScripts();
     AddSC_IcecrownBotScripts();
     AddSC_RubySanctumBotScripts();
+    AddSC_randombot_level_mgr();
 }

@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "BTStrategy.h"
-
 #include "BTMultipliers.h"
 
 void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -205,37 +205,33 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    // General
+    multipliers.push_back(new BlackTempleDelayDpsCooldownsMultiplier(botAI));
+
     // High Warlord Naj'entus
-    multipliers.push_back(new HighWarlordNajentusDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new HighWarlordNajentusDisableCombatFormationMoveMultiplier(botAI));
 
     // Supremus
-    multipliers.push_back(new SupremusDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new SupremusFocusOnAvoidanceInPhase2Multiplier(botAI));
     multipliers.push_back(new SupremusHitboxIsBuggedMultiplier(botAI));
 
     // Teron Gorefiend
-    multipliers.push_back(new TeronGorefiendDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendControlMovementMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendMarkedBotOnlyMoveToDieMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendDisableAttackingConstructsMultiplier(botAI));
 
     // Gurtogg Bloodboil
-    multipliers.push_back(new GurtoggBloodboilDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new GurtoggBloodboilControlMovementMultiplier(botAI));
 
     // Reliquary of Souls
-    multipliers.push_back(new ReliquaryOfSoulsDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new ReliquaryOfSoulsDontWasteHealingMultiplier(botAI));
 
     // Mother Shahraz
-    multipliers.push_back(new MotherShahrazDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new MotherShahrazControlMovementMultiplier(botAI));
     multipliers.push_back(new MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier(botAI));
 
     // Illidari Council
-    multipliers.push_back(new IllidariCouncilDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilControlMovementMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilControlMisdirectionMultiplier(botAI));

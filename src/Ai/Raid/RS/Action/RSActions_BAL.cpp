@@ -4,17 +4,16 @@
  * or (at your option) any later version.
  */
 
+#include "NearestNpcsValue.h"
+#include "ObjectAccessor.h"
+#include "Playerbots.h"
+#include "RSActions.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
 #include <map>
 #include <utility>
 #include <vector>
-
-#include "NearestNpcsValue.h"
-#include "ObjectAccessor.h"
-#include "Playerbots.h"
-#include "RSActions.h"
 
 namespace
 {

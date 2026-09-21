@@ -1,16 +1,16 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
-#include "DpsRogueStrategy.h"
-
+#include "CombatRogueStrategy.h"
 #include "Playerbots.h"
 
-class DpsRogueStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
+class CombatRogueStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
-    DpsRogueStrategyActionNodeFactory()
+    CombatRogueStrategyActionNodeFactory()
     {
         creators["sinister strike"] = &sinister_strike;
         creators["kick"] = &kick;
@@ -61,12 +61,12 @@ private:
     }
 };
 
-DpsRogueStrategy::DpsRogueStrategy(PlayerbotAI* botAI) : MeleeCombatStrategy(botAI)
+CombatRogueStrategy::CombatRogueStrategy(PlayerbotAI* botAI) : GenericRogueStrategy(botAI)
 {
-    actionNodeFactories.Add(new DpsRogueStrategyActionNodeFactory());
+    actionNodeFactories.Add(new CombatRogueStrategyActionNodeFactory());
 }
 
-std::vector<NextAction> DpsRogueStrategy::getDefaultActions()
+std::vector<NextAction> CombatRogueStrategy::getDefaultActions()
 {
     return {
         NextAction("killing spree", ACTION_DEFAULT + 0.1f),
@@ -74,9 +74,9 @@ std::vector<NextAction> DpsRogueStrategy::getDefaultActions()
     };
 }
 
-void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void CombatRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    MeleeCombatStrategy::InitTriggers(triggers);
+    GenericRogueStrategy::InitTriggers(triggers);
 
     triggers.push_back(
         new TriggerNode(
@@ -101,7 +101,16 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "slice and dice",
             {
-                NextAction("slice and dice", ACTION_HIGH + 2)
+                NextAction("slice and dice", ACTION_HIGH + 5)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "riposte",
+            {
+                NextAction("riposte", ACTION_HIGH + 4)
             }
         )
     );
@@ -167,24 +176,6 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "kick on enemy healer",
             {
                 NextAction("kick on enemy healer", ACTION_INTERRUPT + 1)
-            }
-        )
-    );
-
-    triggers.push_back(
-        new TriggerNode(
-            "light aoe",
-            {
-                NextAction("blade flurry", ACTION_HIGH + 3)
-            }
-        )
-    );
-
-    triggers.push_back(
-        new TriggerNode(
-            "blade flurry",
-                {
-                NextAction("blade flurry", ACTION_HIGH + 2)
             }
         )
     );
@@ -361,7 +352,7 @@ void RogueAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "light aoe",
             {
-                NextAction("blade flurry", ACTION_HIGH)
+                NextAction("blade flurry", ACTION_HIGH + 4)
             }
         )
     );
@@ -382,6 +373,15 @@ void RogueBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "adrenaline rush",
             {
                 NextAction("adrenaline rush", ACTION_HIGH + 2)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "blade flurry",
+            {
+                NextAction("blade flurry", ACTION_HIGH + 4)
             }
         )
     );

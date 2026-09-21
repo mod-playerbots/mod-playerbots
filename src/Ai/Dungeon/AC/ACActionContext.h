@@ -1,14 +1,19 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_ACACTIONCONTEXT_H
 #define PLAYERBOTS_ACACTIONCONTEXT_H
 
-#include "AiObjectContext.h"
-#include "Action.h"
 #include "ACActions.h"
+#include "NamedObjectContext.h"
 
 class TbcDungeonAuchenaiCryptsActionContext : public NamedObjectContext<Action>
 {
 public:
-    TbcDungeonAuchenaiCryptsActionContext() : NamedObjectContext<Action>(false, true)
+    TbcDungeonAuchenaiCryptsActionContext()
     {
         creators["shirrak tank position boss"] =
             &TbcDungeonAuchenaiCryptsActionContext::shirrak_tank_position_boss;
@@ -20,7 +25,6 @@ public:
             &TbcDungeonAuchenaiCryptsActionContext::shirrak_ranged_keep_distance;
     }
 private:
-
     static Action* shirrak_tank_position_boss(
         PlayerbotAI* botAI) { return new ShirrakTankPositionBossAction(botAI); }
 

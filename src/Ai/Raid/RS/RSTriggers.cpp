@@ -5,11 +5,11 @@
  */
 
 #include "RSTriggers.h"
+#include "Playerbots.h"
 #include "RSActions.h"
 #include "RSScripts.h"
-#include "Playerbots.h"
-#include "Trigger.h"
 #include "Timer.h"
+#include "Trigger.h"
 #include <set>
 
 bool RsBaltharusBrandTrigger::IsActive()

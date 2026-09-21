@@ -1,7 +1,13 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "CoSStrategy.h"
 #include "CoSMultipliers.h"
 
-void WotlkDungeonCoSStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void WotlkDungeonCoSStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Meathook
     // Can tank this in a fixed position to allow healer to LoS the stun, probably not necessary
@@ -20,7 +26,7 @@ void WotlkDungeonCoSStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
     // Infinite Corruptor (Heroic only)
 }
 
-void WotlkDungeonCoSStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+void WotlkDungeonCoSStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new EpochMultiplier(botAI));
 }

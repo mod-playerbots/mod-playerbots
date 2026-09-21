@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "Talentspec.h"
-
 #include "Event.h"
 #include "Player.h"
 #include "SpellMgr.h"
@@ -483,7 +483,9 @@ void TalentSpec::ShiftTalents(TalentSpec* currentSpec, uint32 level)
 
     for (auto& entry : deltaList)
     {
-        if (entry.rank < 0)  // We have to remove talents. Might as well reset and crop the new list.
+        // We have to remove talents. Might as well reset and crop the new list.
+        // rank is unsigned, so a removal (new < old) wraps around; read it as signed to detect that.
+        if (static_cast<int32>(entry.rank) < 0)
         {
             CropTalents(level);
             return;

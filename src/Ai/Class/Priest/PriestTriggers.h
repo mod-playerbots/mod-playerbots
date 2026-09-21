@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_PRIESTTRIGGERS_H
@@ -14,8 +15,8 @@
 class PlayerbotAI;
 
 DEBUFF_CHECKISOWNER_TRIGGER(HolyFireTrigger, "holy fire");
-DEBUFF_CHECKISOWNER_TRIGGER(PowerWordPainTrigger, "shadow word: pain");
-DEBUFF_ENEMY_TRIGGER(PowerWordPainOnAttackerTrigger, "shadow word: pain");
+DEBUFF_CHECKISOWNER_TRIGGER(ShadowWordPainTrigger, "shadow word: pain");
+DEBUFF_ENEMY_TRIGGER(ShadowWordPainOnAttackerTrigger, "shadow word: pain");
 DEBUFF_CHECKISOWNER_TRIGGER(VampiricTouchTrigger, "vampiric touch");
 DEBUFF_ENEMY_TRIGGER(VampiricTouchOnAttackerTrigger, "vampiric touch on attacker");
 BUFF_TRIGGER(VampiricEmbraceTrigger, "vampiric embrace");
@@ -30,16 +31,12 @@ BUFF_TRIGGER(InnerFocusTrigger, "inner focus");
 CC_TRIGGER(ShackleUndeadTrigger, "shackle undead");
 INTERRUPT_TRIGGER(SilenceTrigger, "silence");
 INTERRUPT_HEALER_TRIGGER(SilenceEnemyHealerTrigger, "silence");
-
-// racials
 DEBUFF_CHECKISOWNER_TRIGGER(DevouringPlagueTrigger, "devouring plague");
 BUFF_TRIGGER(TouchOfWeaknessTrigger, "touch of weakness");
 DEBUFF_TRIGGER(HexOfWeaknessTrigger, "hex of weakness");
 BUFF_TRIGGER(ShadowguardTrigger, "shadowguard");
-BUFF_TRIGGER(FearWardTrigger, "fear ward");
 DEFLECT_TRIGGER(FeedbackTrigger, "feedback");
 SNARE_TRIGGER(ChastiseTrigger, "chastise");
-
 BOOST_TRIGGER_A(ShadowfiendTrigger, "shadowfiend");
 
 class ShadowProtectionTrigger : public BuffTrigger
@@ -86,6 +83,15 @@ class DivineSpiritTrigger : public BuffTrigger
 public:
     DivineSpiritTrigger(PlayerbotAI* botAI)
         : BuffTrigger(botAI, "divine spirit", 4 * 2000) {}
+
+    bool IsActive() override;
+};
+
+class FearWardOnMainTankTrigger : public BuffOnMainTankTrigger
+{
+public:
+    FearWardOnMainTankTrigger(PlayerbotAI* botAI)
+        : BuffOnMainTankTrigger(botAI, "fear ward", false, 2000) {}
 
     bool IsActive() override;
 };

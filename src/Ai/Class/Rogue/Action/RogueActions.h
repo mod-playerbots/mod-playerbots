@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_ROGUEACTIONS_H
@@ -154,28 +155,29 @@ public:
 class UseDeadlyPoisonAction : public UseItemAction
 {
 public:
-    UseDeadlyPoisonAction(PlayerbotAI* ai) : UseItemAction(ai, "Deadly Poison") {}
+    UseDeadlyPoisonAction(PlayerbotAI* botAI) : UseItemAction(botAI, "Deadly Poison") {}
 
     bool Execute(Event event) override;
-    bool isPossible() override;
+    bool isPossible() override { return true; }
 };
 
 class UseInstantPoisonAction : public UseItemAction
 {
 public:
-    UseInstantPoisonAction(PlayerbotAI* ai) : UseItemAction(ai, "Instant Poison") {}
+    UseInstantPoisonAction(PlayerbotAI* botAI) : UseItemAction(botAI, "Instant Poison") {}
 
     bool Execute(Event event) override;
-    bool isPossible() override;
+    bool isPossible() override { return true; }
 };
 
 class UseInstantPoisonOffHandAction : public UseItemAction
 {
 public:
-    UseInstantPoisonOffHandAction(PlayerbotAI* ai) : UseItemAction(ai, "Instant Poison Off Hand") {}
+    UseInstantPoisonOffHandAction(PlayerbotAI* botAI)
+        : UseItemAction(botAI, "Instant Poison Off Hand") {}
 
     bool Execute(Event event) override;
-    bool isPossible() override;
+    bool isPossible() override { return true; }
 };
 
 class FanOfKnivesAction : public CastMeleeSpellAction

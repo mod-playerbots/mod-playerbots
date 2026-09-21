@@ -1,9 +1,14 @@
-#include "GenericActions.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "GenericSpellActions.h"
-#include "Multiplier.h"
-#include "Playerbots.h"
 #include "ICCActions.h"
 #include "ICCTriggers.h"
+#include "Multiplier.h"
+#include "Playerbots.h"
 
 bool IccDogsTankPositionAction::Execute(Event /*event*/)
 {
@@ -12,51 +17,6 @@ bool IccDogsTankPositionAction::Execute(Event /*event*/)
         boss = AI_VALUE2(Unit*, "find target", "precious");
     if (!boss)
         return false;
-
-    auto CastClassTaunt = [&](Unit* target) -> bool
-    {
-        if (!target || !target->IsAlive())
-            return false;
-
-        switch (bot->getClass())
-        {
-            case CLASS_PALADIN:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_PALADIN, true);
-                if (botAI->CastSpell("hand of reckoning", target))
-                    return true;
-                break;
-            }
-            case CLASS_DEATH_KNIGHT:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DK, true);
-                if (botAI->CastSpell("dark command", target))
-                    return true;
-                break;
-            }
-            case CLASS_DRUID:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DRUID, true);
-                if (botAI->CastSpell("growl", target))
-                    return true;
-                break;
-            }
-            case CLASS_WARRIOR:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_WARRIOR, true);
-                if (botAI->CastSpell("taunt", target))
-                    return true;
-                break;
-            }
-            default:
-                break;
-        }
-
-        if (botAI->CastSpell("shoot", target) || botAI->CastSpell("throw", target))
-            return true;
-
-        return false;
-    };
 
     if (botAI->IsTank(bot))
     {
@@ -77,7 +37,7 @@ bool IccDogsTankPositionAction::Execute(Event /*event*/)
         {
             Aura* victimAura = botAI->GetAura("mortal wound", currentTarget, false, true);
             if (victimAura && victimAura->GetStackAmount() >= 8)
-                CastClassTaunt(boss);
+                IccCastClassTaunt(bot, botAI,boss);
         }
 
         // Taunt nearby hostile adds not targeting a tank
@@ -98,7 +58,7 @@ bool IccDogsTankPositionAction::Execute(Event /*event*/)
             Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
             if (!victimPlayer || !botAI->IsTank(victimPlayer))
             {
-                CastClassTaunt(unit);
+                IccCastClassTaunt(bot, botAI,unit);
                 break;
             }
         }

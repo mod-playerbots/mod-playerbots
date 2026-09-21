@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_NEWRPGINFO_H
 #define PLAYERBOTS_NEWRPGINFO_H
 
@@ -40,7 +46,7 @@ struct NewRpgInfo
     // RPG_DO_QUEST
     struct DoQuest
     {
-        const Quest* quest{nullptr};
+        Quest const* quest{nullptr};
         uint32 questId{0};
         int32 objectiveIdx{0};
         WorldPosition pos{};
@@ -91,12 +97,13 @@ struct NewRpgInfo
     RpgData data;
 
     NewRpgStatus GetStatus();
+    static NewRpgStatus StatusFromString(std::string const& name);
     bool HasStatusPersisted(uint32 maxDuration) { return GetMSTimeDiffToNow(startT) > maxDuration; }
     void ChangeToGoGrind(WorldPosition pos);
     void ChangeToGoCamp(WorldPosition pos);
     void ChangeToWanderNpc();
     void ChangeToWanderRandom();
-    void ChangeToDoQuest(uint32 questId, const Quest* quest);
+    void ChangeToDoQuest(uint32 questId, Quest const* quest);
     void ChangeToTravelFlight(uint32 flightMasterEntry, WorldPosition flightMasterPos, std::vector<uint32> path);
     void ChangeToOutdoorPvp(ObjectGuid::LowType capturePointSpawnId = 0);
     void ChangeToRest();
@@ -114,7 +121,7 @@ struct NewRpgStatistic
     uint32 questAbandoned{0};
     uint32 questRewarded{0};
     uint32 questDropped{0};
-    NewRpgStatistic operator+(const NewRpgStatistic& other) const
+    NewRpgStatistic operator+(NewRpgStatistic const& other) const
     {
         NewRpgStatistic result;
         result.questAccepted = this->questAccepted + other.questAccepted;
@@ -124,7 +131,7 @@ struct NewRpgStatistic
         result.questDropped = this->questDropped + other.questDropped;
         return result;
     }
-    NewRpgStatistic& operator+=(const NewRpgStatistic& other)
+    NewRpgStatistic& operator+=(NewRpgStatistic const& other)
     {
         this->questAccepted += other.questAccepted;
         this->questCompleted += other.questCompleted;

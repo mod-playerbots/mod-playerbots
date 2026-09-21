@@ -1,7 +1,8 @@
-// /*
-//  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
-//  and/or modify it under version 3 of the License, or (at your option), any later version.
-//  */
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
 #ifndef PLAYERBOTS_NAXXTRIGGERCONTEXT_H
 #define PLAYERBOTS_NAXXTRIGGERCONTEXT_H
@@ -18,8 +19,8 @@ public:
         creators["mutating injection ranged"] = &RaidNaxxTriggerContext::mutating_injection_ranged;
         creators["mutating injection removed"] = &RaidNaxxTriggerContext::mutating_injection_removed;
         creators["grobbulus cloud"] = &RaidNaxxTriggerContext::grobbulus_cloud;
-        //creators["heigan melee"] = &RaidNaxxTriggerContext::heigan_melee;
-        //creators["heigan ranged"] = &RaidNaxxTriggerContext::heigan_ranged;
+        creators["heigan melee"] = &RaidNaxxTriggerContext::heigan_melee;
+        creators["heigan ranged"] = &RaidNaxxTriggerContext::heigan_ranged;
 
         creators["thaddius phase pet"] = &RaidNaxxTriggerContext::thaddius_phase_pet;
         creators["thaddius phase pet lose aggro"] = &RaidNaxxTriggerContext::thaddius_phase_pet_lose_aggro;
@@ -55,8 +56,8 @@ private:
     static Trigger* mutating_injection_ranged(PlayerbotAI* ai) { return new MutatingInjectionRangedTrigger(ai); }
     static Trigger* mutating_injection_removed(PlayerbotAI* ai) { return new MutatingInjectionRemovedTrigger(ai); }
     static Trigger* grobbulus_cloud(PlayerbotAI* ai) { return new GrobbulusCloudTrigger(ai); }
-    //static Trigger* heigan_melee(PlayerbotAI* ai) { return new HeiganMeleeTrigger(ai); }
-    //static Trigger* heigan_ranged(PlayerbotAI* ai) { return new HeiganRangedTrigger(ai); }
+    static Trigger* heigan_melee(PlayerbotAI* ai) { return new HeiganMeleeTrigger(ai); }
+    static Trigger* heigan_ranged(PlayerbotAI* ai) { return new HeiganRangedTrigger(ai); }
 
     static Trigger* thaddius_phase_pet(PlayerbotAI* ai) { return new ThaddiusPhasePetTrigger(ai); }
     static Trigger* thaddius_phase_pet_lose_aggro(PlayerbotAI* ai) { return new ThaddiusPhasePetLoseAggroTrigger(ai); }

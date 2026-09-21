@@ -1,5 +1,10 @@
-#include "NaxxStrategy.h"
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
+#include "NaxxStrategy.h"
 #include "NaxxMultipliers.h"
 
 void RaidNaxxStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -22,13 +27,13 @@ void RaidNaxxStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // Heigan the Unclean
-    //triggers.push_back(new TriggerNode("heigan melee",
-    //    { NextAction("heigan dance melee", ACTION_RAID + 1) }
-    //));
+    triggers.push_back(new TriggerNode("heigan melee",
+        { NextAction("heigan dance melee", ACTION_RAID + 1) }
+    ));
 
-    //triggers.push_back(new TriggerNode("heigan ranged",
-    //    { NextAction("heigan dance ranged", ACTION_RAID + 1) }
-    //));
+    triggers.push_back(new TriggerNode("heigan ranged",
+        { NextAction("heigan dance ranged", ACTION_RAID + 1) }
+    ));
 
     // Kel'Thuzad
     triggers.push_back(
@@ -143,7 +148,7 @@ void RaidNaxxStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidNaxxStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new GrobbulusMultiplier(botAI));
-    //multipliers.push_back(new HeiganDanceMultiplier(botAI));
+    multipliers.push_back(new HeiganDanceMultiplier(botAI));
     multipliers.push_back(new LoathebGenericMultiplier(botAI));
     multipliers.push_back(new ThaddiusGenericMultiplier(botAI));
     multipliers.push_back(new SapphironGenericMultiplier(botAI));

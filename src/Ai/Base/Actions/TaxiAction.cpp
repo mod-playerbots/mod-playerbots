@@ -1,16 +1,16 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "TaxiAction.h"
-
+#include "Config.h"
 #include "Event.h"
 #include "LastMovementValue.h"
+#include "PlayerbotAIConfig.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
-#include "PlayerbotAIConfig.h"
-#include "Config.h"
 
 bool TaxiAction::Execute(Event event)
 {
@@ -60,7 +60,7 @@ bool TaxiAction::Execute(Event event)
         }
 
         // Only for follower bots
-        if (botAI->HasRealPlayerMaster())
+        if (botAI->HasGameClientMaster())
         {
             uint32 index = botAI->GetGroupSlotIndex(bot);
             uint32 delay = sPlayerbotAIConfig.botTaxiDelayMin +
