@@ -103,7 +103,7 @@ public:
 class TargetRequesterAction : public Action
 {
 public:
-    TargetRequesterAction(PlayerbotAI* botAI) : Action(botAI, "target requester") {}
+    TargetRequesterAction(PlayerbotAI* botAI) : Action(botAI, "target me") {}
 
     bool Execute(Event event) override;
 };

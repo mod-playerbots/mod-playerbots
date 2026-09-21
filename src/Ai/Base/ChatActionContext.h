@@ -170,7 +170,7 @@ public:
         creators["spirit healer"] = &ChatActionContext::spirit_healer;
         creators["position"] = &ChatActionContext::position;
         creators["tell target"] = &ChatActionContext::tell_target;
-        creators["target requester"] = &ChatActionContext::target_requester;
+        creators["target me"] = &ChatActionContext::target_requester;
         creators["summon"] = &ChatActionContext::summon;
         creators["who"] = &ChatActionContext::who;
         creators["save mana"] = &ChatActionContext::save_mana;
