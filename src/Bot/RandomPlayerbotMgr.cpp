@@ -9,16 +9,11 @@
 #include "AiFactory.h"
 #include "Battleground.h"
 #include "BattlegroundMgr.h"
-#include "Cell.h"
-#include "CellImpl.h"
 #include "ChannelMgr.h"
 #include "DBCStores.h"
 #include "DBCStructure.h"
 #include "DatabaseEnv.h"
 #include "Define.h"
-#include "FleeManager.h"
-#include "GridNotifiers.h"
-#include "GridNotifiersImpl.h"
 #include "LFGMgr.h"
 #include "MapMgr.h"
 #include "NewRpgInfo.h"
@@ -1901,45 +1896,6 @@ void RandomPlayerbotMgr::RandomTeleportGrindForLevel(Player* bot)
               bot->GetLevel(), locs.size());
 
     RandomTeleport(bot, locs);
-}
-
-void RandomPlayerbotMgr::RandomTeleport(Player* bot)
-{
-    if (bot->InBattleground())
-        return;
-
-    PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "RandomTeleport");
-    std::vector<WorldLocation> locs;
-
-    std::list<Unit*> targets;
-    float range = sPlayerbotAIConfig.randomBotTeleportDistance;
-    Acore::AnyUnitInObjectRangeCheck u_check(bot, range);
-    Acore::UnitListSearcher<Acore::AnyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, range);
-
-    if (!targets.empty())
-    {
-        for (Unit* unit : targets)
-        {
-            bot->UpdatePosition(*unit);
-            FleeManager manager(bot, sPlayerbotAIConfig.sightDistance, 0, true);
-            float rx, ry, rz;
-            if (manager.CalculateDestination(&rx, &ry, &rz))
-            {
-                WorldLocation loc(bot->GetMapId(), rx, ry, rz);
-                locs.push_back(loc);
-            }
-        }
-    }
-    else
-    {
-        RandomTeleportForLevel(bot);
-    }
-
-    if (pmo)
-        pmo->finish();
-
-    Refresh(bot);
 }
 
 void RandomPlayerbotMgr::Randomize(Player* bot)

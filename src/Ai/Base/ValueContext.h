@@ -325,8 +325,6 @@ public:
         creators["area debuff"] = &ValueContext::area_debuff;
         creators["nearest trap with damage"] = &ValueContext::nearest_trap_with_damange;
         creators["disperse distance"] = &ValueContext::disperse_distance;
-        creators["last flee angle"] = &ValueContext::last_flee_angle;
-        creators["last flee timestamp"] = &ValueContext::last_flee_timestamp;
         creators["recently flee info"] = &ValueContext::recently_flee_info;
 
         creators["can fish"] = &ValueContext::can_fish;
@@ -582,8 +580,6 @@ private:
     static UntypedValue* area_debuff(PlayerbotAI* botAI) { return new AreaDebuffValue(botAI); }
     static UntypedValue* nearest_trap_with_damange(PlayerbotAI* botAI) { return new NearestTrapWithDamageValue(botAI); }
     static UntypedValue* disperse_distance(PlayerbotAI* botAI) { return new DisperseDistanceValue(botAI); }
-    static UntypedValue* last_flee_angle(PlayerbotAI* botAI) { return new LastFleeAngleValue(botAI); }
-    static UntypedValue* last_flee_timestamp(PlayerbotAI* botAI) { return new LastFleeTimestampValue(botAI); }
     static UntypedValue* recently_flee_info(PlayerbotAI* botAI) { return new RecentlyFleeInfo(botAI); }
     static UntypedValue* can_fish(PlayerbotAI* botAI) { return new CanFishValue(botAI); }
     static UntypedValue* can_use_fishing_bobber(PlayerbotAI* botAI) { return new CanUseFishingBobberValue(botAI); }

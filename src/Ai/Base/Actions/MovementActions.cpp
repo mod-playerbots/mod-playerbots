@@ -1476,18 +1476,9 @@ bool MovementAction::Flee(Unit* target)
     if ((foundFlee || lastFlee) && bot->GetGroup())
     {
         if (!lastFlee)
-        {
             AI_VALUE(LastMovement&, "last movement").lastFlee = now;
-        }
         else
-        {
-            if ((now - lastFlee) > fleeDelay)
-            {
-                AI_VALUE(LastMovement&, "last movement").lastFlee = 0;
-            }
-            else
-                return false;
-        }
+            AI_VALUE(LastMovement&, "last movement").lastFlee = 0;
     }
 
     FleeManager manager(bot, botAI->GetRange("flee"), bot->GetAngle(target) + M_PI);

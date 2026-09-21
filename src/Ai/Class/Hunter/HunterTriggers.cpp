@@ -12,7 +12,6 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
-#include "ServerFacade.h"
 #include "SharedDefines.h"
 
 bool KillCommandTrigger::IsActive()

@@ -8,11 +8,8 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
-FleeManager::FleeManager(Player* bot, float maxAllowedDistance, float /*followAngle*/, bool forceMaxDistance,
-                         WorldPosition startPosition)
-    : bot(bot),
-      maxAllowedDistance(maxAllowedDistance),
-      forceMaxDistance(forceMaxDistance),
+FleeManager::FleeManager(Player* bot, float maxAllowedDistance, float /*followAngle*/, WorldPosition startPosition)
+    : bot(bot), maxAllowedDistance(maxAllowedDistance),
       startPosition(startPosition ? startPosition : WorldPosition(bot))
 {
 }
@@ -95,10 +92,6 @@ void FleeManager::calculatePossibleDestinations(std::vector<FleePoint*>& points)
 
                 float x = botPosX + cos(angle) * maxAllowedDistance, y = botPosY + sin(angle) * maxAllowedDistance,
                       z = botPosZ + CONTACT_DISTANCE;
-                if (forceMaxDistance &&
-                    ServerFacade::instance().IsDistanceLessThan(ServerFacade::instance().GetDistance2d(bot, x, y),
-                                                      maxAllowedDistance - sPlayerbotAIConfig.tooCloseDistance))
-                    continue;
 
                 bot->UpdateAllowedPositionZ(x, y, z);
 
