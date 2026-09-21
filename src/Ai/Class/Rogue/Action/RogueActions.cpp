@@ -37,7 +37,7 @@ bool CastStealthAction::isPossible()
 bool UnstealthAction::Execute(Event /*event*/)
 {
     botAI->RemoveAura("stealth");
-    // botAI->ChangeStrategy("+dps,-stealthed", BOT_STATE_COMBAT);
+    // botAI->ChangeStrategy("+combat,-stealthed", BOT_STATE_COMBAT);
 
     return true;
 }
@@ -46,11 +46,11 @@ bool CheckStealthAction::Execute(Event /*event*/)
 {
     if (botAI->HasAura("stealth", bot))
     {
-        botAI->ChangeStrategy("-dps,+stealthed", BOT_STATE_COMBAT);
+        botAI->ChangeStrategy("-combat,+stealthed", BOT_STATE_COMBAT);
     }
     else
     {
-        botAI->ChangeStrategy("+dps,-stealthed", BOT_STATE_COMBAT);
+        botAI->ChangeStrategy("+combat,-stealthed", BOT_STATE_COMBAT);
     }
 
     return true;
