@@ -175,7 +175,7 @@ public:
         if (!player->IsInWorld() || player->GetMapId() == mapid)
             return true;
 
-        // If this is a selfbot, do nothing
+        // If this is a SelfBot, do nothing
         PlayerbotAI* ai = GET_PLAYERBOT_AI(player);
         if (!ai || IsSelfBot(player))
             return true;

@@ -781,7 +781,7 @@ void PlayerbotAI::HandleTeleportAck()
     if (!bot || !bot->GetSession())
         return;
 
-    // Skip acknowledgment for selfbots. The player's client handles that.
+    // Skip acknowledgment for SelfBots. The player's client handles that.
     if (IsSelfBot(bot))
         return;
 
@@ -4404,7 +4404,7 @@ bool PlayerbotAI::canDispel(SpellInfo const* spellInfo, uint32 dispelType)
 
 bool IsRealPlayer(Player* player)
 {
-    // No PlayerbotAI attached means this is not a bot of any kind, including selfbots. This is an actual person
+    // No PlayerbotAI attached means this is not a bot of any kind, including SelfBots. This is an actual person
     // controlling their character manually through the client.
     // "player" check needed, otherwise GET_PLAYERBOT_AI(nullptr) reads as a "real player".
     return player && !GET_PLAYERBOT_AI(player);
@@ -4412,7 +4412,7 @@ bool IsRealPlayer(Player* player)
 
 bool IsSelfBot(Player* player)
 {
-    // Selfbot: "player" has PlayerbotAI attached, and it has a master who is itself (player).
+    // SelfBot: "player" has PlayerbotAI attached, and it has a master who is itself (player).
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
     return botAI && botAI->GetMaster() == player;
 }
@@ -4466,12 +4466,12 @@ Player* PlayerbotAI::FindNewMaster()
     return nullptr;
 }
 
-// An altbot is a bot whose master is client-based (a regular player or a selfbot), and is not a randombot, and is not a selfbot.
+// An altbot is a bot whose master is client-based (a regular player or a SelfBot), and is not a randombot, and is not a SelfBot.
 // For the purpose of this bool, all addclassbots return true for IsAltBot, but not all altbots return true for IsAddClassBot, since
 // IsAddClassBot requires the bot to come from a type 2 account in playerbots_account_type.
 bool PlayerbotAI::IsAltBot() { return HasGameClientMaster() && !sRandomPlayerbotMgr.IsRandomBot(bot) && !IsSelfBot(bot); }
 
-// True when the bot's master is driven by a player with a game client: a regular player (no bot AI) or a selfbot player.
+// True when the bot's master is driven by a player with a game client: a regular player (no bot AI) or a SelfBot player.
 bool PlayerbotAI::HasGameClientMaster() { return IsRealPlayer(master) || IsSelfBot(master); }
 
 Player* PlayerbotAI::GetGroupLeader()

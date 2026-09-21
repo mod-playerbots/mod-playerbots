@@ -1054,16 +1054,16 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
     {
         if (GET_PLAYERBOT_AI(master))
         {
-            messages.push_back("Disable player botAI");
+            messages.push_back("SelfBot is now deactivated.");
             delete GET_PLAYERBOT_AI(master);
         }
         else if (sPlayerbotAIConfig.selfBotLevel == 0)
-            messages.push_back("Self-bot is disabled");
+            messages.push_back("SelfBot is disabled server-wide.");
         else if (sPlayerbotAIConfig.selfBotLevel == 1 && !master->CanBeGameMaster())
-            messages.push_back("You do not have permission to enable player botAI");
+            messages.push_back("SelfBot is restricted for this account.");
         else
         {
-            messages.push_back("Enable player botAI");
+            messages.push_back("SelfBot is now active.");
             PlayerbotsMgr::instance().AddPlayerbotData(master, true);
             GET_PLAYERBOT_AI(master)->SetMaster(master);
             PlayerbotRepository::instance().Load(GET_PLAYERBOT_AI(master));

@@ -134,7 +134,7 @@ ItemUsage ItemUsageValue::Calculate()
     if (isLootFromItem && botNeedsItemForQuest)
         return ITEM_USAGE_QUEST;
 
-    // If this is not a selfbot acting alone and the master needs this quest item, defer to the master
+    // If this is not a SelfBot acting alone and the master needs this quest item, defer to the master
     if (!IsSelfBot(bot) && masterNeedsItemForQuest)
         return ITEM_USAGE_NONE;
 

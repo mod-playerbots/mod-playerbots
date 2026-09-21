@@ -30,7 +30,7 @@ public:
         if (!player || !IsSelfBot(player) || !player->isAFK())
             return true;
 
-        LOG_DEBUG("playerbots", "Selfbot {} stays in world: refused the AFK logout", player->GetName());
+        LOG_DEBUG("playerbots", "SelfBot {} stays in world: refused the AFK logout", player->GetName());
 
         WorldPackets::Character::LogoutResponse logoutResponse;
         logoutResponse.LogoutResult = 2;
