@@ -349,13 +349,13 @@ bool UseItemAction::SocketItem(Item* item, Item* gem, bool replace)
          ++enchant_slot)
     {
         uint32 socketIndex = enchant_slot - SOCK_ENCHANTMENT_SLOT;
-        uint8 SocketColor = item->GetTemplate()->Socket[socketIndex].Color;
+        uint8 socketColor = item->GetTemplate()->Socket[socketIndex].Color;
         GemPropertiesEntry const* gemProperty = sGemPropertiesStore.LookupEntry(gem->GetTemplate()->GemProperties);
 
         // A socket added by a buckle carries no colour of its own and takes any gem except a meta one.
-        bool const isPrismatic = !SocketColor && hasPrismaticSocket && socketIndex == firstPrismatic;
+        bool const isPrismatic = !socketColor && hasPrismaticSocket && socketIndex == firstPrismatic;
         bool const gemFitsSocket = gemProperty && (isPrismatic ? gemProperty->color != SOCKET_COLOR_META
-                                                               : (gemProperty->color & SocketColor) != 0);
+                                                               : (gemProperty->color & socketColor) != 0);
         if (gemFitsSocket)
         {
             if (fits)
