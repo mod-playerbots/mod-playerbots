@@ -650,7 +650,7 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
                     //Currently in magons TBC, if you switch zones, then you join "Trade - <zone>" and "GuildRecruitment - <zone>"
                     //which is a core bug, should be "Trade - City" and "GuildRecruitment - City" in both 1.12 and TBC
                     //but if you (actual player) logout in a city and log back in - you join "City" versions
-                    snprintf(new_channel_name_buf, 100, channel->pattern[locale], GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(GetAreaEntryByAreaID(3459)).c_str());
+                    snprintf(new_channel_name_buf, 100, channel->pattern[locale], GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(sAreaTableStore.LookupEntry(3459)).c_str());
                     new_channel = cMgr->GetJoinChannel(new_channel_name_buf, channel->ChannelID);
                     break;
                 }
