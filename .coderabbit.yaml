@@ -105,7 +105,6 @@ reviews:
           `static` first: `static float const x = 1.0f;`.
         - No magic numbers: named `constexpr` or `enum`/`enum class`, never `#define`.
           Prefixes: SPELL_, NPC_, ITEM_, GO_, QUEST_, SAY_, EMOTE_, EVENT_, DATA_, ACHIEV_.
-        - No free namespace functions unless required; use class methods or static functions.
         - Never redefine `me`; it is reserved for the scripted object pointer.
         - Header guards on every header. New files carry the mod-playerbots GPLv2 header.
         - Logging: `LOG_INFO("playerbots", "msg {}", arg)` (also LOG_WARN/ERROR/DEBUG) with
