@@ -900,9 +900,9 @@ void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
     if (bot->GetLevel() < 70)
         return;
 
-    for (uint8 arena_slot = ARENA_SLOT_2v2; arena_slot <= ARENA_SLOT_5v5; ++arena_slot)
+    for (uint8 arenaSlot = ARENA_SLOT_2v2; arenaSlot <= ARENA_SLOT_5v5; ++arenaSlot)
     {
-        if (bot->GetArenaTeamId(arena_slot))
+        if (bot->GetArenaTeamId(arenaSlot))
             return;
     }
 
@@ -913,10 +913,10 @@ void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
 void RandomPlayerbotFactory::AssignBotToArenaTeamInternal(Player* bot)
 {
     // Check if bot has team, only one per bot to avoid queue conflicts
-    for (uint8 arena_slot = ARENA_SLOT_2v2; arena_slot <= ARENA_SLOT_5v5; ++arena_slot)
+    for (uint8 arenaSlot = ARENA_SLOT_2v2; arenaSlot <= ARENA_SLOT_5v5; ++arenaSlot)
     {
-        if (bot->GetArenaTeamId(arena_slot) ||
-            sCharacterCache->GetCharacterArenaTeamIdByGuid(bot->GetGUID(), arena_slot))
+        if (bot->GetArenaTeamId(arenaSlot) ||
+            sCharacterCache->GetCharacterArenaTeamIdByGuid(bot->GetGUID(), arenaSlot))
             return;
     }
 
