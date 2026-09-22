@@ -5,6 +5,7 @@
  */
 
 #include "RandomPlayerbotFactory.h"
+#include "PlayerbotsDatabase.h"
 #include "AccountMgr.h"
 #include "ArenaTeamMgr.h"
 #include "CharacterCache.h"
@@ -324,21 +325,26 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
     {
         if (sPlayerbotAIConfig.maxRandomBots == 0)
         {
-            PlayerbotsDatabase.Execute("UPDATE playerbots_account_type SET account_type = 0 WHERE account_type = 1");
+            PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_ACCOUNT_TYPE_UNASSIGN);
+            stmt->SetData(0, uint8(1));
+            PlayerbotsDatabase.Execute(stmt);
             LOG_INFO("playerbots", "MaxRandomBots set to 0, any RNDbot accounts (type 1) will be unassigned (type 0)");
         }
         if (sPlayerbotAIConfig.addClassAccountPoolSize == 0)
         {
-            PlayerbotsDatabase.Execute("UPDATE playerbots_account_type SET account_type = 0 WHERE account_type = 2");
+            PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_ACCOUNT_TYPE_UNASSIGN);
+            stmt->SetData(0, uint8(2));
+            PlayerbotsDatabase.Execute(stmt);
             LOG_INFO("playerbots", "AddClassAccountPoolSize set to 0, any AddClass accounts (type 2) will be unassigned (type 0)");
         }
 
         // Wait for DB to reflect the change, up to 1 second max. This is needed to make sure other logs don't show wrong info
         for (int waited = 0; waited < 1000; waited += 50)
         {
-            QueryResult res = PlayerbotsDatabase.Query("SELECT COUNT(*) FROM playerbots_account_type WHERE account_type IN ({}, {})",
-                sPlayerbotAIConfig.maxRandomBots == 0 ? 1 : -1,
-                sPlayerbotAIConfig.addClassAccountPoolSize == 0 ? 2 : -1);
+            PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_ACCOUNT_TYPE_COUNT_BY_TYPES);
+            stmt->SetData(0, int32(sPlayerbotAIConfig.maxRandomBots == 0 ? 1 : -1));
+            stmt->SetData(1, int32(sPlayerbotAIConfig.addClassAccountPoolSize == 0 ? 2 : -1));
+            PreparedQueryResult res = PlayerbotsDatabase.Query(stmt);
 
             if (!res || res->Fetch()[0].Get<uint64>() == 0)
                 break;
@@ -352,7 +358,8 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
     uint32 existingAddClassAccounts = 0;
     uint32 existingUnassignedAccounts = 0;
 
-    QueryResult typeCheck = PlayerbotsDatabase.Query("SELECT account_type, COUNT(*) FROM playerbots_account_type GROUP BY account_type");
+    PlayerbotsDatabasePreparedStatement* typeStmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_ACCOUNT_TYPE_COUNT_BY_TYPE);
+    PreparedQueryResult typeCheck = PlayerbotsDatabase.Query(typeStmt);
     if (typeCheck)
     {
         do
@@ -485,8 +492,8 @@ void RandomPlayerbotFactory::CreateRandomBots()
 
         // First execute all the cleanup SQL commands
         // Clear playerbots_random_bots and playerbots_account_type
-        PlayerbotsDatabase.Execute("DELETE FROM playerbots_random_bots");
-        PlayerbotsDatabase.Execute("DELETE FROM playerbots_account_type");
+        PlayerbotsDatabase.Execute(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_RANDOM_BOTS));
+        PlayerbotsDatabase.Execute(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_ACCOUNT_TYPE));
 
         // Get the character database name dynamically (used in same-server subqueries below)
         std::string characterDBName = CharacterDatabase.GetConnectionInfo()->database;
