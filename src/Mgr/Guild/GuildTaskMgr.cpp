@@ -621,7 +621,7 @@ uint32 GuildTaskMgr::SetTaskValue(uint32 owner, uint32 guildId, std::string cons
     stmt->SetData(0, owner);
     stmt->SetData(1, guildId);
     stmt->SetData(2, type);
-    PlayerbotsDatabase.Execute(stmt);
+    PlayerbotsDatabase.DirectExecute(stmt);
 
     if (value)
     {
@@ -632,7 +632,7 @@ uint32 GuildTaskMgr::SetTaskValue(uint32 owner, uint32 guildId, std::string cons
         stmt->SetData(3, validIn);
         stmt->SetData(4, type);
         stmt->SetData(5, value);
-        PlayerbotsDatabase.Execute(stmt);
+        PlayerbotsDatabase.DirectExecute(stmt);
     }
 
     return value;
@@ -656,7 +656,7 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* /* handler */, char const* 
 
     if (cmd == "reset")
     {
-        PlayerbotsDatabase.Execute(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_GUILD_TASKS_ALL));
+        PlayerbotsDatabase.DirectExecute(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_GUILD_TASKS_ALL));
         LOG_INFO("playerbots", "Guild tasks were reset for all players");
         return true;
     }

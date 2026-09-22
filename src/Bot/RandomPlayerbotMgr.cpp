@@ -539,7 +539,7 @@ void RandomPlayerbotMgr::AssignAccountTypes()
             PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_INS_ACCOUNT_TYPE);
             stmt->SetData(0, accountId);
             stmt->SetData(1, uint8(0));
-            PlayerbotsDatabase.Execute(stmt);
+            PlayerbotsDatabase.DirectExecute(stmt);
             currentAssignments[accountId] = 0;
         }
     }
@@ -585,7 +585,7 @@ void RandomPlayerbotMgr::AssignAccountTypes()
                 PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_ACCOUNT_TYPE);
                 stmt->SetData(0, uint8(1));
                 stmt->SetData(1, accountId);
-                PlayerbotsDatabase.Execute(stmt);
+                PlayerbotsDatabase.DirectExecute(stmt);
                 currentAssignments[accountId] = 1;
                 assigned++;
             }
@@ -613,7 +613,7 @@ void RandomPlayerbotMgr::AssignAccountTypes()
                 PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_ACCOUNT_TYPE);
                 stmt->SetData(0, uint8(2));
                 stmt->SetData(1, accountId);
-                PlayerbotsDatabase.Execute(stmt);
+                PlayerbotsDatabase.DirectExecute(stmt);
                 currentAssignments[accountId] = 2;
                 assigned++;
             }
@@ -1776,7 +1776,7 @@ void RandomPlayerbotMgr::Init()
 
     PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_RANDOM_BOTS_BY_EVENT);
     stmt->SetData(0, std::string("add"));
-    PlayerbotsDatabase.Execute(stmt);
+    PlayerbotsDatabase.DirectExecute(stmt);
 }
 
 void RandomPlayerbotMgr::InitArenaTeams()
@@ -2483,7 +2483,7 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* /*handler*/,
 
     if (cmd == "reset")
     {
-        PlayerbotsDatabase.Execute(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_RANDOM_BOTS));
+        PlayerbotsDatabase.DirectExecute(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_RANDOM_BOTS));
         sRandomPlayerbotMgr.eventCache.clear();
         LOG_INFO("playerbots", "Random bots were reset for all players. Please restart the Server.");
         return true;
@@ -3145,7 +3145,7 @@ void RandomPlayerbotMgr::Remove(Player* bot)
         PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_RANDOM_BOTS_BY_OWNER);
     stmt->SetData(0, 0);
     stmt->SetData(1, owner.GetCounter());
-    PlayerbotsDatabase.Execute(stmt);
+    PlayerbotsDatabase.DirectExecute(stmt);
 
     uint32 botId = owner.GetCounter();
     eventCache.erase(botId);
