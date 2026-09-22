@@ -32,7 +32,7 @@ public:
 class FleeManager
 {
 public:
-    FleeManager(Player* bot, float maxAllowedDistance, float followAngle,
+    FleeManager(Player* bot, float maxAllowedDistance, float followAngle, bool forceMaxDistance = false,
                 WorldPosition startPosition = WorldPosition());
 
     bool CalculateDestination(float* rx, float* ry, float* rz);
@@ -47,6 +47,7 @@ private:
 
     Player* bot;
     float maxAllowedDistance;
+    bool forceMaxDistance;
     WorldPosition startPosition;
 };
 

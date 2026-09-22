@@ -142,7 +142,7 @@ bool FindCorpseAction::Execute(Event /*event*/)
             moveToPos = leaderPos;
         else
         {
-            FleeManager manager(bot, reclaimDist, 0.0, moveToPos);
+            FleeManager manager(bot, reclaimDist, 0.0, urand(0, 1), moveToPos);
 
             if (manager.isUseful())
             {

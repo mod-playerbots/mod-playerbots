@@ -1922,7 +1922,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot)
         for (Unit* unit : targets)
         {
             bot->UpdatePosition(*unit);
-            FleeManager manager(bot, sPlayerbotAIConfig.sightDistance, 0);
+            FleeManager manager(bot, sPlayerbotAIConfig.sightDistance, 0, true);
             float rx, ry, rz;
             if (manager.CalculateDestination(&rx, &ry, &rz))
             {
@@ -2125,6 +2125,35 @@ void RandomPlayerbotMgr::Clear(Player* bot)
 {
     PlayerbotFactory factory(bot, bot->GetLevel());
     factory.ClearEverything();
+}
+
+uint32 RandomPlayerbotMgr::GetZoneLevel(uint16 mapId, float teleX, float teleY, float /*teleZ*/)
+{
+    uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+
+    uint32 level = 0;
+    QueryResult results = WorldDatabase.Query(
+        "SELECT AVG(t.minlevel) minlevel, AVG(t.maxlevel) maxlevel FROM creature c "
+        "INNER JOIN creature_template t ON c.id = t.entry WHERE map = {} AND minlevel > 1 AND ABS(position_x - {}) < "
+        "{} AND ABS(position_y - {}) < {}",
+        mapId, teleX, sPlayerbotAIConfig.randomBotTeleportDistance / 2, teleY,
+        sPlayerbotAIConfig.randomBotTeleportDistance / 2);
+
+    if (results)
+    {
+        Field* fields = results->Fetch();
+        uint8 minLevel = fields[0].Get<uint8>();
+        uint8 maxLevel = fields[1].Get<uint8>();
+        level = urand(minLevel, maxLevel);
+        if (level > maxLevel)
+            level = maxLevel;
+    }
+    else
+    {
+        level = urand(1, maxLevel);
+    }
+
+    return level;
 }
 
 void RandomPlayerbotMgr::Refresh(Player* bot)
