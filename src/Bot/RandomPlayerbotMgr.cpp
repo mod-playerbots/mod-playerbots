@@ -2083,35 +2083,6 @@ void RandomPlayerbotMgr::Clear(Player* bot)
     factory.ClearEverything();
 }
 
-uint32 RandomPlayerbotMgr::GetZoneLevel(uint16 mapId, float teleX, float teleY, float /*teleZ*/)
-{
-    uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
-
-    uint32 level = 0;
-    QueryResult results = WorldDatabase.Query(
-        "SELECT AVG(t.minlevel) minlevel, AVG(t.maxlevel) maxlevel FROM creature c "
-        "INNER JOIN creature_template t ON c.id = t.entry WHERE map = {} AND minlevel > 1 AND ABS(position_x - {}) < "
-        "{} AND ABS(position_y - {}) < {}",
-        mapId, teleX, sPlayerbotAIConfig.randomBotTeleportDistance / 2, teleY,
-        sPlayerbotAIConfig.randomBotTeleportDistance / 2);
-
-    if (results)
-    {
-        Field* fields = results->Fetch();
-        uint8 minLevel = fields[0].Get<uint8>();
-        uint8 maxLevel = fields[1].Get<uint8>();
-        level = urand(minLevel, maxLevel);
-        if (level > maxLevel)
-            level = maxLevel;
-    }
-    else
-    {
-        level = urand(1, maxLevel);
-    }
-
-    return level;
-}
-
 void RandomPlayerbotMgr::Refresh(Player* bot)
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);

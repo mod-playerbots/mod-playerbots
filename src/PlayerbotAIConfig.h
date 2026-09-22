@@ -152,7 +152,6 @@ public:
     std::vector<uint32> randomBotAccounts;
     std::vector<uint32> randomBotSpellIds;
     std::vector<uint32> randomBotQuestIds;
-    uint32 randomBotTeleportDistance;
     float randomGearLoweringChance;
     int32 randomGearQualityLimit;
     int32 randomGearScoreLimit;
