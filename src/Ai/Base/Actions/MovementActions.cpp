@@ -2214,8 +2214,7 @@ bool MovementAction::FleePosition(Position pos, float radius, uint32 minInterval
             // As a reaction (e.g. "avoid aoe"), hold the reaction for the travel time so the
             // main AI doesn't resume and override the flee movement mid-way.
             if (IsReaction())
-                SetDuration((uint32)(1000.0f * bot->GetExactDist(&bestPos) / bot->GetSpeed(MOVE_RUN)) +
-                            sPlayerbotAIConfig.reactDelay);
+                SetDuration((uint32)(1000.0f * MoveDelay(bot->GetExactDist(&bestPos))) + sPlayerbotAIConfig.reactDelay);
 
             uint32 curTS = getMSTime();
             while (!infoList.empty())

@@ -100,18 +100,16 @@ bool ReactionEngine::FindReaction(bool minimal, bool isStunned)
                             if (reactionRelevance > 0.0f)
                                 reactionRelevance = ApplyMainEngineMultipliers(reaction, reactionRelevance);
 
-                            if (!skipReactionPrerequisites)
+                            if ((reactionRelevance > 0.0f) && reaction->isPossible())
                             {
-                                if (MultiplyAndPush(reactionNode->getPrerequisites(), reactionRelevance + 0.02f,
+                                if (!skipReactionPrerequisites &&
+                                    MultiplyAndPush(reactionNode->getPrerequisites(), reactionRelevance + 0.02f,
                                                     false, reactionEvent, "prereq"))
                                 {
                                     PushAgain(reactionNode, reactionRelevance + 0.01f, reactionEvent);
                                     continue;
                                 }
-                            }
 
-                            if ((reactionRelevance > 0.0f) && reaction->isPossible())
-                            {
                                 incomingReaction.SetAction(reaction);
                                 incomingReaction.SetEvent(reactionEvent);
                                 delete reactionNode;
@@ -192,16 +190,13 @@ bool ReactionEngine::Update(uint32 elapsed, bool minimal, bool isStunned, bool& 
 
     if (CanUpdateAIReaction())
     {
-        if (IsReacting())
-        {
-            if (ongoingReaction.Update(elapsed))
-            {
-                StopReaction();
-                reactionFinished = true;
-            }
-        }
-        else
+        if (!IsReacting())
             reactionFinished = true;
+        else if (ongoingReaction.Update(elapsed))
+        {
+            StopReaction();
+            reactionFinished = true;
+        }
 
         if (reactionFinished)
         {
@@ -216,11 +211,8 @@ bool ReactionEngine::Update(uint32 elapsed, bool minimal, bool isStunned, bool& 
             }
         }
 
-        if (!HasIncomingReaction() && !IsReacting())
-        {
-            if (aiReactionUpdateDelay < sPlayerbotAIConfig.reactDelay)
-                aiReactionUpdateDelay = minimal ? sPlayerbotAIConfig.reactDelay * 10 : sPlayerbotAIConfig.reactDelay;
-        }
+        if (!HasIncomingReaction() && !IsReacting() && aiReactionUpdateDelay < sPlayerbotAIConfig.reactDelay)
+            aiReactionUpdateDelay = minimal ? sPlayerbotAIConfig.reactDelay * 10 : sPlayerbotAIConfig.reactDelay;
     }
 
     return HasIncomingReaction() || IsReacting();
