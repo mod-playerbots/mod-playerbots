@@ -645,6 +645,12 @@ bool RandomPlayerbotMgr::IsAccountType(uint32 accountId, uint8 accountType)
     return PlayerbotsDatabase.Query(stmt) != nullptr;
 }
 
+bool RandomPlayerbotMgr::IsAddClassAccount(uint32 accountId) const
+{
+    return std::find(addClassTypeAccounts.begin(), addClassTypeAccounts.end(), accountId) !=
+           addClassTypeAccounts.end();
+}
+
 // Logs-in bots in 4 phases. Phase 1 logs Alliance bots up to how much is expected according to the faction ratio,
 // and Phase 2 logs-in the remainder Horde bots to reach the total maxAllowedBotCount. If maxAllowedBotCount is not
 // reached after Phase 2, the function goes back to log-in Alliance bots and reach maxAllowedBotCount. This is done
