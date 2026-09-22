@@ -56,7 +56,6 @@
 #include "LootValues.h"
 #include "MaintenanceValues.h"
 #include "ManaSaveLevelValue.h"
-#include "NearestAdsValue.h"
 #include "NearestCorpsesValue.h"
 #include "NearestFriendlyPlayersValue.h"
 #include "NearestGameObjects.h"
@@ -128,7 +127,6 @@ public:
         creators["possible rpg targets"] = &ValueContext::possible_rpg_targets;
         creators["possible new rpg targets"] = &ValueContext::possible_new_rpg_targets;
         creators["possible new rpg game objects"] = &ValueContext::possible_new_rpg_game_objects;
-        creators["nearest adds"] = &ValueContext::nearest_adds;
         creators["nearest corpses"] = &ValueContext::nearest_corpses;
         creators["log level"] = &ValueContext::log_level;
         creators["party member without aura"] = &ValueContext::party_member_without_aura;
@@ -444,7 +442,6 @@ private:
     static UntypedValue* possible_adds(PlayerbotAI* botAI) { return new PossibleAddsValue(botAI); }
     static UntypedValue* prioritized_targets(PlayerbotAI* botAI) { return new PrioritizedTargetsValue(botAI); }
     static UntypedValue* all_targets(PlayerbotAI* botAI) { return new AllTargetsValue(botAI); }
-    static UntypedValue* nearest_adds(PlayerbotAI* botAI) { return new NearestAddsValue(botAI); }
     static UntypedValue* party_member_without_aura(PlayerbotAI* botAI)
     {
         return new PartyMemberWithoutAuraValue(botAI);
