@@ -2510,7 +2510,7 @@ PlayerbotsDatabase.WorkerThreads     = 1
 #    PlayerbotsDatabase.SynchThreads
 #        Description: The amount of MySQL connections spawned to handle synchronous (blocking) MySQL
 #                     statements.
-#        Default:     2 - (PlayerbotsDatabase.SynchThreads)
+#        Default:     1 - (PlayerbotsDatabase.SynchThreads)
 
 PlayerbotsDatabase.SynchThreads     = 1
 
