@@ -23,8 +23,8 @@ void PlayerbotsDatabaseConnection::DoPrepareStatements()
     PrepareStatement(PLAYERBOTS_INS_CUSTOM_STRATEGY, "INSERT INTO playerbots_custom_strategy (name, owner, idx, action_line) VALUES (?, ?, ?, ?)", CONNECTION_SYNCH);
 
     PrepareStatement(PLAYERBOTS_SEL_DB_STORE, "SELECT `key`,`value` FROM `playerbots_db_store` WHERE `guid` = ?", CONNECTION_SYNCH);
-    PrepareStatement(PLAYERBOTS_DEL_DB_STORE, "DELETE FROM `playerbots_db_store` WHERE `guid` = ?", CONNECTION_ASYNC);
-    PrepareStatement(PLAYERBOTS_INS_DB_STORE, "INSERT INTO `playerbots_db_store` (`guid`, `key`, `value`) VALUES (?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(PLAYERBOTS_DEL_DB_STORE, "DELETE FROM `playerbots_db_store` WHERE `guid` = ?", CONNECTION_SYNCH);
+    PrepareStatement(PLAYERBOTS_INS_DB_STORE, "INSERT INTO `playerbots_db_store` (`guid`, `key`, `value`) VALUES (?, ?, ?)", CONNECTION_SYNCH);
 
     PrepareStatement(PLAYERBOTS_SEL_ENCHANTS, "SELECT class, spec, spellid, slotid FROM playerbots_enchants", CONNECTION_SYNCH);
 
@@ -45,8 +45,8 @@ void PlayerbotsDatabaseConnection::DoPrepareStatements()
     PrepareStatement(PLAYERBOTS_SEL_RANDOM_BOTS_BY_OWNER_AND_BOT, "SELECT `event`, `value`, `time`, validIn, `data` FROM playerbots_random_bots WHERE owner = ? AND bot = ?", CONNECTION_SYNCH);
     PrepareStatement(PLAYERBOTS_SEL_RANDOM_BOTS_BY_EVENT_AND_VALUE, "SELECT bot FROM playerbots_random_bots WHERE event = ? AND value = ?", CONNECTION_SYNCH);
     PrepareStatement(PLAYERBOTS_INS_RANDOM_BOTS, "INSERT INTO playerbots_random_bots (owner, bot, `time`, validIn, event, `value`, `data`) VALUES (?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
-    PrepareStatement(PLAYERBOTS_DEL_RANDOM_BOTS, "DELETE FROM playerbots_random_bots", CONNECTION_SYNCH);
-    PrepareStatement(PLAYERBOTS_DEL_RANDOM_BOTS_BY_OWNER, "DELETE FROM playerbots_random_bots WHERE owner = ? AND bot = ?", CONNECTION_SYNCH);
+    PrepareStatement(PLAYERBOTS_DEL_RANDOM_BOTS, "DELETE FROM playerbots_random_bots", CONNECTION_BOTH);
+    PrepareStatement(PLAYERBOTS_DEL_RANDOM_BOTS_BY_OWNER, "DELETE FROM playerbots_random_bots WHERE owner = ? AND bot = ?", CONNECTION_ASYNC);
     PrepareStatement(PLAYERBOTS_DEL_RANDOM_BOTS_BY_OWNER_AND_EVENT, "DELETE FROM playerbots_random_bots WHERE owner = ? AND bot = ? AND event = ?", CONNECTION_ASYNC);
     PrepareStatement(PLAYERBOTS_UPD_RANDOM_BOTS, "UPDATE playerbots_random_bots SET validIn = ? WHERE event = ? AND bot = ?", CONNECTION_ASYNC);
 

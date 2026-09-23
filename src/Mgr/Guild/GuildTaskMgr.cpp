@@ -617,11 +617,13 @@ uint32 GuildTaskMgr::GetTaskValue(uint32 owner, uint32 guildId, std::string cons
 
 uint32 GuildTaskMgr::SetTaskValue(uint32 owner, uint32 guildId, std::string const type, uint32 value, uint32 validIn)
 {
+    PlayerbotsDatabaseTransaction trans = PlayerbotsDatabase.BeginTransaction();
+
     PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_GUILD_TASKS);
     stmt->SetData(0, owner);
     stmt->SetData(1, guildId);
     stmt->SetData(2, type);
-    PlayerbotsDatabase.DirectExecute(stmt);
+    trans->Append(stmt);
 
     if (value)
     {
@@ -632,8 +634,10 @@ uint32 GuildTaskMgr::SetTaskValue(uint32 owner, uint32 guildId, std::string cons
         stmt->SetData(3, validIn);
         stmt->SetData(4, type);
         stmt->SetData(5, value);
-        PlayerbotsDatabase.DirectExecute(stmt);
+        trans->Append(stmt);
     }
+
+    PlayerbotsDatabase.DirectCommitTransaction(trans);
 
     return value;
 }

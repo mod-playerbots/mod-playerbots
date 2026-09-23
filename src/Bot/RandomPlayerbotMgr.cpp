@@ -2483,7 +2483,7 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* /*handler*/,
 
     if (cmd == "reset")
     {
-        PlayerbotsDatabase.DirectExecute(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_RANDOM_BOTS));
+        PlayerbotsDatabase.Execute(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_RANDOM_BOTS));
         sRandomPlayerbotMgr.eventCache.clear();
         LOG_INFO("playerbots", "Random bots were reset for all players. Please restart the Server.");
         return true;
@@ -3145,7 +3145,7 @@ void RandomPlayerbotMgr::Remove(Player* bot)
         PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_RANDOM_BOTS_BY_OWNER);
     stmt->SetData(0, 0);
     stmt->SetData(1, owner.GetCounter());
-    PlayerbotsDatabase.DirectExecute(stmt);
+    PlayerbotsDatabase.Execute(stmt);
 
     uint32 botId = owner.GetCounter();
     eventCache.erase(botId);

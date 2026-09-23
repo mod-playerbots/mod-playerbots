@@ -68,7 +68,7 @@ void PlayerbotRepository::Save(PlayerbotAI* botAI)
     SaveValue(trans, guid, "nc", FormatStrategies("nc", botAI->GetStrategies(BOT_STATE_NON_COMBAT)));
     SaveValue(trans, guid, "dead", FormatStrategies("dead", botAI->GetStrategies(BOT_STATE_DEAD)));
 
-    PlayerbotsDatabase.CommitTransaction(trans);
+    PlayerbotsDatabase.DirectCommitTransaction(trans);
 }
 
 std::string const PlayerbotRepository::FormatStrategies(std::string const /*type*/, std::vector<std::string> strategies)
@@ -87,7 +87,7 @@ void PlayerbotRepository::Reset(PlayerbotAI* botAI)
 
     PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_DB_STORE);
     stmt->SetData(0, guid);
-    PlayerbotsDatabase.Execute(stmt);
+    PlayerbotsDatabase.DirectExecute(stmt);
 }
 
 void PlayerbotRepository::SaveValue(PlayerbotsDatabaseTransaction trans, uint32 guid, std::string const key,
