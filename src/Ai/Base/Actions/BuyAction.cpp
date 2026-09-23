@@ -8,7 +8,6 @@
 #include "BudgetValues.h"
 #include "Event.h"
 #include "ItemCountValue.h"
-#include "ItemUsageValue.h"
 #include "ItemVisitors.h"
 #include "Playerbots.h"
 #include "StatsWeightCalculator.h"

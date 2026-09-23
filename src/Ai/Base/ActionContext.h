@@ -8,6 +8,8 @@
 #define PLAYERBOTS_ACTIONCONTEXT_H
 
 #include "AddLootAction.h"
+#include "AhActions.h"
+#include "SellAction.h"
 #include "AttackAction.h"
 #include "AutoMaintenanceOnLevelupAction.h"
 #include "BattleGroundJoinAction.h"
@@ -252,6 +254,10 @@ public:
         creators["rpg start quest"] = &ActionContext::rpg_start_quest;
         creators["rpg end quest"] = &ActionContext::rpg_end_quest;
         creators["rpg buy"] = &ActionContext::rpg_buy;
+        creators["ah sell"] = &ActionContext::ah_sell;
+        creators["ah search result"] = &ActionContext::ah_search_result;
+        creators["ah command result"] = &ActionContext::ah_command_result;
+        creators["ah bidder notification"] = &ActionContext::ah_bidder_notification;
         creators["rpg sell"] = &ActionContext::rpg_sell;
         creators["rpg repair"] = &ActionContext::rpg_repair;
         creators["rpg train"] = &ActionContext::rpg_train;
@@ -277,6 +283,7 @@ public:
         creators["new rpg wander npc"] = &ActionContext::new_rpg_wander_npc;
         creators["new rpg do quest"] = &ActionContext::new_rpg_do_quest;
         creators["new rpg travel flight"] = &ActionContext::new_rpg_travel_flight;
+        creators["new rpg go city"] = &ActionContext::new_rpg_go_city;
         creators["new rpg outdoor pvp"] = &ActionContext::new_rpg_outdoor_pvp;
         creators["wait for attack keep safe distance"] = &ActionContext::wait_for_attack_keep_safe_distance;
     }
@@ -458,6 +465,10 @@ private:
     static Action* rpg_start_quest(PlayerbotAI* botAI) { return new RpgStartQuestAction(botAI); }
     static Action* rpg_end_quest(PlayerbotAI* botAI) { return new RpgEndQuestAction(botAI); }
     static Action* rpg_buy(PlayerbotAI* botAI) { return new RpgBuyAction(botAI); }
+    static Action* ah_sell(PlayerbotAI* botAI) { return new AhSellAction(botAI); }
+    static Action* ah_search_result(PlayerbotAI* botAI) { return new AhSearchResultAction(botAI); }
+    static Action* ah_command_result(PlayerbotAI* botAI) { return new AhCommandResultAction(botAI); }
+    static Action* ah_bidder_notification(PlayerbotAI* botAI) { return new AhBidderNotificationAction(botAI); }
     static Action* rpg_sell(PlayerbotAI* botAI) { return new RpgSellAction(botAI); }
     static Action* rpg_repair(PlayerbotAI* botAI) { return new RpgRepairAction(botAI); }
     static Action* rpg_train(PlayerbotAI* botAI) { return new RpgTrainAction(botAI); }
@@ -483,6 +494,7 @@ private:
     static Action* new_rpg_wander_npc(PlayerbotAI* ai) { return new NewRpgWanderNpcAction(ai); }
     static Action* new_rpg_do_quest(PlayerbotAI* ai) { return new NewRpgDoQuestAction(ai); }
     static Action* new_rpg_travel_flight(PlayerbotAI* ai) { return new NewRpgTravelFlightAction(ai); }
+    static Action* new_rpg_go_city(PlayerbotAI* ai) { return new NewRpgGoCityAction(ai); }
     static Action* new_rpg_outdoor_pvp(PlayerbotAI* ai) { return new NewRpgOutdoorPvpAction(ai); }
     static Action* wait_for_attack_keep_safe_distance(PlayerbotAI* ai) { return new WaitForAttackKeepSafeDistanceAction(ai); }
 };

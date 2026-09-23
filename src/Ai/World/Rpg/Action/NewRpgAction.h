@@ -62,11 +62,12 @@ public:
 
 protected:
     // static NewRpgStatusTransitionProb transitionMat;
-    const int32 statusWanderNpcDuration = 5 * MINUTE  * IN_MILLISECONDS ;
-    const int32 statusWanderRandomDuration = 5 * MINUTE  * IN_MILLISECONDS ;
-    const int32 statusRestDuration = 30 * IN_MILLISECONDS ;
-    const int32 statusDoQuestDuration = 30 * MINUTE  * IN_MILLISECONDS ;
-    const int32 statusOutDoorPvPDuration = HOUR * IN_MILLISECONDS ;
+    const int32 statusWanderNpcDuration = 5 * MINUTE  * IN_MILLISECONDS;
+    const int32 statusWanderRandomDuration = 5 * MINUTE  * IN_MILLISECONDS;
+    const int32 statusRestDuration = 30 * IN_MILLISECONDS;
+    const int32 statusDoQuestDuration = 30 * MINUTE  * IN_MILLISECONDS;
+    const int32 statusOutDoorPvPDuration = HOUR * IN_MILLISECONDS;
+    const int32 statusGoCityDuration = 30 * MINUTE * IN_MILLISECONDS;
 };
 
 class NewRpgGoGrindAction : public NewRpgBaseAction
@@ -120,6 +121,16 @@ public:
 
 protected:
     void ContinueCrossMapTaxi();
+};
+
+class NewRpgGoCityAction : public NewRpgBaseAction
+{
+public:
+    NewRpgGoCityAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "new rpg go city") {}
+    bool Execute(Event event) override;
+
+private:
+    bool ExecuteAuctioneerTask(NewRpgInfo::GoCity& data);
 };
 
 #endif

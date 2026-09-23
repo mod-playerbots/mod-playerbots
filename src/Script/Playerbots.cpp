@@ -18,6 +18,7 @@
 #include "GuildTaskMgr.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
+#include "BotAHUtil.h"
 #include "PlayerbotCommandScript.h"
 #include "PlayerbotGuildMgr.h"
 #include "PlayerbotSpellRepository.h"
@@ -384,7 +385,8 @@ class PlayerbotsWorldScript : public WorldScript
 public:
     PlayerbotsWorldScript() : WorldScript("PlayerbotsWorldScript", {
         WORLDHOOK_ON_BEFORE_WORLD_INITIALIZED,
-        WORLDHOOK_ON_UPDATE
+        WORLDHOOK_ON_UPDATE,
+        WORLDHOOK_ON_SHUTDOWN
     }) {}
 
     void OnBeforeWorldInitialized() override
@@ -424,7 +426,27 @@ public:
     {
         PlayerbotWorldThreadProcessor::instance().Update(diff);
         sRandomPlayerbotMgr.UpdateAI(diff);  // World thread only
+
+        // Batch-flush dirty auction-price history to DB every ~15 min. Writes
+        // are otherwise accumulated in-memory to avoid per-message DB traffic.
+        _auctionFlushAccumulatorMs += diff;
+        if (_auctionFlushAccumulatorMs >= kAuctionFlushIntervalMs)
+        {
+            _auctionFlushAccumulatorMs = 0;
+            sBotAHUtil.FlushDirty();
+        }
     }
+
+    void OnShutdown() override
+    {
+        // Final flush before process exit so the last ~15 min of market
+        // observations aren't lost.
+        sBotAHUtil.FlushDirty();
+    }
+
+private:
+    static constexpr uint32 kAuctionFlushIntervalMs = 15 * MINUTE * IN_MILLISECONDS;
+    uint32 _auctionFlushAccumulatorMs = 0;
 };
 
 class PlayerbotsScript : public PlayerbotScript
