@@ -67,13 +67,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class BwlNefarianFearWardAction : public Action
-{
-public:
-    BwlNefarianFearWardAction(PlayerbotAI* botAI) : Action(botAI, "bwl nefarian fear ward") {}
-    bool Execute(Event event) override;
-};
-
 // Trash
 
 class BwlDeathTalonWyrmguardTankMoveAwayAction : public MovementAction
