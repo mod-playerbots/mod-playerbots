@@ -368,6 +368,7 @@ public:
 
     void OnUpdate(uint32 diff) override
     {
+        PlayerbotHolder::UpdatePendingLogins();  // Headless sessions whose login holder is in flight
         PlayerbotWorldThreadProcessor::instance().Update(diff);
         sRandomPlayerbotMgr.UpdateAI(diff);  // World thread only
     }
