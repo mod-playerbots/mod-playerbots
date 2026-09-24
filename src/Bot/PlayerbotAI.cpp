@@ -42,6 +42,7 @@
 #include "PositionValue.h"
 #include "RBAC.h"
 #include "RandomPlayerbotMgr.h"
+#include "ReactionEngine.h"
 #include "SayAction.h"
 #include "ScriptMgr.h"
 #include "ServerFacade.h"
@@ -158,6 +159,7 @@ PlayerbotAI::PlayerbotAI(Player* bot)
     engines[BOT_STATE_COMBAT] = AiFactory::createCombatEngine(bot, this, aiObjectContext);
     engines[BOT_STATE_NON_COMBAT] = AiFactory::createNonCombatEngine(bot, this, aiObjectContext);
     engines[BOT_STATE_DEAD] = AiFactory::createDeadEngine(bot, this, aiObjectContext);
+    engines[BOT_STATE_REACTION] = reactionEngine = AiFactory::createReactionEngine(bot, this, aiObjectContext);
 
     if (sPlayerbotAIConfig.applyInstanceStrategies)
         ApplyInstanceStrategies(bot->GetMapId());
@@ -277,6 +279,27 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     }
 
     AllowActivity();
+
+    // Wake up if combat state changed (unless casting).
+    bool isCasting = bot->IsNonMeleeSpellCast(true);
+    if (bot->IsInCombat())
+    {
+        if (!inCombat && !isCasting)
+            ResetActionDuration();
+
+        inCombat = true;
+    }
+    else
+    {
+        if (inCombat && !isCasting)
+            ResetActionDuration();
+
+        inCombat = false;
+    }
+
+    bool doMinimalReaction = minimal || !AllowActivity(REACT_ACTIVITY);
+    if (UpdateAIReaction(elapsed, doMinimalReaction, !bot->IsInFlight()))
+        return;
 
     if (!CanUpdateAI())
         return;
@@ -413,6 +436,44 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     // Update internal AI
     UpdateAIInternal(elapsed, minimal);
     YieldThread(bot, GetReactDelay());
+}
+
+bool PlayerbotAI::UpdateAIReaction(uint32 elapsed, bool minimal, bool canControlSelf)
+{
+    if (!reactionEngine)
+        return false;
+
+    bool reactionFound = false;
+    bool const reactionInProgress = reactionEngine->Update(elapsed, minimal, canControlSelf, reactionFound);
+
+    if (reactionFound)
+    {
+        Reaction const* reaction = reactionEngine->GetReaction();
+        if (reaction)
+        {
+            if (reaction->ShouldInterruptCast())
+                bot->InterruptNonMeleeSpells(true);
+
+            if (reaction->ShouldInterruptMovement())
+                bot->StopMoving();
+        }
+    }
+
+    return reactionInProgress;
+}
+
+void PlayerbotAI::SetActionDuration(Action const* action)
+{
+    if (!action)
+        return;
+
+    if (action->IsReaction())
+    {
+        if (reactionEngine)
+            reactionEngine->SetReactionDuration(action);
+    }
+    else
+        PlayerbotAIBase::SetActionDuration(action->GetDuration());
 }
 
 // Helper function for UpdateAI to check group membership and handle removal if necessary
@@ -877,6 +938,8 @@ void PlayerbotAI::Reset(bool full)
     currentEngine = engines[BOT_STATE_NON_COMBAT];
     currentState = BOT_STATE_NON_COMBAT;
     nextAICheckDelay = 0;
+    if (reactionEngine)
+        reactionEngine->ResetReactions();
     whispers.clear();
 
     aiObjectContext->GetValue<Unit*>("old target")->Set(nullptr);
@@ -1907,6 +1970,7 @@ void PlayerbotAI::ResetStrategies(bool /*load*/)
     AiFactory::AddDefaultCombatStrategies(bot, this, engines[BOT_STATE_COMBAT]);
     AiFactory::AddDefaultNonCombatStrategies(bot, this, engines[BOT_STATE_NON_COMBAT]);
     AiFactory::AddDefaultDeadStrategies(bot, this, engines[BOT_STATE_DEAD]);
+    AiFactory::AddDefaultReactionStrategies(bot, this, reactionEngine);
     if (sPlayerbotAIConfig.applyInstanceStrategies)
         ApplyInstanceStrategies(bot->GetMapId());
 
@@ -4677,6 +4741,10 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
             }
         }
     }
+
+    // reaction engine: always active when a real player is within react distance (no config gate)
+    if (activityType == REACT_ACTIVITY && HasPlayerNearby())
+        return true;
 
     // bot has a real player master (not another bot)
     if (GetMaster())

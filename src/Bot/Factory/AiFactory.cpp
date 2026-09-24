@@ -18,6 +18,7 @@
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "PriestAiObjectContext.h"
+#include "ReactionEngine.h"
 #include "RogueAiObjectContext.h"
 #include "ShamanAiObjectContext.h"
 #include "SharedDefines.h"
@@ -737,4 +738,25 @@ Engine* AiFactory::createDeadEngine(Player* player, PlayerbotAI* const facade, A
     AddDefaultDeadStrategies(player, facade, deadEngine);
     deadEngine->Init();
     return deadEngine;
+}
+
+void AiFactory::AddDefaultReactionStrategies(Player* player, PlayerbotAI* const facade, ReactionEngine* reactionEngine)
+{
+    reactionEngine->addStrategies("react", "chat", "potions", nullptr);
+
+    if (sPlayerbotAIConfig.autoAvoidAoe && facade->HasGameClientMaster())
+        reactionEngine->addStrategy("avoid aoe", false);
+
+    if (sRandomPlayerbotMgr.IsRandomBot(player))
+        reactionEngine->ChangeStrategy(sPlayerbotAIConfig.randomBotReactStrategies);
+    else
+        reactionEngine->ChangeStrategy(sPlayerbotAIConfig.reactStrategies);
+}
+
+ReactionEngine* AiFactory::createReactionEngine(Player* player, PlayerbotAI* const facade, AiObjectContext* aiObjectContext)
+{
+    ReactionEngine* reactionEngine = new ReactionEngine(facade, aiObjectContext);
+    AddDefaultReactionStrategies(player, facade, reactionEngine);
+    reactionEngine->Init();
+    return reactionEngine;
 }

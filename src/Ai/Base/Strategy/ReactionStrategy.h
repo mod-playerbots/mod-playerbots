@@ -4,21 +4,20 @@
  * or (at your option) any later version.
  */
 
-#ifndef PLAYERBOTS_USEPOTIONSSTRATEGY_H
-#define PLAYERBOTS_USEPOTIONSSTRATEGY_H
+#ifndef _PLAYERBOT_REACTIONSTRATEGY_H
+#define _PLAYERBOT_REACTIONSTRATEGY_H
 
 #include "Strategy.h"
 
-class PlayerbotAI;
-
-class UsePotionsStrategy : public Strategy
+class ReactionStrategy : public Strategy
 {
 public:
-    UsePotionsStrategy(PlayerbotAI* botAI);
+    ReactionStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
+    std::string const getName() override { return "react"; }
+    uint32 GetType() const override { return STRATEGY_TYPE_REACTION; }
 
-    void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+protected:
     void InitReactionTriggers(std::vector<TriggerNode*>& triggers) override;
-    std::string const getName() override { return "potions"; }
 };
 
 #endif
