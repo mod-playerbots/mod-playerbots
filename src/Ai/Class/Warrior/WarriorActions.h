@@ -143,12 +143,11 @@ public:
     bool isUseful() override;
 };
 
-class CastVigilanceAction : public BuffOnPartyAction
+class CastVigilanceAction : public CastBuffSpellAction
 {
 public:
-    CastVigilanceAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "vigilance") {}
+    CastVigilanceAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "vigilance") {}
 
-    bool Execute(Event event) override;
     Unit* GetTarget() override;
 };
 
