@@ -42,14 +42,14 @@ public:
 
     void Init() override;
     void ResetReactions();
-    bool Update(uint32 elapsed, bool minimal, bool isStunned, bool& reactionFound);
+    bool Update(uint32 elapsed, bool minimal, bool canControlSelf, bool& reactionFound);
     bool IsReacting() const { return ongoingReaction.IsValid(); }
     bool HasIncomingReaction() const { return incomingReaction.IsValid(); }
     void SetReactionDuration(Action const* action);
     Reaction const* GetReaction() const;
 
 private:
-    bool FindReaction(bool minimal, bool isStunned);
+    bool FindReaction(bool minimal, bool canControlSelf);
     float ApplyMainEngineMultipliers(Action* reaction, float relevance);
     bool StartReaction();
     void StopReaction();

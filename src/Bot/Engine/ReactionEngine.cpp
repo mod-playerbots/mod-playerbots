@@ -55,12 +55,12 @@ void ReactionEngine::Init()
     }
 }
 
-bool ReactionEngine::FindReaction(bool minimal, bool isStunned)
+bool ReactionEngine::FindReaction(bool minimal, bool canControlSelf)
 {
     if (!IsReacting())
     {
         // Skip on a taxi: handling commands here would consume them, and most reactions can't run anyway.
-        if (!isStunned)
+        if (canControlSelf)
             botAI->HandleCommands();
 
         ProcessTriggers(minimal);
@@ -87,7 +87,7 @@ bool ReactionEngine::FindReaction(bool minimal, bool isStunned)
                     {
                         reaction->setRelevance(reactionRelevance);
 
-                        if (reaction->isUseful() && (!isStunned || reaction->isUsefulWhenStunned()))
+                        if (reaction->isUseful() && (canControlSelf || reaction->isUsefulWithoutControl()))
                         {
                             for (Multiplier* multiplier : multipliers)
                             {
@@ -181,7 +181,7 @@ void ReactionEngine::StopReaction()
     aiReactionUpdateDelay = 0U;
 }
 
-bool ReactionEngine::Update(uint32 elapsed, bool minimal, bool isStunned, bool& reactionFound)
+bool ReactionEngine::Update(uint32 elapsed, bool minimal, bool canControlSelf, bool& reactionFound)
 {
     aiReactionUpdateDelay = aiReactionUpdateDelay > elapsed ? aiReactionUpdateDelay - elapsed : 0U;
 
@@ -206,7 +206,7 @@ bool ReactionEngine::Update(uint32 elapsed, bool minimal, bool isStunned, bool& 
             }
             else
             {
-                if (FindReaction(minimal, isStunned))
+                if (FindReaction(minimal, canControlSelf))
                     reactionFound = true;
             }
         }

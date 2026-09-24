@@ -399,7 +399,7 @@ public:
 
     void UpdateAI(uint32 elapsed, bool minimal = false) override;
     void UpdateAIInternal(uint32 elapsed, bool minimal = false) override;
-    bool UpdateAIReaction(uint32 elapsed, bool minimal, bool isStunned);
+    bool UpdateAIReaction(uint32 elapsed, bool minimal, bool canControlSelf);
     Engine* GetCurrentEngine() const { return currentEngine; }
     void SetActionDuration(Action const* action);
     using PlayerbotAIBase::SetActionDuration;

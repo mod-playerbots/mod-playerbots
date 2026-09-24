@@ -292,7 +292,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     }
 
     bool doMinimalReaction = minimal || !AllowActivity(REACT_ACTIVITY);
-    if (UpdateAIReaction(elapsed, doMinimalReaction, bot->IsInFlight()))
+    if (UpdateAIReaction(elapsed, doMinimalReaction, !bot->IsInFlight()))
         return;
 
     if (!CanUpdateAI())
@@ -432,13 +432,13 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     YieldThread(bot, GetReactDelay());
 }
 
-bool PlayerbotAI::UpdateAIReaction(uint32 elapsed, bool minimal, bool isStunned)
+bool PlayerbotAI::UpdateAIReaction(uint32 elapsed, bool minimal, bool canControlSelf)
 {
     if (!reactionEngine)
         return false;
 
     bool reactionFound = false;
-    bool const reactionInProgress = reactionEngine->Update(elapsed, minimal, isStunned, reactionFound);
+    bool const reactionInProgress = reactionEngine->Update(elapsed, minimal, canControlSelf, reactionFound);
 
     if (reactionFound)
     {

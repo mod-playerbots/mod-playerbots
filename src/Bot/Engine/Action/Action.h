@@ -85,7 +85,7 @@ public:
     virtual std::vector<NextAction> getAlternatives() { return {}; }
     virtual std::vector<NextAction> getContinuers() { return {}; }
     virtual ActionThreatType getThreatType() { return ActionThreatType::None; }
-    virtual bool isUsefulWhenStunned() { return false; }
+    virtual bool isUsefulWithoutControl() { return false; }
     void Update() {}
     void Reset() {}
     virtual Unit* GetTarget();
