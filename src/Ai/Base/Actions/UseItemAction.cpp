@@ -280,19 +280,19 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
         if (isDrink && isFood)
         {
             p = std::min(hp, mp);
-            if (sPlayerbotAIConfig.announceConsumableUse)
+            if (sPlayerbotAIConfig.AnnounceConsumableUse)
                 TellConsumableUse(item, "Feasting", p);
         }
         else if (isDrink)
         {
             p = mp;
-            if (sPlayerbotAIConfig.announceConsumableUse)
+            if (sPlayerbotAIConfig.AnnounceConsumableUse)
                 TellConsumableUse(item, "Drinking", p);
         }
         else if (isFood)
         {
             p = std::min(hp, mp);
-            if (sPlayerbotAIConfig.announceConsumableUse)
+            if (sPlayerbotAIConfig.AnnounceConsumableUse)
                 TellConsumableUse(item, "Eating", p);
         }
 
