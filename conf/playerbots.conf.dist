@@ -2584,6 +2584,10 @@ AIPlayerbot.GuildFeedback = 1
 AiPlayerbot.GuildRepliesRate = 100
 # Bots without a master will say their lines
 AiPlayerbot.RandomBotSayWithoutMaster = 0
+# Bots whisper their master when they eat/drink/feast ("Eating [item] (85%)"). Set to 0 to
+# suppress those consumable-use messages (bots still sit and eat, just silently).
+# Default: 1 (enabled)
+AiPlayerbot.AnnounceConsumableUse = 1
 
 #
 #
