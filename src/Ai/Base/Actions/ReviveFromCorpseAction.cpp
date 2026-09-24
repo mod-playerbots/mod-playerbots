@@ -17,6 +17,12 @@
 
 bool ReviveFromCorpseAction::Execute(Event event)
 {
+    // In battlegrounds, ghosts are revived by the spirit healer's waves (see AutoReleaseSpiritAction).
+    // Reclaiming here, or falling through to "spirit healer" after 5+ deaths, teleports the bot to a
+    // world graveyard, which removes it from the battleground mid-game.
+    if (bot->InBattleground())
+        return false;
+
     Player* groupLeader = botAI->GetGroupLeader();
     Corpse* corpse = bot->GetCorpse();
 
@@ -293,6 +299,11 @@ GraveyardStruct const* SpiritHealerAction::GetGrave(bool startZone)
 
 bool SpiritHealerAction::Execute(Event /*event*/)
 {
+    // GetGrave() picks world graveyards (falling back to faction start zones); teleporting there from a
+    // battleground removes the bot from it. BG revives go through AutoReleaseSpiritAction instead.
+    if (bot->InBattleground())
+        return false;
+
     Corpse* corpse = bot->GetCorpse();
     if (!corpse)
     {
