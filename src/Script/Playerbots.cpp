@@ -18,12 +18,14 @@
 #include "AllMapScript.h"
 #include "GlobalScript.h"
 #include "GuildTaskMgr.h"
+#include "NewRpgDoQuest.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotCommandScript.h"
 #include "PlayerbotGuildMgr.h"
 #include "PlayerbotSpellRepository.h"
 #include "PlayerbotWorldThreadProcessor.h"
+#include "QuestValues.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
 #include "ServerScript.h"
@@ -527,8 +529,22 @@ public:
         LOG_INFO("server.loading", ">> Loaded playerbots config in {} ms", GetMSTimeDiffToNow(oldMSTime));
         LOG_INFO("server.loading", " ");
 
+        // Everything below builds bot-only indexes; a disabled module should build none.
+        if (!sPlayerbotAIConfig.enabled)
+        {
+            LOG_INFO("server.loading", "Playerbots disabled by config - skipping bot indexes");
+            return;
+        }
+
         PlayerbotSpellRepository::Instance().Initialize();
         CheckMountStateAction::LoadPreferredMounts();
+
+        LOG_INFO("server.loading", "Loading quest objective spawn index...");
+        uint32 questIndexMSTime = getMSTime();
+        BuildQuestObjectiveSpawns();
+        NewRpgDoQuestAction::BuildCaches();
+        LOG_INFO("server.loading", ">> Loaded quest objective spawn index in {} ms",
+                 GetMSTimeDiffToNow(questIndexMSTime));
 
         LOG_INFO("server.loading", "Playerbots World Thread Processor initialized");
     }
