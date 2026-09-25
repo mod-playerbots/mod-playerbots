@@ -491,14 +491,14 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
 // be unassigned (type 0)
 void RandomPlayerbotMgr::AssignAccountTypes()
 {
-    LOG_INFO("playerbots", "Assigning account types for random bot accounts...");
+    LOG_INFO("playerbots", "Assigning account types for bot accounts...");
 
     // Clear existing filtered lists
     rndBotTypeAccounts.clear();
     addClassTypeAccounts.clear();
 
-    // First, get ALL randombot accounts from the database
-    std::vector<uint32> allRandomBotAccounts;
+    // First, get ALL bot accounts from the database
+    std::vector<uint32> allBotAccounts;
     QueryResult allAccounts = LoginDatabase.Query(
         "SELECT id FROM account WHERE username LIKE '{}%%' ORDER BY id",
         sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
@@ -509,11 +509,11 @@ void RandomPlayerbotMgr::AssignAccountTypes()
         {
             Field* fields = allAccounts->Fetch();
             uint32 accountId = fields[0].Get<uint32>();
-            allRandomBotAccounts.push_back(accountId);
+            allBotAccounts.push_back(accountId);
         } while (allAccounts->NextRow());
     }
 
-    LOG_INFO("playerbots", "Found {} total randombot accounts in database", allRandomBotAccounts.size());
+    LOG_INFO("playerbots", "Found {} total bot accounts in database", allBotAccounts.size());
 
     // Check existing assignments
     PlayerbotsDatabasePreparedStatement* assignmentsStmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_ACCOUNT_TYPE);
@@ -531,8 +531,8 @@ void RandomPlayerbotMgr::AssignAccountTypes()
         } while (existingAssignments->NextRow());
     }
 
-    // Mark ALL randombot accounts as unassigned if not already assigned
-    for (uint32 accountId : allRandomBotAccounts)
+    // Mark ALL bot accounts as unassigned if not already assigned
+    for (uint32 accountId : allBotAccounts)
     {
         if (currentAssignments.find(accountId) == currentAssignments.end())
         {
@@ -577,9 +577,9 @@ void RandomPlayerbotMgr::AssignAccountTypes()
         uint32 toAssign = neededRndBotAccounts - existingRndBotAccounts;
         uint32 assigned = 0;
 
-        for (uint32 i = 0; i < allRandomBotAccounts.size() && assigned < toAssign; i++)
+        for (uint32 i = 0; i < allBotAccounts.size() && assigned < toAssign; i++)
         {
-            uint32 accountId = allRandomBotAccounts[i];
+            uint32 accountId = allBotAccounts[i];
             if (currentAssignments[accountId] == 0) // Unassigned
             {
                 PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_ACCOUNT_TYPE);
@@ -605,9 +605,9 @@ void RandomPlayerbotMgr::AssignAccountTypes()
         uint32 toAssign = neededAddClassAccounts - existingAddClassAccounts;
         uint32 assigned = 0;
 
-        for (size_t idx = allRandomBotAccounts.size(); idx-- > 0 && assigned < toAssign;)
+        for (size_t idx = allBotAccounts.size(); idx-- > 0 && assigned < toAssign;)
         {
-            uint32 accountId = allRandomBotAccounts[idx];
+            uint32 accountId = allBotAccounts[idx];
             if (currentAssignments[accountId] == 0) // Unassigned
             {
                 PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_ACCOUNT_TYPE);
@@ -1533,7 +1533,7 @@ bool RandomPlayerbotMgr::ProcessBot(Player* bot)
             //         }
 
             //         uint32 accountId = sCharacterCache->GetCharacterAccountIdByGuid(guild->GetLeaderGUID());
-            //         if (!sPlayerbotAIConfig.IsInRandomAccountList(accountId))
+            //         if (!sPlayerbotAIConfig.IsInBotAccountList(accountId))
             //         {
             //             uint8 rank = player->GetRank();
             //             randomiser = rank < 4 ? false : true;
@@ -2221,7 +2221,7 @@ bool RandomPlayerbotMgr::IsRandomBot(Player* bot)
 bool RandomPlayerbotMgr::IsRandomBot(ObjectGuid::LowType bot)
 {
     ObjectGuid guid = ObjectGuid::Create<HighGuid::Player>(bot);
-    if (!sPlayerbotAIConfig.IsInRandomAccountList(sCharacterCache->GetCharacterAccountIdByGuid(guid)))
+    if (!sPlayerbotAIConfig.IsInBotAccountList(sCharacterCache->GetCharacterAccountIdByGuid(guid)))
         return false;
 
     return currentBots.contains(bot);
@@ -2529,8 +2529,8 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* /*handler*/,
         std::string const name = cmd.size() > prefix.size() + 1 ? cmd.substr(1 + prefix.size()) : "%";
 
         std::vector<uint32> botIds;
-        for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.randomBotAccounts.begin();
-             i != sPlayerbotAIConfig.randomBotAccounts.end(); ++i)
+        for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.botAccounts.begin();
+             i != sPlayerbotAIConfig.botAccounts.end(); ++i)
         {
             uint32 account = *i;
             if (QueryResult results = CharacterDatabase.Query(

@@ -941,9 +941,9 @@ void PlayerbotAIConfig::LoadRandomBotLevelConfig()
         resetBotLevelExcludeNames);
 }
 
-bool PlayerbotAIConfig::IsInRandomAccountList(uint32 id)
+bool PlayerbotAIConfig::IsInBotAccountList(uint32 id)
 {
-    return find(randomBotAccounts.begin(), randomBotAccounts.end(), id) != randomBotAccounts.end();
+    return find(botAccounts.begin(), botAccounts.end(), id) != botAccounts.end();
 }
 
 bool PlayerbotAIConfig::IsInRandomQuestItemList(uint32 id)
