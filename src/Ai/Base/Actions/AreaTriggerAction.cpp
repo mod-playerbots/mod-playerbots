@@ -13,7 +13,7 @@
 
 bool ReachAreaTriggerAction::Execute(Event event)
 {
-    if (IsSelfBot(bot))  // Selfbots reach their own area triggers through the client.
+    if (IsSelfBot(bot))  // SelfBots reach their own area triggers through the client.
         return false;
 
     uint32 triggerId;

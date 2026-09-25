@@ -713,7 +713,7 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
         for (uint32 accountId : accountsToUse)
         {
             CharacterDatabasePreparedStatement* stmt =
-                CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARS_BY_ACCOUNT_ID);
+                CharacterDatabase.GetPreparedStatement(CHAR_SEL_ACCOUNT_INFO_CHARS);
             stmt->SetData(0, accountId);
             PreparedQueryResult result = CharacterDatabase.Query(stmt);
             if (!result)
@@ -724,8 +724,8 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
                 Field* fields = result->Fetch();
                 CharacterInfo info;
                 info.guid = fields[0].Get<uint32>();
-                info.rClass = fields[1].Get<uint8>();
-                info.rRace = fields[2].Get<uint8>();
+                info.rRace = fields[3].Get<uint8>();
+                info.rClass = fields[4].Get<uint8>();
                 info.accountId = accountId;
                 allCharacters.push_back(info);
             } while (result->NextRow());

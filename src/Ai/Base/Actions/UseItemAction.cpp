@@ -322,6 +322,9 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
 
 void UseItemAction::TellConsumableUse(Item* item, std::string const action, float percent)
 {
+    if (!sPlayerbotAIConfig.AnnounceConsumableUse)
+        return;
+
     std::ostringstream out;
     out << action << " " << chat->FormatItem(item->GetTemplate());
 
@@ -337,13 +340,26 @@ bool UseItemAction::SocketItem(Item* item, Item* gem, bool replace)
     WorldPacket packet(CMSG_SOCKET_GEMS);
     packet << item->GetGUID();
 
+    // A buckle's gem goes into the first colourless template socket - see WorldSession::HandleSocketOpcode.
+    uint8 firstPrismatic = 0;
+    while (firstPrismatic < MAX_GEM_SOCKETS && item->GetTemplate()->Socket[firstPrismatic].Color)
+        ++firstPrismatic;
+
+    bool const hasPrismaticSocket = item->GetEnchantmentId(PRISMATIC_ENCHANTMENT_SLOT) != 0;
+
     bool fits = false;
     for (uint32 enchant_slot = SOCK_ENCHANTMENT_SLOT; enchant_slot < SOCK_ENCHANTMENT_SLOT + MAX_GEM_SOCKETS;
          ++enchant_slot)
     {
-        uint8 SocketColor = item->GetTemplate()->Socket[enchant_slot - SOCK_ENCHANTMENT_SLOT].Color;
+        uint32 socketIndex = enchant_slot - SOCK_ENCHANTMENT_SLOT;
+        uint8 socketColor = item->GetTemplate()->Socket[socketIndex].Color;
         GemPropertiesEntry const* gemProperty = sGemPropertiesStore.LookupEntry(gem->GetTemplate()->GemProperties);
-        if (gemProperty && (gemProperty->color & SocketColor))
+
+        // A socket added by a buckle carries no colour of its own and takes any gem except a meta one.
+        bool const isPrismatic = !socketColor && hasPrismaticSocket && socketIndex == firstPrismatic;
+        bool const gemFitsSocket = gemProperty && (isPrismatic ? gemProperty->color != SOCKET_COLOR_META
+                                                               : (gemProperty->color & socketColor) != 0);
+        if (gemFitsSocket)
         {
             if (fits)
             {

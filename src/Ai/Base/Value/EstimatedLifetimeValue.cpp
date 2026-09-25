@@ -41,7 +41,7 @@ float EstimatedGroupDpsValue::Calculate()
             if (member == bot)  // calculated
                 continue;
 
-            // Ignore real players and selfbots as they may not help with damage.
+            // Ignore real players and SelfBots as they may not help with damage.
             if (!GET_PLAYERBOT_AI(member) || IsSelfBot(member))
                 continue;
 
