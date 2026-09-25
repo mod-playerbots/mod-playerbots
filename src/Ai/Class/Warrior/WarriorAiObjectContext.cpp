@@ -36,13 +36,14 @@ class WarriorCombatStrategyFactoryInternal : public NamedObjectContext<Strategy>
 public:
     WarriorCombatStrategyFactoryInternal() : NamedObjectContext<Strategy>(false, true)
     {
-        creators["tank"] = &WarriorCombatStrategyFactoryInternal::tank;
+        creators["prot"] = &WarriorCombatStrategyFactoryInternal::prot;
+        creators["tank"] = &WarriorCombatStrategyFactoryInternal::prot;
         creators["arms"] = &WarriorCombatStrategyFactoryInternal::arms;
         creators["fury"] = &WarriorCombatStrategyFactoryInternal::fury;
     }
 
 private:
-    static Strategy* tank(PlayerbotAI* botAI) { return new TankWarriorStrategy(botAI); }
+    static Strategy* prot(PlayerbotAI* botAI) { return new TankWarriorStrategy(botAI); }
     static Strategy* arms(PlayerbotAI* botAI) { return new ArmsWarriorStrategy(botAI); }
     static Strategy* fury(PlayerbotAI* botAI) { return new FuryWarriorStrategy(botAI); }
 };
