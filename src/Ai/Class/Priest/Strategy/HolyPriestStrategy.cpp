@@ -91,6 +91,14 @@ void HolyDpsPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+    triggers.push_back(
+        new TriggerNode(
+            "party member to heal out of spell range",
+            {
+                NextAction("reach party member to heal", ACTION_CRITICAL_HEAL + 10)
+            }
+        )
+    );
 }
 
 HolyHealPriestStrategy::HolyHealPriestStrategy(PlayerbotAI* botAI) : GenericPriestStrategy(botAI)
@@ -116,7 +124,6 @@ void HolyHealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
-
     triggers.push_back(
         new TriggerNode(
             "medium group heal setting",
@@ -128,7 +135,6 @@ void HolyHealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
-
     triggers.push_back(
         new TriggerNode(
             "party member critical health",
@@ -141,7 +147,6 @@ void HolyHealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
-
     triggers.push_back(
         new TriggerNode(
             "party member low health",
@@ -153,7 +158,6 @@ void HolyHealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
-
     triggers.push_back(
         new TriggerNode(
             "party member medium health",
@@ -165,7 +169,6 @@ void HolyHealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
-
     triggers.push_back(
         new TriggerNode(
             "party member almost full health",
@@ -175,7 +178,6 @@ void HolyHealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
-
     triggers.push_back(
         new TriggerNode(
             "party member to heal out of spell range",
