@@ -146,7 +146,6 @@ bool SeeSpellAction::Execute(Event event)
 
 bool SeeSpellAction::SelectSpell(WorldPosition& spellPosition)
 {
-    Player* master = botAI->GetMaster();
     if (spellPosition.distance(bot) <= 5 || AI_VALUE(bool, "RTSC selected"))
     {
         SET_AI_VALUE(bool, "RTSC selected", true);
