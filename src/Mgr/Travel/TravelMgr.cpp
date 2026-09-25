@@ -3352,7 +3352,7 @@ void TravelMgr::LoadQuestTravelTable()
         specs[CLASS_PRIEST][2] = "shadow";
 
         classes[CLASS_ROGUE] = "rogue";
-        specs[CLASS_ROGUE][0] = "assasination";
+        specs[CLASS_ROGUE][0] = "assassination";
         specs[CLASS_ROGUE][1] = "combat";
         specs[CLASS_ROGUE][2] = "subtlety";
 

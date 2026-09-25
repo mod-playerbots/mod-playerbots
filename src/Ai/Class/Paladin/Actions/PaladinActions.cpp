@@ -102,7 +102,9 @@ static inline bool IsTankRole(Player* player)
 
     if (PlayerbotAI* otherAI = GET_PLAYERBOT_AI(player))
     {
-        if (otherAI->HasStrategy("tank", BOT_STATE_NON_COMBAT) ||
+        if (otherAI->HasStrategy("prot", BOT_STATE_NON_COMBAT) ||
+            otherAI->HasStrategy("prot", BOT_STATE_COMBAT)     ||
+            otherAI->HasStrategy("tank", BOT_STATE_NON_COMBAT) ||
             otherAI->HasStrategy("tank", BOT_STATE_COMBAT)     ||
             otherAI->HasStrategy("tank face", BOT_STATE_NON_COMBAT) ||
             otherAI->HasStrategy("tank face", BOT_STATE_COMBAT)     ||
