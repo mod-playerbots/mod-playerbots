@@ -21,7 +21,19 @@
 #include "ScriptMgr.h"
 #include "SharedDefines.h"
 #include "SocialMgr.h"
+#include "StringFormat.h"
 #include "Timer.h"
+#include "World.h"
+
+std::string RandomPlayerbotFactory::GetLocalizedNameSelector(std::string const& column)
+{
+    LocaleConstant locale = sWorld->GetDefaultDbcLocale();
+    if (locale == LOCALE_enUS || locale >= TOTAL_LOCALES)
+        return column;
+
+    // Fall back to the enUS column when the localized one is NULL or empty
+    return Acore::StringFormat("COALESCE(NULLIF({}_{}, ''), {})", column, localeNames[locale], column);
+}
 
 constexpr RandomPlayerbotFactory::NameRaceAndGender RandomPlayerbotFactory::CombineRaceAndGender(uint8 race,
                                                                                                 uint8 gender)
@@ -786,10 +798,12 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
     uint32 maxId = fields[0].Get<uint32>();
 
     uint32 id = urand(0, maxId);
+    std::string nameExpr = GetLocalizedNameSelector("n.name");
     result = CharacterDatabase.Query(
-        "SELECT n.name FROM playerbots_guild_names n "
-        "LEFT OUTER JOIN guild e ON e.name = n.name WHERE e.guildid IS NULL AND n.name_id >= {} LIMIT 1",
-        id);
+        "SELECT {} FROM playerbots_guild_names n "
+        "LEFT OUTER JOIN guild e ON e.name = {} "
+        "WHERE e.guildid IS NULL AND n.name_id >= {} LIMIT 1",
+        nameExpr, nameExpr, id);
     if (!result)
     {
         LOG_ERROR("playerbots", "No more names left for random guilds");
@@ -840,10 +854,13 @@ void RandomPlayerbotFactory::LoadArenaTeamData()
 
     _availableArenaTeamNames.clear();
 
+    // Join on the localized name so already-taken localized names are filtered out
+    std::string nameExpr = GetLocalizedNameSelector("n.name");
     QueryResult result = CharacterDatabase.Query(
-        "SELECT n.name FROM playerbots_arena_team_names n "
-        "LEFT OUTER JOIN arena_team e ON e.name = n.name "
-        "WHERE e.arenateamid IS NULL");
+        "SELECT {} FROM playerbots_arena_team_names n "
+        "LEFT OUTER JOIN arena_team e ON e.name = {} "
+        "WHERE e.arenateamid IS NULL",
+        nameExpr, nameExpr);
 
     if (!result)
     {
