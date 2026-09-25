@@ -577,7 +577,7 @@ public:
     NullTravelDestination(uint32 cooldownDelay1 = 5 * MINUTE * IN_MILLISECONDS) : TravelDestination()
     {
         cooldownDelay = cooldownDelay1;
-    };
+    }
 
     Quest const* GetQuestTemplate() override { return nullptr; }
 

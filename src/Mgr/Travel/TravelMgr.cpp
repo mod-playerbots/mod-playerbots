@@ -1602,7 +1602,10 @@ bool TravelTarget::isActive()
     return true;
 };
 
-uint32 TravelTarget::getMaxTravelTime() { return (IN_MILLISECONDS * distance(bot)) / bot->GetSpeed(MOVE_RUN); }
+uint32 TravelTarget::getMaxTravelTime()
+{
+    return (IN_MILLISECONDS * distance(bot)) / bot->GetSpeed(MOVE_RUN);
+}
 
 bool TravelTarget::isTraveling()
 {
