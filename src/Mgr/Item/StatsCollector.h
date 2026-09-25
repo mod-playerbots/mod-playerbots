@@ -10,6 +10,9 @@
 #include "ItemTemplate.h"
 #include "SpellInfo.h"
 
+struct ScalingStatDistributionEntry;
+struct ScalingStatValuesEntry;
+
 enum StatsType : uint8
 {
     // Basic stats
@@ -65,7 +68,7 @@ public:
     StatsCollector(CollectorType type, int32 cls = -1);
     StatsCollector(StatsCollector& stats) = default;
     void Reset();
-    void CollectItemStats(ItemTemplate const* proto);
+    void CollectItemStats(ItemTemplate const* proto, uint8 playerLevel);
     void CollectSpellStats(uint32 spellId, float multiplier = 1.0f, Milliseconds spellCooldown = -1ms);
     void CollectEnchantStats(SpellItemEnchantmentEntry const* enchant, uint32 default_enchant_amount = 0);
     bool CanBeTriggeredByType(SpellInfo const* spellInfo, uint32 procFlags, bool strict = true);
@@ -75,6 +78,9 @@ public:
     float stats[STATS_TYPE_MAX];
 
 private:
+    void CollectWeaponDamageStats(ItemTemplate const* proto, ScalingStatValuesEntry const* ssv);
+    void CollectItemStatValues(ItemTemplate const* proto, ScalingStatDistributionEntry const* ssd,
+                               ScalingStatValuesEntry const* ssv);
     void CollectByItemStatType(uint32 itemStatType, int32 val);
     bool SpecialSpellFilter(uint32 spellId);
     bool SpecialEnchantFilter(uint32 enchantSpellId);
