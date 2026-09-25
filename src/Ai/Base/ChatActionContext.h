@@ -42,7 +42,6 @@
 #include "MailAction.h"
 #include "NamedObjectContext.h"
 #include "NewRpgAction.h"
-#include "NewRpgDoGather.h"
 #include "OpenItemAction.h"
 #include "PassLeadershipToMasterAction.h"
 #include "PetsAction.h"
@@ -109,7 +108,6 @@ public:
         creators["los"] = &ChatActionContext::los;
         creators["rpg status"] = &ChatActionContext::rpg_status;
         creators["rpg do quest"] = &ChatActionContext::rpg_do_quest;
-        creators["rpg do gather"] = &ChatActionContext::rpg_do_gather;
         creators["aura"] = &ChatActionContext::aura;
         creators["drop"] = &ChatActionContext::drop;
         creators["clean quest log"] = &ChatActionContext::clean_quest_log;
@@ -302,7 +300,6 @@ private:
     static Action* los(PlayerbotAI* botAI) { return new TellLosAction(botAI); }
     static Action* rpg_status(PlayerbotAI* botAI) { return new TellRpgStatusAction(botAI); }
     static Action* rpg_do_quest(PlayerbotAI* botAI) { return new StartRpgDoQuestAction(botAI); }
-    static Action* rpg_do_gather(PlayerbotAI* botAI) { return new StartRpgDoGatherAction(botAI); }
     static Action* aura(PlayerbotAI* ai) { return new TellAuraAction(ai); }
     static Action* ll(PlayerbotAI* botAI) { return new LootStrategyAction(botAI); }
     static Action* ss(PlayerbotAI* botAI) { return new SkipSpellsListAction(botAI); }

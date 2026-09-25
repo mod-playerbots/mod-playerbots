@@ -9,18 +9,6 @@
 
 #include "NewRpgBaseAction.h"
 
-// Chat command "rpg do gather": force the bot into the gathering state in
-// its current zone, mirroring "rpg do quest". Intended for maintainers to
-// test the gather behavior on demand (requires the "new rpg" strategy to be
-// active, e.g. via "nc +new rpg").
-class StartRpgDoGatherAction : public Action
-{
-public:
-    StartRpgDoGatherAction(PlayerbotAI* botAI) : Action(botAI, "start rpg do gather") {}
-
-    bool Execute(Event event) override;
-};
-
 class NewRpgDoGatherAction : public NewRpgBaseAction
 {
 public:

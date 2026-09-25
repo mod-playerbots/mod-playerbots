@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "NewRpgDoGather.h"
@@ -13,7 +14,6 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
-#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 #include "SpellAuraDefines.h"
@@ -27,41 +27,6 @@ enum GatherSpells
     HERB_GATHERING = 2366,
     MINING = 2575,
 };
-
-bool StartRpgDoGatherAction::Execute(Event event)
-{
-    Player* owner = event.getOwner();
-    if (!owner)
-        return false;
-
-    if (!botAI->HasSkill(SKILL_HERBALISM) && !botAI->HasSkill(SKILL_MINING))
-    {
-        std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "rpg_gather_no_profession_error", "I have neither Herbalism nor Mining, so I can't gather.", {});
-        bot->Whisper(msg, LANG_UNIVERSAL, owner);
-        return false;
-    }
-
-    if (!botAI->HasStrategy("new rpg", BOT_STATE_NON_COMBAT))
-    {
-        std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "rpg_gather_strategy_off_warning",
-            "Note: my 'new rpg' strategy is off - run 'nc +new rpg' or I won't act on this.", {});
-        bot->Whisper(msg, LANG_UNIVERSAL, owner);
-    }
-
-    botAI->rpgInfo.ChangeToDoGather();
-
-    std::string msg = sGatherNodeMgr.HasUsableNodes(bot)
-        ? PlayerbotTextMgr::instance().GetBotTextOrDefault(
-              "rpg_gather_started", "Starting to gather nodes in this zone.", {})
-        : PlayerbotTextMgr::instance().GetBotTextOrDefault(
-              "rpg_gather_started_no_nodes",
-              "Starting to gather, but I see no harvestable nodes in this zone right now.", {});
-    bot->Whisper(msg, LANG_UNIVERSAL, owner);
-
-    return true;
-}
 
 void NewRpgDoGatherAction::ClearLootTargetForNode(ObjectGuid::LowType spawnId)
 {
