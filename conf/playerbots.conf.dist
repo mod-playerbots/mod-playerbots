@@ -527,9 +527,6 @@ AiPlayerbot.ForceRebuffOnReadyCheck = 0
 # Default: 60
 AiPlayerbot.ForceRebuffMarginSecs = 60
 
-# Bots can flee from enemies
-AiPlayerbot.FleeingEnabled = 1
-
 #
 #
 ####################################################################################################

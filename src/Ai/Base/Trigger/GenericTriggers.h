@@ -542,14 +542,6 @@ private:
     uint8 threshold;
 };
 
-BEGIN_TRIGGER(PanicTrigger, Trigger) // cppcheck-suppress unknownMacro
-std::string const getName() override { return "panic"; }
-END_TRIGGER()
-
-BEGIN_TRIGGER(OutNumberedTrigger, Trigger)
-std::string const getName() override { return "outnumbered"; }
-END_TRIGGER()
-
 class NoPetTrigger : public Trigger
 {
 public:
@@ -777,14 +769,6 @@ class IsSwimmingTrigger : public Trigger
 {
 public:
     IsSwimmingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "swimming") {}
-
-    bool IsActive() override;
-};
-
-class HasNearestAddsTrigger : public Trigger
-{
-public:
-    HasNearestAddsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "has nearest adds") {}
 
     bool IsActive() override;
 };

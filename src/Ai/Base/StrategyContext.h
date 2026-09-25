@@ -20,7 +20,6 @@
 #include "DpsAssistStrategy.h"
 #include "DuelStrategy.h"
 #include "EmoteStrategy.h"
-#include "FleeStrategy.h"
 #include "FocusTargetStrategy.h"
 #include "FollowMasterStrategy.h"
 #include "ForceRebuff.h"
@@ -75,7 +74,6 @@ public:
         creators["ready check"] = &StrategyContext::ready_check;
         creators["force rebuff"] = &StrategyContext::force_rebuff;
         creators["dead"] = &StrategyContext::dead;
-        creators["flee"] = &StrategyContext::flee;
         creators["duel"] = &StrategyContext::duel;
         creators["start duel"] = &StrategyContext::start_duel;
         creators["kite"] = &StrategyContext::kite;
@@ -148,7 +146,6 @@ private:
     static Strategy* kite(PlayerbotAI* botAI) { return new KiteStrategy(botAI); }
     static Strategy* duel(PlayerbotAI* botAI) { return new DuelStrategy(botAI); }
     static Strategy* start_duel(PlayerbotAI* botAI) { return new StartDuelStrategy(botAI); }
-    static Strategy* flee(PlayerbotAI* botAI) { return new FleeStrategy(botAI); }
     static Strategy* dead(PlayerbotAI* botAI) { return new DeadStrategy(botAI); }
     static Strategy* racials(PlayerbotAI* botAI) { return new RacialsStrategy(botAI); }
     static Strategy* loot(PlayerbotAI* botAI) { return new LootNonCombatStrategy(botAI); }
@@ -218,7 +215,6 @@ public:
         creators["follow"] = &MovementStrategyContext::follow_master;
         creators["stay"] = &MovementStrategyContext::stay;
         creators["runaway"] = &MovementStrategyContext::runaway;
-        creators["flee from adds"] = &MovementStrategyContext::flee_from_adds;
         creators["guard"] = &MovementStrategyContext::guard;
     }
 
@@ -227,7 +223,6 @@ private:
     static Strategy* follow_master(PlayerbotAI* botAI) { return new FollowMasterStrategy(botAI); }
     static Strategy* stay(PlayerbotAI* botAI) { return new StayStrategy(botAI); }
     static Strategy* runaway(PlayerbotAI* botAI) { return new RunawayStrategy(botAI); }
-    static Strategy* flee_from_adds(PlayerbotAI* botAI) { return new FleeFromAddsStrategy(botAI); }
 };
 
 class AssistStrategyContext : public NamedObjectContext<Strategy>

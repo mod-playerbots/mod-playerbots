@@ -109,53 +109,6 @@ bool LoseAggroTrigger::IsActive() { return !AI_VALUE2(bool, "has aggro", "curren
 
 bool HasAggroTrigger::IsActive() { return AI_VALUE2(bool, "has aggro", "current target"); }
 
-bool PanicTrigger::IsActive()
-{
-    return AI_VALUE2(uint8, "health", "self target") < sPlayerbotAIConfig.criticalHealth &&
-           (!AI_VALUE2(bool, "has mana", "self target") ||
-            AI_VALUE2(uint8, "mana", "self target") < sPlayerbotAIConfig.lowMana);
-}
-
-bool OutNumberedTrigger::IsActive()
-{
-    if (bot->GetMap() && (bot->GetMap()->IsDungeon() || bot->GetMap()->IsRaid()))
-        return false;
-
-    if (bot->GetGroup() && bot->GetGroup()->isRaidGroup())
-        return false;
-
-    int32 botLevel = bot->GetLevel();
-    uint32 friendPower = 200;
-    uint32 foePower = 0;
-    for (auto& attacker : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
-    {
-        Creature* creature = botAI->GetCreature(attacker);
-        if (!creature)
-            continue;
-
-        int32 dLevel = creature->GetLevel() - botLevel;
-        if (dLevel > -10)
-            foePower = std::max(100 + 10 * dLevel, dLevel * 200);
-    }
-
-    if (!foePower)
-        return false;
-
-    for (auto& helper : botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest friendly players")->Get())
-    {
-        Unit* player = botAI->GetUnit(helper);
-        if (!player || player == bot)
-            continue;
-
-        int32 dLevel = player->GetLevel() - botLevel;
-
-        if (dLevel > -10 && bot->GetDistance(player) < 10.0f)
-            friendPower += std::max(200 + 20 * dLevel, dLevel * 200);
-    }
-
-    return friendPower < foePower;
-}
-
 bool BuffTrigger::IsActive()
 {
     Unit* target = GetTarget();
@@ -633,12 +586,6 @@ bool NotDpsAoeTargetActiveTrigger::IsActive()
 }
 
 bool IsSwimmingTrigger::IsActive() { return AI_VALUE2(bool, "swimming", "self target"); }
-
-bool HasNearestAddsTrigger::IsActive()
-{
-    GuidVector targets = AI_VALUE(GuidVector, "nearest adds");
-    return targets.size();
-}
 
 bool HasItemForSpellTrigger::IsActive()
 {
