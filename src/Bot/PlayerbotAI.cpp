@@ -3710,10 +3710,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
     {
         LootObject loot = *aiObjectContext->GetValue<LootObject>("loot target");
         GameObject* go = GetGameObject(loot.guid);
-        // A spawned loot-target GO only wins when the cast carries no item target, or
-        // when the item target is that GO's required key (keys use their own item
-        // spell). Other item targets (lockbox Pick Lock, trade window) stay item
-        // casts even while a chest or node happens to be selected as loot target.
+        // Use the loot-target object if it exists and is spawned, and either no item was given or the item is its key.
         if (go && go->isSpawned() && (!itemTarget || itemTarget->GetEntry() == loot.reqItem))
         {
             WorldPacket packetgouse(CMSG_GAMEOBJ_USE, 8);
