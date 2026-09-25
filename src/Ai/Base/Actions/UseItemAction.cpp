@@ -280,20 +280,17 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
         if (isDrink && isFood)
         {
             p = std::min(hp, mp);
-            if (sPlayerbotAIConfig.AnnounceConsumableUse)
-                TellConsumableUse(item, "Feasting", p);
+            TellConsumableUse(item, "Feasting", p);
         }
         else if (isDrink)
         {
             p = mp;
-            if (sPlayerbotAIConfig.AnnounceConsumableUse)
-                TellConsumableUse(item, "Drinking", p);
+            TellConsumableUse(item, "Drinking", p);
         }
         else if (isFood)
         {
             p = std::min(hp, mp);
-            if (sPlayerbotAIConfig.AnnounceConsumableUse)
-                TellConsumableUse(item, "Eating", p);
+            TellConsumableUse(item, "Eating", p);
         }
 
         if (!bot->IsInCombat() && !bot->InBattleground())
@@ -325,6 +322,9 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
 
 void UseItemAction::TellConsumableUse(Item* item, std::string const action, float percent)
 {
+    if (!sPlayerbotAIConfig.AnnounceConsumableUse)
+        return;
+
     std::ostringstream out;
     out << action << " " << chat->FormatItem(item->GetTemplate());
 
