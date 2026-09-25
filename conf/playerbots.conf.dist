@@ -1759,6 +1759,8 @@ AiPlayerbot.PermanentlyInWorldTime = 31104000
 #
 ####################################################################################################
 
+####################################################################################################
+
 ###################################
 #                                 #
 # PREMADE SPECS                   #
@@ -1785,27 +1787,50 @@ AiPlayerbot.PermanentlyInWorldTime = 31104000
 
 AiPlayerbot.PremadeSpecName.1.0 = arms pve
 AiPlayerbot.PremadeSpecGlyph.1.0 = 43418,43395,43423,43399,43397,43421
-AiPlayerbot.PremadeSpecLink.1.0.60 = 3022032023335100002012211231241
+# Level 60 (51 pts): Classic 33/18/0 (Mortal Strike + Fury Cruelty/Commanding Presence)
+AiPlayerbot.PremadeSpecLink.1.0.60 = 32002320233350021101-305050005
+# Level 70 (61 pts): Bladestorm (51 Arms) + 10 points in Fury for Cruelty & AP
+AiPlayerbot.PremadeSpecLink.1.0.70 = 3022032023335100002012211231241-30502
 AiPlayerbot.PremadeSpecLink.1.0.80 = 3022032023335100102012213231251-305-2033
+
 AiPlayerbot.PremadeSpecName.1.1 = fury pve
 AiPlayerbot.PremadeSpecGlyph.1.1 = 43418,43395,43414,43396,49084,43432
-AiPlayerbot.PremadeSpecLink.1.1.60 = -305053000500310053120501351
+# Level 60 (51 pts): Classic 15/36/0 (Arms Deep Wounds/Impale + Deep Fury Bloodthirst/Flurry)
+AiPlayerbot.PremadeSpecLink.1.1.60 = 3200230023-305052005500310502
+# Level 70 (61 pts): Titan's Grip (51 Fury) + 10 points in Arms for Imp Heroic Strike & Rend
+AiPlayerbot.PremadeSpecLink.1.1.70 = 320023-305053000500310053120501351
 AiPlayerbot.PremadeSpecLink.1.1.80 = 32002300233-305053000500310153120511351
+
 AiPlayerbot.PremadeSpecName.1.2 = prot pve
 AiPlayerbot.PremadeSpecGlyph.1.2 = 43429,43397,43425,43399,49084,45797
-AiPlayerbot.PremadeSpecLink.1.2.60 = --053351225000210521030113321
+# Level 60 (51 pts): Classic 15/0/36 (Arms Deep Wounds for Threat + Shield Slam/Concussion Blow)
+AiPlayerbot.PremadeSpecLink.1.2.60 = 3200230023--0533512220030125021
+# Level 70 (61 pts): Shockwave (51 Prot) + 10 points in Arms for Deflection & Parry
+AiPlayerbot.PremadeSpecLink.1.2.70 = 350002--053351225000210521030113321
 AiPlayerbot.PremadeSpecLink.1.2.80 = 3500030023-301-053351225000210521030113321
+
 AiPlayerbot.PremadeSpecName.1.3 = arms pvp
 AiPlayerbot.PremadeSpecGlyph.1.3 = 43417,43397,43423,43396,49084,43421
-AiPlayerbot.PremadeSpecLink.1.3.60 = 0320232023331100032212012221251
+# Level 60 (51 pts): Classic 31/20/0 PvP (Mortal Strike + Enrage/Piercing Howl)
+AiPlayerbot.PremadeSpecLink.1.3.60 = 03202320233311000321-3050501051
+# Level 70 (61 pts): Bladestorm PvP (51 Arms) + 10 points in Fury for Cruelty/Booming Voice
+AiPlayerbot.PremadeSpecLink.1.3.70 = 0320232023331100032212012221251-325
 AiPlayerbot.PremadeSpecLink.1.3.80 = 0320332023335100232212013231251-3250001
+
 AiPlayerbot.PremadeSpecName.1.4 = fury pvp
 AiPlayerbot.PremadeSpecGlyph.1.4 = 43432,43397,43417,43395,43396,43418
-AiPlayerbot.PremadeSpecLink.1.4.60 = -325000131500212250120511351
+# Level 60 (51 pts): Classic 17/34/0 PvP (Arms utility + Fury Deathwish/Flurry)
+AiPlayerbot.PremadeSpecLink.1.4.60 = 3002232023-3050501055003205
+# Level 70 (61 pts): Titan's Grip PvP (51 Fury) + 10 points in Arms
+AiPlayerbot.PremadeSpecLink.1.4.70 = 032203-325000131500212250120511351
 AiPlayerbot.PremadeSpecLink.1.4.80 = 03220300233-325000131500212250122511351
+
 AiPlayerbot.PremadeSpecName.1.5 = prot pvp
 AiPlayerbot.PremadeSpecGlyph.1.5 = 43425,43397,43415,43396,49084,45792
-AiPlayerbot.PremadeSpecLink.1.5.60 = --250031220223012520332113321
+# Level 60 (51 pts): Classic 15/0/36 PvP (Deflection/Deep Wounds + Deep Prot lockdown)
+AiPlayerbot.PremadeSpecLink.1.5.60 = 0320230023--25003122022301252033
+# Level 70 (61 pts): Warbringer/Shockwave PvP (51 Prot) + 10 points in Arms
+AiPlayerbot.PremadeSpecLink.1.5.70 = 05023--250031220223012520332113321
 AiPlayerbot.PremadeSpecLink.1.5.80 = 0502300123-3-250031220223012521332113321
 
 #
@@ -1818,28 +1843,51 @@ AiPlayerbot.PremadeSpecLink.1.5.80 = 0502300123-3-250031220223012521332113321
 
 AiPlayerbot.PremadeSpecName.2.0 = holy pve
 AiPlayerbot.PremadeSpecGlyph.2.0 = 41106,43367,45741,43368,43365,41109
-AiPlayerbot.PremadeSpecLink.2.0.60 = 50350151020013053100515221
+# Level 60 (51 pts): Classic 31/20/0 (Holy Shock + Prot for Imp Concentration Aura/Survivability)
+AiPlayerbot.PremadeSpecLink.2.0.60 = 503501521000135-50320104203
+# Level 70 (61 pts): Beacon of Light (51 Holy) + 10 points in Prot for Divinity/Stoicism
+AiPlayerbot.PremadeSpecLink.2.0.70 = 50350152100013053100515221-5032
 AiPlayerbot.PremadeSpecLink.2.0.80 = 50350152100013053100515221-50320104203
+
 AiPlayerbot.PremadeSpecName.2.1 = prot pve
 AiPlayerbot.PremadeSpecGlyph.2.1 = 41100,43367,43869,43368,43369,45745
-AiPlayerbot.PremadeSpecLink.2.1.60 = -05005135203102311333112321
+# Level 60 (51 pts): Classic 0/40/11 (Deep Prot for Holy Shield + Ret for Deflection/Imp Judgements)
+AiPlayerbot.PremadeSpecLink.2.1.60 = -05005135203102311332-502301
+# Level 70 (61 pts): Hammer of the Righteous (53 Prot) + 8 points in Ret for Benediction/Heart of the Crusader
+AiPlayerbot.PremadeSpecLink.2.1.70 = -05005135203102311333312321-5021
 AiPlayerbot.PremadeSpecLink.2.1.80 = -05005135203102311333312321-502302012003
+
 AiPlayerbot.PremadeSpecName.2.2 = ret pve
 AiPlayerbot.PremadeSpecGlyph.2.2 = 41092,43367,41099,43368,43340,43869
-AiPlayerbot.PremadeSpecLink.2.2.60 = --05230051203331302133231131
+# Level 60 (51 pts): Classic 11/0/40 (Holy for Consecration/Healing + Deep Ret for Repentance)
+AiPlayerbot.PremadeSpecLink.2.2.60 = 5033--05230051203331302133
 AiPlayerbot.PremadeSpecLink.2.2.65 = -05-05230051203331302133231131
+# Level 70 (61 pts): Divine Storm (51 Ret) + 10 points in Holy for Seals of the Pure
+AiPlayerbot.PremadeSpecLink.2.2.70 = 5032--05230051203331302133231131
 AiPlayerbot.PremadeSpecLink.2.2.80 = 050501-05-05232051203331302133231331
+
 AiPlayerbot.PremadeSpecName.2.3 = holy pvp
 AiPlayerbot.PremadeSpecGlyph.2.3 = 41110,43367,45746,43369,43365,45747
-AiPlayerbot.PremadeSpecLink.2.3.60 = 50332150300013050133215221
+# Level 60 (51 pts): Classic 40/11/0 "Shockadin" Survivability (Holy Power + Prot for Redoubt/Toughness)
+AiPlayerbot.PremadeSpecLink.2.3.60 = 503321503000130501332-503201
+# Level 70 (61 pts): Beacon of Light PvP (51 Holy) + 10 points in Prot
+AiPlayerbot.PremadeSpecLink.2.3.70 = 50332150300013050133315221-5032
 AiPlayerbot.PremadeSpecLink.2.3.80 = 50332150300013050133315221-5032013122
+
 AiPlayerbot.PremadeSpecName.2.4 = prot pvp
 AiPlayerbot.PremadeSpecGlyph.2.4 = 41092,43367,41101,43369,43365,45745
-AiPlayerbot.PremadeSpecLink.2.4.60 = -15320130223122311323311321
+# Level 60 (51 pts): Classic 0/25/26 "Reckoning Bomb" (Reckoning in Prot + Repentance/Pursuit of Justice in Ret)
+AiPlayerbot.PremadeSpecLink.2.4.60 = -1532013022312-0523025020331
+# Level 70 (61 pts): Deep Prot PvP (51 Prot) + 10 points in Ret
+AiPlayerbot.PremadeSpecLink.2.4.70 = -15320130223122321333312321-0523
 AiPlayerbot.PremadeSpecLink.2.4.80 = -15320130223122321333312321-052300502
+
 AiPlayerbot.PremadeSpecName.2.5 = ret pvp
 AiPlayerbot.PremadeSpecGlyph.2.5 = 41095,43367,41102,43369,43365,45747
-AiPlayerbot.PremadeSpecLink.2.5.60 = --05230250203331222133201321
+# Level 60 (51 pts): Classic 0/17/34 PvP (Prot for Imp HoJ/Toughness + Deep Ret for utility)
+AiPlayerbot.PremadeSpecLink.2.5.60 = -153201302-0523025020333132
+# Level 70 (61 pts): Divine Storm PvP (51 Ret) + 10 points in Prot for Divine Sacrifice
+AiPlayerbot.PremadeSpecLink.2.5.70 = -1531-05230250203331322133201321
 AiPlayerbot.PremadeSpecLink.2.5.80 = -1532013022-05230250203331322133201321
 
 #
@@ -1852,28 +1900,50 @@ AiPlayerbot.PremadeSpecLink.2.5.80 = -1532013022-05230250203331322133201321
 
 AiPlayerbot.PremadeSpecName.3.0 = bm pve
 AiPlayerbot.PremadeSpecGlyph.3.0 = 42912,43350,42902,43351,43338,42914
-AiPlayerbot.PremadeSpecLink.3.0.40 = 512002015051122301
-AiPlayerbot.PremadeSpecLink.3.0.60 = 51200201505112233110531151
+# Level 60 (51 pts): Classic 31/20/0 (Bestial Wrath + MM for Lethal Shots/Mortal Shots)
+AiPlayerbot.PremadeSpecLink.3.0.60 = 512002015051122301-0353051
+# Level 70 (61 pts): Beast Mastery (51 BM) + 10 points in MM for Lethal Shots
+AiPlayerbot.PremadeSpecLink.3.0.70 = 51200201505112233111531351-0352
 AiPlayerbot.PremadeSpecLink.3.0.80 = 51200201505112233111531351-0323031-5
+
 AiPlayerbot.PremadeSpecName.3.1 = mm pve
 AiPlayerbot.PremadeSpecGlyph.3.1 = 42912,43350,45625,43351,43338,42914
-AiPlayerbot.PremadeSpecLink.3.1.60 = -035305101030013233115031151
+# Level 60 (51 pts): Classic 0/31/20 (Trueshot Aura + SV for Surefooted/Survivalist)
+AiPlayerbot.PremadeSpecLink.3.1.60 = -035305101030013231-500003250003
+# Level 70 (61 pts): Chimera Shot (51 MM) + 10 points in SV for Improved Tracking
+AiPlayerbot.PremadeSpecLink.3.1.70 = -035305101230013233135031351-50000023
 AiPlayerbot.PremadeSpecLink.3.1.80 = 502-035305101230013233135031351-5000002
+
 AiPlayerbot.PremadeSpecName.3.2 = surv pve
 AiPlayerbot.PremadeSpecGlyph.3.2 = 45733,43350,45731,43351,43338,45732
-AiPlayerbot.PremadeSpecLink.3.2.60 = --5000032500033330502135201311
+# Level 60 (51 pts): Classic 0/21/30 (MM for Mortal Shots + SV for Lightning Reflexes/Expose Weakness)
+AiPlayerbot.PremadeSpecLink.3.2.60 = -035305101-50000325000333305
+# Level 70 (61 pts): Explosive Shot (51 SV) + 10 points in MM for Lethal Shots
+AiPlayerbot.PremadeSpecLink.3.2.70 = -0352-5000032500033330532135301321
 AiPlayerbot.PremadeSpecLink.3.2.80 = -005305101-5000032500033330532135301321
+
 AiPlayerbot.PremadeSpecName.3.3 = bm pvp
 AiPlayerbot.PremadeSpecGlyph.3.3 = 42897,42900,42902,43356,43338,42900
-AiPlayerbot.PremadeSpecLink.3.3.60 = 05203201505012233100531151
+# Level 60 (51 pts): Classic 31/20/0 PvP (Bestial Wrath + MM for Aimed Shot)
+AiPlayerbot.PremadeSpecLink.3.3.60 = 052032015050122301-0353051
+# Level 70 (61 pts): Beast Mastery PvP (51 BM) + 10 points in MM
+AiPlayerbot.PremadeSpecLink.3.3.70 = 05203201505012233100531351-0352
 AiPlayerbot.PremadeSpecLink.3.3.80 = 05203201505012233100531351-005305101-03
+
 AiPlayerbot.PremadeSpecName.3.4 = mm pvp
 AiPlayerbot.PremadeSpecGlyph.3.4 = 42912,43351,42897,43338,43356,42904
-AiPlayerbot.PremadeSpecLink.3.4.60 = -034305101030213231135031051
+# Level 60 (51 pts): Classic 0/31/20 PvP (Trueshot Aura + SV for Deterrence/Deflection)
+AiPlayerbot.PremadeSpecLink.3.4.60 = -035305101030213231-53013020102
+# Level 70 (61 pts): Chimera Shot PvP (51 MM) + 10 points in SV for Deflection
+AiPlayerbot.PremadeSpecLink.3.4.70 = -035305101030213233135031051-5302
 AiPlayerbot.PremadeSpecLink.3.4.80 = -035305101030213233135031051-53013020102
+
 AiPlayerbot.PremadeSpecName.3.5 = surv pvp
 AiPlayerbot.PremadeSpecGlyph.3.5 = 42912,43350,42904,43356,43338,45731
-AiPlayerbot.PremadeSpecLink.3.5.60 = --2300302410233030533135001031
+# Level 60 (51 pts): Classic 0/21/30 PvP (MM for Aimed Shot + SV for Wyvern Sting/Entrapment)
+AiPlayerbot.PremadeSpecLink.3.5.60 = -0353052-23003025102333305
+# Level 70 (61 pts): Explosive Shot PvP (51 SV) + 10 points in MM
+AiPlayerbot.PremadeSpecLink.3.5.70 = -0352-2300302510233330533135001031
 AiPlayerbot.PremadeSpecLink.3.5.80 = -005305201-2300302510233330533135001031
 
 
@@ -1899,27 +1969,50 @@ AiPlayerbot.PremadeHunterPetLink.2.20 = 21000203300002110221
 
 AiPlayerbot.PremadeSpecName.4.0 = as pve
 AiPlayerbot.PremadeSpecGlyph.4.0 = 45768,43379,45761,43380,43378,45766
-AiPlayerbot.PremadeSpecLink.4.0.60 = 005303104352100520103331051
+# Level 60 (51 pts): 41/10/0 (Mutilate/Seal Fate + Combat for Dual Wield Spec)
+AiPlayerbot.PremadeSpecLink.4.0.60 = 0053030053521005201033-005005
+# Level 70 (61 pts): Hunger for Blood (51 Assa) + 10 points in Combat
+AiPlayerbot.PremadeSpecLink.4.0.70 = 005303005352100520103331051-005005
 AiPlayerbot.PremadeSpecLink.4.0.80 = 005303005352100520103331051-005005003-502
+
 AiPlayerbot.PremadeSpecName.4.1 = combat pve
 AiPlayerbot.PremadeSpecGlyph.4.1 = 42962,43379,45762,43380,43378,42969
-AiPlayerbot.PremadeSpecLink.4.1.60 = -0252051000035015223100501251
+# Level 60 (51 pts): Classic 20/31/0 (Assa for Malice/Lethality + Combat for Adrenaline Rush)
+AiPlayerbot.PremadeSpecLink.4.1.60 = 00532000523-02520510000350152
+# Level 70 (61 pts): Killing Spree (51 Combat) + 10 points in Assa
+AiPlayerbot.PremadeSpecLink.4.1.70 = 00532000523-02520510000350152231004
 AiPlayerbot.PremadeSpecLink.4.1.80 = 00532000523-0252051000035015223100501251
+
 AiPlayerbot.PremadeSpecName.4.2 = subtlety pve
 AiPlayerbot.PremadeSpecGlyph.4.2 = 42967,43379,45764,43380,43378,45767
-AiPlayerbot.PremadeSpecLink.4.2.60 = --5022012030321121350115031151
+# Level 60 (51 pts): 20/0/31 (Assa for Malice/Lethality + Subtlety for Hemorrhage/Prep)
+AiPlayerbot.PremadeSpecLink.4.2.60 = 30532010114--502201203032112133
+# Level 70 (61 pts): Shadow Dance (51 Sub) + 10 points in Assa
+AiPlayerbot.PremadeSpecLink.4.2.70 = 30532010114--50220120303211213501151
 AiPlayerbot.PremadeSpecLink.4.2.80 = 30532010114--5022012030321121350115031151
+
 AiPlayerbot.PremadeSpecName.4.3 = as pvp
 AiPlayerbot.PremadeSpecGlyph.4.3 = 42974,43380,45768,43379,43376,42971
-AiPlayerbot.PremadeSpecLink.4.3.60 = 005303103342102522103031--50002
+# Level 60 (51 pts): Classic 31/0/20 PvP (Seal Fate + Subtlety for Elusiveness/Master of Deception)
+AiPlayerbot.PremadeSpecLink.4.3.60 = 0053031033421024--532023203
+# Level 70 (61 pts): Mutilate PvP (41 Assa) + 20 points in Sub
+AiPlayerbot.PremadeSpecLink.4.3.70 = 0053031033421025221031--532023203
 AiPlayerbot.PremadeSpecLink.4.3.80 = 005303103342102522103031-004-532023203000012
+
 AiPlayerbot.PremadeSpecName.4.4 = combat pvp
 AiPlayerbot.PremadeSpecGlyph.4.4 = 42972,43380,45762,43376,43378,42971
-AiPlayerbot.PremadeSpecLink.4.4.60 = -3250002050225010223102321251
+# Level 60 (51 pts): Classic 17/34/0 PvP (Assa for Vile Poisons + Combat for Adrenaline Rush/Mace Spec)
+AiPlayerbot.PremadeSpecLink.4.4.60 = 305120105-3250002050235010222
+# Level 70 (61 pts): Combat PvP (44 Combat) + 17 points in Assa
+AiPlayerbot.PremadeSpecLink.4.4.70 = 305120105-325000205023501022310251
 AiPlayerbot.PremadeSpecLink.4.4.80 = 305120105-3250002050235010223102521251
+
 AiPlayerbot.PremadeSpecName.4.5 = subtlety pvp
 AiPlayerbot.PremadeSpecGlyph.4.5 = 42968,43376,45764,43380,43379,42971
-AiPlayerbot.PremadeSpecLink.4.5.60 = --5120212030320121330133221251
+# Level 60 (51 pts): Classic 12/0/39 "Hemo Prep" PvP (Deep Subtlety utility + Assa burst)
+AiPlayerbot.PremadeSpecLink.4.5.60 = 3023031--5120212030320121350132
+# Level 70 (61 pts): Shadow Dance PvP (51 Sub) + 10 points in Assa
+AiPlayerbot.PremadeSpecLink.4.5.70 = 3023031--51202120303201213501352311
 AiPlayerbot.PremadeSpecLink.4.5.80 = 3023031-3-5120212030320121350135231251
 
 #
@@ -1932,27 +2025,50 @@ AiPlayerbot.PremadeSpecLink.4.5.80 = 3023031-3-5120212030320121350135231251
 
 AiPlayerbot.PremadeSpecName.5.0 = disc pve
 AiPlayerbot.PremadeSpecGlyph.5.0 = 42408,43371,42400,43374,43342,45756
-AiPlayerbot.PremadeSpecLink.5.0.60 = 0503203130300512301323131051
+# Level 60 (51 pts): Classic 41/10/0 (Pain Suppression + Holy for Imp Renew/Healing Focus)
+AiPlayerbot.PremadeSpecLink.5.0.60 = 0503203130300512331321-235
+# Level 70 (61 pts): Penance (51 Disc) + 10 points in Holy
+AiPlayerbot.PremadeSpecLink.5.0.70 = 05032031303005123313232312-0352
 AiPlayerbot.PremadeSpecLink.5.0.80 = 0503203130300512331323231251-03520103
+
 AiPlayerbot.PremadeSpecName.5.1 = holy pve
 AiPlayerbot.PremadeSpecGlyph.5.1 = 42408,43371,42400,43374,43342,42396
-AiPlayerbot.PremadeSpecLink.5.1.60 = -035050031301152530000331331
+# Level 60 (51 pts): Classic 20/31/0 (Disc for Meditation + Holy for Spirit of Redemption/Imp Healing)
+AiPlayerbot.PremadeSpecLink.5.1.60 = 05032031303-23505003230215
+# Level 70 (61 pts): Guardian Spirit (51 Holy) + 10 points in Disc
+AiPlayerbot.PremadeSpecLink.5.1.70 = 05032-2350500323021525300003313
 AiPlayerbot.PremadeSpecLink.5.1.80 = 05032031-235050032302152530000331351
+
 AiPlayerbot.PremadeSpecName.5.2 = shadow pve
 AiPlayerbot.PremadeSpecGlyph.5.2 = 45753,43371,42407,43374,43370,42415
-AiPlayerbot.PremadeSpecLink.5.2.60 = --325003041203010323150301351
+# Level 60 (51 pts): Classic 14/0/37 (Disc for Inner Focus + Deep Shadow for Shadowform/Misery)
+AiPlayerbot.PremadeSpecLink.5.2.60 = 05032031--325023051223010323
+# Level 70 (61 pts): Dispersion (51 Shadow) + 10 points in Disc
+AiPlayerbot.PremadeSpecLink.5.2.70 = 05032--3250230512230103231523012
 AiPlayerbot.PremadeSpecLink.5.2.80 = 0503203--325023051223010323152301351
+
 AiPlayerbot.PremadeSpecName.5.3 = disc pvp
 AiPlayerbot.PremadeSpecGlyph.5.3 = 42408,43371,45760,43370,43374,45756
-AiPlayerbot.PremadeSpecLink.5.3.60 = 5003203130320512201323031051
+# Level 60 (51 pts): Classic 41/10/0 PvP (Pain Suppression + Holy for Healing Focus)
+AiPlayerbot.PremadeSpecLink.5.3.60 = 5003203130322512331011-2305
+# Level 70 (61 pts): Penance PvP (51 Disc) + 10 points in Holy
+AiPlayerbot.PremadeSpecLink.5.3.70 = 50032031303225123310132312-2305
 AiPlayerbot.PremadeSpecLink.5.3.80 = 5003203130322512331013231151-23050113
+
 AiPlayerbot.PremadeSpecName.5.4 = holy pvp
 AiPlayerbot.PremadeSpecGlyph.5.4 = 42411,43371,42408,43370,43374,45755
-AiPlayerbot.PremadeSpecLink.5.4.60 = -235501031000152430320031151
+# Level 60 (51 pts): Classic 20/31/0 PvP (Disc for Meditation + Holy for Lightwell/Imp Healing)
+AiPlayerbot.PremadeSpecLink.5.4.60 = 50032031303-2355010310001523
+# Level 70 (61 pts): Guardian Spirit PvP (51 Holy) + 10 points in Disc
+AiPlayerbot.PremadeSpecLink.5.4.70 = 50032-23550103100015253032003133
 AiPlayerbot.PremadeSpecLink.5.4.80 = 500320313-235501031000152530320031351
+
 AiPlayerbot.PremadeSpecName.5.5 = shadow pvp
 AiPlayerbot.PremadeSpecGlyph.5.5 = 42407,43371,45753,43370,43374,42408
-AiPlayerbot.PremadeSpecLink.5.5.60 = --005323241223112003102311351
+# Level 60 (51 pts): Classic 20/0/31 PvP (Disc for Imp Mana Burn + Shadow for Silence/Vampiric Touch)
+AiPlayerbot.PremadeSpecLink.5.5.60 = 50332031003--005323241223112
+# Level 70 (61 pts): Dispersion PvP (51 Shadow) + 10 points in Disc
+AiPlayerbot.PremadeSpecLink.5.5.70 = 5032--005323241223112003102311351
 AiPlayerbot.PremadeSpecLink.5.5.80 = 50332031003--005323241223112003102311351
 
 #
@@ -1965,31 +2081,58 @@ AiPlayerbot.PremadeSpecLink.5.5.80 = 50332031003--005323241223112003102311351
 
 AiPlayerbot.PremadeSpecName.6.0 = blood pve
 AiPlayerbot.PremadeSpecGlyph.6.0 = 45805,43673,43538,43544,43672,43542
+# Level 60 (51 pts): Deep Blood (46 Blood / 5 Unholy)
 AiPlayerbot.PremadeSpecLink.6.0.60 = 035502150300331320102013111-005
+# Level 70 (61 pts): Deep Blood + 15 points in Frost for Icy Talons/Annihilation
+AiPlayerbot.PremadeSpecLink.6.0.70 = 0055021533303310201020131-3050205-002
 AiPlayerbot.PremadeSpecLink.6.0.80 = 0055021533303310201020131-305020510002-00522
+
 AiPlayerbot.PremadeSpecName.6.1 = frost pve
 AiPlayerbot.PremadeSpecGlyph.6.1 = 45805,43673,43547,43544,43672,43543
+# Level 60 (51 pts): Deep Frost
 AiPlayerbot.PremadeSpecLink.6.1.60 = -32003350332203012300023101351
+# Level 70 (61 pts): Howling Blast (51 Frost) + 10 points in Unholy for Morbidity
+AiPlayerbot.PremadeSpecLink.6.1.70 = -32002350352203012300033101351-2302003
 AiPlayerbot.PremadeSpecLink.6.1.80 = -32002350352203012300033101351-230200305003
+
 AiPlayerbot.PremadeSpecName.6.2 = unholy pve
 AiPlayerbot.PremadeSpecGlyph.6.2 = 43542,43673,43546,43535,43672,43549
+# Level 60 (51 pts): Deep Unholy
 AiPlayerbot.PremadeSpecLink.6.2.60 = --2301303050032151000150013131151
+# Level 70 (61 pts): Summon Gargoyle (51 Unholy) + 10 points in Blood for Bladed Armor
+AiPlayerbot.PremadeSpecLink.6.2.70 = 2305--2302303350032152000150003133151
 AiPlayerbot.PremadeSpecLink.6.2.80 = 23050202--2302303350032152000150003133151
+
 AiPlayerbot.PremadeSpecName.6.3 = double aura blood pve
 AiPlayerbot.PremadeSpecGlyph.6.3 = 45805,43673,43538,43544,43672,43554
+# Level 60 (51 pts): Double Aura transition 
 AiPlayerbot.PremadeSpecLink.6.3.60 = 005512153330030320102013-305
+# Level 70 (61 pts): 40 Blood / 19 Frost (Securing Improved Icy Talons)
+AiPlayerbot.PremadeSpecLink.6.3.70 = 005512153330030320102013-3050505-002
 AiPlayerbot.PremadeSpecLink.6.3.80 = 005512153330030320102013-3050505002023001-002
+
 AiPlayerbot.PremadeSpecName.6.4 = blood pvp
 AiPlayerbot.PremadeSpecGlyph.6.4 = 43534,43535,45799,43673,43672,45805
+# Level 60 (51 pts): Pure 51/0/0 Blood PvP
 AiPlayerbot.PremadeSpecLink.6.4.60 = 2305021503003313201222101351
+# Level 70 (61 pts): Dancing Rune Weapon (51 Blood) + 10 points in Unholy
+AiPlayerbot.PremadeSpecLink.6.4.70 = 2305021503003313201222101351--03223
 AiPlayerbot.PremadeSpecLink.6.4.80 = 2305021503003313201222101351--032232300023
+
 AiPlayerbot.PremadeSpecName.6.5 = frost pvp
 AiPlayerbot.PremadeSpecGlyph.6.5 = 43543,43539,45800,43673,43672,45806
+# Level 60 (51 pts): Pure 0/51/0 Frost PvP
 AiPlayerbot.PremadeSpecLink.6.5.60 = -32015351022203012001233101251
+# Level 70 (61 pts): Hungering Cold (51 Frost) + 10 points in Blood
+AiPlayerbot.PremadeSpecLink.6.5.70 = 0055-32015351052203012001233131351
 AiPlayerbot.PremadeSpecLink.6.5.80 = 0055-32015351052203012001233131351-03
+
 AiPlayerbot.PremadeSpecName.6.6 = unholy pvp
 AiPlayerbot.PremadeSpecGlyph.6.6 = 45804,43539,43549,43673,43672,45805
+# Level 60 (51 pts): Pure 0/0/51 Unholy PvP
 AiPlayerbot.PremadeSpecLink.6.6.60 = --2301323301002152230101203103151
+# Level 70 (61 pts): Summon Gargoyle (51 Unholy) + 10 points in Frost
+AiPlayerbot.PremadeSpecLink.6.6.70 = -32005-2301323301002152230101203133151
 AiPlayerbot.PremadeSpecLink.6.6.80 = -320050410002-2301323301002152230101203133151
 
 #
@@ -2002,27 +2145,50 @@ AiPlayerbot.PremadeSpecLink.6.6.80 = -320050410002-23013233010021522301012031331
 
 AiPlayerbot.PremadeSpecName.7.0 = ele pve
 AiPlayerbot.PremadeSpecGlyph.7.0 = 41536,43385,41532,43386,44923,45776
-AiPlayerbot.PremadeSpecLink.7.0.60 = 4530001520213351102301351
+# Level 60 (51 pts): Classic 36/15/0 (Elemental Mastery + Enhance for Ancestral Knowledge/Thundering Strikes)
+AiPlayerbot.PremadeSpecLink.7.0.60 = 4530001520213351102-00525003
+# Level 70 (61 pts): Thunderstorm (51 Ele) + 10 points in Enhance
+AiPlayerbot.PremadeSpecLink.7.0.70 = 4530001520213351102301351-00523
 AiPlayerbot.PremadeSpecLink.7.0.80 = 4530001523213351302301351-00525003
+
 AiPlayerbot.PremadeSpecName.7.1 = enh pve
 AiPlayerbot.PremadeSpecGlyph.7.1 = 41542,43385,41539,43386,43725,45771
-AiPlayerbot.PremadeSpecLink.7.1.60 = -30305003105021333031121131051
+# Level 60 (51 pts): Classic 15/36/0 (Ele for Elemental Devastation + Deep Enhance for Stormstrike/Flurry)
+AiPlayerbot.PremadeSpecLink.7.1.60 = 05303013-3030500310502133
+# Level 70 (61 pts): Feral Spirit (51 Enh) + 10 points in Ele
+AiPlayerbot.PremadeSpecLink.7.1.70 = 05302-30305003105021333031121131051
 AiPlayerbot.PremadeSpecLink.7.1.80 = 053030152-30305003105021333031131131051
+
 AiPlayerbot.PremadeSpecName.7.2 = resto pve
 AiPlayerbot.PremadeSpecGlyph.7.2 = 41527,43385,41517,43386,43725,45775
-AiPlayerbot.PremadeSpecLink.7.2.60 = --50005301235310501102321251
+# Level 60 (51 pts): Classic 0/13/38 (Enhance for Improved Shields + Deep Resto for Mana Tide)
+AiPlayerbot.PremadeSpecLink.7.2.60 = -00502033-500053012353105011
+# Level 70 (61 pts): Riptide (51 Resto) + 10 points in Enhance
+AiPlayerbot.PremadeSpecLink.7.2.70 = -0050203-50005301235310501102321251
 AiPlayerbot.PremadeSpecLink.7.2.80 = -00502033-50005331335310501122331251
+
 AiPlayerbot.PremadeSpecName.7.3 = ele pvp
 AiPlayerbot.PremadeSpecGlyph.7.3 = 45778,43388,45770,43725,43386,41524
-AiPlayerbot.PremadeSpecLink.7.3.60 = 0533001503213051322301341
+# Level 60 (51 pts): Classic 40/11/0 PvP (Ele Mastery + Enhance for Improved Ghost Wolf/Shields)
+AiPlayerbot.PremadeSpecLink.7.3.60 = 05330015032130513223-023212
+# Level 70 (61 pts): Thunderstorm PvP (51 Ele) + 10 points in Enhance
+AiPlayerbot.PremadeSpecLink.7.3.70 = 0533001503213051322301341-023212
 AiPlayerbot.PremadeSpecLink.7.3.80 = 0533051503213051322331351-023212001
+
 AiPlayerbot.PremadeSpecName.7.4 = enh pvp
 AiPlayerbot.PremadeSpecGlyph.7.4 = 45778,43388,41526,43725,43344,45771
-AiPlayerbot.PremadeSpecLink.7.4.60 = -02305203105001333201131131151
+# Level 60 (51 pts): Classic 17/34/0 PvP (Ele for Reverberation + Deep Enhance burst)
+AiPlayerbot.PremadeSpecLink.7.4.60 = 0503351-02305203105001333201
+# Level 70 (61 pts): Feral Spirit PvP (51 Enh) + 10 points in Ele
+AiPlayerbot.PremadeSpecLink.7.4.70 = 05032-02305203105001333201131131151
 AiPlayerbot.PremadeSpecLink.7.4.80 = 0503351-02305203105001333211131231251
+
 AiPlayerbot.PremadeSpecName.7.5 = resto pvp
 AiPlayerbot.PremadeSpecGlyph.7.5 = 45778,43388,45775,43725,43344,41535
-AiPlayerbot.PremadeSpecLink.7.5.60 = --05032331331013501120321251
+# Level 60 (51 pts): Classic 0/16/35 PvP (Enhance for Ghost Wolf/Toughness + Resto Nature's Swiftness)
+AiPlayerbot.PremadeSpecLink.7.5.60 = -023222301001-05032331331013501
+# Level 70 (61 pts): Riptide PvP (51 Resto) + 10 points in Enhance
+AiPlayerbot.PremadeSpecLink.7.5.70 = -023221-05032331331013501120321251
 AiPlayerbot.PremadeSpecLink.7.5.80 = -023222301004-05032331331013501120331251
 
 #
@@ -2035,31 +2201,58 @@ AiPlayerbot.PremadeSpecLink.7.5.80 = -023222301004-05032331331013501120331251
 
 AiPlayerbot.PremadeSpecName.8.0 = arcane pve
 AiPlayerbot.PremadeSpecGlyph.8.0 = 42735,43339,44955,43364,43361,42751
-AiPlayerbot.PremadeSpecLink.8.0.60 = 230005231100330150323102500321
+# Level 60 (51 pts): Classic 32/3/16 (Arcane Power + Fire/Frost for clearcasting and ice shards)
+AiPlayerbot.PremadeSpecLink.8.0.60 = 2300052311003301503231-03-2033
+# Level 70 (61 pts): Arcane Barrage (51 Arcane) + 10 points in Frost (Icy Veins/Precision)
+AiPlayerbot.PremadeSpecLink.8.0.70 = 230005231100330150323102500321--203302
 AiPlayerbot.PremadeSpecLink.8.0.80 = 230005231100330150323102505321-03-203303001
+
 AiPlayerbot.PremadeSpecName.8.1 = fire pve
 AiPlayerbot.PremadeSpecGlyph.8.1 = 42739,43339,45737,43364,44920,42751
-AiPlayerbot.PremadeSpecLink.8.1.60 = -0055030011302231053120321341
+# Level 60 (51 pts): Classic 18/33/0 (Arcane Focus/Clearcasting + Deep Fire for Combustion)
+AiPlayerbot.PremadeSpecLink.8.1.60 = 23000503110003-005503201230333
+# Level 70 (61 pts): Living Bomb (51 Fire) + 10 points in Arcane
+AiPlayerbot.PremadeSpecLink.8.1.70 = 230005-0055032012303330053120300351
 AiPlayerbot.PremadeSpecLink.8.1.80 = 23000503110003-0055032012303330053120300351
+
 AiPlayerbot.PremadeSpecName.8.2 = frost pve
 AiPlayerbot.PremadeSpecGlyph.8.2 = 42742,43339,50045,43364,43361,42751
-AiPlayerbot.PremadeSpecLink.8.2.60 = --0533030313203100030152231151
+# Level 60 (51 pts): Classic 18/0/33 (Arcane Clearcasting + Deep Frost for Ice Barrier/Winter's Chill)
+AiPlayerbot.PremadeSpecLink.8.2.60 = 23002303110003--053303031320310003015
+# Level 70 (61 pts): Deep Freeze (51 Frost) + 10 points in Arcane
+AiPlayerbot.PremadeSpecLink.8.2.70 = 230023--0533030313203100030152231151
 AiPlayerbot.PremadeSpecLink.8.2.80 = 23002303110003--0533030313203100030152231351
+
 AiPlayerbot.PremadeSpecName.8.3 = frostfire pve
 AiPlayerbot.PremadeSpecGlyph.8.3 = 44684,44920,42751,43339,43364,45737
-AiPlayerbot.PremadeSpecLink.8.3.60 = -2305032012303331053120300051
+# Level 60 (51 pts): Classic "Elemental" 0/37/14 (Deep Fire + Frost for Ice Shards/Icy Veins)
+AiPlayerbot.PremadeSpecLink.8.3.60 = -23050320123033310531--023302031
+# Level 70 (61 pts): Living Bomb (51 Fire) + 10 points in Frost
+AiPlayerbot.PremadeSpecLink.8.3.70 = -2305032012303331053120300051-023302
 AiPlayerbot.PremadeSpecLink.8.3.80 = -2305032012303331053120321351-023302031
+
 AiPlayerbot.PremadeSpecName.8.4 = arcane pvp
 AiPlayerbot.PremadeSpecGlyph.8.4 = 42735,43364,42738,43360,43357,42752
-AiPlayerbot.PremadeSpecLink.8.4.60 = 205323200122032103303102015221
+# Level 60 (51 pts): Classic 33/7/11 PvP (Arcane Power + Fire/Frost for utility/slows)
+AiPlayerbot.PremadeSpecLink.8.4.60 = 20532320012203210330-23002-30302
+# Level 70 (61 pts): Arcane Barrage PvP (51 Arcane) + 10 points in Frost
+AiPlayerbot.PremadeSpecLink.8.4.70 = 205323200122032103303102015221--3030202
 AiPlayerbot.PremadeSpecLink.8.4.80 = 205323200122032103303102015321-23002-303020301
+
 AiPlayerbot.PremadeSpecName.8.5 = fire pvp
 AiPlayerbot.PremadeSpecGlyph.8.5 = 42738,43364,42752,43360,43357,45737
-AiPlayerbot.PremadeSpecLink.8.5.60 = -2305202312020031223122301351
+# Level 60 (51 pts): Classic 20/31/0 PvP (Arcane for Imp CS + Deep Fire for Blast Wave/Combustion)
+AiPlayerbot.PremadeSpecLink.8.5.60 = 230321030122-23052123120200312
+# Level 70 (61 pts): Living Bomb PvP (51 Fire) + 10 points in Arcane
+AiPlayerbot.PremadeSpecLink.8.5.70 = 23032-2305212312020031223122301351
 AiPlayerbot.PremadeSpecLink.8.5.80 = 230321030122-2305212312020031223122301351
+
 AiPlayerbot.PremadeSpecName.8.6 = frost pvp
 AiPlayerbot.PremadeSpecGlyph.8.6 = 42738,43364,45740,43357,43360,42752
-AiPlayerbot.PremadeSpecLink.8.6.60 = --3533203210203100232102231151
+# Level 60 (51 pts): Classic 20/0/31 PvP (Arcane for Imp CS + Deep Frost for Ice Barrier)
+AiPlayerbot.PremadeSpecLink.8.6.60 = 23032103010203--3533203210203100232
+# Level 70 (61 pts): Deep Freeze PvP (51 Frost) + 10 points in Arcane
+AiPlayerbot.PremadeSpecLink.8.6.70 = 23032--3533203210203100232102231151
 AiPlayerbot.PremadeSpecLink.8.6.80 = 23032103010203--3533203210203100232102231151
 
 #
@@ -2072,29 +2265,50 @@ AiPlayerbot.PremadeSpecLink.8.6.80 = 23032103010203--353320321020310023210223115
 
 AiPlayerbot.PremadeSpecName.9.0 = affli pve
 AiPlayerbot.PremadeSpecGlyph.9.0 = 45785,43390,50077,43394,43393,45779
-AiPlayerbot.PremadeSpecLink.9.0.60 = 2350022001113510053500131151
+# Level 60 (51 pts): Classic "SM/Ruin" (36 Affliction for Shadow Mastery / 15 Destro for Ruin)
+AiPlayerbot.PremadeSpecLink.9.0.60 = 2350022001123510252--55000005
+# Level 70 (61 pts): Haunt (51 Affli) + 10 points in Destro for Shadowbane/Bane
 AiPlayerbot.PremadeSpecLink.9.0.70 = 2350022001113510053500131151--55
 AiPlayerbot.PremadeSpecLink.9.0.80 = 2350022001123510253500331151--55000005
+
 AiPlayerbot.PremadeSpecName.9.1 = demo pve
 AiPlayerbot.PremadeSpecGlyph.9.1 = 45785,43390,50077,43394,43393,42459
-AiPlayerbot.PremadeSpecLink.9.1.60 = -003203301135112530135201051
+# Level 60 (51 pts): Classic "DS/Ruin" (36 Demo for Demonic Sacrifice / 15 Destro for Ruin)
+AiPlayerbot.PremadeSpecLink.9.1.60 = -00320330113511253012-55000005
+# Level 70 (61 pts): Metamorphosis (51 Demo) + 10 points in Destro
 AiPlayerbot.PremadeSpecLink.9.1.70 = -003203301135112530135201051-55
 AiPlayerbot.PremadeSpecLink.9.1.80 = -003203301135112530135221351-55000005
+
 AiPlayerbot.PremadeSpecName.9.2 = destro pve
 AiPlayerbot.PremadeSpecGlyph.9.2 = 45785,43390,42454,43394,43393,42453
-AiPlayerbot.PremadeSpecLink.9.2.60 = --05203215200231051305031151
+# Level 60 (51 pts): Classic Deep Destro (5 Affli / 5 Demo / 41 Destro for Conflagrate/Shadowburn)
+AiPlayerbot.PremadeSpecLink.9.2.60 = 23-0302-0520321522033105133
+# Level 70 (61 pts): Chaos Bolt (51 Destro) + 5 Affli / 5 Demo
+AiPlayerbot.PremadeSpecLink.9.2.70 = 23-0302-052032152203310513352
 AiPlayerbot.PremadeSpecLink.9.2.80 = 23-0302-05203215220331051335231351
+
 AiPlayerbot.PremadeSpecName.9.3 = affli pvp
 AiPlayerbot.PremadeSpecGlyph.9.3 = 50077,43392,42455,43390,43389,45783
-AiPlayerbot.PremadeSpecLink.9.3.60 = 0350002231223011053502301151
+# Level 60 (51 pts): Classic "SL/NF" PvP (34 Affliction for Nightfall/Siphon Life / 17 Demo for Soul Link)
+AiPlayerbot.PremadeSpecLink.9.3.60 = 2350002231223111051-2032003011302
+# Level 70 (61 pts): Haunt PvP (51 Affli) + 10 points in Demo for Demonic Embrace
+AiPlayerbot.PremadeSpecLink.9.3.70 = 2350002231223011053502301151-2032003
 AiPlayerbot.PremadeSpecLink.9.3.80 = 2350002231223111053502301151-2032003011302
+
 AiPlayerbot.PremadeSpecName.9.4 = demo pvp
 AiPlayerbot.PremadeSpecGlyph.9.4 = 42459,43392,45780,43390,43389,45783
-AiPlayerbot.PremadeSpecLink.9.4.60 = -003203301135202530135001251
+# Level 60 (51 pts): Classic Deep Demo PvP (33 Demo for Master Demonologist / 18 Destro for Shadowburn)
+AiPlayerbot.PremadeSpecLink.9.4.60 = -00320330113520253-052300152
+# Level 70 (61 pts): Metamorphosis PvP (51 Demo) + 10 points in Destro
+AiPlayerbot.PremadeSpecLink.9.4.70 = -003203301135202530135001251-0523
 AiPlayerbot.PremadeSpecLink.9.4.80 = -003203301135202530135011351-052300152
+
 AiPlayerbot.PremadeSpecName.9.5 = destro pvp
 AiPlayerbot.PremadeSpecGlyph.9.5 = 42471,43392,42454,43390,43389,45783
-AiPlayerbot.PremadeSpecLink.9.5.60 = --05230015220331351005031051
+# Level 60 (51 pts): Classic Conflagrate PvP (17 Demo for Demonic Embrace / 34 Destro for Conflag)
+AiPlayerbot.PremadeSpecLink.9.5.60 = -2032003311302-0523001522033134
+# Level 70 (61 pts): Chaos Bolt PvP (51 Destro) + 10 points in Demo
+AiPlayerbot.PremadeSpecLink.9.5.70 = -2032003-05230015220331351005031051
 AiPlayerbot.PremadeSpecLink.9.5.80 = -2032003311302-05230015220331351005031051
 
 #
@@ -2107,31 +2321,58 @@ AiPlayerbot.PremadeSpecLink.9.5.80 = -2032003311302-05230015220331351005031051
 
 AiPlayerbot.PremadeSpecName.11.0 = balance pve
 AiPlayerbot.PremadeSpecGlyph.11.0 = 40916,43331,40921,43335,44922,40919
-AiPlayerbot.PremadeSpecLink.11.0.60 = 5032003125031003213304301231
+# Level 60 (51 pts): Classic "Moonglow" 40/0/11 (Deep Balance + Resto for Omen of Clarity/Nature's Focus)
+AiPlayerbot.PremadeSpecLink.11.0.60 = 5032003125331303213--20500301
+# Level 70 (61 pts): Starfall (51 Balance) + 10 points in Resto
+AiPlayerbot.PremadeSpecLink.11.0.70 = 5032003125331303213305301--205003
 AiPlayerbot.PremadeSpecLink.11.0.80 = 5032003125331303213305301231--205003012
+
 AiPlayerbot.PremadeSpecName.11.1 = bear pve
 AiPlayerbot.PremadeSpecGlyph.11.1 = 40897,43331,46372,43335,43332,40899
-AiPlayerbot.PremadeSpecLink.11.1.60 = -503232132322010303120300013501
+# Level 60 (51 pts): Classic 0/40/11 (Deep Feral Tanking + Resto for Omen of Clarity)
+AiPlayerbot.PremadeSpecLink.11.1.60 = -503232132322010353120--20350001
+# Level 70 (61 pts): Berserk (51 Feral) + 10 points in Resto
+AiPlayerbot.PremadeSpecLink.11.1.70 = -50323213232201035312030301-2035
 AiPlayerbot.PremadeSpecLink.11.1.80 = -503232132322010353120303013511-20350001
+
 AiPlayerbot.PremadeSpecName.11.2 = resto pve
 AiPlayerbot.PremadeSpecGlyph.11.2 = 40906,43331,45602,43335,43674,45603
-AiPlayerbot.PremadeSpecLink.11.2.60 = --230033312031502331050313031
+# Level 60 (51 pts): Classic 11/0/40 (Balance for Nature's Grasp/Reach + Deep Resto for Swiftmend)
+AiPlayerbot.PremadeSpecLink.11.2.60 = 0532001--230033312031502431
+# Level 70 (61 pts): Wild Growth (51 Resto) + 10 points in Balance
+AiPlayerbot.PremadeSpecLink.11.2.70 = 0532001--2300333120315024310532
 AiPlayerbot.PremadeSpecLink.11.2.80 = 05320031--230033312031502431053313051
+
 AiPlayerbot.PremadeSpecName.11.3 = cat pve
 AiPlayerbot.PremadeSpecGlyph.11.3 = 40902,43331,40901,43674,43335,45604
-AiPlayerbot.PremadeSpecLink.11.3.60 = -552202032322010053100030310501
+# Level 60 (51 pts): Classic "HotW" 0/40/11 (Deep Feral DPS + Resto for Omen of Clarity)
+AiPlayerbot.PremadeSpecLink.11.3.60 = -5532020323220100531200--203501
+# Level 70 (61 pts): Berserk (51 Feral) + 10 points in Resto
+AiPlayerbot.PremadeSpecLink.11.3.70 = -553202032322010053120030311-2035
 AiPlayerbot.PremadeSpecLink.11.3.80 = -553202032322010053120030310511-203503012
+
 AiPlayerbot.PremadeSpecName.11.4 = balance pvp
 AiPlayerbot.PremadeSpecGlyph.11.4 = 40921,43331,45622,43674,43335,45623
-AiPlayerbot.PremadeSpecLink.11.4.60 = 5012203115331002213032311231
+# Level 60 (51 pts): Classic 35/0/16 PvP (Deep Balance + Resto for Improved Enrage/Subtlety)
+AiPlayerbot.PremadeSpecLink.11.4.60 = 5022203125331003213--230033014
+# Level 70 (61 pts): Starfall PvP (51 Balance) + 10 points in Resto
+AiPlayerbot.PremadeSpecLink.11.4.70 = 502220312533100321303531103--230032
 AiPlayerbot.PremadeSpecLink.11.4.80 = 5022203125331003213035311231--230033012
+
 AiPlayerbot.PremadeSpecName.11.5 = cat pvp
 AiPlayerbot.PremadeSpecGlyph.11.5 = 40902,43331,45601,43674,43335,40901
-AiPlayerbot.PremadeSpecLink.11.5.60 = -513202032322010053103030310501
+# Level 60 (51 pts): Classic "HotW/NS" 0/33/18 PvP (Feral Charge/Heart of the Wild + Nature's Swiftness)
+AiPlayerbot.PremadeSpecLink.11.5.60 = -523202032322010053103--205503012
+# Level 70 (61 pts): Berserk PvP (51 Feral) + 10 points in Resto
+AiPlayerbot.PremadeSpecLink.11.5.70 = -5232020323220100531030303105-2053
 AiPlayerbot.PremadeSpecLink.11.5.80 = -523202032322010053103030310511-205503012
+
 AiPlayerbot.PremadeSpecName.11.6 = resto pvp
 AiPlayerbot.PremadeSpecGlyph.11.6 = 40913,43331,40906,43335,43674,45623
-AiPlayerbot.PremadeSpecLink.11.6.60 = --230033312031500511350013051
+# Level 60 (51 pts): Classic 8/0/43 PvP (Balance for Nature's Grasp + Deep Resto tree)
+AiPlayerbot.PremadeSpecLink.11.6.60 = 053--23003331203150053135
+# Level 70 (61 pts): Wild Growth PvP (51 Resto) + 10 points in Balance
+AiPlayerbot.PremadeSpecLink.11.6.70 = 0532001--230033312031500531353013
 AiPlayerbot.PremadeSpecLink.11.6.80 = 05320021--230033312031500531353013251
 
 #
