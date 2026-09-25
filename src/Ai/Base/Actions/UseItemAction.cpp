@@ -12,8 +12,6 @@
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 
-// Generic "Learning" spells used by item_template's special learning format.
-// The actual taught spell lives in Spells[1], never in Spells[0] itself.
 static constexpr uint32 SPELL_LEARNING_1 = 483;
 static constexpr uint32 SPELL_LEARNING_2 = 55884;
 
@@ -88,10 +86,8 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
     bool const isGenericLearnItem = itemProto->Spells[0].SpellId == SPELL_LEARNING_1
         || itemProto->Spells[0].SpellId == SPELL_LEARNING_2;
 
-    // Don't waste a skill book/recipe the bot already knows (mirrors AuctionHouseSearcher::CanBeUseful).
     if (isGenericLearnItem)
     {
-        // Generic-learn layout: Spells[0] is the trigger, Spells[1] is the actual spell learned.
         if (bot->HasSpell(itemProto->Spells[1].SpellId))
             return false;
     }
