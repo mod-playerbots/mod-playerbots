@@ -90,8 +90,8 @@ AiPlayerbot.MinRandomBots = 500
 AiPlayerbot.MaxRandomBots = 500
 
 # Randombot accounts
-# Set to 0 to automatically calculate needed accounts based on MaxRandomBots, EnablePeriodicOnlineOffline
-# and its ratio, and AddClassAccountPoolSize. Set manually if you want to create more accounts than needed.
+# Set to 0 to automatically calculate needed accounts based on MaxRandomBots and AddClassAccountPoolSize.
+# Set manually if you want to create more accounts than needed.
 # If the manual value is less than the required, the system will override it with the required value.
 # Default: 0 (automatic)
 AiPlayerbot.RandomBotAccountCount = 0
@@ -117,6 +117,16 @@ AiPlayerbot.DeleteRandomBotAccounts = 0
 AiPlayerbot.DisabledWithoutRealPlayer = 0
 AiPlayerbot.DisabledWithoutRealPlayerLoginDelay = 30
 AiPlayerbot.DisabledWithoutRealPlayerLogoutDelay = 300
+
+# Online randombots count change
+#   0 = Static:     Fixed random count rolled once at server start, between Min/MaxRandomBots.
+#   1 = Variable:   Fluctuating random count rolled at server start, between Min/MaxRandomBots.
+#                   Re-rolled again at a time between RandomBotCountChangeMin/MaxInterval.
+#   2 = Scheduled:  Fluctuating time-cycled count, ranging from MinRandomBots at RandomBotCountMinTime,
+#                   to MaxRandomBots at RandomBotCountMaxTime.
+# When MinRandomBots = MaxRandomBots the count is constant and all modes behave identically.
+# Default: 0 (static)
+AiPlayerbot.RandomBotCountMode = 0
 
 ####################################################################################################
 
@@ -751,16 +761,6 @@ AiPlayerbot.PreQuests = 0
 # Enable LFG for randombots
 # Default: 1 (enabled)
 AiPlayerbot.RandomBotJoinLfg = 1
-
-# Enable/Disable periodic online - offline of randombots to mimic the real-world scenario where not all players are online simultaneously
-# When enabled, randombots are randomly selected to go online or offline periodically from a larger set
-# Default: 0 (disabled, the set of online bots remains fixed)
-AiPlayerbot.EnablePeriodicOnlineOffline = 0
-
-# Defines the ratio between the total number of randombots (including offline ones) and the number of randombots currently online (MaxRandomBots)
-# This setting must greater than 1.0 and only applies when EnablePeriodicOnlineOffline
-# Default: 2.0 (total number of bots is twice the number of MaxRandomBots)
-AiPlayerbot.PeriodicOnlineOfflineRatio = 2.0
 
 # Percentage ratio of Alliance and Horde randombots
 AiPlayerbot.RandomBotAllianceRatio = 50
@@ -1715,15 +1715,18 @@ AiPlayerbot.FastReactInBG = 1
 # Default: 20
 AiPlayerbot.RandomBotUpdateInterval = 20
 
-# Minimum and maximum seconds before the manager re-evaluates and adjusts total randombot count
+# Minimum and maximum seconds before the randombot population count changes, when RandomBotCountMode = 1 or 2.
+# Bot count changes randomly at some random time between min and max interval value, when RandomBotCountMode = 1.
+# Bot count changes incrementally according to schedule, at every min interval value, when RandomBotCountMode = 2.
 # Defaults: 1800 (min), 7200 (max)
 AiPlayerbot.RandomBotCountChangeMinInterval = 1800
 AiPlayerbot.RandomBotCountChangeMaxInterval = 7200
 
-# Minimum and maximum seconds a randombot will stay online before logging out
-# Defaults: 600 (min), 28800 (max)
-AiPlayerbot.MinRandomBotInWorldTime = 600
-AiPlayerbot.MaxRandomBotInWorldTime = 28800
+# Local server time of day when randombot population count is at minimum or maximum, when RandomBotCountMode = 2.
+# Range: Integer values from 0 to 23
+# Defaults: 5 (min), 20 (max)
+AiPlayerbot.RandomBotCountMinTime = 5
+AiPlayerbot.RandomBotCountMaxTime = 20
 
 # Some aspects of randombots are periodically randomized while they are logged in and idle,
 # including their inventories and, if EquipAndSpecPersistence is disabled, their equipment and specs.
@@ -1750,10 +1753,6 @@ AiPlayerbot.MaxRandomBotReviveTime = 300
 # Defaults: 3600 (min), 18000 (max)
 AiPlayerbot.MinRandomBotTeleportInterval = 3600
 AiPlayerbot.MaxRandomBotTeleportInterval = 18000
-
-# Number of seconds bots flagged as permanent stay in the world (31,104,000 ≈ 1 year)
-# Default: 31104000
-AiPlayerbot.PermanentlyInWorldTime = 31104000
 
 #
 #
