@@ -296,9 +296,9 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
     {
         case CLASS_PRIEST:
             if (tab == PRIEST_TAB_SHADOW)
-                engine->addStrategiesNoInit("dps", "shadow debuff", "shadow aoe", nullptr);
+                engine->addStrategiesNoInit("shadow", "shadow debuff", "shadow aoe", nullptr);
             else if (tab == PRIEST_TAB_DISCIPLINE)
-                engine->addStrategy("heal", false);
+                engine->addStrategy("disc", false);
             else // if (tab == PRIEST_TAB_HOLY)
                 engine->addStrategy("holy heal", false);
             engine->addStrategiesNoInit("dps assist", "cure", nullptr);
