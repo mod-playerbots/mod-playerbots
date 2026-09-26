@@ -32,8 +32,8 @@ bool TradeStatusAction::Execute(Event event)
     bool const traderIsGameClientPlayer = IsRealPlayer(trader) || IsSelfBot(trader);
     Player* master = GetMaster();
 
-    // Bots refuse to trade with a person (whether active or selfbotting) who is neither their
-    // master nor a group member. Bot traders (other than selfbots) are handled further down.
+    // Bots refuse to trade with a person (whether active or using SelfBot) who is neither their
+    // master nor a group member. Bot traders (other than SelfBots) are handled further down.
     if (trader != master && traderIsGameClientPlayer &&
         (!bot->GetGroup() || !bot->GetGroup()->IsMember(trader->GetGUID())))
     {

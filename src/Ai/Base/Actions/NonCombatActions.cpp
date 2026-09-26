@@ -58,9 +58,9 @@ bool DrinkAction::Execute(Event event)
         float delay;
 
         if (!bot->InBattleground())
-            delay = 18000.0f * (100 - p) / 100.0f;
+            delay = 18.0f * IN_MILLISECONDS * (100 - p) / 100.0f;
         else
-            delay = 12000.0f * (100 - p) / 100.0f;
+            delay = 12.0f * IN_MILLISECONDS * (100 - p) / 100.0f;
 
         botAI->SetNextCheckDelay(delay);
 
@@ -118,9 +118,9 @@ bool EatAction::Execute(Event event)
         float delay;
 
         if (!bot->InBattleground())
-            delay = 18000.0f * (100 - p) / 100.0f;
+            delay = 18.0f * IN_MILLISECONDS * (100 - p) / 100.0f;
         else
-            delay = 12000.0f * (100 - p) / 100.0f;
+            delay = 12.0f * IN_MILLISECONDS * (100 - p) / 100.0f;
 
         botAI->SetNextCheckDelay(delay);
 

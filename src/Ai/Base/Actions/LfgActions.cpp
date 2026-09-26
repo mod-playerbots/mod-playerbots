@@ -323,7 +323,7 @@ bool LfgJoinAction::isUseful()
     if (bot->GetLevel() < 15)
         return false;
 
-    // Don't use for selfbots (a real player is at the keyboard).
+    // Don't use for SelfBots (a real player is at the keyboard).
     if (IsSelfBot(bot))
         return false;
 

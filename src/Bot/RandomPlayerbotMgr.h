@@ -174,6 +174,7 @@ public:
     // Account type management
     void AssignAccountTypes();
     bool IsAccountType(uint32 accountId, uint8 accountType);
+    bool IsAddClassAccount(uint32 accountId) const;
 
 protected:
     void OnBotLoginInternal(Player* const bot) override;

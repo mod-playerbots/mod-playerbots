@@ -126,7 +126,7 @@ bool SwitchToMeleeTrigger::IsActive()
 }
 
 // Valid targets for "Improved Tracking".
-// Optional/Utility targets (uncomment for selfbot).
+// Optional/Utility targets (uncomment for SelfBot).
 bool NoTrackTrigger::IsActive()
 {
     std::vector<std::string> track_list = {

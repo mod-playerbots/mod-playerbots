@@ -18,6 +18,7 @@
 #include "ChangeTalentsAction.h"
 #include "ChatShortcutActions.h"
 #include "CheatAction.h"
+#include "ChooseTargetActions.h"
 #include "CustomStrategyEditAction.h"
 #include "DebugAction.h"
 #include "DestroyItemAction.h"
@@ -169,6 +170,7 @@ public:
         creators["spirit healer"] = &ChatActionContext::spirit_healer;
         creators["position"] = &ChatActionContext::position;
         creators["tell target"] = &ChatActionContext::tell_target;
+        creators["target me"] = &ChatActionContext::target_requester;
         creators["summon"] = &ChatActionContext::summon;
         creators["who"] = &ChatActionContext::who;
         creators["save mana"] = &ChatActionContext::save_mana;
@@ -234,6 +236,7 @@ private:
     static Action* who(PlayerbotAI* botAI) { return new WhoAction(botAI); }
     static Action* summon(PlayerbotAI* botAI) { return new SummonAction(botAI); }
     static Action* tell_target(PlayerbotAI* botAI) { return new TellTargetAction(botAI); }
+    static Action* target_requester(PlayerbotAI* botAI) { return new TargetRequesterAction(botAI); }
     static Action* position(PlayerbotAI* botAI) { return new PositionAction(botAI); }
     static Action* spirit_healer(PlayerbotAI* botAI) { return new SpiritHealerAction(botAI); }
     static Action* rti(PlayerbotAI* botAI) { return new RtiAction(botAI); }

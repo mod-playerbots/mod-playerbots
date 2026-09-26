@@ -59,6 +59,10 @@ bool ReleaseSpiritAction::Execute(Event event)
 
 void ReleaseSpiritAction::IncrementDeathCount() const
 {
+    // BG deaths don't count, matching PlayerbotAI::DoNextAction.
+    if (bot->InBattleground())
+        return;
+
     // Death Count to prevent skeleton piles
     Player* master = botAI->GetMaster();
     if (!master || GET_PLAYERBOT_AI(master))

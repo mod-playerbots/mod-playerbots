@@ -12,6 +12,9 @@
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 
+static constexpr uint32 SPELL_LEARNING_1 = 483;
+static constexpr uint32 SPELL_LEARNING_2 = 55884;
+
 bool UseItemAction::Execute(Event event)
 {
     std::string name = event.getParam();
@@ -79,15 +82,51 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
     uint8 castFlags = 0;
     uint32 targetFlag = TARGET_FLAG_NONE;
     uint32 spellId = 0;
-    for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+    ItemTemplate const* itemProto = item->GetTemplate();
+    bool const isGenericLearnItem = itemProto->Spells[0].SpellId == SPELL_LEARNING_1
+        || itemProto->Spells[0].SpellId == SPELL_LEARNING_2;
+
+    if (isGenericLearnItem)
     {
-        if (item->GetTemplate()->Spells[i].SpellId > 0)
+        if (bot->HasSpell(itemProto->Spells[1].SpellId))
+            return false;
+    }
+    else if (itemProto->Spells[0].SpellId)
+    {
+        // Older/direct layout: Spells[0] itself teaches the spell(s), via one or
+        // more SPELL_EFFECT_LEARN_SPELL effects (not necessarily in effect slot 0).
+        if (SpellInfo const* learnSpellInfo = sSpellMgr->GetSpellInfo(itemProto->Spells[0].SpellId))
         {
-            spellId = item->GetTemplate()->Spells[i].SpellId;
-            if (!botAI->CanCastSpell(spellId, bot, false, itemTarget, item))
+            bool foundLearnEffect = false;
+            bool allKnown = true;
+            for (auto const& effect : learnSpellInfo->Effects)
             {
-                return false;
+                if (effect.Effect != SPELL_EFFECT_LEARN_SPELL || !effect.TriggerSpell)
+                    continue;
+
+                foundLearnEffect = true;
+                if (!bot->HasSpell(effect.TriggerSpell))
+                {
+                    allKnown = false;
+                    break;
+                }
             }
+
+            if (foundLearnEffect && allKnown)
+                return false;
+        }
+    }
+
+    // Only check index 0 for generic-learn items; slot 1 is the taught spell id
+    uint8 const spellSlotLimit = isGenericLearnItem ? 1 : MAX_ITEM_PROTO_SPELLS;
+
+    for (uint8 i = 0; i < spellSlotLimit; ++i)
+    {
+        if (itemProto->Spells[i].SpellId > 0)
+        {
+            spellId = itemProto->Spells[i].SpellId;
+            if (!botAI->CanCastSpell(spellId, bot, false, itemTarget, item))
+                return false;
         }
     }
 
@@ -294,10 +333,10 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
         }
 
         if (!bot->IsInCombat() && !bot->InBattleground())
-            botAI->SetNextCheckDelay(std::max(10000.0f, 27000.0f * (100 - p) / 100.0f));
+            botAI->SetNextCheckDelay(std::max(10.0f * IN_MILLISECONDS, 27.0f * IN_MILLISECONDS * (100 - p) / 100.0f));
 
         if (!bot->IsInCombat() && bot->InBattleground())
-            botAI->SetNextCheckDelay(std::max(10000.0f, 20000.0f * (100 - p) / 100.0f));
+            botAI->SetNextCheckDelay(std::max(10.0f * IN_MILLISECONDS, 20.0f * IN_MILLISECONDS * (100 - p) / 100.0f));
 
         // botAI->SetNextCheckDelay(27000.0f * (100 - p) / 100.0f);
         //  botAI->SetNextCheckDelay(20000);
@@ -322,6 +361,9 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
 
 void UseItemAction::TellConsumableUse(Item* item, std::string const action, float percent)
 {
+    if (!sPlayerbotAIConfig.AnnounceConsumableUse)
+        return;
+
     std::ostringstream out;
     out << action << " " << chat->FormatItem(item->GetTemplate());
 
@@ -337,13 +379,26 @@ bool UseItemAction::SocketItem(Item* item, Item* gem, bool replace)
     WorldPacket packet(CMSG_SOCKET_GEMS);
     packet << item->GetGUID();
 
+    // A buckle's gem goes into the first colourless template socket - see WorldSession::HandleSocketOpcode.
+    uint8 firstPrismatic = 0;
+    while (firstPrismatic < MAX_GEM_SOCKETS && item->GetTemplate()->Socket[firstPrismatic].Color)
+        ++firstPrismatic;
+
+    bool const hasPrismaticSocket = item->GetEnchantmentId(PRISMATIC_ENCHANTMENT_SLOT) != 0;
+
     bool fits = false;
     for (uint32 enchant_slot = SOCK_ENCHANTMENT_SLOT; enchant_slot < SOCK_ENCHANTMENT_SLOT + MAX_GEM_SOCKETS;
          ++enchant_slot)
     {
-        uint8 SocketColor = item->GetTemplate()->Socket[enchant_slot - SOCK_ENCHANTMENT_SLOT].Color;
+        uint32 socketIndex = enchant_slot - SOCK_ENCHANTMENT_SLOT;
+        uint8 socketColor = item->GetTemplate()->Socket[socketIndex].Color;
         GemPropertiesEntry const* gemProperty = sGemPropertiesStore.LookupEntry(gem->GetTemplate()->GemProperties);
-        if (gemProperty && (gemProperty->color & SocketColor))
+
+        // A socket added by a buckle carries no colour of its own and takes any gem except a meta one.
+        bool const isPrismatic = !socketColor && hasPrismaticSocket && socketIndex == firstPrismatic;
+        bool const gemFitsSocket = gemProperty && (isPrismatic ? gemProperty->color != SOCKET_COLOR_META
+                                                               : (gemProperty->color & socketColor) != 0);
+        if (gemFitsSocket)
         {
             if (fits)
             {

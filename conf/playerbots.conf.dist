@@ -139,6 +139,12 @@ AiPlayerbot.MaxAddedBots = 40
 # Default: 1 (enabled)
 AiPlayerbot.AddClassCommand = 1
 
+# Pick a random eligible character each time the addclass command adds a bot of a given class.
+# When disabled, addclass keeps adding the same character for a class as long as it is available,
+# so a bot geared with init or tweak comes back on the next call.
+# Default: 0 (always the same character)
+AiPlayerbot.AddClassRandomCharacter = 0
+
 # Bot group invitation permission level (0 = GM only, 1 = accept based on level, 2 = always accept)
 # Default: 1 (accept based on level)
 AiPlayerbot.GroupInvitationPermission = 1
@@ -2584,6 +2590,10 @@ AIPlayerbot.GuildFeedback = 1
 AiPlayerbot.GuildRepliesRate = 100
 # Bots without a master will say their lines
 AiPlayerbot.RandomBotSayWithoutMaster = 0
+# Bots whisper their master when they eat/drink/feast ("Eating [item] (85%)"). Set to 0 to
+# suppress those consumable-use messages (bots still sit and eat, just silently).
+# Default: 1 (enabled)
+AiPlayerbot.AnnounceConsumableUse = 1
 
 #
 #

@@ -132,7 +132,7 @@ bool CheckMountStateAction::Execute(Event /*event*/)
         return false;
     }
 
-    // No real master (random bot or self-bot) OR bot in BG
+    // No real master (random bot or SelfBot) OR bot in BG
     if ((noRealMaster || inBattleground) && !bot->IsMounted() &&
         noAttackers && shouldMount && !bot->IsInCombat())
         return Mount();

@@ -13,16 +13,11 @@
 #include "Playerbots.h"
 #include "WorldPacket.h"
 
-bool AcceptInvitationAction::Execute(Event event)
+bool AcceptInvitationAction::Execute(Event /*event*/)
 {
     Group* grp = bot->GetGroupInvite();
     if (!grp)
         return false;
-    WorldPacket packet = event.getPacket();
-    uint8 flag;
-    std::string name;
-    packet >> flag >> name;
-
     Player* inviter = ObjectAccessor::FindPlayer(grp->GetLeaderGUID());
     if (!inviter)
         return false;

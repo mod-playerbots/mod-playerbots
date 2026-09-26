@@ -1254,7 +1254,7 @@ inline bool RsHalionPortalCommit(PlayerbotAI* botAI, Player* bot)
     float speed = bot->GetSpeed(MOVE_RUN);
     if (speed < 1.0f)
         speed = 7.0f;
-    uint32 const reachMs = static_cast<uint32>((dist / speed) * 1000.0f);
+    uint32 const reachMs = static_cast<uint32>((dist / speed) * IN_MILLISECONDS);
     return reachMs + RS_HALION_PORTAL_COMMIT_MARGIN_MS <= RsHalionCutterMsUntilShoot(bot->GetInstanceId());
 }
 

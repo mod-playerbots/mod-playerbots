@@ -19,9 +19,9 @@ bool LootRollAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    std::vector<Roll*> rolls = group->GetRolls();
+    std::vector<Roll const*> rolls = group->GetRolls();
     bool voted = false;
-    for (Roll*& roll : rolls)
+    for (Roll const* roll : rolls)
     {
         auto voteItr = roll->playerVote.find(bot->GetGUID());
         if (voteItr == roll->playerVote.end() || voteItr->second != NOT_EMITED_YET)

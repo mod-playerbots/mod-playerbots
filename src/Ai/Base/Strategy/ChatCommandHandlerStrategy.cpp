@@ -67,6 +67,7 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(new TriggerNode("max dps", { NextAction("max dps chat shortcut", relevance) }));
     triggers.push_back(new TriggerNode("attackers", { NextAction("tell attackers", relevance) }));
     triggers.push_back(new TriggerNode("target", { NextAction("tell target", relevance) }));
+    triggers.push_back(new TriggerNode("target me", { NextAction("target me", relevance) }));
     triggers.push_back(new TriggerNode("pull", { NextAction("pull my target", relevance) }));
     triggers.push_back(new TriggerNode("pull back", { NextAction("pull my target", relevance) }));
     triggers.push_back(new TriggerNode("pull rti", { NextAction("pull rti target", relevance) }));
