@@ -4584,6 +4584,7 @@ std::vector<WorldLocation> TravelMgr::GetValidQuestGiverLocations(Player* bot)
     uint32 raceMask = bot->getRaceMask();
     uint32 classMask = bot->getClassMask();
     int32 lowLevelDiff = sWorld->getIntConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF);
+    int32 levelWindow = sPlayerbotAIConfig.questGiverTeleportLevelWindow;
 
     for (auto const& cand : teamIt->second)
     {
@@ -4591,7 +4592,7 @@ std::vector<WorldLocation> TravelMgr::GetValidQuestGiverLocations(Player* bot)
 
         // Effective quest level, mirroring Player::GetQuestLevel (unknown -> bot level).
         int32 effQuestLevel = (cand.questLevel > 0) ? cand.questLevel : (int32)botLevel;
-        if (botLevel + 3 < effQuestLevel)  // quest too high for the bot (IsQuestCapableDoing)
+        if (botLevel + levelWindow < effQuestLevel)  // quest too high for the bot
             continue;
         if (botLevel > effQuestLevel + lowLevelDiff)  // below the bot's interest (IsQuestWorthDoing)
             continue;
