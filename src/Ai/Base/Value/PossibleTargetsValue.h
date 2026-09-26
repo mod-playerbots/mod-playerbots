@@ -40,7 +40,7 @@ class PossibleTriggersValue : public NearestUnitsValue
 public:
     PossibleTriggersValue(PlayerbotAI* botAI, std::string const name = "possible triggers", float range = 15.0f,
                           bool ignoreLos = true)
-        : NearestUnitsValue(botAI, name, range, ignoreLos, 1 * 1000)
+        : NearestUnitsValue(botAI, name, range, ignoreLos, 1 * IN_MILLISECONDS)
     {
     }
 

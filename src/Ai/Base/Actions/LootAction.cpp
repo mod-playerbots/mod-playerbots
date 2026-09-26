@@ -160,6 +160,19 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
     if (lootObject.skillId == SKILL_HERBALISM)
         return botAI->HasSkill(SKILL_HERBALISM) ? botAI->CastSpell(HERB_GATHERING, bot) : false;
 
+    // Key-locked chest: the core only opens LOCK_KEY_ITEM locks through the key
+    // item's own use spell (Spell::CanOpenLock checks m_CastItem), so look up the
+    // key's OPEN_LOCK spell from its template and cast it with the key as the cast
+    // item, GO-targeted. This mirrors the client's CMSG_USE_ITEM.
+    if (lootObject.reqItem && go)
+    {
+        if (uint32 keySpell = GetKeySpell(lootObject.reqItem))
+        {
+            if (Item* keyItem = bot->GetItemByEntry(lootObject.reqItem))
+                return botAI->CastSpell(keySpell, bot, keyItem);
+        }
+    }
+
     uint32 spellId = GetOpeningSpell(lootObject);
     if (!spellId)
         return false;
@@ -210,6 +223,32 @@ uint32 OpenLootAction::GetOpeningSpell(LootObject& lootObject, GameObject* go)
     }
 
     return sPlayerbotAIConfig.openGoSpell;
+}
+
+uint32 OpenLootAction::GetKeySpell(uint32 keyItemId)
+{
+    ItemTemplate const* keyItem = sObjectMgr->GetItemTemplate(keyItemId);
+    if (!keyItem)
+        return 0;
+
+    // A key opens a lock through its own on-use spell (e.g. Dead-Tooth's Key ->
+    // spell 8517 "Opening"). Only effect 0 counts: PlayerbotAI::CastSpell routes
+    // OPEN_LOCK casts off Effects[0].
+    for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+    {
+        uint32 spellId = keyItem->Spells[i].SpellId;
+        if (!spellId)
+            continue;
+
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (!spellInfo)
+            continue;
+
+        if (spellInfo->Effects[0].Effect == SPELL_EFFECT_OPEN_LOCK)
+            return spellId;
+    }
+
+    return 0;
 }
 
 bool OpenLootAction::CanOpenLock(LootObject& /*lootObject*/, SpellInfo const* spellInfo, GameObject* go)

@@ -18,7 +18,8 @@ reviews:
   assess_linked_issues: false
   related_issues: false
   related_prs: false
-  suggested_labels: false
+  suggested_labels: true
+  auto_apply_labels: true
   suggested_reviewers: false
   review_status: false
   review_details: false
@@ -26,6 +27,29 @@ reviews:
   poem: false
   enable_prompt_for_ai_agents: false
   collapse_walkthrough: true
+
+  labeling_instructions:
+    - label: "Multibot requires update"
+      instructions: |
+        Apply this label only when the PR requires a corresponding change in MultiBot-Chatless
+        (https://github.com/Wishmaster117/MultiBot-Chatless) or mod-multibot-bridge
+        (https://github.com/Wishmaster117/mod-multibot-bridge).
+
+        The integration surface is limited to playerbot chat controls: apply the label when a player-facing
+        chat command is added, removed, renamed, or has its syntax, subcommands, arguments, aliases, or
+        machine-consumed response format changed. Also apply when a strategy name that a player can select,
+        enable, disable, or otherwise manage through a playerbot chat command is added, removed, or renamed.
+
+        Do not apply the label for internal AI actions, triggers, values, strategies, states, stances,
+        configuration, item/equipment logic, bot lifecycle/management code, or ordinary chat text unless the
+        PR also changes the player-facing chat-control contract above. File paths and identifiers alone are
+        insufficient evidence: changes in ChatHelper, ChatActionContext, ChatTriggerContext,
+        ChatCommandHandlerStrategy, ChatShortcutActions, ChatFilter, ListSpellsAction, or similarly named
+        files do not require the label unless they alter that contract.
+
+        Examples that must not receive the label: refactors or bug fixes in chat helpers; changes to internal
+        strategy/action/trigger names that cannot be managed through chat; and gameplay changes such as
+        fleeing, item evaluation, selfbot behavior, or core-hook alignment.
 
   pre_merge_checks:
     docstrings:
@@ -91,7 +115,6 @@ reviews:
           `static` first: `static float const x = 1.0f;`.
         - No magic numbers: named `constexpr` or `enum`/`enum class`, never `#define`.
           Prefixes: SPELL_, NPC_, ITEM_, GO_, QUEST_, SAY_, EMOTE_, EVENT_, DATA_, ACHIEV_.
-        - No free namespace functions unless required; use class methods or static functions.
         - Never redefine `me`; it is reserved for the scripted object pointer.
         - Header guards on every header. New files carry the mod-playerbots GPLv2 header.
         - Logging: `LOG_INFO("playerbots", "msg {}", arg)` (also LOG_WARN/ERROR/DEBUG) with

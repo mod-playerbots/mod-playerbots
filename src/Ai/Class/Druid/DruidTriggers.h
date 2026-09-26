@@ -24,13 +24,14 @@ class PlayerbotAI;
 class MarkOfTheWildOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
-    MarkOfTheWildOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "mark of the wild", 4 * 2000) {}
+    MarkOfTheWildOnPartyTrigger(PlayerbotAI* botAI)
+        : BuffOnPartyTrigger(botAI, "mark of the wild", 8 * IN_MILLISECONDS) {}
 };
 
 class MarkOfTheWildTrigger : public BuffTrigger
 {
 public:
-    MarkOfTheWildTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "mark of the wild", 4 * 2000) {}
+    MarkOfTheWildTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "mark of the wild", 8 * IN_MILLISECONDS) {}
 
     bool IsActive() override;
 };
@@ -38,7 +39,7 @@ public:
 class ThornsOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
-    ThornsOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "thorns", 2 * 2000) {}
+    ThornsOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "thorns", 4 * IN_MILLISECONDS) {}
 
     bool IsActive() override;
 };
@@ -46,13 +47,13 @@ public:
 class ThornsOnMainTankTrigger : public BuffOnMainTankTrigger
 {
 public:
-    ThornsOnMainTankTrigger(PlayerbotAI* botAI) : BuffOnMainTankTrigger(botAI, "thorns", false, 2 * 2000) {}
+    ThornsOnMainTankTrigger(PlayerbotAI* botAI) : BuffOnMainTankTrigger(botAI, "thorns", false, 4 * IN_MILLISECONDS) {}
 };
 
 class ThornsTrigger : public BuffTrigger
 {
 public:
-    ThornsTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "thorns", 2 * 2000) {}
+    ThornsTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "thorns", 4 * IN_MILLISECONDS) {}
 
     bool IsActive() override;
 };

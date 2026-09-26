@@ -17,7 +17,9 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotOperations.h"
 #include "PlayerbotWorldThreadProcessor.h"
+#include "Playerbots.h"
 #include "RaceMgr.h"
+#include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
 #include "SharedDefines.h"
 #include "SocialMgr.h"
@@ -124,22 +126,22 @@ Player* RandomPlayerbotFactory::CreateRandomBot(WorldSession* session, uint8 cls
     std::vector<std::pair<uint8, uint8>> faces, hairs;
     for (CharSectionsEntry const* charSection : sCharSectionsStore)
     {
-        if (charSection->Race != race || charSection->Gender != gender)
+        if (charSection->RaceID != race || charSection->SexID != gender)
             continue;
 
-        switch (charSection->GenType)
+        switch (charSection->BaseSection)
         {
             case SECTION_TYPE_SKIN:
-                skinColors.push_back(charSection->Color);
+                skinColors.push_back(charSection->ColorIndex);
                 break;
             case SECTION_TYPE_FACE:
-                faces.push_back(std::pair<uint8, uint8>(charSection->Type, charSection->Color));
+                faces.push_back(std::pair<uint8, uint8>(charSection->VariationIndex, charSection->ColorIndex));
                 break;
             case SECTION_TYPE_FACIAL_HAIR:
-                facialHairTypes.push_back(charSection->Type);
+                facialHairTypes.push_back(charSection->VariationIndex);
                 break;
             case SECTION_TYPE_HAIR:
-                hairs.push_back(std::pair<uint8, uint8>(charSection->Type, charSection->Color));
+                hairs.push_back(std::pair<uint8, uint8>(charSection->VariationIndex, charSection->ColorIndex));
                 break;
         }
     }
@@ -718,7 +720,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         RandomPlayerbotFactory factory;
 
         WorldSession* session = new WorldSession(accountId, "", 0x0, nullptr, SEC_PLAYER, EXPANSION_WRATH_OF_THE_LICH_KING,
-                                                time_t(0), LOCALE_enUS, 0, false, false, 0, true);
+                                                time_t(0), LOCALE_enUS, 0, false, false, 0);
         sessionBots.push_back(session);
 
         for (uint8 cls = CLASS_WARRIOR; cls < MAX_CLASSES - count; ++cls)
@@ -866,9 +868,30 @@ void RandomPlayerbotFactory::LoadArenaTeamData()
     LOG_INFO("playerbots", "Loaded {} available arena team names", _availableArenaTeamNames.size());
 }
 
+bool RandomPlayerbotFactory::IsEligibleForBotArenaTeam(Player* bot)
+{
+    if (!bot || !bot->GetSession())
+        return false;
+
+    uint32 const accountId = bot->GetSession()->GetAccountId();
+    if (!sPlayerbotAIConfig.IsInRandomAccountList(accountId))
+        return false;
+
+    if (sRandomPlayerbotMgr.IsAddClassAccount(accountId))
+        return false;
+
+    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+    {
+        if (botAI->HasGameClientMaster())
+            return false;
+    }
+
+    return true;
+}
+
 void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
 {
-    if (!sPlayerbotAIConfig.IsInRandomAccountList(bot->GetSession()->GetAccountId()))
+    if (!IsEligibleForBotArenaTeam(bot))
         return;
 
     if (sPlayerbotAIConfig.deleteRandomBotArenaTeams)
@@ -877,9 +900,9 @@ void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
     if (bot->GetLevel() < 70)
         return;
 
-    for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
+    for (uint8 arenaSlot = ARENA_SLOT_2v2; arenaSlot <= ARENA_SLOT_5v5; ++arenaSlot)
     {
-        if (bot->GetArenaTeamId(arena_slot))
+        if (bot->GetArenaTeamId(arenaSlot))
             return;
     }
 
@@ -890,10 +913,10 @@ void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
 void RandomPlayerbotFactory::AssignBotToArenaTeamInternal(Player* bot)
 {
     // Check if bot has team, only one per bot to avoid queue conflicts
-    for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
+    for (uint8 arenaSlot = ARENA_SLOT_2v2; arenaSlot <= ARENA_SLOT_5v5; ++arenaSlot)
     {
-        if (bot->GetArenaTeamId(arena_slot) ||
-            sCharacterCache->GetCharacterArenaTeamIdByGuid(bot->GetGUID(), arena_slot))
+        if (bot->GetArenaTeamId(arenaSlot) ||
+            sCharacterCache->GetCharacterArenaTeamIdByGuid(bot->GetGUID(), arenaSlot))
             return;
     }
 
@@ -967,11 +990,11 @@ void RandomPlayerbotFactory::CreateBotArenaTeam(Player* bot, ArenaType type)
     arenateam->SetRatingForAll(
         urand(sPlayerbotAIConfig.randomBotArenaTeamMinRating, sPlayerbotAIConfig.randomBotArenaTeamMaxRating));
 
-    uint32 backgroundColor = urand(0xFF000000, 0xFFFFFFFF);
-    uint32 emblemStyle = urand(0, 101);
-    uint32 emblemColor = urand(0xFF000000, 0xFFFFFFFF);
-    uint32 borderStyle = urand(0, 5);
-    uint32 borderColor = urand(0xFF000000, 0xFFFFFFFF);
+    uint32 const backgroundColor = urand(0xFF000000, 0xFFFFFFFF);
+    uint8 const emblemStyle = urand(0, 101);
+    uint32 const emblemColor = urand(0xFF000000, 0xFFFFFFFF);
+    uint8 const borderStyle = urand(0, 5);
+    uint32 const borderColor = urand(0xFF000000, 0xFFFFFFFF);
     arenateam->SetEmblem(backgroundColor, emblemStyle, emblemColor, borderStyle, borderColor);
 
     arenateam->SaveToDB();

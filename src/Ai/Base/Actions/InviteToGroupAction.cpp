@@ -85,7 +85,7 @@ bool InviteNearbyToGroupAction::Execute(Event /*event*/)
 
         if (botAI)
         {
-            // A solo-grouper bot with no real master (regular player or selfbot master) does not invite.
+            // A solo-grouper bot with no real master (regular player or SelfBot master) does not invite.
             if (botAI->GetGrouperType() == GrouperType::SOLO && !botAI->HasGameClientMaster())
                 continue;
 

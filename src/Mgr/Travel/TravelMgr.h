@@ -566,18 +566,18 @@ protected:
     uint32 visitors = 0;
     uint32 maxVisitors = 0;
     uint32 maxVisitorsPerPoint = 0;
-    uint32 expireDelay = 5 * 1000;
-    uint32 cooldownDelay = 60 * 1000;
+    uint32 expireDelay = 5 * IN_MILLISECONDS;
+    uint32 cooldownDelay = MINUTE * IN_MILLISECONDS;
 };
 
 // A travel target that is always inactive and jumps to cooldown.
 class NullTravelDestination : public TravelDestination
 {
 public:
-    NullTravelDestination(uint32 cooldownDelay1 = 5 * 60 * 1000) : TravelDestination()
+    NullTravelDestination(uint32 cooldownDelay1 = 5 * MINUTE * IN_MILLISECONDS) : TravelDestination()
     {
         cooldownDelay = cooldownDelay1;
-    };
+    }
 
     Quest const* GetQuestTemplate() override { return nullptr; }
 
