@@ -100,19 +100,18 @@ float GetFuryMageInterruptReach(Player* bot)
 
 bool IsFlurriedBerserker(Unit* berserker)
 {
-    return berserker->HasAura(Id(SwpSpells::SPELL_FLURRY)) &&
+    return berserker && berserker->HasAura(Id(SwpSpells::SPELL_FLURRY)) &&
         !berserker->HasUnitState(UNIT_STATE_STUNNED);
 }
 
 bool IsCastingFelFireball(Unit* furyMage)
 {
-    return furyMage->HasUnitState(UNIT_STATE_CASTING) &&
-        furyMage->FindCurrentSpellBySpellId(Id(SwpSpells::SPELL_FEL_FIREBALL));
+    return furyMage && furyMage->FindCurrentSpellBySpellId(Id(SwpSpells::SPELL_FEL_FIREBALL));
 }
 
 bool IsSpellFuryBuffedFuryMage(Unit* furyMage)
 {
-    return furyMage->HasAura(Id(SwpSpells::SPELL_SPELL_FURY));
+    return furyMage && furyMage->HasAura(Id(SwpSpells::SPELL_SPELL_FURY));
 }
 
 Unit* SelectNearestQualifying(

@@ -250,11 +250,11 @@ protected:
 
 // Eredar Twins
 
-class EredarTwinsDisableAutomaticTargetingMultiplier : public SunwellEncounterMultiplier
+class EredarTwinsDisableAutoTargetingMultiplier : public SunwellEncounterMultiplier
 {
 public:
-    EredarTwinsDisableAutomaticTargetingMultiplier(PlayerbotAI* botAI)
-        : SunwellEncounterMultiplier(botAI, "eredar twins disable automatic targeting") {}
+    EredarTwinsDisableAutoTargetingMultiplier(PlayerbotAI* botAI)
+        : SunwellEncounterMultiplier(botAI, "eredar twins disable auto targeting") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
