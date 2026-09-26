@@ -394,6 +394,30 @@ std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius,
     return dynObjs;
 }
 
+// Ice Block, Divine Shield, and/or Cloak of Shadows can be used to nullify or ignore several
+// dangerous boss mechanics.
+uint32 GetSelfImmunitySpell(Player* bot)
+{
+    constexpr uint32 iceBlock = 45438;
+    constexpr uint32 divineShield = 642;
+    constexpr uint32 cloakOfShadows = 31224;
+
+    switch (bot->getClass())
+    {
+        case CLASS_MAGE:
+            return iceBlock;
+
+        case CLASS_PALADIN:
+            return divineShield;
+
+        case CLASS_ROGUE:
+            return cloakOfShadows;
+
+        default:
+            return 0;
+    }
+}
+
 // This function is primarily for use in multipliers during encounters where it is desirable
 // for bots to save cooldowns for particular phases (or for a bit after the pull).
 bool IsDpsCooldownAction(Player* bot, Action* action)
