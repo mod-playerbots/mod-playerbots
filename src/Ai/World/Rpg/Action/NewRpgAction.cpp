@@ -24,6 +24,7 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
+#include "Playerbots.h"
 #include "QuestDef.h"
 #include "Random.h"
 #include "SharedDefines.h"
@@ -404,6 +405,39 @@ bool NewRpgWanderNpcAction::Execute(Event /*event*/)
             data.lastReach = getMSTime();
             if (bot->CanInteractWithQuestGiver(object))
                 InteractWithNpcOrGameObjectForQuest(data.npcOrGo);
+
+            if (Creature* creature = object->ToCreature())
+            {
+                uint32 npcFlags = creature->GetCreatureTemplate()->npcflag;
+
+                // Vendors: random bots sell junk then buy useful items unconditionally;
+                // alt/self bots only when the matching EnableAltBot* flag is set.
+                if (npcFlags & UNIT_NPC_FLAG_VENDOR)
+                {
+                    if (sRandomPlayerbotMgr.IsRandomBot(bot))
+                    {
+                        botAI->DoSpecificAction("sell", Event("sell", "vendor"));
+                        botAI->DoSpecificAction("buy", Event("buy", "vendor"));
+                    }
+                    else
+                    {
+                        int32 const altBotAutoSellLevel = sPlayerbotAIConfig.altBotAutoSellLevel;
+                        if (altBotAutoSellLevel >= 2)
+                            botAI->DoSpecificAction("sell", Event("sell", "vendor"));
+                        else if (altBotAutoSellLevel == 1)
+                            botAI->DoSpecificAction("sell", Event("sell", "gray"));
+                        if (sPlayerbotAIConfig.enableAltBotAutoBuy)
+                            botAI->DoSpecificAction("buy", Event("buy", "vendor"));
+                    }
+                }
+
+                // Repair: repair gear below full durability
+                if ((npcFlags & UNIT_NPC_FLAG_REPAIR) && AI_VALUE(uint8, "durability") < 100)
+                {
+                    bot->SetSelection(data.npcOrGo);
+                    botAI->DoSpecificAction("repair", Event("repair"));
+                }
+            }
             return true;
         }
 
