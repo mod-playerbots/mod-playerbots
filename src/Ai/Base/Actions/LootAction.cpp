@@ -393,8 +393,7 @@ bool StoreLootAction::Execute(Event event)
     if (p.size() - p.rpos() < size_t(items) * 22)
         return false;
 
-    if (!availableLoot->LootOpened(guid))
-        return false;
+    availableLoot->LootOpened(guid);
 
     if (!currentLoot)
         bot->SetLootGUID(guid);

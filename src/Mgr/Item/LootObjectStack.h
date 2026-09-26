@@ -107,7 +107,7 @@ public:
 
     bool IsLootPending();
     void BeginLoot(ObjectGuid guid);
-    bool LootOpened(ObjectGuid guid);
+    void LootOpened(ObjectGuid guid);
     void CancelLoot(ObjectGuid guid);
     void RetryLoot(ObjectGuid guid);
     void DeferLoot(ObjectGuid guid);
