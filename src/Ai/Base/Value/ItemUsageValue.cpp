@@ -13,6 +13,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
+#include "QuestAction.h"
 #include "RandomItemMgr.h"
 #include "ServerFacade.h"
 #include "StatsWeightCalculator.h"
@@ -99,6 +100,11 @@ ItemUsage ItemUsageValue::Calculate()
     ItemUsage equip = QueryItemUsageForEquip(proto, randomPropertyId);
     if (equip != ITEM_USAGE_NONE)
         return equip;
+
+    // Equipping a start-quest item the bot can take is fine (the quest does not consume it), so
+    // only the disenchant path is blocked here; "start quest" also looks at equipped items.
+    if (IsStartQuestItemUsefulFor(bot, proto))
+        return ITEM_USAGE_QUEST;
 
     // Get item instance to check if it's soulbound
     Item* item = bot->GetItemByEntry(proto->ItemId);
@@ -541,7 +547,21 @@ bool ItemUsageValue::IsItemUsefulForQuest(Player* player, ItemTemplate const* pr
         }
     }
 
+    // Keep items that start a quest the bot can take, so they are not sold or destroyed
+    if (IsStartQuestItemUsefulFor(player, proto))
+        return true; // Item starts a quest the bot can take
+
     return false; // Item is not useful for any active quests
+}
+
+bool ItemUsageValue::IsStartQuestItemUsefulFor(Player* player, ItemTemplate const* proto)
+{
+    if (!proto->StartQuest)
+        return false;
+
+    Quest const* quest = sObjectMgr->GetQuestTemplate(proto->StartQuest);
+    return quest && player->GetQuestStatus(proto->StartQuest) == QUEST_STATUS_NONE &&
+        QuestAction::CanAcceptQuest(player, quest);
 }
 
 bool ItemUsageValue::IsItemNeededForSkill(ItemTemplate const* proto)

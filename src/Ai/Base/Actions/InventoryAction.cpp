@@ -14,7 +14,7 @@ namespace
 {
 bool isReservedQualifier(std::string const& text)
 {
-    static std::array<std::string_view, 14> const exactQualifiers = {
+    static std::array<std::string_view, 15> const exactQualifiers = {
         "ammo",
         "conjured drink",
         "conjured food",
@@ -28,6 +28,7 @@ bool isReservedQualifier(std::string const& text)
         "pet",
         "quest",
         "recipe",
+        "start quest",
         "water"
     };
 
@@ -317,6 +318,16 @@ std::vector<Item*> InventoryAction::parseItems(std::string const text, IterateIt
     {
         FindQuestItemVisitor visitor(bot);
         IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
+        found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
+    }
+
+    // "start quest" is every usable item that opens a quest, regardless of item class.
+    // Equipped items are included: a start-quest item is not consumed by the quest, so it can
+    // be worn as an upgrade and still open the quest.
+    if (text == "start quest")
+    {
+        FindStartQuestItemVisitor visitor(bot);
+        IterateItems(&visitor, static_cast<IterateItemsMask>(ITERATE_ITEMS_IN_BAGS | ITERATE_ITEMS_IN_EQUIP));
         found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
     }
 
