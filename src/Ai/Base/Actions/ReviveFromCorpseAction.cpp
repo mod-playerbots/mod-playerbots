@@ -17,6 +17,10 @@
 
 bool ReviveFromCorpseAction::Execute(Event event)
 {
+    // BG ghosts are revived by spirit healer waves; teleporting to a world graveyard removes them from the BG.
+    if (bot->InBattleground())
+        return false;
+
     Player* groupLeader = botAI->GetGroupLeader();
     Corpse* corpse = bot->GetCorpse();
 
@@ -293,6 +297,10 @@ GraveyardStruct const* SpiritHealerAction::GetGrave(bool startZone)
 
 bool SpiritHealerAction::Execute(Event /*event*/)
 {
+    // GetGrave() picks world graveyards; teleporting there from a BG removes the bot from it.
+    if (bot->InBattleground())
+        return false;
+
     Corpse* corpse = bot->GetCorpse();
     if (!corpse)
     {

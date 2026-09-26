@@ -13,7 +13,6 @@ with `clang-format` (`.clang-format` in the module root); `code_format.sh` runs 
   `static` first in a declaration.
 - No magic numbers: `constexpr` or `enum` / `enum class`, never `#define`. Standard prefixes
   `SPELL_`, `NPC_`, `ITEM_`, `GO_`, `QUEST_`, `SAY_`, `EVENT_`, `DATA_`, `ACHIEV_`.
-- No free namespace functions unless required; use class methods or statics.
 - Never redefine `me`; the core reserves it for the scripted object pointer.
 - New source files carry the mod-playerbots GPLv2 header (copy it from any file in `src/`). Ported
   files keep their upstream notice and add an in-file "Ported/adapted from <project>" note.

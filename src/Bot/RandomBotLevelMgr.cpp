@@ -933,13 +933,13 @@ void RandomBotLevelMgr::Update(uint32 diff)
         _bracketsTimer += diff;
         _flaggedTimer += diff;
 
-        if (_flaggedTimer >= sPlayerbotAIConfig.levelBracketsFlaggedCheckFrequency * 1000)
+        if (_flaggedTimer >= sPlayerbotAIConfig.levelBracketsFlaggedCheckFrequency * IN_MILLISECONDS)
         {
             ProcessPendingLevelResets();
             _flaggedTimer = 0;
         }
 
-        if (_bracketsTimer >= sPlayerbotAIConfig.levelBracketsCheckFrequency * 1000)
+        if (_bracketsTimer >= sPlayerbotAIConfig.levelBracketsCheckFrequency * IN_MILLISECONDS)
         {
             _bracketsTimer = 0;
             RunLevelBracketsDistribution();
@@ -950,7 +950,7 @@ void RandomBotLevelMgr::Update(uint32 diff)
         sPlayerbotAIConfig.resetBotLevelMaxLevel > 0)
     {
         _resetTimer += diff;
-        if (_resetTimer >= sPlayerbotAIConfig.resetBotLevelPlayedTimeCheckFrequency * 1000)
+        if (_resetTimer >= sPlayerbotAIConfig.resetBotLevelPlayedTimeCheckFrequency * IN_MILLISECONDS)
         {
             _resetTimer = 0;
             RunResetPlayedTimeCheck();

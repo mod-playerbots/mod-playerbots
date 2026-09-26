@@ -96,7 +96,7 @@ public:
     NewRpgWanderNpcAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "new rpg move npcs") {}
     bool Execute(Event event) override;
 
-    const uint32 npcStayTime = 8 * 1000;
+    const uint32 npcStayTime = 8 * IN_MILLISECONDS;
 };
 
 class NewRpgDoQuestAction : public NewRpgBaseAction
@@ -109,7 +109,7 @@ protected:
     bool DoIncompleteQuest(NewRpgInfo::DoQuest& data);
     bool DoCompletedQuest(NewRpgInfo::DoQuest& data);
 
-    const uint32 poiStayTime = 5 * 60 * 1000;
+    const uint32 poiStayTime = 5 * MINUTE * IN_MILLISECONDS;
 };
 
 class NewRpgTravelFlightAction : public NewRpgBaseAction

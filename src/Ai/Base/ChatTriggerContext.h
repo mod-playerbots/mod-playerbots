@@ -108,6 +108,7 @@ public:
         creators["max dps"] = &ChatTriggerContext::max_dps;
         creators["attackers"] = &ChatTriggerContext::attackers;
         creators["target"] = &ChatTriggerContext::target;
+        creators["target me"] = &ChatTriggerContext::target_me;
         creators["formation"] = &ChatTriggerContext::formation;
         creators["stance"] = &ChatTriggerContext::stance;
         creators["cancel tree form"] = &ChatTriggerContext::cancel_tree_form;
@@ -184,6 +185,7 @@ private:
     static Trigger* cancel_aquatic_form(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "cancel aquatic form"); }
     static Trigger* attackers(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "attackers"); }
     static Trigger* target(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "target"); }
+    static Trigger* target_me(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "target me"); }
     static Trigger* max_dps(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "max dps"); }
     static Trigger* save_mana(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "save mana"); }
     static Trigger* who(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "who"); }
