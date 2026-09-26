@@ -31,11 +31,28 @@ bool BearFormTrigger::IsActive() { return !botAI->HasAnyAuraOf(bot, "bear form",
 
 bool TreeFormTrigger::IsActive()
 {
-    constexpr uint32 SPELL_TREE_OF_LIFE = 33891;
     return !bot->HasAura(SPELL_TREE_OF_LIFE);
 }
 
 bool CatFormTrigger::IsActive() { return !botAI->HasAura("cat form", bot); }
+
+bool HealerShouldAttackAndNotBlanketingTrigger::IsActive()
+{
+    if (bot->GetGroup() && botAI->HasStrategy("blanketing", BOT_STATE_COMBAT))
+        return false;
+
+    return HealerShouldAttackTrigger::IsActive();
+}
+
+Value<Unit*>* BlanketHotTrigger::GetTargetValue() { return context->GetValue<Unit*>("blanket hot target", _spell); }
+
+bool BlanketHotTrigger::IsActive()
+{
+    if (bot->GetGroup() && bot->HasSpell(SPELL_TREE_OF_LIFE) && botAI->HasStrategy("blanketing", BOT_STATE_COMBAT))
+        return false;
+
+    return GetTarget();
+}
 
 bool AquaticFormTrigger::IsActive()
 {

@@ -260,7 +260,7 @@ bool CastRejuvenationOnNotFullAction::isUseful()
 
 // --- Blanket HoT actions ---
 
-Unit* CastBlanketHotAction::GetBlanketTarget(std::string const& auraName)
+Unit* BlanketHotTargetValue::Calculate()
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -271,7 +271,8 @@ Unit* CastBlanketHotAction::GetBlanketTarget(std::string const& auraName)
         return member && member->IsAlive() &&
                !member->IsGameMaster() &&
                bot->GetDistance2d(member) <= sPlayerbotAIConfig.spellDistance &&
-               !botAI->HasAura(auraName, member, false, true);
+               !botAI->HasAura(qualifier, member, false, true) &&
+               bot->IsWithinLOSInMap(member);
     };
 
     Player* firstMelee  = nullptr;
@@ -298,22 +299,6 @@ Unit* CastBlanketHotAction::GetBlanketTarget(std::string const& auraName)
     return firstRanged;
 }
 
-Unit* CastRejuvenationBlanketAction::GetTarget()
-{
-    return GetBlanketTarget("rejuvenation");
-}
+Value<Unit*>* CastBlanketHotAction::GetTargetValue() { return context->GetValue<Unit*>("blanket hot target", spell); }
 
-bool CastRejuvenationBlanketAction::isUseful()
-{
-    return GetTarget() != nullptr;
-}
-
-Unit* CastWildGrowthBlanketAction::GetTarget()
-{
-    return GetBlanketTarget("wild growth");
-}
-
-bool CastWildGrowthBlanketAction::isUseful()
-{
-    return GetTarget() != nullptr;
-}
+bool CastBlanketHotAction::isUseful() { return GetTarget() != nullptr; }

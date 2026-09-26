@@ -367,8 +367,15 @@ public:
     CastForceOfNatureAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "force of nature") {}
 };
 
-// Base for blanket HoT actions. Provides GetBlanketTarget() as a member so
-// subclasses can use AI_VALUE and the standard context machinery.
+class BlanketHotTargetValue : public UnitCalculatedValue, public Qualified
+{
+public:
+    BlanketHotTargetValue(PlayerbotAI* botAI) : UnitCalculatedValue(botAI, "blanket hot target") {}
+
+protected:
+    Unit* Calculate() override;
+};
+
 class CastBlanketHotAction : public CastSpellAction
 {
 public:
@@ -377,16 +384,14 @@ public:
         range = botAI->GetRange("heal");
     }
 
-protected:
-    Unit* GetBlanketTarget(std::string const& auraName);
+    Value<Unit*>* GetTargetValue() override;
+    bool isUseful() override;
 };
 
 class CastRejuvenationBlanketAction : public CastBlanketHotAction
 {
 public:
     CastRejuvenationBlanketAction(PlayerbotAI* ai) : CastBlanketHotAction(ai, "rejuvenation") {}
-    bool isUseful() override;
-    Unit* GetTarget() override;
     std::string const getName() override { return "rejuvenation blanket"; }
 };
 
@@ -394,8 +399,6 @@ class CastWildGrowthBlanketAction : public CastBlanketHotAction
 {
 public:
     CastWildGrowthBlanketAction(PlayerbotAI* ai) : CastBlanketHotAction(ai, "wild growth") {}
-    bool isUseful() override;
-    Unit* GetTarget() override;
     std::string const getName() override { return "wild growth blanket"; }
 };
 
