@@ -4364,6 +4364,7 @@ void TravelMgr::Init()
     {
         PrepareZone2LevelBracket();
         PrepareDestinationCache();
+        PrepareQuestGiverTeleportIndex();
     }
     sTravelNodeMap.InitTaxiGraph();
     LOG_INFO("playerbots", "Playerbots Taxi graph and destination cache built.");
@@ -4559,6 +4560,71 @@ std::vector<WorldLocation> TravelMgr::GetCityLocations(Player* bot)
         return { locIt->second };
     // Fallback if something went wrong
     return fallbackLocations;
+}
+
+std::vector<WorldLocation> TravelMgr::GetValidQuestGiverLocations(Player* bot)
+{
+    std::vector<WorldLocation> out;
+    if (!sPlayerbotAIConfig.enabled)
+        return out;
+
+    // The index is keyed by exact level and built up to CONFIG_MAX_PLAYER_LEVEL.
+    uint32 level = std::min<uint32>(bot->GetLevel(), sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
+    auto levelIt = questGiverTeleportIndex.find(level);
+    if (levelIt == questGiverTeleportIndex.end())
+        return out;
+
+    auto teamIt = levelIt->second.find(bot->GetTeamId());
+    if (teamIt == levelIt->second.end())
+        return out;
+
+    // int32 (not uint32) for the level-window comparisons below.
+    int32 botLevel = (int32)bot->GetLevel();
+    // Bitmasks, not 1u << getRace()/getClass(): those are 1-based enums (off by one bit).
+    uint32 raceMask = bot->getRaceMask();
+    uint32 classMask = bot->getClassMask();
+    int32 lowLevelDiff = sWorld->getIntConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF);
+    int32 levelWindow = sPlayerbotAIConfig.questGiverTeleportLevelWindow;
+
+    for (auto const& cand : teamIt->second)
+    {
+        // ---- cheap early-exit on the pre-extracted statics ----
+
+        // Effective quest level, mirroring Player::GetQuestLevel (unknown -> bot level).
+        int32 effQuestLevel = (cand.questLevel > 0) ? cand.questLevel : (int32)botLevel;
+        if (botLevel + levelWindow < effQuestLevel)  // quest too high for the bot
+            continue;
+        if (botLevel > effQuestLevel + lowLevelDiff)  // below the bot's interest (IsQuestWorthDoing)
+            continue;
+        if (cand.allowableRaces && !(cand.allowableRaces & raceMask))
+            continue;
+        if (cand.requiredClasses && !(cand.requiredClasses & classMask))
+            continue;
+
+        // ---- authoritative gate, only run on the small surviving set ----
+        auto const* quest = sObjectMgr->GetQuestTemplate(cand.questId);
+        if (!quest)
+            continue;
+        if (bot->GetQuestStatus(cand.questId) != QUEST_STATUS_NONE)  // in progress or completed
+            continue;
+        if (!bot->CanTakeQuest(quest, false) || !bot->CanAddQuest(quest, false))
+            continue;
+
+        // Fine faction reaction of THIS spawn: the team bucket only guarantees the right
+        // side, not friendliness, so check the actual reaction (same idiom as the
+        // quest-giver values in QuestValues.cpp).
+        CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(cand.giverEntry);
+        if (creatureTemplate)
+        {
+            FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(creatureTemplate->faction);
+            if (factionEntry && bot->GetFactionReactionTo(bot->GetFactionTemplateEntry(), factionEntry) < REP_FRIENDLY)
+                continue;
+        }
+
+        out.push_back(cand.loc);
+    }
+
+    return out;
 }
 
 void TravelMgr::PrepareZone2LevelBracket()
@@ -4877,4 +4943,97 @@ void TravelMgr::PrepareDestinationCache()
         }
     }
     LOG_INFO("playerbots", ">> {} flight masters and {} innkeepers and {} banker locations for level collected.", flightMastersCount, innkeepersCount, bankerCount);
+}
+
+void TravelMgr::PrepareQuestGiverTeleportIndex()
+{
+    questGiverTeleportIndex.clear();
+
+    uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    int32 window = sPlayerbotAIConfig.questGiverTeleportLevelWindow;
+    uint32 candidateCount = 0;
+
+    // One pass over all world creature spawns (the same pass PrepareDestinationCache does).
+    // Only entries listed in `creature_queststarter` yield candidates; everything else
+    // produces an empty relation range, so this stays cheap even over ~125k spawns.
+    for (auto const& [guid, creData] : sObjectMgr->GetAllCreatureData())
+    {
+        if (std::find(sPlayerbotAIConfig.randomBotMaps.begin(), sPlayerbotAIConfig.randomBotMaps.end(),
+                      creData.mapid) == sPlayerbotAIConfig.randomBotMaps.end())
+            continue;
+
+        CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creData.id);
+        if (!creatureTemplate)
+            continue;
+
+        // Quests this creature entry STARTS (the accept-from side). `it->second` is the quest
+        // id (ObjectMgr::GetCreatureQuestRelationBounds, loaded from `creature_queststarter`).
+        auto const& relations = sObjectMgr->GetCreatureQuestRelationBounds(creData.id);
+        if (relations.first == relations.second)
+            continue;  // not a quest starter - the large majority of spawns
+
+        // Team filter from the giver's hostileMask (same idiom as PrepareDestinationCache).
+        FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(creatureTemplate->faction);
+        if (!factionEntry)
+            continue;  // invalid faction template - skip defensively
+        bool forAlliance = !(factionEntry->hostileMask & 2);
+        bool forHorde = !(factionEntry->hostileMask & 4);
+        if (!forAlliance && !forHorde)
+            continue;
+
+        for (auto it = relations.first; it != relations.second; ++it)
+        {
+            auto const* quest = sObjectMgr->GetQuestTemplate(it->second);
+            if (!quest)
+                continue;
+
+            // Bake out the static worth/capable parts so they never reach the index, mirroring
+            // NewRpgBaseAction::IsQuestWorthDoing / IsQuestCapableDoing (dynamic parts - level
+            // and the core checks - are applied at call time in GetValidQuestGiverLocations).
+            if (quest->IsRepeatable() || quest->IsSeasonal())
+                continue;
+            if (quest->GetType() != 0 || quest->GetSuggestedPlayers() >= 2)
+                continue;
+
+            QuestGiverTeleportCandidate cand;
+            cand.questId = it->second;
+            cand.giverEntry = creData.id;
+
+            // Stand ~5y in front of the spawn, facing back at it (same offset idiom as the
+            // flight-master/innkeeper hubs in PrepareDestinationCache).
+            float o = creData.orientation;
+            cand.loc = WorldLocation(creData.mapid,
+                                     creData.posX + cos(o) * 5.0f,
+                                     creData.posY + sin(o) * 5.0f,
+                                     creData.posZ + 0.5f,
+                                     o + M_PI);
+
+            int32 qLevel = quest->GetQuestLevel();
+            cand.questLevel = (qLevel > 0) ? (uint16)qLevel : 0;
+            cand.allowableRaces = quest->GetAllowableRaces();
+            cand.requiredClasses = quest->GetRequiredClasses();
+
+            // Bucket into every level the quest can plausibly be taken at:
+            // [minLevel, questLevel + window]. Unknown quest levels span to maxLevel and
+            // are pruned at call time by CanTakeQuest.
+            uint32 lo = quest->GetMinLevel() > 0 ? quest->GetMinLevel() : 1;
+            int32 hi = (qLevel > 0) ? (qLevel + window) : (int32)maxLevel;
+            for (uint32 level = lo; level <= maxLevel && (int32)level <= hi; ++level)
+            {
+                if (forAlliance)
+                {
+                    questGiverTeleportIndex[level][TEAM_ALLIANCE].push_back(cand);
+                    ++candidateCount;
+                }
+                if (forHorde)
+                {
+                    questGiverTeleportIndex[level][TEAM_HORDE].push_back(cand);
+                    ++candidateCount;
+                }
+            }
+        }
+    }
+
+    LOG_INFO("playerbots", ">> Prepared quest-giver teleport index: {} candidates across {} levels.",
+             candidateCount, questGiverTeleportIndex.size());
 }
