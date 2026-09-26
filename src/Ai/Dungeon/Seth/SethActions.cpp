@@ -58,7 +58,7 @@ bool AnzuAlternateMarksOnBossAction::Execute(Event /*event*/)
     return MarkTargetWithSkull(bot, anzu);
 }
 
-// Priority: Falcon (haste) > Eagle during Banish (damage all enemies) > Hawk (damage reduction)
+// Priority: Falcon (haste) -> Hawk (damage reduction) -> Eagle (damage all enemies).
 bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event /*event*/)
 {
     constexpr float searchRadius = 60.0f;

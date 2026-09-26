@@ -5,6 +5,7 @@
  */
 
 #include "PlayerbotRepository.h"
+#include "PlayerbotsDatabase.h"
 #include "AiObjectContext.h"
 
 void PlayerbotRepository::Load(PlayerbotAI* botAI)

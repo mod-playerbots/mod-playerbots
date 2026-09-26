@@ -5,11 +5,13 @@
  */
 
 #include "PlayerbotMgr.h"
+#include "PlayerbotsDatabase.h"
 #include "BroadcastHelper.h"
 #include "ChannelMgr.h"
 #include "CharacterCache.h"
 #include "CharacterPackets.h"
 #include "Common.h"
+#include "Containers.h"
 #include "DatabaseEnv.h"
 #include "Define.h"
 #include "Group.h"
@@ -34,8 +36,10 @@
 #include <cstdio>
 #include <cstring>
 #include <iomanip>
+#include <memory>
 #include <openssl/sha.h>
 #include <string>
+#include <vector>
 #include <unordered_set>
 
 class BotInitGuard
@@ -65,7 +69,7 @@ private:
 };
 
 std::unordered_set<ObjectGuid> BotInitGuard::botsBeingInitialized;
-std::unordered_map<ObjectGuid, uint32> PlayerbotHolder::botLoading;
+std::unordered_map<ObjectGuid, PendingBotLogin> PlayerbotHolder::botLoading;
 
 PlayerbotHolder::PlayerbotHolder() : PlayerbotAIBase(false) {}
 class PlayerbotLoginQueryHolder : public LoginQueryHolder
@@ -123,9 +127,9 @@ void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId
             return;
         }
         uint32 loadingForMaster = 0;
-        for (auto const& [guid, acctId] : botLoading)
+        for (auto const& [guid, pending] : botLoading)
         {
-            if (acctId == masterAccountId)
+            if (pending.masterAccountId == masterAccountId)
                 ++loadingForMaster;
         }
         uint32 count = mgr->GetPlayerbotsCount() + loadingForMaster;
@@ -151,12 +155,15 @@ void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId
         return;
     }
 
-    botLoading.emplace(playerGuid, masterAccountId);
+    WorldSession* botSession =
+        new WorldSession(accountId, "", 0x0, nullptr, SEC_PLAYER, EXPANSION_WRATH_OF_THE_LICH_KING, time_t(0),
+                         sWorld->GetDefaultDbcLocale(), 0, false, false, 0);
 
-    // Always login in with world session to avoid race condition
-    sWorld->AddQueryHolderCallback(CharacterDatabase.DelayQueryHolder(holder))
+    botLoading.emplace(playerGuid, PendingBotLogin{masterAccountId, botSession, false});
+
+    botSession->AddQueryHolderCallback(CharacterDatabase.DelayQueryHolder(holder))
         .AfterComplete(
-            [](SQLQueryHolderBase const& queryHolder)
+            [botSession](SQLQueryHolderBase const& queryHolder)
             {
                 PlayerbotLoginQueryHolder const& holder = static_cast<PlayerbotLoginQueryHolder const&>(queryHolder);
                 uint32 masterAccountId = holder.GetMasterAccountId();
@@ -169,40 +176,82 @@ void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId
 
                     if (masterPlayer)
                     {
-                        PlayerbotHolder* mgr = PlayerbotsMgr::instance().GetPlayerbotMgr(masterPlayer);
-
-                        if (mgr != nullptr)
+                        if (PlayerbotHolder* mgr = PlayerbotsMgr::instance().GetPlayerbotMgr(masterPlayer))
                         {
-                            mgr->HandlePlayerBotLoginCallback(holder);
-
+                            mgr->HandlePlayerBotLoginCallback(holder, botSession);
                             return;
                         }
 
-                        PlayerbotHolder::botLoading.erase(holder.GetGuid());
-
+                        // Master lost its manager while the holder was in flight
+                        AbandonPendingLogin(holder.GetGuid());
                         return;
                     }
                 }
 
-                RandomPlayerbotMgr ::instance().HandlePlayerBotLoginCallback(holder);
+                RandomPlayerbotMgr::instance().HandlePlayerBotLoginCallback(holder, botSession);
             });
+}
+
+void PlayerbotHolder::AbandonPendingLogin(ObjectGuid guid)
+{
+    auto itr = botLoading.find(guid);
+    if (itr != botLoading.end())
+        itr->second.failed = true;
+}
+
+void PlayerbotHolder::UpdatePendingLogins()
+{
+    if (botLoading.empty())
+        return;
+
+    // Callbacks erase or flag their own entry, so iterate over a snapshot of the keys
+    std::vector<ObjectGuid> guids;
+    guids.reserve(botLoading.size());
+    for (auto const& [guid, pending] : botLoading)
+        guids.push_back(guid);
+
+    for (ObjectGuid const& guid : guids)
+    {
+        auto itr = botLoading.find(guid);
+        if (itr == botLoading.end())
+            continue;
+
+        WorldSession* session = itr->second.session;
+        if (!itr->second.failed)
+            session->ProcessQueryCallbacks();  // may complete the login (entry erased) or flag it failed
+
+        itr = botLoading.find(guid);
+        if (itr == botLoading.end() || !itr->second.failed)
+            continue;
+
+        // Safe here: the processor has returned, nothing of the session is on the stack
+        session->LogoutPlayer(true);
+        delete session;
+        botLoading.erase(itr);
+    }
+}
+
+void PlayerbotHolder::ClearPendingLogins()
+{
+    for (auto const& [guid, pending] : botLoading)
+    {
+        pending.session->LogoutPlayer(true);
+        delete pending.session;
+    }
+    botLoading.clear();
 }
 
 bool PlayerbotHolder::IsAccountLinked(uint32 accountId, uint32 linkedAccountId)
 {
-    QueryResult result = PlayerbotsDatabase.Query(
-        "SELECT 1 FROM playerbots_account_links WHERE account_id = {} AND linked_account_id = {}", accountId, linkedAccountId);
-    return result != nullptr;
+    PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_ACCOUNT_LINK);
+    stmt->SetData(0, accountId);
+    stmt->SetData(1, linkedAccountId);
+    return PlayerbotsDatabase.Query(stmt) != nullptr;
 }
 
-void PlayerbotHolder::HandlePlayerBotLoginCallback(PlayerbotLoginQueryHolder const& holder)
+void PlayerbotHolder::HandlePlayerBotLoginCallback(PlayerbotLoginQueryHolder const& holder, WorldSession* botSession)
 {
     uint32 botAccountId = holder.GetAccountId();
-    // At login DBC locale should be what the server is set to use by default (as spells etc are hardcoded to ENUS this
-    // allows channels to work as intended)
-    WorldSession* botSession =
-        new WorldSession(botAccountId, "", 0x0, nullptr, SEC_PLAYER, EXPANSION_WRATH_OF_THE_LICH_KING, time_t(0),
-                         sWorld->GetDefaultDbcLocale(), 0, false, false, 0, true);
 
     botSession->HandlePlayerLoginFromDB(holder);  // will delete lqh
 
@@ -211,10 +260,8 @@ void PlayerbotHolder::HandlePlayerBotLoginCallback(PlayerbotLoginQueryHolder con
     {
         // Debug log
         LOG_DEBUG("mod-playerbots", "Bot player could not be loaded for account ID: {}", botAccountId);
-        botSession->LogoutPlayer(true);
-        delete botSession;
-        PlayerbotHolder::botLoading.erase(holder.GetGuid());
-
+        // This runs inside botSession's own callback processor, so the teardown is deferred to UpdatePendingLogins()
+        AbandonPendingLogin(holder.GetGuid());
         return;
     }
 
@@ -241,6 +288,8 @@ void PlayerbotHolder::UpdateSessions()
     for (PlayerBotMap::const_iterator itr = GetPlayerBotsBegin(); itr != GetPlayerBotsEnd(); ++itr)
     {
         Player* const bot = itr->second;
+        // Nothing else drives a headless session's async query, transaction and holder callbacks
+        bot->GetSession()->ProcessQueryCallbacks();
         if (bot->IsBeingTeleported())
         {
             PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
@@ -258,19 +307,16 @@ void PlayerbotHolder::UpdateSessions()
 
 void PlayerbotHolder::HandleBotPackets(WorldSession* session)
 {
-    WorldPacket* packet;
-    while (session->GetPacketQueue().next(packet))
+    while (std::unique_ptr<WorldPacket> packet = session->NextQueuedPacket())
     {
         OpcodeClient opcode = static_cast<OpcodeClient>(packet->GetOpcode());
         ClientOpcodeHandler const* opHandle = opcodeTable[opcode];
         if (!opHandle)
         {
             LOG_ERROR("playerbots", "Unhandled opcode {} queued for bot session {}. Packet dropped.", static_cast<uint32>(opcode), session->GetAccountId());
-            delete packet;
             continue;
         }
         opHandle->Call(session, *packet);
-        delete packet;
     }
 }
 
@@ -317,7 +363,7 @@ void PlayerbotMgr::CancelLogout()
         if (!botAI || IsSelfBot(bot))
             continue;
 
-        if (bot->GetSession()->isLogingOut())
+        if (bot->GetSession()->IsLoggingOut())
         {
             WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
             bot->GetSession()->HandleLogoutCancelOpcode(data);
@@ -337,7 +383,7 @@ void PlayerbotMgr::CancelLogout()
         if (botAI->GetMaster() != master)
             continue;
 
-        if (bot->GetSession()->isLogingOut())
+        if (bot->GetSession()->IsLoggingOut())
         {
             WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
             bot->GetSession()->HandleLogoutCancelOpcode(data);
@@ -368,7 +414,7 @@ void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
         WorldSession* botWorldSessionPtr = bot->GetSession();
         [[maybe_unused]] WorldSession* masterWorldSessionPtr = nullptr;     // Remove [[maybe_unused]] tag if timed logout implemented.
 
-        if (botWorldSessionPtr->isLogingOut())
+        if (botWorldSessionPtr->IsLoggingOut())
             return;
 
         Player* master = botAI->GetMaster();
@@ -650,7 +696,10 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
                     //Currently in magons TBC, if you switch zones, then you join "Trade - <zone>" and "GuildRecruitment - <zone>"
                     //which is a core bug, should be "Trade - City" and "GuildRecruitment - City" in both 1.12 and TBC
                     //but if you (actual player) logout in a city and log back in - you join "City" versions
-                    snprintf(new_channel_name_buf, 100, channel->pattern[locale], GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(GetAreaEntryByAreaID(3459)).c_str());
+                    constexpr uint32 AREA_ID_CITY = 3459;
+                    std::string const cityName =
+                        GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(sAreaTableStore.LookupEntry(AREA_ID_CITY));
+                    snprintf(new_channel_name_buf, 100, channel->pattern[locale], cityName.c_str());
                     new_channel = cMgr->GetJoinChannel(new_channel_name_buf, channel->ChannelID);
                     break;
                 }
@@ -1052,16 +1101,19 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
     {
         if (GET_PLAYERBOT_AI(master))
         {
-            messages.push_back("Disable player botAI");
+            messages.push_back("SelfBot is now deactivated.");
             delete GET_PLAYERBOT_AI(master);
+
+            if (master->isTaxiCheater())
+                master->SetTaxiCheater(false);
         }
         else if (sPlayerbotAIConfig.selfBotLevel == 0)
-            messages.push_back("Self-bot is disabled");
+            messages.push_back("SelfBot is disabled server-wide.");
         else if (sPlayerbotAIConfig.selfBotLevel == 1 && !master->CanBeGameMaster())
-            messages.push_back("You do not have permission to enable player botAI");
+            messages.push_back("SelfBot is restricted for this account.");
         else
         {
-            messages.push_back("Enable player botAI");
+            messages.push_back("SelfBot is now active.");
             PlayerbotsMgr::instance().AddPlayerbotData(master, true);
             GET_PLAYERBOT_AI(master)->SetMaster(master);
             PlayerbotRepository::instance().Load(GET_PLAYERBOT_AI(master));
@@ -1160,23 +1212,46 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
         }
         uint8 teamId = master->GetTeamId(true);
         std::unordered_set<ObjectGuid> const& guidCache = sRandomPlayerbotMgr.addclassCache[RandomPlayerbotMgr::GetTeamClassIdx(teamId == TEAM_ALLIANCE, claz)];
-        for (ObjectGuid const& guid: guidCache)
+        auto const pickFirstEligible = [&](auto const& pool) -> ObjectGuid
         {
-            // If the user requested a specific gender, skip any character that doesn't match.
-            if (gender != -1 && GetOfflinePlayerGender(guid) != gender)
-                continue;
-            if (botLoading.find(guid) != botLoading.end())
-                continue;
-            if (ObjectAccessor::FindConnectedPlayer(guid))
-                continue;
-            uint32 guildId = sCharacterCache->GetCharacterGuildIdByGuid(guid);
-            if (guildId && PlayerbotGuildMgr::instance().IsRealGuild(guildId))
-                continue;
-            AddPlayerBot(guid, master->GetSession()->GetAccountId());
-            messages.push_back("Add class " + std::string(charname));
+            for (ObjectGuid const& guid : pool)
+            {
+                // If the user requested a specific gender, skip any character that doesn't match.
+                if (gender != -1 && GetOfflinePlayerGender(guid) != gender)
+                    continue;
+                if (botLoading.find(guid) != botLoading.end())
+                    continue;
+                if (ObjectAccessor::FindConnectedPlayer(guid))
+                    continue;
+                uint32 guildId = sCharacterCache->GetCharacterGuildIdByGuid(guid);
+                if (guildId && PlayerbotGuildMgr::instance().IsRealGuild(guildId))
+                    continue;
+                return guid;
+            }
+            return ObjectGuid::Empty;
+        };
+
+        // The cache is an unordered_set: its iteration order does not change between calls, so the first
+        // eligible character is always the same one. Walk a shuffled copy when a random one is wanted,
+        // and the cache itself otherwise, so the default path copies nothing.
+        ObjectGuid picked = ObjectGuid::Empty;
+        if (sPlayerbotAIConfig.addClassRandomCharacter)
+        {
+            std::vector<ObjectGuid> candidates(guidCache.begin(), guidCache.end());
+            Acore::Containers::RandomShuffle(candidates);
+            picked = pickFirstEligible(candidates);
+        }
+        else
+            picked = pickFirstEligible(guidCache);
+
+        if (picked.IsEmpty())
+        {
+            messages.push_back("Add class failed, no available characters!");
             return messages;
         }
-        messages.push_back("Add class failed, no available characters!");
+
+        AddPlayerBot(picked, master->GetSession()->GetAccountId());
+        messages.push_back("Add class " + std::string(charname));
         return messages;
     }
 
@@ -1786,7 +1861,7 @@ PlayerbotAI* PlayerbotsMgr::GetPlayerbotAI(Player* player)
     {
         return nullptr;
     }
-    // if (player->GetSession()->isLogingOut() || player->IsDuringRemoveFromWorld())
+    // if (player->GetSession()->IsLoggingOut() || player->IsDuringRemoveFromWorld())
     // {
     //     return nullptr;
     // }
@@ -1830,9 +1905,10 @@ void PlayerbotMgr::HandleSetSecurityKeyCommand(Player* player, std::string const
         hashedKey << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
 
     // Store the hashed key in the database
-    PlayerbotsDatabase.Execute(
-        "REPLACE INTO playerbots_account_keys (account_id, security_key) VALUES ({}, '{}')",
-        accountId, hashedKey.str());
+    PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_REP_ACCOUNT_KEY);
+    stmt->SetData(0, accountId);
+    stmt->SetData(1, hashedKey.str());
+    PlayerbotsDatabase.Execute(stmt);
 
     ChatHandler(player->GetSession()).PSendSysMessage("Security key set successfully.");
 }
@@ -1849,8 +1925,10 @@ void PlayerbotMgr::HandleLinkAccountCommand(Player* player, std::string const& a
     Field* fields = result->Fetch();
     uint32 linkedAccountId = fields[0].Get<uint32>();
 
-    result = PlayerbotsDatabase.Query("SELECT security_key FROM playerbots_account_keys WHERE account_id = {}", linkedAccountId);
-    if (!result)
+    PlayerbotsDatabasePreparedStatement* keyStmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_ACCOUNT_KEY);
+    keyStmt->SetData(0, linkedAccountId);
+    PreparedQueryResult keyResult = PlayerbotsDatabase.Query(keyStmt);
+    if (!keyResult)
     {
         ChatHandler(player->GetSession()).PSendSysMessage("Invalid security key.");
         return;
@@ -1866,7 +1944,7 @@ void PlayerbotMgr::HandleLinkAccountCommand(Player* player, std::string const& a
         hashedKey << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
 
     // Compare the hashed key with the stored hashed key
-    std::string storedKey = result->Fetch()->Get<std::string>();
+    std::string storedKey = keyResult->Fetch()->Get<std::string>();
     if (hashedKey.str() != storedKey)
     {
         ChatHandler(player->GetSession()).PSendSysMessage("Invalid security key.");
@@ -1874,12 +1952,15 @@ void PlayerbotMgr::HandleLinkAccountCommand(Player* player, std::string const& a
     }
 
     uint32 accountId = player->GetSession()->GetAccountId();
-    PlayerbotsDatabase.Execute(
-        "INSERT IGNORE INTO playerbots_account_links (account_id, linked_account_id) VALUES ({}, {})",
-        accountId, linkedAccountId);
-    PlayerbotsDatabase.Execute(
-        "INSERT IGNORE INTO playerbots_account_links (account_id, linked_account_id) VALUES ({}, {})",
-        linkedAccountId, accountId);
+    PlayerbotsDatabasePreparedStatement* linkStmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_INS_ACCOUNT_LINK);
+    linkStmt->SetData(0, accountId);
+    linkStmt->SetData(1, linkedAccountId);
+    PlayerbotsDatabase.Execute(linkStmt);
+
+    linkStmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_INS_ACCOUNT_LINK);
+    linkStmt->SetData(0, linkedAccountId);
+    linkStmt->SetData(1, accountId);
+    PlayerbotsDatabase.Execute(linkStmt);
 
     ChatHandler(player->GetSession()).PSendSysMessage("Account linked successfully.");
 }
@@ -1887,7 +1968,9 @@ void PlayerbotMgr::HandleLinkAccountCommand(Player* player, std::string const& a
 void PlayerbotMgr::HandleViewLinkedAccountsCommand(Player* player)
 {
     uint32 accountId = player->GetSession()->GetAccountId();
-    QueryResult result = PlayerbotsDatabase.Query("SELECT linked_account_id FROM playerbots_account_links WHERE account_id = {}", accountId);
+    PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_ACCOUNT_LINKS_BY_ACCOUNT);
+    stmt->SetData(0, accountId);
+    PreparedQueryResult result = PlayerbotsDatabase.Query(stmt);
 
     if (!result)
     {
@@ -1928,8 +2011,12 @@ void PlayerbotMgr::HandleUnlinkAccountCommand(Player* player, std::string const&
     uint32 linkedAccountId = fields[0].Get<uint32>();
     uint32 accountId = player->GetSession()->GetAccountId();
 
-    PlayerbotsDatabase.Execute("DELETE FROM playerbots_account_links WHERE (account_id = {} AND linked_account_id = {}) OR (account_id = {} AND linked_account_id = {})",
-                                accountId, linkedAccountId, linkedAccountId, accountId);
+    PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_ACCOUNT_LINK);
+    stmt->SetData(0, accountId);
+    stmt->SetData(1, linkedAccountId);
+    stmt->SetData(2, linkedAccountId);
+    stmt->SetData(3, accountId);
+    PlayerbotsDatabase.Execute(stmt);
 
     ChatHandler(player->GetSession()).PSendSysMessage("Account unlinked successfully.");
 }
