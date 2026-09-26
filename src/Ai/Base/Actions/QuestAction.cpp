@@ -225,7 +225,7 @@ bool QuestAction::CanAcceptQuest(Player* bot, Quest const* quest)
     // Never accept grey quests (well below the bot's level), same band as QuestValues.cpp.
     // Player::GetQuestLevel falls back to the bot's own level for level-less quests
     // (QuestLevel <= 0), so those are never treated as grey — like the core's dialog status.
-    if ((int32)bot->GetLevel() > bot->GetQuestLevel(quest) + 10)
+    if ((int32)bot->GetLevel() > bot->GetQuestLevel(quest) + GREY_QUEST_LEVEL_BAND)
         return false;
 
     return true;

@@ -97,6 +97,11 @@ ItemUsage ItemUsageValue::Calculate()
     if (bot->GetGuildId() && GuildTaskMgr::instance().IsGuildTaskItem(itemId, bot->GetGuildId()))
         return ITEM_USAGE_GUILD_TASK;
 
+    // A start-quest item must stay in the bags for "start quest" to find it, so keep it out of
+    // the equip and disenchant paths (an equipped starter never opens its quest).
+    if (IsStartQuestItemUsefulFor(bot, proto))
+        return ITEM_USAGE_QUEST;
+
     ItemUsage equip = QueryItemUsageForEquip(proto, randomPropertyId);
     if (equip != ITEM_USAGE_NONE)
         return equip;
@@ -543,16 +548,20 @@ bool ItemUsageValue::IsItemUsefulForQuest(Player* player, ItemTemplate const* pr
     }
 
     // Keep items that start a quest the bot can take, so they are not sold or destroyed
-    if (uint32 startQuestId = proto->StartQuest)
-    {
-        if (Quest const* quest = sObjectMgr->GetQuestTemplate(startQuestId))
-        {
-            if (player->GetQuestStatus(startQuestId) == QUEST_STATUS_NONE && QuestAction::CanAcceptQuest(player, quest))
-                return true; // Item starts a quest the bot can take
-        }
-    }
+    if (IsStartQuestItemUsefulFor(player, proto))
+        return true; // Item starts a quest the bot can take
 
     return false; // Item is not useful for any active quests
+}
+
+bool ItemUsageValue::IsStartQuestItemUsefulFor(Player* player, ItemTemplate const* proto)
+{
+    if (!proto->StartQuest)
+        return false;
+
+    Quest const* quest = sObjectMgr->GetQuestTemplate(proto->StartQuest);
+    return quest && player->GetQuestStatus(proto->StartQuest) == QUEST_STATUS_NONE &&
+        QuestAction::CanAcceptQuest(player, quest);
 }
 
 bool ItemUsageValue::IsItemNeededForSkill(ItemTemplate const* proto)

@@ -25,6 +25,8 @@ public:
     bool Execute(Event event) override;
     // Shared quest-accept path (guards, packet, sync fallback, broadcast); also used for quest-starting items
     bool AcceptQuest(Quest const* quest, ObjectGuid questGiver);
+    // Level band below the bot's level at which a quest counts as grey (shared with QuestValues).
+    static constexpr int32 GREY_QUEST_LEVEL_BAND = 10;
     // Whether the bot can and should accept this quest: core eligibility (level/race/class/rep/chain/...)
     // plus the module's "no grey quests" level band (same as QuestValues.cpp). Null-safe.
     // Used for quest-starting items (selection, use and item valuation) only; the NPC/GO quest-giver

@@ -515,11 +515,13 @@ bool UseStartQuestItem::Execute(Event /*event*/)
         if (!QuestAction::CanAcceptQuest(bot, qInfo))
             continue;
 
-        bool used = UseItem(questItem, ObjectGuid::Empty, nullptr, nullptr);
-        if (used)
+        // UseItem can fail before the start-quest accept (e.g. a transient cast state), so keep
+        // looking at the other eligible items instead of stopping at the first one.
+        if (UseItem(questItem, ObjectGuid::Empty, nullptr, nullptr))
+        {
             botAI->SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
-
-        return used;
+            return true;
+        }
     }
 
     return false;
