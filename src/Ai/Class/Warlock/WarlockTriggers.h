@@ -37,14 +37,15 @@ public:
 class UnendingBreathTrigger : public BuffTrigger
 {
 public:
-    UnendingBreathTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "unending breath", 5 * 2000) {}
+    UnendingBreathTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "unending breath", 10 * IN_MILLISECONDS) {}
     bool IsActive() override;
 };
 
 class UnendingBreathOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
-    UnendingBreathOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "unending breath on party", 2 * 2000) {}
+    UnendingBreathOnPartyTrigger(PlayerbotAI* botAI)
+        : BuffOnPartyTrigger(botAI, "unending breath on party", 4 * IN_MILLISECONDS) {}
     bool IsActive() override;
 };
 

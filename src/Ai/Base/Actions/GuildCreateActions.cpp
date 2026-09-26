@@ -257,7 +257,7 @@ bool PetitionTurnInAction::Execute(Event /*event*/)
             guild->HandleSetEmblem(emblemInfo); // official core handling
 
             // LANG_GUILD_VETERAN -> can invite
-            guild->HandleSetRankInfo(2, GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK | GR_RIGHT_INVITE);
+            guild->HandleSetRankInfo(2, {}, GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK | GR_RIGHT_INVITE);
         }
 
         return true;

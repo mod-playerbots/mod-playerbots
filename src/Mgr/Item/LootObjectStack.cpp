@@ -294,9 +294,8 @@ bool LootObject::IsLootPossible(Player* bot)
 
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     if (!botAI)
-    {
         return false;
-    }
+
     if (abs(worldObj->GetPositionZ() - bot->GetPositionZ()) > INTERACTION_DISTANCE - 2.0f)
         return false;
 
@@ -325,6 +324,17 @@ bool LootObject::IsLootPossible(Player* bot)
 
         if (requirement.SkillId == SKILL_NONE)
             return true;
+
+        bool const gatheringObject = requirement.SkillId == SKILL_HERBALISM || requirement.SkillId == SKILL_MINING ||
+                                     requirement.SkillId == SKILL_SKINNING || requirement.SkillId == SKILL_ENGINEERING;
+        Player* master = botAI->GetMaster();
+        bool const hasActivePlayerMaster = master && !GET_PLAYERBOT_AI(master);
+        if (gatheringObject && !hasActivePlayerMaster)
+        {
+            constexpr uint8 maxGatheringBagUsage = 80;
+            if (botAI->GetAiObjectContext()->GetValue<uint8>("bag space")->Get() > maxGatheringBagUsage)
+                return false;
+        }
 
         if (requirement.SkillId == SKILL_FISHING || !botAI->HasSkill((SkillType)requirement.SkillId) ||
             requirement.ReqSkillValue > uint32(bot->GetSkillValue(requirement.SkillId)))

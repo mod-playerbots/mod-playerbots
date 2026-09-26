@@ -30,7 +30,7 @@ class EnemyPlayerValue : public UnitCalculatedValue
 {
 public:
     EnemyPlayerValue(PlayerbotAI* botAI, std::string const name = "enemy player")
-        : UnitCalculatedValue(botAI, name, 1 * 1000)
+        : UnitCalculatedValue(botAI, name, 1 * IN_MILLISECONDS)
     {
     }
 
