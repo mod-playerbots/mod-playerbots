@@ -112,7 +112,7 @@ public:
     bool dynamicReactDelay;
     float sightDistance, spellDistance, reactDistance, grindDistance, lootDistance, shootDistance, fleeDistance,
         tooCloseDistance, meleeDistance, followDistance, whisperDistance, contactDistance, aoeRadius, rpgDistance,
-        targetPosRecalcDistance, farDistance, healDistance, aggroDistance;
+        targetPosRecalcDistance, farDistance, healDistance, aggroDistance, leashDistance, questGrabDistance;
     uint32 criticalHealth, lowHealth, mediumHealth, almostFullHealth;
     uint32 lowMana, mediumMana, highMana;
     bool autoSaveMana;

@@ -29,6 +29,7 @@
 #include "GuardStrategy.h"
 #include "GuildStrategy.h"
 #include "KiteStrategy.h"
+#include "LeashStrategy.h"
 #include "LfgStrategy.h"
 #include "LootNonCombatStrategy.h"
 #include "MaintenanceStrategy.h"
@@ -40,6 +41,7 @@
 #include "NonCombatStrategy.h"
 #include "PassiveStrategy.h"
 #include "PullStrategy.h"
+#include "QuestGrabStrategy.h"
 #include "QuestStrategies.h"
 #include "RTSCStrategy.h"
 #include "RacialsStrategy.h"
@@ -90,6 +92,8 @@ public:
         creators["custom"] = &StrategyContext::custom;
         creators["reveal"] = &StrategyContext::reveal;
         creators["collision"] = &StrategyContext::collision;
+        creators["leash"] = &StrategyContext::leash;
+        creators["grab"] = &StrategyContext::grab;
         creators["rpg"] = &StrategyContext::rpg;
         creators["new rpg"] = &StrategyContext::new_rpg;
         creators["travel"] = &StrategyContext::travel;
@@ -169,6 +173,8 @@ private:
     static Strategy* custom(PlayerbotAI* botAI) { return new CustomStrategy(botAI); }
     static Strategy* reveal(PlayerbotAI* botAI) { return new RevealStrategy(botAI); }
     static Strategy* collision(PlayerbotAI* botAI) { return new CollisionStrategy(botAI); }
+    static Strategy* leash(PlayerbotAI* botAI) { return new LeashStrategy(botAI); }
+    static Strategy* grab(PlayerbotAI* botAI) { return new QuestGrabStrategy(botAI); }
     static Strategy* rpg(PlayerbotAI* botAI) { return new RpgStrategy(botAI); }
     static Strategy* new_rpg(PlayerbotAI* botAI) { return new NewRpgStrategy(botAI); }
     static Strategy* travel(PlayerbotAI* botAI) { return new TravelStrategy(botAI); }
