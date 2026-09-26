@@ -535,7 +535,7 @@ bool MuruCastStunOnBerserkerAction::Execute(Event /*event*/)
     if (!berserker)
         return false;
 
-    auto const castStun = [&](const char* spell)
+    auto const castStun = [&](char const* spell)
     {
         return botAI->CanCastSpell(spell, berserker) && botAI->CastSpell(spell, berserker);
     };
@@ -568,7 +568,7 @@ bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
     if (!furyMage)
         return false;
 
-    auto const castInterrupt = [&](const char* spell)
+    auto const castInterrupt = [&](char const* spell)
     {
         return botAI->CanCastSpell(spell, furyMage) && botAI->CastSpell(spell, furyMage);
     };

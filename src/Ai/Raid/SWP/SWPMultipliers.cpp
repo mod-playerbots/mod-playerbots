@@ -470,7 +470,7 @@ float FelmystDelayCooldownsMultiplier::GetValueInEncounter(Action* action)
 
 // Eredar Twins
 
-float EredarTwinsDisableAutomaticTargetingMultiplier::GetValueInEncounter(Action* action)
+float EredarTwinsDisableAutoTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;

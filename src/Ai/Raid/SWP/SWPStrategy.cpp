@@ -259,7 +259,7 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FelmystDelayCooldownsMultiplier(botAI));
 
     // Eredar Twins
-    multipliers.push_back(new EredarTwinsDisableAutomaticTargetingMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsDisableAutoTargetingMultiplier(botAI));
     multipliers.push_back(new EredarTwinsHoldDpsAtStartMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
@@ -285,9 +285,8 @@ namespace
 using namespace SwpHelpers;
 
 void AppendVolatileFiendMeleeDpsExclusions(
-    PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
+    PlayerbotAI* botAI, Player* bot, AiObjectContext* context, GuidSet& exclusions)
 {
-    Player* bot = botAI->GetBot();
     if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
         return;
 
@@ -297,9 +296,9 @@ void AppendVolatileFiendMeleeDpsExclusions(
 }
 
 void AppendFelmystVaporPhaseMeleeExclusions(
-    PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
+    PlayerbotAI* botAI, Player* bot, AiObjectContext* context, GuidSet& exclusions)
 {
-    if (!PlayerbotAI::IsMelee(botAI->GetBot()))
+    if (!PlayerbotAI::IsMelee(bot))
         return;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
@@ -321,9 +320,9 @@ void AppendMuruDarkFiendExclusions(
     }
 }
 
-void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
+void AppendMuruTankExclusions(
+    PlayerbotAI* botAI, Player* bot, AiObjectContext* context, GuidSet& exclusions)
 {
-    Player* bot = botAI->GetBot();
     if (!PlayerbotAI::IsTank(bot))
         return;
 
@@ -359,9 +358,9 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, Guid
 }
 
 void AppendKiljaedenShieldOrbExclusions(
-    PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
+    PlayerbotAI* botAI, Player* bot, AiObjectContext* context, GuidSet& exclusions)
 {
-    if (!PlayerbotAI::IsMelee(botAI->GetBot()))
+    if (!PlayerbotAI::IsMelee(bot))
         return;
 
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
@@ -380,10 +379,14 @@ void AppendKiljaedenShieldOrbExclusions(
 void RaidSwpStrategy::AppendTargetExclusions(
     GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
+    Player* bot = botAI->GetBot();
+    if (bot->GetMapId() != SWP_MAP_ID)
+        return;
+
     AiObjectContext* context = botAI->GetAiObjectContext();
-    AppendVolatileFiendMeleeDpsExclusions(botAI, context, exclusions);
-    AppendFelmystVaporPhaseMeleeExclusions(botAI, context, exclusions);
-    AppendMuruTankExclusions(botAI, context, exclusions);
+    AppendVolatileFiendMeleeDpsExclusions(botAI, bot, context, exclusions);
+    AppendFelmystVaporPhaseMeleeExclusions(botAI, bot, context, exclusions);
     AppendMuruDarkFiendExclusions(botAI, context, exclusions);
-    AppendKiljaedenShieldOrbExclusions(botAI, context, exclusions);
+    AppendMuruTankExclusions(botAI, bot, context, exclusions);
+    AppendKiljaedenShieldOrbExclusions(botAI, bot, context, exclusions);
 }
