@@ -280,8 +280,8 @@ public:
 class DruidPartyMemberRemoveCurseTrigger : public PartyMemberNeedCureTrigger
 {
 public:
-    DruidPartyMemberRemoveCurseTrigger(PlayerbotAI* ai)
-        : PartyMemberNeedCureTrigger(ai, "druid remove curse", DISPEL_CURSE)
+    DruidPartyMemberRemoveCurseTrigger(PlayerbotAI* botAI)
+        : PartyMemberNeedCureTrigger(botAI, "druid remove curse", DISPEL_CURSE)
     {
     }
 };
@@ -354,7 +354,7 @@ public:
 class MangleCatTrigger : public DebuffTrigger
 {
 public:
-    MangleCatTrigger(PlayerbotAI* ai) : DebuffTrigger(ai, "mangle (cat)", 1, false, 0.0f) {}
+    MangleCatTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "mangle (cat)", 1, false, 0.0f) {}
     bool IsActive() override
     {
         if (botAI->HasAura("prowl", bot))
@@ -367,7 +367,7 @@ public:
 class FerociousBiteTimeTrigger : public Trigger
 {
 public:
-    FerociousBiteTimeTrigger(PlayerbotAI* ai) : Trigger(ai, "ferocious bite time") {}
+    FerociousBiteTimeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "ferocious bite time") {}
     bool IsActive() override
     {
         Unit* target = AI_VALUE(Unit*, "current target");

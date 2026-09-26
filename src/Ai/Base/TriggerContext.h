@@ -256,7 +256,7 @@ private:
     static Trigger* give_water(PlayerbotAI* botAI) { return new GiveWaterTrigger(botAI); }
     static Trigger* no_rti(PlayerbotAI* botAI) { return new NoRtiTrigger(botAI); }
     static Trigger* _return(PlayerbotAI* botAI) { return new ReturnTrigger(botAI); }
-    static Trigger* return_to_stay_position(PlayerbotAI* ai) { return new ReturnToStayPositionTrigger(ai); }
+    static Trigger* return_to_stay_position(PlayerbotAI* botAI) { return new ReturnToStayPositionTrigger(botAI); }
     static Trigger* sit(PlayerbotAI* botAI) { return new SitTrigger(botAI); }
     static Trigger* far_from_rpg_target(PlayerbotAI* botAI) { return new FarFromRpgTargetTrigger(botAI); }
     static Trigger* near_rpg_target(PlayerbotAI* botAI) { return new NearRpgTargetTrigger(botAI); }
@@ -281,13 +281,13 @@ private:
     {
         return new AoeHealTrigger(botAI, "almost full aoe heal", "almost full", 2);
     }
-    static Trigger* group_heal_occasion(PlayerbotAI* ai)
+    static Trigger* group_heal_occasion(PlayerbotAI* botAI)
     {
-        return new AoeInGroupTrigger(ai, "group heal setting", "almost full");
+        return new AoeInGroupTrigger(botAI, "group heal setting", "almost full");
     }
-    static Trigger* medium_group_heal_occasion(PlayerbotAI* ai)
+    static Trigger* medium_group_heal_occasion(PlayerbotAI* botAI)
     {
-        return new AoeInGroupTrigger(ai, "medium group heal setting", "medium");
+        return new AoeInGroupTrigger(botAI, "medium group heal setting", "medium");
     }
     static Trigger* target_changed(PlayerbotAI* botAI) { return new TargetChangedTrigger(botAI); }
     static Trigger* swimming(PlayerbotAI* botAI) { return new IsSwimmingTrigger(botAI); }
@@ -366,9 +366,9 @@ private:
     static Trigger* ComboPoints5Available(PlayerbotAI* botAI) { return new ComboPointsAvailableTrigger(botAI, 5); }
     static Trigger* ComboPoints4Available(PlayerbotAI* botAI) { return new ComboPointsAvailableTrigger(botAI, 4); }
     static Trigger* ComboPoints3Available(PlayerbotAI* botAI) { return new ComboPointsAvailableTrigger(botAI, 3); }
-    static Trigger* target_with_combo_points_almost_dead(PlayerbotAI* ai)
+    static Trigger* target_with_combo_points_almost_dead(PlayerbotAI* botAI)
     {
-        return new TargetWithComboPointsLowerHealTrigger(ai, 3, 3.0f);
+        return new TargetWithComboPointsLowerHealTrigger(botAI, 3, 3.0f);
     }
     static Trigger* ComboPointsNotFull(PlayerbotAI* botAI) { return new ComboPointsNotFullTrigger(botAI); }
     static Trigger* ComboPointsNotFullAndHighEnergy(PlayerbotAI* botAI) { return new TwoTriggers(botAI, "combo points not full", "high energy available"); }
@@ -459,11 +459,11 @@ private:
     static Trigger* do_quest_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_DO_QUEST); }
     static Trigger* travel_flight_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_TRAVEL_FLIGHT); }
     static Trigger* outdoor_pvp_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_OUTDOOR_PVP); }
-    static Trigger* can_self_resurrect(PlayerbotAI* ai) { return new SelfResurrectTrigger(ai); }
-    static Trigger* can_fish(PlayerbotAI* ai) { return new CanFishTrigger(ai); }
-    static Trigger* can_use_fishing_bobber(PlayerbotAI* ai) { return new CanUseFishingBobberTrigger(ai); }
-    static Trigger* new_pet(PlayerbotAI* ai) { return new NewPetTrigger(ai); }
-    static Trigger* wait_for_attack_safe_distance(PlayerbotAI* ai) { return new WaitForAttackSafeDistanceTrigger(ai); }
+    static Trigger* can_self_resurrect(PlayerbotAI* botAI) { return new SelfResurrectTrigger(botAI); }
+    static Trigger* can_fish(PlayerbotAI* botAI) { return new CanFishTrigger(botAI); }
+    static Trigger* can_use_fishing_bobber(PlayerbotAI* botAI) { return new CanUseFishingBobberTrigger(botAI); }
+    static Trigger* new_pet(PlayerbotAI* botAI) { return new NewPetTrigger(botAI); }
+    static Trigger* wait_for_attack_safe_distance(PlayerbotAI* botAI) { return new WaitForAttackSafeDistanceTrigger(botAI); }
 };
 
 #endif

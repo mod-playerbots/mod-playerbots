@@ -279,11 +279,11 @@ private:
     {
         return new CastPowerWordShieldOnPartyAction(botAI);
     }
-    static Action* power_word_shield_on_almost_full_health_below(PlayerbotAI* ai)
+    static Action* power_word_shield_on_almost_full_health_below(PlayerbotAI* botAI)
     {
-        return new CastPowerWordShieldOnAlmostFullHealthBelowAction(ai);
+        return new CastPowerWordShieldOnAlmostFullHealthBelowAction(botAI);
     }
-    static Action* power_word_shield_on_not_full(PlayerbotAI* ai) { return new CastPowerWordShieldOnNotFullAction(ai); }
+    static Action* power_word_shield_on_not_full(PlayerbotAI* botAI) { return new CastPowerWordShieldOnNotFullAction(botAI); }
     static Action* renew(PlayerbotAI* botAI) { return new CastRenewAction(botAI); }
     static Action* renew_on_party(PlayerbotAI* botAI) { return new CastRenewOnPartyAction(botAI); }
     static Action* greater_heal(PlayerbotAI* botAI) { return new CastGreaterHealAction(botAI); }
@@ -330,11 +330,11 @@ private:
     static Action* chastise(PlayerbotAI* botAI) { return new CastChastiseAction(botAI); }
     static Action* consume_magic(PlayerbotAI* botAI) { return new CastConsumeMagicAction(botAI); }
     static Action* symbol_of_hope(PlayerbotAI* botAI) { return new CastSymbolOfHopeAction(botAI); }
-    static Action* penance_on_party(PlayerbotAI* ai) { return new CastPenanceOnPartyAction(ai); }
-    static Action* hymn_of_hope(PlayerbotAI* ai) { return new CastHymnOfHopeAction(ai); }
-    static Action* divine_hymn(PlayerbotAI* ai) { return new CastDivineHymnAction(ai); }
-    static Action* mind_sear(PlayerbotAI* ai) { return new CastMindSearAction(ai); }
-    static Action* guardian_spirit_on_party(PlayerbotAI* ai) { return new CastGuardianSpiritOnPartyAction(ai); }
+    static Action* penance_on_party(PlayerbotAI* botAI) { return new CastPenanceOnPartyAction(botAI); }
+    static Action* hymn_of_hope(PlayerbotAI* botAI) { return new CastHymnOfHopeAction(botAI); }
+    static Action* divine_hymn(PlayerbotAI* botAI) { return new CastDivineHymnAction(botAI); }
+    static Action* mind_sear(PlayerbotAI* botAI) { return new CastMindSearAction(botAI); }
+    static Action* guardian_spirit_on_party(PlayerbotAI* botAI) { return new CastGuardianSpiritOnPartyAction(botAI); }
 };
 
 SharedNamedObjectContextList<Strategy> PriestAiObjectContext::sharedStrategyContexts;
