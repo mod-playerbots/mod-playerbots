@@ -367,13 +367,16 @@ public:
     CastForceOfNatureAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "force of nature") {}
 };
 
-class BlanketHotTargetValue : public UnitCalculatedValue, public Qualified
+inline constexpr uint32 BLANKET_TARGET_CACHE_MS = 200;
+
+class BlanketHotTargetValue : public CalculatedValue<ObjectGuid>, public Qualified
 {
 public:
-    BlanketHotTargetValue(PlayerbotAI* botAI) : UnitCalculatedValue(botAI, "blanket hot target") {}
+    BlanketHotTargetValue(PlayerbotAI* botAI)
+        : CalculatedValue<ObjectGuid>(botAI, "blanket hot target", BLANKET_TARGET_CACHE_MS) {}
 
 protected:
-    Unit* Calculate() override;
+    ObjectGuid Calculate() override;
 };
 
 class CastBlanketHotAction : public CastSpellAction
@@ -384,7 +387,7 @@ public:
         range = botAI->GetRange("heal");
     }
 
-    Value<Unit*>* GetTargetValue() override;
+    Unit* GetTarget() override;
     bool isUseful() override;
 };
 

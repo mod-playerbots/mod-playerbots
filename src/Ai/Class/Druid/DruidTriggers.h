@@ -462,7 +462,7 @@ public:
     BlanketHotTrigger(PlayerbotAI* botAI, std::string const& name, std::string const& spell)
         : Trigger(botAI, name), _spell(spell) {}
 
-    Value<Unit*>* GetTargetValue() override;
+    Unit* GetTarget() override;
     bool IsActive() override;
 
 private:
