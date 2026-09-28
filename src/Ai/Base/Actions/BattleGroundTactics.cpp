@@ -1969,7 +1969,7 @@ bool BGTactics::selectObjective(bool reset)
                         if (Map* map = bot->GetMap())
                         {
                             float groundZ = map->GetHeight(rx, ry, rz);
-                            if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                            if (groundZ > INVALID_HEIGHT)
                                 rz = groundZ;
                         }
 
@@ -2087,7 +2087,7 @@ bool BGTactics::selectObjective(bool reset)
                     if (Map* map = bot->GetMap())
                     {
                         float groundZ = map->GetHeight(rx, ry, rz);
-                        if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                        if (groundZ > INVALID_HEIGHT)
                             rz = groundZ;
                     }
 
@@ -2130,7 +2130,7 @@ bool BGTactics::selectObjective(bool reset)
                 if (Map* map = bot->GetMap())
                 {
                     float groundZ = map->GetHeight(rx, ry, rz);
-                    if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                    if (groundZ > INVALID_HEIGHT)
                         rz = groundZ;
                 }
 
@@ -2386,7 +2386,7 @@ bool BGTactics::selectObjective(bool reset)
                 if (Map* map = bot->GetMap())
                 {
                     float groundZ = map->GetHeight(rx, ry, rz);
-                    if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                    if (groundZ > INVALID_HEIGHT)
                         rz = groundZ;
                 }
                 pos.Set(rx, ry, rz, bot->GetMapId());
@@ -2477,7 +2477,7 @@ bool BGTactics::selectObjective(bool reset)
                 if (Map* map = bot->GetMap())
                 {
                     float groundZ = map->GetHeight(rx, ry, rz);
-                    if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                    if (groundZ > INVALID_HEIGHT)
                         rz = groundZ;
                 }
 
@@ -2571,7 +2571,7 @@ bool BGTactics::selectObjective(bool reset)
                     if (Map* map = bot->GetMap())
                     {
                         float groundZ = map->GetHeight(rx, ry, rz);
-                        if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                        if (groundZ > INVALID_HEIGHT)
                             rz = groundZ;
                     }
 
@@ -2599,7 +2599,7 @@ bool BGTactics::selectObjective(bool reset)
                     if (Map* map = bot->GetMap())
                     {
                         float groundZ = map->GetHeight(rx, ry, rz);
-                        if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                        if (groundZ > INVALID_HEIGHT)
                             rz = groundZ;
                     }
 

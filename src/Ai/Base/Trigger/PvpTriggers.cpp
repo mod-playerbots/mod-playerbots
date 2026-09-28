@@ -106,7 +106,7 @@ bool PlayerIsInBattlegroundWithoutFlag::IsActive()
                 return true;
 
             if (bot->GetGUID() == bg->GetFlagPickerGUID(TEAM_ALLIANCE) ||
-                bot->GetGUID() == bg->GetFlagPickerGUID(TEAM_ALLIANCE))
+                bot->GetGUID() == bg->GetFlagPickerGUID(TEAM_HORDE))
             {
                 return false;
             }

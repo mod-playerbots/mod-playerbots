@@ -105,7 +105,13 @@ bool TargetWithComboPointsLowerHealTrigger::IsActive()
            (target->GetHealth() / AI_VALUE(float, "estimated group dps")) <= lifeTime;
 }
 
-bool LoseAggroTrigger::IsActive() { return !AI_VALUE2(bool, "has aggro", "current target"); }
+bool LoseAggroTrigger::IsActive()
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (target && target->IsPlayer())
+        return false;  // players have no threat: taunts only waste the cooldown
+    return !AI_VALUE2(bool, "has aggro", "current target");
+}
 
 bool HasAggroTrigger::IsActive() { return AI_VALUE2(bool, "has aggro", "current target"); }
 
@@ -209,6 +215,8 @@ bool MyAttackerCountTrigger::IsActive()
 
 bool MediumThreatTrigger::IsActive()
 {
+    if (Unit* target = AI_VALUE(Unit*, "current target"); target && target->IsPlayer())
+        return false;  // players have no threat: Fade, Soulshatter, Cower, Vanish would be wasted
     if (!AI_VALUE(Unit*, "main tank"))
         return false;
 
@@ -217,12 +225,12 @@ bool MediumThreatTrigger::IsActive()
 
 bool LowTankThreatTrigger::IsActive()
 {
+    Unit* current_target = AI_VALUE(Unit*, "current target");
+    if (!current_target || current_target->IsPlayer())
+        return false;  // players have no threat: Tricks of the Trade / Misdirection would be wasted
+
     Unit* mainTank = AI_VALUE(Unit*, "main tank");
     if (!mainTank)
-        return false;
-
-    Unit* current_target = AI_VALUE(Unit*, "current target");
-    if (!current_target)
         return false;
 
     ThreatManager& mgr = current_target->GetThreatMgr();
