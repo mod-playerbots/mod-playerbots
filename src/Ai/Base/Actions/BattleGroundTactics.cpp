@@ -2153,10 +2153,7 @@ bool BGTactics::selectObjective(bool reset)
                 if (radius > 0.0f)
                 {
                     bot->GetRandomPoint(origin, radius, rx, ry, rz);
-                    if (rz == VMAP_INVALID_HEIGHT_VALUE)
-                        target.Relocate(rx, ry, rz);
-                    else
-                        target.Relocate(origin);
+                    target.Relocate(rx, ry, rz);
                 }
                 else
                 {
@@ -2176,23 +2173,15 @@ bool BGTactics::selectObjective(bool reset)
 
             uint8 defendersProhab = 3;  // Default balanced
 
-            switch (static_cast<uint8>(strategy))
+            switch (strategy)
             {
-                case 0:
-                case 1:
-                case 2:
-                case 3:  // Balanced
-                    defendersProhab = 3;
-                    break;
-                case 4:
-                case 5:
-                case 6:
-                case 7:  // Heavy Offense
+                case WS_STRATEGY_OFFENSIVE:
                     defendersProhab = 1;
                     break;
-                case 8:
-                case 9:  // Heavy Defense
+                case WS_STRATEGY_DEFENSIVE:
                     defendersProhab = 6;
+                    break;
+                default:
                     break;
             }
 
@@ -2258,13 +2247,10 @@ bool BGTactics::selectObjective(bool reset)
                     }
                     else if (teamFC)
                     {
-                        // 70% chance to support own FC
-                        if (urand(0, 99) < 70)
-                        {
-                            target.Relocate(teamFC->GetPositionX(), teamFC->GetPositionY(), teamFC->GetPositionZ());
-                            if (ServerFacade::instance().GetDistance2d(bot, teamFC) < 33.0f)
-                                Follow(teamFC);
-                        }
+                        // support own FC
+                        target.Relocate(teamFC->GetPositionX(), teamFC->GetPositionY(), teamFC->GetPositionZ());
+                        if (ServerFacade::instance().GetDistance2d(bot, teamFC) < 33.0f)
+                            Follow(teamFC);
                     }
                     else
                     {
