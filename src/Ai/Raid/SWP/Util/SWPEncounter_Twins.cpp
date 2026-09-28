@@ -205,6 +205,8 @@ Player* GetSacrolashTank(Player* bot, uint8 index)
 
         ++found;
     }
+
+    return nullptr;
 }
 
 // Sacrolash is held by every tank except the one assigned to Alythess.
