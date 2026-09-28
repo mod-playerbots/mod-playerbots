@@ -44,7 +44,7 @@ bool PullRequestAction::Execute(Event event)
     if (!strategy)
         return false;
 
-    if (!botAI->IsTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return false;
 
     Unit* target = GetPullTarget(event);

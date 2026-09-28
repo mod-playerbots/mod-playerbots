@@ -1108,7 +1108,7 @@ void PlayerbotAIConfig::LoadWorldBuff()
     }
 }
 
-static std::vector<std::string> split(std::string const& str, std::string const& pattern)
+static std::vector<std::string> Split(std::string const& str, std::string const& pattern)
 {
     std::vector<std::string> res;
     if (str == "")
@@ -1134,7 +1134,7 @@ std::vector<std::vector<uint32>> PlayerbotAIConfig::ParseTempTalentsOrder(uint32
     // check bad link
     uint32 classMask = 1 << (cls - 1);
     std::vector<std::vector<uint32>> res;
-    std::vector<std::string> tab_links = split(tab_link, "-");
+    std::vector<std::string> tab_links = Split(tab_link, "-");
     std::map<uint32, std::vector<TalentEntry const*>> spells;
     std::vector<std::vector<std::vector<uint32>>> orders(3);
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)

@@ -215,7 +215,7 @@ bool TankAttackChatShortcutAction::Execute(Event /*event*/)
     if (!master)
         return false;
 
-    if (!botAI->IsTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return false;
 
     botAI->Reset();

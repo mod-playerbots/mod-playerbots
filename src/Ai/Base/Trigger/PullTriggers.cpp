@@ -43,7 +43,7 @@ bool PullEndTrigger::IsActive()
 
     float distanceToPullTarget = bot->GetDistance(target);
     if (distanceToPullTarget > ATTACK_DISTANCE && !target->IsNonMeleeSpellCast(false, false, true) &&
-        (!botAI->IsRanged(bot) || distanceToPullTarget > botAI->GetRange("spell")))
+        (!PlayerbotAI::IsRanged(bot) || distanceToPullTarget > botAI->GetRange("spell")))
         return false;
 
     if (!botAI->HasStrategy("pull back", BOT_STATE_COMBAT))

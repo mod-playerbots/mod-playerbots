@@ -166,7 +166,7 @@ void IccApplyHeroicBuffToMember(PlayerbotAI* botAI, Player* member, bool applyPa
     if (applyPainSupp && !member->HasAura(SPELL_PAIN_SUPPRESION))
         member->AddAura(SPELL_PAIN_SUPPRESION, member);
 
-    if (applyNoThreat && !botAI->IsTank(member) && !member->HasAura(SPELL_NO_THREAT))
+    if (applyNoThreat && !PlayerbotAI::IsTank(member) && !member->HasAura(SPELL_NO_THREAT))
         member->AddAura(SPELL_NO_THREAT, member);
 }
 
@@ -253,7 +253,7 @@ std::optional<bool> IccValithriaShouldHealRaid(Player* bot, PlayerbotAI* botAI)
         if (!member || !member->IsAlive() || IsSelfBot(bot))
             continue;
 
-        if (botAI->IsHeal(member) && !IsSelfBot(bot))
+        if (PlayerbotAI::IsHeal(member) && !IsSelfBot(bot))
         {
             healerCount++;
             healerGuids.push_back(member->GetGUID());

@@ -102,7 +102,7 @@ float HealerAutoSaveManaMultiplier::GetValue(Action* action)
     Unit* target = healingAction->GetTarget();
     if (!target)
         return 1.0f;
-    bool isTank = target->ToPlayer() ? botAI->IsTank(target->ToPlayer()) : false;
+    bool isTank = target->ToPlayer() ? PlayerbotAI::IsTank(target->ToPlayer()) : false;
     uint8 health = target->GetHealthPct();
     HealingManaEfficiency manaEfficiency = healingAction->manaEfficiency;
     uint8 estAmount = healingAction->estAmount;

@@ -1379,7 +1379,7 @@ bool MovementAction::Flee(Unit* target)
                 if (!player || player == bot || !player->IsAlive())
                     continue;
 
-                if (botAI->IsTank(player))
+                if (PlayerbotAI::IsTank(player))
                 {
                     float distanceToTank = ServerFacade::instance().GetDistance2d(bot, player);
                     if (distanceToTank < fleeDistance)
@@ -1401,9 +1401,9 @@ bool MovementAction::Flee(Unit* target)
     }
     else  // bot is not targeted, try to flee dps/healers
     {
-        bool isHealer = botAI->IsHeal(bot);
+        bool isHealer = PlayerbotAI::IsHeal(bot);
         bool needHealer = !isHealer && AI_VALUE2(uint8, "health", "self target") < 50;
-        bool isRanged = botAI->IsRanged(bot);
+        bool isRanged = PlayerbotAI::IsRanged(bot);
 
         Group* group = bot->GetGroup();
         if (group)
@@ -1420,7 +1420,7 @@ bool MovementAction::Flee(Unit* target)
                 if (!player || player == bot || !player->IsAlive())
                     continue;
 
-                if ((isHealer && botAI->IsHeal(player)) || needHealer)
+                if ((isHealer && PlayerbotAI::IsHeal(player)) || needHealer)
                 {
                     float distanceToHealer = ServerFacade::instance().GetDistance2d(bot, player);
                     float distanceToTarget = ServerFacade::instance().GetDistance2d(player, target);
@@ -1433,7 +1433,7 @@ bool MovementAction::Flee(Unit* target)
                         possibleTargets.push_back(fleeTarget);
                     }
                 }
-                else if (isRanged && botAI->IsRanged(player))
+                else if (isRanged && PlayerbotAI::IsRanged(player))
                 {
                     float distanceToRanged = ServerFacade::instance().GetDistance2d(bot, player);
                     float distanceToTarget = ServerFacade::instance().GetDistance2d(player, target);
@@ -2197,7 +2197,7 @@ bool MovementAction::FleePosition(Position pos, float radius, uint32 minInterval
         return false;
 
     Position bestPos;
-    if (botAI->IsMelee(bot))
+    if (PlayerbotAI::IsMelee(bot))
     {
         bestPos = BestPositionForMeleeToFlee(pos, radius);
     }
@@ -2530,7 +2530,7 @@ bool DisperseSetAction::Execute(Event event)
     }
     if (text == "enable" || text == "reset")
     {
-        if (botAI->IsMelee(bot))
+        if (PlayerbotAI::IsMelee(bot))
         {
             SET_AI_VALUE(float, "disperse distance", DEFAULT_DISPERSE_DISTANCE_MELEE);
         }

@@ -133,7 +133,7 @@ void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId
                 ++loadingForMaster;
         }
         uint32 count = mgr->GetPlayerbotsCount() + loadingForMaster;
-        if (count >= uint32(PlayerbotAIConfig::instance().MaxAddedBots))
+        if (count >= uint32(PlayerbotAIConfig::Instance().MaxAddedBots))
         {
             allowed = false;
             out << "Failure: You have added too many bots (more than " << sPlayerbotAIConfig.MaxAddedBots << ")";
@@ -667,7 +667,7 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
     uint8 locale = BroadcastHelper::GetLocale();
     AreaTableEntry const* current_zone = GET_PLAYERBOT_AI(bot)->GetCurrentZone();
     ChannelMgr* cMgr = ChannelMgr::forTeam(bot->GetTeamId());
-    std::string current_zone_name = current_zone ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_zone) : "";
+    std::string current_zone_name = current_zone ? PlayerbotAI::GetLocalizedAreaName(current_zone) : "";
 
     if (current_zone && cMgr)
     {
@@ -698,7 +698,7 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
                     //but if you (actual player) logout in a city and log back in - you join "City" versions
                     constexpr uint32 AREA_ID_CITY = 3459;
                     std::string const cityName =
-                        GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(sAreaTableStore.LookupEntry(AREA_ID_CITY));
+                        PlayerbotAI::GetLocalizedAreaName(sAreaTableStore.LookupEntry(AREA_ID_CITY));
                     snprintf(new_channel_name_buf, 100, channel->pattern[locale], cityName.c_str());
                     new_channel = cMgr->GetJoinChannel(new_channel_name_buf, channel->ChannelID);
                     break;

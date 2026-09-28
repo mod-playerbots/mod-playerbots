@@ -76,15 +76,15 @@ Unit* CastHysteriaAction::GetTarget()
             continue;
 
         // Priority 1: Melee DPS
-        if (botAI->IsMelee(member) && botAI->IsDps(member))
+        if (PlayerbotAI::IsMelee(member) && PlayerbotAI::IsDps(member))
             return member;
 
         // Priority 2: Ranged DPS (physical, not casters)
-        if (!rangedDps && botAI->IsRanged(member) && botAI->IsDps(member) && !botAI->IsCaster(member))
+        if (!rangedDps && PlayerbotAI::IsRanged(member) && PlayerbotAI::IsDps(member) && !PlayerbotAI::IsCaster(member))
             rangedDps = member;
 
         // Priority 3: Tank
-        if (!tank && botAI->IsTank(member))
+        if (!tank && PlayerbotAI::IsTank(member))
             tank = member;
     }
 

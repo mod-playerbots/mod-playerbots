@@ -33,12 +33,12 @@ bool ThaddiusAttackNearestPetAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != target)
         return Attack(target);
 
-    if (botAI->IsTank(bot) && AI_VALUE2(bool, "has aggro", "current target"))
+    if (PlayerbotAI::IsTank(bot) && AI_VALUE2(bool, "has aggro", "current target"))
     {
         std::pair<float, float> posForTank = helper.PetPhaseGetPosForTank();
         return MoveTo(533, posForTank.first, posForTank.second, helper.tankPosZ, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
     }
-    if (botAI->IsRanged(bot))
+    if (PlayerbotAI::IsRanged(bot))
     {
         std::pair<float, float> posForRanged = helper.PetPhaseGetPosForRanged();
         return MoveTo(533, posForRanged.first, posForRanged.second, helper.tankPosZ, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
@@ -96,7 +96,7 @@ bool ThaddiusMoveToPlatformAction::Execute(Event /*event*/)
 
 bool ThaddiusMovePolarityAction::isUseful()
 {
-    return !botAI->IsMainTank(bot) || AI_VALUE2(bool, "has aggro", "current target");
+    return !PlayerbotAI::IsMainTank(bot) || AI_VALUE2(bool, "has aggro", "current target");
 }
 
 bool ThaddiusMovePolarityAction::Execute(Event /*event*/)
@@ -132,6 +132,6 @@ bool ThaddiusMovePolarityAction::Execute(Event /*event*/)
     {
         idx = 2;
     }
-    idx = idx * 2 + botAI->IsRanged(bot);
+    idx = idx * 2 + PlayerbotAI::IsRanged(bot);
     return MoveTo(bot->GetMapId(), position[idx].first, position[idx].second, bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
 }

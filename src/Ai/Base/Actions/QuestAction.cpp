@@ -316,7 +316,7 @@ bool QuestUpdateAddKillAction::Execute(Event event)
         GameObjectTemplate const* info = sObjectMgr->GetGameObjectTemplate(entry);
         if (info)
         {
-            std::string infoName = botAI->GetLocalizedGameObjectName(entry);
+            std::string infoName = PlayerbotAI::GetLocalizedGameObjectName(entry);
             BroadcastHelper::BroadcastQuestUpdateAddKill(botAI, bot, qInfo, available, required, infoName);
             if (botAI->GetMaster())
             {
@@ -331,7 +331,7 @@ bool QuestUpdateAddKillAction::Execute(Event event)
         CreatureTemplate const* info = sObjectMgr->GetCreatureTemplate(entry);
         if (info)
         {
-            std::string infoName = botAI->GetLocalizedCreatureName(entry);
+            std::string infoName = PlayerbotAI::GetLocalizedCreatureName(entry);
             BroadcastHelper::BroadcastQuestUpdateAddKill(botAI, bot, qInfo, available, required, infoName);
             if (botAI->GetMaster())
             {

@@ -69,7 +69,7 @@ public:
             if (!member || !member->IsAlive() || member == bot)
                 continue;
 
-            if (!botAI->IsTank(member))
+            if (!PlayerbotAI::IsTank(member))
                 continue;
 
             float distance = ServerFacade::instance().GetDistance2d(member, creature);

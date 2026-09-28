@@ -2902,10 +2902,10 @@ void RandomPlayerbotMgr::PrintStats()
         else
             ++engine_dead;
 
-        if (botAI->IsHeal(bot, false))
+        if (PlayerbotAI::IsHeal(bot, false))
             ++heal;
 
-        else if (botAI->IsTank(bot, false))
+        else if (PlayerbotAI::IsTank(bot, false))
             ++tank;
 
         else

@@ -22,9 +22,9 @@ uint32 LfgJoinAction::GetRoles()
 {
     if (!RandomPlayerbotMgr::instance().IsRandomBot(bot))
     {
-        if (botAI->IsTank(bot))
+        if (PlayerbotAI::IsTank(bot))
             return PLAYER_ROLE_TANK;
-        if (botAI->IsHeal(bot))
+        if (PlayerbotAI::IsHeal(bot))
             return PLAYER_ROLE_HEALER;
         else
             return PLAYER_ROLE_DAMAGE;

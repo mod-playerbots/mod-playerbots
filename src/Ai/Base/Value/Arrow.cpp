@@ -75,11 +75,11 @@ void ArrowFormation::Build()
 
 FormationSlot* ArrowFormation::FindSlot(Player* member)
 {
-    if (botAI->IsTank(member))
+    if (PlayerbotAI::IsTank(member))
         return &tanks;
-    else if (botAI->IsHeal(member))
+    else if (PlayerbotAI::IsHeal(member))
         return &healers;
-    else if (botAI->IsRanged(member))
+    else if (PlayerbotAI::IsRanged(member))
         return &ranged;
     else
         return &melee;

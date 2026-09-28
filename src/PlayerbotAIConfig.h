@@ -87,7 +87,7 @@ struct LevelBracketConfig
 class PlayerbotAIConfig
 {
 public:
-    static PlayerbotAIConfig& instance()
+    static PlayerbotAIConfig& Instance()
     {
         static PlayerbotAIConfig instance;
 
@@ -526,6 +526,6 @@ private:
     PlayerbotAIConfig& operator=(PlayerbotAIConfig&&) = delete;
 };
 
-#define sPlayerbotAIConfig PlayerbotAIConfig::instance()
+#define sPlayerbotAIConfig PlayerbotAIConfig::Instance()
 
 #endif

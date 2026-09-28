@@ -93,7 +93,7 @@ public:
                     if (member == bot)
                         index = count;
 
-                    if (member && !botAI->IsRanged(member) && !botAI->IsTank(member))
+                    if (member && !PlayerbotAI::IsRanged(member) && !PlayerbotAI::IsTank(member))
                         count++;
                 }
             }
@@ -142,7 +142,7 @@ public:
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 if (Player* member = ref->GetSource())
-                    if (member != bot && botAI->IsRanged(member))
+                    if (member != bot && PlayerbotAI::IsRanged(member))
                     {
                         angle += target->GetAngle(member);
                         ++count;
@@ -177,7 +177,7 @@ public:
                     if (member == bot)
                         index = count;
 
-                    if (!botAI->IsRanged(member) && !botAI->IsTank(member))
+                    if (!PlayerbotAI::IsRanged(member) && !PlayerbotAI::IsTank(member))
                         ++count;
                 }
             }

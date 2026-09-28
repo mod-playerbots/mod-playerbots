@@ -4056,7 +4056,7 @@ bool BGTactics::useBuff()
         // do not move to Berserk buff if bot is healer or has flag
         if (!(bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) ||
               bot->HasAura(BG_EY_NETHERSTORM_FLAG_SPELL)) &&
-            !botAI->IsHeal(bot) && go->GetEntry() == Buff_Entries[2])
+            !PlayerbotAI::IsHeal(bot) && go->GetEntry() == Buff_Entries[2])
             foundBuff = true;
 
         if (foundBuff)

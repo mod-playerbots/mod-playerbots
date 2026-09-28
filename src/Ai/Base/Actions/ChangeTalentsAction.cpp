@@ -372,7 +372,7 @@ bool AutoSetTalentsAction::Execute(Event /*event*/)
 {
     std::ostringstream out;
 
-    if (!PlayerbotAIConfig::instance().AutoPickTalents || !RandomPlayerbotMgr::instance().IsRandomBot(bot))
+    if (!PlayerbotAIConfig::Instance().AutoPickTalents || !RandomPlayerbotMgr::instance().IsRandomBot(bot))
         return false;
 
     if (bot->GetFreeTalentPoints() <= 0)

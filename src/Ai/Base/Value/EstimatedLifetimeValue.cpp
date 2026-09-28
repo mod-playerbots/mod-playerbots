@@ -60,9 +60,9 @@ float EstimatedGroupDpsValue::Calculate()
     for (Player* player : groupPlayer)
     {
         float roleMultiplier;
-        if (botAI->IsTank(player))
+        if (PlayerbotAI::IsTank(player))
             roleMultiplier = 0.3f;
-        else if (botAI->IsHeal(player))
+        else if (PlayerbotAI::IsHeal(player))
             roleMultiplier = 0.1f;
         else
             roleMultiplier = 1.0f;

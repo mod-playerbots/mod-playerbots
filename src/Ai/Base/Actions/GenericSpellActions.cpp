@@ -199,7 +199,7 @@ bool CastSpellAction::isUseful()
         return false;
 
     // float combatReach = bot->GetCombatReach() + target->GetCombatReach();
-    // if (!botAI->IsRanged(bot))
+    // if (!PlayerbotAI::IsRanged(bot))
     //     combatReach += 4.0f / 3.0f;
 
     return AI_VALUE2(bool, "spell cast useful", spell);

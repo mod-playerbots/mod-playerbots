@@ -60,9 +60,9 @@ static Unit* FindBlessingTarget(
 
         if (player == master)
             masters.push_back(player);
-        else if (botAI->IsHeal(player))
+        else if (PlayerbotAI::IsHeal(player))
             healers.push_back(player);
-        else if (botAI->IsTank(player))
+        else if (PlayerbotAI::IsTank(player))
             tanks.push_back(player);
         else
             others.push_back(player);

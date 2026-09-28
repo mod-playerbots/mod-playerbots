@@ -77,9 +77,9 @@ Unit* PartyMemberValue::FindPartyMember(FindPlayerPredicate& predicate, bool /*i
         if (!player)
             continue;
 
-        if (botAI->IsHeal(player))
+        if (PlayerbotAI::IsHeal(player))
             healers.push_back(player);
-        else if (botAI->IsTank(player))
+        else if (PlayerbotAI::IsTank(player))
             tanks.push_back(player);
         else if (player != master)
             others.push_back(player);
@@ -163,7 +163,7 @@ public:
         {
             return false;
         }
-        return botAI->IsMainTank(player);
+        return PlayerbotAI::IsMainTank(player);
     }
 
 private:
