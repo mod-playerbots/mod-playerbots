@@ -129,6 +129,11 @@ reviews:
           SQLTransaction.
         - Namespace is `Acore::`; flag any `Trinity::` left over from ports.
 
+        Code comments: flag any new or changed comment longer than one line, and any comment
+        that restates what the code already says. A comment should only explain something
+        non-obvious, a core quirk, or hidden constrainta.
+        The GPLv2 file header is exempt.
+
         mod-playerbots architecture rules (CLAUDE.md). The project's stated philosophy is
         "stability, performance, and predictability over behavioral realism"; every action,
         trigger, and value runs per bot per tick across thousands of bots:
