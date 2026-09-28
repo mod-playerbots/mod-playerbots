@@ -542,7 +542,6 @@ public:
     bool Execute(Event event) override;
 };
 
-
 // Kil'jaeden <The Deceiver>
 
 class KiljaedenAnnounceDragonOrbUserAction : public Action
