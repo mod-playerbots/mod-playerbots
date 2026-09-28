@@ -1694,6 +1694,10 @@ bool BGTactics::Execute(Event /*event*/)
             bot->HasAura(BG_EY_NETHERSTORM_FLAG_SPELL))
             return false;
 
+        // EotS routes meet at the bases, bridges and center: head straight to the objective instead of a random route
+        if (bgType == BATTLEGROUND_EY)
+            return moveToObjective(true);
+
         if (!startNewPathBegin(*vPaths))
             return moveToObjective(true);
 
@@ -2562,7 +2566,7 @@ bool BGTactics::selectObjective(bool reset)
                     }
                 }
 
-                if (bestNodeId != 0 && EY_NodePositions.contains(bestNodeId))
+                if (bestTrigger != 0)  // Fel Reaver is point 0, so check the trigger
                 {
                     Position const& targetPos = EY_NodePositions[bestNodeId];
                     float rx, ry, rz;
