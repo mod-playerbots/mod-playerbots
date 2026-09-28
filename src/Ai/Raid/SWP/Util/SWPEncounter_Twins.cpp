@@ -98,7 +98,7 @@ bool HasClosedOnTankThreat(Unit* boss, Player* bot, float tankThreat, float thre
 } // end anonymous namespace
 
 std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
-	eredarTwinsIncomingConflagrationStates;
+    eredarTwinsIncomingConflagrationStates;
 
 std::unordered_map<uint32, EredarTwinsBlazeTargetState> eredarTwinsBlazeTargetStates;
 
@@ -194,7 +194,7 @@ Player* GetSacrolashTank(Player* bot, uint8 index)
         found = 1;
     }
 
-    for (uint8 assistIndex = 0;; ++assistIndex)
+    for (uint8 assistIndex = 0; ++assistIndex)
     {
         Player* assistTank = GetGroupAssistTank(bot, assistIndex);
         if (!assistTank)
