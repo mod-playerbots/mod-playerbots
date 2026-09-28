@@ -14,7 +14,7 @@ void WotlkDungeonNexStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Alliance Commander (Horde N)/Commander Stoutbeard (Horde H)
     triggers.push_back(new TriggerNode("faction commander whirlwind",
         { NextAction("move from whirlwind", ACTION_MOVE + 5) }));
-    // TODO: Handle fear? (tremor totems, fear ward etc.)
+    // TODO: Handle fear? (tremor totems)
 
     // Grand Magus Telestra
     triggers.push_back(new TriggerNode("telestra firebomb",

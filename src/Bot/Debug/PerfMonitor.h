@@ -30,7 +30,8 @@ struct PerformanceData
     uint64_t minTime;
     uint64_t maxTime;
     uint64_t totalTime;
-    uint32_t count;
+    uint64_t count;
+    uint64_t blocks;
     std::mutex lock;
 };
 
@@ -39,6 +40,7 @@ enum PerformanceMetric
     PERF_MON_TRIGGER,
     PERF_MON_VALUE,
     PERF_MON_ACTION,
+    PERF_MON_MULTIPLIER,
     PERF_MON_RNDBOT,
     PERF_MON_TOTAL
 };
@@ -85,6 +87,7 @@ public:
     PerfMonitorOperation* start(PerformanceMetric metric, std::string const name,
                                        PerformanceStack* stack = nullptr);
     PerformanceData* acquire(PerformanceMetric metric, std::string const& name);
+    static void CountBlock(PerformanceData* data);
     void PrintStats(bool perTick = false, bool fullStack = false);
     void DumpJson(bool perTick = false);
     void Reset();

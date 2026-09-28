@@ -62,7 +62,7 @@ public:
     CalculatedValue(PlayerbotAI* botAI, std::string const name = "value", uint32 checkInterval = 1)
         : UntypedValue(botAI, name),
           checkInterval(
-              checkInterval == 1 ? 1 : (checkInterval < 100 ? checkInterval * 1000 : checkInterval)) /*turn s -> ms?*/,
+              checkInterval == 1 ? 1 : (checkInterval < 100 ? checkInterval * IN_MILLISECONDS : checkInterval)),
           lastCheckTime(0)
     {
     }

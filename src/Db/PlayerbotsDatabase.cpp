@@ -56,9 +56,6 @@ void PlayerbotsDatabaseConnection::DoPrepareStatements()
     PrepareStatement(PLAYERBOTS_SEL_RNDITEM_CACHE, "SELECT lvl, type, item FROM playerbots_rnditem_cache", CONNECTION_SYNCH);
     PrepareStatement(PLAYERBOTS_INS_RNDITEM_CACHE, "INSERT INTO playerbots_rnditem_cache (lvl, type, item) VALUES (?, ?, ?)", CONNECTION_SYNCH);
 
-    PrepareStatement(PLAYERBOTS_SEL_SPEECH, "SELECT name, text, type FROM playerbots_speech", CONNECTION_SYNCH);
-    PrepareStatement(PLAYERBOTS_SEL_SPEECH_PROBABILITY, "SELECT name, probability FROM playerbots_speech_probability", CONNECTION_SYNCH);
-
     PrepareStatement(PLAYERBOTS_SEL_TELE_CACHE, "SELECT map_id, x, y, z, level FROM playerbots_tele_cache", CONNECTION_SYNCH);
     PrepareStatement(PLAYERBOTS_INS_TELE_CACHE, "INSERT INTO playerbots_tele_cache (level, map_id, x, y, z) VALUES (?, ?, ?, ?, ?)", CONNECTION_SYNCH);
 

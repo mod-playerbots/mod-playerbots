@@ -20,7 +20,7 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                         { NextAction("mc lucifron shadow resistance", ACTION_RAID) }));
 
     // Magmadar
-    // TODO: Fear ward / tremor totem, or general anti-fear strat development. Same as King Dred (Drak'Tharon) and faction commander (Nexus).
+    // TODO: tremor totem, or general anti-fear strat development. Same as King Dred (Drak'Tharon) and faction commander (Nexus).
     triggers.push_back(
         new TriggerNode("mc magmadar fire resistance",
                         { NextAction("mc magmadar fire resistance", ACTION_RAID) }));
