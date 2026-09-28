@@ -3367,6 +3367,8 @@ bool BGTactics::resetObjective()
     // Adjust role-change chance based on battleground type
     uint32 oddsToChangeRole = 1;  // default low
     BattlegroundTypeId bgType = bg->GetBgTypeID();
+    if (bgType == BATTLEGROUND_RB)
+        bgType = bg->GetBgTypeID(true);
 
     if (bgType == BATTLEGROUND_WS)
         oddsToChangeRole = 2;

@@ -559,7 +559,11 @@ public:
     {
         BGStrategyData data;
 
-        switch (bg->GetBgTypeID())
+        BattlegroundTypeId bgType = bg->GetBgTypeID();
+        if (bgType == BATTLEGROUND_RB)  // a random-queue game: the rolled map
+            bgType = bg->GetBgTypeID(true);
+
+        switch (bgType)
         {
             case BATTLEGROUND_WS:
                 data.allianceStrategy = urand(0, WS_STRATEGY_MAX - 1);
