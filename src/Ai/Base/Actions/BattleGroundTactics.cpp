@@ -2440,11 +2440,12 @@ bool BGTactics::selectObjective(bool reset)
                         bool isNeutral = state == BG_AB_NODE_STATE_NEUTRAL;
                         bool isEnemyOccupied = (team == TEAM_ALLIANCE && state == BG_AB_NODE_STATE_HORDE_OCCUPIED) ||
                                                (team == TEAM_HORDE && state == BG_AB_NODE_STATE_ALLY_OCCUPIED);
-                        bool isFriendlyContested =
-                            (team == TEAM_ALLIANCE && state == BG_AB_NODE_STATE_ALLY_CONTESTED) ||
-                            (team == TEAM_HORDE && state == BG_AB_NODE_STATE_HORDE_CONTESTED);
+                        // an enemy assault can be clicked back; our own assault can't
+                        bool isEnemyContested =
+                            (team == TEAM_ALLIANCE && state == BG_AB_NODE_STATE_HORDE_CONTESTED) ||
+                            (team == TEAM_HORDE && state == BG_AB_NODE_STATE_ALLY_CONTESTED);
 
-                        if (!(isNeutral || isEnemyOccupied || isFriendlyContested))
+                        if (!(isNeutral || isEnemyOccupied || isEnemyContested))
                             continue;
 
                         GameObject* go = bg->GetBGObject(nodeId * BG_AB_OBJECTS_PER_NODE);
