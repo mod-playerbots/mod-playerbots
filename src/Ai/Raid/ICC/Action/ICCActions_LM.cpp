@@ -31,7 +31,7 @@ static bool IsValidLmMember(Player* member, Player* bot)
 }
 
 // Up to two lowest-GUID ranged bots in same instance, hunter-priority.
-static std::vector<Player*> PickBoneStormRangedTargets(Player* bot, PlayerbotAI* botAI)
+static std::vector<Player*> PickBoneStormRangedTargets(Player* bot)
 {
     std::vector<Player*> result;
 
@@ -104,7 +104,7 @@ bool IccLmTankPositionAction::Execute(Event /*event*/)
 
     if (isBossInBoneStorm)
     {
-        std::vector<Player*> const rangedTargets = PickBoneStormRangedTargets(bot, botAI);
+        std::vector<Player*> const rangedTargets = PickBoneStormRangedTargets(bot);
         if (std::find(rangedTargets.begin(), rangedTargets.end(), bot) != rangedTargets.end())
         {
             float const anchorDist = bot->GetExactDist2d(ICC_LM_BONE_STORM_AT_POSITION.GetPositionX(),

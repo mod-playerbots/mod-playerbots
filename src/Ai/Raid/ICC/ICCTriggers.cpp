@@ -401,7 +401,7 @@ bool IccPutricideMalleableGooTrigger::IsActive()
                 if (!member || !member->IsAlive() || !member->IsInWorld())
                     continue;
 
-                IccApplyHeroicBuffToMember(botAI, member, false, true);
+                IccApplyHeroicBuffToMember(member, false, true);
 
                 if (PlayerbotAI::IsTank(member) && !member->HasAura(SPELL_SPITEFULL_FURY) &&
                     boss->GetVictim() != member)
@@ -703,7 +703,7 @@ bool IccValithriaPortalTrigger::IsActive()
     if ((worm && worm->GetVictim() == bot) || (zombie && zombie->GetVictim() == bot))
         return false;
 
-    auto const shouldHealRaid = IccValithriaShouldHealRaid(bot, botAI);
+    auto const shouldHealRaid = IccValithriaShouldHealRaid(bot);
     if (!shouldHealRaid.has_value() || *shouldHealRaid)
         return false;
 
@@ -735,7 +735,7 @@ bool IccValithriaHealTrigger::IsActive()
     if ((worm && worm->GetVictim() == bot) || (zombie && zombie->GetVictim() == bot))
         return false;
 
-    auto const shouldHealRaid = IccValithriaShouldHealRaid(bot, botAI);
+    auto const shouldHealRaid = IccValithriaShouldHealRaid(bot);
     if (!shouldHealRaid.has_value() || *shouldHealRaid)
         return false;
 
@@ -784,7 +784,7 @@ bool IccSindragosaGroupPositionTrigger::IsActive()
                 if (!member || !member->IsAlive() || !member->IsInWorld())
                     continue;
 
-                IccApplyHeroicBuffToMember(botAI, member, false, true);
+                IccApplyHeroicBuffToMember(member, false, true);
 
                 if (PlayerbotAI::IsMainTank(member) && boss->GetVictim() != member &&
                     !member->HasAura(SPELL_SPITEFULL_FURY))

@@ -418,7 +418,7 @@ bool LadyVashjCastsShockBlastOnHighestAggroTrigger::IsActive()
         IsLadyVashjInPhase2(botAI))
         return false;
 
-    return IsMainTankInSameSubgroup(botAI, bot);
+    return IsMainTankInSameSubgroup(bot);
 }
 
 bool LadyVashjBotHasStaticChargeTrigger::IsActive()

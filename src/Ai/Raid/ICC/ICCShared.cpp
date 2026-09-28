@@ -149,7 +149,7 @@ void IccEnsureIconOn(Player* bot, PlayerbotAI* botAI, int8 icon, Unit* target)
         group->SetTargetIcon(icon, bot->GetGUID(), target->GetGUID());
 }
 
-void IccApplyHeroicBuffToMember(PlayerbotAI* botAI, Player* member, bool applyPainSupp, bool applyNoThreat)
+void IccApplyHeroicBuffToMember(Player* member, bool applyPainSupp, bool applyNoThreat)
 {
     uint32 const now = getMSTime();
     uint32& last = IcecrownHelpers::IccState(member->GetInstanceId()).lastBuffMs[member->GetGUID()];
@@ -237,7 +237,7 @@ bool IccAnyBloodPrincePresent(PlayerbotAI* botAI)
            AI_VALUE2(Unit*, "find target", "prince keleseth");
 }
 
-std::optional<bool> IccValithriaShouldHealRaid(Player* bot, PlayerbotAI* botAI)
+std::optional<bool> IccValithriaShouldHealRaid(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)

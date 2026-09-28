@@ -180,7 +180,7 @@ std::unordered_map<ObjectGuid, Position> intendedLineup;
 std::unordered_map<uint32, time_t> lastImbueAttempt;
 std::unordered_map<ObjectGuid, time_t> lastCoreInInventoryTime;
 
-bool IsMainTankInSameSubgroup(PlayerbotAI* botAI, Player* bot)
+bool IsMainTankInSameSubgroup(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group || !group->isRaidGroup())

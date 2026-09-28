@@ -173,7 +173,7 @@ bool IccLichKingShadowTrapAction::Execute(Event /*event*/)
     Difficulty const diff = bot->GetRaidDifficulty();
 
     if (sPlayerbotAIConfig.EnableICCBuffs && boss->IsInCombat() && IsHeroicLk(diff))
-        IccApplyHeroicBuffToMember(botAI, bot, true, false);
+        IccApplyHeroicBuffToMember(bot, true, false);
 
     static constexpr float CIRCLE_RADIUS = 20.0f;
     static constexpr float SAFE_DISTANCE = 12.0f;
@@ -370,7 +370,7 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
     Difficulty const diff = bot->GetRaidDifficulty();
 
     if (sPlayerbotAIConfig.EnableICCBuffs && boss->IsInCombat() && IsHeroicLk(diff))
-        IccApplyHeroicBuffToMember(botAI, bot, true, true);
+        IccApplyHeroicBuffToMember(bot, true, true);
 
     // Speed boost to help escape the inward push
     if (bot->GetDistance2d(boss) < 35.0f && !bot->HasAura(SPELL_NITRO_BOOSTS))
@@ -1821,7 +1821,7 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
                 if (!member || !member->IsAlive() || !member->IsInWorld())
                     continue;
 
-                IccApplyHeroicBuffToMember(botAI, member, true, true);
+                IccApplyHeroicBuffToMember(member, true, true);
 
                 if (boss && boss->HealthBelowPct(60) && boss->HealthAbovePct(40) &&
                     !member->HasAura(SPELL_EMPOWERED_BLOOD))

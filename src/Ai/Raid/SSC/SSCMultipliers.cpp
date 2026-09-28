@@ -617,7 +617,7 @@ float LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier::GetValue(Action* 
     if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
         return 1.0f;
 
-    if (!IsMainTankInSameSubgroup(botAI, bot))
+    if (!IsMainTankInSameSubgroup(bot))
         return 1.0f;
 
     if (dynamic_cast<CastWindfuryTotemAction*>(action) ||
