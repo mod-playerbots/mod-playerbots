@@ -228,7 +228,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
     if (bot->isMoving())
     {
         bot->StopMoving();
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.GlobalCoolDown);
         return false;
     }
 
@@ -270,7 +270,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
                 targetText = chat->FormatItem(itemForSpell->GetTemplate());
             }
             uint32 castTime = spellInfo->CalcCastTime();
-            botAI->SetNextCheckDelay(castTime + sPlayerbotAIConfig.reactDelay);
+            botAI->SetNextCheckDelay(castTime + sPlayerbotAIConfig.ReactDelay);
         }
 
         break;
@@ -348,7 +348,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
     if (!spellId)
         return false;
 
-    // botAI->SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
+    // botAI->SetNextCheckDelay(sPlayerbotAIConfig.GlobalCoolDown);
     std::string useText = targetSelected
         ? PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "use_item_on_target", "Using %item on %target", {{"%item", itemText}, {"%target", targetText}})
@@ -540,7 +540,7 @@ bool UseRandomQuestItem::Execute(Event /*event*/)
 
     bool used = UseItem(item, goTarget, nullptr, unitTarget);
     if (used)
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.GlobalCoolDown);
 
     return used;
 }

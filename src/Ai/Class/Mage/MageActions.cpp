@@ -121,7 +121,7 @@ Unit* CastFocusMagicOnPartyAction::GetTarget()
     {
         Player* member = ref->GetSource();
         if (!member || member == bot || !member->IsAlive() || member->GetMap() != bot->GetMap() ||
-            bot->GetDistance(member) > sPlayerbotAIConfig.spellDistance || member->HasAura(54646))  // Focus Magic
+            bot->GetDistance(member) > sPlayerbotAIConfig.SpellDistance || member->HasAura(54646))  // Focus Magic
         {
             continue;
         }

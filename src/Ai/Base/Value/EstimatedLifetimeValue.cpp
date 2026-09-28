@@ -51,7 +51,7 @@ float EstimatedGroupDpsValue::Calculate()
             if (member->GetMapId() != bot->GetMapId())
                 continue;
 
-            if (member->GetExactDist(bot) > sPlayerbotAIConfig.sightDistance)
+            if (member->GetExactDist(bot) > sPlayerbotAIConfig.SightDistance)
                 continue;
 
             groupPlayer.push_back(member);

@@ -36,7 +36,7 @@ public:
             return;
 
         uint8 health = static_cast<uint8>(creature->GetHealthPct());
-        if (health < sPlayerbotAIConfig.mediumHealth)
+        if (health < sPlayerbotAIConfig.MediumHealth)
             return;
 
         float minDistance = botAI->GetRange("spell");
@@ -49,7 +49,7 @@ public:
             WorldLocation aoe = *botAI->GetAiObjectContext()->GetValue<WorldLocation>("aoe position");
             if (ServerFacade::instance().IsDistanceLessOrEqualThan(
                     ServerFacade::instance().GetDistance2d(creature, aoe.GetPositionX(), aoe.GetPositionY()),
-                    sPlayerbotAIConfig.aoeRadius))
+                    sPlayerbotAIConfig.AoeRadius))
                 return;
         }
 

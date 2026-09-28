@@ -2746,7 +2746,7 @@ bool YoggSaronMoveToEnterPortalAction::Execute(Event /*event*/)
     {
         return MoveNear(bot->GetMapId(), assignedPortalPosition.GetPositionX(),
                                assignedPortalPosition.GetPositionY(),
-                 assignedPortalPosition.GetPositionZ(), sPlayerbotAIConfig.contactDistance,
+                 assignedPortalPosition.GetPositionZ(), sPlayerbotAIConfig.ContactDistance,
                  MovementPriority::MOVEMENT_FORCED);
     }
 }

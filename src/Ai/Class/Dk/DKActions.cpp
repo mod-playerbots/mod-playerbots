@@ -68,7 +68,7 @@ Unit* CastHysteriaAction::GetTarget()
         if (!member || !member->IsAlive())
             continue;
 
-        if (member->GetMap() != bot->GetMap() || bot->GetDistance(member) > sPlayerbotAIConfig.spellDistance)
+        if (member->GetMap() != bot->GetMap() || bot->GetDistance(member) > sPlayerbotAIConfig.SpellDistance)
             continue;
 
         // Skip if already has hysteria

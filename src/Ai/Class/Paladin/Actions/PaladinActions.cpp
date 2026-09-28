@@ -21,7 +21,7 @@ static bool IsBlessingTargetCandidate(Player* bot, Player* player)
     if (player->IsGameMaster())
         return false;
 
-    return bot->GetDistance(player) < sPlayerbotAIConfig.spellDistance * 2 &&
+    return bot->GetDistance(player) < sPlayerbotAIConfig.SpellDistance * 2 &&
            bot->IsWithinLOS(player->GetPositionX(), player->GetPositionY(),
                             player->GetPositionZ());
 }

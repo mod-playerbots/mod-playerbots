@@ -106,10 +106,10 @@ Unit* PartyMemberValue::FindPartyMember(FindPlayerPredicate& predicate, bool /*i
 bool PartyMemberValue::Check(Unit* player)
 {
     // return player && player != bot && player->GetMapId() == bot->GetMapId() && bot->IsWithinDistInMap(player,
-    // sPlayerbotAIConfig.sightDistance, false);
+    // sPlayerbotAIConfig.SightDistance, false);
     bool isGM = player->ToPlayer() && player->ToPlayer()->IsGameMaster();
     return player && player->GetMapId() == bot->GetMapId() && !isGM &&
-           bot->GetDistance(player) < sPlayerbotAIConfig.spellDistance * 2 &&
+           bot->GetDistance(player) < sPlayerbotAIConfig.SpellDistance * 2 &&
            bot->IsWithinLOS(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
 }
 

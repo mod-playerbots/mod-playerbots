@@ -97,7 +97,7 @@ Unit* CastVigilanceAction::GetTarget()
 
         // And it must be in range and be a dps.
         if (member->GetMapId() != bot->GetMapId() || !PlayerbotAI::IsDps(member) ||
-            bot->GetDistance(member) > sPlayerbotAIConfig.spellDistance)
+            bot->GetDistance(member) > sPlayerbotAIConfig.SpellDistance)
         {
             continue;
         }

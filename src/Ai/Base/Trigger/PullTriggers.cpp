@@ -67,5 +67,5 @@ bool ReturnToPullPositionTrigger::IsActive()
 
     PositionInfo pullPosition = AI_VALUE(PositionMap&, "position")["pull"];
     return pullPosition.isSet() && pullPosition.mapId == bot->GetMapId() &&
-           bot->GetDistance(pullPosition.x, pullPosition.y, pullPosition.z) > sPlayerbotAIConfig.followDistance;
+           bot->GetDistance(pullPosition.x, pullPosition.y, pullPosition.z) > sPlayerbotAIConfig.FollowDistance;
 }

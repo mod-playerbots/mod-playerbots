@@ -11,7 +11,7 @@
 
 bool DelayAction::Execute(Event /*event*/)
 {
-    const uint32 delay = PlayerbotAIConfig::instance().passiveDelay + PlayerbotAIConfig::instance().globalCoolDown;
+    const uint32 delay = PlayerbotAIConfig::instance().PassiveDelay + PlayerbotAIConfig::instance().GlobalCoolDown;
 
     botAI->SetNextCheckDelay(delay);
 

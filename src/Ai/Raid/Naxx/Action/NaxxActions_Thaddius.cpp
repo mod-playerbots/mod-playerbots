@@ -72,7 +72,7 @@ bool ThaddiusMoveToPlatformAction::Execute(Event /*event*/)
             if (!MoveTo(bot->GetMapId(), position[0].first, position[0].second, high_z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT))
             {
                 float distance = bot->GetExactDist2d(position[0].first, position[0].second);
-                if (distance < sPlayerbotAIConfig.contactDistance)
+                if (distance < sPlayerbotAIConfig.ContactDistance)
                     JumpTo(bot->GetMapId(), position[2].first, position[2].second, low_z, MovementPriority::MOVEMENT_COMBAT);
                     // bot->TeleportTo(bot->GetMapId(), position[2].first, position[2].second, low_z, bot->GetOrientation());
             }
@@ -82,7 +82,7 @@ bool ThaddiusMoveToPlatformAction::Execute(Event /*event*/)
             if (!MoveTo(bot->GetMapId(), position[1].first, position[1].second, high_z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT))
             {
                 float distance = bot->GetExactDist2d(position[1].first, position[1].second);
-                if (distance < sPlayerbotAIConfig.contactDistance)
+                if (distance < sPlayerbotAIConfig.ContactDistance)
                     JumpTo(bot->GetMapId(), position[3].first, position[3].second, low_z, MovementPriority::MOVEMENT_COMBAT);
                     // bot->TeleportTo(bot->GetMapId(), position[3].first, position[3].second, low_z, bot->GetOrientation());
             }

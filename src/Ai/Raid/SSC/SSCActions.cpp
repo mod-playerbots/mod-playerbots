@@ -2124,7 +2124,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
 
     context->GetValue<LootObject>("loot target")->Set(loot);
 
-    const float maxLootRange = sPlayerbotAIConfig.lootDistance;
+    const float maxLootRange = sPlayerbotAIConfig.LootDistance;
     constexpr float distFromObject = 2.0f;
 
     if (bot->GetDistance(elemental) > maxLootRange)
