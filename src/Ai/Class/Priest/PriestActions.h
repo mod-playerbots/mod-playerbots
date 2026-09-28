@@ -123,7 +123,12 @@ DEBUFF_ENEMY_ACTION(CastShadowWordPainOnAttackerAction, "shadow word: pain");
 SPELL_ACTION(CastMindBlastAction, "mind blast");
 SPELL_ACTION(CastPsychicScreamAction, "psychic scream");
 DEBUFF_ACTION(CastMindSootheAction, "mind soothe");
-BUFF_ACTION_U(CastFadeAction, "fade", bot->GetGroup());
+class CastFadeAction : public CastBuffSpellAction
+{
+public:
+    CastFadeAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "fade") {}
+    bool isUseful() override;
+};
 class CastShadowProtectionAction : public GroupBuffSpellAction
 {
 public:
