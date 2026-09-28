@@ -194,12 +194,9 @@ Player* GetSacrolashTank(Player* bot, uint8 index)
         found = 1;
     }
 
-    for (uint8 assistIndex = 0; ++assistIndex)
+    for (uint8 assistIndex = 0; Player* assistTank = GetGroupAssistTank(bot, assistIndex);
+         ++assistIndex)
     {
-        Player* assistTank = GetGroupAssistTank(bot, assistIndex);
-        if (!assistTank)
-            return nullptr;
-
         if (assistTank == alythessTank)
             continue;
 
