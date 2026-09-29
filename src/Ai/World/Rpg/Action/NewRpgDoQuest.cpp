@@ -1310,19 +1310,6 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
         }
     }
 
-    // Only for a POI destination, whose z is a guess: quest_poi carries x/y only, and
-    // GetQuestPOIPosAndObjectiveIdx falls back to the bot's own height when the POI's grid is
-    // not resident. Arrival is a 3D check and MoveFarTo's stuck recovery teleports to this
-    // exact point, so a stale height strands the bot. A spawn point already has the real z.
-    if (!data.spawnGuid)
-    {
-        float const groundZ = std::max(bot->GetMap()->GetHeight(data.pos.GetPositionX(), data.pos.GetPositionY(),
-                                                                MAX_HEIGHT),
-                                       bot->GetMap()->GetWaterLevel(data.pos.GetPositionX(), data.pos.GetPositionY()));
-        if (groundZ != INVALID_HEIGHT && groundZ != VMAP_INVALID_HEIGHT_VALUE && groundZ != data.pos.GetPositionZ())
-            data.pos = WorldPosition(bot->GetMapId(), data.pos.GetPositionX(), data.pos.GetPositionY(), groundZ);
-    }
-
     // Same gate as DoIncompleteQuest: don't start the walk to the turn-in while lootable
     // corpses are pending nearby.
     if (HoldForLoot(data))

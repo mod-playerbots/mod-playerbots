@@ -872,6 +872,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
                 continue;
 
             float dz = std::max(bot->GetMap()->GetHeight(dx, dy, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(dx, dy));
+            // Indoor enders stand over terrain holes; skipping them would keep the quest out of DO_QUEST.
             if (dz == INVALID_HEIGHT || dz == VMAP_INVALID_HEIGHT_VALUE)
                 dz = bot->GetPositionZ();
 
