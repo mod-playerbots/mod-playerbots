@@ -702,8 +702,6 @@ bool NewRpgBaseAction::SearchQuestGiverAndAcceptOrReward()
             ForceToWait(5000);
             return true;
         }
-        LOG_DEBUG("playerbots", "[New RPG] {} questgiver {} at {} yd not interactable yet, closing in",
-                  bot->GetName(), npcOrGo.ToString(), uint32(bot->GetDistance(object)));
         return MoveWorldObjectTo(npcOrGo);
     }
     return false;
