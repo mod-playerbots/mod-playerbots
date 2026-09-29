@@ -62,7 +62,7 @@ void LoadListString(std::string const value, T& list)
 }
 
 // Parses a comma-separated, whitespace-tolerant bot name list (as used by both
-// AiPlayerbot.LevelBrackets.ExcludeNames and AiPlayerbot.ResetBotLevel.ExcludeNames) into out.
+// Playerbots.LevelBrackets.ExcludeNames and Playerbots.ResetBotLevel.ExcludeNames) into out.
 static void ParseLevelMgrExcludeNames(std::string const& csv, std::vector<std::string>& out)
 {
     out.clear();
@@ -80,59 +80,59 @@ bool PlayerbotAIConfig::Initialize()
 {
     LOG_INFO("server.loading", "Initializing mod-playerbots, based on AI Playerbots by ike3 and the original Playerbots by blueboy");
 
-    Enabled = sConfigMgr->GetOption<bool>("AiPlayerbot.Enabled", true);
+    Enabled = sConfigMgr->GetOption<bool>("Playerbots.Enabled", true);
     if (!Enabled)
     {
         LOG_INFO("server.loading", "Playerbots Module is disabled in playerbots.conf");
         return false;
     }
 
-    GlobalCoolDown = sConfigMgr->GetOption<int32>("AiPlayerbot.GlobalCooldown", 500);
-    MaxWaitForMove = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxWaitForMove", 5000);
-    DisableMoveSplinePath = sConfigMgr->GetOption<int32>("AiPlayerbot.DisableMoveSplinePath", 0);
-    MaxMovementSearchTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxMovementSearchTime", 3);
-    ExpireActionTime = sConfigMgr->GetOption<int32>("AiPlayerbot.ExpireActionTime", 5000);
-    DispelAuraDuration = sConfigMgr->GetOption<int32>("AiPlayerbot.DispelAuraDuration", 700);
-    ReactDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.ReactDelay", 100);
-    DynamicReactDelay = sConfigMgr->GetOption<bool>("AiPlayerbot.DynamicReactDelay", true);
-    PassiveDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.PassiveDelay", 10000);
-    RepeatDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.RepeatDelay", 2000);
-    ErrorDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.ErrorDelay", 100);
-    RpgDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgDelay", 10000);
-    SitDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.SitDelay", 20000);
-    ReturnDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.ReturnDelay", 2000);
-    LootDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.LootDelay", 1000);
-    DisabledWithoutRealPlayerLoginDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.DisabledWithoutRealPlayerLoginDelay", 30);
-    DisabledWithoutRealPlayerLogoutDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.DisabledWithoutRealPlayerLogoutDelay", 300);
+    GlobalCoolDown = sConfigMgr->GetOption<int32>("Playerbots.GlobalCooldown", 500);
+    MaxWaitForMove = sConfigMgr->GetOption<int32>("Playerbots.MaxWaitForMove", 5000);
+    DisableMoveSplinePath = sConfigMgr->GetOption<int32>("Playerbots.DisableMoveSplinePath", 0);
+    MaxMovementSearchTime = sConfigMgr->GetOption<int32>("Playerbots.MaxMovementSearchTime", 3);
+    ExpireActionTime = sConfigMgr->GetOption<int32>("Playerbots.ExpireActionTime", 5000);
+    DispelAuraDuration = sConfigMgr->GetOption<int32>("Playerbots.DispelAuraDuration", 700);
+    ReactDelay = sConfigMgr->GetOption<int32>("Playerbots.ReactDelay", 100);
+    DynamicReactDelay = sConfigMgr->GetOption<bool>("Playerbots.DynamicReactDelay", true);
+    PassiveDelay = sConfigMgr->GetOption<int32>("Playerbots.PassiveDelay", 10000);
+    RepeatDelay = sConfigMgr->GetOption<int32>("Playerbots.RepeatDelay", 2000);
+    ErrorDelay = sConfigMgr->GetOption<int32>("Playerbots.ErrorDelay", 100);
+    RpgDelay = sConfigMgr->GetOption<int32>("Playerbots.RpgDelay", 10000);
+    SitDelay = sConfigMgr->GetOption<int32>("Playerbots.SitDelay", 20000);
+    ReturnDelay = sConfigMgr->GetOption<int32>("Playerbots.ReturnDelay", 2000);
+    LootDelay = sConfigMgr->GetOption<int32>("Playerbots.LootDelay", 1000);
+    DisabledWithoutRealPlayerLoginDelay = sConfigMgr->GetOption<int32>("Playerbots.DisabledWithoutRealPlayerLoginDelay", 30);
+    DisabledWithoutRealPlayerLogoutDelay = sConfigMgr->GetOption<int32>("Playerbots.DisabledWithoutRealPlayerLogoutDelay", 300);
 
-    FarDistance = sConfigMgr->GetOption<float>("AiPlayerbot.FarDistance", 20.0f);
-    SightDistance = sConfigMgr->GetOption<float>("AiPlayerbot.SightDistance", 100.0f);
-    SpellDistance = sConfigMgr->GetOption<float>("AiPlayerbot.SpellDistance", 28.5f);
-    ShootDistance = sConfigMgr->GetOption<float>("AiPlayerbot.ShootDistance", 5.0f);
-    HealDistance = sConfigMgr->GetOption<float>("AiPlayerbot.HealDistance", 38.5f);
-    LootDistance = sConfigMgr->GetOption<float>("AiPlayerbot.LootDistance", 15.0f);
-    FleeDistance = sConfigMgr->GetOption<float>("AiPlayerbot.FleeDistance", 5.0f);
-    AggroDistance = sConfigMgr->GetOption<float>("AiPlayerbot.AggroDistance", 22.0f);
-    TooCloseDistance = sConfigMgr->GetOption<float>("AiPlayerbot.TooCloseDistance", 5.0f);
-    MeleeDistance = sConfigMgr->GetOption<float>("AiPlayerbot.MeleeDistance", 0.75f);
-    FollowDistance = sConfigMgr->GetOption<float>("AiPlayerbot.FollowDistance", 1.5f);
-    WhisperDistance = sConfigMgr->GetOption<float>("AiPlayerbot.WhisperDistance", 6000.0f);
-    ContactDistance = sConfigMgr->GetOption<float>("AiPlayerbot.ContactDistance", 0.45f);
-    AoeRadius = sConfigMgr->GetOption<float>("AiPlayerbot.AoeRadius", 10.0f);
-    RpgDistance = sConfigMgr->GetOption<float>("AiPlayerbot.RpgDistance", 200.0f);
-    GrindDistance = sConfigMgr->GetOption<float>("AiPlayerbot.GrindDistance", 75.0f);
-    ReactDistance = sConfigMgr->GetOption<float>("AiPlayerbot.ReactDistance", 150.0f);
+    FarDistance = sConfigMgr->GetOption<float>("Playerbots.FarDistance", 20.0f);
+    SightDistance = sConfigMgr->GetOption<float>("Playerbots.SightDistance", 100.0f);
+    SpellDistance = sConfigMgr->GetOption<float>("Playerbots.SpellDistance", 28.5f);
+    ShootDistance = sConfigMgr->GetOption<float>("Playerbots.ShootDistance", 5.0f);
+    HealDistance = sConfigMgr->GetOption<float>("Playerbots.HealDistance", 38.5f);
+    LootDistance = sConfigMgr->GetOption<float>("Playerbots.LootDistance", 15.0f);
+    FleeDistance = sConfigMgr->GetOption<float>("Playerbots.FleeDistance", 5.0f);
+    AggroDistance = sConfigMgr->GetOption<float>("Playerbots.AggroDistance", 22.0f);
+    TooCloseDistance = sConfigMgr->GetOption<float>("Playerbots.TooCloseDistance", 5.0f);
+    MeleeDistance = sConfigMgr->GetOption<float>("Playerbots.MeleeDistance", 0.75f);
+    FollowDistance = sConfigMgr->GetOption<float>("Playerbots.FollowDistance", 1.5f);
+    WhisperDistance = sConfigMgr->GetOption<float>("Playerbots.WhisperDistance", 6000.0f);
+    ContactDistance = sConfigMgr->GetOption<float>("Playerbots.ContactDistance", 0.45f);
+    AoeRadius = sConfigMgr->GetOption<float>("Playerbots.AoeRadius", 10.0f);
+    RpgDistance = sConfigMgr->GetOption<float>("Playerbots.RpgDistance", 200.0f);
+    GrindDistance = sConfigMgr->GetOption<float>("Playerbots.GrindDistance", 75.0f);
+    ReactDistance = sConfigMgr->GetOption<float>("Playerbots.ReactDistance", 150.0f);
 
-    CriticalHealth = sConfigMgr->GetOption<int32>("AiPlayerbot.CriticalHealth", 25);
-    LowHealth = sConfigMgr->GetOption<int32>("AiPlayerbot.LowHealth", 45);
-    MediumHealth = sConfigMgr->GetOption<int32>("AiPlayerbot.MediumHealth", 65);
-    AlmostFullHealth = sConfigMgr->GetOption<int32>("AiPlayerbot.AlmostFullHealth", 85);
-    LowMana = sConfigMgr->GetOption<int32>("AiPlayerbot.LowMana", 15);
-    MediumMana = sConfigMgr->GetOption<int32>("AiPlayerbot.MediumMana", 40);
-    HighMana = sConfigMgr->GetOption<int32>("AiPlayerbot.HighMana", 65);
-    AutoSaveMana = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoSaveMana", true);
-    SaveManaThreshold = sConfigMgr->GetOption<int32>("AiPlayerbot.SaveManaThreshold", 60);
-    switch (sConfigMgr->GetOption<uint32>("AiPlayerbot.AutoGreaterBlessings", 1))
+    CriticalHealth = sConfigMgr->GetOption<int32>("Playerbots.CriticalHealth", 25);
+    LowHealth = sConfigMgr->GetOption<int32>("Playerbots.LowHealth", 45);
+    MediumHealth = sConfigMgr->GetOption<int32>("Playerbots.MediumHealth", 65);
+    AlmostFullHealth = sConfigMgr->GetOption<int32>("Playerbots.AlmostFullHealth", 85);
+    LowMana = sConfigMgr->GetOption<int32>("Playerbots.LowMana", 15);
+    MediumMana = sConfigMgr->GetOption<int32>("Playerbots.MediumMana", 40);
+    HighMana = sConfigMgr->GetOption<int32>("Playerbots.HighMana", 65);
+    AutoSaveMana = sConfigMgr->GetOption<bool>("Playerbots.AutoSaveMana", true);
+    SaveManaThreshold = sConfigMgr->GetOption<int32>("Playerbots.SaveManaThreshold", 60);
+    switch (sConfigMgr->GetOption<uint32>("Playerbots.AutoGreaterBlessings", 1))
     {
         case 0:
             AutoGreaterBlessings = AutoPartyBuffMode::DISABLED;
@@ -145,7 +145,7 @@ bool PlayerbotAIConfig::Initialize()
             AutoGreaterBlessings = AutoPartyBuffMode::RAID_ONLY;
             break;
     }
-    switch (sConfigMgr->GetOption<uint32>("AiPlayerbot.AutoPartyBuffs", 2))
+    switch (sConfigMgr->GetOption<uint32>("Playerbots.AutoPartyBuffs", 2))
     {
         case 0:
             AutoPartyBuffs = AutoPartyBuffMode::DISABLED;
@@ -158,123 +158,123 @@ bool PlayerbotAIConfig::Initialize()
             AutoPartyBuffs = AutoPartyBuffMode::GROUP_OR_RAID;
             break;
     }
-    TellWhenMissingBuffReagents = sConfigMgr->GetOption<bool>("AiPlayerbot.TellWhenMissingBuffReagents", true);
+    TellWhenMissingBuffReagents = sConfigMgr->GetOption<bool>("Playerbots.TellWhenMissingBuffReagents", true);
     MissingBuffReagentMessageCooldown = sConfigMgr->GetOption<uint32>(
-        "AiPlayerbot.MissingBuffReagentMessageCooldown", 300);
-    ForceRebuffOnReadyCheck = sConfigMgr->GetOption<bool>("AiPlayerbot.ForceRebuffOnReadyCheck", false);
-    ForceRebuffMarginSecs = std::min(sConfigMgr->GetOption<uint32>("AiPlayerbot.ForceRebuffMarginSecs", 60), 3600u);
-    AutoAvoidAoe = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoAvoidAoe", true);
-    MaxAoeAvoidRadius = sConfigMgr->GetOption<float>("AiPlayerbot.MaxAoeAvoidRadius", 15.0f);
-    LoadSet<std::set<uint32>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.AoeAvoidSpellWhitelist", "50759,57491,13810,29946"),
+        "Playerbots.MissingBuffReagentMessageCooldown", 300);
+    ForceRebuffOnReadyCheck = sConfigMgr->GetOption<bool>("Playerbots.ForceRebuffOnReadyCheck", false);
+    ForceRebuffMarginSecs = std::min(sConfigMgr->GetOption<uint32>("Playerbots.ForceRebuffMarginSecs", 60), 3600u);
+    AutoAvoidAoe = sConfigMgr->GetOption<bool>("Playerbots.AutoAvoidAoe", true);
+    MaxAoeAvoidRadius = sConfigMgr->GetOption<float>("Playerbots.MaxAoeAvoidRadius", 15.0f);
+    LoadSet<std::set<uint32>>(sConfigMgr->GetOption<std::string>("Playerbots.AoeAvoidSpellWhitelist", "50759,57491,13810,29946"),
                               AoeAvoidSpellWhitelist);
-    TellWhenAvoidAoe = sConfigMgr->GetOption<bool>("AiPlayerbot.TellWhenAvoidAoe", false);
+    TellWhenAvoidAoe = sConfigMgr->GetOption<bool>("Playerbots.TellWhenAvoidAoe", false);
 
-    RandomGearLoweringChance = sConfigMgr->GetOption<float>("AiPlayerbot.RandomGearLoweringChance", 0.0f);
-    RandomGearQualityLimit = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomGearQualityLimit", 3);
-    RandomGearScoreLimit = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomGearScoreLimit", 0);
-    PreferClassArmorType  = sConfigMgr->GetOption<bool>("AiPlayerbot.PreferClassArmorType", false);
-    PreferredSpecWeapons  = sConfigMgr->GetOption<bool>("AiPlayerbot.PreferredSpecWeapons", false);
+    RandomGearLoweringChance = sConfigMgr->GetOption<float>("Playerbots.RandomGearLoweringChance", 0.0f);
+    RandomGearQualityLimit = sConfigMgr->GetOption<int32>("Playerbots.RandomGearQualityLimit", 3);
+    RandomGearScoreLimit = sConfigMgr->GetOption<int32>("Playerbots.RandomGearScoreLimit", 0);
+    PreferClassArmorType  = sConfigMgr->GetOption<bool>("Playerbots.PreferClassArmorType", false);
+    PreferredSpecWeapons  = sConfigMgr->GetOption<bool>("Playerbots.PreferredSpecWeapons", false);
 
-    RandomBotMinLevelChance = sConfigMgr->GetOption<float>("AiPlayerbot.RandomBotMinLevelChance", 0.1f);
-    RandomBotMaxLevelChance = sConfigMgr->GetOption<float>("AiPlayerbot.RandomBotMaxLevelChance", 0.1f);
-    RandomBotRpgChance = sConfigMgr->GetOption<float>("AiPlayerbot.RandomBotRpgChance", 0.20f);
+    RandomBotMinLevelChance = sConfigMgr->GetOption<float>("Playerbots.RandomBotMinLevelChance", 0.1f);
+    RandomBotMaxLevelChance = sConfigMgr->GetOption<float>("Playerbots.RandomBotMaxLevelChance", 0.1f);
+    RandomBotRpgChance = sConfigMgr->GetOption<float>("Playerbots.RandomBotRpgChance", 0.20f);
 
-    IterationsPerTick = sConfigMgr->GetOption<int32>("AiPlayerbot.IterationsPerTick", 10);
+    IterationsPerTick = sConfigMgr->GetOption<int32>("Playerbots.IterationsPerTick", 10);
 
-    AllowAccountBots = sConfigMgr->GetOption<bool>("AiPlayerbot.AllowAccountBots", true);
-    AllowGuildBots = sConfigMgr->GetOption<bool>("AiPlayerbot.AllowGuildBots", true);
-    AllowTrustedAccountBots = sConfigMgr->GetOption<bool>("AiPlayerbot.AllowTrustedAccountBots", true);
-    DisabledWithoutRealPlayer = sConfigMgr->GetOption<bool>("AiPlayerbot.DisabledWithoutRealPlayer", false);
-    RandomBotGuildNearby = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotGuildNearby", false);
-    RandomBotInvitePlayer = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotInvitePlayer", false);
-    InviteChat = sConfigMgr->GetOption<bool>("AiPlayerbot.InviteChat", false);
+    AllowAccountBots = sConfigMgr->GetOption<bool>("Playerbots.AllowAccountBots", true);
+    AllowGuildBots = sConfigMgr->GetOption<bool>("Playerbots.AllowGuildBots", true);
+    AllowTrustedAccountBots = sConfigMgr->GetOption<bool>("Playerbots.AllowTrustedAccountBots", true);
+    DisabledWithoutRealPlayer = sConfigMgr->GetOption<bool>("Playerbots.DisabledWithoutRealPlayer", false);
+    RandomBotGuildNearby = sConfigMgr->GetOption<bool>("Playerbots.RandomBotGuildNearby", false);
+    RandomBotInvitePlayer = sConfigMgr->GetOption<bool>("Playerbots.RandomBotInvitePlayer", false);
+    InviteChat = sConfigMgr->GetOption<bool>("Playerbots.InviteChat", false);
 
-    RandomBotMapsAsString = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotMaps", "0,1,530,571");
+    RandomBotMapsAsString = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotMaps", "0,1,530,571");
     LoadList<std::vector<uint32>>(RandomBotMapsAsString, RandomBotMaps);
-    ProbTeleToBankers = sConfigMgr->GetOption<float>("AiPlayerbot.ProbTeleToBankers", 0.25f);
-    EnableWeightTeleToCityBankers = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableWeightTeleToCityBankers", false);
-    WeightTeleToStormwind = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToStormwindWeight", 2);
-    WeightTeleToIronforge = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToIronforgeWeight", 1);
-    WeightTeleToDarnassus = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToDarnassusWeight", 1);
-    WeightTeleToExodar = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToExodarWeight", 1);
-    WeightTeleToOrgrimmar = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToOrgrimmarWeight", 2);
-    WeightTeleToUndercity = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToUndercityWeight", 1);
-    WeightTeleToThunderBluff = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToThunderBluffWeight", 1);
-    WeightTeleToSilvermoonCity = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToSilvermoonCityWeight", 1);
-    WeightTeleToShattrathCity = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToShattrathCityWeight", 1);
-    WeightTeleToDalaran = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToDalaranWeight", 1);
+    ProbTeleToBankers = sConfigMgr->GetOption<float>("Playerbots.ProbTeleToBankers", 0.25f);
+    EnableWeightTeleToCityBankers = sConfigMgr->GetOption<bool>("Playerbots.EnableWeightTeleToCityBankers", false);
+    WeightTeleToStormwind = sConfigMgr->GetOption<int>("Playerbots.TeleToStormwindWeight", 2);
+    WeightTeleToIronforge = sConfigMgr->GetOption<int>("Playerbots.TeleToIronforgeWeight", 1);
+    WeightTeleToDarnassus = sConfigMgr->GetOption<int>("Playerbots.TeleToDarnassusWeight", 1);
+    WeightTeleToExodar = sConfigMgr->GetOption<int>("Playerbots.TeleToExodarWeight", 1);
+    WeightTeleToOrgrimmar = sConfigMgr->GetOption<int>("Playerbots.TeleToOrgrimmarWeight", 2);
+    WeightTeleToUndercity = sConfigMgr->GetOption<int>("Playerbots.TeleToUndercityWeight", 1);
+    WeightTeleToThunderBluff = sConfigMgr->GetOption<int>("Playerbots.TeleToThunderBluffWeight", 1);
+    WeightTeleToSilvermoonCity = sConfigMgr->GetOption<int>("Playerbots.TeleToSilvermoonCityWeight", 1);
+    WeightTeleToShattrathCity = sConfigMgr->GetOption<int>("Playerbots.TeleToShattrathCityWeight", 1);
+    WeightTeleToDalaran = sConfigMgr->GetOption<int>("Playerbots.TeleToDalaranWeight", 1);
     LoadList<std::vector<uint32>>(
-        sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotQuestItems",
+        sConfigMgr->GetOption<std::string>("Playerbots.RandomBotQuestItems",
                                            "5175,5176,5177,5178,6948,11000,12382,13704,16309"),
         RandomBotQuestItems);
-    LoadList<std::vector<uint32>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotSpellIds", "54197"),
+    LoadList<std::vector<uint32>>(sConfigMgr->GetOption<std::string>("Playerbots.RandomBotSpellIds", "54197"),
                                   RandomBotSpellIds);
     LoadList<std::vector<uint32>>(
-        sConfigMgr->GetOption<std::string>("AiPlayerbot.PvpProhibitedZoneIds",
+        sConfigMgr->GetOption<std::string>("Playerbots.PvpProhibitedZoneIds",
                                            "2255,656,2361,2362,2363,976,35,2268,3425,392,541,1446,3828,3712,3738,3565,"
                                            "3539,3623,4152,3988,4658,4284,4418,4436,4275,4323,4395,3703,4298,3951"),
         PvpProhibitedZoneIds);
     LoadList<std::vector<uint32>>(
-        sConfigMgr->GetOption<std::string>("AiPlayerbot.PvpProhibitedAreaIds",
+        sConfigMgr->GetOption<std::string>("Playerbots.PvpProhibitedAreaIds",
                                            "976,35,392,2268,4161,4010,4317,4312,3649,3887,3958,3724,4080,3938,3754,3786,"
                                            "3973,4085,4086,4087,4088"),
         PvpProhibitedAreaIds);
-    FastReactInBG = sConfigMgr->GetOption<bool>("AiPlayerbot.FastReactInBG", true);
+    FastReactInBG = sConfigMgr->GetOption<bool>("Playerbots.FastReactInBG", true);
     LoadList<std::vector<uint32>>(
-        sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotQuestIds", "3802,5505,6502,7761,7848,10277,10285,11492,"
+        sConfigMgr->GetOption<std::string>("Playerbots.RandomBotQuestIds", "3802,5505,6502,7761,7848,10277,10285,11492,"
                                            "13188,13189,24499,24511,24710,24712"),
         RandomBotQuestIds);
 
     LoadSet<std::set<uint32>>(
-        sConfigMgr->GetOption<std::string>("AiPlayerbot.DisallowedGameObjects",
+        sConfigMgr->GetOption<std::string>("Playerbots.DisallowedGameObjects",
                                            "176213,17155,2656,74448,19020,3719,3658,3705,3706,105579,75293,2857,"
                                            "179490,141596,160836,160845,179516,176224,181085,176112,128308,128403,"
                                            "165739,165738,175245,175970,176325,176327,123329,2560"),
         DisallowedGameObjects);
     LoadSet<std::set<uint32>>(
-        sConfigMgr->GetOption<std::string>("AiPlayerbot.AttunementQuests", "10279,10277,10282,10283,10284,10285,10296,"
+        sConfigMgr->GetOption<std::string>("Playerbots.AttunementQuests", "10279,10277,10282,10283,10284,10285,10296,"
                                            "10297,10298,11481,11482,11488,11490,11492,10901,10888,10445,10985"),
         AttunementQuests);
 
     LoadSet<std::set<uint32>>(
-        sConfigMgr->GetOption<std::string>("AiPlayerbot.UnobtainableItems", "12468,44869,44870,46978"),
+        sConfigMgr->GetOption<std::string>("Playerbots.UnobtainableItems", "12468,44869,44870,46978"),
         UnobtainableItems);
 
-    BotAutologin = sConfigMgr->GetOption<bool>("AiPlayerbot.BotAutologin", false);
-    RandomBotAutologin = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotAutologin", true);
-    MinRandomBots = sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBots", 500);
-    MaxRandomBots = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBots", 500);
-    RandomBotUpdateInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotUpdateInterval", 20);
+    BotAutologin = sConfigMgr->GetOption<bool>("Playerbots.BotAutologin", false);
+    RandomBotAutologin = sConfigMgr->GetOption<bool>("Playerbots.RandomBotAutologin", true);
+    MinRandomBots = sConfigMgr->GetOption<int32>("Playerbots.MinRandomBots", 500);
+    MaxRandomBots = sConfigMgr->GetOption<int32>("Playerbots.MaxRandomBots", 500);
+    RandomBotUpdateInterval = sConfigMgr->GetOption<int32>("Playerbots.RandomBotUpdateInterval", 20);
     RandomBotCountChangeMinInterval =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotCountChangeMinInterval", 30 * MINUTE);
+        sConfigMgr->GetOption<int32>("Playerbots.RandomBotCountChangeMinInterval", 30 * MINUTE);
     RandomBotCountChangeMaxInterval =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotCountChangeMaxInterval", 2 * HOUR);
-    MinRandomBotInWorldTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBotInWorldTime", 2 * HOUR);
-    MaxRandomBotInWorldTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBotInWorldTime", 14 * 24 * HOUR);
-    MinRandomBotRandomizeTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBotRandomizeTime", 2 * HOUR);
-    MaxRandomBotRandomizeTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBotRandomizeTime", 14 * 24 * HOUR);
+        sConfigMgr->GetOption<int32>("Playerbots.RandomBotCountChangeMaxInterval", 2 * HOUR);
+    MinRandomBotInWorldTime = sConfigMgr->GetOption<int32>("Playerbots.MinRandomBotInWorldTime", 2 * HOUR);
+    MaxRandomBotInWorldTime = sConfigMgr->GetOption<int32>("Playerbots.MaxRandomBotInWorldTime", 14 * 24 * HOUR);
+    MinRandomBotRandomizeTime = sConfigMgr->GetOption<int32>("Playerbots.MinRandomBotRandomizeTime", 2 * HOUR);
+    MaxRandomBotRandomizeTime = sConfigMgr->GetOption<int32>("Playerbots.MaxRandomBotRandomizeTime", 14 * 24 * HOUR);
     MinRandomBotChangeStrategyTime =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBotChangeStrategyTime", 30 * MINUTE);
+        sConfigMgr->GetOption<int32>("Playerbots.MinRandomBotChangeStrategyTime", 30 * MINUTE);
     MaxRandomBotChangeStrategyTime =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBotChangeStrategyTime", 2 * HOUR);
-    MinRandomBotReviveTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBotReviveTime", MINUTE);
-    MaxRandomBotReviveTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBotReviveTime", 5 * MINUTE);
-    MinRandomBotTeleportInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBotTeleportInterval", 1 * HOUR);
-    MaxRandomBotTeleportInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBotTeleportInterval", 5 * HOUR);
+        sConfigMgr->GetOption<int32>("Playerbots.MaxRandomBotChangeStrategyTime", 2 * HOUR);
+    MinRandomBotReviveTime = sConfigMgr->GetOption<int32>("Playerbots.MinRandomBotReviveTime", MINUTE);
+    MaxRandomBotReviveTime = sConfigMgr->GetOption<int32>("Playerbots.MaxRandomBotReviveTime", 5 * MINUTE);
+    MinRandomBotTeleportInterval = sConfigMgr->GetOption<int32>("Playerbots.MinRandomBotTeleportInterval", 1 * HOUR);
+    MaxRandomBotTeleportInterval = sConfigMgr->GetOption<int32>("Playerbots.MaxRandomBotTeleportInterval", 5 * HOUR);
     PermanentlyInWorldTime =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.PermanentlyInWorldTime", 1 * YEAR);
-    RandomBotTeleportDistance = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotTeleportDistance", 100);
-    RandomBotsPerInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotsPerInterval", 60);
-    RandomBotPrintStatsInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotPrintStatsInterval", 300);
+        sConfigMgr->GetOption<int32>("Playerbots.PermanentlyInWorldTime", 1 * YEAR);
+    RandomBotTeleportDistance = sConfigMgr->GetOption<int32>("Playerbots.RandomBotTeleportDistance", 100);
+    RandomBotsPerInterval = sConfigMgr->GetOption<int32>("Playerbots.RandomBotsPerInterval", 60);
+    RandomBotPrintStatsInterval = sConfigMgr->GetOption<int32>("Playerbots.RandomBotPrintStatsInterval", 300);
     MinRandomBotsPriceChangeInterval =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBotsPriceChangeInterval", 2 * HOUR);
+        sConfigMgr->GetOption<int32>("Playerbots.MinRandomBotsPriceChangeInterval", 2 * HOUR);
     MaxRandomBotsPriceChangeInterval =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBotsPriceChangeInterval", 48 * HOUR);
-    RandomBotJoinLfg = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotJoinLfg", true);
+        sConfigMgr->GetOption<int32>("Playerbots.MaxRandomBotsPriceChangeInterval", 48 * HOUR);
+    RandomBotJoinLfg = sConfigMgr->GetOption<bool>("Playerbots.RandomBotJoinLfg", true);
 
-    RestrictHealerDPS = sConfigMgr->GetOption<bool>("AiPlayerbot.HealerDPSMapRestriction", false);
+    RestrictHealerDPS = sConfigMgr->GetOption<bool>("Playerbots.HealerDPSMapRestriction", false);
     LoadList<std::vector<uint32>>(
-        sConfigMgr->GetOption<std::string>("AiPlayerbot.RestrictedHealerDPSMaps",
+        sConfigMgr->GetOption<std::string>("Playerbots.RestrictedHealerDPSMaps",
                                              "33,34,36,43,47,48,70,90,109,129,209,229,230,329,349,389,429,1001,1004,"
                                              "1007,269,540,542,543,545,546,547,552,553,554,555,556,557,558,560,585,574,"
                                              "575,576,578,595,599,600,601,602,604,608,619,632,650,658,668,409,469,509,"
@@ -283,22 +283,22 @@ bool PlayerbotAIConfig::Initialize()
 
     //////////////////////////// ICC
 
-    EnableICCBuffs = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableICCBuffs", true);
+    EnableICCBuffs = sConfigMgr->GetOption<bool>("Playerbots.EnableICCBuffs", true);
 
     //////////////////////////// Professions
     ClassMatchingProfessionChance =
-        std::min<uint32>(100, sConfigMgr->GetOption<uint32>("AiPlayerbot.ClassMatchingProfessionChance", 30));
-    FishingDistanceFromMaster = sConfigMgr->GetOption<float>("AiPlayerbot.FishingDistanceFromMaster", 10.0f);
-    EndFishingWithMaster = sConfigMgr->GetOption<float>("AiPlayerbot.EndFishingWithMaster", 30.0f);
-    FishingDistance = sConfigMgr->GetOption<float>("AiPlayerbot.FishingDistance", 40.0f);
-    EnableFishingWithMaster = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableFishingWithMaster", true);
+        std::min<uint32>(100, sConfigMgr->GetOption<uint32>("Playerbots.ClassMatchingProfessionChance", 30));
+    FishingDistanceFromMaster = sConfigMgr->GetOption<float>("Playerbots.FishingDistanceFromMaster", 10.0f);
+    EndFishingWithMaster = sConfigMgr->GetOption<float>("Playerbots.EndFishingWithMaster", 30.0f);
+    FishingDistance = sConfigMgr->GetOption<float>("Playerbots.FishingDistance", 40.0f);
+    EnableFishingWithMaster = sConfigMgr->GetOption<bool>("Playerbots.EnableFishingWithMaster", true);
     //////////////////////////// CHAT
-    EnableBroadcasts = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableBroadcasts", true);
-    RandomBotTalk = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotTalk", false);
-    RandomBotEmote = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotEmote", false);
-    RandomBotSuggestDungeons = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotSuggestDungeons", true);
-    RandomBotSayWithoutMaster = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotSayWithoutMaster", false);
-    AnnounceConsumableUse = sConfigMgr->GetOption<bool>("AiPlayerbot.AnnounceConsumableUse", true);
+    EnableBroadcasts = sConfigMgr->GetOption<bool>("Playerbots.EnableBroadcasts", true);
+    RandomBotTalk = sConfigMgr->GetOption<bool>("Playerbots.RandomBotTalk", false);
+    RandomBotEmote = sConfigMgr->GetOption<bool>("Playerbots.RandomBotEmote", false);
+    RandomBotSuggestDungeons = sConfigMgr->GetOption<bool>("Playerbots.RandomBotSuggestDungeons", true);
+    RandomBotSayWithoutMaster = sConfigMgr->GetOption<bool>("Playerbots.RandomBotSayWithoutMaster", false);
+    AnnounceConsumableUse = sConfigMgr->GetOption<bool>("Playerbots.AnnounceConsumableUse", true);
 
     // broadcastChanceMaxValue is used in urand(1, broadcastChanceMaxValue) for broadcasts,
     // lowering it will increase the chance, setting it to 0 will disable broadcasts
@@ -307,118 +307,118 @@ bool PlayerbotAIConfig::Initialize()
 
     // all broadcast chances should be in range 1-broadcastChanceMaxValue, value of 0 will disable this particular
     // broadcast setting value to max does not guarantee the broadcast, as there are some internal randoms as well
-    BroadcastToGuildGlobalChance = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastToGuildGlobalChance", 30000);
-    BroadcastToWorldGlobalChance = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastToWorldGlobalChance", 30000);
-    BroadcastToGeneralGlobalChance = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastToGeneralGlobalChance", 30000);
-    BroadcastToTradeGlobalChance = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastToTradeGlobalChance", 30000);
-    BroadcastToLFGGlobalChance = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastToLFGGlobalChance", 30000);
+    BroadcastToGuildGlobalChance = sConfigMgr->GetOption<int32>("Playerbots.BroadcastToGuildGlobalChance", 30000);
+    BroadcastToWorldGlobalChance = sConfigMgr->GetOption<int32>("Playerbots.BroadcastToWorldGlobalChance", 30000);
+    BroadcastToGeneralGlobalChance = sConfigMgr->GetOption<int32>("Playerbots.BroadcastToGeneralGlobalChance", 30000);
+    BroadcastToTradeGlobalChance = sConfigMgr->GetOption<int32>("Playerbots.BroadcastToTradeGlobalChance", 30000);
+    BroadcastToLFGGlobalChance = sConfigMgr->GetOption<int32>("Playerbots.BroadcastToLFGGlobalChance", 30000);
     BroadcastToLocalDefenseGlobalChance =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastToLocalDefenseGlobalChance", 30000);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastToLocalDefenseGlobalChance", 30000);
     BroadcastToWorldDefenseGlobalChance =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastToWorldDefenseGlobalChance", 30000);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastToWorldDefenseGlobalChance", 30000);
     BroadcastToGuildRecruitmentGlobalChance =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastToGuildRecruitmentGlobalChance", 30000);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastToGuildRecruitmentGlobalChance", 30000);
 
-    BroadcastChanceLootingItemPoor = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceLootingItemPoor", 30);
+    BroadcastChanceLootingItemPoor = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceLootingItemPoor", 30);
     BroadcastChanceLootingItemNormal =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceLootingItemNormal", 300);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceLootingItemNormal", 300);
     BroadcastChanceLootingItemUncommon =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceLootingItemUncommon", 10000);
-    BroadcastChanceLootingItemRare = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceLootingItemRare", 20000);
-    BroadcastChanceLootingItemEpic = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceLootingItemEpic", 30000);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceLootingItemUncommon", 10000);
+    BroadcastChanceLootingItemRare = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceLootingItemRare", 20000);
+    BroadcastChanceLootingItemEpic = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceLootingItemEpic", 30000);
     BroadcastChanceLootingItemLegendary =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceLootingItemLegendary", 30000);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceLootingItemLegendary", 30000);
     BroadcastChanceLootingItemArtifact =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceLootingItemArtifact", 30000);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceLootingItemArtifact", 30000);
 
-    BroadcastChanceQuestAccepted = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceQuestAccepted", 6000);
+    BroadcastChanceQuestAccepted = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceQuestAccepted", 6000);
     BroadcastChanceQuestUpdateObjectiveCompleted =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceQuestUpdateObjectiveCompleted", 300);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceQuestUpdateObjectiveCompleted", 300);
     BroadcastChanceQuestUpdateObjectiveProgress =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceQuestUpdateObjectiveProgress", 300);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceQuestUpdateObjectiveProgress", 300);
     BroadcastChanceQuestUpdateFailedTimer =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceQuestUpdateFailedTimer", 300);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceQuestUpdateFailedTimer", 300);
     BroadcastChanceQuestUpdateComplete =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceQuestUpdateComplete", 1000);
-    BroadcastChanceQuestTurnedIn = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceQuestTurnedIn", 10000);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceQuestUpdateComplete", 1000);
+    BroadcastChanceQuestTurnedIn = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceQuestTurnedIn", 10000);
 
-    BroadcastChanceKillNormal = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceKillNormal", 30);
-    BroadcastChanceKillElite = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceKillElite", 300);
-    BroadcastChanceKillRareelite = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceKillRareelite", 3000);
-    BroadcastChanceKillWorldboss = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceKillWorldboss", 20000);
-    BroadcastChanceKillRare = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceKillRare", 10000);
-    BroadcastChanceKillUnknown = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceKillUnknown", 100);
-    BroadcastChanceKillPet = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceKillPet", 10);
-    BroadcastChanceKillPlayer = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceKillPlayer", 30);
+    BroadcastChanceKillNormal = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceKillNormal", 30);
+    BroadcastChanceKillElite = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceKillElite", 300);
+    BroadcastChanceKillRareelite = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceKillRareelite", 3000);
+    BroadcastChanceKillWorldboss = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceKillWorldboss", 20000);
+    BroadcastChanceKillRare = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceKillRare", 10000);
+    BroadcastChanceKillUnknown = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceKillUnknown", 100);
+    BroadcastChanceKillPet = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceKillPet", 10);
+    BroadcastChanceKillPlayer = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceKillPlayer", 30);
 
-    BroadcastChanceLevelupGeneric = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceLevelupGeneric", 20000);
-    BroadcastChanceLevelupTenX = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceLevelupTenX", 30000);
-    BroadcastChanceLevelupMaxLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceLevelupMaxLevel", 30000);
+    BroadcastChanceLevelupGeneric = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceLevelupGeneric", 20000);
+    BroadcastChanceLevelupTenX = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceLevelupTenX", 30000);
+    BroadcastChanceLevelupMaxLevel = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceLevelupMaxLevel", 30000);
 
-    BroadcastChanceSuggestInstance = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceSuggestInstance", 5000);
-    BroadcastChanceSuggestQuest = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceSuggestQuest", 10000);
+    BroadcastChanceSuggestInstance = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceSuggestInstance", 5000);
+    BroadcastChanceSuggestQuest = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceSuggestQuest", 10000);
     BroadcastChanceSuggestGrindMaterials =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceSuggestGrindMaterials", 5000);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceSuggestGrindMaterials", 5000);
     BroadcastChanceSuggestGrindReputation =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceSuggestGrindReputation", 5000);
-    BroadcastChanceSuggestSell = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceSuggestSell", 300);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceSuggestGrindReputation", 5000);
+    BroadcastChanceSuggestSell = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceSuggestSell", 300);
     BroadcastChanceSuggestSomething =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceSuggestSomething", 30000);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceSuggestSomething", 30000);
 
     BroadcastChanceSuggestSomethingToxic =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceSuggestSomethingToxic", 0);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceSuggestSomethingToxic", 0);
 
-    BroadcastChanceSuggestToxicLinks = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceSuggestToxicLinks", 0);
-    ToxicLinksPrefix = sConfigMgr->GetOption<std::string>("AiPlayerbot.ToxicLinksPrefix", "gnomes");
+    BroadcastChanceSuggestToxicLinks = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceSuggestToxicLinks", 0);
+    ToxicLinksPrefix = sConfigMgr->GetOption<std::string>("Playerbots.ToxicLinksPrefix", "gnomes");
 
     BroadcastChanceSuggestThunderfury =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceSuggestThunderfury", 1);
+        sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceSuggestThunderfury", 1);
 
     // does not depend on global chance
-    BroadcastChanceGuildManagement = sConfigMgr->GetOption<int32>("AiPlayerbot.BroadcastChanceGuildManagement", 30000);
+    BroadcastChanceGuildManagement = sConfigMgr->GetOption<int32>("Playerbots.BroadcastChanceGuildManagement", 30000);
 
-    ToxicLinksRepliesChance = sConfigMgr->GetOption<int32>("AiPlayerbot.ToxicLinksRepliesChance", 30);    // 0-100
-    ThunderfuryRepliesChance = sConfigMgr->GetOption<int32>("AiPlayerbot.ThunderfuryRepliesChance", 40);  // 0-100
-    GuildRepliesRate = sConfigMgr->GetOption<int32>("AiPlayerbot.GuildRepliesRate", 100);                 // 0-100
+    ToxicLinksRepliesChance = sConfigMgr->GetOption<int32>("Playerbots.ToxicLinksRepliesChance", 30);    // 0-100
+    ThunderfuryRepliesChance = sConfigMgr->GetOption<int32>("Playerbots.ThunderfuryRepliesChance", 40);  // 0-100
+    GuildRepliesRate = sConfigMgr->GetOption<int32>("Playerbots.GuildRepliesRate", 100);                 // 0-100
 
-    RandomBotJoinBG = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotJoinBG", true);
-    RandomBotAutoJoinBG = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotAutoJoinBG", false);
+    RandomBotJoinBG = sConfigMgr->GetOption<bool>("Playerbots.RandomBotJoinBG", true);
+    RandomBotAutoJoinBG = sConfigMgr->GetOption<bool>("Playerbots.RandomBotAutoJoinBG", false);
 
-    RandomBotAutoJoinArenaBracket = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAutoJoinArenaBracket", 14);
+    RandomBotAutoJoinArenaBracket = sConfigMgr->GetOption<int32>("Playerbots.RandomBotAutoJoinArenaBracket", 14);
 
-    RandomBotAutoJoinWSBrackets = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotAutoJoinWSBrackets", "7");
-    RandomBotAutoJoinABBrackets = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotAutoJoinABBrackets", "6");
-    RandomBotAutoJoinAVBrackets = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotAutoJoinAVBrackets", "3");
-    RandomBotAutoJoinEYBrackets = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotAutoJoinEYBrackets", "2");
-    RandomBotAutoJoinICBrackets = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotAutoJoinICBrackets", "1");
+    RandomBotAutoJoinWSBrackets = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotAutoJoinWSBrackets", "7");
+    RandomBotAutoJoinABBrackets = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotAutoJoinABBrackets", "6");
+    RandomBotAutoJoinAVBrackets = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotAutoJoinAVBrackets", "3");
+    RandomBotAutoJoinEYBrackets = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotAutoJoinEYBrackets", "2");
+    RandomBotAutoJoinICBrackets = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotAutoJoinICBrackets", "1");
 
-    RandomBotAutoJoinBGWSCount = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAutoJoinBGWSCount", 1);
-    RandomBotAutoJoinBGABCount = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAutoJoinBGABCount", 1);
-    RandomBotAutoJoinBGAVCount = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAutoJoinBGAVCount", 0);
-    RandomBotAutoJoinBGEYCount = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAutoJoinBGEYCount", 1);
-    RandomBotAutoJoinBGICCount = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAutoJoinBGICCount", 0);
+    RandomBotAutoJoinBGWSCount = sConfigMgr->GetOption<int32>("Playerbots.RandomBotAutoJoinBGWSCount", 1);
+    RandomBotAutoJoinBGABCount = sConfigMgr->GetOption<int32>("Playerbots.RandomBotAutoJoinBGABCount", 1);
+    RandomBotAutoJoinBGAVCount = sConfigMgr->GetOption<int32>("Playerbots.RandomBotAutoJoinBGAVCount", 0);
+    RandomBotAutoJoinBGEYCount = sConfigMgr->GetOption<int32>("Playerbots.RandomBotAutoJoinBGEYCount", 1);
+    RandomBotAutoJoinBGICCount = sConfigMgr->GetOption<int32>("Playerbots.RandomBotAutoJoinBGICCount", 0);
 
     RandomBotAutoJoinBGRatedArena2v2Count =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAutoJoinBGRatedArena2v2Count", 0);
+        sConfigMgr->GetOption<int32>("Playerbots.RandomBotAutoJoinBGRatedArena2v2Count", 0);
     RandomBotAutoJoinBGRatedArena3v3Count =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAutoJoinBGRatedArena3v3Count", 0);
+        sConfigMgr->GetOption<int32>("Playerbots.RandomBotAutoJoinBGRatedArena3v3Count", 0);
     RandomBotAutoJoinBGRatedArena5v5Count =
-        sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAutoJoinBGRatedArena5v5Count", 0);
-    LogInGroupOnly = sConfigMgr->GetOption<bool>("AiPlayerbot.LogInGroupOnly", true);
-    LogValuesPerTick = sConfigMgr->GetOption<bool>("AiPlayerbot.LogValuesPerTick", false);
-    FleeingEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.FleeingEnabled", true);
-    SummonAtInnkeepersEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.SummonAtInnkeepersEnabled", true);
-    RandomBotMinLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotMinLevel", 1);
-    RandomBotMaxLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotMaxLevel", 80);
+        sConfigMgr->GetOption<int32>("Playerbots.RandomBotAutoJoinBGRatedArena5v5Count", 0);
+    LogInGroupOnly = sConfigMgr->GetOption<bool>("Playerbots.LogInGroupOnly", true);
+    LogValuesPerTick = sConfigMgr->GetOption<bool>("Playerbots.LogValuesPerTick", false);
+    FleeingEnabled = sConfigMgr->GetOption<bool>("Playerbots.FleeingEnabled", true);
+    SummonAtInnkeepersEnabled = sConfigMgr->GetOption<bool>("Playerbots.SummonAtInnkeepersEnabled", true);
+    RandomBotMinLevel = sConfigMgr->GetOption<int32>("Playerbots.RandomBotMinLevel", 1);
+    RandomBotMaxLevel = sConfigMgr->GetOption<int32>("Playerbots.RandomBotMaxLevel", 80);
     if (RandomBotMaxLevel > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
         RandomBotMaxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
     // Bracket defaults (below) derive from randomBotMaxLevel, so this must run after it is read.
     LoadRandomBotLevelConfig();
 
-    RandomBotTeleLowerLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotTeleLowerLevel", 1);
-    RandomBotTeleHigherLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotTeleHigherLevel", 3);
-    OpenGoSpell = sConfigMgr->GetOption<int32>("AiPlayerbot.OpenGoSpell", 6477);
+    RandomBotTeleLowerLevel = sConfigMgr->GetOption<int32>("Playerbots.RandomBotTeleLowerLevel", 1);
+    RandomBotTeleHigherLevel = sConfigMgr->GetOption<int32>("Playerbots.RandomBotTeleHigherLevel", 3);
+    OpenGoSpell = sConfigMgr->GetOption<int32>("Playerbots.OpenGoSpell", 6477);
 
     // Zones for NewRpgStrategy teleportation brackets
     std::vector<uint32> zoneIds = {
@@ -440,7 +440,7 @@ bool PlayerbotAIConfig::Initialize()
 
     for (uint32 zoneId : zoneIds)
     {
-        std::string setting = "AiPlayerbot.ZoneBracket." + std::to_string(zoneId);
+        std::string setting = "Playerbots.ZoneBracket." + std::to_string(zoneId);
         std::string value = sConfigMgr->GetOption<std::string>(setting, "");
 
         if (!value.empty())
@@ -455,30 +455,30 @@ bool PlayerbotAIConfig::Initialize()
         }
     }
 
-    RandomChangeMultiplier = sConfigMgr->GetOption<float>("AiPlayerbot.RandomChangeMultiplier", 1.0);
+    RandomChangeMultiplier = sConfigMgr->GetOption<float>("Playerbots.RandomChangeMultiplier", 1.0);
 
-    RandomBotCombatStrategies = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotCombatStrategies", "");
-    RandomBotNonCombatStrategies = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotNonCombatStrategies", "");
-    CombatStrategies = sConfigMgr->GetOption<std::string>("AiPlayerbot.CombatStrategies", "");
-    NonCombatStrategies = sConfigMgr->GetOption<std::string>("AiPlayerbot.NonCombatStrategies", "");
-    ApplyInstanceStrategies = sConfigMgr->GetOption<bool>("AiPlayerbot.ApplyInstanceStrategies", true);
+    RandomBotCombatStrategies = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotCombatStrategies", "");
+    RandomBotNonCombatStrategies = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotNonCombatStrategies", "");
+    CombatStrategies = sConfigMgr->GetOption<std::string>("Playerbots.CombatStrategies", "");
+    NonCombatStrategies = sConfigMgr->GetOption<std::string>("Playerbots.NonCombatStrategies", "");
+    ApplyInstanceStrategies = sConfigMgr->GetOption<bool>("Playerbots.ApplyInstanceStrategies", true);
 
-    CommandPrefix = sConfigMgr->GetOption<std::string>("AiPlayerbot.CommandPrefix", "");
-    CommandSeparator = sConfigMgr->GetOption<std::string>("AiPlayerbot.CommandSeparator", "\\\\");
+    CommandPrefix = sConfigMgr->GetOption<std::string>("Playerbots.CommandPrefix", "");
+    CommandSeparator = sConfigMgr->GetOption<std::string>("Playerbots.CommandSeparator", "\\\\");
 
-    CommandServerPort = sConfigMgr->GetOption<int32>("AiPlayerbot.CommandServerPort", 8888);
-    PerfMonEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.PerfMonEnabled", false);
+    CommandServerPort = sConfigMgr->GetOption<int32>("Playerbots.CommandServerPort", 8888);
+    PerfMonEnabled = sConfigMgr->GetOption<bool>("Playerbots.PerfMonEnabled", false);
 
-    UseGroundMountAtMinLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.UseGroundMountAtMinLevel", 20);
-    UseFastGroundMountAtMinLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.UseFastGroundMountAtMinLevel", 40);
-    UseFlyMountAtMinLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.UseFlyMountAtMinLevel", 60);
-    UseFastFlyMountAtMinLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.UseFastFlyMountAtMinLevel", 70);
+    UseGroundMountAtMinLevel = sConfigMgr->GetOption<int32>("Playerbots.UseGroundMountAtMinLevel", 20);
+    UseFastGroundMountAtMinLevel = sConfigMgr->GetOption<int32>("Playerbots.UseFastGroundMountAtMinLevel", 40);
+    UseFlyMountAtMinLevel = sConfigMgr->GetOption<int32>("Playerbots.UseFlyMountAtMinLevel", 60);
+    UseFastFlyMountAtMinLevel = sConfigMgr->GetOption<int32>("Playerbots.UseFastFlyMountAtMinLevel", 70);
 
     // stagger bot flightpath takeoff
-    BotTaxiDelayMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotTaxiDelayMinMs", 350);
-    BotTaxiDelayMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotTaxiDelayMaxMs", 5000);
-    BotTaxiGapMs = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotTaxiGapMs", 200);
-    BotTaxiGapJitterMs = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotTaxiGapJitterMs", 100);
+    BotTaxiDelayMin = sConfigMgr->GetOption<uint32>("Playerbots.BotTaxiDelayMinMs", 350);
+    BotTaxiDelayMax = sConfigMgr->GetOption<uint32>("Playerbots.BotTaxiDelayMaxMs", 5000);
+    BotTaxiGapMs = sConfigMgr->GetOption<uint32>("Playerbots.BotTaxiGapMs", 200);
+    BotTaxiGapJitterMs = sConfigMgr->GetOption<uint32>("Playerbots.BotTaxiGapJitterMs", 100);
 
     LOG_INFO("server.loading", "Loading TalentSpecs...");
 
@@ -491,11 +491,11 @@ bool PlayerbotAIConfig::Initialize()
         for (uint32 spec = 0; spec < MAX_SPECNO; ++spec)
         {
             std::ostringstream os;
-            os << "AiPlayerbot.PremadeSpecName." << cls << "." << spec;
+            os << "Playerbots.PremadeSpecName." << cls << "." << spec;
             PremadeSpecName[cls][spec] = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
             os.str("");
             os.clear();
-            os << "AiPlayerbot.PremadeSpecGlyph." << cls << "." << spec;
+            os << "Playerbots.PremadeSpecGlyph." << cls << "." << spec;
             PremadeSpecGlyph[cls][spec] = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
             std::vector<std::string> splitSpecGlyph = split(PremadeSpecGlyph[cls][spec], ',');
             for (std::string& split : splitSpecGlyph)
@@ -508,7 +508,7 @@ bool PlayerbotAIConfig::Initialize()
             for (uint32 level = 0; level < MAX_LEVEL; ++level)
             {
                 std::ostringstream os;
-                os << "AiPlayerbot.PremadeSpecLink." << cls << "." << spec << "." << level;
+                os << "Playerbots.PremadeSpecLink." << cls << "." << spec << "." << level;
                 PremadeSpecLink[cls][spec][level] = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
                 ParsedSpecLinkOrder[cls][spec][level] = ParseTempTalentsOrder(cls, PremadeSpecLink[cls][spec][level]);
             }
@@ -518,7 +518,7 @@ bool PlayerbotAIConfig::Initialize()
             for (uint32 points = 0; points < 21; ++points)
             {
                 std::ostringstream os;
-                os << "AiPlayerbot.PremadeHunterPetLink." << spec << "." << points;
+                os << "Playerbots.PremadeHunterPetLink." << spec << "." << points;
                 PremadeHunterPetLink[spec][points] = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
                 ParsedHunterPetLinkOrder[spec][points] =
                     ParseTempPetTalentsOrder(spec, PremadeHunterPetLink[spec][points]);
@@ -527,7 +527,7 @@ bool PlayerbotAIConfig::Initialize()
         for (uint32 spec = 0; spec < MAX_SPECNO; ++spec)
         {
             std::ostringstream os;
-            os << "AiPlayerbot.RandomClassSpecProb." << cls << "." << spec;
+            os << "Playerbots.RandomClassSpecProb." << cls << "." << spec;
             uint32 def;
             if (spec <= 1)
                 def = 33;
@@ -538,13 +538,13 @@ bool PlayerbotAIConfig::Initialize()
             RandomClassSpecProb[cls][spec] = sConfigMgr->GetOption<uint32>(os.str().c_str(), def, false);
             os.str("");
             os.clear();
-            os << "AiPlayerbot.RandomClassSpecIndex." << cls << "." << spec;
+            os << "Playerbots.RandomClassSpecIndex." << cls << "." << spec;
             RandomClassSpecIndex[cls][spec] = sConfigMgr->GetOption<uint32>(os.str().c_str(), spec, false);
         }
     }
 
     BotCheats.clear();
-    LoadListString<std::vector<std::string>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.BotCheats", "food,taxi,raid"),
+    LoadListString<std::vector<std::string>>(sConfigMgr->GetOption<std::string>("Playerbots.BotCheats", "food,taxi,raid"),
                                              BotCheats);
 
     BotCheatMask = 0;
@@ -564,38 +564,38 @@ bool PlayerbotAIConfig::Initialize()
     if (std::find(BotCheats.begin(), BotCheats.end(), "raid") != BotCheats.end())
         BotCheatMask |= (uint32)BotCheatMask::raid;
 
-    LoadListString<std::vector<std::string>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.AllowedLogFiles", ""),
+    LoadListString<std::vector<std::string>>(sConfigMgr->GetOption<std::string>("Playerbots.AllowedLogFiles", ""),
                                              AllowedLogFiles);
-    EnableAutoTradeOnItemMention = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableAutoTradeOnItemMention", true);
-    LoadListString<std::vector<std::string>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.TradeActionExcludedPrefixes", ""),
+    EnableAutoTradeOnItemMention = sConfigMgr->GetOption<bool>("Playerbots.EnableAutoTradeOnItemMention", true);
+    LoadListString<std::vector<std::string>>(sConfigMgr->GetOption<std::string>("Playerbots.TradeActionExcludedPrefixes", ""),
                                              TradeActionExcludedPrefixes);
 
     WorldBuffs.clear();
     LoadWorldBuff();
     LOG_INFO("playerbots", "Loading World Buff Feature...");
 
-    RandomBotAccountPrefix = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotAccountPrefix", "rndbot");
-    RandomBotAccountCount = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAccountCount", 0);
-    DeleteRandomBotAccounts = sConfigMgr->GetOption<bool>("AiPlayerbot.DeleteRandomBotAccounts", false);
-    RandomBotGuildCount = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotGuildCount", 20);
-    RandomBotGuildSizeMax = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotGuildSizeMax", 15);
-    DeleteRandomBotGuilds = sConfigMgr->GetOption<bool>("AiPlayerbot.DeleteRandomBotGuilds", false);
+    RandomBotAccountPrefix = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotAccountPrefix", "rndbot");
+    RandomBotAccountCount = sConfigMgr->GetOption<int32>("Playerbots.RandomBotAccountCount", 0);
+    DeleteRandomBotAccounts = sConfigMgr->GetOption<bool>("Playerbots.DeleteRandomBotAccounts", false);
+    RandomBotGuildCount = sConfigMgr->GetOption<int32>("Playerbots.RandomBotGuildCount", 20);
+    RandomBotGuildSizeMax = sConfigMgr->GetOption<int32>("Playerbots.RandomBotGuildSizeMax", 15);
+    DeleteRandomBotGuilds = sConfigMgr->GetOption<bool>("Playerbots.DeleteRandomBotGuilds", false);
 
-    BotSendMailEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.BotSendMailEnabled", true);
+    BotSendMailEnabled = sConfigMgr->GetOption<bool>("Playerbots.BotSendMailEnabled", true);
 
-    GuildTaskEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableGuildTasks", false);
-    MinGuildTaskChangeTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MinGuildTaskChangeTime", 3 * 24 * 3600);
-    MaxGuildTaskChangeTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxGuildTaskChangeTime", 4 * 24 * 3600);
-    MinGuildTaskAdvertisementTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MinGuildTaskAdvertisementTime", 300);
-    MaxGuildTaskAdvertisementTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxGuildTaskAdvertisementTime", 12 * 3600);
-    MinGuildTaskRewardTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MinGuildTaskRewardTime", 300);
-    MaxGuildTaskRewardTime = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxGuildTaskRewardTime", 3600);
-    GuildTaskAdvertCleanupTime = sConfigMgr->GetOption<int32>("AiPlayerbot.GuildTaskAdvertCleanupTime", 300);
-    GuildTaskKillTaskDistance = sConfigMgr->GetOption<int32>("AiPlayerbot.GuildTaskKillTaskDistance", 2000);
-    TargetPosRecalcDistance = sConfigMgr->GetOption<float>("AiPlayerbot.TargetPosRecalcDistance", 0.1f);
+    GuildTaskEnabled = sConfigMgr->GetOption<bool>("Playerbots.EnableGuildTasks", false);
+    MinGuildTaskChangeTime = sConfigMgr->GetOption<int32>("Playerbots.MinGuildTaskChangeTime", 3 * 24 * 3600);
+    MaxGuildTaskChangeTime = sConfigMgr->GetOption<int32>("Playerbots.MaxGuildTaskChangeTime", 4 * 24 * 3600);
+    MinGuildTaskAdvertisementTime = sConfigMgr->GetOption<int32>("Playerbots.MinGuildTaskAdvertisementTime", 300);
+    MaxGuildTaskAdvertisementTime = sConfigMgr->GetOption<int32>("Playerbots.MaxGuildTaskAdvertisementTime", 12 * 3600);
+    MinGuildTaskRewardTime = sConfigMgr->GetOption<int32>("Playerbots.MinGuildTaskRewardTime", 300);
+    MaxGuildTaskRewardTime = sConfigMgr->GetOption<int32>("Playerbots.MaxGuildTaskRewardTime", 3600);
+    GuildTaskAdvertCleanupTime = sConfigMgr->GetOption<int32>("Playerbots.GuildTaskAdvertCleanupTime", 300);
+    GuildTaskKillTaskDistance = sConfigMgr->GetOption<int32>("Playerbots.GuildTaskKillTaskDistance", 2000);
+    TargetPosRecalcDistance = sConfigMgr->GetOption<float>("Playerbots.TargetPosRecalcDistance", 0.1f);
 
     //cosmetics
-    switch (sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotShowHelmet", 1))
+    switch (sConfigMgr->GetOption<int32>("Playerbots.RandomBotShowHelmet", 1))
     {
         case 0:
             RandomBotShowHelmet = ShowHideCosmetic::ALWAYS_HIDE;
@@ -608,7 +608,7 @@ bool PlayerbotAIConfig::Initialize()
             RandomBotShowHelmet = ShowHideCosmetic::ALWAYS_SHOW;
             break;
     }
-    switch (sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotShowCloak", 1))
+    switch (sConfigMgr->GetOption<int32>("Playerbots.RandomBotShowCloak", 1))
     {
         case 0:
             RandomBotShowCloak = ShowHideCosmetic::ALWAYS_HIDE;
@@ -623,135 +623,135 @@ bool PlayerbotAIConfig::Initialize()
     }
 
     // SPP switches
-    EnableGreet = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableGreet", true);
-    SummonWhenGroup = sConfigMgr->GetOption<bool>("AiPlayerbot.SummonWhenGroup", true);
-    RandomBotFixedLevel = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotFixedLevel", false);
-    DisableRandomLevels = sConfigMgr->GetOption<bool>("AiPlayerbot.DisableRandomLevels", false);
-    RandomBotRandomPassword = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotRandomPassword", true);
-    DowngradeMaxLevelBot = sConfigMgr->GetOption<bool>("AiPlayerbot.DowngradeMaxLevelBot", true);
-    EquipAndSpecPersistence = sConfigMgr->GetOption<bool>("AiPlayerbot.EquipAndSpecPersistence", true);
-    EquipAndSpecPersistenceLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.EquipAndSpecPersistenceLevel", 1);
-    GroupInvitationPermission = sConfigMgr->GetOption<int32>("AiPlayerbot.GroupInvitationPermission", 1);
-    KeepAltsInGroup = sConfigMgr->GetOption<bool>("AiPlayerbot.KeepAltsInGroup", false);
-    AllowSummonInCombat = sConfigMgr->GetOption<bool>("AiPlayerbot.AllowSummonInCombat", true);
-    AllowSummonWhenMasterIsDead = sConfigMgr->GetOption<bool>("AiPlayerbot.AllowSummonWhenMasterIsDead", true);
-    AllowSummonWhenBotIsDead = sConfigMgr->GetOption<bool>("AiPlayerbot.AllowSummonWhenBotIsDead", true);
-    ReviveBotWhenSummoned = sConfigMgr->GetOption<int32>("AiPlayerbot.ReviveBotWhenSummoned", 1);
-    BotRepairWhenSummon = sConfigMgr->GetOption<bool>("AiPlayerbot.BotRepairWhenSummon", true);
-    AutoInitOnly = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoInitOnly", false);
-    ResetInstanceIdForAltBots = sConfigMgr->GetOption<bool>("AiPlayerbot.ResetInstanceIdForAltBots", false);
-    AutoInitEquipLevelLimitRatio = sConfigMgr->GetOption<float>("AiPlayerbot.AutoInitEquipLevelLimitRatio", 1.0);
+    EnableGreet = sConfigMgr->GetOption<bool>("Playerbots.EnableGreet", true);
+    SummonWhenGroup = sConfigMgr->GetOption<bool>("Playerbots.SummonWhenGroup", true);
+    RandomBotFixedLevel = sConfigMgr->GetOption<bool>("Playerbots.RandomBotFixedLevel", false);
+    DisableRandomLevels = sConfigMgr->GetOption<bool>("Playerbots.DisableRandomLevels", false);
+    RandomBotRandomPassword = sConfigMgr->GetOption<bool>("Playerbots.RandomBotRandomPassword", true);
+    DowngradeMaxLevelBot = sConfigMgr->GetOption<bool>("Playerbots.DowngradeMaxLevelBot", true);
+    EquipAndSpecPersistence = sConfigMgr->GetOption<bool>("Playerbots.EquipAndSpecPersistence", true);
+    EquipAndSpecPersistenceLevel = sConfigMgr->GetOption<int32>("Playerbots.EquipAndSpecPersistenceLevel", 1);
+    GroupInvitationPermission = sConfigMgr->GetOption<int32>("Playerbots.GroupInvitationPermission", 1);
+    KeepAltsInGroup = sConfigMgr->GetOption<bool>("Playerbots.KeepAltsInGroup", false);
+    AllowSummonInCombat = sConfigMgr->GetOption<bool>("Playerbots.AllowSummonInCombat", true);
+    AllowSummonWhenMasterIsDead = sConfigMgr->GetOption<bool>("Playerbots.AllowSummonWhenMasterIsDead", true);
+    AllowSummonWhenBotIsDead = sConfigMgr->GetOption<bool>("Playerbots.AllowSummonWhenBotIsDead", true);
+    ReviveBotWhenSummoned = sConfigMgr->GetOption<int32>("Playerbots.ReviveBotWhenSummoned", 1);
+    BotRepairWhenSummon = sConfigMgr->GetOption<bool>("Playerbots.BotRepairWhenSummon", true);
+    AutoInitOnly = sConfigMgr->GetOption<bool>("Playerbots.AutoInitOnly", false);
+    ResetInstanceIdForAltBots = sConfigMgr->GetOption<bool>("Playerbots.ResetInstanceIdForAltBots", false);
+    AutoInitEquipLevelLimitRatio = sConfigMgr->GetOption<float>("Playerbots.AutoInitEquipLevelLimitRatio", 1.0);
 
-    MaxAddedBots = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxAddedBots", 40);
-    AddClassCommand = sConfigMgr->GetOption<int32>("AiPlayerbot.AddClassCommand", 1);
-    AddClassAccountPoolSize = sConfigMgr->GetOption<int32>("AiPlayerbot.AddClassAccountPoolSize", 50);
-    AddClassRandomCharacter = sConfigMgr->GetOption<bool>("AiPlayerbot.AddClassRandomCharacter", false);
-    MaintenanceCommand = sConfigMgr->GetOption<int32>("AiPlayerbot.MaintenanceCommand", 1);
+    MaxAddedBots = sConfigMgr->GetOption<int32>("Playerbots.MaxAddedBots", 40);
+    AddClassCommand = sConfigMgr->GetOption<int32>("Playerbots.AddClassCommand", 1);
+    AddClassAccountPoolSize = sConfigMgr->GetOption<int32>("Playerbots.AddClassAccountPoolSize", 50);
+    AddClassRandomCharacter = sConfigMgr->GetOption<bool>("Playerbots.AddClassRandomCharacter", false);
+    MaintenanceCommand = sConfigMgr->GetOption<int32>("Playerbots.MaintenanceCommand", 1);
 
-    AltMaintenanceAttunementQs = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceAttunementQuests", true);
-    AltMaintenanceBags = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceBags", true);
-    AltMaintenanceAmmo = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceAmmo", true);
-    AltMaintenanceFood = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceFood", true);
-    AltMaintenanceReagents = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceReagents", true);
-    AltMaintenanceConsumables = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceConsumables", true);
-    AltMaintenancePotions = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenancePotions", true);
-    AltMaintenanceTalentTree = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceTalentTree", true);
-    AltMaintenancePet = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenancePet", true);
-    AltMaintenancePetTalents = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenancePetTalents", true);
-    AltMaintenanceClassSpells = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceClassSpells", true);
-    AltMaintenanceAvailableSpells = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceAvailableSpells", true);
-    AltMaintenanceSkills = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceSkills", true);
-    AltMaintenanceReputation = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceReputation", true);
-    AltMaintenanceSpecialSpells = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceSpecialSpells", true);
-    AltMaintenanceMounts = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceMounts", true);
-    AltMaintenanceGlyphs = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceGlyphs", true);
-    AltMaintenanceKeyring = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceKeyring", true);
-    AltMaintenanceGemsEnchants = sConfigMgr->GetOption<bool>("AiPlayerbot.AltMaintenanceGemsEnchants", true);
+    AltMaintenanceAttunementQs = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceAttunementQuests", true);
+    AltMaintenanceBags = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceBags", true);
+    AltMaintenanceAmmo = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceAmmo", true);
+    AltMaintenanceFood = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceFood", true);
+    AltMaintenanceReagents = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceReagents", true);
+    AltMaintenanceConsumables = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceConsumables", true);
+    AltMaintenancePotions = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenancePotions", true);
+    AltMaintenanceTalentTree = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceTalentTree", true);
+    AltMaintenancePet = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenancePet", true);
+    AltMaintenancePetTalents = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenancePetTalents", true);
+    AltMaintenanceClassSpells = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceClassSpells", true);
+    AltMaintenanceAvailableSpells = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceAvailableSpells", true);
+    AltMaintenanceSkills = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceSkills", true);
+    AltMaintenanceReputation = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceReputation", true);
+    AltMaintenanceSpecialSpells = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceSpecialSpells", true);
+    AltMaintenanceMounts = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceMounts", true);
+    AltMaintenanceGlyphs = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceGlyphs", true);
+    AltMaintenanceKeyring = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceKeyring", true);
+    AltMaintenanceGemsEnchants = sConfigMgr->GetOption<bool>("Playerbots.AltMaintenanceGemsEnchants", true);
 
-    AutoGearCommand = sConfigMgr->GetOption<int32>("AiPlayerbot.AutoGearCommand", 1);
-    AutoGearCommandAltBots = sConfigMgr->GetOption<int32>("AiPlayerbot.AutoGearCommandAltBots", 1);
-    AutoGearBisCommand = sConfigMgr->GetOption<int32>("AiPlayerbot.AutoGearBisCommand", 0);
-    AutoGearQualityLimit = sConfigMgr->GetOption<int32>("AiPlayerbot.AutoGearQualityLimit", 3);
-    AutoGearScoreLimit = sConfigMgr->GetOption<int32>("AiPlayerbot.AutoGearScoreLimit", 0);
+    AutoGearCommand = sConfigMgr->GetOption<int32>("Playerbots.AutoGearCommand", 1);
+    AutoGearCommandAltBots = sConfigMgr->GetOption<int32>("Playerbots.AutoGearCommandAltBots", 1);
+    AutoGearBisCommand = sConfigMgr->GetOption<int32>("Playerbots.AutoGearBisCommand", 0);
+    AutoGearQualityLimit = sConfigMgr->GetOption<int32>("Playerbots.AutoGearQualityLimit", 3);
+    AutoGearScoreLimit = sConfigMgr->GetOption<int32>("Playerbots.AutoGearScoreLimit", 0);
 
-    RandomBotXPRate = sConfigMgr->GetOption<float>("AiPlayerbot.RandomBotXPRate", 1.0);
-    RandomBotAllianceRatio = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAllianceRatio", 50);
-    RandomBotHordeRatio = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotHordeRatio", 50);
-    DisableDeathKnightLogin = sConfigMgr->GetOption<bool>("AiPlayerbot.DisableDeathKnightLogin", 0);
-    LimitTalentsExpansion = sConfigMgr->GetOption<bool>("AiPlayerbot.LimitTalentsExpansion", 0);
-    BotActiveAlone = sConfigMgr->GetOption<int32>("AiPlayerbot.BotActiveAlone", 10);
-    BotActiveAloneDurationSeconds = sConfigMgr->GetOption<int32>("AiPlayerbot.BotActiveAloneDurationSeconds", 30);
-    BotActiveAloneForceWhenInRadius = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotActiveAloneForceWhenInRadius", 150);
-    BotActiveAloneForceWhenInZone = sConfigMgr->GetOption<bool>("AiPlayerbot.BotActiveAloneForceWhenInZone", 1);
-    BotActiveAloneForceWhenInMap = sConfigMgr->GetOption<bool>("AiPlayerbot.BotActiveAloneForceWhenInMap", 0);
-    BotActiveAloneForceWhenIsFriend = sConfigMgr->GetOption<bool>("AiPlayerbot.BotActiveAloneForceWhenIsFriend", 0);
-    BotActiveAloneForceWhenInGuild = sConfigMgr->GetOption<bool>("AiPlayerbot.BotActiveAloneForceWhenInGuild", 1);
-    BotActiveAloneSmartScale = sConfigMgr->GetOption<bool>("AiPlayerbot.botActiveAloneSmartScale", 1);
-    BotActiveAloneSmartScaleDiffLimitFloor = sConfigMgr->GetOption<uint32>("AiPlayerbot.botActiveAloneSmartScaleDiffLimitfloor", 50);
-    BotActiveAloneSmartScaleDiffLimitCeiling = sConfigMgr->GetOption<uint32>("AiPlayerbot.botActiveAloneSmartScaleDiffLimitCeiling", 200);
-    BotActiveAloneSmartScaleWhenMinLevel = sConfigMgr->GetOption<uint32>("AiPlayerbot.botActiveAloneSmartScaleWhenMinLevel", 1);
-    BotActiveAloneSmartScaleWhenMaxLevel = sConfigMgr->GetOption<uint32>("AiPlayerbot.botActiveAloneSmartScaleWhenMaxLevel", 80);
+    RandomBotXPRate = sConfigMgr->GetOption<float>("Playerbots.RandomBotXPRate", 1.0);
+    RandomBotAllianceRatio = sConfigMgr->GetOption<int32>("Playerbots.RandomBotAllianceRatio", 50);
+    RandomBotHordeRatio = sConfigMgr->GetOption<int32>("Playerbots.RandomBotHordeRatio", 50);
+    DisableDeathKnightLogin = sConfigMgr->GetOption<bool>("Playerbots.DisableDeathKnightLogin", 0);
+    LimitTalentsExpansion = sConfigMgr->GetOption<bool>("Playerbots.LimitTalentsExpansion", 0);
+    BotActiveAlone = sConfigMgr->GetOption<int32>("Playerbots.BotActiveAlone", 10);
+    BotActiveAloneDurationSeconds = sConfigMgr->GetOption<int32>("Playerbots.BotActiveAloneDurationSeconds", 30);
+    BotActiveAloneForceWhenInRadius = sConfigMgr->GetOption<uint32>("Playerbots.BotActiveAloneForceWhenInRadius", 150);
+    BotActiveAloneForceWhenInZone = sConfigMgr->GetOption<bool>("Playerbots.BotActiveAloneForceWhenInZone", 1);
+    BotActiveAloneForceWhenInMap = sConfigMgr->GetOption<bool>("Playerbots.BotActiveAloneForceWhenInMap", 0);
+    BotActiveAloneForceWhenIsFriend = sConfigMgr->GetOption<bool>("Playerbots.BotActiveAloneForceWhenIsFriend", 0);
+    BotActiveAloneForceWhenInGuild = sConfigMgr->GetOption<bool>("Playerbots.BotActiveAloneForceWhenInGuild", 1);
+    BotActiveAloneSmartScale = sConfigMgr->GetOption<bool>("Playerbots.botActiveAloneSmartScale", 1);
+    BotActiveAloneSmartScaleDiffLimitFloor = sConfigMgr->GetOption<uint32>("Playerbots.botActiveAloneSmartScaleDiffLimitfloor", 50);
+    BotActiveAloneSmartScaleDiffLimitCeiling = sConfigMgr->GetOption<uint32>("Playerbots.botActiveAloneSmartScaleDiffLimitCeiling", 200);
+    BotActiveAloneSmartScaleWhenMinLevel = sConfigMgr->GetOption<uint32>("Playerbots.botActiveAloneSmartScaleWhenMinLevel", 1);
+    BotActiveAloneSmartScaleWhenMaxLevel = sConfigMgr->GetOption<uint32>("Playerbots.botActiveAloneSmartScaleWhenMaxLevel", 80);
 
-    RandomBotsWalkingRPG = sConfigMgr->GetOption<bool>("AiPlayerbot.RandombotsWalkingRPG", false);
-    RandomBotsWalkingRPGInDoors = sConfigMgr->GetOption<bool>("AiPlayerbot.RandombotsWalkingRPG.InDoors", false);
-    MinEnchantingBotLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.MinEnchantingBotLevel", 60);
-    LimitEnchantExpansion = sConfigMgr->GetOption<int32>("AiPlayerbot.LimitEnchantExpansion", 1);
-    LimitGearExpansion = sConfigMgr->GetOption<int32>("AiPlayerbot.LimitGearExpansion", 1);
-    RandomBotStartingLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.RandombotStartingLevel", 1);
-    EnablePeriodicOnlineOffline = sConfigMgr->GetOption<bool>("AiPlayerbot.EnablePeriodicOnlineOffline", false);
-    EnableRandomBotTrading = sConfigMgr->GetOption<int32>("AiPlayerbot.EnableRandomBotTrading", 1);
-    PeriodicOnlineOfflineRatio = sConfigMgr->GetOption<float>("AiPlayerbot.PeriodicOnlineOfflineRatio", 2.0);
-    GearScoreCheck = sConfigMgr->GetOption<bool>("AiPlayerbot.GearScoreCheck", false);
-    RandomBotPreQuests = sConfigMgr->GetOption<bool>("AiPlayerbot.PreQuests", false);
+    RandomBotsWalkingRPG = sConfigMgr->GetOption<bool>("Playerbots.RandombotsWalkingRPG", false);
+    RandomBotsWalkingRPGInDoors = sConfigMgr->GetOption<bool>("Playerbots.RandombotsWalkingRPG.InDoors", false);
+    MinEnchantingBotLevel = sConfigMgr->GetOption<int32>("Playerbots.MinEnchantingBotLevel", 60);
+    LimitEnchantExpansion = sConfigMgr->GetOption<int32>("Playerbots.LimitEnchantExpansion", 1);
+    LimitGearExpansion = sConfigMgr->GetOption<int32>("Playerbots.LimitGearExpansion", 1);
+    RandomBotStartingLevel = sConfigMgr->GetOption<int32>("Playerbots.RandombotStartingLevel", 1);
+    EnablePeriodicOnlineOffline = sConfigMgr->GetOption<bool>("Playerbots.EnablePeriodicOnlineOffline", false);
+    EnableRandomBotTrading = sConfigMgr->GetOption<int32>("Playerbots.EnableRandomBotTrading", 1);
+    PeriodicOnlineOfflineRatio = sConfigMgr->GetOption<float>("Playerbots.PeriodicOnlineOfflineRatio", 2.0);
+    GearScoreCheck = sConfigMgr->GetOption<bool>("Playerbots.GearScoreCheck", false);
+    RandomBotPreQuests = sConfigMgr->GetOption<bool>("Playerbots.PreQuests", false);
 
     // SPP automation
-    FreeMethodLoot = sConfigMgr->GetOption<bool>("AiPlayerbot.FreeMethodLoot", false);
-    LootNeedRollLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.LootNeedRollLevel", 1);
-    LootRollRecipe = sConfigMgr->GetOption<bool>("AiPlayerbot.LootRollRecipe", false);
-    LootRollDisenchant = sConfigMgr->GetOption<bool>("AiPlayerbot.LootRollDisenchant", false);
-    LootGreedRollLevel = sConfigMgr->GetOption<bool>("AiPlayerbot.LootGreedRollLevel", false);
-    AutoPickReward = sConfigMgr->GetOption<std::string>("AiPlayerbot.AutoPickReward", "yes");
-    AutoEquipUpgradeLoot = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoEquipUpgradeLoot", true);
-    EquipUpgradeThreshold = sConfigMgr->GetOption<float>("AiPlayerbot.EquipUpgradeThreshold", 1.1f);
-    TwoRoundsGearInit = sConfigMgr->GetOption<bool>("AiPlayerbot.TwoRoundsGearInit", false);
-    SyncQuestWithPlayer = sConfigMgr->GetOption<bool>("AiPlayerbot.SyncQuestWithPlayer", true);
-    SyncQuestForPlayer = sConfigMgr->GetOption<bool>("AiPlayerbot.SyncQuestForPlayer", false);
-    DropObsoleteQuests = sConfigMgr->GetOption<bool>("AiPlayerbot.DropObsoleteQuests", true);
-    AllowLearnTrainerSpells = sConfigMgr->GetOption<bool>("AiPlayerbot.AllowLearnTrainerSpells", true);
-    AutoPickTalents = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoPickTalents", true);
-    AutoUpgradeEquip = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoUpgradeEquip", true);
-    HunterWolfPet = sConfigMgr->GetOption<int32>("AiPlayerbot.HunterWolfPet", 0);
-    DefaultPetStance = sConfigMgr->GetOption<int32>("AiPlayerbot.DefaultPetStance", 1);
-    PetChatCommandDebug = sConfigMgr->GetOption<bool>("AiPlayerbot.PetChatCommandDebug", 0);
-    AutoLearnTrainerSpells = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoLearnTrainerSpells", true);
-    AutoLearnQuestSpells = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoLearnQuestSpells", true);
-    AutoTeleportForLevel = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoTeleportForLevel", false);
-    AutoDoQuests = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoDoQuests", true);
-    EnableNewRpgStrategy = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableNewRpgStrategy", true);
+    FreeMethodLoot = sConfigMgr->GetOption<bool>("Playerbots.FreeMethodLoot", false);
+    LootNeedRollLevel = sConfigMgr->GetOption<int32>("Playerbots.LootNeedRollLevel", 1);
+    LootRollRecipe = sConfigMgr->GetOption<bool>("Playerbots.LootRollRecipe", false);
+    LootRollDisenchant = sConfigMgr->GetOption<bool>("Playerbots.LootRollDisenchant", false);
+    LootGreedRollLevel = sConfigMgr->GetOption<bool>("Playerbots.LootGreedRollLevel", false);
+    AutoPickReward = sConfigMgr->GetOption<std::string>("Playerbots.AutoPickReward", "yes");
+    AutoEquipUpgradeLoot = sConfigMgr->GetOption<bool>("Playerbots.AutoEquipUpgradeLoot", true);
+    EquipUpgradeThreshold = sConfigMgr->GetOption<float>("Playerbots.EquipUpgradeThreshold", 1.1f);
+    TwoRoundsGearInit = sConfigMgr->GetOption<bool>("Playerbots.TwoRoundsGearInit", false);
+    SyncQuestWithPlayer = sConfigMgr->GetOption<bool>("Playerbots.SyncQuestWithPlayer", true);
+    SyncQuestForPlayer = sConfigMgr->GetOption<bool>("Playerbots.SyncQuestForPlayer", false);
+    DropObsoleteQuests = sConfigMgr->GetOption<bool>("Playerbots.DropObsoleteQuests", true);
+    AllowLearnTrainerSpells = sConfigMgr->GetOption<bool>("Playerbots.AllowLearnTrainerSpells", true);
+    AutoPickTalents = sConfigMgr->GetOption<bool>("Playerbots.AutoPickTalents", true);
+    AutoUpgradeEquip = sConfigMgr->GetOption<bool>("Playerbots.AutoUpgradeEquip", true);
+    HunterWolfPet = sConfigMgr->GetOption<int32>("Playerbots.HunterWolfPet", 0);
+    DefaultPetStance = sConfigMgr->GetOption<int32>("Playerbots.DefaultPetStance", 1);
+    PetChatCommandDebug = sConfigMgr->GetOption<bool>("Playerbots.PetChatCommandDebug", 0);
+    AutoLearnTrainerSpells = sConfigMgr->GetOption<bool>("Playerbots.AutoLearnTrainerSpells", true);
+    AutoLearnQuestSpells = sConfigMgr->GetOption<bool>("Playerbots.AutoLearnQuestSpells", true);
+    AutoTeleportForLevel = sConfigMgr->GetOption<bool>("Playerbots.AutoTeleportForLevel", false);
+    AutoDoQuests = sConfigMgr->GetOption<bool>("Playerbots.AutoDoQuests", true);
+    EnableNewRpgStrategy = sConfigMgr->GetOption<bool>("Playerbots.EnableNewRpgStrategy", true);
 
-    RpgStatusProbWeight[RPG_WANDER_RANDOM] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.WanderRandom", 15);
-    RpgStatusProbWeight[RPG_WANDER_NPC] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.WanderNpc", 20);
-    RpgStatusProbWeight[RPG_GO_GRIND] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.GoGrind", 15);
-    RpgStatusProbWeight[RPG_GO_CAMP] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.GoCamp", 10);
-    RpgStatusProbWeight[RPG_DO_QUEST] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.DoQuest", 60);
-    RpgStatusProbWeight[RPG_TRAVEL_FLIGHT] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.TravelFlight", 15);
-    RpgStatusProbWeight[RPG_REST] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.Rest", 5);
-    RpgStatusProbWeight[RPG_OUTDOOR_PVP] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.OutdoorPvp", 10);
+    RpgStatusProbWeight[RPG_WANDER_RANDOM] = sConfigMgr->GetOption<int32>("Playerbots.RpgStatusProbWeight.WanderRandom", 15);
+    RpgStatusProbWeight[RPG_WANDER_NPC] = sConfigMgr->GetOption<int32>("Playerbots.RpgStatusProbWeight.WanderNpc", 20);
+    RpgStatusProbWeight[RPG_GO_GRIND] = sConfigMgr->GetOption<int32>("Playerbots.RpgStatusProbWeight.GoGrind", 15);
+    RpgStatusProbWeight[RPG_GO_CAMP] = sConfigMgr->GetOption<int32>("Playerbots.RpgStatusProbWeight.GoCamp", 10);
+    RpgStatusProbWeight[RPG_DO_QUEST] = sConfigMgr->GetOption<int32>("Playerbots.RpgStatusProbWeight.DoQuest", 60);
+    RpgStatusProbWeight[RPG_TRAVEL_FLIGHT] = sConfigMgr->GetOption<int32>("Playerbots.RpgStatusProbWeight.TravelFlight", 15);
+    RpgStatusProbWeight[RPG_REST] = sConfigMgr->GetOption<int32>("Playerbots.RpgStatusProbWeight.Rest", 5);
+    RpgStatusProbWeight[RPG_OUTDOOR_PVP] = sConfigMgr->GetOption<int32>("Playerbots.RpgStatusProbWeight.OutdoorPvp", 10);
 
-    SyncLevelWithPlayers = sConfigMgr->GetOption<bool>("AiPlayerbot.SyncLevelWithPlayers", false);
+    SyncLevelWithPlayers = sConfigMgr->GetOption<bool>("Playerbots.SyncLevelWithPlayers", false);
     RandomBotConcentrateInPlayerZone =
-        sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotConcentrateInPlayerZone", false);
-    RandomBotGroupNearby = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotGroupNearby", false);
+        sConfigMgr->GetOption<bool>("Playerbots.RandomBotConcentrateInPlayerZone", false);
+    RandomBotGroupNearby = sConfigMgr->GetOption<bool>("Playerbots.RandomBotGroupNearby", false);
 
     // arena
-    RandomBotArenaTeam2v2Count = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotArenaTeam2v2Count", 10);
-    RandomBotArenaTeam3v3Count = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotArenaTeam3v3Count", 10);
-    RandomBotArenaTeam5v5Count = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotArenaTeam5v5Count", 5);
-    DeleteRandomBotArenaTeams = sConfigMgr->GetOption<bool>("AiPlayerbot.DeleteRandomBotArenaTeams", false);
-    RandomBotArenaTeamMaxRating = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotArenaTeamMaxRating", 2000);
-    RandomBotArenaTeamMinRating = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotArenaTeamMinRating", 1000);
+    RandomBotArenaTeam2v2Count = sConfigMgr->GetOption<int32>("Playerbots.RandomBotArenaTeam2v2Count", 10);
+    RandomBotArenaTeam3v3Count = sConfigMgr->GetOption<int32>("Playerbots.RandomBotArenaTeam3v3Count", 10);
+    RandomBotArenaTeam5v5Count = sConfigMgr->GetOption<int32>("Playerbots.RandomBotArenaTeam5v5Count", 5);
+    DeleteRandomBotArenaTeams = sConfigMgr->GetOption<bool>("Playerbots.DeleteRandomBotArenaTeams", false);
+    RandomBotArenaTeamMaxRating = sConfigMgr->GetOption<int32>("Playerbots.RandomBotArenaTeamMaxRating", 2000);
+    RandomBotArenaTeamMinRating = sConfigMgr->GetOption<int32>("Playerbots.RandomBotArenaTeamMinRating", 1000);
 
-    SelfBotLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.SelfBotLevel", 1);
+    SelfBotLevel = sConfigMgr->GetOption<int32>("Playerbots.SelfBotLevel", 1);
 
     RandomPlayerbotFactory::CreateRandomBots();
     if (World::IsStopped())
@@ -785,7 +785,7 @@ bool PlayerbotAIConfig::Initialize()
     sTravelMgr.Init();
 
     ExcludedHunterPetFamilies.clear();
-    LoadList<std::vector<uint32>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.ExcludedHunterPetFamilies", ""), ExcludedHunterPetFamilies);
+    LoadList<std::vector<uint32>>(sConfigMgr->GetOption<std::string>("Playerbots.ExcludedHunterPetFamilies", ""), ExcludedHunterPetFamilies);
 
     LOG_INFO("server.loading", "---------------------------------------");
     LOG_INFO("server.loading", "       mod-playerbots initialized      ");
@@ -794,7 +794,7 @@ bool PlayerbotAIConfig::Initialize()
     return true;
 }
 
-// Loads AiPlayerbot.LevelBrackets.* and AiPlayerbot.ResetBotLevel.* (see RandomBotLevelMgr). Also
+// Loads Playerbots.LevelBrackets.* and Playerbots.ResetBotLevel.* (see RandomBotLevelMgr). Also
 // re-run on ".reload config" via RandomBotLevelWorldScript::OnAfterConfigLoad. Bracket
 // bounds/percentages are only the as-configured values here; RandomBotLevelMgr::LoadConfig()
 // copies them into its own working state, since dynamic distribution and clamp/rebalance mutate
@@ -802,29 +802,29 @@ bool PlayerbotAIConfig::Initialize()
 void PlayerbotAIConfig::LoadRandomBotLevelConfig()
 {
     // ---- Level brackets ----
-    LevelBracketsEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.Enabled", false);
+    LevelBracketsEnabled = sConfigMgr->GetOption<bool>("Playerbots.LevelBrackets.Enabled", false);
     LevelBracketsIgnoreGuildWithRealPlayers =
-        sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.IgnoreGuildBotsWithRealPlayers", true);
+        sConfigMgr->GetOption<bool>("Playerbots.LevelBrackets.IgnoreGuildBotsWithRealPlayers", true);
     LevelBracketsIgnoreArenaTeamBots =
-        sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.IgnoreArenaTeamBots", true);
+        sConfigMgr->GetOption<bool>("Playerbots.LevelBrackets.IgnoreArenaTeamBots", true);
 
-    LevelBracketsCheckFrequency = sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.CheckFrequency", 300);
+    LevelBracketsCheckFrequency = sConfigMgr->GetOption<uint32>("Playerbots.LevelBrackets.CheckFrequency", 300);
     LevelBracketsFlaggedCheckFrequency =
-        sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.CheckFlaggedFrequency", 15);
+        sConfigMgr->GetOption<uint32>("Playerbots.LevelBrackets.CheckFlaggedFrequency", 15);
     LevelBracketsDynamicDistribution =
-        sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.Dynamic.UseDynamicDistribution", false);
+        sConfigMgr->GetOption<bool>("Playerbots.LevelBrackets.Dynamic.UseDynamicDistribution", false);
     LevelBracketsRealPlayerWeight =
-        sConfigMgr->GetOption<float>("AiPlayerbot.LevelBrackets.Dynamic.RealPlayerWeight", 1.0f);
-    LevelBracketsSyncFactions = sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.Dynamic.SyncFactions", false);
-    LevelBracketsIgnoreFriendListed = sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.IgnoreFriendListed", true);
+        sConfigMgr->GetOption<float>("Playerbots.LevelBrackets.Dynamic.RealPlayerWeight", 1.0f);
+    LevelBracketsSyncFactions = sConfigMgr->GetOption<bool>("Playerbots.LevelBrackets.Dynamic.SyncFactions", false);
+    LevelBracketsIgnoreFriendListed = sConfigMgr->GetOption<bool>("Playerbots.LevelBrackets.IgnoreFriendListed", true);
     LevelBracketsFlaggedProcessLimit =
-        sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.FlaggedProcessLimit", 5);
+        sConfigMgr->GetOption<uint32>("Playerbots.LevelBrackets.FlaggedProcessLimit", 5);
 
-    ParseLevelMgrExcludeNames(sConfigMgr->GetOption<std::string>("AiPlayerbot.LevelBrackets.ExcludeNames", ""),
+    ParseLevelMgrExcludeNames(sConfigMgr->GetOption<std::string>("Playerbots.LevelBrackets.ExcludeNames", ""),
         LevelBracketsExcludeNames);
 
     LevelBracketsNumRanges =
-        static_cast<uint8>(sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.NumRanges", 9));
+        static_cast<uint8>(sConfigMgr->GetOption<uint32>("Playerbots.LevelBrackets.NumRanges", 9));
     LevelBracketsAlliance.resize(LevelBracketsNumRanges);
     LevelBracketsHorde.resize(LevelBracketsNumRanges);
 
@@ -834,11 +834,11 @@ void PlayerbotAIConfig::LoadRandomBotLevelConfig()
         uint32 defaultLower = (i == 0 ? 1 : i * 10);
         uint32 defaultUpper = (i < LevelBracketsNumRanges - 1 ? i * 10 + 9 : RandomBotMaxLevel);
         LevelBracketsAlliance[i].Lower = static_cast<uint8>(
-            sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.Alliance.Range" + idx + ".Lower", defaultLower));
+            sConfigMgr->GetOption<uint32>("Playerbots.LevelBrackets.Alliance.Range" + idx + ".Lower", defaultLower));
         LevelBracketsAlliance[i].Upper = static_cast<uint8>(
-            sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.Alliance.Range" + idx + ".Upper", defaultUpper));
+            sConfigMgr->GetOption<uint32>("Playerbots.LevelBrackets.Alliance.Range" + idx + ".Upper", defaultUpper));
         LevelBracketsAlliance[i].Pct = static_cast<uint8>(
-            sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.Alliance.Range" + idx + ".Pct", 11));
+            sConfigMgr->GetOption<uint32>("Playerbots.LevelBrackets.Alliance.Range" + idx + ".Pct", 11));
     }
 
     for (uint8 i = 0; i < LevelBracketsNumRanges; ++i)
@@ -847,11 +847,11 @@ void PlayerbotAIConfig::LoadRandomBotLevelConfig()
         uint32 defaultLower = (i == 0 ? 1 : i * 10);
         uint32 defaultUpper = (i < LevelBracketsNumRanges - 1 ? i * 10 + 9 : RandomBotMaxLevel);
         LevelBracketsHorde[i].Lower = static_cast<uint8>(
-            sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.Horde.Range" + idx + ".Lower", defaultLower));
+            sConfigMgr->GetOption<uint32>("Playerbots.LevelBrackets.Horde.Range" + idx + ".Lower", defaultLower));
         LevelBracketsHorde[i].Upper = static_cast<uint8>(
-            sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.Horde.Range" + idx + ".Upper", defaultUpper));
+            sConfigMgr->GetOption<uint32>("Playerbots.LevelBrackets.Horde.Range" + idx + ".Upper", defaultUpper));
         LevelBracketsHorde[i].Pct = static_cast<uint8>(
-            sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.Horde.Range" + idx + ".Pct", 11));
+            sConfigMgr->GetOption<uint32>("Playerbots.LevelBrackets.Horde.Range" + idx + ".Pct", 11));
     }
 
     // A mismatch forcibly disables SyncFactions and logs an error; it never brings the server down.
@@ -875,71 +875,71 @@ void PlayerbotAIConfig::LoadRandomBotLevelConfig()
     }
 
     // ---- Level reset ----
-    ResetBotLevelEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.ResetBotLevel.Enabled", false);
+    ResetBotLevelEnabled = sConfigMgr->GetOption<bool>("Playerbots.ResetBotLevel.Enabled", false);
 
     ResetBotLevelMaxLevel =
-        static_cast<uint8>(sConfigMgr->GetOption<uint32>("AiPlayerbot.ResetBotLevel.MaxLevel", 80));
+        static_cast<uint8>(sConfigMgr->GetOption<uint32>("Playerbots.ResetBotLevel.MaxLevel", 80));
     if ((ResetBotLevelMaxLevel < 2 || ResetBotLevelMaxLevel > 80) && ResetBotLevelMaxLevel != 0)
     {
         LOG_ERROR("server.loading",
-            "[RandomBotLevelMgr] Invalid AiPlayerbot.ResetBotLevel.MaxLevel value: {}. Using default value 80.",
+            "[RandomBotLevelMgr] Invalid Playerbots.ResetBotLevel.MaxLevel value: {}. Using default value 80.",
             ResetBotLevelMaxLevel);
         ResetBotLevelMaxLevel = 80;
     }
 
     ResetBotLevelResetTo =
-        static_cast<uint8>(sConfigMgr->GetOption<uint32>("AiPlayerbot.ResetBotLevel.ResetToLevel", 1));
+        static_cast<uint8>(sConfigMgr->GetOption<uint32>("Playerbots.ResetBotLevel.ResetToLevel", 1));
     if (ResetBotLevelResetTo < 1 || (ResetBotLevelMaxLevel > 0 && ResetBotLevelResetTo >= ResetBotLevelMaxLevel))
     {
         LOG_ERROR("server.loading",
-            "[RandomBotLevelMgr] Invalid AiPlayerbot.ResetBotLevel.ResetToLevel value: {}. Using default value 1.",
+            "[RandomBotLevelMgr] Invalid Playerbots.ResetBotLevel.ResetToLevel value: {}. Using default value 1.",
             ResetBotLevelResetTo);
         ResetBotLevelResetTo = 1;
     }
 
     ResetBotLevelSkipFrom =
-        static_cast<uint8>(sConfigMgr->GetOption<uint32>("AiPlayerbot.ResetBotLevel.SkipFromLevel", 0));
+        static_cast<uint8>(sConfigMgr->GetOption<uint32>("Playerbots.ResetBotLevel.SkipFromLevel", 0));
     if (ResetBotLevelSkipFrom > 80 || (ResetBotLevelMaxLevel > 0 && ResetBotLevelSkipFrom >= ResetBotLevelMaxLevel))
     {
         LOG_ERROR("server.loading",
-            "[RandomBotLevelMgr] Invalid AiPlayerbot.ResetBotLevel.SkipFromLevel value: {}. Using default value 0 "
+            "[RandomBotLevelMgr] Invalid Playerbots.ResetBotLevel.SkipFromLevel value: {}. Using default value 0 "
             "(disabled).",
             ResetBotLevelSkipFrom);
         ResetBotLevelSkipFrom = 0;
     }
 
-    ResetBotLevelSkipTo = static_cast<uint8>(sConfigMgr->GetOption<uint32>("AiPlayerbot.ResetBotLevel.SkipToLevel", 1));
+    ResetBotLevelSkipTo = static_cast<uint8>(sConfigMgr->GetOption<uint32>("Playerbots.ResetBotLevel.SkipToLevel", 1));
     if (ResetBotLevelSkipTo < 1 || ResetBotLevelSkipTo > 80 ||
         (ResetBotLevelMaxLevel > 0 && ResetBotLevelSkipTo > ResetBotLevelMaxLevel))
     {
         LOG_ERROR("server.loading",
-            "[RandomBotLevelMgr] Invalid AiPlayerbot.ResetBotLevel.SkipToLevel value: {}. Using default value 1.",
+            "[RandomBotLevelMgr] Invalid Playerbots.ResetBotLevel.SkipToLevel value: {}. Using default value 1.",
             ResetBotLevelSkipTo);
         ResetBotLevelSkipTo = 1;
     }
 
     ResetBotLevelChance =
-        static_cast<uint8>(sConfigMgr->GetOption<uint32>("AiPlayerbot.ResetBotLevel.ResetChance", 100));
+        static_cast<uint8>(sConfigMgr->GetOption<uint32>("Playerbots.ResetBotLevel.ResetChance", 100));
     if (ResetBotLevelChance > 100)
     {
         LOG_ERROR("server.loading",
-            "[RandomBotLevelMgr] Invalid AiPlayerbot.ResetBotLevel.ResetChance value: {}. Using default value 100.",
+            "[RandomBotLevelMgr] Invalid Playerbots.ResetBotLevel.ResetChance value: {}. Using default value 100.",
             ResetBotLevelChance);
         ResetBotLevelChance = 100;
     }
 
-    ResetBotLevelScaledChance = sConfigMgr->GetOption<bool>("AiPlayerbot.ResetBotLevel.ScaledChance", false);
+    ResetBotLevelScaledChance = sConfigMgr->GetOption<bool>("Playerbots.ResetBotLevel.ScaledChance", false);
 
     ResetBotLevelRestrictTimePlayed =
-        sConfigMgr->GetOption<bool>("AiPlayerbot.ResetBotLevel.RestrictTimePlayed", false);
-    ResetBotLevelMinTimePlayed = sConfigMgr->GetOption<uint32>("AiPlayerbot.ResetBotLevel.MinTimePlayed", 86400);
+        sConfigMgr->GetOption<bool>("Playerbots.ResetBotLevel.RestrictTimePlayed", false);
+    ResetBotLevelMinTimePlayed = sConfigMgr->GetOption<uint32>("Playerbots.ResetBotLevel.MinTimePlayed", 86400);
     ResetBotLevelPlayedTimeCheckFrequency =
-        sConfigMgr->GetOption<uint32>("AiPlayerbot.ResetBotLevel.PlayedTimeCheckFrequency", 864);
+        sConfigMgr->GetOption<uint32>("Playerbots.ResetBotLevel.PlayedTimeCheckFrequency", 864);
 
     ResetBotLevelIgnoreGuildWithRealPlayers =
-        sConfigMgr->GetOption<bool>("AiPlayerbot.ResetBotLevel.IgnoreGuildBotsWithRealPlayers", false);
+        sConfigMgr->GetOption<bool>("Playerbots.ResetBotLevel.IgnoreGuildBotsWithRealPlayers", false);
 
-    ParseLevelMgrExcludeNames(sConfigMgr->GetOption<std::string>("AiPlayerbot.ResetBotLevel.ExcludeNames", ""),
+    ParseLevelMgrExcludeNames(sConfigMgr->GetOption<std::string>("Playerbots.ResetBotLevel.ExcludeNames", ""),
         ResetBotLevelExcludeNames);
 }
 
@@ -1050,7 +1050,7 @@ void PlayerbotAIConfig::Log(std::string const fileName, char const* str, ...)
 
 void PlayerbotAIConfig::LoadWorldBuff()
 {
-    std::string matrix = sConfigMgr->GetOption<std::string>("AiPlayerbot.WorldBuffMatrix", "", true);
+    std::string matrix = sConfigMgr->GetOption<std::string>("Playerbots.WorldBuffMatrix", "", true);
     if (matrix.empty())
         return;
 

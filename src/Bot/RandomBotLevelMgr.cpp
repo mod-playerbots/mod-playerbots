@@ -804,8 +804,8 @@ void RandomBotLevelMgr::ProcessPendingLevelResets()
 // =============================================================================
 
 // Computes the percent chance that a bot at the given level should be reset. When
-// AiPlayerbot.ResetBotLevel.ScaledChance is enabled, the chance scales linearly from 0 at level 1
-// up to AiPlayerbot.ResetBotLevel.ResetChance at AiPlayerbot.ResetBotLevel.MaxLevel.
+// Playerbots.ResetBotLevel.ScaledChance is enabled, the chance scales linearly from 0 at level 1
+// up to Playerbots.ResetBotLevel.ResetChance at Playerbots.ResetBotLevel.MaxLevel.
 uint8 RandomBotLevelMgr::ComputeResetChance(uint8 level) const
 {
     uint8 chance = sPlayerbotAIConfig.ResetBotLevelChance;
@@ -824,7 +824,7 @@ uint8 RandomBotLevelMgr::ComputeResetChance(uint8 level) const
     return chance;
 }
 
-// Resets a bot down to AiPlayerbot.ResetBotLevel.ResetToLevel (or the Death Knight starting level,
+// Resets a bot down to Playerbots.ResetBotLevel.ResetToLevel (or the Death Knight starting level,
 // whichever is higher) via a full PlayerbotFactory randomize.
 void RandomBotLevelMgr::ResetBot(Player* player, uint8 currentLevel)
 {
@@ -847,7 +847,7 @@ void RandomBotLevelMgr::ResetBot(Player* player, uint8 currentLevel)
         levelToResetTo);
 }
 
-// Sends a bot straight to AiPlayerbot.ResetBotLevel.SkipToLevel (or the Death Knight starting
+// Sends a bot straight to Playerbots.ResetBotLevel.SkipToLevel (or the Death Knight starting
 // level, whichever is higher) via a full PlayerbotFactory randomize.
 void RandomBotLevelMgr::SkipBotLevel(Player* player, uint8 currentLevel)
 {
