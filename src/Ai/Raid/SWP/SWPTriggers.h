@@ -480,11 +480,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MuruDeterminingDpsPriorityTrigger : public SunwellEncounterTrigger
+class MuruShouldAssignDpsPriorityTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruDeterminingDpsPriorityTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru determining dps priority") {}
+    MuruShouldAssignDpsPriorityTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "m'uru should assign dps priority") {}
 
 protected:
     bool IsActiveInEncounter() override;

@@ -632,7 +632,7 @@ bool MuruRangedShouldStackOrSpreadTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "m'uru");
 }
 
-bool MuruDeterminingDpsPriorityTrigger::IsActiveInEncounter()
+bool MuruShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
     return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "m'uru");
 }

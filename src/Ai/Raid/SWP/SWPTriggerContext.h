@@ -149,8 +149,8 @@ public:
         creators["m'uru ranged should stack or spread"] =
             &RaidSwpTriggerContext::muru_ranged_should_stack_or_spread;
 
-        creators["m'uru determining dps priority"] =
-            &RaidSwpTriggerContext::muru_determining_dps_priority;
+        creators["m'uru should assign dps priority"] =
+            &RaidSwpTriggerContext::muru_should_assign_dps_priority;
 
         creators["m'uru void sentinel pulses shadow"] =
             &RaidSwpTriggerContext::muru_void_sentinel_pulses_shadow;
@@ -361,8 +361,8 @@ private:
     static Trigger* muru_ranged_should_stack_or_spread(PlayerbotAI* botAI) {
         return new MuruRangedShouldStackOrSpreadTrigger(botAI);
     }
-    static Trigger* muru_determining_dps_priority(PlayerbotAI* botAI) {
-        return new MuruDeterminingDpsPriorityTrigger(botAI);
+    static Trigger* muru_should_assign_dps_priority(PlayerbotAI* botAI) {
+        return new MuruShouldAssignDpsPriorityTrigger(botAI);
     }
     static Trigger* muru_void_sentinel_pulses_shadow(PlayerbotAI* botAI) {
         return new MuruVoidSentinelPulsesShadowTrigger(botAI);
