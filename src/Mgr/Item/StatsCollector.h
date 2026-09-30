@@ -83,6 +83,14 @@ private:
                          bool canNextTrigger, Milliseconds triggerCooldown);
     float AverageValue(SpellEffectInfo const& effectInfo, SpellInfo const* spellInfo);
 
+    // Value a buff that a core script casts on proc (the DBC has TriggerSpell = 0; the script picks the
+    // buff). The buff's DBC value flows through the normal collector path and the proc's internal
+    // cooldown (spell_proc_event) drives the uptime coverage.
+    void CollectScriptedProcBuff(uint32 procSpellId, uint32 buffSpellId, float multiplier = 1.0f);
+    // Stack-to-trigger scripts (spell_item_trinket_stack): the proc adds a stack and, at N stacks
+    // (the proc aura's amount), fires the trigger spell. Value the trigger over stacks x ICD.
+    void CollectStackTriggerProc(uint32 procSpellId, uint32 triggerSpellId);
+
 private:
     CollectorType type_;
     uint32 cls_;
