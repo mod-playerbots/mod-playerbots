@@ -28,6 +28,7 @@
 #include "LootObjectStack.h"
 #include "MapMgr.h"
 #include "MotionMaster.h"
+#include "MoveSpline.h"
 #include "MoveSplineInit.h"
 #include "NewRpgStrategy.h"
 #include "ObjectGuid.h"
@@ -53,6 +54,7 @@
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
+#include "WaypointMovementGenerator.h"
 #include <cmath>
 #include <mutex>
 #include <sstream>
@@ -65,6 +67,9 @@ constexpr uint32 SPELL_DK_FROST_PRESENCE = 48263;
 constexpr uint32 SPELL_GRAVITY_LAPSE_TK = 39432;
 constexpr uint32 SPELL_GRAVITY_LAPSE_MGT = 44226;
 constexpr uint32 VEHICLE_FLAG_FIXED_POSITION = 0x00200000;
+constexpr float TAXI_PROGRESS_DISTANCE_SQ = 3.0f * 3.0f;
+constexpr uint32 TAXI_STALL_TIMEOUT = 15 * IN_MILLISECONDS;
+constexpr uint8 TAXI_MAX_RESTART_ATTEMPTS = 1;
 }
 
 std::vector<std::string> PlayerbotAI::dispel_whitelist = {
@@ -257,6 +262,20 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         bot->GetSession()->IsLoggingOut() || bot->IsDuringRemoveFromWorld())
         return;
 
+    if (!bot->IsInFlight())
+    {
+        if (_taxiWatchdog.active)
+            _taxiWatchdog = TaxiWatchdogState();
+    }
+    else if (_taxiWatchdog.active)
+    {
+        uint32 remaining = TAXI_STALL_TIMEOUT - _taxiWatchdog.noProgressMilliseconds;
+        if (elapsed >= remaining)
+            _taxiWatchdog.noProgressMilliseconds = TAXI_STALL_TIMEOUT;
+        else
+            _taxiWatchdog.noProgressMilliseconds += elapsed;
+    }
+
     // Bots send no movement opcodes, so m_lastFallZ stays frozen and Player::IsFalling() (a Z test
     // against it) blocks LFG teleports. Unit::IsFalling() is the flag test, so real falls keep theirs.
     if (!bot->Unit::IsFalling())
@@ -280,6 +299,12 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
     if (!CanUpdateAI())
         return;
+
+    if (HandleTaxiFlight())
+    {
+        YieldThread(bot, GetReactDelay());
+        return;
+    }
 
     // Handle a spell that is still in its preparing phase (including channeled spells).
     Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
@@ -413,6 +438,165 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     // Update internal AI
     UpdateAIInternal(elapsed, minimal);
     YieldThread(bot, GetReactDelay());
+}
+
+bool PlayerbotAI::HandleTaxiFlight()
+{
+    if (!bot->IsInFlight())
+    {
+        _taxiWatchdog = TaxiWatchdogState();
+        return false;
+    }
+
+    if (bot->IsBeingTeleported())
+        return true;
+
+    MotionMaster* motionMaster = bot->GetMotionMaster();
+    FlightPathMovementGenerator* flight = nullptr;
+    if (motionMaster && motionMaster->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE)
+        flight = dynamic_cast<FlightPathMovementGenerator*>(motionMaster->top());
+
+    bool hasRouteNode = flight != nullptr;
+    uint32 routeNode = hasRouteNode ? flight->GetCurrentNode() : 0;
+    bool hasSplineIndex = bot->movespline != nullptr;
+    int32 splineIndex = hasSplineIndex ? bot->movespline->currentPathIdx() : 0;
+
+    auto refreshSnapshot = [&]()
+    {
+        _taxiWatchdog.active = true;
+        _taxiWatchdog.lastMapId = bot->GetMapId();
+        _taxiWatchdog.lastPosition = bot->GetPosition();
+        _taxiWatchdog.hasRouteNode = flight != nullptr;
+        _taxiWatchdog.lastRouteNode = flight ? flight->GetCurrentNode() : 0;
+        _taxiWatchdog.hasSplineIndex = bot->movespline != nullptr;
+        _taxiWatchdog.lastSplineIndex = bot->movespline ? bot->movespline->currentPathIdx() : 0;
+    };
+
+    bool progress = false;
+    if (_taxiWatchdog.active)
+    {
+        float deltaX = bot->GetPositionX() - _taxiWatchdog.lastPosition.GetPositionX();
+        float deltaY = bot->GetPositionY() - _taxiWatchdog.lastPosition.GetPositionY();
+        float deltaZ = bot->GetPositionZ() - _taxiWatchdog.lastPosition.GetPositionZ();
+        float distanceSq = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+
+        progress = bot->GetMapId() != _taxiWatchdog.lastMapId ||
+                   (hasRouteNode && (!_taxiWatchdog.hasRouteNode || routeNode != _taxiWatchdog.lastRouteNode)) ||
+                   (hasSplineIndex &&
+                    (!_taxiWatchdog.hasSplineIndex || splineIndex != _taxiWatchdog.lastSplineIndex)) ||
+                   distanceSq >= TAXI_PROGRESS_DISTANCE_SQ;
+    }
+    else
+    {
+        refreshSnapshot();
+        _taxiWatchdog.noProgressMilliseconds = 0;
+        _taxiWatchdog.restartAttempts = 0;
+    }
+
+    if (progress)
+    {
+        refreshSnapshot();
+        _taxiWatchdog.noProgressMilliseconds = 0;
+        _taxiWatchdog.restartAttempts = 0;
+        return true;
+    }
+
+    uint32 nextDestination = bot->m_taxi.GetTaxiDestination();
+    TaxiNodesEntry const* nextNode = nextDestination ? sTaxiNodesStore.LookupEntry(nextDestination) : nullptr;
+    TaxiPathNodeList const* path = flight ? &flight->GetPath() : nullptr;
+    bool routeNodeValid = path && routeNode < path->size() && (*path)[routeNode];
+    bool usableFlight = flight && routeNodeValid && nextNode;
+    bool splineFinalized = bot->movespline && bot->movespline->Finalized();
+
+    if (splineFinalized && usableFlight && nextNode->map_id != bot->GetMapId())
+    {
+        flight->SetCurrentNodeAfterTeleport();
+        if (!flight->HasArrived())
+        {
+            TaxiPathNodeList const& currentPath = flight->GetPath();
+            uint32 currentNode = flight->GetCurrentNode();
+            if (currentNode < currentPath.size())
+            {
+                TaxiPathNodeEntry const* node = currentPath[currentNode];
+                if (node && node->mapid == nextNode->map_id)
+                {
+                    LOG_DEBUG("playerbots",
+                              "{} continuing stalled taxi route node {} to taxi node {}, map {} -> {}",
+                              bot->GetName(), currentNode, nextDestination, bot->GetMapId(), nextNode->map_id);
+
+                    flight->SkipCurrentNode();
+                    bot->TeleportTo(nextNode->map_id, node->x, node->y, node->z, bot->GetOrientation(),
+                                    TELE_TO_NOT_LEAVE_TAXI);
+                    refreshSnapshot();
+                    _taxiWatchdog.noProgressMilliseconds = 0;
+                    _taxiWatchdog.restartAttempts = 0;
+                    return true;
+                }
+            }
+        }
+    }
+
+    if (splineFinalized && usableFlight && nextNode->map_id == bot->GetMapId() &&
+        _taxiWatchdog.restartAttempts < TAXI_MAX_RESTART_ATTEMPTS)
+    {
+        LOG_DEBUG("playerbots", "{} resetting stalled taxi spline at route node {} toward taxi node {} on map {}",
+                  bot->GetName(), routeNode, nextDestination, bot->GetMapId());
+        flight->Reset(bot);
+        ++_taxiWatchdog.restartAttempts;
+        refreshSnapshot();
+        _taxiWatchdog.noProgressMilliseconds = 0;
+        return true;
+    }
+
+    if (_taxiWatchdog.noProgressMilliseconds < TAXI_STALL_TIMEOUT)
+        return true;
+
+    if (usableFlight && _taxiWatchdog.restartAttempts < TAXI_MAX_RESTART_ATTEMPTS)
+    {
+        LOG_WARN("playerbots",
+                 "{} ({}) restarting stalled taxi spline on map {} at route node {}, spline index {} after {} ms",
+                 bot->GetName(), bot->GetGUID().ToString(), bot->GetMapId(), routeNode, splineIndex,
+                 _taxiWatchdog.noProgressMilliseconds);
+
+        flight->Reset(bot);
+        ++_taxiWatchdog.restartAttempts;
+        refreshSnapshot();
+        _taxiWatchdog.noProgressMilliseconds = 0;
+        return true;
+    }
+
+    uint32 finalTaxiNodeId = 0;
+    if (!bot->m_taxi.GetPath().empty())
+        finalTaxiNodeId = bot->m_taxi.GetPath().back();
+
+    TaxiNodesEntry const* finalTaxiNode = finalTaxiNodeId ? sTaxiNodesStore.LookupEntry(finalTaxiNodeId) : nullptr;
+    bool hasFinalDestination = finalTaxiNode != nullptr;
+    uint32 finalMapId = hasFinalDestination ? finalTaxiNode->map_id : 0;
+    float finalX = hasFinalDestination ? finalTaxiNode->x : 0.0f;
+    float finalY = hasFinalDestination ? finalTaxiNode->y : 0.0f;
+    float finalZ = hasFinalDestination ? finalTaxiNode->z : 0.0f;
+
+    LOG_ERROR("playerbots",
+              "{} ({}) finishing stalled taxi on map {} at route node {} (available {}), spline index {} "
+              "(available {}) after {} ms and {} restart attempts; final taxi node {} (valid {})",
+              bot->GetName(), bot->GetGUID().ToString(), bot->GetMapId(), routeNode, hasRouteNode, splineIndex,
+              hasSplineIndex, _taxiWatchdog.noProgressMilliseconds, _taxiWatchdog.restartAttempts, finalTaxiNodeId,
+              hasFinalDestination);
+
+    if (motionMaster && motionMaster->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == FLIGHT_MOTION_TYPE)
+        motionMaster->MovementExpiredOnSlot(MOTION_SLOT_CONTROLLED, false);
+
+    bot->ClearUnitState(UNIT_STATE_IN_FLIGHT);
+    bot->CleanupAfterTaxiFlight();
+    bot->UpdatePvPState();
+    bot->RemovePlayerFlag(PLAYER_FLAGS_TAXI_BENCHMARK);
+
+    // Without a valid destination, normal maintenance and stuck recovery resume on the next AI tick.
+    _taxiWatchdog = TaxiWatchdogState();
+    if (hasFinalDestination)
+        bot->TeleportTo(finalMapId, finalX, finalY, finalZ, bot->GetOrientation());
+
+    return true;
 }
 
 // Helper function for UpdateAI to check group membership and handle removal if necessary

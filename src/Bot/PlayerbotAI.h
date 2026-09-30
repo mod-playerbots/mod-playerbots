@@ -612,8 +612,22 @@ public:
     void AddTimedEvent(std::function<void()> callback, uint32 delayMs);
 
 private:
+    struct TaxiWatchdogState
+    {
+        bool active = false;
+        uint32 lastMapId = 0;
+        Position lastPosition;
+        bool hasRouteNode = false;
+        uint32 lastRouteNode = 0;
+        bool hasSplineIndex = false;
+        int32 lastSplineIndex = 0;
+        uint32 noProgressMilliseconds = 0;
+        uint8 restartAttempts = 0;
+    };
+
     static void _fillGearScoreData(Player* player, Item* item, std::vector<uint32>* gearScore, uint32& twoHandScore,
                                    bool mixed = false);
+    bool HandleTaxiFlight();
     bool IsTellAllowed(PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
     void UpdateAIGroupMaster();
     Item* FindItemInInventory(std::function<bool(ItemTemplate const*)> checkItem) const;
@@ -654,6 +668,9 @@ protected:
     Position jumpDestination = Position();
     uint32 nextTransportCheck = 0;
     bool spellInterruptRequested = false;
+
+private:
+    TaxiWatchdogState _taxiWatchdog;
 };
 
 #endif

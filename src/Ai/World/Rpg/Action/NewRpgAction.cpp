@@ -8,11 +8,8 @@
 #include "AreaDefines.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
-#include "DBCStores.h"
 #include "GossipDef.h"
 #include "IVMapMgr.h"
-#include "MotionMaster.h"
-#include "MoveSpline.h"
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
 #include "Object.h"
@@ -29,7 +26,6 @@
 #include "SharedDefines.h"
 #include "Timer.h"
 #include "TravelMgr.h"
-#include "WaypointMovementGenerator.h"
 #include "G3D/Vector2.h"
 #include <cmath>
 #include <cstdlib>
@@ -646,8 +642,7 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
     if (bot->IsInFlight())
     {
         data.inFlight = true;
-        ContinueCrossMapTaxi();
-        return false;
+        return true;
     }
 
     if (bot->GetDistance(data.flightMasterPos) > INTERACTION_DISTANCE)
@@ -677,45 +672,6 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         info.ChangeToIdle();
         return true;
     }
+    data.inFlight = true;
     return true;
-}
-
-void NewRpgTravelFlightAction::ContinueCrossMapTaxi()
-{
-    if (bot->IsBeingTeleported())
-        return;
-
-    if (!bot->movespline->Finalized())
-        return;
-
-    MotionMaster* mm = bot->GetMotionMaster();
-    if (!mm || mm->GetCurrentMovementGeneratorType() != FLIGHT_MOTION_TYPE)
-        return;
-
-    // Check if we are at our destination.
-    uint32 nextDest = bot->m_taxi.GetTaxiDestination();
-    if (!nextDest)
-        return;
-
-    // Confirm next node needs different map.
-    TaxiNodesEntry const* nextNode = sTaxiNodesStore.LookupEntry(nextDest);
-    if (!nextNode || nextNode->map_id == bot->GetMapId())
-        return;
-
-    FlightPathMovementGenerator* flight = dynamic_cast<FlightPathMovementGenerator*>(mm->top());
-    if (!flight)
-        return;
-
-    LOG_DEBUG("playerbots", "[New RPG] {} continuing taxi across map boundary (next node {} on map {})",
-              bot->GetName(), nextDest, nextNode->map_id);
-
-    flight->SetCurrentNodeAfterTeleport();
-
-    if (flight->HasArrived())
-        return;
-
-    TaxiPathNodeEntry const* node = flight->GetPath()[flight->GetCurrentNode()];
-    flight->SkipCurrentNode();
-
-    bot->TeleportTo(nextNode->map_id, node->x, node->y, node->z, bot->GetOrientation(), TELE_TO_NOT_LEAVE_TAXI);
 }
