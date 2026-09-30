@@ -164,8 +164,10 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
                     coverage =
                         std::min(1.0f, (float)spellInfo->GetDuration() / (spellInfo->GetDuration() + spellCooldown.count()));
 
-                multiplier *= coverage;
-                HandleApplyAura(effectInfo, spellInfo, multiplier, canNextTrigger, triggerCooldown);
+                // Do not mutate `multiplier`: a spell with several APPLY_AURA effects would otherwise
+                // get its coverage applied once per effect (e.g. Deathbringer's Will buffs carry a
+                // TRANSFORM visual + the stat aura).
+                HandleApplyAura(effectInfo, spellInfo, multiplier * coverage, canNextTrigger, triggerCooldown);
                 break;
             }
             case SPELL_EFFECT_HEAL:
