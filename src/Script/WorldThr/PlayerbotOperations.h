@@ -337,9 +337,10 @@ public:
                 continue;
             }
 
-            if (member->GetLevel() < 70)
+            if (!RandomPlayerbotFactory::SameArenaBracket(member->GetLevel(), leader->GetLevel()))
             {
-                LOG_DEBUG("playerbots", "ArenaGroupFormationOperation: Member {} is below level 70, skipping",
+                LOG_DEBUG("playerbots",
+                          "ArenaGroupFormationOperation: Member {} is outside the leader's arena bracket, skipping",
                          member->GetName());
                 continue;
             }
