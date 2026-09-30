@@ -4594,7 +4594,8 @@ std::vector<WorldLocation> TravelMgr::GetValidQuestGiverLocations(Player* bot)
         int32 effQuestLevel = (cand.questLevel > 0) ? cand.questLevel : (int32)botLevel;
         if (botLevel + levelWindow < effQuestLevel)  // quest too high for the bot
             continue;
-        if (botLevel > effQuestLevel + lowLevelDiff)  // below the bot's interest (IsQuestWorthDoing)
+        // IsQuestWorthDoing; a negative LowLevelHideDiff disables the filter (core convention).
+        if (lowLevelDiff >= 0 && botLevel > effQuestLevel + lowLevelDiff)
             continue;
         if (cand.allowableRaces && !(cand.allowableRaces & raceMask))
             continue;
