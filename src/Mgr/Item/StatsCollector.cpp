@@ -215,6 +215,25 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
             }
             case SPELL_EFFECT_TRIGGER_SPELL:
             {
+                // Skip a one-time on-apply trigger when the same spell already grants that trigger
+                // periodically (e.g. Dislodged Foreign Object's Surge of Power: a PERIODIC_TRIGGER_SPELL
+                // aura stacks the buff every tick, plus a redundant on-apply trigger). Only the periodic
+                // one contributes sustained value.
+                bool hasPeriodicTrigger = false;
+                for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
+                {
+                    SpellEffectInfo const& other = spellInfo->Effects[j];
+                    if (other.Effect == SPELL_EFFECT_APPLY_AURA &&
+                        other.ApplyAuraName == SPELL_AURA_PERIODIC_TRIGGER_SPELL &&
+                        other.TriggerSpell == effectInfo.TriggerSpell)
+                    {
+                        hasPeriodicTrigger = true;
+                        break;
+                    }
+                }
+                if (hasPeriodicTrigger)
+                    break;
+
                 // Follow the trigger spell, mirroring SPELL_AURA_PROC_TRIGGER_SPELL
                 if (canNextTrigger)
                     CollectSpellStats(effectInfo.TriggerSpell, multiplier, triggerCooldown);
