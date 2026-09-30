@@ -679,6 +679,22 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInf
         case SPELL_AURA_MOD_HEALING_DONE:
             stats[STATS_TYPE_HEAL_POWER] += val * multiplier;
             break;
+        case SPELL_AURA_PERIODIC_DAMAGE:
+        {
+            // Value is damage per tick; Amplitude is the tick interval in ms.
+            float perSecond = effectInfo.Amplitude ? (val * 1000.0f / effectInfo.Amplitude) : val;
+            if (type_ & (CollectorType::MELEE | CollectorType::RANGED))
+                stats[STATS_TYPE_ATTACK_POWER] += perSecond * multiplier;
+            else if (type_ & CollectorType::SPELL_DMG)
+                stats[STATS_TYPE_SPELL_POWER] += perSecond * multiplier * 0.5f;
+            break;
+        }
+        case SPELL_AURA_PERIODIC_HEAL:
+        {
+            float perSecond = effectInfo.Amplitude ? (val * 1000.0f / effectInfo.Amplitude) : val;
+            stats[STATS_TYPE_HEAL_POWER] += perSecond * multiplier;
+            break;
+        }
         case SPELL_AURA_MOD_INCREASE_HEALTH:
             stats[STATS_TYPE_STAMINA] += val * multiplier / 15;
             break;
