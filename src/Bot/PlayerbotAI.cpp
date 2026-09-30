@@ -495,9 +495,13 @@ bool PlayerbotAI::HandleTaxiFlight()
 
     if (progress)
     {
+        bool realProgress = bot->GetMapId() != _taxiWatchdog.lastMapId ||
+                            (hasRouteNode && routeNode != _taxiWatchdog.lastRouteNode) ||
+                            bot->GetExactDistSq(&_taxiWatchdog.lastPosition) >= TAXI_PROGRESS_DISTANCE_SQ;
         refreshSnapshot();
         _taxiWatchdog.noProgressMilliseconds = 0;
-        _taxiWatchdog.restartAttempts = 0;
+        if (realProgress)
+            _taxiWatchdog.restartAttempts = 0;
         return true;
     }
 
