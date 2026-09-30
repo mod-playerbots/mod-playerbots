@@ -14,6 +14,67 @@
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 #include "Util.h"
+#include <unordered_map>
+
+namespace
+{
+    struct RelicModAbility
+    {
+        uint32 spellId = 0;
+        uint32 castTime = 0;
+        uint32 cooldown = 0;
+        uint32 duration = 0;
+        uint32 requiredLevel = 0;
+    };
+
+    // Cache of relic spell id -> every ability its flat modifier targets (resolved by family + class mask).
+    // A class mask bit is often shared across the ranks of a spell, so all ranks are cached and the
+    // highest one available to the bot is picked at lookup time.
+    std::unordered_map<uint32, std::vector<RelicModAbility>> RelicAbilityCache;
+
+    std::vector<RelicModAbility> const& ResolveRelicAbilities(SpellInfo const* relicSpell, flag96 mask)
+    {
+        auto it = RelicAbilityCache.find(relicSpell->Id);
+        if (it != RelicAbilityCache.end())
+            return it->second;
+
+        std::vector<RelicModAbility> abilities;
+        for (uint32 id = 1; id < sSpellMgr->GetSpellInfoStoreSize(); ++id)
+        {
+            SpellInfo const* si = sSpellMgr->GetSpellInfo(id);
+            if (!si || si->SpellFamilyName != relicSpell->SpellFamilyName)
+                continue;
+            if ((si->SpellFamilyFlags & mask) == mask)
+            {
+                RelicModAbility ability;
+                ability.spellId = id;
+                ability.castTime = si->CalcCastTime(nullptr);
+                ability.cooldown = std::max(si->RecoveryTime, si->CategoryRecoveryTime);
+                ability.duration = si->GetDuration() > 0 ? uint32(si->GetDuration()) : 0;
+                ability.requiredLevel = si->BaseLevel ? si->BaseLevel : si->SpellLevel;
+                abilities.push_back(ability);
+            }
+        }
+
+        return RelicAbilityCache.emplace(relicSpell->Id, std::move(abilities)).first->second;
+    }
+
+    // Highest-rank ability matching the relic's modifier that the bot can cast (<= its level).
+    RelicModAbility ResolveRelicAbility(SpellInfo const* relicSpell, flag96 mask, int32 lvl)
+    {
+        RelicModAbility best;
+        for (RelicModAbility const& ability : ResolveRelicAbilities(relicSpell, mask))
+        {
+            if (lvl > 0 && int32(ability.requiredLevel) > lvl)
+                continue;
+
+            if (!best.spellId || ability.requiredLevel > best.requiredLevel ||
+                (ability.requiredLevel == best.requiredLevel && ability.spellId > best.spellId))
+                best = ability;
+        }
+        return best;
+    }
+}
 
 StatsCollector::StatsCollector(CollectorType type, int32 cls, int32 lvl) : type_(type), cls_(cls), lvl_(lvl)
 {
@@ -598,6 +659,39 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInf
                 stats[STATS_TYPE_ATTACK_POWER] += val * multiplier;
             if ((schoolType & SPELL_SCHOOL_MASK_MAGIC) == SPELL_SCHOOL_MASK_MAGIC)
                 stats[STATS_TYPE_SPELL_POWER] += val * multiplier;
+            break;
+        }
+        case SPELL_AURA_ADD_FLAT_MODIFIER:
+        {
+            // Relic flat modifier: value applied per cast of the ability identified by
+            // SpellFamilyName + SpellClassMask. MiscValue is the SpellModOp.
+            uint32 op = effectInfo.MiscValue;
+            if (op != SPELLMOD_DAMAGE && op != SPELLMOD_EFFECT1 && op != SPELLMOD_EFFECT2 && op != SPELLMOD_EFFECT3 &&
+                op != SPELLMOD_DOT && op != SPELLMOD_COST)
+                break;
+
+            if (!spellInfo)
+                break;
+
+            RelicModAbility ability = ResolveRelicAbility(spellInfo, effectInfo.SpellClassMask, lvl_);
+            if (!ability.spellId)
+                break;
+
+            // Cycle = how often the ability is used (cooldown, duration for DoTs/HoTs, or cast time + GCD)
+            uint32 cycle = std::max(std::max(ability.cooldown, ability.duration), ability.castTime + 1500);
+            if (!cycle)
+                cycle = 1500;
+
+            float perSecond = (op == SPELLMOD_COST ? -val : val) * 1000.0f / cycle;
+
+            if (op == SPELLMOD_COST)
+                stats[STATS_TYPE_MANA_REGENERATION] += perSecond;
+            else if (type_ & CollectorType::SPELL_HEAL)
+                stats[STATS_TYPE_HEAL_POWER] += perSecond;
+            else if (type_ & CollectorType::SPELL_DMG)
+                stats[STATS_TYPE_SPELL_POWER] += perSecond;
+            else
+                stats[STATS_TYPE_ATTACK_POWER] += perSecond;
             break;
         }
         case SPELL_AURA_MOD_HEALING_DONE:
