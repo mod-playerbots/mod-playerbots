@@ -750,6 +750,11 @@ AiPlayerbot.SyncLevelWithPlayers = 0
 # Default: 0 (disabled)
 AiPlayerbot.RandomBotConcentrateInPlayerZone = 0
 
+# Keep randombot levels within N levels of the highest-level online real player.
+# Best paired with AiPlayerbot.RandomBotConcentrateInPlayerZone.
+# Default: 0 (disabled)
+AiPlayerbot.RandomBotLevelWindowAroundPlayer = 0
+
 # Mark many quests ≤ bot level as complete (slows down bot creation)
 # Default: 0 (disabled)
 AiPlayerbot.PreQuests = 0
