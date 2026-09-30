@@ -1592,9 +1592,9 @@ AiPlayerbot.ProbTeleToBankers = 0.25
 
 # Probability an idle random bot's random move targets a quest giver it can accept a quest from
 # right now (level/faction valid, no unmet prereq, not in progress, quest-log + item room).
-# Falls back to the city/hub destination when no valid giver exists.
-# Default: 0.25
-AiPlayerbot.ProbTeleToQuestGivers = 0.25
+# Falls through to the innkeeper/hub path when no valid giver exists.
+# Default: 0 (off; set above 0 to enable quest-giver teleports)
+AiPlayerbot.ProbTeleToQuestGivers = 0
 
 # Level window for quest-giver teleports: the startup index buckets a quest for bots from its
 # MinLevel up to (QuestLevel + this window), and at teleport time quests more than this many levels
