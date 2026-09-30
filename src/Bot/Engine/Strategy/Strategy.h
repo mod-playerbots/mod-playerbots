@@ -16,10 +16,10 @@
 
 enum class TargetValueExclusionType : uint8
 {
-    None = 0,
-    Tank,
-    Dps,
-    Attacker
+    TankTarget,
+    DpsTarget,     // also "dps aoe target"
+    DebuffTarget,  // "attacker without aura", "melee attacker without aura"
+    Aoe,
 };
 
 enum StrategyType : uint32
@@ -73,6 +73,7 @@ public:
     virtual std::vector<NextAction> getDefaultActions() { return {}; }
     virtual void InitTriggers([[maybe_unused]] std::vector<TriggerNode*>& triggers) {}
     virtual void InitMultipliers([[maybe_unused]] std::vector<Multiplier*>& multipliers) {}
+    // Ignoring type applies an exclusion to every consumer; exclusions never make a bot drop its current target.
     virtual void AppendTargetExclusions([[maybe_unused]] GuidSet& exclusions,
                                         [[maybe_unused]] TargetValueExclusionType type) {}
     virtual bool HasTargetExclusions() const { return false; }

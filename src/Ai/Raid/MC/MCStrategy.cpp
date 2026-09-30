@@ -107,7 +107,9 @@ void RaidMcStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
 void RaidMcStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
 {
-    if (type != TargetValueExclusionType::Dps && type != TargetValueExclusionType::Attacker)
+    // Tanks keep counting these toward AoE, which they need for threat.
+    if (type == TargetValueExclusionType::TankTarget ||
+        (type == TargetValueExclusionType::Aoe && PlayerbotAI::IsTank(botAI->GetBot())))
         return;
 
     // Damage into these is wasted: Core Ragers are unkillable while Golemagg

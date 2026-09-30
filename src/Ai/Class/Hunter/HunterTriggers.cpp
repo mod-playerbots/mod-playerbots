@@ -14,6 +14,7 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "SharedDefines.h"
+#include "TargetValue.h"
 
 bool KillCommandTrigger::IsActive()
 {
@@ -181,8 +182,7 @@ bool VolleyChannelCheckTrigger::IsActive()
     if (Spell* spell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
         spell && VOLLEY_SPELL_IDS.count(spell->m_spellInfo->Id))
     {
-        uint8 attackerCount = AI_VALUE(uint8, "attacker count");
-        return attackerCount < minEnemies;
+        return !HasEnoughAoeTargets(botAI, bot->GetPosition(), sPlayerbotAIConfig.sightDistance, minEnemies);
     }
 
     return false;
