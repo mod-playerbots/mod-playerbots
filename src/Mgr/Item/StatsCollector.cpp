@@ -341,7 +341,8 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
                 int32 val = AverageValue(effectInfo, spellInfo);
                 if (type_ & (CollectorType::MELEE | CollectorType::RANGED))
                 {
-                    float transfer_multiplier = 1;
+                    // 14 AP = 1 DPS: convert the per-second damage into attack power.
+                    float transfer_multiplier = 14;
                     stats[STATS_TYPE_ATTACK_POWER] += (float)val / normalizedCd * multiplier * transfer_multiplier;
                 }
                 else if (type_ & CollectorType::SPELL_DMG)
@@ -775,7 +776,7 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInf
             else if (type_ & CollectorType::SPELL_DMG)
                 stats[STATS_TYPE_SPELL_POWER] += perSecond;
             else
-                stats[STATS_TYPE_ATTACK_POWER] += perSecond;
+                stats[STATS_TYPE_ATTACK_POWER] += perSecond * 14.0f;  // 14 AP = 1 DPS
             break;
         }
         case SPELL_AURA_MOD_HEALING_DONE:
@@ -786,7 +787,7 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInf
             // Value is damage per tick; Amplitude is the tick interval in ms.
             float perSecond = effectInfo.Amplitude ? (val * 1000.0f / effectInfo.Amplitude) : val;
             if (type_ & (CollectorType::MELEE | CollectorType::RANGED))
-                stats[STATS_TYPE_ATTACK_POWER] += perSecond * multiplier;
+                stats[STATS_TYPE_ATTACK_POWER] += perSecond * multiplier * 14.0f;  // 14 AP = 1 DPS
             else if (type_ & CollectorType::SPELL_DMG)
                 stats[STATS_TYPE_SPELL_POWER] += perSecond * multiplier * 0.5f;
             break;
@@ -994,7 +995,7 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInf
                     else if (type_ & CollectorType::SPELL_DMG)
                         stats[STATS_TYPE_SPELL_POWER] += perSecond;
                     else
-                        stats[STATS_TYPE_ATTACK_POWER] += perSecond;
+                        stats[STATS_TYPE_ATTACK_POWER] += perSecond * 14.0f;  // 14 AP = 1 DPS
                 }
             }
             break;
