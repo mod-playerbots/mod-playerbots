@@ -809,6 +809,11 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInf
                 stats[STATS_TYPE_SPELL_PENETRATION] += val * multiplier;
             break;
         }
+        case SPELL_AURA_MOD_POWER_COST_SCHOOL:
+            // Flat mana-cost reduction (e.g. Spark of Hope); stored negative in the DBC,
+            // so negate to add as mana saved per cast.
+            stats[STATS_TYPE_MANA_REGENERATION] += -val * multiplier;
+            break;
         case SPELL_AURA_PROC_TRIGGER_SPELL:
         {
             if (canNextTrigger)
