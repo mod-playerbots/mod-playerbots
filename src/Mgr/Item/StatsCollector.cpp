@@ -44,7 +44,10 @@ namespace
             SpellInfo const* si = sSpellMgr->GetSpellInfo(id);
             if (!si || si->SpellFamilyName != relicSpell->SpellFamilyName)
                 continue;
-            if ((si->SpellFamilyFlags & mask) == mask)
+            // A relic may target several abilities (e.g. a feral relic buffing Lacerate, Swipe,
+            // Mangle and Shred); match any ability sharing a bit with the mask, not just a spell
+            // carrying every mask bit.
+            if (!(si->SpellFamilyFlags & mask).IsEqual())
             {
                 RelicModAbility ability;
                 ability.spellId = id;
@@ -231,10 +234,10 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
             }
             case SPELL_EFFECT_HEAL:
             {
-                /// @todo Handle spell without cooldown
-                if (!spellCooldown.count())
-                    break;
-                float normalizedCd = std::max((float)spellCooldown.count() / 1000, 5.0f);
+                // No known cycle (no-ICD proc / on-equip): fall back to a default 1.8 PPM interval.
+                float normalizedCd = spellCooldown.count() == 0
+                    ? 60000.0f / 1.8f / 1000
+                    : std::max((float)spellCooldown.count() / 1000, 5.0f);
                 int32 val = AverageValue(effectInfo, spellInfo);
                 float transfer_multiplier = 1;
                 stats[STATS_TYPE_HEAL_POWER] += (float)val / normalizedCd * multiplier * transfer_multiplier;
@@ -242,12 +245,12 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
             }
             case SPELL_EFFECT_ENERGIZE:
             {
-                /// @todo Handle spell without cooldown
-                if (!spellCooldown.count())
-                    break;
                 if (effectInfo.MiscValue != POWER_MANA)
                     break;
-                float normalizedCd = std::max((float)spellCooldown.count() / 1000, 5.0f);
+                // No known cycle (no-ICD proc / on-equip): fall back to a default 1.8 PPM interval.
+                float normalizedCd = spellCooldown.count() == 0
+                    ? 60000.0f / 1.8f / 1000
+                    : std::max((float)spellCooldown.count() / 1000, 5.0f);
                 int32 val = AverageValue(effectInfo, spellInfo);
                 float transfer_multiplier = 0.2;
                 stats[STATS_TYPE_MANA_REGENERATION] += (float)val / normalizedCd * multiplier * transfer_multiplier;
@@ -255,10 +258,10 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
             }
             case SPELL_EFFECT_SCHOOL_DAMAGE:
             {
-                /// @todo Handle spell without cooldown
-                if (!spellCooldown.count())
-                    break;
-                float normalizedCd = std::max((float)spellCooldown.count() / 1000, 5.0f);
+                // No known cycle (no-ICD proc / on-equip): fall back to a default 1.8 PPM interval.
+                float normalizedCd = spellCooldown.count() == 0
+                    ? 60000.0f / 1.8f / 1000
+                    : std::max((float)spellCooldown.count() / 1000, 5.0f);
                 int32 val = AverageValue(effectInfo, spellInfo);
                 if (type_ & (CollectorType::MELEE | CollectorType::RANGED))
                 {
@@ -391,6 +394,11 @@ bool StatsCollector::SpecialSpellFilter(uint32 spellId)
             break;
         case 71903:  // Shadowmourne
             stats[STATS_TYPE_STRENGTH] += 200;
+            return true;
+        case 64415:  // Val'anyr, Hammer of Ancient Kings: 10% on heal -> Blessing of Ancient Kings (64411),
+                      // an absorb shield for 15% of the heal (scripted DUMMY, no DBC value); ~+100 heal power sustained
+            if (type_ & CollectorType::SPELL_HEAL)
+                stats[STATS_TYPE_HEAL_POWER] += 100;
             return true;
         default:
             break;
@@ -878,8 +886,41 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInf
         }
         case SPELL_AURA_PROC_TRIGGER_SPELL:
         {
-            if (canNextTrigger)
-                CollectSpellStats(effectInfo.TriggerSpell, multiplier, triggerCooldown);
+            if (effectInfo.TriggerSpell)
+            {
+                if (canNextTrigger)
+                    CollectSpellStats(effectInfo.TriggerSpell, multiplier, triggerCooldown);
+            }
+            else if (val > 0)
+            {
+                // Flat-damage proc (e.g. feral "your ability deals X additional damage" relics):
+                // the bonus lives in the aura's base points with no trigger spell. The abilities are
+                // identified by the proc's SpellFamilyMask from the spell_proc table (the DBC effect
+                // mask is unreliable here); value the bonus over their use cycle like ADD_FLAT_MODIFIER.
+                flag96 abilityMask = effectInfo.SpellClassMask;
+                SpellProcEntry const* procEntry = sSpellMgr->GetSpellProcEntry(spellInfo->Id);
+                if (procEntry && procEntry->SpellFamilyName)
+                    abilityMask = procEntry->SpellFamilyMask;
+
+                if (spellInfo->SpellFamilyName && !CheckSpellValidation(spellInfo->SpellFamilyName, abilityMask))
+                    break;
+                RelicModAbility ability = ResolveRelicAbility(spellInfo, abilityMask, lvl_);
+                if (ability.spellId)
+                {
+                    uint32 cycle = std::max(std::max(ability.cooldown, ability.duration), ability.castTime + 1500);
+                    if (procEntry && procEntry->Cooldown.count())
+                        cycle = std::max(cycle, uint32(procEntry->Cooldown.count()));
+                    if (!cycle)
+                        cycle = 1500;
+                    float perSecond = val * 1000.0f / cycle;
+                    if (type_ & CollectorType::SPELL_HEAL)
+                        stats[STATS_TYPE_HEAL_POWER] += perSecond;
+                    else if (type_ & CollectorType::SPELL_DMG)
+                        stats[STATS_TYPE_SPELL_POWER] += perSecond;
+                    else
+                        stats[STATS_TYPE_ATTACK_POWER] += perSecond;
+                }
+            }
             break;
         }
         case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
