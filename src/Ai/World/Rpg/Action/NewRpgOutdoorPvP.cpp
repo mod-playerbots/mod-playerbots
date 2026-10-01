@@ -5,8 +5,10 @@
  */
 
 #include "NewRpgOutdoorPvP.h"
+#include "LastMovementValue.h"
 #include "OutdoorPvP.h"
 #include "OutdoorPvPMgr.h"
+#include "Playerbots.h"
 
 bool NewRpgOutdoorPvpAction::Execute(Event)
 {
@@ -15,7 +17,7 @@ bool NewRpgOutdoorPvpAction::Execute(Event)
         botAI->rpgInfo.ChangeToIdle();
         return false;
     }
-    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL) || !bot->IsOutdoorPvPActive())
+    if (!bot->IsOutdoorPvPActive())
         return false;
 
     uint32 zoneId = bot->GetZoneId();
@@ -119,16 +121,23 @@ OPvPCapturePoint* NewRpgOutdoorPvpAction::SelectNewObjective(OutdoorPvP::OPvPCap
 
 bool NewRpgOutdoorPvpAction::PatrolCapturePoint(GameObject* objectiveGO, float radius)
 {
-    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL))
-        return false;
+    if (AI_VALUE(LastMovement&, "last movement").IsHoldActive())
+        return true;
 
-    // Randomly pause at the current spot before picking a new patrol point
+    // Randomly pause at the current spot before picking a new patrol
+    // point. NORMAL-priority movement hold, not a brain sleep — combat
+    // movement breaks it instantly.
     if (urand(0, 2) == 0)
-        return ForceToWait(urand(3000, 6000));
+    {
+        SetNextMovementDelay(urand(3000, 6000), MovementPriority::MOVEMENT_NORMAL);
+        return true;
+    }
 
     float patrolRadius = radius * 0.8f;
     if (MoveRandomNear(patrolRadius, MovementPriority::MOVEMENT_NORMAL, objectiveGO))
         return true;
 
-    return ForceToWait(urand(3000, 6000));
+    // No patrol spot found this tick: pause instead of re-rolling every tick.
+    SetNextMovementDelay(urand(3000, 6000), MovementPriority::MOVEMENT_NORMAL);
+    return true;
 }
