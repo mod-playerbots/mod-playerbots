@@ -85,6 +85,24 @@ bool DropTargetAction::Execute(Event /*event*/)
     return true;
 }
 
+bool TargetRequesterAction::Execute(Event event)
+{
+    Player* requester = event.getOwner();
+
+    if (!requester)
+        return false;
+
+    bot->SetSelection(requester->GetGUID());
+
+    botAI->TellMasterNoFacing(
+        PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "target_requester_success",
+            "Targeting %target",
+            {{"%target", requester->GetName()}}));
+
+    return true;
+}
+
 bool AttackAnythingAction::Execute(Event event)
 {
     bool result = AttackAction::Execute(event);

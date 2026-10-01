@@ -14,6 +14,7 @@
  */
 
 #include "TravelNode.h"
+#include "PlayerbotsDatabase.h"
 #include "BudgetValues.h"
 #include "MapMgr.h"
 #include "PathGenerator.h"

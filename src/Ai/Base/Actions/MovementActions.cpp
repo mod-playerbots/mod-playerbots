@@ -198,7 +198,7 @@ void MovementAction::EmitDebugMove(char const* method, char const* generator, fl
 void MovementAction::CreateWp(Player* wpOwner, float x, float y, float z, float o, uint32 entry, bool important)
 {
     float dist = wpOwner->GetDistance(x, y, z);
-    float delay = 1000.0f * dist / wpOwner->GetSpeed(MOVE_RUN) + sPlayerbotAIConfig.reactDelay;
+    float delay = IN_MILLISECONDS * dist / wpOwner->GetSpeed(MOVE_RUN) + sPlayerbotAIConfig.reactDelay;
 
     Creature* wpCreature = wpOwner->SummonCreature(entry, x, y, z - 1, o, TEMPSUMMON_TIMED_DESPAWN, delay);
     botAI->GetBot()->AddAura(246, wpCreature);
@@ -372,7 +372,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
                 mover->SetStandState(UNIT_STAND_STATE_STAND);
 
             DoMovePoint(mover, x, y, z, generatePath, backwards);
-            float delay = 1000.0f * MoveDelay(distance, backwards);
+            float delay = IN_MILLISECONDS * MoveDelay(distance, backwards);
             if (lessDelay)
                 delay -= botAI->GetReactDelay();
             delay = std::max(.0f, delay);
@@ -1897,7 +1897,7 @@ bool TankFaceAction::Execute(Event /*event*/)
 
 bool RearFlankAction::isUseful()
 {
-    Unit* target = AI_VALUE(Unit*, "current target");
+    Unit const* target = GetTarget();
     if (!target)
         return false;
 
@@ -1912,7 +1912,7 @@ bool RearFlankAction::isUseful()
 
 bool RearFlankAction::Execute(Event /*event*/)
 {
-    Unit* target = AI_VALUE(Unit*, "current target");
+    Unit const* target = GetTarget();
     if (!target)
         return false;
 
@@ -1935,6 +1935,11 @@ bool RearFlankAction::Execute(Event /*event*/)
 
     return MoveTo(bot->GetMapId(), destination->GetPositionX(), destination->GetPositionY(),
                   destination->GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
+}
+
+Unit* BossRearFlankAction::GetTarget()
+{
+    return AI_VALUE2(Unit*, "find target", bossName);
 }
 
 bool DisperseSetAction::Execute(Event event)
@@ -2998,7 +3003,7 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
         time_t const now = time(nullptr);
         if (lastMove.nextTeleport > now)
         {
-            botAI->SetNextCheckDelay((uint32)((lastMove.nextTeleport - now) * 1000));
+            botAI->SetNextCheckDelay((uint32)((lastMove.nextTeleport - now) * IN_MILLISECONDS));
             return true;
         }
     }

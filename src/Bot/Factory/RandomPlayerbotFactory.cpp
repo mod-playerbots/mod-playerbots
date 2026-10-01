@@ -5,6 +5,7 @@
  */
 
 #include "RandomPlayerbotFactory.h"
+#include "PlayerbotsDatabase.h"
 #include "AccountMgr.h"
 #include "ArenaTeamMgr.h"
 #include "CharacterCache.h"
@@ -16,7 +17,9 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotOperations.h"
 #include "PlayerbotWorldThreadProcessor.h"
+#include "Playerbots.h"
 #include "RaceMgr.h"
+#include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
 #include "SharedDefines.h"
 #include "SocialMgr.h"
@@ -123,22 +126,22 @@ Player* RandomPlayerbotFactory::CreateRandomBot(WorldSession* session, uint8 cls
     std::vector<std::pair<uint8, uint8>> faces, hairs;
     for (CharSectionsEntry const* charSection : sCharSectionsStore)
     {
-        if (charSection->Race != race || charSection->Gender != gender)
+        if (charSection->RaceID != race || charSection->SexID != gender)
             continue;
 
-        switch (charSection->GenType)
+        switch (charSection->BaseSection)
         {
             case SECTION_TYPE_SKIN:
-                skinColors.push_back(charSection->Color);
+                skinColors.push_back(charSection->ColorIndex);
                 break;
             case SECTION_TYPE_FACE:
-                faces.push_back(std::pair<uint8, uint8>(charSection->Type, charSection->Color));
+                faces.push_back(std::pair<uint8, uint8>(charSection->VariationIndex, charSection->ColorIndex));
                 break;
             case SECTION_TYPE_FACIAL_HAIR:
-                facialHairTypes.push_back(charSection->Type);
+                facialHairTypes.push_back(charSection->VariationIndex);
                 break;
             case SECTION_TYPE_HAIR:
-                hairs.push_back(std::pair<uint8, uint8>(charSection->Type, charSection->Color));
+                hairs.push_back(std::pair<uint8, uint8>(charSection->VariationIndex, charSection->ColorIndex));
                 break;
         }
     }
@@ -324,21 +327,26 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
     {
         if (sPlayerbotAIConfig.maxRandomBots == 0)
         {
-            PlayerbotsDatabase.Execute("UPDATE playerbots_account_type SET account_type = 0 WHERE account_type = 1");
+            PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_ACCOUNT_TYPE_UNASSIGN);
+            stmt->SetData(0, uint8(1));
+            PlayerbotsDatabase.Execute(stmt);
             LOG_INFO("playerbots", "MaxRandomBots set to 0, any RNDbot accounts (type 1) will be unassigned (type 0)");
         }
         if (sPlayerbotAIConfig.addClassAccountPoolSize == 0)
         {
-            PlayerbotsDatabase.Execute("UPDATE playerbots_account_type SET account_type = 0 WHERE account_type = 2");
+            PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_ACCOUNT_TYPE_UNASSIGN);
+            stmt->SetData(0, uint8(2));
+            PlayerbotsDatabase.Execute(stmt);
             LOG_INFO("playerbots", "AddClassAccountPoolSize set to 0, any AddClass accounts (type 2) will be unassigned (type 0)");
         }
 
         // Wait for DB to reflect the change, up to 1 second max. This is needed to make sure other logs don't show wrong info
         for (int waited = 0; waited < 1000; waited += 50)
         {
-            QueryResult res = PlayerbotsDatabase.Query("SELECT COUNT(*) FROM playerbots_account_type WHERE account_type IN ({}, {})",
-                sPlayerbotAIConfig.maxRandomBots == 0 ? 1 : -1,
-                sPlayerbotAIConfig.addClassAccountPoolSize == 0 ? 2 : -1);
+            PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_ACCOUNT_TYPE_COUNT_BY_TYPES);
+            stmt->SetData(0, int32(sPlayerbotAIConfig.maxRandomBots == 0 ? 1 : -1));
+            stmt->SetData(1, int32(sPlayerbotAIConfig.addClassAccountPoolSize == 0 ? 2 : -1));
+            PreparedQueryResult res = PlayerbotsDatabase.Query(stmt);
 
             if (!res || res->Fetch()[0].Get<uint64>() == 0)
                 break;
@@ -352,7 +360,8 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
     uint32 existingAddClassAccounts = 0;
     uint32 existingUnassignedAccounts = 0;
 
-    QueryResult typeCheck = PlayerbotsDatabase.Query("SELECT account_type, COUNT(*) FROM playerbots_account_type GROUP BY account_type");
+    PlayerbotsDatabasePreparedStatement* typeStmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_ACCOUNT_TYPE_COUNT_BY_TYPE);
+    PreparedQueryResult typeCheck = PlayerbotsDatabase.Query(typeStmt);
     if (typeCheck)
     {
         do
@@ -457,36 +466,42 @@ void RandomPlayerbotFactory::CreateRandomBots()
 
     if (sPlayerbotAIConfig.deleteRandomBotAccounts)
     {
+        // Collect bot account ids from the login database so the cleanup below
+        // never needs a cross-database subquery (the login database may live on
+        // a different server than the character database)
         std::vector<uint32> botAccounts;
-        std::vector<uint32> botFriends;
-
-        // Calculates the total number of required accounts.
-        uint32 totalAccountCount = CalculateTotalAccountCount();
-
-        for (uint32 accountNumber = 0; accountNumber < totalAccountCount; ++accountNumber)
+        QueryResult accountResult = LoginDatabase.Query("SELECT id FROM account WHERE username LIKE '{}%%' ORDER BY id",
+            sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
+        if (accountResult)
         {
-            std::ostringstream out;
-            out << sPlayerbotAIConfig.randomBotAccountPrefix << accountNumber;
-            std::string const accountName = out.str();
-
-            if (uint32 accountId = AccountMgr::GetId(accountName))
-                botAccounts.push_back(accountId);
+            do
+            {
+                botAccounts.push_back(accountResult->Fetch()->Get<uint32>());
+            } while (accountResult->NextRow());
         }
 
-        LOG_INFO("playerbots", "Deleting all random bot characters and accounts...");
+        std::string botAccountIds;
+        for (uint32 accountId : botAccounts)
+        {
+            if (!botAccountIds.empty())
+                botAccountIds += ", ";
+            botAccountIds += std::to_string(accountId);
+        }
+        if (botAccountIds.empty())
+            botAccountIds = "0";    // account ids start at 1, so this matches nothing
+
+        LOG_INFO("playerbots", "Deleting all random bot characters and accounts ({} bot accounts found)...", botAccounts.size());
 
         // First execute all the cleanup SQL commands
         // Clear playerbots_random_bots and playerbots_account_type
-        PlayerbotsDatabase.Execute("DELETE FROM playerbots_random_bots");
-        PlayerbotsDatabase.Execute("DELETE FROM playerbots_account_type");
+        PlayerbotsDatabase.Execute(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_RANDOM_BOTS));
+        PlayerbotsDatabase.Execute(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_ACCOUNT_TYPE));
 
-        // Get the database names dynamically
-        std::string loginDBName = LoginDatabase.GetConnectionInfo()->database;
+        // Get the character database name dynamically (used in same-server subqueries below)
         std::string characterDBName = CharacterDatabase.GetConnectionInfo()->database;
 
-        // Delete all characters from bot accounts
-        CharacterDatabase.Execute("DELETE FROM characters WHERE account IN (SELECT id FROM " + loginDBName + ".account WHERE username LIKE '{}%%')",
-            sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
+        // Delete all characters from bot accounts (by explicit id list, no cross-database subquery)
+        CharacterDatabase.Execute("DELETE FROM characters WHERE account IN (" + botAccountIds + ")");
 
         // Wait for the characters to be deleted before proceeding to dependent deletes
         while (CharacterDatabase.QueueSize())
@@ -498,9 +513,8 @@ void RandomPlayerbotFactory::CreateRandomBots()
         // Clean up orphaned entries in playerbots_guild_tasks
         PlayerbotsDatabase.Execute("DELETE FROM playerbots_guild_tasks WHERE owner NOT IN (SELECT guid FROM " + characterDBName + ".characters)");
 
-        // Clean up orphaned entries in playerbots_db_store
-        PlayerbotsDatabase.Execute("DELETE FROM playerbots_db_store WHERE guid NOT IN (SELECT guid FROM " + characterDBName + ".characters WHERE account IN (SELECT id FROM " + loginDBName + ".account WHERE username NOT LIKE '{}%%'))",
-            sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
+        // Clean up orphaned entries in playerbots_db_store (explicit id list, no cross-database subquery)
+        PlayerbotsDatabase.Execute("DELETE FROM playerbots_db_store WHERE guid NOT IN (SELECT guid FROM " + characterDBName + ".characters WHERE account NOT IN (" + botAccountIds + "))");
 
         // Clean up orphaned records in character-related tables
         CharacterDatabase.Execute("DELETE FROM arena_team_member WHERE guid NOT IN (SELECT guid FROM characters)");
@@ -706,7 +720,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         RandomPlayerbotFactory factory;
 
         WorldSession* session = new WorldSession(accountId, "", 0x0, nullptr, SEC_PLAYER, EXPANSION_WRATH_OF_THE_LICH_KING,
-                                                time_t(0), LOCALE_enUS, 0, false, false, 0, true);
+                                                time_t(0), LOCALE_enUS, 0, false, false, 0);
         sessionBots.push_back(session);
 
         for (uint8 cls = CLASS_WARRIOR; cls < MAX_CLASSES - count; ++cls)
@@ -854,9 +868,30 @@ void RandomPlayerbotFactory::LoadArenaTeamData()
     LOG_INFO("playerbots", "Loaded {} available arena team names", _availableArenaTeamNames.size());
 }
 
+bool RandomPlayerbotFactory::IsEligibleForBotArenaTeam(Player* bot)
+{
+    if (!bot || !bot->GetSession())
+        return false;
+
+    uint32 const accountId = bot->GetSession()->GetAccountId();
+    if (!sPlayerbotAIConfig.IsInRandomAccountList(accountId))
+        return false;
+
+    if (sRandomPlayerbotMgr.IsAddClassAccount(accountId))
+        return false;
+
+    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+    {
+        if (botAI->HasGameClientMaster())
+            return false;
+    }
+
+    return true;
+}
+
 void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
 {
-    if (!sPlayerbotAIConfig.IsInRandomAccountList(bot->GetSession()->GetAccountId()))
+    if (!IsEligibleForBotArenaTeam(bot))
         return;
 
     if (sPlayerbotAIConfig.deleteRandomBotArenaTeams)
@@ -865,9 +900,9 @@ void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
     if (bot->GetLevel() < 70)
         return;
 
-    for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
+    for (uint8 arenaSlot = ARENA_SLOT_2v2; arenaSlot <= ARENA_SLOT_5v5; ++arenaSlot)
     {
-        if (bot->GetArenaTeamId(arena_slot))
+        if (bot->GetArenaTeamId(arenaSlot))
             return;
     }
 
@@ -878,10 +913,10 @@ void RandomPlayerbotFactory::AssignBotToArenaTeam(Player* bot)
 void RandomPlayerbotFactory::AssignBotToArenaTeamInternal(Player* bot)
 {
     // Check if bot has team, only one per bot to avoid queue conflicts
-    for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
+    for (uint8 arenaSlot = ARENA_SLOT_2v2; arenaSlot <= ARENA_SLOT_5v5; ++arenaSlot)
     {
-        if (bot->GetArenaTeamId(arena_slot) ||
-            sCharacterCache->GetCharacterArenaTeamIdByGuid(bot->GetGUID(), arena_slot))
+        if (bot->GetArenaTeamId(arenaSlot) ||
+            sCharacterCache->GetCharacterArenaTeamIdByGuid(bot->GetGUID(), arenaSlot))
             return;
     }
 
@@ -955,11 +990,11 @@ void RandomPlayerbotFactory::CreateBotArenaTeam(Player* bot, ArenaType type)
     arenateam->SetRatingForAll(
         urand(sPlayerbotAIConfig.randomBotArenaTeamMinRating, sPlayerbotAIConfig.randomBotArenaTeamMaxRating));
 
-    uint32 backgroundColor = urand(0xFF000000, 0xFFFFFFFF);
-    uint32 emblemStyle = urand(0, 101);
-    uint32 emblemColor = urand(0xFF000000, 0xFFFFFFFF);
-    uint32 borderStyle = urand(0, 5);
-    uint32 borderColor = urand(0xFF000000, 0xFFFFFFFF);
+    uint32 const backgroundColor = urand(0xFF000000, 0xFFFFFFFF);
+    uint8 const emblemStyle = urand(0, 101);
+    uint32 const emblemColor = urand(0xFF000000, 0xFFFFFFFF);
+    uint8 const borderStyle = urand(0, 5);
+    uint32 const borderColor = urand(0xFF000000, 0xFFFFFFFF);
     arenateam->SetEmblem(backgroundColor, emblemStyle, emblemColor, borderStyle, borderColor);
 
     arenateam->SaveToDB();

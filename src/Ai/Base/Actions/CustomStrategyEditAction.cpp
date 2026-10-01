@@ -5,6 +5,7 @@
  */
 
 #include "CustomStrategyEditAction.h"
+#include "PlayerbotsDatabase.h"
 #include "CustomStrategy.h"
 #include "Event.h"
 #include "Playerbots.h"
