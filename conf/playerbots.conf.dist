@@ -1386,10 +1386,10 @@ AiPlayerbot.NonCombatStrategies = ""
 
 # Reaction engine strategy overrides.
 # Strategy modifiers applied to the reaction engine after the defaults.
-# Defaults are: "react", "chat", "potions", plus "avoid aoe" when AutoAvoidAoe is enabled and the bot has a real player master.
+# Defaults are: "react", "chat".
 # ReactStrategies applies to bots with a real player master or that are real players themselves.
 # RandomBotReactStrategies applies to all other bots (random bots without a real player master).
-# Example: "-potions" stops potion use as a reaction; "+custom_react" adds a custom reaction strategy.
+# Example: "-chat" stops chat commands being handled as reactions; "+custom_react" adds a custom reaction strategy.
 AiPlayerbot.ReactStrategies = ""
 AiPlayerbot.RandomBotReactStrategies = ""
 

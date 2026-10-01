@@ -232,8 +232,6 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
             }
             uint32 castTime = spellInfo->CalcCastTime();
             botAI->SetNextCheckDelay(castTime + sPlayerbotAIConfig.reactDelay);
-            if (IsReaction())
-                SetDuration(castTime + sPlayerbotAIConfig.reactDelay);
         }
 
         break;

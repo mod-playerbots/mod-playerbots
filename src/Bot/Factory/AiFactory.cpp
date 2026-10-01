@@ -740,12 +740,10 @@ Engine* AiFactory::createDeadEngine(Player* player, PlayerbotAI* const facade, A
     return deadEngine;
 }
 
-void AiFactory::AddDefaultReactionStrategies(Player* player, PlayerbotAI* const facade, ReactionEngine* reactionEngine)
+void AiFactory::AddDefaultReactionStrategies(Player* player, PlayerbotAI* const /*facade*/,
+                                             ReactionEngine* reactionEngine)
 {
-    reactionEngine->addStrategies("react", "chat", "potions", nullptr);
-
-    if (sPlayerbotAIConfig.autoAvoidAoe && facade->HasGameClientMaster())
-        reactionEngine->addStrategy("avoid aoe", false);
+    reactionEngine->addStrategies("react", "chat", nullptr);
 
     if (sRandomPlayerbotMgr.IsRandomBot(player))
         reactionEngine->ChangeStrategy(sPlayerbotAIConfig.randomBotReactStrategies);
