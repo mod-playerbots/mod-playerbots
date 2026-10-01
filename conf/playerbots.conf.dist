@@ -1201,6 +1201,12 @@ Playerbots.PreferClassArmorType = 0
 # Default: 0 (disabled)
 Playerbots.PreferredSpecWeapons = 0
 
+# When enabled, item set bonuses are valued by their actual tier spells (2-piece/4-piece effects)
+# instead of the legacy flat completeness multiplier. Disabled by default so default scoring is
+# unchanged; enable for more accurate set-bonus valuation.
+# Default: 0 (disabled)
+AiPlayerbot.ItemSetSpellScoring = 0
+
 # Set minimum level of bots that will enchant and socket gems into their equipment with maintenance
 # If greater than RandomBotMaxlevel, bots will not automatically enchant equipment or socket gems
 # Default: 60

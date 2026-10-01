@@ -98,7 +98,7 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
 
     collector_->CollectItemStats(proto);
 
-    if (enable_item_set_bonus_)
+    if (enable_item_set_bonus_ && sPlayerbotAIConfig.itemSetSpellScoring)
         CollectItemSetBonus(player_, proto);
 
     if (randomPropertyIds != 0)
@@ -114,6 +114,9 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
     }
 
     CalculateItemTypePenalty(proto);
+
+    if (enable_item_set_bonus_ && !sPlayerbotAIConfig.itemSetSpellScoring)
+        CalculateItemSetMod(player_, proto);
 
     CalculateSocketBonus(player_, proto);
 
@@ -578,6 +581,50 @@ void StatsWeightCalculator::CollectItemSetBonus(Player* player, ItemTemplate con
         if (threshold && spellId && itemCount >= threshold)
             collector_->CollectSpellStats(spellId, 1.0f, Milliseconds(0));
     }
+}
+
+void StatsWeightCalculator::CalculateItemSetMod(Player* player, ItemTemplate const* proto)
+{
+    uint32 itemSet = proto->ItemSet;
+    if (!itemSet)
+        return;
+
+    float multiplier = 1.0f;
+    size_t i = 0;
+    for (i = 0; i < player->ItemSetEff.size(); i++)
+    {
+        if (player->ItemSetEff[i])
+        {
+            ItemSetEffect* eff = player->ItemSetEff[i];
+
+            uint32 setId = eff->setid;
+            if (itemSet != setId)
+                continue;
+
+            ItemSetEntry const* setEntry = sItemSetStore.LookupEntry(setId);
+            if (!setEntry)
+                continue;
+
+            uint32 itemCount = eff->item_count;
+            uint32 max_items = 0;
+            for (size_t j = 0; j < MAX_ITEM_SET_SPELLS; j++)
+                max_items = std::max(max_items, setEntry->items_to_triggerspell[j]);
+            if (itemCount < max_items)
+            {
+                multiplier += 0.1f * itemCount;  // 10% bonus for each item already equipped
+            }
+            else
+            {
+                multiplier = 1.0f;  // All item set effect has been triggered
+            }
+            break;
+        }
+    }
+
+    if (i == player->ItemSetEff.size())
+        multiplier = 1.05f;  // this is the first item in the item set
+
+    weight_ *= multiplier;
 }
 
 void StatsWeightCalculator::CalculateSocketBonus(Player* /*player*/, ItemTemplate const* proto)
