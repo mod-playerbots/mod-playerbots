@@ -63,12 +63,15 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto)
                 break;
             case ITEM_SPELLTRIGGER_CHANCE_ON_HIT:
             {
-                // CanBeTriggeredByType inside CollectSpellStats gates which collector types a proc can trigger
-                // for, so caster on-hit procs are valued for spell damage dealers too.
-                if (proto->Spells[j].SpellPPMRate > 0.01f)
-                    CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(static_cast<int>(60000 / proto->Spells[j].SpellPPMRate)));
-                else
-                    CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(static_cast<int>(60000 / 1.8f)));  // Default PPM = 1.8
+                // Weapon on-hit procs trigger on melee/ranged attacks, not spell casts, so only
+                // value them for the collectors that can actually trigger them.
+                if (type_ & (CollectorType::MELEE | CollectorType::RANGED))
+                {
+                    if (proto->Spells[j].SpellPPMRate > 0.01f)
+                        CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(static_cast<int>(60000 / proto->Spells[j].SpellPPMRate)));
+                    else
+                        CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(static_cast<int>(60000 / 1.8f)));  // Default PPM = 1.8
+                }
                 break;
             }
             default:
@@ -79,7 +82,7 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto)
     if (proto->socketBonus)
     {
         if (SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(proto->socketBonus))
-            CollectEnchantStats(enchant);
+            CollectEnchantStats(enchant, 0, proto->Delay);
     }
 }
 
@@ -153,8 +156,9 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
                     stats[STATS_TYPE_BONUS] += 1;
                 }
 
-                /// @todo Handle negative spell
-                if (!spellInfo->IsPositive())
+                // Skip harmful self-auras, but value offensive periodic damage (enemy DoTs),
+                // which is stored as a negative spell.
+                if (!spellInfo->IsPositive() && effectInfo.ApplyAuraName != SPELL_AURA_PERIODIC_DAMAGE)
                     break;
 
                 float coverage;
@@ -213,9 +217,12 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
             }
             case SPELL_EFFECT_TRIGGER_SPELL:
             {
-                // Follow the trigger spell, mirroring SPELL_AURA_PROC_TRIGGER_SPELL
+                // Follow the trigger spell, mirroring SPELL_AURA_PROC_TRIGGER_SPELL.
+                // On-use wrappers have no proc entry (triggerCooldown == 0); propagate the
+                // wrapper's activation cooldown instead so the child effect is still valued.
                 if (canNextTrigger)
-                    CollectSpellStats(effectInfo.TriggerSpell, multiplier, triggerCooldown);
+                    CollectSpellStats(effectInfo.TriggerSpell, multiplier,
+                        triggerCooldown.count() ? triggerCooldown : spellCooldown);
                 break;
             }
             default:
@@ -224,7 +231,7 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
     }
 }
 
-void StatsCollector::CollectEnchantStats(SpellItemEnchantmentEntry const* enchant, uint32 default_enchant_amount)
+void StatsCollector::CollectEnchantStats(SpellItemEnchantmentEntry const* enchant, uint32 default_enchant_amount, uint32 weaponDelay)
 {
     for (int s = 0; s < MAX_SPELL_ITEM_ENCHANTMENT_EFFECTS; ++s)
     {
@@ -245,9 +252,9 @@ void StatsCollector::CollectEnchantStats(SpellItemEnchantmentEntry const* enchan
             }
             case ITEM_ENCHANTMENT_TYPE_DAMAGE:
             {
-                // Flat weapon-damage enchant; approximated as raw DPS (true gain depends on weapon speed)
-                if (type_ & CollectorType::MELEE)
-                    stats[STATS_TYPE_MELEE_DPS] += enchant_amount;
+                // Flat weapon-damage enchant is per swing; convert to DPS using the weapon delay.
+                if (type_ & CollectorType::MELEE && weaponDelay)
+                    stats[STATS_TYPE_MELEE_DPS] += enchant_amount * 1000.0f / weaponDelay;
                 break;
             }
             case ITEM_ENCHANTMENT_TYPE_EQUIP_SPELL:
@@ -774,12 +781,13 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInf
             break;
         case SPELL_AURA_MOD_TARGET_RESISTANCE:
         {
-            // Mirrors AuraEffect::HandleModTargetResistance: physical -> armor pen, full spell -> spell pen
+            // The core adds this aura's signed amount to the enemy's resistance, so beneficial
+            // reduction is stored negative; negate to record penetration as positive. Only the
+            // spell school maps to a flat penetration stat; physical is a flat armor reduction
+            // that has no rating-based collector stat, so leave it unvalued.
             int32 schoolType = effectInfo.MiscValue;
-            if (schoolType & SPELL_SCHOOL_MASK_NORMAL)
-                stats[STATS_TYPE_ARMOR_PENETRATION] += val * multiplier;
             if ((schoolType & SPELL_SCHOOL_MASK_SPELL) == SPELL_SCHOOL_MASK_SPELL)
-                stats[STATS_TYPE_SPELL_PENETRATION] += val * multiplier;
+                stats[STATS_TYPE_SPELL_PENETRATION] += -val * multiplier;
             break;
         }
         case SPELL_AURA_PROC_TRIGGER_SPELL:
