@@ -22,6 +22,7 @@
 
 #include "AreaDefines.h"
 #include "Corpse.h"
+#include "DisableMgr.h"
 #include "Event.h"
 #include "FleeManager.h"
 #include "GameObject.h"
@@ -2392,15 +2393,18 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos, WorldPosition
 
     TravelPath out;
 
-    bool const usedGraph = needsLongPath &&
+    bool const noMesh = !crossMap && !DisableMgr::IsPathfindingEnabled(bot->GetMap());
+
+    bool const usedGraph = !noMesh && needsLongPath &&
                            !sTravelNodeMap.getNodes().empty() && !bot->InBattleground();
     char const* resolveMethod = usedGraph ? "graph" : "probe";
     if (usedGraph)
         out = sTravelNodeMap.GetFullPath(startPos, endPos, bot);
-    else
+    else if (!noMesh)
     {
         std::vector<WorldPosition> probe = startPos.getPathTo(endPos, bot);
-        out.addPath(probe);
+        if (probe.size() > 1)
+            out.addPath(probe);
     }
 
     // Check if the new path is better than the old one in reaching the destination.
@@ -2435,7 +2439,7 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos, WorldPosition
     if (out.empty())
     {
         // Beeline fallback for path failures.
-        if (!usedGraph && totalDistance > sPlayerbotAIConfig.sightDistance)
+        if (!usedGraph && !noMesh && totalDistance > sPlayerbotAIConfig.sightDistance)
             LOG_DEBUG("playerbots",
                       "[TravelGate] {} {} no path, beelining {:.0f}y: map {} "
                       "({:.0f},{:.0f},{:.0f}) -> map {} ({:.0f},{:.0f},{:.0f}) (mmap probe failed)",
@@ -2445,7 +2449,7 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos, WorldPosition
                       endPos.GetMapId(), endPos.GetPositionX(),
                       endPos.GetPositionY(), endPos.GetPositionZ());
         out.addPoint(endPos);
-        resolveMethod = "beeline";
+        resolveMethod = noMesh ? "beeline-nomesh" : "beeline";
     }
 
     if (sPlayerbotAIConfig.hasLog("pathfind_result.csv"))
@@ -3051,7 +3055,7 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
             uint32 const bridgeSteps = sPlayerbotAIConfig.travelNodeProbeSteps
                                            ? sPlayerbotAIConfig.travelNodeProbeSteps : 10;
             std::vector<WorldPosition> bridge = anchor.getPathFromPath({botPos}, bot, bridgeSteps);
-            if (!bridge.empty())
+            if (bridge.size() > 1)  // a failed probe is just {botPos}
                 path.addPath(bridge);
         }
 
