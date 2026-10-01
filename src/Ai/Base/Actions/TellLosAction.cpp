@@ -10,8 +10,10 @@
 #include "ItemTemplate.h"
 #include "ObjectMgr.h"
 #include "Playerbots.h"
+#include "PlayerbotTextMgr.h"
 #include "StatsWeightCalculator.h"
 #include "World.h"
+#include <map>
 #include <sstream>
 
 bool TellLosAction::Execute(Event event)
@@ -173,7 +175,7 @@ bool TellCalculateItemAction::Execute(Event event)
     std::ostringstream breakdown;
     for (uint32 i = 0; i < STATS_TYPE_MAX; ++i)
     {
-        if (collector->stats[i] == 0.0f || weights[i] == 0.0f)
+        if (collector->stats[i] == 0.0f)
             continue;
 
         float const contribution = collector->stats[i] * weights[i];
@@ -184,7 +186,13 @@ bool TellCalculateItemAction::Execute(Event event)
     }
 
     if (!breakdown.str().empty())
-        botAI->TellMasterNoFacing("Breakdown: " + breakdown.str() + " (weighted sum " + std::to_string(sum) + ")");
+    {
+        std::map<std::string, std::string> placeholders;
+        placeholders["%breakdown"] = breakdown.str();
+        placeholders["%sum"] = std::to_string(sum);
+        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "calc_item_breakdown", "Breakdown: %breakdown (weighted sum %sum)", placeholders));
+    }
 
     return true;
 }
