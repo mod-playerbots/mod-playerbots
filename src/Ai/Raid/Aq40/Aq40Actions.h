@@ -213,6 +213,8 @@ public:
     bool CthunEyeMelee(Player* player);
     Unit* CthunTarget(Player* player);
     bool CthunPhase2();
+    // Phase 2: the two ranged bots that take the Eye Tentacles out of reach of the stack.
+    bool CthunTentacleKiller(Player* player);
     bool NeedSwap(Unit* boss, uint32 aura, uint32 stacks);
     bool SkeramPlatform(Player* player, Position& platform);
     Position ViscidusRing(Player* player, Creature* boss);

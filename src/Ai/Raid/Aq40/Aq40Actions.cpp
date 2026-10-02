@@ -85,6 +85,10 @@ constexpr bool CthunPhase2Stack = true;
 constexpr float CthunTentacleChase = 70.0f;
 // Phase 2 melee leave the stack for tentacles up to this far from their stack spot.
 constexpr float CthunStackMeleeLeash = 30.0f;
+// Phase 2 Eye Tentacles farther than this from the stack are out of reach for casters standing in it, and live
+// long when every ranged bot picks the nearest tentacle; two ranged bots take only those.
+constexpr float CthunFarTentacle = 30.0f;
+constexpr uint32 CthunTentacleKillers = 2;
 // Dark Glare band (5 yd) plus a margin, and how many 1-second ticks ahead a bot starts moving.
 constexpr float GlareHalfWidth = 8.0f;
 constexpr int GlareLookahead = 3;
@@ -1282,6 +1286,27 @@ bool Aq40ControlAction::CthunPhase2()
     return true;
 }
 
+bool Aq40ControlAction::CthunTentacleKiller(Player* player)
+{
+    if (!CthunPhase2() || InStomach(player))
+        return false;
+    // Ranged damage bots only (never a human player): hunters first (longest reach), then mages, then the rest.
+    std::vector<Player*> killers;
+    for (Player* member : Members())
+        if (GET_PLAYERBOT_AI(member) && !InStomach(member) && !PlayerbotAI::IsHeal(member) &&
+            !PlayerbotAI::IsMelee(member) && !IsTankRole(member))
+            killers.push_back(member);
+    auto rank = [](Player* member) {
+        return member->getClass() == CLASS_HUNTER ? 0u : member->getClass() == CLASS_MAGE ? 1u : 2u;
+    };
+    std::stable_sort(killers.begin(), killers.end(),
+                     [&](Player* left, Player* right) { return rank(left) < rank(right); });
+    for (uint32 index = 0; index < killers.size() && index < CthunTentacleKillers; ++index)
+        if (killers[index] == player)
+            return true;
+    return false;
+}
+
 bool Aq40ControlAction::CthunMeleeBurn(Player* player)
 {
     if (_encounter != Aq40Encounter::Cthun || InStomach(player) ||
@@ -1316,6 +1341,17 @@ Unit* Aq40ControlAction::CthunTarget(Player* player)
         for (Creature* claw : Units(Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE)))
             if (TankFor(claw) == player && AllowedDamage(player, claw) && nearRaid(claw))
                 return claw;
+    // The tentacle killers take the far Eye Tentacles, even while C'Thun is Weakened. A Giant Eye still comes first.
+    if (Units(Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE)).empty() && CthunTentacleKiller(player))
+    {
+        Creature* best = nullptr;
+        for (Creature* tentacle : Units(Id(Aq40Npcs::NPC_EYE_TENTACLE)))
+            if (tentacle->GetExactDist2d(&CthunStack) > CthunFarTentacle && AllowedDamage(player, tentacle) &&
+                (!best || player->GetDistance(tentacle) < player->GetDistance(best)))
+                best = tentacle;
+        if (best)
+            return best;
+    }
     bool melee = PlayerbotAI::IsMelee(player) || IsTankRole(player);
     bool eyeMelee = CthunEyeMelee(player);
     Creature* body =
@@ -2232,8 +2268,15 @@ bool Aq40ControlAction::Formation(Player* player, Position& goal)
         }
         else if (CthunPhase2())
             if (Unit* target = Target(player))
+            {
                 if (player->GetDistance(target) > CthunRangedReach)
                     return false;  // Walk into range of a far Eye Tentacle, then come back to the stack.
+                // A tentacle killer stays where it can reach its far tentacle until it dies, instead of walking
+                // back to the stack and out of range again.
+                if (target->GetEntry() == Id(Aq40Npcs::NPC_EYE_TENTACLE) &&
+                    target->GetExactDist2d(&CthunStack) > CthunFarTentacle && CthunTentacleKiller(player))
+                    return false;
+            }
         return player->GetExactDist2d(goal) > 3.0f;
     }
     if (PlayerbotAI::IsTank(player))

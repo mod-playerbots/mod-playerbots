@@ -94,6 +94,9 @@ The marks must be set by the raid leader or an assistant.
   kick, pummel, shield bash, wind shear, counterspell, mind freeze, silencing shot, hammer of justice, concussion blow,
   bash, war stomp, kidney shot or gouge ready. If one spawns more than 20 yd from the stack, the whole stack moves
   next to it and kills it there.
+- **Eye Tentacles:** two ranged bots (hunters first, then mages, then other ranged) take the Eye Tentacles more than
+  30 yd from the stack, out of reach for casters standing in it, even during Weakened windows. They step out just far
+  enough to reach each one and return when it dies; everyone else handles the near ones from the stack.
 - **Giant Claw Tentacle:** tanks take claws near the raid. **Nobody chases a claw more than 20 yd from the stack**;
   with nobody near it, it burrows and comes back up under someone anyway.
 - **The stomach:** C'Thun swallows a random player about every 14 s.
@@ -162,5 +165,5 @@ are needed except Skull on the Bug Trio.
 
 Measured on a level-60 server with a 40-bot raid (one human player), production difficulty:
 - **Twin Emperors:** 10 kills in 11 full-raid test pulls with the floor-spot strategy; killed live.
-- **C'Thun:** 5 kills in 7 test pulls with the core strategy, and 2 in 4 rehearsals of the full live-style opening
-  (Moon pull, bots on follow). Killed live on the fourth live attempt, with 33 of 40 alive at the kill.
+- **C'Thun:** killed live on the fourth live attempt, with 33 of 40 alive at the kill. With the Eye Tentacle killers:
+  5 kills in 6 live-style test pulls, against 4 in 8 without them.
