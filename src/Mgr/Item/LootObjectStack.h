@@ -36,6 +36,7 @@ public:
     bool IsLootPossible(Player* bot);
     void Refresh(Player* bot, ObjectGuid guid);
     WorldObject* GetWorldObject(Player* bot);
+    static Player* GetQuestLootReceiver(Player* bot);
     ObjectGuid guid;
 
     uint32 skillId;
