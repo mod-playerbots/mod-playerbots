@@ -413,6 +413,7 @@ public:
     bool equipAndSpecPersistence;
     int32 equipAndSpecPersistenceLevel;
     int32 groupInvitationPermission;
+    bool allowBattlegroundCommands;
     bool keepAltsInGroup = false;
     bool KeepAltsInGroup() const { return keepAltsInGroup; }
     bool allowSummonInCombat;
