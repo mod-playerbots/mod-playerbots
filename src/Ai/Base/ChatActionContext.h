@@ -48,6 +48,7 @@
 #include "PetsAction.h"
 #include "PositionAction.h"
 #include "PullActions.h"
+#include "QueryGameObjectAction.h"
 #include "QueryItemUsageAction.h"
 #include "QueryQuestAction.h"
 #include "RangeAction.h"
@@ -115,6 +116,7 @@ public:
         creators["share"] = &ChatActionContext::share;
         creators["query quest"] = &ChatActionContext::query_quest;
         creators["query item usage"] = &ChatActionContext::query_item_usage;
+        creators["query game object"] = &ChatActionContext::query_game_object;
         creators["ll"] = &ChatActionContext::ll;
         creators["ss"] = &ChatActionContext::ss;
         creators["add all loot"] = &ChatActionContext::add_all_loot;
@@ -290,6 +292,7 @@ private:
     static Action* release(PlayerbotAI* botAI) { return new ReleaseSpiritAction(botAI); }
     static Action* repop(PlayerbotAI* botAI) { return new RepopAction(botAI); }
     static Action* query_item_usage(PlayerbotAI* botAI) { return new QueryItemUsageAction(botAI); }
+    static Action* query_game_object(PlayerbotAI* botAI) { return new QueryGameObjectAction(botAI); }
     static Action* query_quest(PlayerbotAI* botAI) { return new QueryQuestAction(botAI); }
     static Action* drop(PlayerbotAI* botAI) { return new DropQuestAction(botAI); }
     static Action* clean_quest_log(PlayerbotAI* botAI) { return new CleanQuestLogAction(botAI); }

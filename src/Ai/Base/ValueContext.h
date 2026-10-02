@@ -305,6 +305,7 @@ public:
         creators["experience"] = &ValueContext::experience;
 
         creators["entry loot usage"] = &ValueContext::entry_loot_usage;
+        creators["loot entry useful"] = &ValueContext::loot_entry_useful;
         creators["has upgrade"] = &ValueContext::has_upgrade;
         creators["items useful to give"] = &ValueContext::items_useful_to_give;
 
@@ -562,6 +563,7 @@ private:
     static UntypedValue* experience(PlayerbotAI* botAI) { return new ExperienceValue(botAI); }
 
     static UntypedValue* entry_loot_usage(PlayerbotAI* botAI) { return new EntryLootUsageValue(botAI); }
+    static UntypedValue* loot_entry_useful(PlayerbotAI* botAI) { return new LootEntryUsefulValue(botAI); }
     static UntypedValue* has_upgrade(PlayerbotAI* botAI) { return new HasUpgradeValue(botAI); }
     static UntypedValue* items_useful_to_give(PlayerbotAI* botAI) { return new ItemsUsefulToGiveValue(botAI); }
 

@@ -102,6 +102,8 @@ bool PlayerbotAIConfig::Initialize()
     sitDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.SitDelay", 20000);
     returnDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.ReturnDelay", 2000);
     lootDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.LootDelay", 1000);
+    lootItemStoreableCacheTime = sConfigMgr->GetOption<uint32>("AiPlayerbot.LootItemStoreableCacheTime", 10);
+    lootItemStoreableCacheMaxSize = sConfigMgr->GetOption<uint32>("AiPlayerbot.LootItemStoreableCacheMaxSize", 1024);
     disabledWithoutRealPlayerLoginDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.DisabledWithoutRealPlayerLoginDelay", 30);
     disabledWithoutRealPlayerLogoutDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.DisabledWithoutRealPlayerLogoutDelay", 300);
 

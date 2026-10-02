@@ -8,12 +8,18 @@
 #define PLAYERBOTS_LOOTOBJECTSTACK_H
 
 #include "ObjectGuid.h"
+#include <unordered_map>
 
 class AiObjectContext;
+class GameObject;
 class Player;
 class WorldObject;
 
 struct ItemTemplate;
+
+// Client parity: whether the game object's faction is hostile to the player,
+// including forced-reaction overrides (e.g. disguises).
+bool IsGameObjectHostileTo(GameObject const* go, Player const* player);
 
 class LootStrategy
 {
@@ -21,6 +27,8 @@ public:
     LootStrategy() {}
     virtual ~LootStrategy(){};
     virtual bool CanLoot(ItemTemplate const* proto, AiObjectContext* context) = 0;
+    // True for the all/* strategy: loot everything the interaction gates allow.
+    virtual bool AlwaysLoot() const { return false; }
     virtual std::string const GetName() = 0;
 };
 
@@ -72,17 +80,26 @@ class LootObjectStack
 public:
     LootObjectStack(Player* bot) : bot(bot) {}
 
+    static constexpr time_t SkipDuration = 30;
+
     bool Add(ObjectGuid guid);
     void Remove(ObjectGuid guid);
+    void Skip(ObjectGuid guid);
+    void Unskip(ObjectGuid guid);
     void Clear();
     bool CanLoot(float maxDistance);
     LootObject GetLoot(float maxDistance = 0);
+    // Cached per bot, per item (AiPlayerbot.LootItemStoreableCache*). Targeting only - the
+    // autostore re-checks uncached, so a stale verdict can waste an open but never a store.
+    bool IsItemStoreable(uint32 itemId);
 
 private:
     LootObject GetNearest(float maxDistance = 0);
 
     Player* bot;
     LootTargetList availableLoot;
+    LootTargetList skippedLoot;
+    std::unordered_map<uint32, std::pair<bool, time_t>> itemStoreableCache;
 };
 
 #endif
