@@ -5,16 +5,6 @@
  */
 
 #include "Aq40Actions.h"
-
-#include <algorithm>
-#include <cmath>
-#include <ctime>
-#include <limits>
-#include <list>
-#include <set>
-#include <unordered_map>
-#include <vector>
-
 #include "AiFactory.h"
 #include "AllSpellScript.h"
 #include "Aq40Rules.h"
@@ -23,7 +13,6 @@
 #include "GenericSpellActions.h"
 #include "InstanceScript.h"
 #include "LastMovementValue.h"
-#include "Log.h"
 #include "MoveSpline.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
@@ -32,6 +21,12 @@
 #include "ReachTargetActions.h"
 #include "Spell.h"
 #include "SpellAuras.h"
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <list>
+#include <set>
+#include <vector>
 
 using namespace Aq40;
 
@@ -113,11 +108,11 @@ bool Passive(Unit* unit)
     return creature && creature->GetReactState() == REACT_PASSIVE;
 }
 
-void Stop(PlayerbotAI* ai)
+void Stop(PlayerbotAI* botAI)
 {
-    ai->GetBot()->GetMotionMaster()->Clear();
-    ai->GetBot()->StopMoving();
-    ai->GetAiObjectContext()->GetValue<LastMovement&>("last movement")->Get().clear();
+    botAI->GetBot()->GetMotionMaster()->Clear();
+    botAI->GetBot()->StopMoving();
+    botAI->GetAiObjectContext()->GetValue<LastMovement&>("last movement")->Get().clear();
 }
 
 void StopAttacking(Player* player)
@@ -130,16 +125,16 @@ void StopAttacking(Player* player)
     }
 }
 
-SpellInfo const* SpellFor(PlayerbotAI* ai, std::string const& name)
+SpellInfo const* SpellFor(PlayerbotAI* botAI, std::string const& name)
 {
-    uint32 id = ai->GetAiObjectContext()->GetValue<uint32>("spell id", name)->Get();
+    uint32 id = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", name)->Get();
     return sSpellMgr->GetSpellInfo(id);
 }
 
-bool Cast(PlayerbotAI* ai, std::string const& name, Unit* target, bool interruptCast = false)
+bool Cast(PlayerbotAI* botAI, std::string const& name, Unit* target, bool interruptCast = false)
 {
-    Player* player = ai->GetBot();
-    SpellInfo const* spell = SpellFor(ai, name);
+    Player* player = botAI->GetBot();
+    SpellInfo const* spell = SpellFor(botAI, name);
     if (!spell || !target || (player->HasUnitState(UNIT_STATE_CASTING) && !interruptCast) ||
         !player->IsWithinLOSInMap(target) ||
         player->GetDistance(target) > spell->GetMaxRange(spell->IsPositive(), player) ||
@@ -163,8 +158,8 @@ bool Cast(PlayerbotAI* ai, std::string const& name, Unit* target, bool interrupt
         }
     }
     if (player->isMoving() && spell->CalcCastTime())
-        Stop(ai);
-    return ai->CanCastSpell(spell->Id, target) && ai->CastSpell(spell->Id, target);
+        Stop(botAI);
+    return botAI->CanCastSpell(spell->Id, target) && botAI->CastSpell(spell->Id, target);
 }
 
 std::string Taunt(Player* player)
@@ -188,56 +183,69 @@ bool IsEncounterBoss(uint32 entry)
 {
     switch (entry)
     {
-        case SkeramBoss:
-        case Kri:
-        case Yauj:
-        case Vem:
-        case SarturaBoss:
-        case FankrissBoss:
-        case ViscidusBoss:
-        case HuhuranBoss:
-        case Veknilash:
-        case Veklor:
-        case OuroBoss:
-        case Eye:
-        case Body:
+        case Id(Aq40Npcs::NPC_SKERAM):
+        case Id(Aq40Npcs::NPC_KRI):
+        case Id(Aq40Npcs::NPC_YAUJ):
+        case Id(Aq40Npcs::NPC_VEM):
+        case Id(Aq40Npcs::NPC_SARTURA):
+        case Id(Aq40Npcs::NPC_FANKRISS):
+        case Id(Aq40Npcs::NPC_VISCIDUS):
+        case Id(Aq40Npcs::NPC_HUHURAN):
+        case Id(Aq40Npcs::NPC_VEKNILASH):
+        case Id(Aq40Npcs::NPC_VEKLOR):
+        case Id(Aq40Npcs::NPC_OURO):
+        case Id(Aq40Npcs::NPC_EYE_OF_CTHUN):
+        case Id(Aq40Npcs::NPC_CTHUN):
             return true;
         default:
             return false;
     }
 }
 
-std::vector<uint32> Entries(Aq40::Encounter encounter)
+std::vector<uint32> Entries(Aq40::Aq40Encounter encounter)
 {
     switch (encounter)
     {
-        case Skeram:
-            return {SkeramBoss};
-        case Trio:
-            return {Kri, Yauj, Vem, Brood, PoisonCloud};
-        case Sartura:
-            return {SarturaBoss, Guard};
-        case Fankriss:
-            return {FankrissBoss, Worm, Hatchling};
-        case Viscidus:
-            return {ViscidusBoss, Glob, Toxin};
-        case Huhuran:
-            return {HuhuranBoss};
-        case Twins:
-            return {Veknilash, Veklor, Scarab, Scorpion};
-        case Ouro:
-            return {OuroBoss, Mound, OuroScarab};
-        case Cthun:
-            return {Eye, Body, SmallEye, SmallClaw, GiantEye, GiantClaw, Flesh, StomachExit};
+        case Aq40Encounter::Skeram:
+            return {Id(Aq40Npcs::NPC_SKERAM)};
+        case Aq40Encounter::Trio:
+            return {Id(Aq40Npcs::NPC_KRI), Id(Aq40Npcs::NPC_YAUJ), Id(Aq40Npcs::NPC_VEM), Id(Aq40Npcs::NPC_YAUJ_BROOD),
+                    Id(Aq40Npcs::NPC_POISON_CLOUD)};
+        case Aq40Encounter::Sartura:
+            return {Id(Aq40Npcs::NPC_SARTURA), Id(Aq40Npcs::NPC_SARTURA_ROYAL_GUARD)};
+        case Aq40Encounter::Fankriss:
+            return {Id(Aq40Npcs::NPC_FANKRISS), Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS),
+                    Id(Aq40Npcs::NPC_VEKNISS_HATCHLING)};
+        case Aq40Encounter::Viscidus:
+            return {Id(Aq40Npcs::NPC_VISCIDUS), Id(Aq40Npcs::NPC_GLOB_OF_VISCIDUS), Id(Aq40Npcs::NPC_TOXIC_SLIME)};
+        case Aq40Encounter::Huhuran:
+            return {Id(Aq40Npcs::NPC_HUHURAN)};
+        case Aq40Encounter::Twins:
+            return {Id(Aq40Npcs::NPC_VEKNILASH), Id(Aq40Npcs::NPC_VEKLOR), Id(Aq40Npcs::NPC_QIRAJI_SCARAB),
+                    Id(Aq40Npcs::NPC_QIRAJI_SCORPION)};
+        case Aq40Encounter::Ouro:
+            return {Id(Aq40Npcs::NPC_OURO), Id(Aq40Npcs::NPC_DIRT_MOUND), Id(Aq40Npcs::NPC_OURO_SCARAB)};
+        case Aq40Encounter::Cthun:
+            return {Id(Aq40Npcs::NPC_EYE_OF_CTHUN),       Id(Aq40Npcs::NPC_CTHUN),
+                    Id(Aq40Npcs::NPC_EYE_TENTACLE),       Id(Aq40Npcs::NPC_CLAW_TENTACLE),
+                    Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE), Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE),
+                    Id(Aq40Npcs::NPC_FLESH_TENTACLE),     Id(Aq40Npcs::NPC_EXIT_TRIGGER)};
         default:
             return {};
     }
 }
 }  // namespace
 
-bool Aq40::InStomach(Player* player) { return player->HasAura(DigestiveAcid) || player->GetPositionZ() < -40.0f; }
+bool Aq40::InStomach(Player* player)
+{
+    return player->HasAura(Id(Aq40Spells::SPELL_DIGESTIVE_ACID)) || player->GetPositionZ() < -40.0f;
+}
 
-bool Aq40::Whirling(Unit* unit) { return unit && (unit->HasAura(Whirlwind) || unit->HasAura(GuardWhirlwind)); }
+bool Aq40::Whirling(Unit* unit)
+{
+    return unit &&
+           (unit->HasAura(Id(Aq40Spells::SPELL_WHIRLWIND)) || unit->HasAura(Id(Aq40Spells::SPELL_GUARD_WHIRLWIND)));
+}
 
 uint32 Aq40::Stacks(Unit* unit, uint32 spell)
 {
@@ -245,23 +253,24 @@ uint32 Aq40::Stacks(Unit* unit, uint32 spell)
     return aura ? aura->GetStackAmount() : 0;
 }
 
-Aq40ControlAction* Aq40ControlAction::Get(PlayerbotAI* ai)
+Aq40ControlAction* Aq40ControlAction::Get(PlayerbotAI* botAI)
 {
-    Player* owner = ai->GetBot();
+    Player* owner = botAI->GetBot();
     if (Group* group = owner->GetGroup())
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             if (Player* member = ref->GetSource())
-                if (member->IsInWorld() && member->GetMap() == ai->GetBot()->GetMap() &&
+                if (member->IsInWorld() && member->GetMap() == botAI->GetBot()->GetMap() &&
                     member->GetGUID() < owner->GetGUID() && GET_PLAYERBOT_AI(member))
                     owner = member;
     PlayerbotAI* ownerAI = GET_PLAYERBOT_AI(owner);
-    return static_cast<Aq40ControlAction*>((ownerAI ? ownerAI : ai)->GetAiObjectContext()->GetAction("aq40 control"));
+    return static_cast<Aq40ControlAction*>(
+        (ownerAI ? ownerAI : botAI)->GetAiObjectContext()->GetAction("aq40 control"));
 }
 
 void Aq40ControlAction::Reset()
 {
     _group.Clear();
-    _encounter = None;
+    _encounter = Aq40Encounter::None;
     _units.clear();
     _owners.clear();
     _focus.Clear();
@@ -287,6 +296,7 @@ void Aq40ControlAction::Reset()
     _glareActive = false;
     _glareDirection = 0.0f;
     _refresh = {};
+    ++_version;
 }
 
 std::vector<Player*> Aq40ControlAction::Members(bool tanks)
@@ -296,7 +306,7 @@ std::vector<Player*> Aq40ControlAction::Members(bool tanks)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             if (Player* member = ref->GetSource())
                 if (member->IsAlive() && member->IsInWorld() && member->GetMap() == bot->GetMap() &&
-                    !member->HasAura(MindControl) && (!tanks || PlayerbotAI::IsTank(member)))
+                    !member->HasAura(Id(Aq40Spells::SPELL_TRUE_FULFILLMENT)) && (!tanks || PlayerbotAI::IsTank(member)))
                     result.push_back(member);
     std::sort(result.begin(), result.end(),
               [](Player* left, Player* right) { return left->GetGUID() < right->GetGUID(); });
@@ -307,7 +317,7 @@ Player* Aq40ControlAction::Member(ObjectGuid guid)
 {
     Player* player = ObjectAccessor::FindPlayer(guid);
     return player && player->IsAlive() && player->IsInWorld() && player->GetMap() == bot->GetMap() &&
-                   player->GetGroup() == bot->GetGroup() && !player->HasAura(MindControl)
+                   player->GetGroup() == bot->GetGroup() && !player->HasAura(Id(Aq40Spells::SPELL_TRUE_FULFILLMENT))
                ? player
                : nullptr;
 }
@@ -342,11 +352,11 @@ void Aq40ControlAction::Refresh(PlayerbotAI* observer)
         Reset();
         return;
     }
-    Aq40::Encounter current = None;
-    for (uint32 id = Skeram; id <= Cthun; ++id)
+    Aq40::Aq40Encounter current = Aq40Encounter::None;
+    for (uint32 id = Id(Aq40Encounter::Skeram); id <= Id(Aq40Encounter::Cthun); ++id)
         if (instance->GetBossState(id) == IN_PROGRESS)
         {
-            current = Aq40::Encounter(id);
+            current = static_cast<Aq40Encounter>(id);
             break;
         }
     if (current != _encounter || _group != player->GetGroup()->GetGUID())
@@ -357,15 +367,16 @@ void Aq40ControlAction::Refresh(PlayerbotAI* observer)
         _twinLastSwap = _encounterStart;
         _group = player->GetGroup()->GetGUID();
     }
-    if (_encounter == None)
+    if (_encounter == Aq40Encounter::None)
         return;
     auto now = std::chrono::steady_clock::now();
     if (now - _refresh < std::chrono::milliseconds(250))
         return;
     _refresh = now;
+    ++_version;
     // Instance boss GUID is the scan anchor, so a healer's visibility does not change assignments.
     WorldObject* anchor = player;
-    if (Creature* boss = instance->GetCreature(uint32(_encounter)))
+    if (Creature* boss = instance->GetCreature(Id(_encounter)))
         anchor = boss;
     else if (Creature* boss = Boss())
         anchor = boss;
@@ -380,8 +391,8 @@ void Aq40ControlAction::Refresh(PlayerbotAI* observer)
     }
     std::sort(_units.begin(), _units.end());
     AssignTanks();
-    if (_encounter == Cthun)
-        for (Creature* eye : Units(Eye))
+    if (_encounter == Aq40Encounter::Cthun)
+        for (Creature* eye : Units(Id(Aq40Npcs::NPC_EYE_OF_CTHUN)))
         {
             // The puller entered alone and is the member nearest the Eye when the fight starts; the first Eye Beam
             // (3 s) confirms it. The Eye's victim is not reliable: a healer may hold its threat.
@@ -401,11 +412,11 @@ void Aq40ControlAction::Refresh(PlayerbotAI* observer)
             }
             if (std::chrono::steady_clock::now() - _encounterStart < std::chrono::seconds(12))
                 if (Spell* beam = eye->GetCurrentSpell(CURRENT_GENERIC_SPELL))
-                    if (beam->m_spellInfo->Id == EyeBeam)
+                    if (beam->m_spellInfo->Id == Id(Aq40Spells::SPELL_EYE_BEAM))
                         if (Unit* target = beam->m_targets.GetUnitTarget())
                             if (target->IsPlayer())
                                 _cthunPuller = target->GetGUID();
-            bool glare = eye->HasAura(RedEye);
+            bool glare = eye->HasAura(Id(Aq40Spells::SPELL_RED_COLORATION));
             float angle = eye->GetOrientation();
             if (glare && _glareActive)
             {
@@ -434,15 +445,15 @@ void Aq40ControlAction::AssignTanks()
         auto main = std::find_if(tanks.begin(), tanks.end(), [](Player* p) { return PlayerbotAI::IsMainTank(p); });
         _mainTank = (main == tanks.end() ? tanks.front() : *main)->GetGUID();
     }
-    if (_encounter == Skeram)
+    if (_encounter == Aq40Encounter::Skeram)
     {
         AssignSkeram(tanks);
         return;
     }
-    if (_encounter == Twins)
+    if (_encounter == Aq40Encounter::Twins)
     {
-        auto physical = Units(Veknilash);
-        auto caster = Units(Veklor);
+        auto physical = Units(Id(Aq40Npcs::NPC_VEKNILASH));
+        auto caster = Units(Id(Aq40Npcs::NPC_VEKLOR));
         if (!_sidesReady && !physical.empty() && !caster.empty())
         {
             // Side 0 is Vek'nilash's spawn side. Sides use the floor spots: the emperors move at engage (Vek'lor walks
@@ -492,7 +503,6 @@ void Aq40ControlAction::AssignTanks()
         for (Player* tank : tanks)
             if (GET_PLAYERBOT_AI(tank))
                 botTanks.push_back(tank);
-        std::array<ObjectGuid, 2> const previousTanks = _twinTanks;
         // Plate tanks with the most health take the platforms; other tank-spec bots (feral druid, arms/prot warrior)
         // only replace a dead platform tank, rather than whoever stood nearest at the first refresh.
         auto tankPoints = [](Player* tank)
@@ -539,16 +549,6 @@ void Aq40ControlAction::AssignTanks()
                         _twinTanks[replace] = held->GetGUID();
                 }
         assignSides(_twinTanks, botTanks);
-        if (previousTanks != _twinTanks)
-        {
-            auto nameOf = [&](ObjectGuid guid)
-            {
-                Player* member = Member(guid);
-                return member ? member->GetName() : std::string("none");
-            };
-            LOG_INFO("playerbots", "AQ40 Twins platform tanks: side0={} side1={} (candidates {})",
-                     nameOf(_twinTanks[0]), nameOf(_twinTanks[1]), botTanks.size());
-        }
         for (uint32 side = 0; side < 2; ++side)
             if (_twinTanks[side])
                 _raidSides[_twinTanks[side]] = side;
@@ -584,15 +584,6 @@ void Aq40ControlAction::AssignTanks()
             }
             _twinLast = {physical.front()->GetPosition(), caster.front()->GetPosition()};
             _twinLastReady = true;
-            if (_owners[physical.front()->GetGUID()] != _twinTanks[physicalSide])
-                LOG_DEBUG("playerbots",
-                          "Twins pickup owners: side={} tank0={} tank1={} home0=({}, {}) home1=({}, {}) nilash=({}, "
-                          "{}) lor=({}, {})",
-                          physicalSide, _twinTanks[0].ToString(), _twinTanks[1].ToString(),
-                          _twinSides[0].GetPositionX(), _twinSides[0].GetPositionY(), _twinSides[1].GetPositionX(),
-                          _twinSides[1].GetPositionY(), physical.front()->GetPositionX(),
-                          physical.front()->GetPositionY(), caster.front()->GetPositionX(),
-                          caster.front()->GetPositionY());
             _owners[physical.front()->GetGUID()] = _twinTanks[physicalSide];
             _owners[caster.front()->GetGUID()] = _twinTanks[1 - physicalSide];
             // At the pull the warriors have no threat on Vek'lor and healing pulls him across the room, so a
@@ -630,13 +621,15 @@ void Aq40ControlAction::AssignTanks()
     for (Creature* unit : Units())
     {
         uint32 entry = unit->GetEntry();
-        if (!Attackable(bot, unit) || entry == Glob || entry == Flesh || entry == SmallEye || entry == GiantEye)
+        if (!Attackable(bot, unit) || entry == Id(Aq40Npcs::NPC_GLOB_OF_VISCIDUS) ||
+            entry == Id(Aq40Npcs::NPC_FLESH_TENTACLE) || entry == Id(Aq40Npcs::NPC_EYE_TENTACLE) ||
+            entry == Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE))
             continue;
         if (_owners.count(unit->GetGUID()))
             continue;
         Player* owner = nullptr;
-        bool primary =
-            IsEncounterBoss(entry) && entry != Yauj && entry != Vem && !(entry == SkeramBoss && unit->IsSummon());
+        bool primary = IsEncounterBoss(entry) && entry != Id(Aq40Npcs::NPC_YAUJ) && entry != Id(Aq40Npcs::NPC_VEM) &&
+                       !(entry == Id(Aq40Npcs::NPC_SKERAM) && unit->IsSummon());
         if (primary)
             owner = Member(_mainTank);
         if (!owner)
@@ -657,8 +650,8 @@ void Aq40ControlAction::AssignTanks()
             ++loads[owner->GetGUID()];
         }
     }
-    if (_encounter == Cthun)
-        for (Creature* claw : Units(GiantClaw))
+    if (_encounter == Aq40Encounter::Cthun)
+        for (Creature* claw : Units(Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE)))
         {
             // The nearest tank takes each Giant Claw (the least-loaded one could be across the room while the
             // claw kills whoever it spawned under).
@@ -669,7 +662,7 @@ void Aq40ControlAction::AssignTanks()
             if (nearest)
                 _owners[claw->GetGUID()] = nearest->GetGUID();
         }
-    if (_encounter == Ouro)
+    if (_encounter == Aq40Encounter::Ouro)
         if (Creature* boss = Boss())
             if (Unit* victim = boss->GetVictim())
                 if (victim->IsPlayer() && PlayerbotAI::IsTank(victim->ToPlayer()) && Member(victim->GetGUID()))
@@ -678,14 +671,17 @@ void Aq40ControlAction::AssignTanks()
                     _owners[boss->GetGUID()] = victim->GetGUID();
                     _mainTank = victim->GetGUID();
                 }
-    if (_encounter == Fankriss || _encounter == Huhuran)
+    if (_encounter == Aq40Encounter::Fankriss || _encounter == Aq40Encounter::Huhuran)
         if (Creature* boss = Boss())
-            NeedSwap(boss, _encounter == Fankriss ? MortalWound : AcidSpit, _encounter == Fankriss ? 3 : 5);
-    if (_encounter == Huhuran)
+            NeedSwap(boss,
+                     _encounter == Aq40Encounter::Fankriss ? Id(Aq40Spells::SPELL_MORTAL_WOUND)
+                                                           : Id(Aq40Spells::SPELL_ACID_SPIT),
+                     _encounter == Aq40Encounter::Fankriss ? 3 : 5);
+    if (_encounter == Aq40Encounter::Huhuran)
     {
         _soakers.erase(std::remove_if(_soakers.begin(), _soakers.end(), [&](ObjectGuid guid) { return !Member(guid); }),
                        _soakers.end());
-        SpellInfo const* spell = sSpellMgr->GetSpellInfo(HuhuranBolt);
+        SpellInfo const* spell = sSpellMgr->GetSpellInfo(Id(Aq40Spells::SPELL_POISON_BOLT));
         uint32 count = spell ? spell->MaxAffectedTargets : 0;
         auto members = Members();
         std::stable_sort(
@@ -775,7 +771,7 @@ void Aq40ControlAction::AssignSkeram(std::vector<Player*> const& tanks)
     }
 
     _owners.clear();
-    for (Creature* unit : Units(SkeramBoss))
+    for (Creature* unit : Units(Id(Aq40Npcs::NPC_SKERAM)))
     {
         ObjectGuid guid = unit->GetGUID();
         if (Passive(unit))
@@ -804,7 +800,7 @@ void Aq40ControlAction::AssignSkeram(std::vector<Player*> const& tanks)
 bool Aq40ControlAction::SkeramPlatform(Player* player, Position& platform)
 {
     auto it = _raidSides.find(player->GetGUID());
-    if (_encounter != Skeram || !_platformsReady || it == _raidSides.end())
+    if (_encounter != Aq40Encounter::Skeram || !_platformsReady || it == _raidSides.end())
         return false;
     uint32 side = it->second;
     if (!PlayerbotAI::IsHeal(player))
@@ -876,7 +872,8 @@ Position Aq40ControlAction::TwinUnstuckSpot(Unit* emperor)
         return emperor->GetPosition();
     uint32 side = emperor->GetExactDist2d(_twinSides[0]) < emperor->GetExactDist2d(_twinSides[1]) ? 0 : 1;
     float inward = _twinSides[side].GetAngle(&_twinSides[1 - side]);
-    float offset = emperor->GetEntry() == Veklor ? emperor->GetCombatReach() + TwinBurstClearance + 2.0f : 4.0f;
+    float offset =
+        emperor->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR) ? emperor->GetCombatReach() + TwinBurstClearance + 2.0f : 4.0f;
     Position spot = _twinSides[side];
     spot.m_positionX += offset * std::cos(inward);
     spot.m_positionY += offset * std::sin(inward);
@@ -885,12 +882,12 @@ Position Aq40ControlAction::TwinUnstuckSpot(Unit* emperor)
 
 bool Aq40ControlAction::IsTwinSpareTank(Player* player)
 {
-    return _encounter == Twins && IsTankRole(player) && !IsTwinPlatformTank(player);
+    return _encounter == Aq40Encounter::Twins && IsTankRole(player) && !IsTwinPlatformTank(player);
 }
 
 bool Aq40ControlAction::IsTwinLock(Player* player)
 {
-    return _encounter == Twins && player &&
+    return _encounter == Aq40Encounter::Twins && player &&
            ((_twinLocks[0] && player->GetGUID() == _twinLocks[0]) ||
             (_twinLocks[1] && player->GetGUID() == _twinLocks[1]));
 }
@@ -909,7 +906,7 @@ Position Aq40ControlAction::TwinLockSpot(uint32 side) const
 
 bool Aq40ControlAction::TwinSwapWindow() const
 {
-    return _encounter == Twins &&
+    return _encounter == Aq40Encounter::Twins &&
            std::chrono::steady_clock::now() - _twinLastSwap >= std::chrono::seconds(TwinSwapWindowSeconds);
 }
 
@@ -928,7 +925,7 @@ bool Aq40ControlAction::Held(Unit* unit)
         return false;
     // Vek'lor keeps casting after knocking his tank out of melee. That is still a valid pickup;
     // waiting for melee contact here otherwise freezes every caster on its old platform.
-    if (_encounter == Twins && unit->GetEntry() == Veklor)
+    if (_encounter == Aq40Encounter::Twins && unit->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR))
         return owner == TankFor(unit) && owner->GetDistance(unit) <= 45.0f;
     return owner->IsWithinMeleeRange(unit);
 }
@@ -938,32 +935,33 @@ bool Aq40ControlAction::AllowedDamage(Player* player, Unit* unit)
     if (!Attackable(player, unit))
         return false;
     uint32 entry = unit->GetEntry();
-    if (unit->HasAura(MindControl) || Whirling(unit))
+    if (unit->HasAura(Id(Aq40Spells::SPELL_TRUE_FULFILLMENT)) || Whirling(unit))
         return false;
-    if (_encounter == Cthun)
+    if (_encounter == Aq40Encounter::Cthun)
     {
         bool inside = InStomach(player);
-        if ((entry == Flesh) != inside)
+        if ((entry == Id(Aq40Npcs::NPC_FLESH_TENTACLE)) != inside)
             return false;
-        if (entry == Body && unit->HasAura(Carapace))
+        if (entry == Id(Aq40Npcs::NPC_CTHUN) && unit->HasAura(Id(Aq40Spells::SPELL_CARAPACE_CTHUN)))
             return false;
     }
     // The Eye is passive through Dark Glare but still takes damage, so players keep hitting it.
-    if (IsEncounterBoss(entry) && Passive(unit) && entry != Eye)
+    if (IsEncounterBoss(entry) && Passive(unit) && entry != Id(Aq40Npcs::NPC_EYE_OF_CTHUN))
         return false;
-    if (_encounter == Twins && !IsTankRole(player))
+    if (_encounter == Aq40Encounter::Twins && !IsTankRole(player))
     {
         // Damage follows the emperor, not the platform: Vek'nilash is immune to magic and anyone in Vek'lor's melee
         // range triggers Arcane Burst. Melee and hunters take Vek'nilash, casters take Vek'lor, crossing on every swap.
         bool physical = PlayerbotAI::IsMelee(player) || player->getClass() == CLASS_HUNTER;
-        if ((entry == Veklor && physical) || (entry == Veknilash && !physical))
+        if ((entry == Id(Aq40Npcs::NPC_VEKLOR) && physical) || (entry == Id(Aq40Npcs::NPC_VEKNILASH) && !physical))
             return false;
     }
-    if (_encounter == Twins && (entry == Scarab || entry == Scorpion))
+    if (_encounter == Aq40Encounter::Twins &&
+        (entry == Id(Aq40Npcs::NPC_QIRAJI_SCARAB) || entry == Id(Aq40Npcs::NPC_QIRAJI_SCORPION)))
     {
-        if (unit->HasAura(ExplodeBug))
+        if (unit->HasAura(Id(Aq40Spells::SPELL_EXPLODE_BUG)))
             return false;
-        if (unit->HasAura(Mutate))
+        if (unit->HasAura(Id(Aq40Spells::SPELL_MUTATE_BUG)))
             return true;
         // Totems, Blizzard and other area damage also pull the room's bugs. Kill any bug already
         // attacking the raid; leave idle critters alone.
@@ -971,18 +969,19 @@ bool Aq40ControlAction::AllowedDamage(Player* player, Unit* unit)
         Player* attacked = victim ? victim->GetCharmerOrOwnerPlayerOrPlayerItself() : nullptr;
         return attacked && Member(attacked->GetGUID());
     }
-    return entry != PoisonCloud && entry != Toxin && entry != Mound && entry != StomachExit;
+    return entry != Id(Aq40Npcs::NPC_POISON_CLOUD) && entry != Id(Aq40Npcs::NPC_TOXIC_SLIME) &&
+           entry != Id(Aq40Npcs::NPC_DIRT_MOUND) && entry != Id(Aq40Npcs::NPC_EXIT_TRIGGER);
 }
 
 Unit* Aq40ControlAction::DamageTarget(Player* player)
 {
-    if (_encounter == Skeram)
+    if (_encounter == Aq40Encounter::Skeram)
     {
         auto side = _raidSides.find(player->GetGUID());
         if (side == _raidSides.end())
             return nullptr;
         Creature* original = nullptr;
-        for (Creature* unit : Units(SkeramBoss))
+        for (Creature* unit : Units(Id(Aq40Npcs::NPC_SKERAM)))
         {
             if (!AllowedDamage(player, unit))
                 continue;
@@ -999,43 +998,54 @@ Unit* Aq40ControlAction::DamageTarget(Player* player)
     std::vector<uint32> priorities;
     switch (_encounter)
     {
-        case Trio:
-            priorities = {Brood, Kri, Yauj, Vem};
+        case Aq40Encounter::Trio:
+            priorities = {Id(Aq40Npcs::NPC_YAUJ_BROOD), Id(Aq40Npcs::NPC_KRI), Id(Aq40Npcs::NPC_YAUJ),
+                          Id(Aq40Npcs::NPC_VEM)};
             // A living bug marked skull explicitly overrides the default Kri/Yauj/Vem order.
             if (Group* group = player->GetGroup())
                 if (Creature* marked = player->GetMap()->GetCreature(group->GetTargetIcon(7)))
-                    if (marked->GetEntry() == Kri || marked->GetEntry() == Yauj || marked->GetEntry() == Vem)
+                    if (marked->GetEntry() == Id(Aq40Npcs::NPC_KRI) || marked->GetEntry() == Id(Aq40Npcs::NPC_YAUJ) ||
+                        marked->GetEntry() == Id(Aq40Npcs::NPC_VEM))
                         priorities.insert(priorities.begin() + 1, marked->GetEntry());
             break;
-        case Sartura:
-            priorities = {Guard, SarturaBoss};
+        case Aq40Encounter::Sartura:
+            priorities = {Id(Aq40Npcs::NPC_SARTURA_ROYAL_GUARD), Id(Aq40Npcs::NPC_SARTURA)};
             break;
-        case Fankriss:
-            priorities = {Worm, FankrissBoss};
+        case Aq40Encounter::Fankriss:
+            priorities = {Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS), Id(Aq40Npcs::NPC_FANKRISS)};
             break;
-        case Viscidus:
-            priorities = {Glob, ViscidusBoss};
+        case Aq40Encounter::Viscidus:
+            priorities = {Id(Aq40Npcs::NPC_GLOB_OF_VISCIDUS), Id(Aq40Npcs::NPC_VISCIDUS)};
             break;
-        case Huhuran:
-            priorities = {HuhuranBoss};
+        case Aq40Encounter::Huhuran:
+            priorities = {Id(Aq40Npcs::NPC_HUHURAN)};
             break;
-        case Twins:
+        case Aq40Encounter::Twins:
             priorities = PlayerbotAI::IsMelee(player) || player->getClass() == CLASS_HUNTER
-                             ? std::vector<uint32>{Scarab, Scorpion, Veknilash}
-                             : std::vector<uint32>{Scarab, Scorpion, Veklor};
+                             ? std::vector<uint32>{Id(Aq40Npcs::NPC_QIRAJI_SCARAB), Id(Aq40Npcs::NPC_QIRAJI_SCORPION),
+                                                   Id(Aq40Npcs::NPC_VEKNILASH)}
+                             : std::vector<uint32>{Id(Aq40Npcs::NPC_QIRAJI_SCARAB), Id(Aq40Npcs::NPC_QIRAJI_SCORPION),
+                                                   Id(Aq40Npcs::NPC_VEKLOR)};
             break;
-        case Ouro:
-            priorities = {OuroScarab, OuroBoss};
+        case Aq40Encounter::Ouro:
+            priorities = {Id(Aq40Npcs::NPC_OURO_SCARAB), Id(Aq40Npcs::NPC_OURO)};
             break;
-        case Cthun:
+        case Aq40Encounter::Cthun:
             if (InStomach(player))
-                priorities = {Flesh};
-            else if (Creature* body = player->GetInstanceScript()->GetCreature(Cthun))
-                priorities = body->HasAura(Weakness)
-                                 ? std::vector<uint32>{Body, GiantEye, SmallEye, GiantClaw, SmallClaw}
-                                 : std::vector<uint32>{GiantEye, SmallEye, GiantClaw, SmallClaw, Eye};
+                priorities = {Id(Aq40Npcs::NPC_FLESH_TENTACLE)};
+            else if (Creature* body = player->GetInstanceScript()->GetCreature(Id(Aq40Encounter::Cthun)))
+                priorities =
+                    body->HasAura(Id(Aq40Spells::SPELL_PURPLE_COLORATION))
+                        ? std::vector<uint32>{Id(Aq40Npcs::NPC_CTHUN), Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE),
+                                              Id(Aq40Npcs::NPC_EYE_TENTACLE), Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE),
+                                              Id(Aq40Npcs::NPC_CLAW_TENTACLE)}
+                        : std::vector<uint32>{Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE), Id(Aq40Npcs::NPC_EYE_TENTACLE),
+                                              Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE), Id(Aq40Npcs::NPC_CLAW_TENTACLE),
+                                              Id(Aq40Npcs::NPC_EYE_OF_CTHUN)};
             else
-                priorities = {GiantEye, SmallEye, GiantClaw, SmallClaw, Eye};
+                priorities = {Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE), Id(Aq40Npcs::NPC_EYE_TENTACLE),
+                              Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE), Id(Aq40Npcs::NPC_CLAW_TENTACLE),
+                              Id(Aq40Npcs::NPC_EYE_OF_CTHUN)};
             break;
         default:
             return nullptr;
@@ -1043,28 +1053,32 @@ Unit* Aq40ControlAction::DamageTarget(Player* player)
     for (uint32 entry : priorities)
     {
         auto candidates = Units(entry);
-        candidates.erase(
-            std::remove_if(candidates.begin(), candidates.end(),
-                           [&](Creature* unit)
-                           {
-                               return !AllowedDamage(player, unit) ||
-                                      (_encounter == Cthun && !InStomach(player) &&
-                                       unit->GetDistance(player) > 45.0f) ||
-                                      ((entry == Scarab || entry == Scorpion) && unit->GetDistance(player) > 30.0f);
-                           }),
-            candidates.end());
+        candidates.erase(std::remove_if(candidates.begin(), candidates.end(),
+                                        [&](Creature* unit)
+                                        {
+                                            return !AllowedDamage(player, unit) ||
+                                                   (_encounter == Aq40Encounter::Cthun && !InStomach(player) &&
+                                                    unit->GetDistance(player) > 45.0f) ||
+                                                   ((entry == Id(Aq40Npcs::NPC_QIRAJI_SCARAB) ||
+                                                     entry == Id(Aq40Npcs::NPC_QIRAJI_SCORPION)) &&
+                                                    unit->GetDistance(player) > 30.0f);
+                                        }),
+                         candidates.end());
         if (candidates.empty())
             continue;
         Creature* selected = candidates.front();
-        bool localTarget = entry == Glob || entry == Flesh || entry == SmallEye || entry == SmallClaw ||
-                           entry == Scarab || entry == Scorpion;
+        bool localTarget = entry == Id(Aq40Npcs::NPC_GLOB_OF_VISCIDUS) || entry == Id(Aq40Npcs::NPC_FLESH_TENTACLE) ||
+                           entry == Id(Aq40Npcs::NPC_EYE_TENTACLE) || entry == Id(Aq40Npcs::NPC_CLAW_TENTACLE) ||
+                           entry == Id(Aq40Npcs::NPC_QIRAJI_SCARAB) || entry == Id(Aq40Npcs::NPC_QIRAJI_SCORPION);
         for (Creature* unit : candidates)
             if (localTarget ? unit->GetDistance(player) < selected->GetDistance(player) : unit->GetGUID() == _focus)
                 selected = unit;
         if (!localTarget)
             _focus = selected->GetGUID();
-        bool needsTank = IsEncounterBoss(entry) && entry != Eye && entry != Body && entry != ViscidusBoss;
-        needsTank = needsTank || entry == Worm || entry == Guard || entry == GiantClaw;
+        bool needsTank = IsEncounterBoss(entry) && entry != Id(Aq40Npcs::NPC_EYE_OF_CTHUN) &&
+                         entry != Id(Aq40Npcs::NPC_CTHUN) && entry != Id(Aq40Npcs::NPC_VISCIDUS);
+        needsTank = needsTank || entry == Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS) ||
+                    entry == Id(Aq40Npcs::NPC_SARTURA_ROYAL_GUARD) || entry == Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE);
         return needsTank && !Held(selected) ? nullptr : selected;
     }
     return nullptr;
@@ -1072,9 +1086,9 @@ Unit* Aq40ControlAction::DamageTarget(Player* player)
 
 Unit* Aq40ControlAction::Target(Player* player)
 {
-    if (_encounter == None || player->HasAura(MindControl))
+    if (_encounter == Aq40Encounter::None || player->HasAura(Id(Aq40Spells::SPELL_TRUE_FULFILLMENT)))
         return nullptr;
-    if (_encounter == Cthun && InStomach(player))
+    if (_encounter == Aq40Encounter::Cthun && InStomach(player))
     {
         if (StomachExitNeeded(player))
             return nullptr;
@@ -1082,12 +1096,12 @@ Unit* Aq40ControlAction::Target(Player* player)
         // and the Giant Eye response make the burn safe without it.
         return DamageTarget(player);
     }
-    if (_encounter == Cthun)
+    if (_encounter == Aq40Encounter::Cthun)
         return CthunTarget(player);
     if (IsTwinLock(player))
     {
         // Only the warlock on Vek'lor's side builds threat; the other one waits for his next phase.
-        for (Creature* veklor : Units(Veklor))
+        for (Creature* veklor : Units(Id(Aq40Npcs::NPC_VEKLOR)))
             if (TankFor(veklor) == player && AllowedDamage(player, veklor))
                 return veklor;
         return nullptr;
@@ -1098,7 +1112,7 @@ Unit* Aq40ControlAction::Target(Player* player)
     {
         // Bugs come first for damage dealers, but a spare tank busy on a scorpion builds no threat on Vek'nilash, who
         // then goes to a damage dealer when his tank dies.
-        for (Creature* nilash : Units(Veknilash))
+        for (Creature* nilash : Units(Id(Aq40Npcs::NPC_VEKNILASH)))
             if (AllowedDamage(player, nilash) && Held(nilash))
                 return nilash;
         return DamageTarget(player);
@@ -1115,7 +1129,7 @@ Unit* Aq40ControlAction::Target(Player* player)
         if (Unit* victim = unit->GetVictim())
             if (victim->IsPlayer() && PlayerbotAI::IsHeal(victim->ToPlayer()))
                 current += 100.0f;
-        if (unit->GetEntry() == Worm)
+        if (unit->GetEntry() == Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS))
             current += 20.0f;
         if (!selected || current > score)
         {
@@ -1123,19 +1137,19 @@ Unit* Aq40ControlAction::Target(Player* player)
             score = current;
         }
     }
-    if (!selected && _encounter == Ouro)
+    if (!selected && _encounter == Aq40Encounter::Ouro)
         if (Creature* boss = Boss())
             if (AllowedDamage(player, boss))
                 return boss;  // Backup tanks must keep building threat before the next Sand Blast.
     // An unassigned off-tank can help damage, but must never taunt another tank's boss.
-    if (!selected && _encounter != Twins && _encounter != Skeram)
+    if (!selected && _encounter != Aq40Encounter::Twins && _encounter != Aq40Encounter::Skeram)
         selected = DamageTarget(player);
     return selected;
 }
 
 bool Aq40ControlAction::StomachExitNeeded(Player* player)
 {
-    if (_encounter != Cthun || !InStomach(player))
+    if (_encounter != Aq40Encounter::Cthun || !InStomach(player))
         return false;
     // A swallowed tank leaves at once: Giant Claws need it up top.
     if (IsTankRole(player))
@@ -1143,8 +1157,8 @@ bool Aq40ControlAction::StomachExitNeeded(Player* player)
     bool healerInside = false;
     for (Player* member : Members())
         healerInside = healerInside || (member != player && PlayerbotAI::IsHeal(member) && InStomach(member));
-    return Aq40Rules::LeaveStomach(Stacks(player, DigestiveAcid), player->GetHealthPct(), !Units(Flesh).empty(),
-                                   healerInside);
+    return Aq40Rules::LeaveStomach(Stacks(player, Id(Aq40Spells::SPELL_DIGESTIVE_ACID)), player->GetHealthPct(),
+                                   !Units(Id(Aq40Npcs::NPC_FLESH_TENTACLE)).empty(), healerInside);
 }
 
 bool Aq40ControlAction::CthunSpot(Player* player, Position& spot)
@@ -1239,7 +1253,7 @@ bool Aq40ControlAction::CthunSpot(Player* player, Position& spot)
         // A Giant Eye away from the stack is killed where it stands: the stack moves to it so melee can interrupt it
         // and casters see it. Left alone, one behind C'Thun takes no damage while its chaining beam kills the stack.
         Position center = CthunStack;
-        for (Creature* giantEye : Units(GiantEye))
+        for (Creature* giantEye : Units(Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE)))
             if (giantEye->GetExactDist2d(&CthunStack) > 20.0f)
             {
                 float angle = giantEye->GetAngle(&CthunStack);
@@ -1262,7 +1276,7 @@ bool Aq40ControlAction::CthunSpot(Player* player, Position& spot)
 bool Aq40ControlAction::CthunPhase2()
 {
     // The Eye fakes its death (0 health, still "alive") when phase 2 starts.
-    for (Creature* eye : Units(Eye))
+    for (Creature* eye : Units(Id(Aq40Npcs::NPC_EYE_OF_CTHUN)))
         if (eye->GetHealth() > 0)
             return false;
     return true;
@@ -1270,10 +1284,12 @@ bool Aq40ControlAction::CthunPhase2()
 
 bool Aq40ControlAction::CthunMeleeBurn(Player* player)
 {
-    if (_encounter != Cthun || InStomach(player) || !(PlayerbotAI::IsMelee(player) || IsTankRole(player)))
+    if (_encounter != Aq40Encounter::Cthun || InStomach(player) ||
+        !(PlayerbotAI::IsMelee(player) || IsTankRole(player)))
         return false;
     Unit* target = Target(player);
-    return target && target->GetEntry() == Body && target->HasAura(Weakness);
+    return target && target->GetEntry() == Id(Aq40Npcs::NPC_CTHUN) &&
+           target->HasAura(Id(Aq40Spells::SPELL_PURPLE_COLORATION));
 }
 
 bool Aq40ControlAction::CthunEyeMelee(Player* player)
@@ -1297,15 +1313,21 @@ Unit* Aq40ControlAction::CthunTarget(Player* player)
     auto nearRaid = [&](Unit* claw) { return haveSpot && claw->GetExactDist2d(&spot) <= CthunFarClaw; };
     // A tank takes its assigned Giant Claw when it is near the raid.
     if (IsTankRole(player))
-        for (Creature* claw : Units(GiantClaw))
+        for (Creature* claw : Units(Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE)))
             if (TankFor(claw) == player && AllowedDamage(player, claw) && nearRaid(claw))
                 return claw;
     bool melee = PlayerbotAI::IsMelee(player) || IsTankRole(player);
     bool eyeMelee = CthunEyeMelee(player);
-    Creature* body = player->GetInstanceScript() ? player->GetInstanceScript()->GetCreature(Cthun) : nullptr;
-    std::vector<uint32> priorities = body && body->HasAura(Weakness)
-                                         ? std::vector<uint32>{Body, GiantEye, SmallEye, GiantClaw, SmallClaw}
-                                         : std::vector<uint32>{GiantEye, SmallEye, GiantClaw, SmallClaw, Eye, Body};
+    Creature* body =
+        player->GetInstanceScript() ? player->GetInstanceScript()->GetCreature(Id(Aq40Encounter::Cthun)) : nullptr;
+    std::vector<uint32> priorities =
+        body && body->HasAura(Id(Aq40Spells::SPELL_PURPLE_COLORATION))
+            ? std::vector<uint32>{Id(Aq40Npcs::NPC_CTHUN), Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE),
+                                  Id(Aq40Npcs::NPC_EYE_TENTACLE), Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE),
+                                  Id(Aq40Npcs::NPC_CLAW_TENTACLE)}
+            : std::vector<uint32>{Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE),  Id(Aq40Npcs::NPC_EYE_TENTACLE),
+                                  Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE), Id(Aq40Npcs::NPC_CLAW_TENTACLE),
+                                  Id(Aq40Npcs::NPC_EYE_OF_CTHUN),        Id(Aq40Npcs::NPC_CTHUN)};
     bool phase2 = CthunPhase2();
     for (uint32 entry : priorities)
     {
@@ -1314,15 +1336,17 @@ Unit* Aq40ControlAction::CthunTarget(Player* player)
         {
             // Phase 2: a Giant Claw hits whoever it spawned under until its tank taunts it, so everyone
             // near starts on it at once instead of waiting for the tank.
-            if (!AllowedDamage(player, unit) || (entry == GiantClaw && !phase2 && !Held(unit)) ||
-                (entry == GiantClaw && phase2 && !nearRaid(unit)))
+            if (!AllowedDamage(player, unit) ||
+                (entry == Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE) && !phase2 && !Held(unit)) ||
+                (entry == Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE) && phase2 && !nearRaid(unit)))
                 continue;
             if (phase2)
             {
-                if (entry == Body)
+                if (entry == Id(Aq40Npcs::NPC_CTHUN))
                 {
                     // Melee hit C'Thun only while he is Weakened; otherwise they leave him to the casters.
-                    if (melee ? !unit->HasAura(Weakness) : player->GetDistance(unit) > CthunRangedReach)
+                    if (melee ? !unit->HasAura(Id(Aq40Spells::SPELL_PURPLE_COLORATION))
+                              : player->GetDistance(unit) > CthunRangedReach)
                         continue;
                 }
                 else if (melee)
@@ -1332,13 +1356,15 @@ Unit* Aq40ControlAction::CthunTarget(Player* player)
                         continue;
                 }
                 else if (player->GetDistance(unit) >
-                         (entry == SmallEye || entry == GiantEye ? CthunTentacleChase : CthunRangedReach))
+                         (entry == Id(Aq40Npcs::NPC_EYE_TENTACLE) || entry == Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE)
+                              ? CthunTentacleChase
+                              : CthunRangedReach))
                     continue;
             }
             else if (melee)
             {
                 // Only the four Eye spots stand in the Eye's melee range; everyone else would stack on it.
-                if (entry == Eye || entry == Body)
+                if (entry == Id(Aq40Npcs::NPC_EYE_OF_CTHUN) || entry == Id(Aq40Npcs::NPC_CTHUN))
                 {
                     if (!eyeMelee)
                         continue;
@@ -1381,7 +1407,7 @@ bool Aq40ControlAction::ToxinEscape(Player* player, Position& goal)
     float pushX = 0.0f;
     float pushY = 0.0f;
     bool inside = false;
-    for (Creature* cloud : Units(Toxin))
+    for (Creature* cloud : Units(Id(Aq40Npcs::NPC_TOXIC_SLIME)))
     {
         float distance = player->GetExactDist2d(cloud);
         if (distance > awareness)
@@ -1423,50 +1449,53 @@ bool Aq40ControlAction::ToxinEscape(Player* player, Position& goal)
     return true;
 }
 
-bool Aq40ControlAction::UrgentHeal(PlayerbotAI* ai)
+bool Aq40ControlAction::UrgentHeal(PlayerbotAI* botAI)
 {
-    Player* player = ai->GetBot();
+    Player* player = botAI->GetBot();
     if (!PlayerbotAI::IsHeal(player))
         return false;
-    Unit* target = ai->GetAiObjectContext()->GetValue<Unit*>("party member to heal")->Get();
+    Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("party member to heal")->Get();
     // Twin Emperors tanks lose ~40% in a few seconds, so healers stop moving to heal much earlier there.
-    float const threshold = _encounter == Twins ? 75.0f : 40.0f;
+    float const threshold = _encounter == Aq40Encounter::Twins ? 75.0f : 40.0f;
     return target && target->IsAlive() && target->GetHealthPct() < threshold && target->GetMap() == player->GetMap() &&
-           player->GetDistance(target) < ai->GetRange("heal") - 2.0f && player->IsWithinLOSInMap(target);
+           player->GetDistance(target) < botAI->GetRange("heal") - 2.0f && player->IsWithinLOSInMap(target);
 }
 
-bool Aq40ControlAction::Interrupt(PlayerbotAI* ai)
+bool Aq40ControlAction::Interrupt(PlayerbotAI* botAI)
 {
     for (Creature* unit : Units())
     {
         Spell* spell = unit->GetCurrentSpell(CURRENT_GENERIC_SPELL);
         // Eye Tentacles channel Mind Flay (750 a second for 10 s); kicks stop channels too.
-        if (!spell && _encounter == Cthun && unit->GetEntry() == SmallEye)
+        if (!spell && _encounter == Aq40Encounter::Cthun && unit->GetEntry() == Id(Aq40Npcs::NPC_EYE_TENTACLE))
             spell = unit->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-        bool skeram = _encounter == Skeram && unit->GetEntry() == SkeramBoss;
-        if (!spell ||
-            (skeram ? spell->m_spellInfo->Id != ArcaneExplosion
-                    : (unit->GetEntry() != Yauj && unit->GetEntry() != SmallEye && unit->GetEntry() != GiantEye)))
+        bool skeram = _encounter == Aq40Encounter::Skeram && unit->GetEntry() == Id(Aq40Npcs::NPC_SKERAM);
+        if (!spell || (skeram ? spell->m_spellInfo->Id != Id(Aq40Spells::SPELL_ARCANE_EXPLOSION)
+                              : (unit->GetEntry() != Id(Aq40Npcs::NPC_YAUJ) &&
+                                 unit->GetEntry() != Id(Aq40Npcs::NPC_EYE_TENTACLE) &&
+                                 unit->GetEntry() != Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE))))
             continue;
         if (skeram && (spell->m_spellInfo->PreventionType != SPELL_PREVENTION_TYPE_SILENCE ||
                        !(spell->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT)))
             continue;
-        if (_encounter == Cthun && InStomach(ai->GetBot()))
+        if (_encounter == Aq40Encounter::Cthun && InStomach(botAI->GetBot()))
             continue;
         // A Giant Eye's beam chains through the phase-2 stack, so casters stop their own cast to counter it; the same
         // goes for Eye Tentacle Mind Flay (750 a second for 10 s).
-        bool urgent = skeram || (_encounter == Cthun && (unit->GetEntry() == GiantEye || unit->GetEntry() == SmallEye));
+        bool urgent = skeram || (_encounter == Aq40Encounter::Cthun &&
+                                 (unit->GetEntry() == Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE) ||
+                                  unit->GetEntry() == Id(Aq40Npcs::NPC_EYE_TENTACLE)));
         // No Earth Shock: since 3.0 it no longer interrupts (Wind Shear does), so it would only do damage.
         for (std::string const name :
              {"kick", "pummel", "shield bash", "wind shear", "counterspell", "mind freeze", "silencing shot"})
-            if (Cast(ai, name, unit, urgent))
+            if (Cast(botAI, name, unit, urgent))
                 return true;
         // C'Thun's tentacles can be stunned (only the Eye and C'Thun are immune): a stun also stops the
         // Giant Eye's chaining beam, which it recasts every 2.1 s.
-        if (_encounter == Cthun)
+        if (_encounter == Aq40Encounter::Cthun)
             for (std::string const name :
                  {"hammer of justice", "kidney shot", "gouge", "concussion blow", "bash", "war stomp"})
-                if (Cast(ai, name, unit))
+                if (Cast(botAI, name, unit))
                     return true;
     }
     return false;
@@ -1474,72 +1503,76 @@ bool Aq40ControlAction::Interrupt(PlayerbotAI* ai)
 
 // A Giant Eye spawns under a random player, often in the phase-2 stack, and its Eye Beam chains through everyone within
 // 13 yd at x1.5 a jump. Runs from the safety action, above movement and rotations: any ready interrupt, else a stun.
-bool Aq40ControlAction::GiantEyeResponse(PlayerbotAI* ai)
+bool Aq40ControlAction::GiantEyeResponse(PlayerbotAI* botAI)
 {
-    Player* player = ai->GetBot();
-    if (_encounter != Cthun || InStomach(player) || player->HasAura(MindControl))
+    Player* player = botAI->GetBot();
+    if (_encounter != Aq40Encounter::Cthun || InStomach(player) ||
+        player->HasAura(Id(Aq40Spells::SPELL_TRUE_FULFILLMENT)))
         return false;
     static char const* const kicks[] = {"kick",         "pummel",      "shield bash",   "wind shear",
                                         "counterspell", "mind freeze", "silencing shot"};
     static char const* const stuns[] = {"hammer of justice", "concussion blow", "bash",
                                         "war stomp",         "kidney shot",     "gouge"};
-    for (Creature* eye : Units(GiantEye))
+    for (Creature* eye : Units(Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE)))
     {
         if (!eye->GetCurrentSpell(CURRENT_GENERIC_SPELL))
             continue;
         for (char const* name : kicks)
-            if (Cast(ai, name, eye, true))
+            if (Cast(botAI, name, eye, true))
                 return true;
         for (char const* name : stuns)
-            if (Cast(ai, name, eye))
+            if (Cast(botAI, name, eye))
                 return true;
     }
     return false;
 }
 
-bool Aq40ControlAction::Special(PlayerbotAI* ai)
+bool Aq40ControlAction::Special(PlayerbotAI* botAI)
 {
-    Player* player = ai->GetBot();
-    if (_encounter == Skeram)
+    Player* player = botAI->GetBot();
+    if (_encounter == Aq40Encounter::Skeram)
     {
         Group* group = player->GetGroup();
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             if (Player* member = ref->GetSource())
-                if (member->IsAlive() && member->GetMap() == player->GetMap() && member->HasAura(MindControl) &&
+                if (member->IsAlive() && member->GetMap() == player->GetMap() &&
+                    member->HasAura(Id(Aq40Spells::SPELL_TRUE_FULFILLMENT)) &&
                     !member->HasAuraType(SPELL_AURA_MOD_CONFUSE) && !member->HasAuraType(SPELL_AURA_MOD_STUN))
                     for (std::string const name : {"polymorph", "hammer of justice", "cyclone"})
-                        if (Cast(ai, name, member))
+                        if (Cast(botAI, name, member))
                             return true;
     }
-    if (Interrupt(ai))
+    if (Interrupt(botAI))
         return true;
-    if (_encounter == Huhuran)
+    if (_encounter == Aq40Encounter::Huhuran)
         if (Creature* boss = Boss())
         {
-            if (boss->HasAura(Frenzy) && Cast(ai, "tranquilizing shot", boss))
+            if (boss->HasAura(Id(Aq40Spells::SPELL_FRENZY)) && Cast(botAI, "tranquilizing shot", boss))
                 return true;
             // Dispel damage is exactly 3,000 in this server's aura script. Protect low-health sleepers.
             for (Player* member : Members())
-                if (IsTankRole(member) && member->HasAura(Sting) && member->GetHealth() > 4500)
+                if (IsTankRole(member) && member->HasAura(Id(Aq40Spells::SPELL_WYVERN_STING)) &&
+                    member->GetHealth() > 4500)
                     for (std::string const name : {"cleanse", "abolish poison", "cure poison", "cleanse spirit"})
-                        if (Cast(ai, name, member))
+                        if (Cast(botAI, name, member))
                             return true;
         }
-    if (_encounter == Viscidus)
+    if (_encounter == Aq40Encounter::Viscidus)
         if (Creature* boss = Boss())
-            if (Units(Glob).empty() && !boss->HasAura(Frozen) && !boss->HasAura(ViscidusInvisible) &&
-                !PlayerbotAI::IsHeal(player))
+            if (Units(Id(Aq40Npcs::NPC_GLOB_OF_VISCIDUS)).empty() &&
+                !boss->HasAura(Id(Aq40Spells::SPELL_VISCIDUS_FREEZE)) &&
+                !boss->HasAura(Id(Aq40Spells::SPELL_INVIS_SELF)) && !PlayerbotAI::IsHeal(player))
             {
                 // Rank-one Frostbolt maximizes hit frequency; use the normal spell engine and costs.
                 if (player->HasSpell(116) && player->GetDistance(boss) < 28.0f && player->IsWithinLOSInMap(boss))
                 {
                     if (player->isMoving())
-                        Stop(ai);
-                    if (ai->CanCastSpell(116, boss) && ai->CastSpell(116, boss))
+                        Stop(botAI);
+                    if (botAI->CanCastSpell(116, boss) && botAI->CastSpell(116, boss))
                         return true;
                 }
                 for (std::string const name : {"frost shock", "icy touch", "ice lance"})
-                    if (Cast(ai, name, boss))
+                    if (Cast(botAI, name, boss))
                         return true;
             }
     return false;
@@ -1549,16 +1582,19 @@ bool Aq40ControlAction::Execute(Event /*event*/)
 {
     Aq40ControlAction* control = Get(botAI);
     control->Refresh(botAI);
-    if (control->Encounter() == None || bot->HasAura(MindControl) || bot->HasUnitState(UNIT_STATE_CASTING))
+    if (control->Encounter() == Aq40Encounter::None || bot->HasAura(Id(Aq40Spells::SPELL_TRUE_FULFILLMENT)) ||
+        bot->HasUnitState(UNIT_STATE_CASTING))
         return false;
     Position danger;
     if (control->Danger(bot, danger))
         return false;
     // Healing threat reaches both emperors: at the pull a healer can take Vek'lor while the waiter's Taunt is on
     // cooldown and walk him into the casters. Anyone not meant to hold an emperor sheds it with a threat drop.
-    if (control->Encounter() == Twins && !control->IsTankRole(bot) && !control->IsTwinLock(bot))
+    if (control->Encounter() == Aq40Encounter::Twins && !control->IsTankRole(bot) && !control->IsTwinLock(bot))
         for (Creature* emperor : control->Units())
-            if ((emperor->GetEntry() == Veklor || emperor->GetEntry() == Veknilash) && emperor->GetVictim() == bot)
+            if ((emperor->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR) ||
+                 emperor->GetEntry() == Id(Aq40Npcs::NPC_VEKNILASH)) &&
+                emperor->GetVictim() == bot)
             {
                 char const* drop = bot->getClass() == CLASS_PRIEST   ? "fade"
                                    : bot->getClass() == CLASS_HUNTER ? "feign death"
@@ -1567,12 +1603,12 @@ bool Aq40ControlAction::Execute(Event /*event*/)
                 if (drop && Cast(botAI, drop, bot))
                     return true;
             }
-    if (control->Encounter() == Twins && control->IsTankRole(bot))
+    if (control->Encounter() == Aq40Encounter::Twins && control->IsTankRole(bot))
     {
         // Unbalancing Strike plus a swing can take a tank from full to dead within 2 seconds, so waiting for 35% is too
         // late. Whoever Vek'nilash is hitting spends Shield Wall, then Last Stand, as soon as each is ready.
         bool holdingNilash = false;
-        for (Creature* nilash : control->Units(Veknilash))
+        for (Creature* nilash : control->Units(Id(Aq40Npcs::NPC_VEKNILASH)))
             holdingNilash = holdingNilash || nilash->GetVictim() == bot;
         // One at a time, so the two cover separate windows.
         bool covered = botAI->HasAura("shield wall", bot) || botAI->HasAura("last stand", bot);
@@ -1581,16 +1617,16 @@ bool Aq40ControlAction::Execute(Event /*event*/)
                 if (!botAI->HasAura(cooldown, bot) && Cast(botAI, cooldown, bot))
                     return true;
     }
-    if (control->Encounter() == Twins && PlayerbotAI::IsHeal(bot))
+    if (control->Encounter() == Aq40Encounter::Twins && PlayerbotAI::IsHeal(bot))
     {
         // Unbalancing Strike + Uppercut + melee can remove a tank in about two seconds, so tank healers keep whoever
         // the emperors hit topped up. After a swap Vek'nilash is passive for 2 s; top up the tank he is about to hit.
         Player* focus = nullptr;
         for (Creature* emperor : control->Units())
-            if (emperor->GetEntry() == Veknilash || emperor->GetEntry() == Veklor)
+            if (emperor->GetEntry() == Id(Aq40Npcs::NPC_VEKNILASH) || emperor->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR))
             {
                 Unit* victim = emperor->GetVictim();
-                if (!victim && emperor->GetEntry() == Veknilash)
+                if (!victim && emperor->GetEntry() == Id(Aq40Npcs::NPC_VEKNILASH))
                     victim = control->TankFor(emperor);
                 if (Player* hit = victim ? victim->ToPlayer() : nullptr)
                     if (control->Member(hit->GetGUID()) && hit->GetHealthPct() < 90.0f &&
@@ -1633,23 +1669,25 @@ bool Aq40ControlAction::Execute(Event /*event*/)
     if (control->Special(botAI))
         return true;
     // While C'Thun is Weakened there is no healing to be done, so healers damage him too.
-    if (control->Encounter() == Cthun && PlayerbotAI::IsHeal(bot) && !InStomach(bot))
-        if (Creature* body = bot->GetInstanceScript() ? bot->GetInstanceScript()->GetCreature(Cthun) : nullptr)
-            if (body->HasAura(Weakness) && control->AllowedDamage(bot, body))
+    if (control->Encounter() == Aq40Encounter::Cthun && PlayerbotAI::IsHeal(bot) && !InStomach(bot))
+        if (Creature* body =
+                bot->GetInstanceScript() ? bot->GetInstanceScript()->GetCreature(Id(Aq40Encounter::Cthun)) : nullptr)
+            if (body->HasAura(Id(Aq40Spells::SPELL_PURPLE_COLORATION)) && control->AllowedDamage(bot, body))
                 for (char const* nuke : {"mind blast", "smite", "starfire", "wrath", "lightning bolt", "holy shock"})
                     if (Cast(botAI, nuke, body))
                         return true;
     // A swallowed healer damages the Flesh Tentacles: its heals can't reach the raid ~170 yd above. Heals on anyone
     // inside still rank above this.
-    if (control->Encounter() == Cthun && PlayerbotAI::IsHeal(bot) && InStomach(bot) && !control->StomachExitNeeded(bot))
+    if (control->Encounter() == Aq40Encounter::Cthun && PlayerbotAI::IsHeal(bot) && InStomach(bot) &&
+        !control->StomachExitNeeded(bot))
     {
         Creature* nearest = nullptr;
-        for (Creature* flesh : control->Units(Flesh))
+        for (Creature* flesh : control->Units(Id(Aq40Npcs::NPC_FLESH_TENTACLE)))
             if (control->AllowedDamage(bot, flesh) && (!nearest || bot->GetDistance(flesh) < bot->GetDistance(nearest)))
                 nearest = flesh;
         // Tree of Life blocks Wrath, Moonfire and Starfire (NOT_SHAPESHIFT).
-        if (nearest && bot->HasAura(TreeOfLife))
-            bot->RemoveAurasDueToSpell(TreeOfLife);
+        if (nearest && bot->HasAura(Id(Aq40Spells::SPELL_TREE_OF_LIFE)))
+            bot->RemoveAurasDueToSpell(Id(Aq40Spells::SPELL_TREE_OF_LIFE));
         if (nearest)
             for (char const* nuke : {"mind blast", "holy fire", "smite", "shadow word: pain", "wrath", "moonfire",
                                      "starfire", "lightning bolt", "flame shock", "holy shock", "exorcism",
@@ -1657,7 +1695,7 @@ bool Aq40ControlAction::Execute(Event /*event*/)
                 if (Cast(botAI, nuke, nearest))
                     return true;
     }
-    if (control->Encounter() == Twins && bot->getClass() == CLASS_WARLOCK)
+    if (control->Encounter() == Aq40Encounter::Twins && bot->getClass() == CLASS_WARLOCK)
         if (Pet* pet = bot->GetPet())
             if (pet->GetReactState() != REACT_PASSIVE)
             {
@@ -1671,7 +1709,7 @@ bool Aq40ControlAction::Execute(Event /*event*/)
         return false;
     // A transfer owns the bot until it reaches its assigned emperor. Attack setup and
     // ranged casts can otherwise stop the same spline the tactics action just started.
-    if (control->Encounter() == Twins && !control->IsTankRole(bot))
+    if (control->Encounter() == Aq40Encounter::Twins && !control->IsTankRole(bot))
     {
         Position formation;
         if (control->Formation(bot, formation))
@@ -1682,7 +1720,7 @@ bool Aq40ControlAction::Execute(Event /*event*/)
     }
     // Between his phases a side's warlock refills mana with Life Tap (never while tanking: a phase
     // costs ~4000 mana) and puts up Shadow Ward before the teleport window.
-    if (control->Encounter() == Twins && control->IsTwinLock(bot) && !control->Target(bot))
+    if (control->Encounter() == Aq40Encounter::Twins && control->IsTwinLock(bot) && !control->Target(bot))
     {
         if (bot->GetPowerPct(POWER_MANA) < 85.0f && bot->GetHealthPct() > 60.0f && Cast(botAI, "life tap", bot))
             return true;
@@ -1691,8 +1729,8 @@ bool Aq40ControlAction::Execute(Event /*event*/)
     }
     // The warrior waiting beside a warlock-held Vek'lor peels him off anyone else (the puller at the
     // opening, a healer later). His taunt copies only their small threat, so Searing Pain retakes him.
-    if (control->Encounter() == Twins && control->IsTwinWaiter(bot))
-        for (Creature* veklor : control->Units(Veklor))
+    if (control->Encounter() == Aq40Encounter::Twins && control->IsTwinWaiter(bot))
+        for (Creature* veklor : control->Units(Id(Aq40Npcs::NPC_VEKLOR)))
             if (Player* lock = control->TankFor(veklor); lock && lock != bot && control->IsTwinLock(lock))
                 if (Unit* victim = veklor->GetVictim(); victim && victim != lock && victim != bot)
                 {
@@ -1713,7 +1751,7 @@ bool Aq40ControlAction::Execute(Event /*event*/)
         if (!taunt.empty() && Cast(botAI, taunt, target))
             return true;
     }
-    if (control->IsTwinLock(bot) && target->GetEntry() == Veklor)
+    if (control->IsTwinLock(bot) && target->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR))
     {
         // Vek'lor's Shadow Bolt hits a warlock for ~3-4k. Below half health, a Voidwalker shields him
         // with Sacrifice even though it stays passive for the rest of the fight.
@@ -1733,8 +1771,8 @@ bool Aq40ControlAction::Execute(Event /*event*/)
     }
     // Vek'lor's tank waits outside melee, so Taunt alone only ties the puller's threat and he
     // drifts back once it fades. The shout reaches him from the waiting spot and builds a margin.
-    if (control->Encounter() == Twins && target->GetEntry() == Veklor && control->TankFor(target) == bot &&
-        bot->GetDistance(target) <= 10.0f)
+    if (control->Encounter() == Aq40Encounter::Twins && target->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR) &&
+        control->TankFor(target) == bot && bot->GetDistance(target) <= 10.0f)
     {
         std::string const shout = bot->getClass() == CLASS_WARRIOR ? "demoralizing shout"
                                   : bot->getClass() == CLASS_DRUID ? "demoralizing roar"
@@ -1743,14 +1781,15 @@ bool Aq40ControlAction::Execute(Event /*event*/)
             return true;
     }
     // Weakened burn: melee hit C'Thun only from within 10 yd of his center; until then they walk in.
-    if (control->Encounter() == Cthun && control->CthunMeleeBurn(bot) &&
+    if (control->Encounter() == Aq40Encounter::Cthun && control->CthunMeleeBurn(bot) &&
         bot->GetExactDist2d(target) > CthunBurnMeleeReach)
     {
         bool attacking = bot->GetVictim() != nullptr;
         StopAttacking(bot);
         return attacking;
     }
-    if (control->Encounter() == Viscidus && target->HasAura(Frozen) && bot->IsWithinMeleeRange(target))
+    if (control->Encounter() == Aq40Encounter::Viscidus && target->HasAura(Id(Aq40Spells::SPELL_VISCIDUS_FREEZE)) &&
+        bot->IsWithinMeleeRange(target))
     {
         bool starting = bot->GetVictim() != target || !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING);
         Attack(target);
@@ -1763,7 +1802,7 @@ bool Aq40ControlAction::Execute(Event /*event*/)
 
 bool Aq40ControlAction::Danger(Player* player, Position& goal)
 {
-    if (_encounter == Cthun && InStomach(player))
+    if (_encounter == Aq40Encounter::Cthun && InStomach(player))
     {
         if (StomachExitNeeded(player))
             if (AreaTrigger const* exit = sObjectMgr->GetAreaTrigger(4033))
@@ -1773,7 +1812,7 @@ bool Aq40ControlAction::Danger(Player* player, Position& goal)
             }
         return false;
     }
-    if (_encounter == Viscidus)
+    if (_encounter == Aq40Encounter::Viscidus)
     {
         if (ToxinEscape(player, goal))
             return true;
@@ -1795,15 +1834,16 @@ bool Aq40ControlAction::Danger(Player* player, Position& goal)
     for (Creature* unit : Units())
     {
         bool hazard = (Whirling(unit) && player->GetDistance2d(unit) < 18.0f) ||
-                      (unit->GetEntry() == PoisonCloud && player->GetDistance2d(unit) < 12.0f) ||
-                      (unit->GetEntry() == Mound && player->GetDistance2d(unit) < 12.0f) ||
-                      (unit->HasAura(ExplodeBug) && player->GetDistance2d(unit) < 15.0f);
+                      (unit->GetEntry() == Id(Aq40Npcs::NPC_POISON_CLOUD) && player->GetDistance2d(unit) < 12.0f) ||
+                      (unit->GetEntry() == Id(Aq40Npcs::NPC_DIRT_MOUND) && player->GetDistance2d(unit) < 12.0f) ||
+                      (unit->HasAura(Id(Aq40Spells::SPELL_EXPLODE_BUG)) && player->GetDistance2d(unit) < 15.0f);
         if (hazard)
         {
             goal = Around(player, 5.0f, unit->GetAngle(player));
             return true;
         }
-        if (_encounter == Cthun && unit->GetEntry() == Eye && unit->HasAura(RedEye))
+        if (_encounter == Aq40Encounter::Cthun && unit->GetEntry() == Id(Aq40Npcs::NPC_EYE_OF_CTHUN) &&
+            unit->HasAura(Id(Aq40Spells::SPELL_RED_COLORATION)))
         {
             // Only the real band moves anyone: a fixed angle would flag ~26 yd either side at 40 yd.
             float bearing = unit->GetAngle(player);
@@ -1818,8 +1858,8 @@ bool Aq40ControlAction::Danger(Player* player, Position& goal)
                 return true;
             }
         }
-        if (_encounter == Ouro && unit->GetEntry() == OuroBoss && unit->GetVictim() != player &&
-            player->GetDistance2d(unit) < 40.0f &&
+        if (_encounter == Aq40Encounter::Ouro && unit->GetEntry() == Id(Aq40Npcs::NPC_OURO) &&
+            unit->GetVictim() != player && player->GetDistance2d(unit) < 40.0f &&
             std::abs(AngleDelta(unit->GetAngle(player), unit->GetOrientation())) < PI / 3.0f)
         {
             float angle = unit->GetAngle(player);
@@ -1829,9 +1869,10 @@ bool Aq40ControlAction::Danger(Player* player, Position& goal)
         }
         // After a swap Vek'nilash is passive for 2 s, then gives the nearest player 2000 threat; he can't be taunted,
         // so damage dealers clear the landing spot until he picks. Healers already hold outside the bystander ring.
-        if (_encounter == Twins && unit->GetEntry() == Veknilash && unit->IsInCombat() &&
-            unit->HasReactState(REACT_PASSIVE) && TankFor(unit) != player && !IsTankRole(player) &&
-            !PlayerbotAI::IsHeal(player) && player->GetExactDist2d(unit) < TwinBystanderDistance + 6.0f)
+        if (_encounter == Aq40Encounter::Twins && unit->GetEntry() == Id(Aq40Npcs::NPC_VEKNILASH) &&
+            unit->IsInCombat() && unit->HasReactState(REACT_PASSIVE) && TankFor(unit) != player &&
+            !IsTankRole(player) && !PlayerbotAI::IsHeal(player) &&
+            player->GetExactDist2d(unit) < TwinBystanderDistance + 6.0f)
         {
             goal = Around(unit, TwinBystanderDistance + 10.0f, unit->GetAngle(player));
             player->UpdateAllowedPositionZ(goal.GetPositionX(), goal.GetPositionY(), goal.m_positionZ);
@@ -1840,7 +1881,7 @@ bool Aq40ControlAction::Danger(Player* player, Position& goal)
         // Arcane Burst fires on anyone in Vek'lor's melee range: ~4.5k damage, a ~33-yard knockback
         // and a 70% slow. His own tank steps just outside it and stays the nearest player to him.
         bool plate = TankFor(unit) == player || (IsTankRole(player) && !IsTwinSpareTank(player));
-        if (_encounter == Twins && unit->GetEntry() == Veklor && plate &&
+        if (_encounter == Aq40Encounter::Twins && unit->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR) && plate &&
             player->GetDistance2d(unit) < TwinBurstClearance - 1.0f)
         {
             // Swap ownership can lag the teleport by one refresh; a plate tank still only steps out.
@@ -1849,7 +1890,7 @@ bool Aq40ControlAction::Danger(Player* player, Position& goal)
         }
         // After a teleport he lands on the melee stack with a 2.3-second grace, so the escape goal
         // is deep enough that one forced move clears the radius.
-        if (_encounter == Twins && unit->GetEntry() == Veklor && !plate &&
+        if (_encounter == Aq40Encounter::Twins && unit->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR) && !plate &&
             player->GetExactDist2d(unit) < TwinBystanderDistance - 2.0f)
         {
             float escape = unit->GetAngle(player);
@@ -1868,8 +1909,9 @@ bool Aq40ControlAction::Danger(Player* player, Position& goal)
             return true;
         }
     }
-    if (_encounter == Twins)
-        for (Position const& blizzard : EncounterHelpers::GetDynamicObjectPositions(player, 30.0f, Blizzard))
+    if (_encounter == Aq40Encounter::Twins)
+        for (Position const& blizzard :
+             EncounterHelpers::GetDynamicObjectPositions(player, 30.0f, Id(Aq40Spells::SPELL_BLIZZARD)))
             if (player->GetExactDist2d(blizzard) < 12.0f)
             {
                 // Blizzard ticks ~1.4k every 2 s in a 10-yard circle. Leave it in one move instead of
@@ -1925,9 +1967,9 @@ Position Aq40ControlAction::TwinWaitSpot(Player* player, Unit* veklor)
 bool Aq40ControlAction::Formation(Player* player, Position& goal)
 {
     Creature* boss = Boss();
-    if (!boss || (_encounter == Cthun && InStomach(player)))
+    if (!boss || (_encounter == Aq40Encounter::Cthun && InStomach(player)))
         return false;
-    if (_encounter == Skeram)
+    if (_encounter == Aq40Encounter::Skeram)
     {
         if (!SkeramPlatform(player, goal))
             return false;
@@ -1967,7 +2009,7 @@ bool Aq40ControlAction::Formation(Player* player, Position& goal)
         }
         return false;
     }
-    if (_encounter == Twins && _sidesReady)
+    if (_encounter == Aq40Encounter::Twins && _sidesReady)
     {
         for (uint32 side = 0; side < 2; ++side)
         {
@@ -1980,9 +2022,9 @@ bool Aq40ControlAction::Formation(Player* player, Position& goal)
             // Vek'nilash follows the tank he is hitting while Vek'lor, held by taunt threat, stays put, so Vek'nilash's
             // tank does the separating: it takes him to whichever platform is clearly farther from Vek'lor.
             uint32 home = side;
-            for (Creature* nilash : Units(Veknilash))
+            for (Creature* nilash : Units(Id(Aq40Npcs::NPC_VEKNILASH)))
                 if (TankFor(nilash) == player)
-                    for (Creature* lor : Units(Veklor))
+                    for (Creature* lor : Units(Id(Aq40Npcs::NPC_VEKLOR)))
                     {
                         float mine = lor->GetExactDist2d(_twinSides[side]);
                         float other = lor->GetExactDist2d(_twinSides[1 - side]);
@@ -1995,10 +2037,11 @@ bool Aq40ControlAction::Formation(Player* player, Position& goal)
             goal.m_positionY += tankOffset * std::sin(away);
             for (Creature* incoming : Units())
             {
-                bool waiter = incoming->GetEntry() == Veklor && _twinLock && _twinWaiter == player->GetGUID();
+                bool waiter =
+                    incoming->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR) && _twinLock && _twinWaiter == player->GetGUID();
                 if (TankFor(incoming) != player && !waiter)
                     continue;
-                if (incoming->GetEntry() == Veklor)
+                if (incoming->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR))
                 {
                     // Vek'nilash can't be taunted and after a swap attacks whoever is nearest Vek'lor's old spot, so
                     // wait just outside Arcane Burst. Vek'lor casts at victims within 45 yd; Taunt reclaims him.
@@ -2006,7 +2049,7 @@ bool Aq40ControlAction::Formation(Player* player, Position& goal)
                     tankTolerance = 1.0f;  // A narrow band between Arcane Burst and Demoralizing Shout range.
                     break;
                 }
-                if (incoming->GetEntry() == Veknilash && incoming->GetVictim() != player)
+                if (incoming->GetEntry() == Id(Aq40Npcs::NPC_VEKNILASH) && incoming->GetVictim() != player)
                 {
                     // Reach Vek'nilash at his actual position. A fixed pickup radius can strand the
                     // tank outside attack range; once acquired, the anchor above brings him home.
@@ -2022,7 +2065,7 @@ bool Aq40ControlAction::Formation(Player* player, Position& goal)
         {
             uint32 mySide = _twinLocks[0] == player->GetGUID() ? 0 : 1;
             Position spot = TwinLockSpot(mySide);
-            for (Creature* veklor : Units(Veklor))
+            for (Creature* veklor : Units(Id(Aq40Npcs::NPC_VEKLOR)))
                 if (TankFor(veklor) == player)
                 {
                     float distance = player->GetExactDist2d(veklor);
@@ -2043,7 +2086,7 @@ bool Aq40ControlAction::Formation(Player* player, Position& goal)
         if (!PlayerbotAI::IsHeal(player) && (!IsTankRole(player) || IsTwinSpareTank(player)))
         {
             bool physical = PlayerbotAI::IsMelee(player) || player->getClass() == CLASS_HUNTER;
-            auto emperors = Units(physical ? Veknilash : Veklor);
+            auto emperors = Units(physical ? Id(Aq40Npcs::NPC_VEKNILASH) : Id(Aq40Npcs::NPC_VEKLOR));
             if (emperors.empty())
                 return false;
             Creature* emperor = emperors.front();
@@ -2095,13 +2138,13 @@ bool Aq40ControlAction::Formation(Player* player, Position& goal)
         // Vek'lor's Shadow Bolts land on his warlock, not on the waiting warrior. The healers of the
         // side Vek'lor is on look after the warlock while he holds him.
         if (Player* lock = Member(_twinLock))
-            for (Creature* veklor : Units(Veklor))
+            for (Creature* veklor : Units(Id(Aq40Npcs::NPC_VEKLOR)))
                 if (TankFor(veklor) == lock && tank &&
                     veklor->GetExactDist2d(_twinSides[side]) < veklor->GetExactDist2d(_twinSides[1 - side]))
                     tank = lock;
         auto clearOfVeklor = [&](Position const& spot)
         {
-            for (Creature* veklor : Units(Veklor))
+            for (Creature* veklor : Units(Id(Aq40Npcs::NPC_VEKLOR)))
                 if (veklor->GetExactDist2d(spot) < TwinBystanderDistance)
                     return false;
             return true;
@@ -2154,7 +2197,7 @@ bool Aq40ControlAction::Formation(Player* player, Position& goal)
         return player->GetExactDist2d(goal) > 5.0f || std::abs(player->GetPositionZ() - goal.GetPositionZ()) > 3.0f;
     }
 
-    if (_encounter == Cthun)
+    if (_encounter == Aq40Encounter::Cthun)
     {
         if (_glareActive || !CthunSpot(player, goal))
             return false;
@@ -2177,12 +2220,13 @@ bool Aq40ControlAction::Formation(Player* player, Position& goal)
             if (Unit* target = Target(player))
             {
                 // Weakened burn: stand 8 yd from C'Thun's center on the bot's side of him.
-                if (target->GetEntry() == Body && CthunPhase2())
+                if (target->GetEntry() == Id(Aq40Npcs::NPC_CTHUN) && CthunPhase2())
                 {
                     goal = Around(target, CthunBurnMeleeRadius, target->GetAngle(player));
                     return player->GetExactDist2d(target) > CthunBurnMeleeRadius + 1.0f;
                 }
-                if (target->GetEntry() != Eye && target->GetEntry() != Body)
+                if (target->GetEntry() != Id(Aq40Npcs::NPC_EYE_OF_CTHUN) &&
+                    target->GetEntry() != Id(Aq40Npcs::NPC_CTHUN))
                     return false;
             }
         }
@@ -2196,7 +2240,7 @@ bool Aq40ControlAction::Formation(Player* player, Position& goal)
     {
         Unit* target = Target(player);
         // Keep the bosses separated without pulling them away from their own healers.
-        if (_encounter == Trio && target && TankFor(target) == player && target->GetVictim() == player)
+        if (_encounter == Aq40Encounter::Trio && target && TankFor(target) == player && target->GetVictim() == player)
         {
             auto [it, inserted] = _angles.emplace(player->GetGUID(), target->GetAngle(player));
             goal = Around(target, 8.0f, it->second);
@@ -2209,12 +2253,13 @@ bool Aq40ControlAction::Formation(Player* player, Position& goal)
         }
         return false;
     }
-    if (_encounter == Viscidus && boss->HasAura(Frozen) && !PlayerbotAI::IsHeal(player))
+    if (_encounter == Aq40Encounter::Viscidus && boss->HasAura(Id(Aq40Spells::SPELL_VISCIDUS_FREEZE)) &&
+        !PlayerbotAI::IsHeal(player))
     {
         goal = boss->GetPosition();
         return !player->IsWithinMeleeRange(boss);
     }
-    if (_encounter == Huhuran)
+    if (_encounter == Aq40Encounter::Huhuran)
     {
         bool soak = std::find(_soakers.begin(), _soakers.end(), player->GetGUID()) != _soakers.end();
         if (soak)
@@ -2255,7 +2300,7 @@ bool Aq40ControlAction::Formation(Player* player, Position& goal)
         if (Unit* target = Target(player))
             if (target != boss)
                 return false;
-    if (_encounter == Viscidus && (PlayerbotAI::IsHeal(player) || PlayerbotAI::IsRanged(player)))
+    if (_encounter == Aq40Encounter::Viscidus && (PlayerbotAI::IsHeal(player) || PlayerbotAI::IsRanged(player)))
     {
         // The generic ring measures from the boss's center but aims at 28 yards plus his 10-yard reach,
         // so nobody ever settles. Measure and aim with the same reach, and keep the slot off the ramp.
@@ -2282,26 +2327,26 @@ bool Aq40SkeramInterruptAction::Execute(Event /*event*/)
 {
     Aq40ControlAction* control = Aq40ControlAction::Get(botAI);
     // Also C'Thun: this action runs while the bot is casting, which the control action does not.
-    return (control->Encounter() == Skeram || control->Encounter() == Cthun) && !bot->HasAura(MindControl) &&
-           control->Interrupt(botAI);
+    return (control->Encounter() == Aq40Encounter::Skeram || control->Encounter() == Aq40Encounter::Cthun) &&
+           !bot->HasAura(Id(Aq40Spells::SPELL_TRUE_FULFILLMENT)) && control->Interrupt(botAI);
 }
 
 bool Aq40Trigger::IsActive()
 {
     Aq40ControlAction* control = Aq40ControlAction::Get(botAI);
     control->Refresh(botAI);
-    return control->Encounter() != None;
+    return control->Encounter() != Aq40Encounter::None;
 }
 
-bool Aq40TwinPrepullSpot(PlayerbotAI* ai, Position& spot)
+bool Aq40TwinPrepullSpot(PlayerbotAI* botAI, Position& spot)
 {
-    Player* bot = ai->GetBot();
+    Player* bot = botAI->GetBot();
     InstanceScript* instance = bot->GetInstanceScript();
     Group* group = bot->GetGroup();
     if (bot->GetMapId() != 531 || !instance || !group || bot->IsInCombat() || !bot->IsAlive() ||
         bot->getClass() != CLASS_WARLOCK || PlayerbotAI::IsTank(bot))
         return false;
-    EncounterState state = instance->GetBossState(Twins);
+    EncounterState state = instance->GetBossState(Id(Aq40Encounter::Twins));
     if (state == IN_PROGRESS || state == DONE)
         return false;
     // Only inside the Twin Emperors room (and its entrance), never elsewhere in the temple.
@@ -2322,16 +2367,16 @@ bool Aq40TwinPrepullSpot(PlayerbotAI* ai, Position& spot)
 
 // Out of combat, the tank marked with Moon walks alone from the entrance ramps to C'Thun's pull spot; the Eye pulls
 // when it sees him. Only with the Twin Emperors dead (the Eye evades until then) and near the room.
-bool Aq40CthunPrepullSpot(PlayerbotAI* ai, Position& spot)
+bool Aq40CthunPrepullSpot(PlayerbotAI* botAI, Position& spot)
 {
-    Player* bot = ai->GetBot();
+    Player* bot = botAI->GetBot();
     InstanceScript* instance = bot->GetInstanceScript();
     Group* group = bot->GetGroup();
     if (bot->GetMapId() != 531 || !instance || !group || bot->IsInCombat() || !bot->IsAlive() ||
         !PlayerbotAI::IsTank(bot) || group->GetTargetIcon(CthunPullerIcon) != bot->GetGUID())
         return false;
-    EncounterState state = instance->GetBossState(Cthun);
-    if (instance->GetBossState(Twins) != DONE || state == IN_PROGRESS || state == DONE)
+    EncounterState state = instance->GetBossState(Id(Aq40Encounter::Cthun));
+    if (instance->GetBossState(Id(Aq40Encounter::Twins)) != DONE || state == IN_PROGRESS || state == DONE)
         return false;
     if (bot->GetExactDist2d(&CthunCenter) > 140.0f || bot->GetPositionZ() < 90.0f)
         return false;
@@ -2365,19 +2410,21 @@ bool Aq40TwinPrepullAction::Execute(Event /*event*/)
 bool Aq40MoveAction::Execute(Event /*event*/)
 {
     Aq40ControlAction* control = Aq40ControlAction::Get(botAI);
-    if (control->Encounter() == None || bot->HasAura(MindControl))
+    if (control->Encounter() == Aq40Encounter::None || bot->HasAura(Id(Aq40Spells::SPELL_TRUE_FULFILLMENT)))
         return false;
     // Server bots have no client to resume gravity after a knockback; finish the fall before pathfinding (CanMove
     // excludes controlled motion). C'Thun knocks back often and the stomach exit drops players 10 yd up. Not in the
     // stomach, where MoveFall sinks bots below the exit.
-    if (_safety && (control->Encounter() == Twins || (control->Encounter() == Cthun && !InStomach(bot))) &&
+    if (_safety &&
+        (control->Encounter() == Aq40Encounter::Twins ||
+         (control->Encounter() == Aq40Encounter::Cthun && !InStomach(bot))) &&
         !IsSelfBot(bot) && botAI->CanMove() && !bot->IsFlying() && !bot->HasAuraType(SPELL_AURA_HOVER))
     {
         float floor = bot->GetMapHeight(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
         // C'Thun: only a short drop (a knockback, the 10-yd stomach drop onto C'Thun). On the entrance slope the height
         // lookup finds ground far below the walkway and MoveFall drops bots through the world.
         float drop = bot->GetPositionZ() - floor;
-        if (floor > INVALID_HEIGHT && drop > 3.0f && (control->Encounter() == Twins || drop < 15.0f))
+        if (floor > INVALID_HEIGHT && drop > 3.0f && (control->Encounter() == Aq40Encounter::Twins || drop < 15.0f))
         {
             bot->GetMotionMaster()->MoveFall();
             return true;
@@ -2385,8 +2432,8 @@ bool Aq40MoveAction::Execute(Event /*event*/)
     }
     // A player on C'Thun's center is spat out by area trigger 4036, which only a client fires. Send it
     // for the bot, as the stomach exit already does.
-    if (_safety && control->Encounter() == Cthun && !IsSelfBot(bot) && !InStomach(bot) && botAI->CanMove() &&
-        bot->GetExactDist2d(&CthunCenter) < CthunSpitOutRadius)
+    if (_safety && control->Encounter() == Aq40Encounter::Cthun && !IsSelfBot(bot) && !InStomach(bot) &&
+        botAI->CanMove() && bot->GetExactDist2d(&CthunCenter) < CthunSpitOutRadius)
     {
         auto now = std::chrono::steady_clock::now();
         if (now - _spitAttempt > std::chrono::seconds(3))
@@ -2402,20 +2449,12 @@ bool Aq40MoveAction::Execute(Event /*event*/)
         return true;
     // An emperor that can't path to his target takes no damage and regenerates a third of his health every tick
     // (Creature::RegenerateHealth). His target finishes any fall, then leads him back onto the nearest platform top.
-    if (_safety && control->Encounter() == Twins && botAI->CanMove())
+    if (_safety && control->Encounter() == Aq40Encounter::Twins && botAI->CanMove())
         for (Creature* emperor : control->Units())
-            if ((emperor->GetEntry() == Veknilash || emperor->GetEntry() == Veklor) && emperor->GetVictim() == bot &&
-                emperor->CanNotReachTarget())
+            if ((emperor->GetEntry() == Id(Aq40Npcs::NPC_VEKNILASH) ||
+                 emperor->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR)) &&
+                emperor->GetVictim() == bot && emperor->CanNotReachTarget())
             {
-                static std::unordered_map<ObjectGuid, time_t> reported;
-                if (time_t now = time(nullptr); now - reported[bot->GetGUID()] >= 5)
-                {
-                    reported[bot->GetGUID()] = now;
-                    LOG_INFO("playerbots",
-                             "AQ40 Twins: {} cannot reach {} at ({:.1f}, {:.1f}, {:.1f}); moving to the platform",
-                             emperor->GetName(), bot->GetName(), bot->GetPositionX(), bot->GetPositionY(),
-                             bot->GetPositionZ());
-                }
                 float floor = bot->GetMapHeight(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
                 if (floor > INVALID_HEIGHT && bot->GetPositionZ() - floor > 0.5f && !bot->IsFlying())
                 {
@@ -2439,14 +2478,16 @@ bool Aq40MoveAction::Execute(Event /*event*/)
     }
     if (!_safety)
     {
-        bool tactical = control->Encounter() == Skeram || control->Encounter() == Twins ||
-                        control->Encounter() == Cthun || control->Encounter() == Huhuran ||
-                        (control->Encounter() == Viscidus && control->Boss() && control->Boss()->HasAura(Frozen));
+        bool tactical = control->Encounter() == Aq40Encounter::Skeram || control->Encounter() == Aq40Encounter::Twins ||
+                        control->Encounter() == Aq40Encounter::Cthun ||
+                        control->Encounter() == Aq40Encounter::Huhuran ||
+                        (control->Encounter() == Aq40Encounter::Viscidus && control->Boss() &&
+                         control->Boss()->HasAura(Id(Aq40Spells::SPELL_VISCIDUS_FREEZE)));
         if (_tactical != tactical || danger || control->UrgentHeal(botAI) || bot->HasUnitState(UNIT_STATE_CASTING) ||
             !control->Formation(bot, goal))
             return false;
     }
-    if (!danger && control->Encounter() == Twins && control->IsTankRole(bot))
+    if (!danger && control->Encounter() == Aq40Encounter::Twins && control->IsTankRole(bot))
         if (Unit* target = control->Target(bot))
             if (target->GetVictim() != bot)
             {
@@ -2456,10 +2497,11 @@ bool Aq40MoveAction::Execute(Event /*event*/)
             }
     // C'Thun: the entrance ramps reach the floor only by one slope south-southeast of the Eye, so a spot is often
     // 100+ yd of path away and short steps stall on the ramps.
-    bool cthunRoute = control->Encounter() == Cthun && !InStomach(bot);
-    if ((!danger && control->Encounter() == Skeram) || control->Encounter() == Twins || cthunRoute)
+    bool cthunRoute = control->Encounter() == Aq40Encounter::Cthun && !InStomach(bot);
+    if ((!danger && control->Encounter() == Aq40Encounter::Skeram) || control->Encounter() == Aq40Encounter::Twins ||
+        cthunRoute)
     {
-        if (control->Encounter() == Twins || cthunRoute)
+        if (control->Encounter() == Aq40Encounter::Twins || cthunRoute)
             bot->UpdateAllowedPositionZ(goal.GetPositionX(), goal.GetPositionY(), goal.m_positionZ);
         else if (!control->IsTankRole(bot))
             StopAttacking(bot);
@@ -2476,7 +2518,7 @@ bool Aq40MoveAction::Execute(Event /*event*/)
             return false;
         // Twins transfers run continuously across the room: stopping every few yards adds an AI reaction delay per
         // segment and can miss the next teleport. The safety action can still interrupt this route for a hazard.
-        float stepLength = control->Encounter() == Twins || cthunRoute ? 250.0f : 4.0f;
+        float stepLength = control->Encounter() == Aq40Encounter::Twins || cthunRoute ? 250.0f : 4.0f;
         float remaining = stepLength;
         Position next = bot->GetPosition();
         for (auto const& point : route.GetPath())
@@ -2493,11 +2535,11 @@ bool Aq40MoveAction::Execute(Event /*event*/)
             next.Relocate(point.x, point.y, point.z);
             remaining -= segment;
         }
-        if (control->Encounter() == Twins && (!control->IsTankRole(bot) || danger))
+        if (control->Encounter() == Aq40Encounter::Twins && (!control->IsTankRole(bot) || danger))
             StopAttacking(bot);
         if (danger)
             bot->CastStop();
-        if ((control->Encounter() == Twins || cthunRoute) && bot->movespline->Finalized())
+        if ((control->Encounter() == Aq40Encounter::Twins || cthunRoute) && bot->movespline->Finalized())
             AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
         return MoveTo(bot->GetMapId(), next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false,
                       true, true, danger ? MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT, true);
@@ -2505,7 +2547,7 @@ bool Aq40MoveAction::Execute(Event /*event*/)
     float distance = bot->GetExactDist2d(goal);
     if (distance < 1.5f)
     {
-        if (danger && control->Encounter() == Cthun && InStomach(bot))
+        if (danger && control->Encounter() == Aq40Encounter::Cthun && InStomach(bot))
         {
             Stop(botAI);  // Stay on the exit while the server's delayed area-trigger checks run.
             auto now = std::chrono::steady_clock::now();
@@ -2526,8 +2568,9 @@ bool Aq40MoveAction::Execute(Event /*event*/)
     // interrupt the bot's cast once a step is actually possible, so a stuck healer keeps healing.
     std::vector<float> turns =
         danger ? std::vector<float>{0.0f, 0.9f, -0.9f, 1.8f, -1.8f, PI} : std::vector<float>{0.0f};
-    std::vector<Creature*> clouds =
-        danger && control->Encounter() == Viscidus ? control->Units(Toxin) : std::vector<Creature*>{};
+    std::vector<Creature*> clouds = danger && control->Encounter() == Aq40Encounter::Viscidus
+                                        ? control->Units(Id(Aq40Npcs::NPC_TOXIC_SLIME))
+                                        : std::vector<Creature*>{};
     bool found = false;
     float bestX = 0.0f;
     float bestY = 0.0f;
@@ -2567,7 +2610,7 @@ bool Aq40MoveAction::Execute(Event /*event*/)
         if (clouds.empty())
             break;
     }
-    if (!found && danger && control->Encounter() == Cthun && InStomach(bot))
+    if (!found && danger && control->Encounter() == Aq40Encounter::Cthun && InStomach(bot))
     {
         // Players drop from the stomach entrance into the pool, but a bot hangs where it was teleported and no short
         // step validates from mid-air. Go straight to the exit.
@@ -2592,21 +2635,22 @@ float Aq40Multiplier::GetValue(Action* action)
     if (!action || bot->GetMapId() != 531)
         return 1.0f;
     Aq40ControlAction* control = Aq40ControlAction::Get(botAI);
-    if (control->Encounter() == None)
+    if (control->Encounter() == Aq40Encounter::None)
     {
         // Trash: an Anubisath Defender reflects two schools for its whole fight (Shadow+Frost or
         // Fire+Arcane, picked on aggro). Casting into the reflect is how bots kill themselves.
         Unit* target = action->GetTarget();
         CastSpellAction* cast = dynamic_cast<CastSpellAction*>(action);
-        if (target && cast && target->GetEntry() == Defender && bot->IsValidAttackTarget(target))
+        if (target && cast && target->GetEntry() == Id(Aq40Npcs::NPC_ANUBISATH_DEFENDER) &&
+            bot->IsValidAttackTarget(target))
             if (SpellInfo const* spell = SpellFor(botAI, cast->getSpell()))
                 if (!spell->IsPositive())
                 {
                     uint32 school = spell->GetSchoolMask();
-                    if (target->HasAura(ShadowFrostReflect) &&
+                    if (target->HasAura(Id(Aq40Spells::SPELL_SHADOW_FROST_REFLECT)) &&
                         (school & (SPELL_SCHOOL_MASK_SHADOW | SPELL_SCHOOL_MASK_FROST)))
                         return 0.0f;
-                    if (target->HasAura(FireArcaneReflect) &&
+                    if (target->HasAura(Id(Aq40Spells::SPELL_FIRE_ARCANE_REFLECT)) &&
                         (school & (SPELL_SCHOOL_MASK_FIRE | SPELL_SCHOOL_MASK_ARCANE)))
                         return 0.0f;
                 }
@@ -2614,7 +2658,7 @@ float Aq40Multiplier::GetValue(Action* action)
     }
     // Attack/cast actions can stop a movement spline even when CanMove() is false.
     // Let server-driven knockbacks and falls finish before any action can replace them.
-    if (control->Encounter() == Twins && !IsSelfBot(bot) &&
+    if (control->Encounter() == Aq40Encounter::Twins && !IsSelfBot(bot) &&
         bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == EFFECT_MOTION_TYPE &&
         !bot->movespline->Finalized())
         return 0.0f;
@@ -2623,10 +2667,10 @@ float Aq40Multiplier::GetValue(Action* action)
         return 1.0f;
     // C'Thun: every bot's place comes from the strategy. A bot briefly out of combat would otherwise follow the raid
     // leader, possibly back up the entrance ramp during phase 1.
-    if (control->Encounter() == Cthun && action->getName() == "follow")
+    if (control->Encounter() == Aq40Encounter::Cthun && action->getName() == "follow")
         return 0.0f;
     // A swallowed bot heading out does nothing else: each heal cast stops its walk to the exit and it dies in the pool.
-    if (control->Encounter() == Cthun && InStomach(bot) && control->StomachExitNeeded(bot))
+    if (control->Encounter() == Aq40Encounter::Cthun && InStomach(bot) && control->StomachExitNeeded(bot))
         return 0.0f;
     Unit* target = action->GetTarget();
     CastSpellAction* cast = dynamic_cast<CastSpellAction*>(action);
@@ -2641,42 +2685,44 @@ float Aq40Multiplier::GetValue(Action* action)
         if (hostile || picker || dynamic_cast<MovementAction*>(action))
             return 0.0f;
     }
-    if (control->Encounter() == Twins && PlayerbotAI::IsHeal(bot) && spell && spell->IsPositive() &&
+    if (control->Encounter() == Aq40Encounter::Twins && PlayerbotAI::IsHeal(bot) && spell && spell->IsPositive() &&
         control->TwinOpeningHold(target ? target : bot))
         return 0.0f;
     // Instant priest spells cast on anyone drain the priests' mana within about two minutes. In this fight Shield and
     // Renew are for the emperors' targets only.
-    if (control->Encounter() == Twins && bot->getClass() == CLASS_PRIEST && cast &&
+    if (control->Encounter() == Aq40Encounter::Twins && bot->getClass() == CLASS_PRIEST && cast &&
         (cast->getSpell() == "power word: shield" || cast->getSpell() == "renew"))
     {
         Unit* who = target ? target : bot;
         bool emperorTarget = false;
         for (Creature* emperor : control->Units())
-            if ((emperor->GetEntry() == Veknilash || emperor->GetEntry() == Veklor) &&
+            if ((emperor->GetEntry() == Id(Aq40Npcs::NPC_VEKNILASH) ||
+                 emperor->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR)) &&
                 (emperor->GetVictim() == who || control->TankFor(emperor) == who))
                 emperorTarget = true;
         if (!emperorTarget || who->GetHealthPct() > 80.0f)
             return 0.0f;
     }
-    if (control->Encounter() == Cthun && InStomach(bot) && cast && cast->getSpell() == "tree of life")
+    if (control->Encounter() == Aq40Encounter::Cthun && InStomach(bot) && cast && cast->getSpell() == "tree of life")
         return 0.0f;  // Stays out of Tree of Life to damage the Flesh Tentacles.
     // Nobody on the floor is in range of a healer in the stomach; those casts only fail and cost its turns.
-    if (control->Encounter() == Cthun && InStomach(bot) && spell && spell->IsPositive() && target && target != bot &&
-        target->GetPositionZ() > -40.0f)
+    if (control->Encounter() == Aq40Encounter::Cthun && InStomach(bot) && spell && spell->IsPositive() && target &&
+        target != bot && target->GetPositionZ() > -40.0f)
         return 0.0f;
     if (control->UrgentHeal(botAI) && dynamic_cast<MovementAction*>(action))
         return 0.0f;
-    if (control->Encounter() == Cthun && InStomach(bot) && dynamic_cast<MovementAction*>(action) && !picker &&
-        (!dynamic_cast<ReachTargetAction*>(action) || !target || target->GetPositionZ() > -40.0f))
+    if (control->Encounter() == Aq40Encounter::Cthun && InStomach(bot) && dynamic_cast<MovementAction*>(action) &&
+        !picker && (!dynamic_cast<ReachTargetAction*>(action) || !target || target->GetPositionZ() > -40.0f))
         return 0.0f;
-    if (target && target->HasAura(MindControl) && hostile)
+    if (target && target->HasAura(Id(Aq40Spells::SPELL_TRUE_FULFILLMENT)) && hostile)
         return 0.0f;  // Only the explicit nonlethal crowd-control action may target raid members.
-    if (control->Encounter() == Huhuran && spell && target && target->HasAura(Sting))
+    if (control->Encounter() == Aq40Encounter::Huhuran && spell && target &&
+        target->HasAura(Id(Aq40Spells::SPELL_WYVERN_STING)))
         for (SpellEffectInfo const& effect : spell->GetEffects())
             if (effect.Effect == SPELL_EFFECT_DISPEL)
                 return 0.0f;  // Dedicated selective dispel handles tanks above the damage safety margin.
     if (EncounterHelpers::IsTauntAction(bot, action) ||
-        (control->Encounter() == Twins && spell && spell->HasEffect(SPELL_EFFECT_ATTACK_ME)))
+        (control->Encounter() == Aq40Encounter::Twins && spell && spell->HasEffect(SPELL_EFFECT_ATTACK_ME)))
     {
         if (action->getName() == "challenging shout" || action->getName() == "challenging roar" ||
             action->getName() == "righteous defense")
@@ -2691,10 +2737,10 @@ float Aq40Multiplier::GetValue(Action* action)
         return 0.0f;
     if (action->getName() == "pet attack" && !desired)
         return 0.0f;
-    if (action->getName() == "pet attack" && control->Encounter() == Twins && bot->getClass() == CLASS_WARLOCK &&
-        bot->GetPet())
+    if (action->getName() == "pet attack" && control->Encounter() == Aq40Encounter::Twins &&
+        bot->getClass() == CLASS_WARLOCK && bot->GetPet())
         return 0.0f;
-    if (control->Encounter() == Twins && !tank && !PlayerbotAI::IsHeal(bot) && (hostile || picker))
+    if (control->Encounter() == Aq40Encounter::Twins && !tank && !PlayerbotAI::IsHeal(bot) && (hostile || picker))
     {
         Position formation;
         if (control->Formation(bot, formation))
@@ -2702,27 +2748,29 @@ float Aq40Multiplier::GetValue(Action* action)
     }
     if (hostile && (!control->AllowedDamage(bot, target) || (!tank && target != desired)))
         return 0.0f;
-    if (hostile && control->Encounter() == Cthun && target->GetEntry() == Body && control->CthunMeleeBurn(bot) &&
-        bot->GetExactDist2d(target) > CthunBurnMeleeReach)
+    if (hostile && control->Encounter() == Aq40Encounter::Cthun && target->GetEntry() == Id(Aq40Npcs::NPC_CTHUN) &&
+        control->CthunMeleeBurn(bot) && bot->GetExactDist2d(target) > CthunBurnMeleeReach)
         return 0.0f;  // Weakened burn: no melee strikes on C'Thun from beyond 10 yd.
-    if (control->Encounter() == Twins && hostile && spell && target->IsImmunedToDamage(bot, spell))
+    if (control->Encounter() == Aq40Encounter::Twins && hostile && spell && target->IsImmunedToDamage(bot, spell))
         return 0.0f;
     // Vek'lor's tank holds him from outside Arcane Burst with taunt threat only, and his Shadow Bolt
     // hits for ~4k. Damage pauses before it would out-threaten that tank.
-    if (control->Encounter() == Twins && hostile && !tank && target->GetEntry() == Veklor)
+    if (control->Encounter() == Aq40Encounter::Twins && hostile && !tank &&
+        target->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR))
         if (Player* owner = control->TankFor(target); owner && owner != bot)
             if (target->GetThreatMgr().GetThreat(bot) + TwinCasterThreatMargin >=
                 1.3f * target->GetThreatMgr().GetThreat(owner))
                 return 0.0f;
     // The spare tank stays second on Vek'nilash's threat: close behind his tank, never above him.
-    if (control->Encounter() == Twins && hostile && control->IsTwinSpareTank(bot) && target->GetEntry() == Veknilash)
+    if (control->Encounter() == Aq40Encounter::Twins && hostile && control->IsTwinSpareTank(bot) &&
+        target->GetEntry() == Id(Aq40Npcs::NPC_VEKNILASH))
         if (Unit* victim = target->GetVictim();
             victim && victim != bot &&
             target->GetThreatMgr().GetThreat(bot) >= 0.9f * target->GetThreatMgr().GetThreat(victim))
             return 0.0f;
-    if (control->Encounter() == Viscidus && hostile && target->GetEntry() == ViscidusBoss)
+    if (control->Encounter() == Aq40Encounter::Viscidus && hostile && target->GetEntry() == Id(Aq40Npcs::NPC_VISCIDUS))
     {
-        if (target->HasAura(Frozen))
+        if (target->HasAura(Id(Aq40Spells::SPELL_VISCIDUS_FREEZE)))
         {
             if ((spell && spell->CalcCastTime() > 0) || action->getName() == "shoot" ||
                 action->getName() == "shoot bow" || action->getName() == "shoot gun" ||
@@ -2735,13 +2783,15 @@ float Aq40Multiplier::GetValue(Action* action)
     // Healing also generates area threat. Only harmful actions belong in the damage hold.
     bool areaThreat = action->getThreatType() == Action::ActionThreatType::Aoe;
     bool areaDamage = spell ? !spell->IsPositive() && (areaThreat || spell->IsAffectingArea()) : hostile && areaThreat;
-    if (!tank && (!desired || control->Encounter() == Twins || control->Encounter() == Skeram) && areaDamage)
+    if (!tank &&
+        (!desired || control->Encounter() == Aq40Encounter::Twins || control->Encounter() == Aq40Encounter::Skeram) &&
+        areaDamage)
         return 0.0f;
-    if (control->Encounter() == Huhuran && EncounterHelpers::IsDpsCooldownAction(bot, action))
+    if (control->Encounter() == Aq40Encounter::Huhuran && EncounterHelpers::IsDpsCooldownAction(bot, action))
         if (Creature* boss = control->Boss())
             if (boss->GetHealthPct() > 30.0f)
                 return 0.0f;
-    if (control->Encounter() == Skeram)
+    if (control->Encounter() == Aq40Encounter::Skeram)
     {
         Position platform;
         if (control->SkeramPlatform(bot, platform))
@@ -2760,7 +2810,7 @@ float Aq40Multiplier::GetValue(Action* action)
     }
     // A Twin tank belongs to a platform, including while its boss is displaced. Ordinary chase
     // and charge must not undo the anchor as soon as the positioning action reaches its goal.
-    if (control->Encounter() == Twins && tank)
+    if (control->Encounter() == Aq40Encounter::Twins && tank)
     {
         if (dynamic_cast<MovementAction*>(action) && !picker)
             return 0.0f;
@@ -2785,23 +2835,23 @@ public:
 
     void OnSpellPrepare(Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo) override
     {
-        if (!spellInfo || spellInfo->Id != ArcaneExplosion || !caster || caster->GetMapId() != 531 ||
-            caster->GetEntry() != SkeramBoss)
+        if (!spellInfo || spellInfo->Id != Id(Aq40Spells::SPELL_ARCANE_EXPLOSION) || !caster ||
+            caster->GetMapId() != 531 || caster->GetEntry() != Id(Aq40Npcs::NPC_SKERAM))
             return;
         for (auto const& ref : caster->GetMap()->GetPlayers())
         {
             Player* player = ref.GetSource();
-            if (!player || !player->IsAlive() || player->HasAura(MindControl))
+            if (!player || !player->IsAlive() || player->HasAura(Id(Aq40Spells::SPELL_TRUE_FULFILLMENT)))
                 continue;
-            PlayerbotAI* ai = GET_PLAYERBOT_AI(player);
-            if (!ai || !ai->HasStrategy("aq40", BOT_STATE_COMBAT))
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+            if (!botAI || !botAI->HasStrategy("aq40", BOT_STATE_COMBAT))
                 continue;
             if (player->HasUnitState(UNIT_STATE_CASTING))
             {
                 std::string name = player->getClass() == CLASS_MAGE     ? "counterspell"
                                    : player->getClass() == CLASS_SHAMAN ? "wind shear"
                                                                         : "";
-                SpellInfo const* interrupt = name.empty() ? nullptr : SpellFor(ai, name);
+                SpellInfo const* interrupt = name.empty() ? nullptr : SpellFor(botAI, name);
                 if (!interrupt || !player->HasSpell(interrupt->Id) || player->HasSpellCooldown(interrupt->Id) ||
                     player->HasUnitState(UNIT_STATE_LOST_CONTROL) || !player->IsWithinLOSInMap(caster) ||
                     player->GetDistance(caster) > interrupt->GetMaxRange(false, player) ||
@@ -2811,9 +2861,9 @@ public:
                 check.m_targets.SetUnitTarget(caster);
                 if (check.CheckCast(true) != SPELL_CAST_OK)
                     continue;
-                ai->RequestSpellInterrupt();
+                botAI->RequestSpellInterrupt();
             }
-            ai->SetNextCheckDelay(0);
+            botAI->SetNextCheckDelay(0);
         }
     }
 };
@@ -2827,18 +2877,21 @@ public:
 
     void OnSpellPrepare(Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo) override
     {
-        if (!spellInfo || (spellInfo->Id != TwinTeleportCast && spellInfo->Id != TwinTeleport) || !caster ||
-            caster->GetMapId() != 531 || (caster->GetEntry() != Veklor && caster->GetEntry() != Veknilash))
+        if (!spellInfo ||
+            (spellInfo->Id != Id(Aq40Spells::SPELL_TWIN_TELEPORT) &&
+             spellInfo->Id != Id(Aq40Spells::SPELL_TWIN_TELEPORT_VISUAL)) ||
+            !caster || caster->GetMapId() != 531 ||
+            (caster->GetEntry() != Id(Aq40Npcs::NPC_VEKLOR) && caster->GetEntry() != Id(Aq40Npcs::NPC_VEKNILASH)))
             return;
         for (auto const& ref : caster->GetMap()->GetPlayers())
         {
             Player* player = ref.GetSource();
-            if (!player || !player->IsAlive() || player->HasAura(MindControl))
+            if (!player || !player->IsAlive() || player->HasAura(Id(Aq40Spells::SPELL_TRUE_FULFILLMENT)))
                 continue;
-            PlayerbotAI* ai = GET_PLAYERBOT_AI(player);
-            if (!ai || !ai->HasStrategy("aq40", BOT_STATE_COMBAT))
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+            if (!botAI || !botAI->HasStrategy("aq40", BOT_STATE_COMBAT))
                 continue;
-            ai->SetNextCheckDelay(0);
+            botAI->SetNextCheckDelay(0);
         }
     }
 };

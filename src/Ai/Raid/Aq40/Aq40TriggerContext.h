@@ -20,8 +20,8 @@ public:
     }
 
 private:
-    static Trigger* Encounter(PlayerbotAI* ai) { return new Aq40Trigger(ai); }
-    static Trigger* TwinPrepull(PlayerbotAI* ai) { return new Aq40TwinPrepullTrigger(ai); }
+    static Trigger* Encounter(PlayerbotAI* botAI) { return new Aq40Trigger(botAI); }
+    static Trigger* TwinPrepull(PlayerbotAI* botAI) { return new Aq40TwinPrepullTrigger(botAI); }
 };
 
 #endif

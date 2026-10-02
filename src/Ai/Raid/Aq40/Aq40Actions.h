@@ -7,17 +7,24 @@
 #ifndef PLAYERBOTS_AQ40ACTIONS_H
 #define PLAYERBOTS_AQ40ACTIONS_H
 
-#include <array>
-#include <chrono>
-#include <map>
-
 #include "AttackAction.h"
 #include "Multiplier.h"
 #include "Trigger.h"
+#include <array>
+#include <chrono>
+#include <map>
+#include <type_traits>
 
 namespace Aq40
 {
-enum Encounter : uint32
+template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
+constexpr uint32 Id(T value)
+{
+    return static_cast<uint32>(value);
+}
+
+// Values match the instance script's boss data ids.
+enum class Aq40Encounter : uint32
 {
     None,
     Skeram,
@@ -31,71 +38,109 @@ enum Encounter : uint32
     Cthun
 };
 
-enum CreatureIds : uint32
+enum class Aq40Npcs : uint32
 {
-    SkeramBoss = 15263,
-    Kri = 15511,
-    Yauj = 15543,
-    Vem = 15544,
-    Brood = 15621,
-    SarturaBoss = 15516,
-    Guard = 15984,
-    FankrissBoss = 15510,
-    Worm = 15630,
-    Hatchling = 15962,
-    ViscidusBoss = 15299,
-    Glob = 15667,
-    Toxin = 15925,
-    HuhuranBoss = 15509,
-    Veknilash = 15275,
-    Veklor = 15276,
-    Scarab = 15316,
-    Scorpion = 15317,
-    OuroBoss = 15517,
-    Mound = 15712,
-    OuroScarab = 15718,
-    Eye = 15589,
-    Body = 15727,
-    SmallEye = 15726,
-    SmallClaw = 15725,
-    GiantEye = 15334,
-    GiantClaw = 15728,
-    Flesh = 15802,
-    StomachExit = 15800,
-    PoisonCloud = 15933,
-    Defender = 15277
+    // The Prophet Skeram
+    NPC_SKERAM = 15263,
+
+    // Bug Trio
+    NPC_KRI = 15511,
+    NPC_YAUJ = 15543,
+    NPC_VEM = 15544,
+    NPC_YAUJ_BROOD = 15621,
+    NPC_POISON_CLOUD = 15933,
+
+    // Battleguard Sartura
+    NPC_SARTURA = 15516,
+    NPC_SARTURA_ROYAL_GUARD = 15984,
+
+    // Fankriss the Unyielding
+    NPC_FANKRISS = 15510,
+    NPC_SPAWN_OF_FANKRISS = 15630,
+    NPC_VEKNISS_HATCHLING = 15962,
+
+    // Viscidus
+    NPC_VISCIDUS = 15299,
+    NPC_GLOB_OF_VISCIDUS = 15667,
+    NPC_TOXIC_SLIME = 15925,
+
+    // Princess Huhuran
+    NPC_HUHURAN = 15509,
+
+    // Twin Emperors
+    NPC_VEKNILASH = 15275,
+    NPC_VEKLOR = 15276,
+    NPC_QIRAJI_SCARAB = 15316,
+    NPC_QIRAJI_SCORPION = 15317,
+    NPC_ANUBISATH_DEFENDER = 15277,
+
+    // Ouro
+    NPC_OURO = 15517,
+    NPC_DIRT_MOUND = 15712,
+    NPC_OURO_SCARAB = 15718,
+
+    // C'Thun
+    NPC_EYE_OF_CTHUN = 15589,
+    NPC_CTHUN = 15727,
+    NPC_EYE_TENTACLE = 15726,
+    NPC_CLAW_TENTACLE = 15725,
+    NPC_GIANT_EYE_TENTACLE = 15334,
+    NPC_GIANT_CLAW_TENTACLE = 15728,
+    NPC_FLESH_TENTACLE = 15802,
+    NPC_EXIT_TRIGGER = 15800
 };
 
-enum SpellIds : uint32
+enum class Aq40Spells : uint32
 {
-    MindControl = 785,
-    Whirlwind = 26083,
-    GuardWhirlwind = 26038,
-    MortalWound = 25646,
-    Frozen = 25937,
-    ViscidusInvisible = 25905,
-    Frenzy = 26051,
-    Sting = 26180,
-    AcidSpit = 26050,
-    HuhuranBolt = 26052,
-    Mutate = 802,
-    ExplodeBug = 804,
-    TwinTeleport = 26638,
-    TwinTeleportCast = 799,
-    ShadowFrostReflect = 19595,
-    FireArcaneReflect = 13022,
-    DarkGlare = 26029,
-    EyeBeam = 26134,
-    RedEye = 22518,
-    DigestiveAcid = 26476,
-    Carapace = 26156,
-    Weakness = 22581,
-    YaujHeal = 25807,
-    SandBlast = 26102,
-    Blizzard = 26607,
-    ToxinAura = 26575,
-    ArcaneExplosion = 26192,
-    TreeOfLife = 33891
+    // The Prophet Skeram
+    SPELL_TRUE_FULFILLMENT = 785,
+    SPELL_ARCANE_EXPLOSION = 26192,
+
+    // Bug Trio
+    SPELL_YAUJ_HEAL = 25807,
+
+    // Battleguard Sartura
+    SPELL_WHIRLWIND = 26083,
+    SPELL_GUARD_WHIRLWIND = 26038,
+
+    // Fankriss the Unyielding
+    SPELL_MORTAL_WOUND = 25646,
+
+    // Viscidus
+    SPELL_VISCIDUS_FREEZE = 25937,
+    SPELL_INVIS_SELF = 25905,
+    SPELL_TOXIN = 26575,
+
+    // Princess Huhuran
+    SPELL_FRENZY = 26051,
+    SPELL_WYVERN_STING = 26180,
+    SPELL_ACID_SPIT = 26050,
+    SPELL_POISON_BOLT = 26052,
+
+    // Twin Emperors
+    SPELL_MUTATE_BUG = 802,
+    SPELL_EXPLODE_BUG = 804,
+    SPELL_TWIN_TELEPORT = 799,
+    SPELL_TWIN_TELEPORT_VISUAL = 26638,
+    SPELL_BLIZZARD = 26607,
+
+    // Anubisath Defender
+    SPELL_SHADOW_FROST_REFLECT = 19595,
+    SPELL_FIRE_ARCANE_REFLECT = 13022,
+
+    // Ouro
+    SPELL_SAND_BLAST = 26102,
+
+    // C'Thun
+    SPELL_DARK_GLARE = 26029,
+    SPELL_EYE_BEAM = 26134,
+    SPELL_RED_COLORATION = 22518,
+    SPELL_DIGESTIVE_ACID = 26476,
+    SPELL_CARAPACE_CTHUN = 26156,
+    SPELL_PURPLE_COLORATION = 22581,  // shown while C'Thun is Weakened
+
+    // Druid
+    SPELL_TREE_OF_LIFE = 33891
 };
 
 // Viscidus: Toxin (25989) is a 5-yard persistent cloud that never despawns, so the room fills up.
@@ -119,11 +164,13 @@ uint32 Stacks(Unit* unit, uint32 spell);
 class Aq40ControlAction : public AttackAction
 {
 public:
-    Aq40ControlAction(PlayerbotAI* ai) : AttackAction(ai, "aq40 control") {}
-    static Aq40ControlAction* Get(PlayerbotAI* ai);
+    Aq40ControlAction(PlayerbotAI* botAI) : AttackAction(botAI, "aq40 control") {}
+    static Aq40ControlAction* Get(PlayerbotAI* botAI);
     void Refresh(PlayerbotAI* observer);
     bool Execute(Event event) override;
-    Aq40::Encounter Encounter() const { return _encounter; }
+    Aq40::Aq40Encounter Encounter() const { return _encounter; }
+    // Changes whenever the shared encounter state is reset or refreshed.
+    uint32 Version() const { return _version; }
     std::vector<Creature*> Units(uint32 entry = 0);
     std::vector<Player*> Members(bool tanks = false);
     Player* Member(ObjectGuid guid);
@@ -148,16 +195,16 @@ public:
     // seconds of the pull healers only save players in real danger while the tanks build threat.
     bool TwinOpeningHold(Unit* target) const
     {
-        return _encounter == Aq40::Twins && target && target->GetHealthPct() >= 60.0f &&
+        return _encounter == Aq40::Aq40Encounter::Twins && target && target->GetHealthPct() >= 60.0f &&
                std::chrono::steady_clock::now() - _encounterStart < std::chrono::seconds(8);
     }
     bool Held(Unit* unit);
     bool Danger(Player* player, Position& goal);
     bool Formation(Player* player, Position& goal);
-    bool UrgentHeal(PlayerbotAI* ai);
-    bool Interrupt(PlayerbotAI* ai);
-    bool GiantEyeResponse(PlayerbotAI* ai);
-    bool Special(PlayerbotAI* ai);
+    bool UrgentHeal(PlayerbotAI* botAI);
+    bool Interrupt(PlayerbotAI* botAI);
+    bool GiantEyeResponse(PlayerbotAI* botAI);
+    bool Special(PlayerbotAI* botAI);
     bool AllowedDamage(Player* player, Unit* unit);
     bool StomachExitNeeded(Player* player);
     // C'Thun: each raid member's spot from Aq40Rules::CthunSlots, and what it may hit from there.
@@ -178,7 +225,7 @@ private:
     Unit* DamageTarget(Player* player);
     Position TwinWaitSpot(Player* player, Unit* veklor);
     ObjectGuid _group;
-    Aq40::Encounter _encounter = Aq40::None;
+    Aq40::Aq40Encounter _encounter = Aq40::Aq40Encounter::None;
     std::vector<ObjectGuid> _units;
     std::map<ObjectGuid, ObjectGuid> _owners;
     std::array<ObjectGuid, 3> _platformTanks{};
@@ -209,49 +256,50 @@ private:
     float _glareDirection = 0.0f;
     bool _glareActive = false;
     std::chrono::steady_clock::time_point _refresh{};
+    uint32 _version = 0;
     std::chrono::steady_clock::time_point _encounterStart{};
 };
 
 class Aq40SkeramInterruptAction : public Action
 {
 public:
-    Aq40SkeramInterruptAction(PlayerbotAI* ai) : Action(ai, "aq40 skeram interrupt") {}
+    Aq40SkeramInterruptAction(PlayerbotAI* botAI) : Action(botAI, "aq40 skeram interrupt") {}
     bool Execute(Event event) override;
 };
 
 // Before the Twin Emperors pull, the raid-marked warlocks walk to their start spots on their own:
 // neither "follow" (drags them back to the master) nor "stay" (keeps pulling them back mid-fight) works.
-bool Aq40TwinPrepullSpot(PlayerbotAI* ai, Position& spot);
-bool Aq40CthunPrepullSpot(PlayerbotAI* ai, Position& spot);
+bool Aq40TwinPrepullSpot(PlayerbotAI* botAI, Position& spot);
+bool Aq40CthunPrepullSpot(PlayerbotAI* botAI, Position& spot);
 
 class Aq40TwinPrepullTrigger : public Trigger
 {
 public:
-    Aq40TwinPrepullTrigger(PlayerbotAI* ai) : Trigger(ai, "aq40 twins prepull", 1) {}
+    Aq40TwinPrepullTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twins prepull", 1) {}
     bool IsActive() override;
 };
 
 class Aq40TwinPrepullAction : public MovementAction
 {
 public:
-    Aq40TwinPrepullAction(PlayerbotAI* ai) : MovementAction(ai, "aq40 twins prepull") {}
+    Aq40TwinPrepullAction(PlayerbotAI* botAI) : MovementAction(botAI, "aq40 twins prepull") {}
     bool Execute(Event event) override;
 };
 
 class Aq40Trigger : public Trigger
 {
 public:
-    Aq40Trigger(PlayerbotAI* ai) : Trigger(ai, "aq40 encounter", 500) {}
+    Aq40Trigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 encounter", 500) {}
     bool IsActive() override;
 };
 
 class Aq40MoveAction : public MovementAction
 {
 public:
-    Aq40MoveAction(PlayerbotAI* ai, bool safety, bool tactical = false)
-        : MovementAction(ai, safety     ? "aq40 safety"
-                             : tactical ? "aq40 tactics"
-                                        : "aq40 position"),
+    Aq40MoveAction(PlayerbotAI* botAI, bool safety, bool tactical = false)
+        : MovementAction(botAI, safety     ? "aq40 safety"
+                                : tactical ? "aq40 tactics"
+                                           : "aq40 position"),
           _safety(safety),
           _tactical(tactical)
     {
@@ -268,7 +316,7 @@ private:
 class Aq40Multiplier : public Multiplier
 {
 public:
-    Aq40Multiplier(PlayerbotAI* ai) : Multiplier(ai, "aq40 encounter") {}
+    Aq40Multiplier(PlayerbotAI* botAI) : Multiplier(botAI, "aq40 encounter") {}
     float GetValue(Action* action) override;
 };
 

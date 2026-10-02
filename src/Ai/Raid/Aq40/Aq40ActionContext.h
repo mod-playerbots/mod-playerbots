@@ -24,12 +24,12 @@ public:
     }
 
 private:
-    static Action* Control(PlayerbotAI* ai) { return new Aq40ControlAction(ai); }
-    static Action* Safety(PlayerbotAI* ai) { return new Aq40MoveAction(ai, true); }
-    static Action* Tactics(PlayerbotAI* ai) { return new Aq40MoveAction(ai, false, true); }
-    static Action* Positioning(PlayerbotAI* ai) { return new Aq40MoveAction(ai, false); }
-    static Action* SkeramInterrupt(PlayerbotAI* ai) { return new Aq40SkeramInterruptAction(ai); }
-    static Action* TwinPrepull(PlayerbotAI* ai) { return new Aq40TwinPrepullAction(ai); }
+    static Action* Control(PlayerbotAI* botAI) { return new Aq40ControlAction(botAI); }
+    static Action* Safety(PlayerbotAI* botAI) { return new Aq40MoveAction(botAI, true); }
+    static Action* Tactics(PlayerbotAI* botAI) { return new Aq40MoveAction(botAI, false, true); }
+    static Action* Positioning(PlayerbotAI* botAI) { return new Aq40MoveAction(botAI, false); }
+    static Action* SkeramInterrupt(PlayerbotAI* botAI) { return new Aq40SkeramInterruptAction(botAI); }
+    static Action* TwinPrepull(PlayerbotAI* botAI) { return new Aq40TwinPrepullAction(botAI); }
 };
 
 #endif
