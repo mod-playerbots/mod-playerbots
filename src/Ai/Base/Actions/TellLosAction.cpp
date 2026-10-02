@@ -10,8 +10,10 @@
 #include "ItemTemplate.h"
 #include "ObjectMgr.h"
 #include "Playerbots.h"
+#include "PlayerbotTextMgr.h"
 #include "StatsWeightCalculator.h"
 #include "World.h"
+#include <map>
 #include <sstream>
 
 bool TellLosAction::Execute(Event event)
@@ -138,15 +140,59 @@ bool TellCalculateItemAction::Execute(Event event)
 {
     std::string const text = event.getParam();
     ItemWithRandomProperty item = chat->parseItemWithRandomProperty(text);
+    if (!item.itemId && text.find("Hitem:") == std::string::npos)
+        item.itemId = uint32(atol(text.c_str()));
+
     StatsWeightCalculator calculator(bot);
+
+    if (!item.itemId)
+        return false;
 
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item.itemId);
     if (!proto)
         return false;
+
     float score = calculator.CalculateItem(item.itemId, item.randomPropertyId);
 
     std::ostringstream out;
     out << "Calculated score of " << chat->FormatItem(proto) << " : " << score;
     botAI->TellMasterNoFacing(out.str());
+
+    // Per-stat breakdown (value * weight = contribution) so score tuning is verifiable.
+    // Keep in sync with enum StatsType in StatsCollector.h.
+    static char const* statNames[STATS_TYPE_MAX] = {
+        "agility",   "strength",   "intellect",     "spirit",          "stamina",
+        "hit",       "crit",       "haste",         "armor",           "defense",
+        "dodge",     "parry",      "block_value",   "block_rating",    "resilience",
+        "health_regen", "spell_power", "spell_penetration", "heal_power", "mana_regen",
+        "attack_power", "armor_penetration", "expertise", "melee_dps", "ranged_dps",
+        "bonus"
+    };
+
+    StatsCollector const* collector = calculator.GetCollector();
+    float const* weights = calculator.GetStatWeights();
+    float sum = 0.0f;
+    std::ostringstream breakdown;
+    for (uint32 i = 0; i < STATS_TYPE_MAX; ++i)
+    {
+        if (collector->stats[i] == 0.0f)
+            continue;
+
+        float const contribution = collector->stats[i] * weights[i];
+        sum += contribution;
+        if (!breakdown.str().empty())
+            breakdown << ", ";
+        breakdown << statNames[i] << " " << collector->stats[i] << " * " << weights[i] << " = " << contribution;
+    }
+
+    if (!breakdown.str().empty())
+    {
+        std::map<std::string, std::string> placeholders;
+        placeholders["%breakdown"] = breakdown.str();
+        placeholders["%sum"] = std::to_string(sum);
+        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "calc_item_breakdown", "Breakdown: %breakdown (weighted sum %sum)", placeholders));
+    }
+
     return true;
 }

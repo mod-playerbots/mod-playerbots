@@ -98,6 +98,9 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
 
     collector_->CollectItemStats(proto);
 
+    if (enable_item_set_bonus_ && sPlayerbotAIConfig.itemSetSpellScoring)
+        CollectItemSetBonus(player_, proto);
+
     if (randomPropertyIds != 0)
         CalculateRandomProperty(randomPropertyIds, itemId);
 
@@ -112,7 +115,7 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
 
     CalculateItemTypePenalty(proto);
 
-    if (enable_item_set_bonus_)
+    if (enable_item_set_bonus_ && !sPlayerbotAIConfig.itemSetSpellScoring)
         CalculateItemSetMod(player_, proto);
 
     CalculateSocketBonus(player_, proto);
@@ -550,6 +553,36 @@ void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
         stats_weights_[STATS_TYPE_RESILIENCE] += 7.0f;
 }
 
+void StatsWeightCalculator::CollectItemSetBonus(Player* player, ItemTemplate const* proto)
+{
+    uint32 itemSet = proto->ItemSet;
+    if (!itemSet)
+        return;
+
+    ItemSetEntry const* setEntry = sItemSetStore.LookupEntry(itemSet);
+    if (!setEntry)
+        return;
+
+    uint32 itemCount = 0;
+    for (ItemSetEffect* eff : player->ItemSetEff)
+    {
+        if (eff && eff->setid == itemSet)
+        {
+            itemCount = eff->item_count;
+            break;
+        }
+    }
+
+    // Value the set bonus spells for every tier the player currently has unlocked.
+    for (uint32 j = 0; j < MAX_ITEM_SET_SPELLS; ++j)
+    {
+        uint32 threshold = setEntry->items_to_triggerspell[j];
+        uint32 spellId = setEntry->spells[j];
+        if (threshold && spellId && itemCount >= threshold)
+            collector_->CollectSpellStats(spellId, 1.0f, Milliseconds(0));
+    }
+}
+
 void StatsWeightCalculator::CalculateItemSetMod(Player* player, ItemTemplate const* proto)
 {
     uint32 itemSet = proto->ItemSet;
@@ -582,7 +615,7 @@ void StatsWeightCalculator::CalculateItemSetMod(Player* player, ItemTemplate con
             }
             else
             {
-                multiplier = 1.0f;  // All item set effect has been triggerred
+                multiplier = 1.0f;  // All item set effect has been triggered
             }
             break;
         }

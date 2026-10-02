@@ -158,6 +158,7 @@ public:
     int32 randomGearScoreLimit;
     bool preferClassArmorType;
     bool preferredSpecWeapons;
+    bool itemSetSpellScoring;
     float randomBotMinLevelChance, randomBotMaxLevelChance;
     float randomBotRpgChance;
     uint32 minRandomBots, maxRandomBots;
