@@ -213,6 +213,7 @@ GraveyardStruct const* SpiritHealerAction::GetGrave(bool startZone)
     GraveyardStruct const* NewGrave = nullptr;
 
     ClosestGrave = sGraveyard->GetClosestGraveyard(bot, bot->GetTeamId());
+    GraveyardStruct const* ownGrave = ClosestGrave;
 
     if (!startZone && ClosestGrave)
         return ClosestGrave;
@@ -250,6 +251,10 @@ GraveyardStruct const* SpiritHealerAction::GetGrave(bool startZone)
             }
         }
     }
+
+    uint32 const maxLevel = sPlayerbotAIConfig.startZoneGraveyardMaxLevel;
+    if (ownGrave && maxLevel && bot->GetLevel() > maxLevel)
+        return ownGrave;
 
     std::vector<uint32> races;
 
