@@ -67,6 +67,19 @@ bool GoAction::Execute(Event event)
         }
     }
 
+    // Manual, on-demand equivalent of the "grab" strategy (QuestGrabStrategy) for players
+    // who don't want it running automatically every "timer" tick -- same one-shot pattern
+    // BossAuraActions/GuildCreateActions already use to invoke another action directly,
+    // bypassing relevance/strategy gating entirely.
+    if (param == "quest" || param == "grab")
+    {
+        if (botAI->DoSpecificAction("grab quest item", Event(), true))
+            return true;
+
+        botAI->TellError("Nothing quest-relevant to grab right now");
+        return false;
+    }
+
     GuidVector gos = ChatHelper::parseGameobjects(param);
     if (!gos.empty())
     {
@@ -222,6 +235,7 @@ bool GoAction::Execute(Event event)
         return MoveNear(bot->GetMapId(), pos.x, pos.y, pos.z + 0.5f, sPlayerbotAIConfig.followDistance);
     }
 
-    botAI->TellMaster("Whisper 'go x,y', 'go [game object]', 'go unit' or 'go position' and I will go there");
+    botAI->TellMaster(
+        "Whisper 'go x,y', 'go [game object]', 'go unit', 'go position' or 'go quest' and I will go there");
     return false;
 }
