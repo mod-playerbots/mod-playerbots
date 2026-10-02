@@ -62,7 +62,7 @@ StatsWeightCalculator::StatsWeightCalculator(Player* player) : player_(player)
     cls = player->getClass();
     lvl = player->GetLevel();
     tab = AiFactory::GetPlayerSpecTab(player);
-    collector_ = std::make_unique<StatsCollector>(type_, cls);
+    collector_ = std::make_unique<StatsCollector>(type_, cls, lvl);
 
     if (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_UNHOLY)
         hitOverflowType_ = CollectorType::SPELL;
@@ -124,7 +124,7 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
     return weight_;
 }
 
-float StatsWeightCalculator::CalculateEnchant(uint32 enchantId)
+float StatsWeightCalculator::CalculateEnchant(uint32 enchantId, uint32 weaponDelay)
 {
     SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(enchantId);
 
@@ -133,7 +133,7 @@ float StatsWeightCalculator::CalculateEnchant(uint32 enchantId)
 
     Reset();
 
-    collector_->CollectEnchantStats(enchant);
+    collector_->CollectEnchantStats(enchant, 0, weaponDelay);
 
     if (enable_overflow_penalty_)
         ApplyOverflowPenalty(player_);
