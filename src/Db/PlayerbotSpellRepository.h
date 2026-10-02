@@ -7,8 +7,10 @@
 #ifndef PLAYERBOTS_PLAYERBOTSPELLREPOSITORY_H
 #define PLAYERBOTS_PLAYERBOTSPELLREPOSITORY_H
 
-#include "DBCStructure.h"
 #include <cstdint>
+#include <vector>
+
+#include "DBCStructure.h"
 
 class PlayerbotSpellRepository
 {
@@ -24,6 +26,7 @@ public:
 
     SkillLineAbilityEntry const* GetSkillLine(uint32_t spellId) const;
     bool IsItemBuyable(uint32_t itemId) const;
+    std::vector<uint32_t> const& GetOpeningSpells(uint32_t lockType) const;
 
 private:
     PlayerbotSpellRepository() = default;
@@ -37,6 +40,7 @@ private:
 
     std::map<uint32_t, SkillLineAbilityEntry const*> skillSpells;
     std::set<uint32_t> vendorItems;
+    std::map<uint32_t, std::vector<uint32_t>> _openingSpells;
 };
 
 #endif
