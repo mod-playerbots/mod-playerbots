@@ -605,6 +605,10 @@ void AddSC_IcecrownBotScripts();
 void AddSC_RubySanctumBotScripts();
 void AddSC_randombot_level_mgr();
 
+#ifdef PLAYERBOTS_INTEGRATION_TESTS
+void AddPlayerbotsIntegrationTestScripts();
+#endif
+
 void AddPlayerbotsScripts()
 {
     new PlayerbotsBattlefieldScript();
@@ -627,4 +631,7 @@ void AddPlayerbotsScripts()
     AddSC_IcecrownBotScripts();
     AddSC_RubySanctumBotScripts();
     AddSC_randombot_level_mgr();
+#ifdef PLAYERBOTS_INTEGRATION_TESTS
+    AddPlayerbotsIntegrationTestScripts();
+#endif
 }
