@@ -102,7 +102,7 @@ Position const IC_CANNON_POS_HORDE2 = {1139.695f, -686.574f, 88.173f, 3.95f};
 Position const IC_CANNON_POS_ALLIANCE1 = {424.860f, -855.795f, 87.96f, 0.44f};
 Position const IC_CANNON_POS_ALLIANCE2 = {425.525f, -779.538f, 87.717f, 5.88f};
 
-Position const IC_GATE_ATTACK_POS_HORDE = {506.782f, -828.594f, 24.313f, 0.0f};
+Position const IC_GATE_ATTACK_POS_HORDE = {478.3f, -830.2f, 40.0f, 0.0f};  // z from the map at runtime
 Position const IC_GATE_ATTACK_POS_ALLIANCE = {1091.273f, -763.619f, 42.352f, 0.0f};
 
 enum BattleBotWsgWaitSpot
@@ -1679,7 +1679,10 @@ bool BGTactics::Execute(Event /*event*/)
 
         // NOTE: can't use IsInCombat() when in vehicle as player is stuck in combat forever while in vehicle (ac bug?)
         bool inCombat = bot->GetVehicle() ? (bool)AI_VALUE(Unit*, "enemy player target") : bot->IsInCombat();
-        if (inCombat && !PlayerHasFlag::IsCapturingFlag(bot))
+        // a vehicle driver with a siege position keeps driving to it; its weapons still fire on the way
+        bool const siegeDrive = botAI->IsInVehicle(true) &&
+                                context->GetValue<PositionMap&>("position")->Get()["bg siege"].isSet();
+        if (inCombat && !siegeDrive && !PlayerHasFlag::IsCapturingFlag(bot))
         {
             // bot->GetMotionMaster()->MovementExpired();
             return false;
@@ -2843,6 +2846,10 @@ bool BGTactics::selectObjective(bool reset)
         case BATTLEGROUND_IC:
         {
             BattlegroundIC* isleOfConquestBG = (BattlegroundIC*)bg;
+            Position icHordePark = IC_GATE_ATTACK_POS_HORDE;
+            float const icParkZ = bg->GetBgMap()->GetHeight(icHordePark.GetPositionX(), icHordePark.GetPositionY(), 60.0f);
+            if (icParkZ > INVALID_HEIGHT)
+                icHordePark.m_positionZ = icParkZ;
 
             uint32 role = context->GetValue<uint32>("bg role")->Get();
             bool inVehicle = botAI->IsInVehicle();
@@ -2898,18 +2905,21 @@ bool BGTactics::selectObjective(bool reset)
                         if (vehicleId == NPC_SIEGE_ENGINE_H)  // target gate directly if siege engine
                         {
                             BgObjective = gate;
+                            PositionInfo siegePos = context->GetValue<PositionMap&>("position")->Get()["bg siege"];
+                            siegePos.Set(gate->GetPositionX(), gate->GetPositionY(), gate->GetPositionZ(), bot->GetMapId());
+                            posMap["bg siege"] = siegePos;
                             // LOG_INFO("playerbots", "bot={} (in siege-engine) attack gate", bot->GetName());
                         }
                         else  // target gate directly at range if other vehicle
                         {
                             // just make bot stay where it is if already close
                             // (stops them shifting around between the random spots)
-                            if (bot->GetDistance(IC_GATE_ATTACK_POS_HORDE) < 8.0f)
+                            if (bot->GetDistance(icHordePark) < 8.0f)
                                 pos.Set(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetMapId());
                             else
-                                pos.Set(IC_GATE_ATTACK_POS_HORDE.GetPositionX() + frand(-5.0f, +5.0f),
-                                        IC_GATE_ATTACK_POS_HORDE.GetPositionY() + frand(-5.0f, +5.0f),
-                                        IC_GATE_ATTACK_POS_HORDE.GetPositionZ(), bot->GetMapId());
+                                pos.Set(icHordePark.GetPositionX() + frand(-5.0f, +5.0f),
+                                        icHordePark.GetPositionY() + frand(-5.0f, +5.0f),
+                                        icHordePark.GetPositionZ(), bot->GetMapId());
                             posMap["bg objective"] = pos;
                             // set siege position
                             PositionInfo siegePos = context->GetValue<PositionMap&>("position")->Get()["bg siege"];
@@ -2993,12 +3003,12 @@ bool BGTactics::selectObjective(bool reset)
                 {
                     // just make bot stay where it is if already close
                     // (stops them shifting around between the random spots)
-                    if (bot->GetDistance(IC_GATE_ATTACK_POS_HORDE) < 8.0f)
+                    if (bot->GetDistance(icHordePark) < 8.0f)
                         pos.Set(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetMapId());
                     else
-                        pos.Set(IC_GATE_ATTACK_POS_HORDE.GetPositionX() + frand(-5.0f, +5.0f),
-                                IC_GATE_ATTACK_POS_HORDE.GetPositionY() + frand(-5.0f, +5.0f),
-                                IC_GATE_ATTACK_POS_HORDE.GetPositionZ(), bot->GetMapId());
+                        pos.Set(icHordePark.GetPositionX() + frand(-5.0f, +5.0f),
+                                icHordePark.GetPositionY() + frand(-5.0f, +5.0f),
+                                icHordePark.GetPositionZ(), bot->GetMapId());
                     posMap["bg objective"] = pos;
                     // LOG_INFO("playerbots", "bot={} guard vehicles as they attack gate", bot->GetName());
                     return true;
@@ -3050,6 +3060,9 @@ bool BGTactics::selectObjective(bool reset)
                         if (vehicleId == NPC_SIEGE_ENGINE_A)  // target gate directly if siege engine
                         {
                             BgObjective = gate;
+                            PositionInfo siegePos = context->GetValue<PositionMap&>("position")->Get()["bg siege"];
+                            siegePos.Set(gate->GetPositionX(), gate->GetPositionY(), gate->GetPositionZ(), bot->GetMapId());
+                            posMap["bg siege"] = siegePos;
                             // LOG_INFO("playerbots", "bot={} (in siege-engine) attack gate", bot->GetName());
                         }
                         else  // target gate directly at range if other vehicle
@@ -3130,7 +3143,7 @@ bool BGTactics::selectObjective(bool reset)
                         auto const& objective =
                             IC_AttackObjectives[(i + role) %
                                                 len];  // use role to determine which objective checked first
-                        if (isleOfConquestBG->GetICNodePoint(objective.first).nodeState != NODE_STATE_CONTROLLED_H)
+                        if (isleOfConquestBG->GetICNodePoint(objective.first).nodeState != NODE_STATE_CONTROLLED_A)
                         {
                             if (GameObject* pGO = bg->GetBGObject(objective.second))
                             {

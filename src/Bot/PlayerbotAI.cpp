@@ -3998,12 +3998,36 @@ bool PlayerbotAI::CastSpell(uint32 spellId, float x, float y, float z, Item* ite
     return true;
 }
 
+// Implemented for IoC (extend for SotA if needed): building-damaging missile at the siege position, or Ram at the gate
+static bool IsSiegeShot(Player* bot, AiObjectContext* context, uint32 spellId)
+{
+    SpellInfo const* info = sSpellMgr->GetSpellInfo(spellId);
+    PositionInfo siege = context->GetValue<PositionMap&>("position")->Get()["bg siege"];
+    if (!bot->GetVehicle() || !info || !siege.isSet())
+        return false;
+    if (info->Targets & TARGET_FLAG_DEST_LOCATION)
+    {
+        // a gate shot launches a missile that damages buildings (Boulder, Glaive, Cannon; not Napalm or rockets)
+        for (SpellEffectInfo const& effect : info->GetEffects())
+            if (effect.Effect == SPELL_EFFECT_TRIGGER_MISSILE)
+                if (SpellInfo const* missile = sSpellMgr->GetSpellInfo(effect.TriggerSpell))
+                    if (missile->HasEffect(SPELL_EFFECT_GAMEOBJECT_DAMAGE))
+                        return true;
+        return false;
+    }
+    Unit* base = bot->GetVehicleBase();
+    return !info->Targets && info->HasEffect(SPELL_EFFECT_GAMEOBJECT_DAMAGE) && base &&
+           base->GetExactDist2d(siege.x, siege.y) < 15.0f;
+}
+
 bool PlayerbotAI::CanCastVehicleSpell(uint32 spellId, Unit* target)
 {
     if (!spellId)
         return false;
 
-    if (!IsValidUnit(target))
+    if (IsSiegeShot(bot, aiObjectContext, spellId))
+        target = nullptr;  // the gate at the siege position, not the current target
+    else if (!IsValidUnit(target))
         return false;
 
     Vehicle* vehicle = bot->GetVehicle();
@@ -4088,7 +4112,9 @@ bool PlayerbotAI::CastVehicleSpell(uint32 spellId, Unit* target)
     if (!spellId)
         return false;
 
-    if (!IsValidUnit(target))
+    if (IsSiegeShot(bot, aiObjectContext, spellId))
+        target = nullptr;  // the gate at the siege position, not the current target
+    else if (!IsValidUnit(target))
         return false;
 
     Vehicle* vehicle = bot->GetVehicle();
@@ -4168,7 +4194,7 @@ bool PlayerbotAI::CastVehicleSpell(uint32 spellId, Unit* target)
         if (spellTarget != vehicleBase)
             dest = WorldLocation(spellTarget->GetMapId(), spellTarget->GetPosition());
         else if (siegePos.isSet())
-            dest = WorldLocation(bot->GetMapId(), siegePos.x + frand(-5.0f, 5.0f), siegePos.y + frand(-5.0f, 5.0f),
+            dest = WorldLocation(bot->GetMapId(), siegePos.x + frand(-2.0f, 2.0f), siegePos.y + frand(-2.0f, 2.0f),
                                  siegePos.z, 0.0f);
         else
             return false;
