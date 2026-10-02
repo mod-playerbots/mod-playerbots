@@ -289,6 +289,9 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
     if (!sPlayerbotAIConfig.randomBotAutologin || !sPlayerbotAIConfig.enabled)
         return;
 
+    if (sPlayerbotAIConfig.randomBotConcentrateInPlayerZone)
+        UpdatePlayerZones();
+
     /*if (sPlayerbotAIConfig.enablePrototypePerformanceDiff)
     {
         LOG_INFO("playerbots", "---------------------------------------");
@@ -373,7 +376,8 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
         AddRandomBots();
     }
 
-    if (sPlayerbotAIConfig.syncLevelWithPlayers && !players.empty())
+    if ((sPlayerbotAIConfig.syncLevelWithPlayers || sPlayerbotAIConfig.randomBotLevelWindowAroundPlayer) &&
+        !players.empty())
     {
         if (time(nullptr) > (PlayersCheckTimer + 60))
             sRandomPlayerbotMgr.CheckPlayers();
@@ -1317,6 +1321,8 @@ void RandomPlayerbotMgr::CheckPlayers()
     if (!playersLevel)
         playersLevel = sPlayerbotAIConfig.randombotStartingLevel;
 
+    uint32 maxRealLevel = 0;
+
     for (std::vector<Player*>::iterator i = players.begin(); i != players.end(); ++i)
     {
         Player* player = *i;
@@ -1329,7 +1335,13 @@ void RandomPlayerbotMgr::CheckPlayers()
 
         if (player->GetLevel() > playersLevel)
             playersLevel = player->GetLevel() + 3;
+
+        maxRealLevel = std::max<uint32>(maxRealLevel, player->GetLevel());
     }
+
+    // Keep the last value while only GMs are online, rather than dropping the level window.
+    if (maxRealLevel)
+        _realPlayersMaxLevel = maxRealLevel;
 
     LOG_INFO("playerbots", "Max player level is {}, max bot level set to {}", playersLevel - 3, playersLevel);
 }
@@ -1820,6 +1832,9 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
     if (sPlayerbotAIConfig.randomBotConcentrateInPlayerZone && !locs.empty())
     {
         std::vector<WorldLocation> playerZoneLocs = GetPlayerZoneTeleportLocations(locs, bot);
+        if (playerZoneLocs.empty())
+            playerZoneLocs = GetPlayerZoneTeleportLocationsNearLevel(bot);
+
         if (!playerZoneLocs.empty())
             locs = std::move(playerZoneLocs);
     }
@@ -1838,37 +1853,19 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
 std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocations(std::vector<WorldLocation> const& locs,
                                                                               Player* bot)
 {
-    std::set<uint32> playerMaps;
     std::set<std::pair<uint32, uint32>> playerMapZones;
-
-    // players only ever holds real (non random bot) players and is maintained on login/logout, so
-    // this is a pass over the online player list, not a world-wide scan.
-    for (Player* player : players)
     {
-        if (!player || !player->IsInWorld() || player->IsGameMaster())
-            continue;
-
-        Map* map = player->GetMap();
-        if (!map)
-            continue;
-
-        // Instanceable maps (dungeons, raids, battlegrounds, arenas) are never valid targets: a
-        // WorldLocation carries no instance id, so a bot would be sent to another instance of the
-        // same map rather than to the player.
-        if (map->Instanceable())
-            continue;
-
-        // Resolve the player zone the same way as the candidate locations below (unphased terrain),
-        // so a player standing in a phased area still matches its underlying zone.
-        uint32 zoneId = map->GetZoneId(PHASEMASK_NORMAL, player->GetPositionX(), player->GetPositionY(),
-                                       player->GetPositionZ());
-        playerMaps.insert(map->GetId());
-        playerMapZones.insert(std::make_pair(map->GetId(), zoneId));
+        std::lock_guard<std::mutex> lock(_playerZonesLock);
+        playerMapZones = _playerZones;
     }
 
     std::vector<WorldLocation> filtered;
     if (playerMapZones.empty())
         return filtered;
+
+    std::set<uint32> playerMaps;
+    for (auto const& mapZone : playerMapZones)
+        playerMaps.insert(mapZone.first);
 
     for (WorldLocation const& loc : locs)
     {
@@ -1895,6 +1892,75 @@ std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocations(st
     }
 
     return filtered;
+}
+
+// World thread only: reads the players list and their positions.
+void RandomPlayerbotMgr::UpdatePlayerZones()
+{
+    std::set<std::pair<uint32, uint32>> playerMapZones;
+
+    for (Player* player : players)
+    {
+        if (!player || !player->IsInWorld() || player->IsGameMaster())
+            continue;
+
+        Map* map = player->GetMap();
+        if (!map)
+            continue;
+
+        // A WorldLocation carries no instance id: a bot sent to a dungeon, raid or battleground map
+        // would land in another instance than the player's.
+        if (map->Instanceable())
+            continue;
+
+        // Unphased terrain, as for the candidate locations, so a player in a phased area matches its zone.
+        uint32 zoneId = map->GetZoneId(PHASEMASK_NORMAL, player->GetPositionX(), player->GetPositionY(),
+                                       player->GetPositionZ());
+        playerMapZones.insert(std::make_pair(map->GetId(), zoneId));
+    }
+
+    std::lock_guard<std::mutex> lock(_playerZonesLock);
+    _playerZones = std::move(playerMapZones);
+}
+
+// Hubs are listed per exact level: try the other levels of the window, nearest first.
+std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocationsNearLevel(Player* bot)
+{
+    uint32 minLevel;
+    uint32 maxLevel;
+    uint32 botLevel = bot->GetLevel();
+    if (!GetPlayerLevelWindow(minLevel, maxLevel) || botLevel < minLevel || botLevel > maxLevel)
+        return {};
+
+    auto zoneLocsAtLevel = [&](uint32 level)
+    { return GetPlayerZoneTeleportLocations(sTravelMgr.GetTeleportLocations(bot, level), bot); };
+
+    for (uint32 offset = 1; offset <= maxLevel - minLevel; ++offset)
+    {
+        std::vector<WorldLocation> locs;
+        if (botLevel >= minLevel + offset)
+            locs = zoneLocsAtLevel(botLevel - offset);
+
+        if (locs.empty() && botLevel + offset <= maxLevel)
+            locs = zoneLocsAtLevel(botLevel + offset);
+
+        if (!locs.empty())
+            return locs;
+    }
+
+    return {};
+}
+
+bool RandomPlayerbotMgr::GetPlayerLevelWindow(uint32& minLevel, uint32& maxLevel) const
+{
+    uint32 window = sPlayerbotAIConfig.randomBotLevelWindowAroundPlayer;
+    uint32 playerLevel = _realPlayersMaxLevel;
+    if (!window || !playerLevel)
+        return false;
+
+    minLevel = playerLevel > window ? playerLevel - window : 1;
+    maxLevel = std::min(playerLevel + window, sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
+    return true;
 }
 
 void RandomPlayerbotMgr::RandomTeleportGrindForLevel(Player* bot)
@@ -2009,6 +2075,16 @@ void RandomPlayerbotMgr::RandomizeFirst(Player* bot)
                             std::min(playersLevel, sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)));
 
     uint32 minLevel = sPlayerbotAIConfig.randomBotMinLevel;
+
+    // The window narrows the configured range but never leaves it.
+    uint32 windowMin;
+    uint32 windowMax;
+    if (GetPlayerLevelWindow(windowMin, windowMax))
+    {
+        minLevel = std::min(std::max(minLevel, windowMin), maxLevel);
+        maxLevel = std::max(std::min(maxLevel, windowMax), minLevel);
+    }
+
     if (bot->getClass() == CLASS_DEATH_KNIGHT)
     {
         maxLevel = std::max(maxLevel, sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL));
@@ -2027,7 +2103,7 @@ void RandomPlayerbotMgr::RandomizeFirst(Player* bot)
         }
         else
         {
-            level = sPlayerbotAIConfig.randomBotMinLevel;
+            level = minLevel;
         }
     }
     else
