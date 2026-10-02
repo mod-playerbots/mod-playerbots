@@ -29,6 +29,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotGuildMgr.h"
 #include "PlayerbotRepository.h"
+#include "PlayerbotSpellRepository.h"
 #include "Playerbots.h"
 #include "QuestDef.h"
 #include "RandomItemMgr.h"
@@ -3989,6 +3990,7 @@ void PlayerbotFactory::InitMounts()
     if (bot->GetLevel() < firstmount)
         return;
 
+    uint32 const ridingSkill = bot->GetPureSkillValue(SKILL_RIDING);
     std::map<uint8, std::map<uint32, std::vector<uint32>>> mounts;
     std::vector<uint32> slow, fast, fslow, ffast;
 
@@ -4091,6 +4093,10 @@ void PlayerbotFactory::InitMounts()
 
         uint32 index = urand(0, mounts[bot->getRace()][type].size() - 1);
         uint32 spell = mounts[bot->getRace()][type][index];
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell);
+        if (spellInfo && PlayerbotSpellRepository::Instance().GetRequiredRidingSkill(spellInfo) > ridingSkill)
+            continue;
+
         if (spell)
         {
             bot->learnSpell(spell);
