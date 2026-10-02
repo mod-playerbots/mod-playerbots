@@ -57,6 +57,9 @@ protected:
 
 protected:
     bool GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector<POIInfo>& poiInfo, bool toComplete = false);
+    // Resolve a quest objective to an exact spawn position (creature/GO/item
+    // source). Returns false when no spawn can be found (fall back to the POI).
+    bool GetQuestObjectiveSpawnPosition(uint32 questId, int32 objectiveIdx, WorldPosition& out);
     static WorldPosition SelectRandomGrindPos(Player* bot);
     static WorldPosition SelectRandomCampPos(Player* bot);
     bool SelectRandomFlightTaxiNode(uint32& flightMasterEntry, WorldPosition& flightMasterPos, std::vector<uint32>& path);

@@ -7,6 +7,7 @@
 #include "PlayerbotAIConfig.h"
 #include "BisListMgr.h"
 #include "Config.h"
+#include "LootSourceMgr.h"
 #include "NewRpgInfo.h"
 #include "PlayerbotDungeonRepository.h"
 #include "PlayerbotFactory.h"
@@ -771,6 +772,7 @@ bool PlayerbotAIConfig::Initialize()
     sRandomPlayerbotMgr.InitArenaTeams();
     sRandomItemMgr.Init();
     sRandomItemMgr.InitAfterAhBot();
+    sLootSourceMgr.Init();
     sBisListMgr->LoadAll();
     PlayerbotTextMgr::instance().LoadBotTexts();
     PlayerbotTextMgr::instance().LoadBotTextChance();

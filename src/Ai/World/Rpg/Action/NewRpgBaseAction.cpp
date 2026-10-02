@@ -12,6 +12,7 @@
 #include "GossipDef.h"
 #include "GridTerrainData.h"
 #include "IVMapMgr.h"
+#include "LootSourceMgr.h"
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
 #include "Object.h"
@@ -36,6 +37,9 @@
 #include "Timer.h"
 #include "TravelMgr.h"
 #include "G3D/Vector2.h"
+#include <cfloat>
+#include <unordered_map>
+#include <unordered_set>
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 {
@@ -959,6 +963,100 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
     }
 
     return true;
+}
+
+bool NewRpgBaseAction::GetQuestObjectiveSpawnPosition(uint32 questId, int32 objectiveIdx, WorldPosition& out)
+{
+    Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+    if (!quest)
+        return false;
+
+    std::unordered_set<uint32> creatureEntries;
+    std::unordered_set<uint32> goEntries;
+
+    if (objectiveIdx >= 0 && objectiveIdx < QUEST_OBJECTIVES_COUNT)
+    {
+        uint32 entry = quest->RequiredNpcOrGo[objectiveIdx];
+        if (!entry)
+            return false;
+        // Disambiguate creature vs gameobject.
+        if (sObjectMgr->GetCreatureTemplate(entry))
+            creatureEntries.insert(entry);
+        else if (sObjectMgr->GetGameObjectTemplate(entry))
+            goEntries.insert(entry);
+        else
+            return false;
+    }
+    else if (objectiveIdx >= QUEST_OBJECTIVES_COUNT && objectiveIdx < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
+    {
+        uint32 itemId = quest->RequiredItemId[objectiveIdx - QUEST_OBJECTIVES_COUNT];
+        if (!itemId)
+            return false;
+        for (uint32 creatureEntry : sLootSourceMgr.GetCreatureSources(itemId))
+            creatureEntries.insert(creatureEntry);
+        for (uint32 goEntry : sLootSourceMgr.GetGameObjectSources(itemId))
+            goEntries.insert(goEntry);
+    }
+    else
+    {
+        return false;
+    }
+
+    if (creatureEntries.empty() && goEntries.empty())
+        return false;
+
+    // Single pass over the spawn stores tracking the nearest spawn per entry
+    // (same map). O(#spawns) once per objective resolution; the caller caches
+    // the resolved position, so this does not run every tick.
+    uint32 const mapId = bot->GetMapId();
+    std::unordered_map<uint32, std::pair<float, WorldPosition>> bestCreature;
+    std::unordered_map<uint32, std::pair<float, WorldPosition>> bestGo;
+
+    auto track = [](std::unordered_map<uint32, std::pair<float, WorldPosition>>& best, uint32 entry,
+                    float dist, WorldPosition pos)
+    {
+        auto it = best.find(entry);
+        if (it == best.end() || dist < it->second.first)
+            best[entry] = {dist, pos};
+    };
+
+    for (auto const& [spawnId, data] : sObjectMgr->GetAllCreatureData())
+    {
+        if (!creatureEntries.count(data.id) || data.mapid != mapId)
+            continue;
+        track(bestCreature, data.id, bot->GetDistance2d(data.posX, data.posY),
+              WorldPosition(data.mapid, data.posX, data.posY, data.posZ));
+    }
+    for (auto const& [spawnId, data] : sObjectMgr->GetAllGOData())
+    {
+        if (!goEntries.count(data.id) || data.mapid != mapId)
+            continue;
+        track(bestGo, data.id, bot->GetDistance2d(data.posX, data.posY),
+              WorldPosition(data.mapid, data.posX, data.posY, data.posZ));
+    }
+
+    float bestDist = FLT_MAX;
+    bool found = false;
+    for (auto const& [entry, posPair] : bestCreature)
+    {
+        if (posPair.first < bestDist)
+        {
+            bestDist = posPair.first;
+            out = posPair.second;
+            found = true;
+        }
+    }
+    for (auto const& [entry, posPair] : bestGo)
+    {
+        if (posPair.first < bestDist)
+        {
+            bestDist = posPair.first;
+            out = posPair.second;
+            found = true;
+        }
+    }
+
+    return found;
 }
 
 WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)

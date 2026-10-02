@@ -495,16 +495,23 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         G3D::Vector2 nearestPoi = poiInfo[rndIdx].pos;
         int32 objectiveIdx = poiInfo[rndIdx].objectiveIdx;
 
-        float dx = nearestPoi.x, dy = nearestPoi.y;
+        WorldPosition pos;
+        if (!GetQuestObjectiveSpawnPosition(questId, objectiveIdx, pos))
+        {
+            // Fallback: the quest POI only carries x/y; estimate z from the
+            // terrain surface. This is wrong for cave/mine interiors (it lands
+            // on the surface above), so the spawn lookup above is the primary
+            // path and this only handles objectives with no known spawn.
+            float dx = nearestPoi.x, dy = nearestPoi.y;
+            float dz = std::max(bot->GetMap()->GetHeight(dx, dy, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(dx, dy));
 
-        // z = MAX_HEIGHT as we do not know accurate z
-        float dz = std::max(bot->GetMap()->GetHeight(dx, dy, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(dx, dy));
+            // double check for GetQuestPOIPosAndObjectiveIdx
+            if (dz == INVALID_HEIGHT || dz == VMAP_INVALID_HEIGHT_VALUE)
+                return false;
 
-        // double check for GetQuestPOIPosAndObjectiveIdx
-        if (dz == INVALID_HEIGHT || dz == VMAP_INVALID_HEIGHT_VALUE)
-            return false;
+            pos = WorldPosition(bot->GetMapId(), dx, dy, dz);
+        }
 
-        WorldPosition pos(bot->GetMapId(), dx, dy, dz);
         data.lastReachPOI = 0;
         data.pos = pos;
         data.objectiveIdx = objectiveIdx;
