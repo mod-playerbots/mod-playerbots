@@ -61,16 +61,17 @@ public:
         creators["bear"] = &DruidDruidStrategyFactoryInternal::bear;
         creators["tank"] = &DruidDruidStrategyFactoryInternal::bear;
         creators["cat"] = &DruidDruidStrategyFactoryInternal::cat;
-        creators["balance"] = &DruidDruidStrategyFactoryInternal::balance;
         creators["dps"] = &DruidDruidStrategyFactoryInternal::cat;
-        creators["resto"] = &DruidDruidStrategyFactoryInternal::heal;
+        creators["balance"] = &DruidDruidStrategyFactoryInternal::balance;
+        creators["resto"] = &DruidDruidStrategyFactoryInternal::resto;
+        creators["heal"] = &DruidDruidStrategyFactoryInternal::resto;
     }
 
 private:
     static Strategy* bear(PlayerbotAI* botAI) { return new BearDruidStrategy(botAI); }
     static Strategy* cat(PlayerbotAI* botAI) { return new CatDruidStrategy(botAI); }
     static Strategy* balance(PlayerbotAI* botAI) { return new BalanceDruidStrategy(botAI); }
-    static Strategy* heal(PlayerbotAI* botAI) { return new RestoDruidStrategy(botAI); }
+    static Strategy* resto(PlayerbotAI* botAI) { return new RestoDruidStrategy(botAI); }
 };
 
 class DruidTriggerFactoryInternal : public NamedObjectContext<Trigger>
