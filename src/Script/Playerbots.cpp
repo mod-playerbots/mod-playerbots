@@ -213,8 +213,8 @@ public:
             return true;
 
         // If this is a SelfBot, do nothing
-        PlayerbotAI* ai = GET_PLAYERBOT_AI(player);
-        if (!ai || IsSelfBot(player))
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+        if (!botAI || IsSelfBot(player))
             return true;
 
         // Cross-map bot teleport: defer visibility reference cleanup.
