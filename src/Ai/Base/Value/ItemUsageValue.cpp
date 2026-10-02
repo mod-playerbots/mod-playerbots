@@ -17,6 +17,7 @@
 #include "ServerFacade.h"
 #include "StatsWeightCalculator.h"
 
+#include <unordered_map>
 #include <unordered_set>
 
 ItemUsage ItemUsageValue::Calculate()
@@ -29,6 +30,10 @@ ItemUsage ItemUsageValue::Calculate()
 
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
     if (!proto)
+        return ITEM_USAGE_NONE;
+
+    // A unique item already at its cap is useless: it cannot be stored, bought, or sold.
+    if (proto->MaxCount > 0 && bot->HasItemCount(itemId, proto->MaxCount, true))
         return ITEM_USAGE_NONE;
 
     if (IsRealPlayer(botAI->GetMaster()))
@@ -705,6 +710,34 @@ namespace
         uint32 _itemId;
         bool _entered;
     };
+
+    // itemId -> CREATE_ITEM spells that consume it as a reagent. The spell store is static, so
+    // this is built once instead of scanning the bot's whole spellbook on every evaluation.
+    std::unordered_map<uint32, std::vector<uint32>> const& CreateItemSpellIndex()
+    {
+        static std::unordered_map<uint32, std::vector<uint32>> const index = []()
+        {
+            std::unordered_map<uint32, std::vector<uint32>> built;
+
+            for (uint32 spellId = 0; spellId < sSpellMgr->GetSpellInfoStoreSize(); ++spellId)
+            {
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+                if (!spellInfo || spellInfo->IsPassive())
+                    continue;
+
+                if (spellInfo->Effects[EFFECT_0].Effect != SPELL_EFFECT_CREATE_ITEM)
+                    continue;
+
+                for (uint8 i = 0; i < MAX_SPELL_REAGENTS; ++i)
+                    if (spellInfo->ReagentCount[i] > 0 && spellInfo->Reagent[i])
+                        built[uint32(spellInfo->Reagent[i])].push_back(spellId);
+            }
+
+            return built;
+        }();
+
+        return index;
+    }
 }
 
 bool ItemUsageValue::IsItemNeededForUsefullSpell(ItemTemplate const* proto, bool checkAllReagents)
@@ -829,28 +862,20 @@ std::vector<uint32> ItemUsageValue::SpellsUsingItem(uint32 itemId, Player* bot)
 {
     std::vector<uint32> retSpells;
 
+    auto const& index = CreateItemSpellIndex();
+    auto itr = index.find(itemId);
+    if (itr == index.end())
+        return retSpells;
+
     PlayerSpellMap const& spellMap = bot->GetSpellMap();
 
-    for (auto& spell : spellMap)
+    for (uint32 spellId : itr->second)
     {
-        uint32 spellId = spell.first;
-
-        if (spell.second->State == PLAYERSPELL_REMOVED || !spell.second->Active)
+        PlayerSpellMap::const_iterator spell = spellMap.find(spellId);
+        if (spell == spellMap.end() || spell->second->State == PLAYERSPELL_REMOVED || !spell->second->Active)
             continue;
 
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-        if (!spellInfo)
-            continue;
-
-        if (spellInfo->IsPassive())
-            continue;
-
-        if (spellInfo->Effects[EFFECT_0].Effect != SPELL_EFFECT_CREATE_ITEM)
-            continue;
-
-        for (uint8 i = 0; i < MAX_SPELL_REAGENTS; i++)
-            if (spellInfo->ReagentCount[i] > 0 && uint32(spellInfo->Reagent[i]) == itemId)
-                retSpells.push_back(spellId);
+        retSpells.push_back(spellId);
     }
 
     return retSpells;

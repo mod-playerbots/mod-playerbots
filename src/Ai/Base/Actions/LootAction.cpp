@@ -145,6 +145,11 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
     if (go && (go->GetGoState() != GO_STATE_READY))
         return false;
 
+    // Client parity: hostile game objects cannot be opened (also covers the stale-target case
+    // where hostility changed after the loot target was selected).
+    if (go && IsGameObjectHostileTo(go, bot))
+        return false;
+
     // This prevents dungeon chests like Tribunal Chest (Halls of Stone) from being ninja'd by the bots.
     // Quest objects carry the same flag but are gated on quest state, which ActivateToQuest answers.
     if (go && go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND) && !go->ActivateToQuest(bot))
@@ -403,6 +408,7 @@ bool StoreLootAction::Execute(Event event)
     uint8 loot_type;
     uint32 gold = 0;
     uint8 items = 0;
+    uint8 autostored = 0;
 
     p.rpos(0);
     p >> guid;       // 8 corpse guid
@@ -441,11 +447,16 @@ bool StoreLootAction::Execute(Event event)
         if (lootslot_type != LOOT_SLOT_TYPE_ALLOW_LOOT && lootslot_type != LOOT_SLOT_TYPE_OWNER)
             continue;
 
+        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemid);
+        if (!proto)
+            continue;
+
         if (loot_type != LOOT_SKINNING && !IsLootAllowed(itemid, botAI))
             continue;
 
-        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemid);
-        if (!proto)
+        // Spell-opened GO loot bypasses IsLootAllowed, but an item at its unique cap cannot be
+        // stored; skip it here instead of failing on the server side.
+        if (loot_type == LOOT_SKINNING && proto->MaxCount > 0 && bot->HasItemCount(itemid, proto->MaxCount, true))
             continue;
 
         if (!IsRealPlayer(botAI->GetMaster()) && AI_VALUE(uint8, "bag space") > 80)
@@ -489,6 +500,7 @@ bool StoreLootAction::Execute(Event event)
         bot->GetSession()->QueuePacket(packet);
         // bot->GetSession()->HandleAutostoreLootItemOpcode(packet);
         botAI->SetNextCheckDelay(sPlayerbotAIConfig.lootDelay);
+        ++autostored;
 
         if (proto->Quality > ITEM_QUALITY_NORMAL && !urand(0, 50) && botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig.randomBotEmote)
             botAI->PlayEmote(TEXT_EMOTE_CHEER);
@@ -499,7 +511,19 @@ bool StoreLootAction::Execute(Event event)
         BroadcastHelper::BroadcastLootingItem(botAI, bot, proto);
     }
 
-    AI_VALUE(LootObjectStack*, "available loot")->Remove(guid);
+    LootObjectStack* lootStack = AI_VALUE(LootObjectStack*, "available loot");
+
+    if (guid.IsGameObject())
+    {
+        // A window with nothing storable would make the server fail every autostore request;
+        // back off from this object for SkipDuration instead of re-opening it in a loop.
+        if (autostored == 0)
+            lootStack->Skip(guid);
+        else
+            lootStack->Unskip(guid);
+    }
+
+    lootStack->Remove(guid);
 
     // release loot
     WorldPacket* packet = new WorldPacket(CMSG_LOOT_RELEASE, 8);
