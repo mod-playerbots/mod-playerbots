@@ -62,7 +62,7 @@ enum CollectorType : uint8
 class StatsCollector
 {
 public:
-    StatsCollector(CollectorType type, int32 cls = -1);
+    StatsCollector(CollectorType type, int32 cls = -1, int32 lvl = -1);
     StatsCollector(StatsCollector& stats) = default;
     void Reset();
     void CollectItemStats(ItemTemplate const* proto);
@@ -79,13 +79,14 @@ private:
     bool SpecialSpellFilter(uint32 spellId);
     bool SpecialEnchantFilter(uint32 enchantSpellId);
 
-    void HandleApplyAura(SpellEffectInfo const& effectInfo, float multiplier, bool canNextTrigger,
-                         Milliseconds triggerCooldown);
-    float AverageValue(SpellEffectInfo const& effectInfo);
+    void HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInfo const* spellInfo, float multiplier,
+                         bool canNextTrigger, Milliseconds triggerCooldown);
+    float AverageValue(SpellEffectInfo const& effectInfo, SpellInfo const* spellInfo);
 
 private:
     CollectorType type_;
     uint32 cls_;
+    int32 lvl_;
 };
 
 #endif
