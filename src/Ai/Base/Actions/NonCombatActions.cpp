@@ -46,7 +46,7 @@ bool DrinkAction::Execute(Event event)
         if (bot->isMoving())
         {
             bot->StopMoving();
-            // botAI->SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);
+            // botAI->SetNextCheckDelay(sPlayerbotAIConfig->GlobalCoolDown);
             // return false;
         }
         bot->SetStandState(UNIT_STAND_STATE_SIT);
@@ -105,7 +105,7 @@ bool EatAction::Execute(Event event)
         if (bot->isMoving())
         {
             bot->StopMoving();
-            // botAI->SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
+            // botAI->SetNextCheckDelay(sPlayerbotAIConfig.GlobalCoolDown);
             // return false;
         }
 

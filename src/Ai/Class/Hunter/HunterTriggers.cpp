@@ -72,7 +72,7 @@ bool HuntersPetLowHealthTrigger::IsActive()
 bool HuntersPetMediumHealthTrigger::IsActive()
 {
     Unit* pet = AI_VALUE(Unit*, "pet target");
-    return pet && AI_VALUE2(uint8, "health", "pet target") < sPlayerbotAIConfig.mediumHealth &&
+    return pet && AI_VALUE2(uint8, "health", "pet target") < sPlayerbotAIConfig.MediumHealth &&
            !AI_VALUE2(bool, "dead", "pet target") && !AI_VALUE2(bool, "mounted", "self target");
 }
 
@@ -90,7 +90,7 @@ bool HunterAspectOfTheViperTrigger::IsActive()
         return false;
 
     return BuffTrigger::IsActive() &&
-           AI_VALUE2(uint8, "mana", "self target") < (sPlayerbotAIConfig.lowMana / 2);
+           AI_VALUE2(uint8, "mana", "self target") < (sPlayerbotAIConfig.LowMana / 2);
 }
 
 bool HunterAspectOfThePackTrigger::IsActive()

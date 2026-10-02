@@ -24,7 +24,7 @@ bool LootAction::Execute(Event /*event*/)
 
     LootObject prevLoot = AI_VALUE(LootObject, "loot target");
     LootObject const& lootObject =
-        AI_VALUE(LootObjectStack*, "available loot")->GetLoot(sPlayerbotAIConfig.lootDistance);
+        AI_VALUE(LootObjectStack*, "available loot")->GetLoot(sPlayerbotAIConfig.LootDistance);
 
     if (!prevLoot.IsEmpty() && prevLoot.guid != lootObject.guid)
     {
@@ -35,7 +35,7 @@ bool LootAction::Execute(Event /*event*/)
     }
 
     if (lootObject.guid.IsGameObject() &&
-        sPlayerbotAIConfig.disallowedGameObjects.contains(lootObject.guid.GetEntry()))
+        sPlayerbotAIConfig.DisallowedGameObjects.contains(lootObject.guid.GetEntry()))
     {
         return false;  // Game object ID is disallowed, so do not proceed
     }
@@ -48,7 +48,7 @@ bool LootAction::Execute(Event /*event*/)
 
 bool LootAction::isUseful()
 {
-    return sPlayerbotAIConfig.freeMethodLoot || !bot->GetGroup() ||
+    return sPlayerbotAIConfig.FreeMethodLoot || !bot->GetGroup() ||
     bot->GetGroup()->GetLootMethod() != FREE_FOR_ALL || IsSelfBot(bot);
 }
 
@@ -94,7 +94,7 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
     if (bot->IsMounted())
     {
         bot->Dismount();
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig.lootDelay); // Small delay to avoid animation issues
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.LootDelay); // Small delay to avoid animation issues
     }
 
     if (creature && creature->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE))
@@ -103,7 +103,7 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
         *packet << lootObject.guid;
         bot->GetSession()->QueuePacket(packet);
         // bot->GetSession()->HandleLootOpcode(packet);
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig.lootDelay);
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.LootDelay);
         return true;
     }
 
@@ -115,7 +115,7 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
     if (bot->isMoving())
     {
         bot->StopMoving();
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig.lootDelay);
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.LootDelay);
         return false;
     }
 
@@ -222,7 +222,7 @@ uint32 OpenLootAction::GetOpeningSpell(LootObject& lootObject, GameObject* go)
             return spellId;
     }
 
-    return sPlayerbotAIConfig.openGoSpell;
+    return sPlayerbotAIConfig.OpenGoSpell;
 }
 
 uint32 OpenLootAction::GetKeySpell(uint32 keyItemId)
@@ -488,12 +488,12 @@ bool StoreLootAction::Execute(Event event)
         *packet << itemindex;
         bot->GetSession()->QueuePacket(packet);
         // bot->GetSession()->HandleAutostoreLootItemOpcode(packet);
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig.lootDelay);
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.LootDelay);
 
-        if (proto->Quality > ITEM_QUALITY_NORMAL && !urand(0, 50) && botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig.randomBotEmote)
+        if (proto->Quality > ITEM_QUALITY_NORMAL && !urand(0, 50) && botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig.RandomBotEmote)
             botAI->PlayEmote(TEXT_EMOTE_CHEER);
 
-        if (proto->Quality >= ITEM_QUALITY_RARE && !urand(0, 1) && botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig.randomBotEmote)
+        if (proto->Quality >= ITEM_QUALITY_RARE && !urand(0, 1) && botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig.RandomBotEmote)
             botAI->PlayEmote(TEXT_EMOTE_CHEER);
 
         BroadcastHelper::BroadcastLootingItem(botAI, bot, proto);
@@ -544,7 +544,7 @@ bool StoreLootAction::IsLootAllowed(uint32 itemid, PlayerbotAI* botAI)
             {
                 // if (AI_VALUE2(uint32, "item count", proto->Name1) < quest->RequiredItemCount[i])
                 // {
-                //     if (botAI->GetMaster() && sPlayerbotAIConfig.syncQuestWithPlayer)
+                //     if (botAI->GetMaster() && sPlayerbotAIConfig.SyncQuestWithPlayer)
                 //         return false; //Quest is autocomplete for the bot so no item needed.
                 // }
 
