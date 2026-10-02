@@ -18,6 +18,7 @@
 #include "Talentspec.h"
 #include "TravelMgr.h"
 #include <cctype>
+#include <cmath>
 #include <iostream>
 #include <sstream>
 
@@ -192,6 +193,31 @@ bool PlayerbotAIConfig::Initialize()
     randomBotMapsAsString = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotMaps", "0,1,530,571");
     LoadList<std::vector<uint32>>(randomBotMapsAsString, randomBotMaps);
     probTeleToBankers = sConfigMgr->GetOption<float>("AiPlayerbot.ProbTeleToBankers", 0.25f);
+    probTeleToQuestGivers = sConfigMgr->GetOption<float>("AiPlayerbot.ProbTeleToQuestGivers", 0.0f);
+    questGiverTeleportLevelWindow = sConfigMgr->GetOption<int32>("AiPlayerbot.QuestGiverTeleportLevelWindow", 3);
+
+    // The shares are peers of one weighted roll whose remainder goes to the innkeeper/hub path, so
+    // keep each in [0, 1], their sum within 1, and the level window non-negative. Otherwise a bad
+    // conf value silently disables a branch (non-finite/negative) or eats into another share.
+    float questGiverShare =
+        std::isfinite(probTeleToQuestGivers) ? std::clamp(probTeleToQuestGivers, 0.0f, 1.0f) : 0.0f;
+    float bankerShare = std::isfinite(probTeleToBankers) ? std::clamp(probTeleToBankers, 0.0f, 1.0f) : 0.0f;
+    if (bankerShare > 1.0f - questGiverShare)
+        bankerShare = 1.0f - questGiverShare;
+    int32 questLevelWindow = std::max(questGiverTeleportLevelWindow, 0);
+
+    if (questGiverShare != probTeleToQuestGivers || bankerShare != probTeleToBankers ||
+        questLevelWindow != questGiverTeleportLevelWindow)
+    {
+        LOG_WARN("playerbots",
+                 "Corrected invalid quest-giver teleport config: ProbTeleToQuestGivers {} -> {}, "
+                 "ProbTeleToBankers {} -> {}, QuestGiverTeleportLevelWindow {} -> {}",
+                 probTeleToQuestGivers, questGiverShare, probTeleToBankers, bankerShare,
+                 questGiverTeleportLevelWindow, questLevelWindow);
+        probTeleToQuestGivers = questGiverShare;
+        probTeleToBankers = bankerShare;
+        questGiverTeleportLevelWindow = questLevelWindow;
+    }
     enableWeightTeleToCityBankers = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableWeightTeleToCityBankers", false);
     weightTeleToStormwind = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToStormwindWeight", 2);
     weightTeleToIronforge = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToIronforgeWeight", 1);
