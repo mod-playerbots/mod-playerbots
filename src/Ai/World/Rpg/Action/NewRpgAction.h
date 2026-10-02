@@ -117,9 +117,6 @@ class NewRpgTravelFlightAction : public NewRpgBaseAction
 public:
     NewRpgTravelFlightAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "new rpg travel flight") {}
     bool Execute(Event event) override;
-
-protected:
-    void ContinueCrossMapTaxi();
 };
 
 #endif
