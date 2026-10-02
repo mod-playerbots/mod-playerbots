@@ -62,6 +62,25 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("ignis fire resistance action", ACTION_RAID) }));
 
     //
+    // Xt-002 Deconstructor
+    //
+    triggers.push_back(new TriggerNode(
+        "xt-002 deconstructor searing light trigger",
+        { NextAction("xt002 deconstructor move searing light action", ACTION_RAID + 1)}));
+
+    triggers.push_back(new TriggerNode(
+        "xt-002 deconstructor gravity bomb trigger",
+         { NextAction("xt002 deconstructor move gravity bomb action", ACTION_RAID + 1)}));
+
+    triggers.push_back(new TriggerNode(
+        "xt-002 deconstructor position trigger",
+        { NextAction("xt002 deconstructor raid position action", ACTION_RAID)}));
+
+    triggers.push_back(new TriggerNode(
+        "xt-002 deconstructor target trigger",
+        { NextAction("xt002 deconstructor target action", ACTION_RAID)}));
+
+    //
     // Iron Assembly
     //
     triggers.push_back(new TriggerNode(

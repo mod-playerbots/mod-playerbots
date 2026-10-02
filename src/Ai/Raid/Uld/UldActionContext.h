@@ -28,6 +28,10 @@ public:
         creators["razorscale fuse armor action"] = &RaidUlduarActionContext::razorscale_fuse_armor_action;
         creators["razorscale fire resistance action"] = &RaidUlduarActionContext::razorscale_fire_resistance_action;
         creators["ignis fire resistance action"] = &RaidUlduarActionContext::ignis_fire_resistance_action;
+        creators["xt002 deconstructor move searing light action"] = &RaidUlduarActionContext::xt002_deconstructor_move_searing_light_action;
+        creators["xt002 deconstructor move gravity bomb action"] = &RaidUlduarActionContext::xt002_deconstructor_move_gravity_bomb_action;
+        creators["xt002 deconstructor raid position action"] = &RaidUlduarActionContext::xt002_deconstructor_raid_position_action;
+        creators["xt002 deconstructor target action"] = &RaidUlduarActionContext::xt002_deconstructor_target_action;
         creators["iron assembly lightning tendrils action"] = &RaidUlduarActionContext::iron_assembly_lightning_tendrils_action;
         creators["iron assembly overload action"] = &RaidUlduarActionContext::iron_assembly_overload_action;
         creators["iron assembly rune of power action"] = &RaidUlduarActionContext::iron_assembly_rune_of_power_action;
@@ -98,6 +102,10 @@ private:
     static Action* razorscale_fuse_armor_action(PlayerbotAI* ai) { return new RazorscaleFuseArmorAction(ai); }
     static Action* razorscale_fire_resistance_action(PlayerbotAI* ai) { return new BossFireResistanceAction(ai, "razorscale"); }
     static Action* ignis_fire_resistance_action(PlayerbotAI* ai) { return new BossFireResistanceAction(ai, "ignis the furnace master"); }
+    static Action* xt002_deconstructor_move_searing_light_action(PlayerbotAI* ai) { return new Xt002DeconstructorMoveSearingLightAction(ai); }
+    static Action* xt002_deconstructor_move_gravity_bomb_action(PlayerbotAI* ai) { return new Xt002DeconstructorMoveGravityBombAction(ai); }
+    static Action* xt002_deconstructor_raid_position_action(PlayerbotAI* ai) { return new Xt002DeconstructorRaidPositionAction(ai); }
+    static Action* xt002_deconstructor_target_action(PlayerbotAI* ai) { return new Xt002DeconstructorTargetAction(ai); }
     static Action* iron_assembly_lightning_tendrils_action(PlayerbotAI* ai) { return new IronAssemblyLightningTendrilsAction(ai); }
     static Action* iron_assembly_overload_action(PlayerbotAI* ai) { return new IronAssemblyOverloadAction(ai); }
     static Action* iron_assembly_rune_of_power_action(PlayerbotAI* ai) { return new IronAssemblyRuneOfPowerAction(ai); }

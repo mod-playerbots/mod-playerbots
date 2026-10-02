@@ -269,6 +269,36 @@ bool RazorscaleFuseArmorTrigger::IsActive()
     return false;
 }
 
+bool Xt002DeconstructorTargetTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+    if (!boss)
+        return false;
+
+    return true;
+}
+
+bool Xt002DeconstructorPositionTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+    Xt002DeconstructorGravityBombTrigger gravityBombTrigger(botAI);
+    Xt002DeconstructorSearingLightTrigger searingLightTrigger(botAI);
+
+    if (!boss)
+        return false;
+
+    if (gravityBombTrigger.IsActive() || searingLightTrigger.IsActive())
+        return false;
+
+    if (botAI->IsMainTank(bot) && bot->GetExactDist(ULDUAR_XT002_DECONSTRUCTOR_MAINTANK_SPOT) > 3.0f)
+        return true;
+
+    if (botAI->IsRanged(bot) && bot->GetExactDist(ULDUAR_XT002_DECONSTRUCTOR_RANGED_SPOT) > 1.0f)
+        return true;
+
+    return false;
+}
+
 bool IronAssemblyLightningTendrilsTrigger::IsActive()
 {
     // Check boss and it is alive

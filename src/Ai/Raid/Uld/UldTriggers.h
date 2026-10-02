@@ -82,6 +82,35 @@ public:
 };
 
 //
+// XT002 Deconstructor
+//
+class Xt002DeconstructorSearingLightTrigger : public HasAuraTrigger
+{
+public:
+    Xt002DeconstructorSearingLightTrigger(PlayerbotAI* ai) : HasAuraTrigger(ai, "searing light", 1) {}
+};
+
+class Xt002DeconstructorGravityBombTrigger : public HasAuraTrigger
+{
+public:
+    Xt002DeconstructorGravityBombTrigger(PlayerbotAI* ai) : HasAuraTrigger(ai, "gravity bomb", 1) {}
+};
+
+class Xt002DeconstructorTargetTrigger : public Trigger
+{
+public:
+    Xt002DeconstructorTargetTrigger(PlayerbotAI* ai) : Trigger(ai, "xt-002 deconstructor target trigger") {}
+    bool IsActive() override;
+};
+
+class Xt002DeconstructorPositionTrigger : public Trigger
+{
+public:
+    Xt002DeconstructorPositionTrigger(PlayerbotAI* ai) : Trigger(ai, "xt-002 deconstructor position trigger") {}
+    bool IsActive() override;
+};
+
+//
 // Iron Assembly
 //
 class IronAssemblyLightningTendrilsTrigger : public Trigger
