@@ -216,12 +216,14 @@ bool MovementAction::JumpTo(uint32 mapId, float x, float y, float z, MovementPri
     if (IsDuplicateMove(x, y, z))
         return false;
 
-    float speed = bot->GetSpeed(MOVE_RUN);
+    float speed = std::max(bot->GetSpeed(MOVE_RUN), 0.1f);
     MotionMaster& mm = *bot->GetMotionMaster();
     mm.Clear();
     mm.MoveJump(x, y, z, speed, speed, 1);
     AI_VALUE(LastMovement&, "last movement")
         .Set(mapId, x, y, z, bot->GetOrientation(), priority);
+    float const flightMs = IN_MILLISECONDS * bot->GetExactDist(x, y, z) / speed;
+    SetNextMovementDelay(std::min(flightMs, (float)sPlayerbotAIConfig.maxWaitForMove), priority);
     return true;
 }
 
