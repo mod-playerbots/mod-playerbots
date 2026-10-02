@@ -130,6 +130,8 @@ public:
         creators["prowl"] = &DruidTriggerFactoryInternal::prowl_trigger;
         creators["rejuvenation blanket"] = &DruidTriggerFactoryInternal::rejuvenation_blanket;
         creators["wild growth blanket"] = &DruidTriggerFactoryInternal::wild_growth_blanket;
+        creators["healer should attack and not blanketing"] =
+            &DruidTriggerFactoryInternal::healer_should_attack_and_not_blanketing;
         creators["aquatic form"] = &DruidTriggerFactoryInternal::aquatic_form;
     }
 
@@ -184,8 +186,18 @@ private:
     static Trigger* predators_swiftness_and_combat_party_member_dead(PlayerbotAI* ai) { return new TwoTriggers(ai, "predator's swiftness", "combat party member dead"); }
     static Trigger* clearcasting_and_medium_aoe(PlayerbotAI* ai) { return new TwoTriggers(ai, "clearcasting", "medium aoe"); }
     static Trigger* prowl_trigger(PlayerbotAI* ai) { return new ProwlTrigger(ai); }
-    static Trigger* rejuvenation_blanket(PlayerbotAI* ai) { return new BuffOnPartyTrigger(ai, "rejuvenation"); }
-    static Trigger* wild_growth_blanket(PlayerbotAI* ai) { return new BuffOnPartyTrigger(ai, "wild growth"); }
+    static Trigger* rejuvenation_blanket(PlayerbotAI* botAI)
+    {
+        return new BlanketHotTrigger(botAI, "rejuvenation blanket", "rejuvenation");
+    }
+    static Trigger* wild_growth_blanket(PlayerbotAI* botAI)
+    {
+        return new BlanketHotTrigger(botAI, "wild growth blanket", "wild growth");
+    }
+    static Trigger* healer_should_attack_and_not_blanketing(PlayerbotAI* botAI)
+    {
+        return new HealerShouldAttackAndNotBlanketingTrigger(botAI);
+    }
     static Trigger* aquatic_form(PlayerbotAI* ai) { return new AquaticFormTrigger(ai); }
 };
 
@@ -429,11 +441,13 @@ public:
     {
         creators["eclipse solar proc time"] = &DruidValueContextInternal::eclipse_solar_proc_time;
         creators["eclipse lunar proc time"] = &DruidValueContextInternal::eclipse_lunar_proc_time;
+        creators["blanket hot target"] = &DruidValueContextInternal::blanket_hot_target;
     }
 
 private:
     static UntypedValue* eclipse_solar_proc_time(PlayerbotAI* botAI) { return new EclipseSolarProcTimeValue(botAI); }
     static UntypedValue* eclipse_lunar_proc_time(PlayerbotAI* botAI) { return new EclipseLunarProcTimeValue(botAI); }
+    static UntypedValue* blanket_hot_target(PlayerbotAI* botAI) { return new BlanketHotTargetValue(botAI); }
 };
 
 void DruidAiObjectContext::BuildSharedValueContexts(SharedNamedObjectContextList<UntypedValue>& valueContexts)
