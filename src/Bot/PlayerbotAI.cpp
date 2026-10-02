@@ -41,6 +41,7 @@
 #include "Playerbots.h"
 #include "PositionValue.h"
 #include "RBAC.h"
+#include "RaceMgr.h"
 #include "RandomPlayerbotMgr.h"
 #include "SayAction.h"
 #include "ScriptMgr.h"
@@ -4423,10 +4424,13 @@ bool IsSelfBot(Player* player)
     return botAI && botAI->GetMaster() == player;
 }
 
+// Same source as GetTeamId(true); TeamIdForRace() logs an error for non-playable races.
 bool IsAlliance(uint8 race)
 {
-    return race == RACE_HUMAN || race == RACE_DWARF || race == RACE_NIGHTELF || race == RACE_GNOME ||
-           race == RACE_DRAENEI;
+    if (!race || race > 32 || !(sRaceMgr->GetPlayableRaceMask() & (1u << (race - 1))))
+        return false;
+
+    return Player::TeamIdForRace(race) == TEAM_ALLIANCE;
 }
 
 Player* PlayerbotAI::FindNewMaster()

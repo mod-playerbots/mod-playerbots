@@ -4037,13 +4037,13 @@ void PlayerbotFactory::InitMounts()
         default:
             if (bot->GetTeamId() == TEAM_HORDE)
             { // Orc mounts
-                slow = {470, 6648, 458, 472};
-                fast = {23228, 23227, 23229};
+                slow = {6654, 6653, 580};
+                fast = {23250, 23252, 23251};
             }
             else // Human mounts
             {
-                slow = {6654, 6653, 580};
-                fast = {23250, 23252, 23251};
+                slow = {470, 6648, 458, 472};
+                fast = {23228, 23227, 23229};
             }
     }
 
