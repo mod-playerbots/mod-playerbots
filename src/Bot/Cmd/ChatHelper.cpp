@@ -7,10 +7,12 @@
 #include "ChatHelper.h"
 #include "AiFactory.h"
 #include "Common.h"
+#include "DBCStores.h"
 #include "ItemTemplate.h"
 #include "ObjectMgr.h"
 #include "Playerbots.h"
 #include "SpellInfo.h"
+#include "World.h"
 #include <regex>
 
 std::map<std::string, uint32> ChatHelper::consumableSubClasses;
@@ -658,7 +660,24 @@ std::string const ChatHelper::FormatClass(Player* player, int8 spec)
 
 std::string const ChatHelper::FormatClass(uint8 cls) { return classes[cls]; }
 
-std::string const ChatHelper::FormatRace(uint8 race) { return races[race]; }
+std::string const ChatHelper::FormatRace(uint8 race)
+{
+    auto itr = races.find(race);
+    if (itr != races.end())
+        return itr->second;
+
+    if (ChrRacesEntry const* entry = sChrRacesStore.LookupEntry(race))
+    {
+        // English like the races map; DBCs from another locale leave enUS empty.
+        char const* name = entry->name[LOCALE_enUS];
+        if (!name || !*name)
+            name = entry->name[sWorld->GetDefaultDbcLocale()];
+        if (name && *name)
+            return name;
+    }
+
+    return "";
+}
 
 uint32 ChatHelper::parseSkill(std::string const text)
 {
