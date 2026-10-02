@@ -174,6 +174,7 @@ public:
     uint32 MinRandomBotsPriceChangeInterval, MaxRandomBotsPriceChangeInterval;
     uint32 DisabledWithoutRealPlayerLoginDelay, DisabledWithoutRealPlayerLogoutDelay;
     bool RandomBotJoinLfg;
+    bool RandomBotJoinLfgOutleveledExpansion;
 
     // Professions
     bool EnableFishingWithMaster;
