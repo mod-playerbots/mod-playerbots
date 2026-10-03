@@ -146,6 +146,7 @@ public:
         creators["disperse"] = &ChatTriggerContext::disperse;
         creators["calc"] = &ChatTriggerContext::calc;
         creators["qi"] = &ChatTriggerContext::qi;
+        creators["qgo"] = &ChatTriggerContext::qgo;
         creators["wipe"] = &ChatTriggerContext::wipe;
         creators["tame"] = &ChatTriggerContext::tame;
         creators["glyphs"] = &ChatTriggerContext::glyphs; // Added for custom Glyphs
@@ -279,6 +280,7 @@ private:
     static Trigger* disperse(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "disperse"); }
     static Trigger* calc(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "calc"); }
     static Trigger* qi(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "qi"); }
+    static Trigger* qgo(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "qgo"); }
     static Trigger* wipe(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "wipe"); }
     static Trigger* tame(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "tame"); }
     static Trigger* glyphs(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "glyphs"); } // Added for custom Glyphs
