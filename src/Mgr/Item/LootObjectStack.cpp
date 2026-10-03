@@ -59,15 +59,15 @@ bool IsGameObjectHostileTo(GameObject const* go, Player const* player)
         return false;
 
     FactionTemplateEntry const* playerFaction = player->GetFactionTemplateEntry();
-    if (!playerFaction || !goFaction->IsHostileTo(*playerFaction))
+    if (!playerFaction)
         return false;
 
-    // A forced reaction (e.g. a disguise) overrides the faction template, exactly like the
-    // client's ActivateToQuest check.
+    // A forced reaction (e.g. a disguise) overrides the faction template in both directions,
+    // exactly like the client's ActivateToQuest check.
     if (ReputationRank const* forcedRank = player->GetReputationMgr().GetForcedRankIfAny(goFaction))
         return *forcedRank <= REP_HOSTILE;
 
-    return true;
+    return goFaction->IsHostileTo(*playerFaction);
 }
 
 LootObject::LootObject(Player* bot, ObjectGuid guid) : guid(), skillId(SKILL_NONE), reqSkillValue(0), reqItem(0)
