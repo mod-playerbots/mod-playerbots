@@ -57,13 +57,26 @@ private:
     bool IsItemUsefulForQuest(Player* player, ItemTemplate const* proto);
     bool IsItemNeededForSkill(ItemTemplate const* proto);
     bool IsItemUsefulForSkill(ItemTemplate const* proto);
-    bool IsItemNeededForUsefullSpell(ItemTemplate const* proto, bool checkAllReagents = false);
+    /**
+     * True for temporary weapon enhancements (sharpening stones, weightstones,
+     * weapon oils, poisons). Used to keep only the best one per equipped weapon /
+     * poison family so obsolete ones fall through to vendor/ah.
+     */
+    bool IsTemporaryWeaponEnchantment(ItemTemplate const* proto);
     bool HasItemsNeededForSpell(uint32 spellId, ItemTemplate const* proto);
     Item* CurrentItem(ItemTemplate const* proto);
     float CurrentStacks(ItemTemplate const* proto);
     float BetterStacks(ItemTemplate const* proto, std::string const usageType = "");
 
 public:
+    bool IsItemNeededForUsefullSpell(ItemTemplate const* proto, bool checkAllReagents = false);
+    /**
+     * True if this poison is the best (highest item level) of its family
+     * (family = the use spell's SpellFamilyFlags) in the bot's inventory.
+     * Lower-rank poisons of the same family fall through to vendor/ah.
+     */
+    bool IsBestPoison(ItemTemplate const* proto);
+
     static std::vector<uint32> SpellsUsingItem(uint32 itemId, Player* bot);
     static bool SpellGivesSkillUp(uint32 spellId, Player* bot);
 

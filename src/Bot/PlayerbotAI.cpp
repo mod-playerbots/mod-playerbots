@@ -53,7 +53,9 @@
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
+#include <algorithm>
 #include <cmath>
+#include <map>
 #include <mutex>
 #include <sstream>
 #include <string>
@@ -5817,6 +5819,101 @@ uint32 PlayerbotAI::GetInventoryItemsCountWithId(uint32 itemId)
     }
 
     return count;
+}
+
+void PlayerbotAI::ConsolidateItems()
+{
+    if (!bot)
+        return;
+
+    // Only entries with 2 or more instances in the bags can possibly be consolidated
+    std::map<uint32, uint32> entryCounts;
+    for (Item* item : GetInventoryItems())
+        if (item && item->GetCount() > 0)
+            ++entryCounts[item->GetEntry()];
+
+    for (auto const& entryCount : entryCounts)
+    {
+        uint32 const entry = entryCount.first;
+        if (entryCount.second < 2)
+            continue;
+
+        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
+        if (!proto || proto->GetMaxStackSize() <= 1)
+            continue;
+
+        LOG_DEBUG("playerbots", "{}: consolidating item {} ({} stacks, max {})", bot->GetName(), entry, entryCount.second, proto->GetMaxStackSize());
+
+        // Merge partial stacks into the fullest stack, one move per pass, until at most one
+        // partial stack remains. Each pass re-collects the stacks: a move can delete a stack
+        // (source emptied) or fill one (target full).
+        for (uint8 pass = 0; pass < 128; ++pass)
+        {
+            std::vector<Item*> stacks;
+            for (Item* item : GetInventoryItems())
+                if (item && item->GetEntry() == entry && item->GetCount() > 0)
+                    stacks.push_back(item);
+
+            if (stacks.size() < 2)
+                break;
+
+            // Target: the fullest stack that still has space
+            Item* target = nullptr;
+            for (Item* item : stacks)
+                if (item->GetCount() < proto->GetMaxStackSize() && (!target || item->GetCount() > target->GetCount()))
+                    target = item;
+            if (!target)
+                break;  // all stacks are full
+
+            // Source: the largest other partial stack. A full stack must never be a source -
+            // moving from it just creates a new partial and the merge never converges.
+            Item* source = nullptr;
+            for (Item* item : stacks)
+                if (item != target && item->GetCount() < proto->GetMaxStackSize() &&
+                    (!source || item->GetCount() > source->GetCount()))
+                    source = item;
+            if (!source)
+                break;
+
+            uint32 const space = proto->GetMaxStackSize() - target->GetCount();
+            uint32 const moveCount = std::min(space, source->GetCount());
+
+            LOG_DEBUG("playerbots", "{}: consolidate item {}: move {} from bag {} slot {} to bag {} slot {} ({} -> {})",
+                bot->GetName(), entry, moveCount, source->GetBagSlot(), source->GetSlot(), target->GetBagSlot(), target->GetSlot(), target->GetCount(), target->GetCount() + moveCount);
+
+            // Move `moveCount` from the source stack to the target stack. The items are not
+            // consumed, only re-stacked, so no quest-progress adjustment.
+            if (source->GetCount() <= moveCount)
+            {
+                // Do NOT use Player::DestroyItem here: it fires ItemRemovedQuestCheck, which
+                // decrements delivery-quest progress even though the items aren't consumed
+                // (the total count is unchanged after the merge). RemoveItem unlinks the
+                // stack without firing the quest hook; finish the removal the same way the
+                // core's stack-merge path does (Player::_StoreItem).
+                bot->RemoveItem(source->GetBagSlot(), source->GetSlot(), true);
+                if (source->IsInWorld())
+                {
+                    source->RemoveFromWorld();
+                    source->DestroyForPlayer(bot);
+                }
+                source->SetNotRefundable(bot);
+                source->ClearSoulboundTradeable(bot);
+                source->SetState(ITEM_REMOVED, bot);
+            }
+            else
+            {
+                source->SetCount(source->GetCount() - moveCount);
+                source->SetState(ITEM_CHANGED, bot);
+                if (bot->IsInWorld())
+                    source->SendUpdateToPlayer(bot);
+            }
+
+            target->SetCount(target->GetCount() + moveCount);
+            target->SetState(ITEM_CHANGED, bot);
+            if (bot->IsInWorld())
+                target->SendUpdateToPlayer(bot);
+        }
+    }
 }
 
 bool PlayerbotAI::HasItemInInventory(uint32 itemId)

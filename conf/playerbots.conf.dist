@@ -785,6 +785,20 @@ AiPlayerbot.LimitTalentsExpansion = 0
 # Default: 1 (enabled)
 AiPlayerbot.EnableRandomBotTrading = 1
 
+# Random bots automatically buy useful items and sell junk at vendors via the
+# NewRpg strategy (no toggle). Manual 'b vendor'/'s vendor' commands are
+# unaffected for all bots.
+
+# Enable the same vendor automation for altbots (and selfbots) - bots played
+# by a real player through a game client.
+# Default: 0 (disabled)
+AiPlayerbot.EnableAltBotAutoBuy = 0
+
+# Alt/self bot vendor sell level via the NewRpg strategy:
+# 0: disabled, 1: sell gray (poor) items only, 2: sell all junk (same as randombots)
+# Default: 0 (disabled)
+AiPlayerbot.EnableAltBotAutoSell = 0
+
 # Configure message prefixes which will be excluded in analysis in trade action to open trade window
 AiPlayerbot.TradeActionExcludedPrefixes = "RPLL_H_,DBMv4,{звезда} Questie,{rt1} Questie"
 
