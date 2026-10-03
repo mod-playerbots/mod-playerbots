@@ -77,6 +77,10 @@ GameObject* QueryGameObjectAction::FindTarget(std::string const& param)
                 }
             }
         }
+
+        // An explicit target that did not resolve is an error; the loot-target and
+        // nearest-object fallbacks are only for a bare call without arguments.
+        return nullptr;
     }
 
     LootObject loot = AI_VALUE(LootObject, "loot target");
@@ -166,7 +170,10 @@ void QueryGameObjectAction::DumpGameObject(GameObject* go)
             if (!lock->Type[i] && !lock->Index[i] && !lock->Skill[i])
                 continue;
 
-            uint32 const mappedSkill = uint32(SkillByLockType(LockType(lock->Index[i])));
+            // Index[i] holds a lock type only for skill slots; item and spell slots use it
+            // for their own id, so mapping it to a skill would report an unrelated profession.
+            uint32 const mappedSkill =
+                lock->Type[i] == LOCK_KEY_SKILL ? uint32(SkillByLockType(LockType(lock->Index[i]))) : 0;
             tell(Acore::StringFormat("QGO lock slot {}: type={} index={} skill={} skillByLockType={} botSkillValue={}",
                                      i, lock->Type[i], lock->Index[i], lock->Skill[i], mappedSkill,
                                      mappedSkill ? bot->GetSkillValue(mappedSkill) : 0));
@@ -181,10 +188,14 @@ void QueryGameObjectAction::DumpGameObject(GameObject* go)
     uint32 const lootId = info->GetLootId();
     if (lootId)
     {
-        LootTemplate const* lTemplate = LootTemplates_Gameobject.GetLootFor(lootId);
+        // Fishing holes load their loot into a separate store; reporting the gameobject
+        // store for them either misses the table or shows an unrelated one with the same id.
+        LootStore const& lootStore =
+            info->type == GAMEOBJECT_TYPE_FISHINGHOLE ? LootTemplates_Fishing : LootTemplates_Gameobject;
+        LootTemplate const* lTemplate = lootStore.GetLootFor(lootId);
         tell(Acore::StringFormat("QGO loot table {}: present={} questLootForBot={}", lootId,
                                  BoolText(lTemplate != nullptr),
-                                 BoolText(LootTemplates_Gameobject.HaveQuestLootForPlayer(lootId, bot))));
+                                 BoolText(lootStore.HaveQuestLootForPlayer(lootId, bot))));
 
         if (lTemplate)
         {
