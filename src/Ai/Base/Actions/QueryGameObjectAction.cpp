@@ -130,13 +130,13 @@ void QueryGameObjectAction::DumpGameObject(GameObject* go)
                   {"%name", go->GetNameForLocaleIdx(sWorld->GetDefaultDbcLocale())},
                   {"%guid", go->GetGUID().ToString()},
                   {"%spawnId", std::to_string(go->GetSpawnId())}}));
-    tell(QgoText("qgo_world", "QGO world: map=%map zone=%zone area=%area x=%x y=%y z=%z o=%o phaseMask=%phaseMask",
+    tell(QgoText("qgo_world", "QGO world: map=%map zone=%zone area=%area x=%x y=%y z=%posZ o=%o phaseMask=%phaseMask",
                  {{"%map", std::to_string(go->GetMapId())},
                   {"%zone", std::to_string(go->GetZoneId())},
                   {"%area", std::to_string(go->GetAreaId())},
                   {"%x", QgoFloat(go->GetPositionX())},
                   {"%y", QgoFloat(go->GetPositionY())},
-                  {"%z", QgoFloat(go->GetPositionZ())},
+                  {"%posZ", QgoFloat(go->GetPositionZ())},
                   {"%o", QgoFloat(go->GetOrientation())},
                   {"%phaseMask", std::to_string(go->GetPhaseMask())}}));
     tell(QgoText("qgo_template",
@@ -165,13 +165,13 @@ void QueryGameObjectAction::DumpGameObject(GameObject* go)
 
     if (spawn)
         tell(QgoText("qgo_spawn",
-                     "QGO spawn: map=%map x=%x y=%y z=%z o=%o respawnSecs=%respawn phaseMask=%phaseMask "
+                     "QGO spawn: map=%map x=%x y=%y z=%posZ o=%o respawnSecs=%respawn phaseMask=%phaseMask "
                      "spawnMask=%spawnMask goState=%goState animprogress=%animprogress scriptId=%scriptId "
                      "poolId=%poolId",
                      {{"%map", std::to_string(spawn->mapid)},
                       {"%x", QgoFloat(spawn->posX)},
                       {"%y", QgoFloat(spawn->posY)},
-                      {"%z", QgoFloat(spawn->posZ)},
+                      {"%posZ", QgoFloat(spawn->posZ)},
                       {"%o", QgoFloat(spawn->orientation)},
                       {"%respawn", std::to_string(spawn->spawntimesecs)},
                       {"%phaseMask", std::to_string(spawn->phaseMask)},
@@ -239,13 +239,13 @@ void QueryGameObjectAction::DumpGameObject(GameObject* go)
             uint32 const mappedSkill =
                 lock->Type[i] == LOCK_KEY_SKILL ? uint32(SkillByLockType(LockType(lock->Index[i]))) : 0;
             tell(QgoText("qgo_lock_slot",
-                         "QGO lock slot %slot: type=%type index=%index skill=%skill skillByLockType=%skillByLockType "
+                         "QGO lock slot %slot: type=%type index=%index skill=%skill skillByLockType=%mappedSkill "
                          "botSkillValue=%botSkillValue",
                          {{"%slot", std::to_string(uint32(i))},
                           {"%type", std::to_string(lock->Type[i])},
                           {"%index", std::to_string(lock->Index[i])},
                           {"%skill", std::to_string(lock->Skill[i])},
-                          {"%skillByLockType", std::to_string(mappedSkill)},
+                          {"%mappedSkill", std::to_string(mappedSkill)},
                           {"%botSkillValue", std::to_string(mappedSkill ? bot->GetSkillValue(mappedSkill) : 0)}}));
         }
     }
@@ -295,13 +295,13 @@ void QueryGameObjectAction::DumpGameObject(GameObject* go)
 
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry->itemid);
                 tell(QgoText("qgo_loot_item",
-                             "QGO loot item=%item '%name' class=%class quality=%quality maxcount=%maxcount sell=%sell "
+                             "QGO loot item=%item '%name' class=%class quality=%quality maxcount=%stackMax sell=%sell "
                              "chance=%chance min=%min max=%max needsQuest=%needsQuest",
                              {{"%item", std::to_string(entry->itemid)},
                               {"%name", proto ? proto->Name1 : "?"},
                               {"%class", std::to_string(proto ? proto->Class : 0)},
                               {"%quality", std::to_string(proto ? proto->Quality : 0)},
-                              {"%maxcount", std::to_string(proto ? proto->MaxCount : 0)},
+                              {"%stackMax", std::to_string(proto ? proto->MaxCount : 0)},
                               {"%sell", std::to_string(proto ? proto->SellPrice : 0)},
                               {"%chance", QgoFloat2(entry->chance)},
                               {"%min", std::to_string(entry->mincount)},
