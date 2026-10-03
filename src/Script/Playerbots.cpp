@@ -45,8 +45,9 @@ public:
             return false;
         }
 
+        uint8 const workerThreads = sConfigMgr->GetOption<uint8>("PlayerbotsDatabase.WorkerThreads", 1);
         uint8 const synchThreads = sConfigMgr->GetOption<uint8>("PlayerbotsDatabase.SynchThreads", 2);
-        PlayerbotsDatabase.SetConnectionInfo(dbString, synchThreads);
+        PlayerbotsDatabase.SetConnectionInfo(dbString, workerThreads, synchThreads);
 
         bool const updatesEnabled = sConfigMgr->GetOption<bool>("Playerbots.Updates.EnableDatabases", true);
         if (updatesEnabled && !DBUpdaterUtil::CheckExecutable())
