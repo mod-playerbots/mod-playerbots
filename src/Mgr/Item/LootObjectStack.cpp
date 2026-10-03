@@ -358,6 +358,10 @@ bool LootObject::IsLootPossible(Player* bot)
         for (uint8 i = 0; i < _lockRequirementCount; ++i)
         {
             LootLockRequirement const& requirement = _lockRequirements[i];
+            if (go && go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED) && !requirement.ReqItem &&
+                requirement.SkillId == SKILL_NONE)
+                continue;
+
             if (!canUseRequirement(requirement))
                 continue;
 
