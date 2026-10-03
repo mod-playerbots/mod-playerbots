@@ -36,7 +36,10 @@ void AutoMaintenanceOnLevelupAction::AutoTeleportForLevel()
 
 void AutoMaintenanceOnLevelupAction::AutoPickTalents()
 {
-    if (!sPlayerbotAIConfig.AutoPickTalents || !sRandomPlayerbotMgr.IsRandomBot(bot))
+    bool isRandomBot = sRandomPlayerbotMgr.IsRandomBot(bot);
+    bool allowPlayerBotTalents = sPlayerbotAIConfig.AutoPickTalentsForPlayerBots && !isRandomBot;
+
+    if (!(isRandomBot ? sPlayerbotAIConfig.AutoPickTalents : allowPlayerBotTalents))
         return;
 
     if (bot->GetFreeTalentPoints() <= 0)
