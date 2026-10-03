@@ -54,6 +54,7 @@ protected:
 
 private:
     uint32 GetSmallestBagSize();
+    bool IsDisenchantable(ItemTemplate const* proto, Item* item);
     bool IsItemUsefulForQuest(Player* player, ItemTemplate const* proto);
     bool IsItemNeededForSkill(ItemTemplate const* proto);
     bool IsItemUsefulForSkill(ItemTemplate const* proto);

@@ -32,9 +32,11 @@ ItemUsage ItemUsageValue::Calculate()
     if (!proto)
         return ITEM_USAGE_NONE;
 
-    // A unique item already at its cap is useless: it cannot be stored, bought, or sold.
+    // A unique item already at its cap cannot be stored, bought, or sold; the one copy the
+    // bot owns can still be destroyed, so an item that qualifies for disenchanting must
+    // keep reporting so or DisEnchantRandomItemAction would never pick it out of the bags.
     if (proto->MaxCount > 0 && bot->HasItemCount(itemId, proto->MaxCount, true))
-        return ITEM_USAGE_NONE;
+        return IsDisenchantable(proto, bot->GetItemByEntry(itemId)) ? ITEM_USAGE_DISENCHANT : ITEM_USAGE_NONE;
 
     if (IsRealPlayer(botAI->GetMaster()))
     {
@@ -109,18 +111,8 @@ ItemUsage ItemUsageValue::Calculate()
     Item* item = bot->GetItemByEntry(proto->ItemId);
     bool isSoulbound = item && item->IsSoulBound();
 
-    if ((proto->Class == ITEM_CLASS_ARMOR || proto->Class == ITEM_CLASS_WEAPON) &&
-        botAI->HasSkill(SKILL_ENCHANTING) &&
-        proto->Quality >= ITEM_QUALITY_UNCOMMON)
-    {
-        // Retrieve the bot's Enchanting skill level
-        uint32 enchantingSkill = bot->GetSkillValue(SKILL_ENCHANTING);
-
-        // Only disenchant if skilled enough and binding allows it
-        if (enchantingSkill >= proto->RequiredDisenchantSkill &&
-            (proto->Bonding == BIND_WHEN_PICKED_UP || (proto->Bonding == BIND_WHEN_EQUIPPED && isSoulbound)))
-            return ITEM_USAGE_DISENCHANT;
-    }
+    if (IsDisenchantable(proto, item))
+        return ITEM_USAGE_DISENCHANT;
 
     Player* master = botAI->GetMaster();
     bool botNeedsItemForQuest = IsItemUsefulForQuest(bot, proto);
@@ -163,6 +155,21 @@ ItemUsage ItemUsageValue::Calculate()
     }
 
     return ITEM_USAGE_NONE;
+}
+
+bool ItemUsageValue::IsDisenchantable(ItemTemplate const* proto, Item* item)
+{
+    if (proto->Class != ITEM_CLASS_ARMOR && proto->Class != ITEM_CLASS_WEAPON)
+        return false;
+
+    if (!botAI->HasSkill(SKILL_ENCHANTING) || proto->Quality < ITEM_QUALITY_UNCOMMON)
+        return false;
+
+    if (bot->GetSkillValue(SKILL_ENCHANTING) < proto->RequiredDisenchantSkill)
+        return false;
+
+    bool const isSoulbound = item && item->IsSoulBound();
+    return proto->Bonding == BIND_WHEN_PICKED_UP || (proto->Bonding == BIND_WHEN_EQUIPPED && isSoulbound);
 }
 
 ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, int32 randomPropertyId)
