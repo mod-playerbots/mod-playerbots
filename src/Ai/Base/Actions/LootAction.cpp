@@ -459,27 +459,43 @@ bool StoreLootAction::Execute(Event event)
         if (loot_type == LOOT_SKINNING && proto->MaxCount > 0 && bot->HasItemCount(itemid, proto->MaxCount, true))
             continue;
 
+        // Nearly full bags must not make the bot refuse quest or otherwise useful items; only
+        // vendor/auction junk is restricted to topping up existing stacks. An item is skipped
+        // only when the bag genuinely cannot hold it.
         if (!IsRealPlayer(botAI->GetMaster()) && AI_VALUE(uint8, "bag space") > 80)
         {
-            uint32 maxStack = proto->GetMaxStackSize();
-            if (maxStack == 1)
-                continue;
+            ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemid);
+            bool isUsefulItem =
+                proto->StartQuest || (usage != ITEM_USAGE_NONE && usage != ITEM_USAGE_VENDOR && usage != ITEM_USAGE_AH);
 
-            std::vector<Item*> found = parseItems(chat->FormatItem(proto));
-
-            bool hasFreeStack = false;
-
-            for (auto stack : found)
+            if (isUsefulItem)
             {
-                if (stack->GetCount() + itemcount < maxStack)
-                {
-                    hasFreeStack = true;
-                    break;
-                }
+                ItemPosCountVec dest;
+                if (bot->CanStoreNewItem(INVENTORY_SLOT_BAG_0, NULL_SLOT, dest, itemid, itemcount) != EQUIP_ERR_OK)
+                    continue;
             }
+            else
+            {
+                uint32 maxStack = proto->GetMaxStackSize();
+                if (maxStack == 1)
+                    continue;
 
-            if (!hasFreeStack)
-                continue;
+                std::vector<Item*> found = parseItems(chat->FormatItem(proto));
+
+                bool hasFreeStack = false;
+
+                for (auto stack : found)
+                {
+                    if (stack->GetCount() + itemcount <= maxStack)
+                    {
+                        hasFreeStack = true;
+                        break;
+                    }
+                }
+
+                if (!hasFreeStack)
+                    continue;
+            }
         }
 
         Player* master = botAI->GetMaster();
