@@ -204,6 +204,12 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
         if (!lockInfo)
             return;
 
+        // A lock opens when ANY case is satisfiable, and the client serves the non-skill cases
+        // (LOCKTYPE_OPEN/QUICK_OPEN/OPEN_TINKERING/OPEN_KNEELING/...) with its hidden "Opening"
+        // abilities (3365/6247/6477/6478). Track one so a gathering case on the same lock cannot
+        // make the object unusable for a bot without the profession.
+        bool skillFreeOpener = false;
+
         for (uint8 i = 0; i < 8; ++i)
         {
             switch (lockInfo->Type[i])
@@ -227,12 +233,29 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
                         reqSkillValue = std::max((uint32)1, lockInfo->Skill[i]);
                         guid = lootGUID;
                     }
+                    else
+                    {
+                        skillFreeOpener = true;
+                        guid = lootGUID;
+                    }
                     break;
 
                 case LOCK_KEY_NONE:
                     guid = lootGUID;
                     break;
             }
+        }
+
+        // The bot cannot satisfy the gathering case, but the client would open this with a plain
+        // opener instead (e.g. the Corrupted Flower's kneel case -> 6478), so drop the
+        // profession/key requirement and let GetOpeningSpell pick the matching spell.
+        bool const gatheringSatisfied = skillId != SKILL_NONE && botAI->HasSkill((SkillType)skillId) &&
+                                        bot->GetSkillValue(skillId) >= reqSkillValue;
+        if (skillFreeOpener && !gatheringSatisfied)
+        {
+            skillId = SKILL_NONE;
+            reqSkillValue = 0;
+            reqItem = 0;
         }
     }
 }
