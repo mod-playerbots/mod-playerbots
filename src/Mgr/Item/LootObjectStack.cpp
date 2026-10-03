@@ -17,6 +17,15 @@
 
 #define MAX_LOOT_OBJECT_COUNT 200
 
+namespace
+{
+bool IsGatheringSkill(uint32 skillId)
+{
+    return skillId == SKILL_SKINNING || skillId == SKILL_HERBALISM || skillId == SKILL_MINING ||
+           skillId == SKILL_ENGINEERING;
+}
+}
+
 LootTarget::LootTarget(ObjectGuid guid) : guid(guid), asOfTime(time(nullptr)) {}
 
 LootTarget::LootTarget(LootTarget const& other)
@@ -341,7 +350,9 @@ bool LootObject::IsLootPossible(Player* bot)
     Creature* creature = botAI->GetCreature(guid);
     if (creature && creature->getDeathState() == DeathState::Corpse)
     {
-        if (!bot->isAllowedToLoot(creature) && skillId != SKILL_SKINNING)
+        // Gathering is independent of loot rights in the core: a corpse only needs to be fully
+        // looted and the bot to have the matching skill. Only normal corpse loot is gated here.
+        if (!bot->isAllowedToLoot(creature) && !IsGatheringSkill(skillId))
             return false;
     }
 
@@ -362,7 +373,7 @@ bool LootObject::IsLootPossible(Player* bot)
 
     //Prevents bot from getting stuck in an infinite loop of
     //gathering herb/ore/skin -> bag too full, don't pick up -> gather again
-    bool gatheringObject = skillId == SKILL_HERBALISM || skillId == SKILL_MINING || skillId == SKILL_SKINNING || skillId == SKILL_ENGINEERING;
+    bool gatheringObject = IsGatheringSkill(skillId);
 
     Player* master = botAI->GetMaster();
     bool hasActivePlayerMaster = master && !GET_PLAYERBOT_AI(master);
