@@ -75,6 +75,13 @@ Position const CthunPullSpot{-8554.8f, 2058.2f, 100.7f};
 constexpr float CthunBurnMeleeRadius = 8.0f;
 // The opening beams land at 3, 6 and 9 s and random beams start at about 17 s.
 constexpr int CthunPullerHoldSeconds = 20;
+// Before the pull the raid trails the puller this far behind (the Eye Beam jumps about 13 yd).
+constexpr float CthunTrailDistance = 22.0f;
+// A trailing bot stays at least this much farther from the Eye than the puller.
+constexpr float CthunTrailMargin = 10.0f;
+// The pre-pull walk works only this close to the Eye and above the floor below the room.
+constexpr float CthunPrepullReach = 140.0f;
+constexpr float CthunPrepullMinZ = 90.0f;
 // Phase 2 stack: Giant Claws and Giant Eyes spawn under a random player outside the stomach, so they spawn on the raid.
 // Inside the Eye Tentacle ring (27.5 yd) to miss their spawn knockback, outside the 7-yd spit-out, in range of C'Thun.
 Position const CthunStack{-8592.8f, 1986.2f, 100.4f};
@@ -2457,20 +2464,48 @@ bool Aq40TwinPrepullSpot(PlayerbotAI* botAI, Position& spot)
 
 // Out of combat, the tank marked with Moon walks alone from the entrance ramps to C'Thun's pull spot; the Eye pulls
 // when it sees him. Only with the Twin Emperors dead (the Eye evades until then) and near the room.
+// The rest of the raid follows him down the slope, CthunTrailDistance behind, so it is that much closer to its spots
+// when the random Eye Beams start at about 17 s. Any closer and it reaches him during the three opening beams.
 bool Aq40CthunPrepullSpot(PlayerbotAI* botAI, Position& spot)
 {
     Player* bot = botAI->GetBot();
     InstanceScript* instance = bot->GetInstanceScript();
     Group* group = bot->GetGroup();
-    if (bot->GetMapId() != 531 || !instance || !group || bot->IsInCombat() || !bot->IsAlive() ||
-        !PlayerbotAI::IsTank(bot) || group->GetTargetIcon(CthunPullerIcon) != bot->GetGUID())
+    if (bot->GetMapId() != 531 || !instance || !group || bot->IsInCombat() || !bot->IsAlive())
         return false;
     EncounterState state = instance->GetBossState(Id(Aq40Encounter::Cthun));
     if (instance->GetBossState(Id(Aq40Encounter::Twins)) != DONE || state == IN_PROGRESS || state == DONE)
         return false;
-    if (bot->GetExactDist2d(&CthunCenter) > 140.0f || bot->GetPositionZ() < 90.0f)
+    auto nearRoom = [](Player* player)
+    { return player->GetExactDist2d(&CthunCenter) <= CthunPrepullReach && player->GetPositionZ() >= CthunPrepullMinZ; };
+    if (!nearRoom(bot))
         return false;
-    spot = CthunPullSpot;
+    ObjectGuid pullerGuid = group->GetTargetIcon(CthunPullerIcon);
+    if (pullerGuid == bot->GetGUID())
+    {
+        if (!PlayerbotAI::IsTank(bot))
+            return false;
+        spot = CthunPullSpot;
+        return true;
+    }
+    // Only while he is walking in, so an idle Moon tank never holds the raid in place.
+    Player* puller = ObjectAccessor::GetPlayer(*bot, pullerGuid);
+    if (!puller || puller->GetGroup() != group || !puller->IsAlive() || puller->IsInCombat() || !puller->isMoving() ||
+        !nearRoom(puller) || !PlayerbotAI::IsTank(puller))
+        return false;
+    float distance = bot->GetExactDist2d(puller);
+    float pullerRange = puller->GetExactDist2d(&CthunCenter);
+    spot = bot->GetPosition();
+    // Never walk to where the Eye could see a trailing bot before him.
+    if (distance <= CthunTrailDistance || bot->GetExactDist2d(&CthunCenter) < pullerRange + CthunTrailMargin)
+        return true;
+    float angle = puller->GetAngle(bot);
+    float share = CthunTrailDistance / distance;
+    spot.Relocate(puller->GetPositionX() + CthunTrailDistance * std::cos(angle),
+                  puller->GetPositionY() + CthunTrailDistance * std::sin(angle),
+                  puller->GetPositionZ() + (bot->GetPositionZ() - puller->GetPositionZ()) * share);
+    if (spot.GetExactDist2d(&CthunCenter) < pullerRange + CthunTrailMargin)
+        spot = bot->GetPosition();
     return true;
 }
 

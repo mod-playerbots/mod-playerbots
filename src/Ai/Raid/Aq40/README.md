@@ -73,7 +73,8 @@ The marks must be set by the raid leader or an assistant.
 ### The pull
 - The Moon tank walks alone to a spot at the room's west edge. The Eye sees him and engages about 6 s after the mark.
   The first three Eye Beams always hit him, and he is far from everyone else.
-- **Don't move until the Eye is fighting him.** Until then the bots are still following their leader.
+- While he walks in, the other bots follow him down the slope about 22 yd behind, never nearer the Eye than he is, so
+  they reach their spots sooner. If he stops, they stop. Human players should wait until the Eye is fighting him.
 - Once the fight starts, bots stop following and run to their own spots. Follow is ignored for the whole fight.
 
 ### Phase 1 — Eye of C'Thun
@@ -169,4 +170,6 @@ are needed except Skull on the Bug Trio.
 Measured on a level-60 server with a 40-bot raid (one human player), production difficulty:
 - **Twin Emperors:** 10 kills in 11 full-raid test pulls with the floor-spot strategy; killed live.
 - **C'Thun:** killed live on the fourth live attempt, with 33 of 40 alive at the kill. With the Eye Tentacle killers:
-  5 kills in 6 live-style test pulls, against 4 in 8 without them.
+  5 kills in 6 live-style test pulls, against 4 in 8 without them. With the floor-safe glare dodge, the Weakened
+  target order and the raid trailing the puller as well: 5 kills in 6 with no pull lost in phase 1, then a confirming
+  kill; killed live again on the second attempt, with 29 of 40 alive.
