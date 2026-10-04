@@ -69,6 +69,7 @@ class AttackEnemyPlayerAction : public AttackAction
 public:
     AttackEnemyPlayerAction(PlayerbotAI* botAI) : AttackAction(botAI, "attack enemy player") {}
 
+    Unit* GetTarget() override;
     std::string const GetTargetName() override { return "enemy player target"; }
     bool isUseful() override;
 };

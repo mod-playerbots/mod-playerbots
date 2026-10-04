@@ -18,6 +18,7 @@
 #include "AllMapScript.h"
 #include "GlobalScript.h"
 #include "GuildTaskMgr.h"
+#include "HumanPlayerRoster.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotCommandScript.h"
@@ -146,6 +147,7 @@ public:
     {
         if (!player->GetSession()->IsHeadless())
         {
+            HumanPlayerRoster::Instance().Add(player->GetGUID());
             PlayerbotsMgr::instance().AddPlayerbotData(player, false);
             sRandomPlayerbotMgr.OnPlayerLogin(player);
 
@@ -172,6 +174,7 @@ public:
 
     void OnPlayerBeforeLogout(Player* player) override
     {
+        HumanPlayerRoster::Instance().Remove(player->GetGUID());
         if (PlayerbotMgr* playerbotMgr = GET_PLAYERBOT_MGR(player))
         {
             PlayerbotAI* botAI = PlayerbotsMgr::instance().GetPlayerbotAI(player);
@@ -559,8 +562,11 @@ public:
     void OnBattlegroundStart(Battleground* bg) override
     {
         BGStrategyData data;
+        BattlegroundTypeId type = bg->GetBgTypeID();
+        if (sPlayerbotAIConfig.wsgTacticsEnabled && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
+            type = BATTLEGROUND_WS;
 
-        switch (bg->GetBgTypeID())
+        switch (type)
         {
             case BATTLEGROUND_WS:
                 data.allianceStrategy = urand(0, WS_STRATEGY_MAX - 1);
@@ -582,10 +588,13 @@ public:
                 break;
         }
 
-        bgStrategies[bg->GetInstanceID()] = data;
+        BGTactics::SetBotStrategies(bg->GetInstanceID(), data);
     }
 
-    void OnBattlegroundEnd(Battleground* bg, TeamId /*winnerTeam*/) override { bgStrategies.erase(bg->GetInstanceID()); }
+    void OnBattlegroundEnd(Battleground* bg, TeamId /*winnerTeam*/) override
+    {
+        BGTactics::ClearBotStrategies(bg->GetInstanceID());
+    }
 };
 
 // Workaround for missing InitEnabledHooksIfNeeded for new BattlefieldScript in ScriptMgr

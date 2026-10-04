@@ -5,6 +5,7 @@
  */
 
 #include "ReachTargetActions.h"
+#include "Battleground.h"
 #include "Event.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
@@ -61,6 +62,14 @@ std::string const ReachPartyMemberToHealAction::GetTargetName() { return "party 
 ReachPartyMemberToResurrectAction::ReachPartyMemberToResurrectAction(PlayerbotAI* botAI)
     : ReachTargetAction(botAI, "reach party member to resurrect", botAI->GetRange("spell"))
 {
+}
+
+bool ReachPartyMemberToResurrectAction::Execute(Event event)
+{
+    Battleground* bg = bot->GetBattleground();
+    if (sPlayerbotAIConfig.wsgTacticsEnabled && bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
+        return false;
+    return ReachTargetAction::Execute(event);
 }
 
 std::string const ReachPartyMemberToResurrectAction::GetTargetName() { return "party member to resurrect"; }

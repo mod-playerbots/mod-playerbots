@@ -250,6 +250,7 @@ public:
 
     bool randomBotJoinBG;
     bool randomBotAutoJoinBG;
+    bool wsgTacticsEnabled;
 
     std::string randomBotAutoJoinICBrackets;
     std::string randomBotAutoJoinEYBrackets;

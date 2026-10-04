@@ -1624,6 +1624,10 @@ AiPlayerbot.AutoTeleportForLevel = 1
 # Enable battlegrounds/arenas for randombots
 AiPlayerbot.RandomBotJoinBG = 1
 
+# Enable experimental Warsong Gulch tactics improvements (disabled by default).
+# Restart the worldserver after changing this option.
+AiPlayerbot.WsgTactics.Enabled = 0
+
 # Enable auto-joining of battlegrounds - have bots start battlegrounds and arenas on their own
 AiPlayerbot.RandomBotAutoJoinBG = 0
 

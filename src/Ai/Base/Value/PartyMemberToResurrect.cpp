@@ -5,6 +5,8 @@
  */
 
 #include "PartyMemberToResurrect.h"
+
+#include "Battleground.h"
 #include "Playerbots.h"
 
 class IsTargetOfResurrectSpell : public SpellEntryPredicate
@@ -43,6 +45,10 @@ private:
 
 Unit* PartyMemberToResurrect::Calculate()
 {
+    Battleground* bg = bot->GetBattleground();
+    if (sPlayerbotAIConfig.wsgTacticsEnabled && bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
+        return nullptr;
+
     FindDeadPlayer finder(this);
     return FindPartyMember(finder);
 }
