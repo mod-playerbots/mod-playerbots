@@ -19,7 +19,7 @@ INSERT INTO ai_playerbot_texts
  `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
  `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES
-(1915, 'qgo_no_game_object_found', 'No game object found', 0, 0,
+(2015, 'qgo_no_game_object_found', 'No game object found', 0, 0,
 '게임 오브젝트를 찾을 수 없습니다',
 'Aucun objet de jeu trouvé',
 'Kein Spielobjekt gefunden',
@@ -29,7 +29,7 @@ VALUES
 'No se encontró ningún objeto de juego',
 'Игровой объект не найден'),
 
-(1916, 'qgo_header', 'QGO %entry ''%name'' guid=%guid spawnId=%spawnId', 0, 0,
+(2016, 'qgo_header', 'QGO %entry ''%name'' guid=%guid spawnId=%spawnId', 0, 0,
 'QGO %entry ''%name'' guid=%guid spawnId=%spawnId',
 'QGO %entry ''%name'' guid=%guid spawnId=%spawnId',
 'QGO %entry ''%name'' guid=%guid spawnId=%spawnId',
@@ -39,7 +39,7 @@ VALUES
 'QGO %entry ''%name'' guid=%guid spawnId=%spawnId',
 'QGO %entry ''%name'' guid=%guid spawnId=%spawnId'),
 
-(1917, 'qgo_world', 'QGO world: map=%map zone=%zone area=%area x=%x y=%y z=%posZ o=%o phaseMask=%phaseMask', 0, 0,
+(2017, 'qgo_world', 'QGO world: map=%map zone=%zone area=%area x=%x y=%y z=%posZ o=%o phaseMask=%phaseMask', 0, 0,
 'QGO 월드: map=%map zone=%zone area=%area x=%x y=%y z=%posZ o=%o phaseMask=%phaseMask',
 'QGO monde : map=%map zone=%zone area=%area x=%x y=%y z=%posZ o=%o phaseMask=%phaseMask',
 'QGO Welt: map=%map zone=%zone area=%area x=%x y=%y z=%posZ o=%o phaseMask=%phaseMask',
@@ -49,7 +49,7 @@ VALUES
 'QGO mundo: map=%map zone=%zone area=%area x=%x y=%y z=%posZ o=%o phaseMask=%phaseMask',
 'QGO мир: map=%map zone=%zone area=%area x=%x y=%y z=%posZ o=%o phaseMask=%phaseMask'),
 
-(1918, 'qgo_template',
+(2018, 'qgo_template',
  'QGO template: type=%type displayId=%displayId size=%size lootId=%lootId lockId=%lockId scriptId=%scriptId AI=''%ai''',
  0, 0,
 'QGO 템플릿: type=%type displayId=%displayId size=%size lootId=%lootId lockId=%lockId scriptId=%scriptId AI=''%ai''',
@@ -61,7 +61,7 @@ VALUES
 'QGO plantilla: type=%type displayId=%displayId size=%size lootId=%lootId lockId=%lockId scriptId=%scriptId AI=''%ai''',
 'QGO шаблон: type=%type displayId=%displayId size=%size lootId=%lootId lockId=%lockId scriptId=%scriptId AI=''%ai'''),
 
-(1919, 'qgo_data', 'QGO data:%data', 0, 0,
+(2019, 'qgo_data', 'QGO data:%data', 0, 0,
 'QGO 데이터:%data',
 'QGO données :%data',
 'QGO Daten:%data',
@@ -71,7 +71,7 @@ VALUES
 'QGO datos:%data',
 'QGO данные:%data'),
 
-(1920, 'qgo_addon', 'QGO addon: faction=%faction flags=%flags mingold=%mingold maxgold=%maxgold', 0, 0,
+(2020, 'qgo_addon', 'QGO addon: faction=%faction flags=%flags mingold=%mingold maxgold=%maxgold', 0, 0,
 'QGO 애드온: faction=%faction flags=%flags mingold=%mingold maxgold=%maxgold',
 'QGO addon : faction=%faction flags=%flags mingold=%mingold maxgold=%maxgold',
 'QGO Addon: faction=%faction flags=%flags mingold=%mingold maxgold=%maxgold',
@@ -81,7 +81,7 @@ VALUES
 'QGO complemento: faction=%faction flags=%flags mingold=%mingold maxgold=%maxgold',
 'QGO аддон: faction=%faction flags=%flags mingold=%mingold maxgold=%maxgold'),
 
-(1921, 'qgo_spawn',
+(2021, 'qgo_spawn',
  'QGO spawn: map=%map x=%x y=%y z=%posZ o=%o respawnSecs=%respawn phaseMask=%phaseMask spawnMask=%spawnMask '
  'goState=%goState animprogress=%animprogress scriptId=%scriptId poolId=%poolId',
  0, 0,
@@ -94,7 +94,7 @@ VALUES
 'QGO aparición: map=%map x=%x y=%y z=%posZ o=%o respawnSecs=%respawn phaseMask=%phaseMask spawnMask=%spawnMask goState=%goState animprogress=%animprogress scriptId=%scriptId poolId=%poolId',
 'QGO спавн: map=%map x=%x y=%y z=%posZ o=%o respawnSecs=%respawn phaseMask=%phaseMask spawnMask=%spawnMask goState=%goState animprogress=%animprogress scriptId=%scriptId poolId=%poolId'),
 
-(1922, 'qgo_runtime',
+(2022, 'qgo_runtime',
  'QGO runtime: goState=%goState lootState=%lootState spawned=%spawned byDefault=%byDefault respawnTime=%respawnTime '
  'useCount=%useCount uniqueUsers=%uniqueUsers',
  0, 0,
@@ -107,7 +107,7 @@ VALUES
 'QGO ejecución: goState=%goState lootState=%lootState spawned=%spawned byDefault=%byDefault respawnTime=%respawnTime useCount=%useCount uniqueUsers=%uniqueUsers',
 'QGO состояние: goState=%goState lootState=%lootState spawned=%spawned byDefault=%byDefault respawnTime=%respawnTime useCount=%useCount uniqueUsers=%uniqueUsers'),
 
-(1923, 'qgo_fields', 'QGO fields: flags=%flags displayId=%displayId faction=%faction level=%level scale=%scale', 0, 0,
+(2023, 'qgo_fields', 'QGO fields: flags=%flags displayId=%displayId faction=%faction level=%level scale=%scale', 0, 0,
 'QGO 필드: flags=%flags displayId=%displayId faction=%faction level=%level scale=%scale',
 'QGO champs : flags=%flags displayId=%displayId faction=%faction level=%level scale=%scale',
 'QGO Felder: flags=%flags displayId=%displayId faction=%faction level=%level scale=%scale',
@@ -117,7 +117,7 @@ VALUES
 'QGO campos: flags=%flags displayId=%displayId faction=%faction level=%level scale=%scale',
 'QGO поля: flags=%flags displayId=%displayId faction=%faction level=%level scale=%scale'),
 
-(1924, 'qgo_bytes1', 'QGO bytes1: state=%state type=%type artkit=%artkit animprogress=%animprogress', 0, 0,
+(2024, 'qgo_bytes1', 'QGO bytes1: state=%state type=%type artkit=%artkit animprogress=%animprogress', 0, 0,
 'QGO bytes1: state=%state type=%type artkit=%artkit animprogress=%animprogress',
 'QGO bytes1 : state=%state type=%type artkit=%artkit animprogress=%animprogress',
 'QGO bytes1: state=%state type=%type artkit=%artkit animprogress=%animprogress',
@@ -127,7 +127,7 @@ VALUES
 'QGO bytes1: state=%state type=%type artkit=%artkit animprogress=%animprogress',
 'QGO bytes1: state=%state type=%type artkit=%artkit animprogress=%animprogress'),
 
-(1925, 'qgo_loot_state', 'QGO loot state: items=%items gold=%gold looted=%looted type=%type', 0, 0,
+(2025, 'qgo_loot_state', 'QGO loot state: items=%items gold=%gold looted=%looted type=%type', 0, 0,
 'QGO 전리품 상태: items=%items gold=%gold looted=%looted type=%type',
 'QGO état du butin : items=%items gold=%gold looted=%looted type=%type',
 'QGO Beutezustand: items=%items gold=%gold looted=%looted type=%type',
@@ -137,7 +137,7 @@ VALUES
 'QGO estado del botín: items=%items gold=%gold looted=%looted type=%type',
 'QGO состояние добычи: items=%items gold=%gold looted=%looted type=%type'),
 
-(1926, 'qgo_bot',
+(2026, 'qgo_bot',
  'QGO bot: name=%name distance=%distance dist2d=%dist2d withinInteract=%withinInteract '
  'interactionDist=%interactionDist los=%los samePhase=%samePhase activatedToQuest=%activatedToQuest '
  'hasQuestForGO=%hasQuestForGO usableMounted=%usableMounted',
@@ -151,7 +151,7 @@ VALUES
 'QGO bot: name=%name distance=%distance dist2d=%dist2d withinInteract=%withinInteract interactionDist=%interactionDist los=%los samePhase=%samePhase activatedToQuest=%activatedToQuest hasQuestForGO=%hasQuestForGO usableMounted=%usableMounted',
 'QGO бот: name=%name distance=%distance dist2d=%dist2d withinInteract=%withinInteract interactionDist=%interactionDist los=%los samePhase=%samePhase activatedToQuest=%activatedToQuest hasQuestForGO=%hasQuestForGO usableMounted=%usableMounted'),
 
-(1927, 'qgo_lock_none', 'QGO lock: %lockId (no Lock.dbc entry)', 0, 0,
+(2027, 'qgo_lock_none', 'QGO lock: %lockId (no Lock.dbc entry)', 0, 0,
 'QGO 잠금: %lockId (Lock.dbc 항목 없음)',
 'QGO verrou : %lockId (aucune entrée Lock.dbc)',
 'QGO Schloss: %lockId (kein Lock.dbc-Eintrag)',
@@ -161,7 +161,7 @@ VALUES
 'QGO cerradura: %lockId (sin entrada en Lock.dbc)',
 'QGO замок: %lockId (нет записи в Lock.dbc)'),
 
-(1928, 'qgo_lock_slot',
+(2028, 'qgo_lock_slot',
  'QGO lock slot %slot: type=%type index=%index skill=%skill skillByLockType=%mappedSkill '
  'botSkillValue=%botSkillValue',
  0, 0,
@@ -174,7 +174,7 @@ VALUES
 'QGO ranura de cerradura %slot: type=%type index=%index skill=%skill skillByLockType=%mappedSkill botSkillValue=%botSkillValue',
 'QGO слот замка %slot: type=%type index=%index skill=%skill skillByLockType=%mappedSkill botSkillValue=%botSkillValue'),
 
-(1929, 'qgo_display', 'QGO display: file=''%file'' min=(%minX,%minY,%minZ) max=(%maxX,%maxY,%maxZ)', 0, 0,
+(2029, 'qgo_display', 'QGO display: file=''%file'' min=(%minX,%minY,%minZ) max=(%maxX,%maxY,%maxZ)', 0, 0,
 'QGO 표시: file=''%file'' min=(%minX,%minY,%minZ) max=(%maxX,%maxY,%maxZ)',
 'QGO affichage : file=''%file'' min=(%minX,%minY,%minZ) max=(%maxX,%maxY,%maxZ)',
 'QGO Anzeige: file=''%file'' min=(%minX,%minY,%minZ) max=(%maxX,%maxY,%maxZ)',
@@ -184,7 +184,7 @@ VALUES
 'QGO pantalla: file=''%file'' min=(%minX,%minY,%minZ) max=(%maxX,%maxY,%maxZ)',
 'QGO отображение: file=''%file'' min=(%minX,%minY,%minZ) max=(%maxX,%maxY,%maxZ)'),
 
-(1930, 'qgo_loot_table', 'QGO loot table %lootId: present=%present questLootForBot=%questLootForBot', 0, 0,
+(2030, 'qgo_loot_table', 'QGO loot table %lootId: present=%present questLootForBot=%questLootForBot', 0, 0,
 'QGO 전리품 테이블 %lootId: present=%present questLootForBot=%questLootForBot',
 'QGO table de butin %lootId : present=%present questLootForBot=%questLootForBot',
 'QGO Beutetabelle %lootId: present=%present questLootForBot=%questLootForBot',
@@ -194,7 +194,7 @@ VALUES
 'QGO tabla de botín %lootId: present=%present questLootForBot=%questLootForBot',
 'QGO таблица добычи %lootId: present=%present questLootForBot=%questLootForBot'),
 
-(1931, 'qgo_loot_ref',
+(2031, 'qgo_loot_ref',
  'QGO loot ref=%reference chance=%chance min=%min max=%max needsQuest=%needsQuest mode=%mode group=%group', 0, 0,
 'QGO 전리품 참조=%reference chance=%chance min=%min max=%max needsQuest=%needsQuest mode=%mode group=%group',
 'QGO butin réf=%reference chance=%chance min=%min max=%max needsQuest=%needsQuest mode=%mode group=%group',
@@ -205,7 +205,7 @@ VALUES
 'QGO botín ref=%reference chance=%chance min=%min max=%max needsQuest=%needsQuest mode=%mode group=%group',
 'QGO добыча ссылка=%reference chance=%chance min=%min max=%max needsQuest=%needsQuest mode=%mode group=%group'),
 
-(1932, 'qgo_loot_item',
+(2032, 'qgo_loot_item',
  'QGO loot item=%item ''%name'' class=%class quality=%quality maxcount=%stackMax sell=%sell chance=%chance '
  'min=%min max=%max needsQuest=%needsQuest',
  0, 0,
@@ -218,7 +218,7 @@ VALUES
 'QGO objeto de botín=%item ''%name'' class=%class quality=%quality maxcount=%stackMax sell=%sell chance=%chance min=%min max=%max needsQuest=%needsQuest',
 'QGO предмет добычи=%item ''%name'' class=%class quality=%quality maxcount=%stackMax sell=%sell chance=%chance min=%min max=%max needsQuest=%needsQuest'),
 
-(1933, 'qgo_yes', 'yes', 0, 0,
+(2033, 'qgo_yes', 'yes', 0, 0,
 '예',
 'Oui',
 'Ja',
@@ -228,7 +228,7 @@ VALUES
 'Sí',
 'Да'),
 
-(1934, 'qgo_no', 'no', 0, 0,
+(2034, 'qgo_no', 'no', 0, 0,
 '아니오',
 'Non',
 'Nein',
