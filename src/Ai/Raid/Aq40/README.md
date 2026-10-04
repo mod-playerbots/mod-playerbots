@@ -110,6 +110,8 @@ The marks must be set by the raid leader or an assistant.
   "C'Thun is weakened!" and a buff on him). Only now does he take damage.
   - Everyone burns him: ranged from the stack; melee move to about 8 yd from his center and strike only from within
     10 yd.
+  - A Giant Eye Tentacle still dies first. A Giant Claw Tentacle that a tank is holding is left to that tank; one that
+    nobody holds is killed first.
   - With the raid mostly alive, each window takes 35–40% of his health, so about three windows kill him.
 
 ### For a human player

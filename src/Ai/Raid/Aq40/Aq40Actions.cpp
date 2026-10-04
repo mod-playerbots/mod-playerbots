@@ -1058,7 +1058,7 @@ Unit* Aq40ControlAction::DamageTarget(Player* player)
             else if (Creature* body = player->GetInstanceScript()->GetCreature(Id(Aq40Encounter::Cthun)))
                 priorities =
                     body->HasAura(Id(Aq40Spells::SPELL_PURPLE_COLORATION))
-                        ? std::vector<uint32>{Id(Aq40Npcs::NPC_CTHUN), Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE),
+                        ? std::vector<uint32>{Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE), Id(Aq40Npcs::NPC_CTHUN),
                                               Id(Aq40Npcs::NPC_EYE_TENTACLE), Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE),
                                               Id(Aq40Npcs::NPC_CLAW_TENTACLE)}
                         : std::vector<uint32>{Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE), Id(Aq40Npcs::NPC_EYE_TENTACLE),
@@ -1374,14 +1374,17 @@ Unit* Aq40ControlAction::CthunTarget(Player* player)
     bool eyeMelee = CthunEyeMelee(player);
     Creature* body =
         player->GetInstanceScript() ? player->GetInstanceScript()->GetCreature(Id(Aq40Encounter::Cthun)) : nullptr;
+    // While C'Thun is Weakened, a Giant Eye still dies first: left alone it kills more of the raid during the window
+    // than the burn gains. A Giant Claw a tank holds is left to that tank (killing it first takes a large part of
+    // the window); one nobody holds is killed first.
+    bool weakened = body && body->HasAura(Id(Aq40Spells::SPELL_PURPLE_COLORATION));
     std::vector<uint32> priorities =
-        body && body->HasAura(Id(Aq40Spells::SPELL_PURPLE_COLORATION))
-            ? std::vector<uint32>{Id(Aq40Npcs::NPC_CTHUN), Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE),
-                                  Id(Aq40Npcs::NPC_EYE_TENTACLE), Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE),
-                                  Id(Aq40Npcs::NPC_CLAW_TENTACLE)}
-            : std::vector<uint32>{Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE),  Id(Aq40Npcs::NPC_EYE_TENTACLE),
-                                  Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE), Id(Aq40Npcs::NPC_CLAW_TENTACLE),
-                                  Id(Aq40Npcs::NPC_EYE_OF_CTHUN),        Id(Aq40Npcs::NPC_CTHUN)};
+        weakened ? std::vector<uint32>{Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE), Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE),
+                                       Id(Aq40Npcs::NPC_CTHUN), Id(Aq40Npcs::NPC_EYE_TENTACLE),
+                                       Id(Aq40Npcs::NPC_CLAW_TENTACLE)}
+                 : std::vector<uint32>{Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE),  Id(Aq40Npcs::NPC_EYE_TENTACLE),
+                                       Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE), Id(Aq40Npcs::NPC_CLAW_TENTACLE),
+                                       Id(Aq40Npcs::NPC_EYE_OF_CTHUN),        Id(Aq40Npcs::NPC_CTHUN)};
     bool phase2 = CthunPhase2();
     for (uint32 entry : priorities)
     {
@@ -1392,7 +1395,8 @@ Unit* Aq40ControlAction::CthunTarget(Player* player)
             // near starts on it at once instead of waiting for the tank.
             if (!AllowedDamage(player, unit) ||
                 (entry == Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE) && !phase2 && !Held(unit)) ||
-                (entry == Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE) && phase2 && !nearRaid(unit)))
+                (entry == Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE) && phase2 &&
+                 (!nearRaid(unit) || (weakened && Held(unit)))))
                 continue;
             if (phase2)
             {
