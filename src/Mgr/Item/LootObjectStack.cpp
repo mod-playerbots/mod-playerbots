@@ -258,9 +258,13 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
         // The bot cannot satisfy the gathering case, but the client would open this with a plain
         // opener instead (e.g. the Corrupted Flower's kneel case -> 6478), so drop the
         // profession/key requirement and let GetOpeningSpell pick the matching spell.
+        // Locked objects (chests, strongboxes, coffers, ...) are excluded: their Open case is a
+        // convenience next to a Lockpicking/key case, and dropping the requirement would let the
+        // hidden opener bypass it (the cast path does not check GO_FLAG_LOCKED). It would also
+        // stop key holders from using their key.
         bool const gatheringSatisfied = skillId != SKILL_NONE && botAI->HasSkill((SkillType)skillId) &&
                                         bot->GetSkillValue(skillId) >= reqSkillValue;
-        if (skillFreeOpener && !gatheringSatisfied)
+        if (skillFreeOpener && !gatheringSatisfied && !go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED))
         {
             skillId = SKILL_NONE;
             reqSkillValue = 0;
