@@ -475,7 +475,7 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
     float closestInUseOrbDistance = std::numeric_limits<float>::max();
     bool orbInUse = false;
 
-    for (ObjectGuid const& orbGuid : AI_VALUE(GuidVector, "kiljaeden dragon orbs"))
+    for (auto const& orbGuid : context->GetValue<GuidVector>("kiljaeden dragon orbs")->RefGet())
     {
         GameObject* orb = botAI->GetGameObject(orbGuid);
         if (!orb)

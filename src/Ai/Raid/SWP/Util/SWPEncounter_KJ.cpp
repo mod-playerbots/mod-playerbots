@@ -123,8 +123,8 @@ std::vector<Unit*> GetKiljaedenHands(PlayerbotAI* botAI)
 {
     std::vector<Unit*> hands;
 
-    for (ObjectGuid const& guid : botAI->GetAiObjectContext()
-             ->GetValue<GuidVector>("kiljaeden hands")->RefGet())
+    for (auto const& guid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("kiljaeden hands")->RefGet())
     {
         Unit* hand = botAI->GetUnit(guid);
         if (hand && hand->IsAlive())
