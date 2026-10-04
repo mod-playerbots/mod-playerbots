@@ -92,6 +92,17 @@ constexpr uint32 CthunTentacleKillers = 2;
 // Dark Glare band (5 yd) plus a margin, and how many 1-second ticks ahead a bot starts moving.
 constexpr float GlareHalfWidth = 8.0f;
 constexpr int GlareLookahead = 3;
+// A glare dodge stays at least this far from the Eye, steps in this much at a time where the floor runs out, and
+// needs floor this far past its goal.
+constexpr float GlareMinRadius = 15.0f;
+constexpr float GlareStepIn = 4.0f;
+constexpr float GlareFloorMargin = 3.0f;
+// Danger() runs several times per bot per tick, so the floor search runs at most this often per bot.
+constexpr std::chrono::milliseconds GlareDodgeRefresh{500};
+// C'Thun's floor ends 48-64 yd from the Eye in places, with a 17-yard drop below it. Ground is searched from just
+// above the floor, and counts as floor within this height of it.
+constexpr float CthunFloorProbeHeight = 2.0f;
+constexpr float CthunFloorTolerance = 3.0f;
 
 using Aq40Rules::AngleDelta;
 
@@ -99,6 +110,12 @@ Position Around(WorldObject* center, float radius, float angle)
 {
     return Position(center->GetPositionX() + radius * std::cos(angle),
                     center->GetPositionY() + radius * std::sin(angle), center->GetPositionZ());
+}
+
+bool OnCthunFloor(WorldObject* probe, float x, float y)
+{
+    return probe->GetMapHeight(x, y, CthunCenter.GetPositionZ() + CthunFloorProbeHeight) >
+           CthunCenter.GetPositionZ() - CthunFloorTolerance;
 }
 
 bool Attackable(Player* player, Unit* unit)
@@ -299,6 +316,7 @@ void Aq40ControlAction::Reset()
     _cthunRedeal = false;
     _glareActive = false;
     _glareDirection = 0.0f;
+    _glareDodges.clear();
     _refresh = {};
     ++_version;
 }
@@ -1836,6 +1854,34 @@ bool Aq40ControlAction::Execute(Event /*event*/)
     return Attack(target);
 }
 
+Position Aq40ControlAction::GlareDodge(Player* player, Unit* eye, float bearing, float distance)
+{
+    auto now = std::chrono::steady_clock::now();
+    auto cached = _glareDodges.find(player->GetGUID());
+    if (cached != _glareDodges.end() && now - cached->second.first < GlareDodgeRefresh)
+        return cached->second.second;
+    // Dodging at the bot's own distance carried outer-ring bots past the floor's edge, where they stayed stuck
+    // for the rest of the fight. Step in until the dodge spot, a margin beyond it and the way there all have floor;
+    // the escape bearing is recomputed for each radius, since the beam's clearance angle grows closer in.
+    Position goal;
+    float radius = std::max(GlareMinRadius, distance);
+    while (true)
+    {
+        float escape = Aq40Rules::GlareEscapeBearing(bearing, radius, eye->GetOrientation(), _glareDirection,
+                                                     GlareHalfWidth, GlareLookahead);
+        goal = Around(eye, radius, escape);
+        Position beyond = Around(eye, radius + GlareFloorMargin, escape);
+        if (radius <= GlareMinRadius || (OnCthunFloor(player, beyond.GetPositionX(), beyond.GetPositionY()) &&
+                                         OnCthunFloor(player, (player->GetPositionX() + goal.GetPositionX()) / 2.0f,
+                                                      (player->GetPositionY() + goal.GetPositionY()) / 2.0f)))
+            break;
+        radius = std::max(GlareMinRadius, radius - GlareStepIn);
+    }
+    goal.m_positionZ = player->GetPositionZ();
+    _glareDodges[player->GetGUID()] = {now, goal};
+    return goal;
+}
+
 bool Aq40ControlAction::Danger(Player* player, Position& goal)
 {
     if (_encounter == Aq40Encounter::Cthun && InStomach(player))
@@ -1887,10 +1933,7 @@ bool Aq40ControlAction::Danger(Player* player, Position& goal)
             if (Aq40Rules::InGlarePath(bearing, distance, unit->GetOrientation(), _glareDirection, GlareHalfWidth,
                                        GlareLookahead))
             {
-                float escape = Aq40Rules::GlareEscapeBearing(bearing, distance, unit->GetOrientation(), _glareDirection,
-                                                             GlareHalfWidth, GlareLookahead);
-                goal = Around(unit, std::max(15.0f, distance), escape);
-                goal.m_positionZ = player->GetPositionZ();
+                goal = GlareDodge(player, unit, bearing, distance);
                 return true;
             }
         }

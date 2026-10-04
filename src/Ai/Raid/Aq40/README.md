@@ -83,7 +83,8 @@ The marks must be set by the raid leader or an assistant.
   - Ranged and the remaining melee take the middle ring (30–42 yd). Spare melee only attack tentacles that come up
     near their spot.
   - Healers take the outer ring.
-- **Dark Glare:** bots dodge the sweeping beam, then re-sort onto the nearest free spot of their kind.
+- **Dark Glare:** bots dodge the sweeping beam, then re-sort onto the nearest free spot of their kind. Where the floor
+  ends (48–64 yd from the Eye in places, over a 17 yd drop), a dodge steps closer to the Eye instead.
 - **Targets:** Eye Tentacles first, then Claw Tentacles, then the Eye.
 - **Pets** are kept; they don't carry Eye Beam.
 

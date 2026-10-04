@@ -200,6 +200,8 @@ public:
     }
     bool Held(Unit* unit);
     bool Danger(Player* player, Position& goal);
+    // Phase 1: where a bot in Dark Glare's path steps to, kept on the floor.
+    Position GlareDodge(Player* player, Unit* eye, float bearing, float distance);
     bool Formation(Player* player, Position& goal);
     bool UrgentHeal(PlayerbotAI* botAI);
     bool Interrupt(PlayerbotAI* botAI);
@@ -257,6 +259,7 @@ private:
     float _lastGlare = 0.0f;
     float _glareDirection = 0.0f;
     bool _glareActive = false;
+    std::map<ObjectGuid, std::pair<std::chrono::steady_clock::time_point, Position>> _glareDodges;
     std::chrono::steady_clock::time_point _refresh{};
     uint32 _version = 0;
     std::chrono::steady_clock::time_point _encounterStart{};
