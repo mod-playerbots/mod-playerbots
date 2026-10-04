@@ -199,12 +199,6 @@ void SellAction::Sell(Item* item, bool force)
         if (ItemUsageValue(botAI).IsItemNeededForUsefullSpell(proto, lowBagSpace))
             keepRequirement = std::max(keepRequirement, 2u * proto->GetMaxStackSize());
     }
-    else if (!force && proto->Class == ITEM_CLASS_CONSUMABLE && proto->SubClass == ITEM_SUBCLASS_CONSUMABLE_OTHER)
-    {
-        // Best-per-family rogue poisons: keep up to 2 full stacks, sell the excess.
-        if (ItemUsageValue(botAI).IsBestPoison(proto))
-            keepRequirement = std::max(keepRequirement, 2u * proto->GetMaxStackSize());
-    }
 
     uint32 countToSell = item->GetCount();
 

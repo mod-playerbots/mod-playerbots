@@ -186,13 +186,12 @@ ItemUsage ItemUsageValue::Calculate()
         // instead of being classified as poisons and sold.
         if (IsRoguePoison(proto))
         {
+            // Keep the best poison of each family. KEEP stops the vendor buy/sell loop: with USE
+            // the bot bought up to 2 stacks, sold the excess past that (usage flipped to AH), and
+            // bought it back on the next visit. Maintenance refills the applied families
+            // (Instant and Deadly) through PlayerbotFactory::InitConsumables().
             if (IsBestPoison(proto))
-            {
-                // Keep up to 2 full stacks; more than that falls through so the excess is sold
-                // (SellAction keeps 2 stacks, same as class reagents).
-                if (CurrentStacks(proto) <= 2)
-                    return ITEM_USAGE_USE;
-            }
+                return ITEM_USAGE_KEEP;
         }
         else
         {
