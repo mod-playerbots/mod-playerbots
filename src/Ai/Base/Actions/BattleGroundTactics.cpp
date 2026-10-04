@@ -1704,6 +1704,10 @@ bool BGTactics::Execute(Event /*event*/)
         if (bgType == BATTLEGROUND_EY)
             return moveToObjective(true);
 
+        // The move above already heads for the objective; a random route here turns AV bots around at junctions
+        if (bgType == BATTLEGROUND_AV)
+            return true;
+
         if (!startNewPathBegin(*vPaths))
             return moveToObjective(true);
 
@@ -1879,6 +1883,16 @@ bool BGTactics::selectObjective(bool reset)
             AVBotStrategy strategy = (team == TEAM_ALLIANCE) ? strategyAlliance : strategyHorde;
             AVBotStrategy enemyStrategy = (team == TEAM_ALLIANCE) ? strategyHorde : strategyAlliance;
 
+            // Same value for this bot all game, so re-selecting keeps the objective until the battle state changes
+            auto stableRoll = [&](uint32 salt, uint32 range) -> uint32
+            {
+                uint32 h = (bot->GetGUID().GetCounter() ^ (bg->GetInstanceID() << 16)) * 2654435761u + salt * 40503u;
+                h ^= h >> 15;
+                h *= 2246822519u;
+                h ^= h >> 13;
+                return h % range;
+            };
+
             uint8 defendersProhab = 4;
             bool enableMineCapture = true;
             bool enableSnowfall = true;
@@ -1926,7 +1940,7 @@ bool BGTactics::selectObjective(bool reset)
             if (isDefender && destroyedNodes > 0)
             {
                 uint32 switchChance = 20 + (destroyedNodes * 15);
-                if (urand(0, 99) < switchChance)
+                if (stableRoll(1, 100) < switchChance)
                     isDefender = false;
             }
 
@@ -1984,22 +1998,6 @@ bool BGTactics::selectObjective(bool reset)
                 }
             }
 
-            // --- Captain ---
-            if (!BgObjective && urand(0, 99) < 90)
-            {
-                if (av->IsCaptainAlive(team == TEAM_HORDE ? TEAM_ALLIANCE : TEAM_HORDE))
-                {
-                    uint32 creatureId = (team == TEAM_HORDE) ? AV_CREATURE_A_CAPTAIN : AV_CREATURE_H_CAPTAIN;
-                    if (Creature* captain = bg->GetBGCreature(creatureId))
-                    {
-                        if (captain->IsAlive())
-                        {
-                            BgObjective = captain;
-                        }
-                    }
-                }
-            }
-
             // --- Defender Logic ---
             if (!BgObjective && isDefender)
             {
@@ -2023,9 +2021,25 @@ bool BGTactics::selectObjective(bool reset)
                 }
 
                 if (!contestedObjectives.empty())
-                    BgObjective = contestedObjectives[urand(0, contestedObjectives.size() - 1)];
+                    BgObjective = contestedObjectives[stableRoll(2, contestedObjectives.size())];
                 else if (!availableObjectives.empty())
-                    BgObjective = availableObjectives[urand(0, availableObjectives.size() - 1)];
+                    BgObjective = availableObjectives[stableRoll(3, availableObjectives.size())];
+            }
+
+            // --- Captain ---
+            if (!BgObjective && !isDefender && stableRoll(4, 100) < 50)
+            {
+                if (av->IsCaptainAlive(team == TEAM_HORDE ? TEAM_ALLIANCE : TEAM_HORDE))
+                {
+                    uint32 creatureId = (team == TEAM_HORDE) ? AV_CREATURE_A_CAPTAIN : AV_CREATURE_H_CAPTAIN;
+                    if (Creature* captain = bg->GetBGCreature(creatureId))
+                    {
+                        if (captain->IsAlive())
+                        {
+                            BgObjective = captain;
+                        }
+                    }
+                }
             }
 
             // --- Enemy Boss ---
@@ -2058,6 +2072,7 @@ bool BGTactics::selectObjective(bool reset)
             if (!BgObjective)
             {
                 std::vector<GameObject*> candidates;
+                std::vector<GameObject*> assaultedByTeam;
 
                 for (auto const& [nodeId, goId] : attackObjectives)
                 {
@@ -2066,8 +2081,11 @@ bool BGTactics::selectObjective(bool reset)
                     if (!go || node.State == POINT_DESTROYED || node.TotalOwnerId == team)
                         continue;
 
-                    if (node.State == POINT_ASSAULTED && urand(0, 99) >= 1)
+                    if (node.State == POINT_ASSAULTED && node.OwnerId == team)
+                    {
+                        assaultedByTeam.push_back(go);
                         continue;
+                    }
 
                     candidates.push_back(go);
 
@@ -2078,8 +2096,11 @@ bool BGTactics::selectObjective(bool reset)
                         break;
                 }
 
-                if (!candidates.empty())
-                    BgObjective = candidates[urand(0, candidates.size() - 1)];
+                // Some attackers hold the nodes we assaulted so the enemy can't retake them during the capture timer
+                if (!assaultedByTeam.empty() && stableRoll(5, 100) < 25)
+                    BgObjective = assaultedByTeam[stableRoll(6, assaultedByTeam.size())];
+                else if (!candidates.empty())
+                    BgObjective = candidates[stableRoll(7, candidates.size())];
                 else
                 {
                     // Fallback: move to boss wait position
