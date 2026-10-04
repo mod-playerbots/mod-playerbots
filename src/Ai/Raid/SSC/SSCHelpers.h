@@ -727,7 +727,7 @@ bool HasTaintedCore(Player* player);
 struct VashjCoreCatcher
 {
     Position spot;
-    ObjectGuid bot;
+    ObjectGuid bot = ObjectGuid::Empty;
     // The first catcher is released when the plan is made, the second when the first starts moving,
     // each later one when the one before reaches its spot, delayed by readyDelay for realism.
     bool released = false;

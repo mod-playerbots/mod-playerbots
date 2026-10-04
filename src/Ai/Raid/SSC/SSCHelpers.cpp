@@ -1275,13 +1275,13 @@ bool IsVashjCoreSpotClear(float x, float y, bool useSpot)
             return false;
     }
 
-    if (useSpot)
-        return true;
-
-    for (Position const& generator : VASHJ_SHIELD_GENERATOR_POSITIONS)
+    if (!useSpot)
     {
-        if (generator.GetExactDist2d(x, y) < VASHJ_CORE_SPOT_GENERATOR_CLEARANCE)
-            return false;
+        for (Position const& generator : VASHJ_SHIELD_GENERATOR_POSITIONS)
+        {
+            if (generator.GetExactDist2d(x, y) < VASHJ_CORE_SPOT_GENERATOR_CLEARANCE)
+                return false;
+        }
     }
 
     return true;
