@@ -856,7 +856,7 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActiveInEncounter()
     bool orbInUse = false;
     bool result = false;
 
-    for (ObjectGuid const& orbGuid : AI_VALUE(GuidVector, "kiljaeden dragon orbs"))
+    for (auto const& orbGuid : context->GetValue<GuidVector>("kiljaeden dragon orbs")->RefGet())
     {
         GameObject* orb = botAI->GetGameObject(orbGuid);
         if (!orb)

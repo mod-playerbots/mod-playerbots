@@ -232,7 +232,7 @@ bool PeekMuruDarknessEarlyState(Player* bot, uint32 earlyWindowMs)
 MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI)
 {
     AiObjectContext* context = botAI->GetAiObjectContext();
-    auto const& units = AI_VALUE(GuidVector, "possible targets no los");
+    auto const& units = context->GetValue<GuidVector>("possible targets no los")->RefGet();
 
     MuruEncounterGuids guids;
     for (ObjectGuid const& guid : units)
@@ -446,7 +446,7 @@ GuidVector FindMuruDarkFiendGuids(Player* bot)
 
 std::vector<Creature*> GetMuruDarkFiends(PlayerbotAI* botAI)
 {
-    GuidVector const& guids =
+    auto const& guids =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("muru dark fiends")->RefGet();
 
     std::vector<Creature*> darkFiends;
@@ -483,7 +483,7 @@ Creature* GetNearestMuruDarkFiend(PlayerbotAI* botAI, float radius)
 Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    GuidVector const& guids =
+    auto const& guids =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("muru void zones")->RefGet();
 
     Creature* nearest = nullptr;

@@ -308,7 +308,7 @@ void AppendMuruDarkFiendExclusions(
     if (!AI_VALUE2(Unit*, "find target", "m'uru"))
         return;
 
-    for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
+    for (auto const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
     {
         Unit* attacker = botAI->GetUnit(guid);
         if (attacker && attacker->GetEntry() == Id(SwpNpcs::NPC_DARK_FIEND))
@@ -333,7 +333,7 @@ void AppendMuruTankExclusions(
 
     ObjectGuid const muruGuid = muru->GetGUID();
 
-    for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
+    for (auto const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
     {
         Unit* attacker = botAI->GetUnit(guid);
         if (!attacker || attacker->GetEntry() == Id(SwpNpcs::NPC_VOID_SENTINEL))
@@ -362,7 +362,7 @@ void AppendKiljaedenShieldOrbExclusions(
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
         return;
 
-    for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
+    for (auto const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
     {
         Unit* attacker = botAI->GetUnit(guid);
         if (attacker && attacker->GetEntry() == Id(SwpNpcs::NPC_SHIELD_ORB))
