@@ -5,6 +5,7 @@
  */
 
 #include "SWPShared.h"
+#include "PathGenerator.h"
 #include "Playerbots.h"
 
 namespace SwpHelpers
@@ -76,6 +77,102 @@ uint32 GetManualCastGlobalCooldown(uint32 spellId)
 
     // A charmed caster still gets MIN_GCD for a cooldownless spell.
     return spellInfo->RecoveryTime || spellInfo->CategoryRecoveryTime ? 0 : minGlobalCooldown;
+}
+
+bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
+{
+    if (!target || !tank)
+        return false;
+
+    if (botAI->CanCastSpell(Id(SwpSpells::SPELL_MISDIRECTION_CAST), tank))
+        return botAI->CastSpell(Id(SwpSpells::SPELL_MISDIRECTION_CAST), tank);
+
+    if (!botAI->GetBot()->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)))
+        return false;
+
+    return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
+}
+
+bool GetPathStepTowardPoint(
+    Player* bot, Position const& destination, float stopDistance, float stepDistance,
+    float& stepX, float& stepY)
+{
+    if (bot->GetExactDist(destination) < stopDistance)
+        return false;
+
+    PathGenerator path(bot);
+    path.CalculatePath(
+        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
+    if (!(path.GetPathType() & (PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_SHORTCUT)))
+        return false;
+
+    Movement::PointsArray const& points = path.GetPath();
+    if (points.size() < 2)
+        return false;
+
+    G3D::Vector3 const targetPos(
+        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
+
+    float remaining = stepDistance;
+    for (std::size_t i = 1; i < points.size(); ++i)
+    {
+        G3D::Vector3 const& from = points[i - 1];
+        G3D::Vector3 const& to = points[i];
+
+        float const segment = (to - from).length();
+        if (segment <= 0.0f)
+            continue;
+
+        float const toDist = (to - targetPos).length();
+        float ratio = 1.0f;
+
+        if (toDist < stopDistance)
+        {
+            float const fromDist = (from - targetPos).length();
+            if (fromDist <= stopDistance)
+                break;
+
+            ratio = (fromDist - stopDistance) / (fromDist - toDist);
+        }
+
+        if (segment * ratio >= remaining)
+            ratio = remaining / segment;
+
+        remaining -= segment * ratio;
+
+        G3D::Vector3 const step = from + (to - from) * ratio;
+        stepX = step.x;
+        stepY = step.y;
+
+        if (remaining <= 0.0f || ratio < 1.0f)
+            return true;
+    }
+
+    return remaining < stepDistance;
+}
+
+bool GetPathStepToPosition(
+    Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
+    float& stepY, bool& backwards)
+{
+    backwards = false;
+    if (bot->GetExactDist2d(position) <= arrivalDist)
+        return false;
+
+    // Whether the step is backwards is known only once the path is, so a tank takes the backward
+    // length either way rather than paying for a second path.
+    bool const tanking = facing && facing->GetVictim() == bot && bot->IsWithinMeleeRange(facing);
+    float const stepDistance = tanking ? PATH_BACKWARD_STEP_DISTANCE : PATH_STEP_DISTANCE;
+    if (!GetPathStepTowardPoint(bot, position, arrivalDist, stepDistance, stepX, stepY))
+        return false;
+
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    backwards = tanking &&
+        (stepX - botX) * (facing->GetPositionX() - botX) +
+        (stepY - botY) * (facing->GetPositionY() - botY) < 0.0f;
+
+    return true;
 }
 
 }

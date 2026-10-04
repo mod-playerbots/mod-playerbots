@@ -105,8 +105,6 @@ extern std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
 extern std::unordered_map<uint32, EredarTwinsBlazeTargetState> eredarTwinsBlazeTargetStates;
 extern std::unordered_map<uint32, uint32> eredarTwinsDpsHoldStartMs;
 extern std::unordered_map<uint32, EredarTwinsTankAssignment> eredarTwinsTankAssignments;
-// For the Alythess tank: the last Blaze it moved away from, so one Blaze moves it only one step.
-extern std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
 
 Position GetAlythessTankPosition(Unit* alythess, uint8 index);
 Position GetEredarTwinsP2MeleePosition(Unit* alythess);
@@ -121,7 +119,7 @@ bool ShouldHoldAlythessThreat(Player* bot, Unit* alythess);
 bool ShouldHoldSacrolashThreat(Player* bot, Unit* sacrolash);
 std::vector<Position> FindEredarTwinsBlazePositions(Player* bot);
 bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position);
-bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
+bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot, ObjectGuid& lastBlazeGuid);
 void RecordIncomingEredarTwinsConflagrationTarget(Player* target);
 Player* GetEredarTwinsConflagrationTarget(Player* bot);
 void RecordEredarTwinsBlazeTarget(Player* target);

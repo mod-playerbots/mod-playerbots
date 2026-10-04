@@ -85,6 +85,87 @@ float SunwellControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
         AI_VALUE2(Unit*, "find target", "kil'jaeden") ? 0.0f : 1.0f;
 }
 
+float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!IsDpsCooldownAction(bot, action))
+        return 1.0f;
+
+    // TEMP LOG (Kil'jaeden cooldown hold), remove after testing
+    if (getMSTimeDiff(_tempLogMs, getMSTime()) >= 1000)
+    {
+        _tempLogMs = getMSTime();
+        Unit* tempHand = AI_VALUE2(Unit*, "find target", "hand of the deceiver");
+        Unit* tempKiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+        if (tempHand || tempKiljaeden)
+        {
+            LOG_INFO("playerbots",
+                "[SWP cooldowns] {} {}: hand {}, kil'jaeden {} (entry {}, {:.0f}%)",
+                bot->GetName(), action->getName(), tempHand ? "found" : "none",
+                tempKiljaeden ? "found" : "none", tempKiljaeden ? tempKiljaeden->GetEntry() : 0,
+                tempKiljaeden ? tempKiljaeden->GetHealthPct() : 0.0f);
+        }
+    }
+
+    // Kil'jaeden is summoned only when the last Hand dies.
+    if (AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
+        return 0.0f;
+
+    bool const isBloodlust = bot->getClass() == CLASS_SHAMAN &&
+        (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action));
+
+    if (Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+    {
+        if (kiljaeden->GetHealthPct() <= KILJAEDEN_PHASE5_HP_THRESHOLD)
+            return 1.0f;
+
+        if (isBloodlust)
+            return 0.0f;
+
+        return kiljaeden->GetHealthPct() > KILJAEDEN_PHASE3_HP_THRESHOLD ? 0.0f : 1.0f;
+    }
+
+    if (Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru"))
+    {
+        Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+        if (entropius && entropius->GetHealthPct() < BOSS_ENGAGED_HEALTH_PCT)
+            return 1.0f;
+
+        if (isBloodlust) // Bloodlust is saved for Entropius.
+            return 0.0f;
+
+        // Other dps cooldowns can be used on M'uru after the pull.
+        return muru->GetHealthPct() > MURU_MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
+    }
+
+    if (AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    {
+        Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+        return sacrolash && sacrolash->GetHealthPct() > EREDAR_TWINS_MAX_DPS_HP_PERCENT ?
+            0.0f : 1.0f;
+    }
+
+    if (Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst"))
+    {
+        if (felmyst->IsFlying())
+            return 0.0f;
+
+        return felmyst->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+    }
+
+    if (Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus"))
+        return brutallus->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+
+    if (AI_VALUE2(Unit*, "find target", "kalecgos")) // Use cooldowns against Sathrovarr only.
+        return IsInSpectralRealm(bot) ? 1.0f : 0.0f;
+
+    return 1.0f;
+}
+
+// Kalecgos
+
 float KalecgosWaitToDecurseMultiplier::GetValueInEncounter(Action* action)
 {
     if (bot->getClass() != CLASS_DRUID && bot->getClass() != CLASS_MAGE &&
@@ -204,20 +285,6 @@ float KalecgosEnterSpectralRiftMultiplier::GetValueInEncounter(Action* action)
     return botAI->GetGameObject(AI_VALUE(ObjectGuid, "kalecgos spectral rift")) ? 0.0f : 1.0f;
 }
 
-float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!IsDpsCooldownAction(bot, action))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
-        return 1.0f;
-
-    return IsInSpectralRealm(bot) ? 1.0f : 0.0f;
-}
-
 // Brutallus
 
 float BrutallusControlMovementMultiplier::GetValueInEncounter(Action* action)
@@ -292,18 +359,6 @@ float BrutallusRestrictTauntMultiplier::GetValueInEncounter(Action* action)
 
     Player* playerVictim = victim->ToPlayer();
     return playerVictim && PlayerbotAI::IsTank(playerVictim) ? 0.0f : 1.0f;
-}
-
-float BrutallusDelayCooldownsMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!IsDpsCooldownAction(bot, action))
-        return 1.0f;
-
-    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
-    return brutallus && brutallus->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
 // Felmyst
@@ -450,24 +505,6 @@ float FelmystDontDotAddsMultiplier::GetValueInEncounter(Action* action)
     return action->GetTarget() == felmyst ? 1.0f : 0.0f;
 }
 
-float FelmystDelayCooldownsMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!IsDpsCooldownAction(bot, action))
-        return 1.0f;
-
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst)
-        return 1.0f;
-
-    if (felmyst->IsFlying())
-        return 0.0f;
-
-    return felmyst->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
-}
-
 // Eredar Twins
 
 float EredarTwinsDisableAutoTargetingMultiplier::GetValueInEncounter(Action* action)
@@ -497,7 +534,7 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<EredarTwinsMisdirectBossesToTanksAction*>(action))
+    if (dynamic_cast<EredarTwinsMisdirectToTanksAction*>(action))
         return 1.0f;
 
     if (PlayerbotAI::IsMelee(bot) && bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
@@ -611,22 +648,6 @@ float EredarTwinsIsolateConflagrationMultiplier::GetValueInEncounter(Action* act
     return victim && victim != bot && conflagTarget == victim ? 0.0f : 1.0f;
 }
 
-float EredarTwinsDelayCooldownsMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!IsDpsCooldownAction(bot, action))
-        return 1.0f;
-
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    if (!alythess)
-        return 1.0f;
-
-    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    return sacrolash && sacrolash->GetHealthPct() > EREDAR_TWINS_MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
-}
-
 // M'uru
 
 float MuruDisableDefaultTargetingMultiplier::GetValueInEncounter(Action* action)
@@ -718,63 +739,9 @@ float MuruControlMovementMultiplier::GetValueInEncounter(Action* action)
     return PlayerbotAI::IsTank(bot) && !PeekMuruDarknessEarlyState(bot) ? 1.0f : 0.0f;
 }
 
-float MuruDelayCooldownsMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!IsDpsCooldownAction(bot, action))
-        return 1.0f;
-
-    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru)
-        return 1.0f;
-
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
-    if (entropius && entropius->GetHealthPct() < BOSS_ENGAGED_HEALTH_PCT)
-        return 1.0f;
-
-    // Bloodlust is saved for Entropius
-    if (bot->getClass() == CLASS_SHAMAN &&
-        (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action)))
-    {
-        return 0.0f;
-    }
-
-    // Other dps cooldowns can be used on M'uru after the pull
-    return muru->GetHealthPct() > MURU_MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
-}
-
 // Kil'jaeden <The Deceiver>
 
-float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!IsDpsCooldownAction(bot, action))
-        return 1.0f;
-
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden)
-        return 1.0f;
-
-    if (AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
-        return 0.0f;
-
-    if (kiljaeden->GetHealthPct() <= KILJAEDEN_PHASE5_HP_THRESHOLD)
-        return 1.0f;
-
-    if (bot->getClass() == CLASS_SHAMAN &&
-        (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action)))
-    {
-        return 0.0f;
-    }
-
-    return kiljaeden->GetHealthPct() > KILJAEDEN_PHASE3_HP_THRESHOLD ? 0.0f : 1.0f;
-}
-
-float KiljaedenSingleTargetHandsMultiplier::GetValue(Action* action)
+float KiljaedenSingleTargetHandsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -793,10 +760,7 @@ float KiljaedenSingleTargetHandsMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > SUNWELL_CENTER_RADIUS)
-        return 1.0f;
-
-    return AI_VALUE(GuidVector, "kiljaeden hands").empty() ? 1.0f : 0.0f;
+    return AI_VALUE2(Unit*, "find target", "hand of the deceiver") ? 0.0f : 1.0f;
 }
 
 float KiljaedenControlMovementAndTargetingMultiplier::GetValueInEncounter(Action* action)

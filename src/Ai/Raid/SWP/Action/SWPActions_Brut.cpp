@@ -58,15 +58,19 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
         if (brutallus->GetVictim() != bot || !bot->IsWithinMeleeRange(brutallus))
             return false;
 
+        constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+        if (IsWaitingForLastMove(priority))
+            return false;
+
         float moveX;
         float moveY;
         bool backwards;
-        if (!GetStepToPosition(bot, position, arrivalDist, brutallus, moveX, moveY, backwards))
+        if (!GetPathStepToPosition(bot, position, arrivalDist, brutallus, moveX, moveY, backwards))
             return false;
 
         return MoveTo(
             SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, backwards);
+            priority, true, backwards);
     }
     else if (assistTank == bot)
     {
@@ -82,12 +86,21 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
 
         Position const position = GetBrutallusPositionAtAngle(
             bot, brutallus, assistTankAngle, BRUTALLUS_TANK_POSITION_RADIUS);
-        if (bot->GetExactDist2d(position) <= 2.0f)
+
+        constexpr float arrivalDist = 2.0f;
+        constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+        if (IsWaitingForLastMove(priority))
+            return false;
+
+        float moveX;
+        float moveY;
+        bool backwards;
+        if (!GetPathStepToPosition(bot, position, arrivalDist, brutallus, moveX, moveY, backwards))
             return false;
 
         return MoveTo(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            priority, true, backwards);
     }
 
     return false;
@@ -110,12 +123,20 @@ bool BrutallusPositionMeleeAtRearCenterAction::Execute(Event /*event*/)
     if (!TryGetBrutallusMeleePosition(brutallus, mainTank, assistTank, meleeIndex, position))
         return false;
 
-    if (bot->GetExactDist2d(position) <= 0.5f)
+    constexpr float arrivalDist = 1.0f;
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetPathStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
-        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        priority, true, false);
 }
 
 bool BrutallusPositionMeleeAtRearCenterAction::TryGetBrutallusMeleePosition(
@@ -234,9 +255,7 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
             return false;
         }
 
-        return MoveTo(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        return StepToPosition(position, 1.0f);
     }
 
     if (burnState == BrutallusRangedBurnState::TraversingOuterLane)
@@ -286,9 +305,7 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
             return false;
         }
 
-        return MoveTo(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        return StepToPosition(position, 1.0f);
     }
 
     Position position;
@@ -299,12 +316,25 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetExactDist2d(position) <= 0.5f)
+    return StepToPosition(position, 1.0f);
+}
+
+bool BrutallusPositionRangedInTwoGroupsAction::StepToPosition(
+    Position const& position, float arrivalDist)
+{
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetPathStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
-        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        priority, true, false);
 }
 
 bool BrutallusIsolateBurnAction::Execute(Event /*event*/)
@@ -364,9 +394,7 @@ bool BrutallusIsolateBurnAction::Execute(Event /*event*/)
             return false;
         }
 
-        return MoveTo(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        return StepToPosition(position, 1.0f);
     }
 
     if (burnState == BrutallusRangedBurnState::TraversingInnerLane)
@@ -412,13 +440,28 @@ bool BrutallusIsolateBurnAction::Execute(Event /*event*/)
         return false;
     }
 
-    return MoveTo(
-        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    return StepToPosition(position, 1.0f);
 }
 
 bool BrutallusIsolateBurnAction::RemoveBurnWithCooldown()
 {
     uint32 const spellId = GetSelfImmunitySpell(bot);
     return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
+}
+
+bool BrutallusIsolateBurnAction::StepToPosition(Position const& position, float arrivalDist)
+{
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetPathStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
+        return false;
+
+    return MoveTo(
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        priority, true, false);
 }

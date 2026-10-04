@@ -9,6 +9,7 @@
 
 #include "NamedObjectContext.h"
 #include "ObjectGuid.h"
+#include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_Muru.h"
@@ -56,6 +57,31 @@ public:
 
 protected:
     GuidVector Calculate() override { return SwpHelpers::FindMuruVoidZoneGuids(bot); }
+};
+
+class FelmystDemonicVaporsValue : public CalculatedValue<SwpHelpers::FelmystDemonicVaporGuids>
+{
+public:
+    FelmystDemonicVaporsValue(PlayerbotAI* botAI)
+        : CalculatedValue<SwpHelpers::FelmystDemonicVaporGuids>(
+              botAI, "felmyst demonic vapors", SwpHelpers::DEMONIC_VAPOR_CACHE_INTERVAL_MS) {}
+
+protected:
+    SwpHelpers::FelmystDemonicVaporGuids Calculate() override
+    {
+        return SwpHelpers::FindFelmystDemonicVaporGuids(bot);
+    }
+};
+
+class MuruDarkFiendsValue : public CalculatedValue<GuidVector>
+{
+public:
+    MuruDarkFiendsValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "muru dark fiends", SwpHelpers::DARK_FIEND_CACHE_INTERVAL_MS) {}
+
+protected:
+    GuidVector Calculate() override { return SwpHelpers::FindMuruDarkFiendGuids(bot); }
 };
 
 class SwpVolatileFiendValue : public CalculatedValue<ObjectGuid>
@@ -118,9 +144,11 @@ class RaidSwpValueContext : public NamedObjectContext<UntypedValue>
 public:
     RaidSwpValueContext()
     {
+        creators["felmyst demonic vapors"] = &RaidSwpValueContext::felmyst_demonic_vapors;
         creators["eredar twins blaze"] = &RaidSwpValueContext::eredar_twins_blaze;
         creators["muru encounter targets"] = &RaidSwpValueContext::muru_encounter_targets;
         creators["muru void zones"] = &RaidSwpValueContext::muru_void_zones;
+        creators["muru dark fiends"] = &RaidSwpValueContext::muru_dark_fiends;
         creators["swp volatile fiend"] = &RaidSwpValueContext::swp_volatile_fiend;
         creators["kalecgos spectral rift"] = &RaidSwpValueContext::kalecgos_spectral_rift;
         creators["muru singularity"] = &RaidSwpValueContext::muru_singularity;
@@ -129,28 +157,44 @@ public:
     }
 
 private:
-    static UntypedValue* eredar_twins_blaze(PlayerbotAI* botAI) {
+    static UntypedValue* felmyst_demonic_vapors(PlayerbotAI* botAI)
+    {
+        return new FelmystDemonicVaporsValue(botAI);
+    }
+    static UntypedValue* eredar_twins_blaze(PlayerbotAI* botAI)
+    {
         return new EredarTwinsBlazePositionsValue(botAI);
     }
-    static UntypedValue* muru_encounter_targets(PlayerbotAI* botAI) {
+    static UntypedValue* muru_encounter_targets(PlayerbotAI* botAI)
+    {
         return new MuruEncounterTargetsValue(botAI);
     }
-    static UntypedValue* muru_void_zones(PlayerbotAI* botAI) {
+    static UntypedValue* muru_void_zones(PlayerbotAI* botAI)
+    {
         return new MuruVoidZonesValue(botAI);
     }
-    static UntypedValue* swp_volatile_fiend(PlayerbotAI* botAI) {
+    static UntypedValue* muru_dark_fiends(PlayerbotAI* botAI)
+    {
+        return new MuruDarkFiendsValue(botAI);
+    }
+    static UntypedValue* swp_volatile_fiend(PlayerbotAI* botAI)
+    {
         return new SwpVolatileFiendValue(botAI);
     }
-    static UntypedValue* kalecgos_spectral_rift(PlayerbotAI* botAI) {
+    static UntypedValue* kalecgos_spectral_rift(PlayerbotAI* botAI)
+    {
         return new KalecgosSpectralRiftValue(botAI);
     }
-    static UntypedValue* muru_singularity(PlayerbotAI* botAI) {
+    static UntypedValue* muru_singularity(PlayerbotAI* botAI)
+    {
         return new MuruSingularityValue(botAI);
     }
-    static UntypedValue* kiljaeden_dragon_orbs(PlayerbotAI* botAI) {
+    static UntypedValue* kiljaeden_dragon_orbs(PlayerbotAI* botAI)
+    {
         return new KiljaedenDragonOrbsValue(botAI);
     }
-    static UntypedValue* kiljaeden_hands(PlayerbotAI* botAI) {
+    static UntypedValue* kiljaeden_hands(PlayerbotAI* botAI)
+    {
         return new KiljaedenHandsValue(botAI);
     }
 };

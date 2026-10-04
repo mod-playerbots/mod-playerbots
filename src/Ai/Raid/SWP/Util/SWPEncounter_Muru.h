@@ -57,6 +57,8 @@ inline constexpr float MURU_MAX_DPS_HP_PERCENT = 97.0f;
 inline constexpr uint32 MURU_ENCOUNTER_TARGETS_CACHE_INTERVAL_MS = 200;
 // For the "muru void zones" value.
 inline constexpr uint32 VOID_ZONE_CACHE_INTERVAL_MS = 200;
+// For the "muru dark fiends" value.
+inline constexpr uint32 DARK_FIEND_CACHE_INTERVAL_MS = 200;
 // For the "muru singularity" value. Only one exists at a time: Entropius casts Black Hole every
 // 29s, and Singularities despawn after 18s.
 inline constexpr uint32 SINGULARITY_CACHE_INTERVAL_MS = 200;
@@ -129,6 +131,11 @@ Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI);
 Position const& GetAssignedVoidSentinelTankPosition(Unit* voidSentinel);
 bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI);
 GuidVector FindMuruVoidZoneGuids(Player* bot);
+GuidVector FindMuruDarkFiendGuids(Player* bot);
+// The living Dark Fiends from the "muru dark fiends" value, within DARK_FIEND_DISPEL_SEARCH_RADIUS.
+std::vector<Creature*> GetMuruDarkFiends(PlayerbotAI* botAI);
+// The nearest of them within radius of the bot, edge to edge, as FindNearestCreature() measures.
+Creature* GetNearestMuruDarkFiend(PlayerbotAI* botAI, float radius);
 ObjectGuid FindMuruSingularityGuid(Player* bot);
 Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI);
 Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI);

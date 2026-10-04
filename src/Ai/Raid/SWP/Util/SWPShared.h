@@ -9,9 +9,12 @@
 
 #include "Common.h"
 #include "ObjectGuid.h"
+#include "Position.h"
 #include <type_traits>
 
 class Player;
+class PlayerbotAI;
+class Unit;
 
 namespace SwpHelpers
 {
@@ -45,11 +48,7 @@ enum class SwpSpells : uint32
     SPELL_ENCAPSULATE                  = 45661,
     SPELL_GAS_NOVA                     = 45855,
     SPELL_FELMYST_SPEED_BURST          = 45495,
-    SPELL_FOG_OF_CORRUPTION            = 45582,
     SPELL_FOG_OF_CORRUPTION_CHARM      = 45717,
-    SPELL_FELMYST_STRAFE_TOP           = 45585,
-    SPELL_FELMYST_STRAFE_MIDDLE        = 45633,
-    SPELL_FELMYST_STRAFE_BOTTOM        = 45635,
 
     // Eredar Twins
     SPELL_BLAZE                        = 45235,
@@ -76,6 +75,7 @@ enum class SwpSpells : uint32
     SPELL_SHADOW_SPIKE                 = 46680,
 
     // Hunter
+    SPELL_MISDIRECTION_CAST            = 34477,
     SPELL_MISDIRECTION                 = 35079,
 
     // Mage
@@ -147,6 +147,10 @@ enum class SwpObjects : uint32
 
 inline constexpr uint32 SWP_MAP_ID = 580;
 
+// Steps short enough to navigate poor terrain, matching the standard in EncounterHelpers.
+inline constexpr float PATH_STEP_DISTANCE = 3.5f;
+inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
+
 // Ability reaches from SpellRange.dbc (MaxRangeHostile). _REACH is the distance from the caster to
 // a target; _RADIUS is the area around the caster. Both are the raw dbc figures. A single-target
 // cast counts both combat reaches, so using unmodified _REACH is conservative.
@@ -184,6 +188,20 @@ float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcW
 uint32 GetManualCastCooldown(uint32 spellId);
 // Same as above, except for enforcing a GCD for abilities with no cooldowns.
 uint32 GetManualCastGlobalCooldown(uint32 spellId);
+// Misdirection on the tank, then Steady Shot on the target while it is up, to spend it.
+bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
+// One step along the bot's path to a point, stopping short of it by stopDistance. The step
+// follows the path corner-by-corner, rather than aiming at the far end of it, so a bot can move
+// around an obstacle between it and the point.
+bool GetPathStepTowardPoint(
+    Player* bot, Position const& destination, float stopDistance, float stepDistance,
+    float& stepX, float& stepY);
+// GetStepToPosition() from EncounterHelpers, but each step follows the path. Pass the unit being
+// tanked as facing to walk the step backwards when it leads away from that unit. Returns false
+// once the bot is within arrivalDist or when there is no path. Pass the bot's Z to MoveTo().
+bool GetPathStepToPosition(
+    Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
+    float& stepY, bool& backwards);
 
 }
 

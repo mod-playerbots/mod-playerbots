@@ -32,8 +32,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kalecgos should communicate boss health",
         { NextAction("kalecgos announce boss health", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("kalecgos pulling boss",
-        { NextAction("kalecgos misdirect boss to main tank", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("kalecgos hunter should misdirect",
+        { NextAction("kalecgos misdirect to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kalecgos requires tank rotation",
         { NextAction("kalecgos surface tank position dragon", ACTION_RAID) }));
@@ -54,8 +54,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("kalecgos return to spectral realm ground", ACTION_EMERGENCY + 10) }));
 
     // Brutallus
-    triggers.push_back(new TriggerNode("brutallus pulling boss",
-        { NextAction("brutallus misdirect boss to main tank", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("brutallus hunter should misdirect",
+        { NextAction("brutallus misdirect to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("brutallus requires two tanks",
         { NextAction("brutallus tanks position and swap", ACTION_RAID) }));
@@ -70,8 +70,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("brutallus isolate burn", ACTION_EMERGENCY + 1) }));
 
     // Felmyst
-    triggers.push_back(new TriggerNode("felmyst pulling boss",
-        { NextAction("felmyst misdirect boss to main tank", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("felmyst hunter should misdirect",
+        { NextAction("felmyst misdirect to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("felmyst ground phase should be tanked",
         { NextAction("felmyst main tank position boss on ground", ACTION_RAID) }));
@@ -116,8 +116,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("eredar twins should announce alythess tank",
         { NextAction("eredar twins announce alythess tank", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("eredar twins pulling bosses",
-        { NextAction("eredar twins misdirect bosses to tanks", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("eredar twins hunter should misdirect",
+        { NextAction("eredar twins misdirect to tanks", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("eredar twins sacrolash requires two tanks",
         { NextAction("eredar twins position sacrolash tanks", ACTION_RAID) }));
@@ -145,8 +145,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("eredar twins move away from sacrolash victim", ACTION_EMERGENCY + 10) }));
 
     // M'uru
-    triggers.push_back(new TriggerNode("m'uru void sentinel or entropius has appeared",
-        { NextAction("m'uru misdirect enemies to tanks", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("m'uru hunter should misdirect new enemy",
+        { NextAction("m'uru misdirect enemy to tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("m'uru transformed into entropius",
         { NextAction("m'uru main tank pick up entropius", ACTION_RAID + 2) }));
@@ -154,7 +154,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru ranged should stack or spread",
         { NextAction("m'uru position ranged by phase", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("m'uru void sentinel pulses shadow",
+    triggers.push_back(new TriggerNode("m'uru void sentinel should be tanked",
         { NextAction("m'uru tanks move sentinel to safe position", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("m'uru adds spawn at entrance",
@@ -169,13 +169,13 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru darkness is coming",
         { NextAction("m'uru melee flee the darkness", ACTION_EMERGENCY + 8) }));
 
-    triggers.push_back(new TriggerNode("m'uru berserker is buffed with flurry",
+    triggers.push_back(new TriggerNode("m'uru berserker has flurry",
         { NextAction("m'uru cast stun on berserker", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("m'uru fury mage casting fel fireball",
         { NextAction("m'uru interrupt fel fireball", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("m'uru fury mage is buffed with spell fury",
+    triggers.push_back(new TriggerNode("m'uru fury mage has spell fury",
         { NextAction("m'uru cast spellsteal on spell fury", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("m'uru void spawn available for enslave",
@@ -184,7 +184,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru warlock has enslaved void spawn",
         { NextAction("m'uru void spawn cast shadow bolt volley", ACTION_RAID + 4) }));
 
-    triggers.push_back(new TriggerNode("m'uru entropius darkness pools spawn dark fiends",
+    triggers.push_back(new TriggerNode("m'uru entropius summons void zones",
         { NextAction("m'uru keep distance from dark fiends", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("m'uru the singularity is near",
@@ -227,13 +227,14 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // General
-    multipliers.push_back(new SunwellNoEncounterDrinkingMultiplier(botAI));
+    // multipliers.push_back(new SunwellNoEncounterDrinkingMultiplier(botAI));
 
     // Trash
     multipliers.push_back(new VolatileFiendRestrictApproachMultiplier(botAI));
 
     // Shared Boss
     multipliers.push_back(new SunwellControlMisdirectionMultiplier(botAI));
+    multipliers.push_back(new SunwellDelayDpsCooldownsMultiplier(botAI));
 
     // Kalecgos
     multipliers.push_back(new KalecgosWaitToDecurseMultiplier(botAI));
@@ -241,13 +242,11 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new KalecgosRestrictTauntMultiplier(botAI));
     multipliers.push_back(new KalecgosSuppressAssistTankPullThreatMultiplier(botAI));
     multipliers.push_back(new KalecgosEnterSpectralRiftMultiplier(botAI));
-    multipliers.push_back(new KalecgosDelayCooldownsForSathrovarrMultiplier(botAI));
 
     // Brutallus
     multipliers.push_back(new BrutallusControlMovementMultiplier(botAI));
     multipliers.push_back(new BrutallusNoKillingSpreeWhenNearbyBurnMultiplier(botAI));
     multipliers.push_back(new BrutallusRestrictTauntMultiplier(botAI));
-    multipliers.push_back(new BrutallusDelayCooldownsMultiplier(botAI));
 
     // Felmyst
     multipliers.push_back(new FelmystControlMovementMultiplier(botAI));
@@ -257,7 +256,6 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FelmystPrioritizeFogAvoidanceMultiplier(botAI));
     multipliers.push_back(new FelmystFocusAttacksOnCharmedPlayerMultiplier(botAI));
     multipliers.push_back(new FelmystDontDotAddsMultiplier(botAI));
-    multipliers.push_back(new FelmystDelayCooldownsMultiplier(botAI));
 
     // Eredar Twins
     multipliers.push_back(new EredarTwinsDisableAutoTargetingMultiplier(botAI));
@@ -265,15 +263,12 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
     multipliers.push_back(new EredarTwinsIsolateConflagrationMultiplier(botAI));
-    multipliers.push_back(new EredarTwinsDelayCooldownsMultiplier(botAI));
 
     // M'uru
     multipliers.push_back(new MuruDisableDefaultTargetingMultiplier(botAI));
     multipliers.push_back(new MuruControlMovementMultiplier(botAI));
-    multipliers.push_back(new MuruDelayCooldownsMultiplier(botAI));
 
     // Kil'jaeden <The Deceiver>
-    multipliers.push_back(new KiljaedenDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new KiljaedenSingleTargetHandsMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlMovementAndTargetingMultiplier(botAI));
     multipliers.push_back(new KiljaedenPrioritizeDarknessProtectionMultiplier(botAI));
