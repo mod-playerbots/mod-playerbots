@@ -10,6 +10,7 @@
 #include "ChatHelper.h"
 #include "Corpse.h"
 #include "Creature.h"
+#include "GameEventMgr.h"
 #include "Log.h"
 #include "Map.h"
 #include "MapCollisionData.h"
@@ -4954,11 +4955,22 @@ void TravelMgr::PrepareQuestGiverTeleportIndex()
     int32 window = sPlayerbotAIConfig.questGiverTeleportLevelWindow;
     uint32 candidateCount = 0;
 
+    // Spawns tagged for a positive game event sit in the upper half of GameEventCreatureGuids and
+    // only exist while the event runs (e.g. the AQ War Effort givers). `creature_queststarter` and
+    // `CanTakeQuest` ignore event state, so without this they would be indexed all year.
+    std::unordered_set<ObjectGuid::LowType> eventSpawns;
+    auto const& eventCreatureGuids = sGameEventMgr->GameEventCreatureGuids;
+    for (size_t i = sGameEventMgr->GetEventMap().size(); i < eventCreatureGuids.size(); ++i)
+        eventSpawns.insert(eventCreatureGuids[i].begin(), eventCreatureGuids[i].end());
+
     // One pass over all world creature spawns (the same pass PrepareDestinationCache does).
     // Only entries listed in `creature_queststarter` yield candidates; everything else
     // produces an empty relation range, so this stays cheap even over ~125k spawns.
     for (auto const& [guid, creData] : sObjectMgr->GetAllCreatureData())
     {
+        if (eventSpawns.count(guid))
+            continue;
+
         if (std::find(sPlayerbotAIConfig.randomBotMaps.begin(), sPlayerbotAIConfig.randomBotMaps.end(),
                       creData.mapid) == sPlayerbotAIConfig.randomBotMaps.end())
             continue;
