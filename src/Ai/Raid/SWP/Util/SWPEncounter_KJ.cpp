@@ -33,10 +33,8 @@ uint32 GetDragonAppliedAuraSpell(uint32 spellId)
     {
         case Id(SwpSpells::SPELL_DRAGON_BREATH_HASTE):
             return Id(SwpSpells::SPELL_DRAGON_BREATH_HASTE);
-
         case Id(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE):
             return Id(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE);
-
         default:
             return 0;
     }

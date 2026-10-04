@@ -62,6 +62,19 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class SunwellDelayDpsCooldownsMultiplier : public SunwellEncounterMultiplier
+{
+public:
+    SunwellDelayDpsCooldownsMultiplier(PlayerbotAI* botAI)
+        : SunwellEncounterMultiplier(botAI, "sunwell delay dps cooldowns") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+
+private:
+    uint32 _tempLogMs = 0; // TEMP LOG
+};
+
 // Kalecgos
 
 class KalecgosWaitToDecurseMultiplier : public SunwellEncounterMultiplier
@@ -114,16 +127,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class KalecgosDelayCooldownsForSathrovarrMultiplier : public SunwellEncounterMultiplier
-{
-public:
-    KalecgosDelayCooldownsForSathrovarrMultiplier(PlayerbotAI* botAI)
-        : SunwellEncounterMultiplier(botAI, "kalecgos delay cooldowns for sathrovarr") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 // Brutallus
 
 class BrutallusControlMovementMultiplier : public SunwellEncounterMultiplier
@@ -151,16 +154,6 @@ class BrutallusRestrictTauntMultiplier : public SunwellEncounterMultiplier
 public:
     BrutallusRestrictTauntMultiplier(PlayerbotAI* botAI)
         : SunwellEncounterMultiplier(botAI, "brutallus restrict taunt") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
-class BrutallusDelayCooldownsMultiplier : public SunwellEncounterMultiplier
-{
-public:
-    BrutallusDelayCooldownsMultiplier(PlayerbotAI* botAI)
-        : SunwellEncounterMultiplier(botAI, "brutallus delay cooldowns") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -238,16 +231,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class FelmystDelayCooldownsMultiplier : public SunwellEncounterMultiplier
-{
-public:
-    FelmystDelayCooldownsMultiplier(PlayerbotAI* botAI)
-        : SunwellEncounterMultiplier(botAI, "felmyst delay cooldowns") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 // Eredar Twins
 
 class EredarTwinsDisableAutoTargetingMultiplier : public SunwellEncounterMultiplier
@@ -300,16 +283,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class EredarTwinsDelayCooldownsMultiplier : public SunwellEncounterMultiplier
-{
-public:
-    EredarTwinsDelayCooldownsMultiplier(PlayerbotAI* botAI)
-        : SunwellEncounterMultiplier(botAI, "eredar twins delay cooldowns") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 // M'uru
 
 class MuruDisableDefaultTargetingMultiplier : public SunwellEncounterMultiplier
@@ -332,37 +305,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class MuruDelayCooldownsMultiplier : public SunwellEncounterMultiplier
-{
-public:
-    MuruDelayCooldownsMultiplier(PlayerbotAI* botAI)
-        : SunwellEncounterMultiplier(botAI, "m'uru delay cooldowns") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 // Kil'jaeden <The Deceiver>
 
-// The next two are ungated for the reason given in SWPTriggers.h: they run during the Hands of
-// the Deceiver phase, which precedes IN_PROGRESS. Holding cooldowns matters most there, and both
-// are suppression multipliers, so the gated default of 1.0f would permit precisely what they
-// exist to forbid.
-
-class KiljaedenDelayCooldownsMultiplier : public Multiplier
-{
-public:
-    KiljaedenDelayCooldownsMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "kil'jaeden delay cooldowns") {}
-    float GetValue(Action* action) override;
-};
-
-class KiljaedenSingleTargetHandsMultiplier : public Multiplier
+class KiljaedenSingleTargetHandsMultiplier : public SunwellEncounterMultiplier
 {
 public:
     KiljaedenSingleTargetHandsMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "kil'jaeden single target hands") {}
-    float GetValue(Action* action) override;
+        : SunwellEncounterMultiplier(botAI, "kil'jaeden single target hands") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class KiljaedenControlMovementAndTargetingMultiplier : public SunwellEncounterMultiplier

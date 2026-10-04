@@ -10,7 +10,6 @@
 #include "PlayerbotTextMgr.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPShared.h"
-#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <string>
@@ -37,10 +36,14 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     }
 
     constexpr float arrivalDist = 3.0f;
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(
+    if (!GetPathStepToPosition(
             bot, GetFelmystMainTankGroundPosition(bot), arrivalDist, felmyst, moveX, moveY,
             backwards))
     {
@@ -49,7 +52,7 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
 
     return MoveTo(
         SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        priority, true, backwards);
 }
 
 bool FelmystRangedStackInThreeGroupsAction::Execute(Event /*event*/)
@@ -64,9 +67,22 @@ bool FelmystRangedStackInThreeGroupsAction::Execute(Event /*event*/)
     if (!TryGetFelmystRangedPosition(bot, felmyst, position))
         return false;
 
-    return MoveInside(
-        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        FELMYST_RANGED_GROUP_RADIUS, MovementPriority::MOVEMENT_COMBAT);
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetPathStepToPosition(
+            bot, position, FELMYST_RANGED_GROUP_RADIUS, nullptr, moveX, moveY, backwards))
+    {
+        return false;
+    }
+
+    return MoveTo(
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        priority, true, false);
 }
 
 bool FelmystMeleeStackBehindBossAction::Execute(Event /*event*/)
@@ -81,12 +97,20 @@ bool FelmystMeleeStackBehindBossAction::Execute(Event /*event*/)
     if (!TryGetFelmystGroundStackPosition(bot, felmyst, FelmystGroundStack::Melee, position))
         return false;
 
-    if (bot->GetExactDist2d(position) <= 0.25f)
+    constexpr float arrivalDist = 0.25f;
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetPathStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
-        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        priority, true, false);
 }
 
 bool FelmystRemoveEncapsulateAction::Execute(Event /*event*/)
@@ -121,9 +145,22 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
         if (!TryGetFelmystGroundStackPosition(bot, felmyst, stack, position))
             return false;
 
-        return MoveInside(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-            FELMYST_RANGED_GROUP_RADIUS, MovementPriority::MOVEMENT_FORCED);
+        constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+        if (IsWaitingForLastMove(priority))
+            return false;
+
+        float moveX;
+        float moveY;
+        bool backwards;
+        if (!GetPathStepToPosition(
+                bot, position, FELMYST_RANGED_GROUP_RADIUS, nullptr, moveX, moveY, backwards))
+        {
+            return false;
+        }
+
+        return MoveTo(
+            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            priority, true, false);
     };
 
     if (targetStack == FelmystGroundStack::Left || targetStack == FelmystGroundStack::Right)
@@ -286,49 +323,23 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor(bool unrestricted)
 bool FelmystAvoidDemonicVaporAction::MoveToFlightLeader(Player* leader)
 {
     constexpr float followDist = 5.0f;
-    float const currentDistance = bot->GetExactDist2d(leader);
-    if (currentDistance <= followDist)
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
         return false;
 
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const botZ = bot->GetPositionZ();
-
-    float const leaderX = leader->GetPositionX();
-    float const leaderY = leader->GetPositionY();
-    float const leaderZ = leader->GetPositionZ();
-
-    float const toPosX = leaderX - botX;
-    float const toPosY = leaderY - botY;
-    float const toPosZ = leaderZ - botZ;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetPathStepToPosition(
+            bot, leader->GetPosition(), followDist, nullptr, moveX, moveY, backwards))
+    {
+        return false;
+    }
 
     bot->CastStop();
-
-    // 1) Try exact leader position
-    if (MoveTo(
-            SWP_MAP_ID, leaderX, leaderY, leaderZ, false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false))
-    {
-        return true;
-    }
-
-    // 2) Try leader XY with bot's own Z
-    if (MoveTo(
-            SWP_MAP_ID, leaderX, leaderY, botZ, false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false))
-    {
-        return true;
-    }
-
-    // 3) Try an incremental step toward the leader with linearly interpolated Z.
-    float const moveDist = std::min(3.5f, currentDistance);
-    float const moveX = botX + (toPosX / currentDistance) * moveDist;
-    float const moveY = botY + (toPosY / currentDistance) * moveDist;
-    float const moveZ = botZ + (toPosZ / currentDistance) * moveDist;
-
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        priority, true, false);
 }
 
 void FelmystAvoidDemonicVaporAction::AnnounceFlightLeader(Player* leader)
@@ -348,22 +359,20 @@ bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
     if (!TryGetFelmystDemonicVaporKiteDestination(bot, destination))
         return false;
 
-    float const distToDestination = bot->GetExactDist2d(destination);
-    if (distToDestination <= 0.5f)
+    constexpr float arrivalDist = 0.5f;
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
         return false;
 
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = destination.GetPositionX() - botX;
-    float const toPosY = destination.GetPositionY() - botY;
-
-    float const moveDist = std::min(3.5f, distToDestination);
-    float const moveX = botX + (toPosX / distToDestination) * moveDist;
-    float const moveY = botY + (toPosY / distToDestination) * moveDist;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetPathStepToPosition(bot, destination, arrivalDist, nullptr, moveX, moveY, backwards))
+        return false;
 
     return MoveTo(
         SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        priority, true, false);
 }
 
 bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)

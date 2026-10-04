@@ -64,10 +64,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class SunwellMisdirectBossToMainTankAction : public Action
+class SunwellMisdirectToMainTankAction : public Action
 {
 public:
-    SunwellMisdirectBossToMainTankAction(
+    SunwellMisdirectToMainTankAction(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
         : Action(botAI, name), _bossName(bossName) {}
     bool Execute(Event event) override;
@@ -178,6 +178,9 @@ public:
     BrutallusPositionRangedInTwoGroupsAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "brutallus position ranged in two groups") {}
     bool Execute(Event event) override;
+
+private:
+    bool StepToPosition(Position const& position, float arrivalDist);
 };
 
 class BrutallusIsolateBurnAction : public MovementAction
@@ -189,6 +192,7 @@ public:
 
 private:
     bool RemoveBurnWithCooldown();
+    bool StepToPosition(Position const& position, float arrivalDist);
 };
 
 // Felmyst
@@ -320,11 +324,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class EredarTwinsMisdirectBossesToTanksAction : public Action
+class EredarTwinsMisdirectToTanksAction : public Action
 {
 public:
-    EredarTwinsMisdirectBossesToTanksAction(PlayerbotAI* botAI)
-        : Action(botAI, "eredar twins misdirect bosses to tanks") {}
+    EredarTwinsMisdirectToTanksAction(PlayerbotAI* botAI)
+        : Action(botAI, "eredar twins misdirect to tanks") {}
     bool Execute(Event event) override;
 };
 
@@ -342,16 +346,21 @@ public:
     EredarTwinsAlythessTankMoveOutOfBlazeAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "eredar twins alythess tank move out of blaze") {}
     bool Execute(Event event) override;
-    bool ResetAlythessTankStep()
+    bool ResetAlythessTankState()
     {
-        if (!_alythessTankStep)
+        if (!_alythessTankStep && _lastBlazeGuid.IsEmpty())
             return false;
         _alythessTankStep = 0;
+        _lastBlazeGuid.Clear();
         return true;
     }
 
 private:
+    bool StepToPosition(Unit* alythess, Position const& position, float arrivalDist);
+
     uint8 _alythessTankStep = 0;
+    // The last Blaze the bot moved away from, so one Blaze moves it only one step
+    ObjectGuid _lastBlazeGuid;
 };
 
 class EredarTwinsRangedStackAtBalconyEdgeAction : public MovementAction
@@ -396,11 +405,11 @@ public:
 
 // M'uru
 
-class MuruMisdirectEnemiesToTanksAction : public Action
+class MuruMisdirectEnemyToTankAction : public Action
 {
 public:
-    MuruMisdirectEnemiesToTanksAction(PlayerbotAI* botAI)
-        : Action(botAI, "m'uru misdirect enemies to tanks") {}
+    MuruMisdirectEnemyToTankAction(PlayerbotAI* botAI)
+        : Action(botAI, "m'uru misdirect enemy to tank") {}
     bool Execute(Event event) override;
 };
 

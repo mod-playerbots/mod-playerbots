@@ -28,9 +28,17 @@ bool EredarTwinsMeleeJumpFromBalconyAction::Execute(Event /*event*/)
 
     if (distanceToJumpPos > arrivalDistance)
     {
+        float moveX;
+        float moveY;
+        bool backwards;
+        if (!GetStepToPosition(
+                bot, jumpPosition, arrivalDistance, nullptr, moveX, moveY, backwards))
+        {
+            return false;
+        }
+
         return MoveTo(
-            SWP_MAP_ID, jumpPosition.GetPositionX(), jumpPosition.GetPositionY(),
-            jumpPosition.GetPositionZ(), false, false, false, false,
+            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -58,34 +66,38 @@ bool EredarTwinsAnnounceAlythessTankAction::Execute(Event /*event*/)
     switch (source)
     {
         case AlythessTankSource::MainTankPaladin:
+        {
             text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "eredar_twins_alythess_tank_main_tank_paladin",
                 "Alythess requires a Paladin tank. %bot is the main tank and a Paladin and is "
                 "assigned to tank Alythess.",
                 placeholders);
             break;
-
+        }
         case AlythessTankSource::PaladinTank:
+        {
             text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "eredar_twins_alythess_tank_paladin_tank",
                 "Alythess requires a Paladin tank. The main tank is not a Paladin. %bot is the "
                 "best-geared Paladin tank and is assigned to tank Alythess.",
                 placeholders);
             break;
-
+        }
         default:
+        {
             text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "eredar_twins_alythess_tank_no_paladin",
                 "Alythess requires a Paladin tank. However, no Paladin tank is present. "
                 "Therefore, the main tank, %bot, is assigned to tank Alythess.",
                 placeholders);
             break;
+        }
     }
 
     return botAI->SayToRaid(text);
 }
 
-bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
+bool EredarTwinsMisdirectToTanksAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -143,13 +155,7 @@ bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
     if (!boss || !tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", tank))
-        return botAI->CastSpell("misdirection", tank);
-
-    if (!bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)))
-        return false;
-
-    return botAI->CanCastSpell("steady shot", boss) && botAI->CastSpell("steady shot", boss);
+    return MisdirectTargetToTank(botAI, boss, tank);
 }
 
 bool EredarTwinsPositionSacrolashTanksAction::Execute(Event /*event*/)
@@ -227,7 +233,8 @@ bool EredarTwinsAlythessTankMoveOutOfBlazeAction::Execute(Event /*event*/)
     if (alythess->GetVictim() != bot)
         return false;
 
-    if (distToPosition <= maxDistance && ShouldAdvanceAlythessTankPosition(alythess, bot))
+    if (distToPosition <= maxDistance &&
+        ShouldAdvanceAlythessTankPosition(alythess, bot, _lastBlazeGuid))
     {
         uint8 safeIndex = index;
         if (!findSafeAlythessTankIndex(index, false, safeIndex))
@@ -238,20 +245,26 @@ bool EredarTwinsAlythessTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         Position const newPos = GetAlythessTankPosition(alythess, index);
 
         if (bot->GetExactDist2d(newPos) > maxDistance)
-        {
-            return MoveTo(
-                SWP_MAP_ID, newPos.GetPositionX(), newPos.GetPositionY(), newPos.GetPositionZ(),
-                false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
+            return StepToPosition(alythess, newPos, maxDistance);
     }
     else if (distToPosition > maxDistance)
-    {
-        return MoveTo(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
+        return StepToPosition(alythess, position, maxDistance);
 
     return false;
+}
+
+bool EredarTwinsAlythessTankMoveOutOfBlazeAction::StepToPosition(
+    Unit* alythess, Position const& position, float arrivalDist)
+{
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, alythess, moveX, moveY, backwards))
+        return false;
+
+    return MoveTo(
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool EredarTwinsRangedStackAtBalconyEdgeAction::Execute(Event /*event*/)
@@ -279,9 +292,17 @@ bool EredarTwinsRangedStackAtBalconyEdgeAction::Execute(Event /*event*/)
 
         if (distanceToJumpPos > arrivalDistance)
         {
+            float moveX;
+            float moveY;
+            bool backwards;
+            if (!GetStepToPosition(
+                    bot, jumpPosition, arrivalDistance, nullptr, moveX, moveY, backwards))
+            {
+                return false;
+            }
+
             return MoveTo(
-                SWP_MAP_ID, jumpPosition.GetPositionX(), jumpPosition.GetPositionY(),
-                jumpPosition.GetPositionZ(), false, false, false, false,
+                SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                 MovementPriority::MOVEMENT_FORCED, true, false);
         }
 
@@ -303,12 +324,16 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
         GetEredarTwinsP2RangedPosition(alythess) :
         GetEredarTwinsP2MeleePosition(alythess);
 
-    if (bot->GetExactDist2d(position) <= 0.5f)
+    constexpr float arrivalDist = 0.5f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
-        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool EredarTwinsDpsPrioritizeSacrolashAction::Execute(Event /*event*/)

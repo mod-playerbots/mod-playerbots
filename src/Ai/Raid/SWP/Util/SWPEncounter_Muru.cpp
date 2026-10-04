@@ -427,6 +427,59 @@ GuidVector FindMuruVoidZoneGuids(Player* bot)
     return guids;
 }
 
+GuidVector FindMuruDarkFiendGuids(Player* bot)
+{
+    std::list<Creature*> darkFiends;
+    bot->GetCreatureListWithEntryInGrid(
+        darkFiends, Id(SwpNpcs::NPC_DARK_FIEND), DARK_FIEND_DISPEL_SEARCH_RADIUS);
+
+    GuidVector guids;
+    guids.reserve(darkFiends.size());
+    for (Creature* darkFiend : darkFiends)
+    {
+        if (darkFiend && darkFiend->IsAlive())
+            guids.push_back(darkFiend->GetGUID());
+    }
+
+    return guids;
+}
+
+std::vector<Creature*> GetMuruDarkFiends(PlayerbotAI* botAI)
+{
+    GuidVector const& guids =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("muru dark fiends")->RefGet();
+
+    std::vector<Creature*> darkFiends;
+    darkFiends.reserve(guids.size());
+    for (ObjectGuid const& guid : guids)
+    {
+        Unit* unit = ResolveLivingUnit(botAI, guid);
+        if (Creature* darkFiend = unit ? unit->ToCreature() : nullptr)
+            darkFiends.push_back(darkFiend);
+    }
+
+    return darkFiends;
+}
+
+Creature* GetNearestMuruDarkFiend(PlayerbotAI* botAI, float radius)
+{
+    Player* bot = botAI->GetBot();
+    Creature* nearest = nullptr;
+    float nearestDistance = radius;
+
+    for (Creature* darkFiend : GetMuruDarkFiends(botAI))
+    {
+        float const distance = bot->GetDistance(darkFiend);
+        if (distance > nearestDistance)
+            continue;
+
+        nearest = darkFiend;
+        nearestDistance = distance;
+    }
+
+    return nearest;
+}
+
 Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();

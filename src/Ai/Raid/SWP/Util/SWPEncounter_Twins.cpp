@@ -106,8 +106,6 @@ std::unordered_map<uint32, uint32> eredarTwinsDpsHoldStartMs;
 
 std::unordered_map<uint32, EredarTwinsTankAssignment> eredarTwinsTankAssignments;
 
-std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
-
 Position GetAlythessTankPosition(Unit* alythess, uint8 index)
 {
     if (index >= ALYTHESS_TANK_POSITIONS.size())
@@ -311,27 +309,24 @@ bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position)
     return true;
 }
 
-bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
+bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot, ObjectGuid& lastBlazeGuid)
 {
     if (!alythess)
         return false;
-
-    ObjectGuid const botGuid = bot->GetGUID();
 
     GameObject* blazeObject =
         bot->FindNearestGameObject(Id(SwpObjects::GO_BLAZE), BLAZE_DANGER_RADIUS);
     if (!blazeObject)
     {
-        alythessTankLastBlazeGuid.erase(botGuid);
+        lastBlazeGuid.Clear();
         return false;
     }
 
     ObjectGuid const blazeGuid = blazeObject->GetGUID();
-    auto const lastBlaze = alythessTankLastBlazeGuid.find(botGuid);
-    if (lastBlaze != alythessTankLastBlazeGuid.end() && lastBlaze->second == blazeGuid)
+    if (lastBlazeGuid == blazeGuid)
         return false;
 
-    alythessTankLastBlazeGuid[botGuid] = blazeGuid;
+    lastBlazeGuid = blazeGuid;
     return true;
 }
 

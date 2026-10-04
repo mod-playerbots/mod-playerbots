@@ -32,7 +32,8 @@ public:
         creators["kalecgos should communicate boss health"] =
             &RaidSwpTriggerContext::kalecgos_should_communicate_boss_health;
 
-        creators["kalecgos pulling boss"] = &RaidSwpTriggerContext::kalecgos_pulling_boss;
+        creators["kalecgos hunter should misdirect"] =
+            &RaidSwpTriggerContext::kalecgos_hunter_should_misdirect;
 
         creators["kalecgos requires tank rotation"] =
             &RaidSwpTriggerContext::kalecgos_requires_tank_rotation;
@@ -53,7 +54,8 @@ public:
             &RaidSwpTriggerContext::kalecgos_bots_dont_observe_gravity;
 
         // Brutallus
-        creators["brutallus pulling boss"] = &RaidSwpTriggerContext::brutallus_pulling_boss;
+        creators["brutallus hunter should misdirect"] =
+            &RaidSwpTriggerContext::brutallus_hunter_should_misdirect;
 
         creators["brutallus requires two tanks"] =
             &RaidSwpTriggerContext::brutallus_requires_two_tanks;
@@ -67,7 +69,8 @@ public:
         creators["brutallus burn on non-tank"] = &RaidSwpTriggerContext::brutallus_burn_on_non_tank;
 
         // Felmyst
-        creators["felmyst pulling boss"] = &RaidSwpTriggerContext::felmyst_pulling_boss;
+        creators["felmyst hunter should misdirect"] =
+            &RaidSwpTriggerContext::felmyst_hunter_should_misdirect;
 
         creators["felmyst ground phase should be tanked"] =
             &RaidSwpTriggerContext::felmyst_ground_phase_should_be_tanked;
@@ -112,8 +115,8 @@ public:
         creators["eredar twins should announce alythess tank"] =
             &RaidSwpTriggerContext::eredar_twins_should_announce_alythess_tank;
 
-        creators["eredar twins pulling bosses"] =
-            &RaidSwpTriggerContext::eredar_twins_pulling_bosses;
+        creators["eredar twins hunter should misdirect"] =
+            &RaidSwpTriggerContext::eredar_twins_hunter_should_misdirect;
 
         creators["eredar twins sacrolash requires two tanks"] =
             &RaidSwpTriggerContext::eredar_twins_sacrolash_requires_two_tanks;
@@ -140,8 +143,8 @@ public:
             &RaidSwpTriggerContext::eredar_twins_sacrolash_victim_has_conflagration;
 
         // M'uru
-        creators["m'uru void sentinel or entropius has appeared"] =
-            &RaidSwpTriggerContext::muru_void_sentinel_or_entropius_has_appeared;
+        creators["m'uru hunter should misdirect new enemy"] =
+            &RaidSwpTriggerContext::muru_hunter_should_misdirect_new_enemy;
 
         creators["m'uru transformed into entropius"] =
             &RaidSwpTriggerContext::muru_transformed_into_entropius;
@@ -152,8 +155,8 @@ public:
         creators["m'uru should assign dps priority"] =
             &RaidSwpTriggerContext::muru_should_assign_dps_priority;
 
-        creators["m'uru void sentinel pulses shadow"] =
-            &RaidSwpTriggerContext::muru_void_sentinel_pulses_shadow;
+        creators["m'uru m'uru void sentinel should be tanked"] =
+            &RaidSwpTriggerContext::muru_void_sentinel_should_be_tanked;
 
         creators["m'uru adds spawn at entrance"] =
             &RaidSwpTriggerContext::muru_adds_spawn_at_entrance;
@@ -162,14 +165,14 @@ public:
 
         creators["m'uru darkness is coming"] = &RaidSwpTriggerContext::muru_darkness_is_coming;
 
-        creators["m'uru berserker is buffed with flurry"] =
-            &RaidSwpTriggerContext::muru_berserker_is_buffed_with_flurry;
+        creators["m'uru berserker has flurry"] =
+            &RaidSwpTriggerContext::muru_berserker_has_flurry;
 
         creators["m'uru fury mage casting fel fireball"] =
             &RaidSwpTriggerContext::muru_fury_mage_casting_fel_fireball;
 
-        creators["m'uru fury mage is buffed with spell fury"] =
-            &RaidSwpTriggerContext::muru_fury_mage_is_buffed_with_spell_fury;
+        creators["m'uru fury mage has spell fury"] =
+            &RaidSwpTriggerContext::muru_fury_mage_has_spell_fury;
 
         creators["m'uru void spawn available for enslave"] =
             &RaidSwpTriggerContext::muru_void_spawn_available_for_enslave;
@@ -177,8 +180,8 @@ public:
         creators["m'uru warlock has enslaved void spawn"] =
             &RaidSwpTriggerContext::muru_warlock_has_enslaved_void_spawn;
 
-        creators["m'uru entropius darkness pools spawn dark fiends"] =
-            &RaidSwpTriggerContext::muru_entropius_darkness_pools_spawn_dark_fiends;
+        creators["m'uru entropius summons void zones"] =
+            &RaidSwpTriggerContext::muru_entropius_summons_void_zones;
 
         creators["m'uru the singularity is near"] =
             &RaidSwpTriggerContext::muru_the_singularity_is_near;
@@ -217,216 +220,285 @@ public:
 
 private:
     // General
-    static Trigger* sunwell_no_encounter_in_progress(PlayerbotAI* botAI) {
+    static Trigger* sunwell_no_encounter_in_progress(PlayerbotAI* botAI)
+    {
         return new SunwellNoEncounterInProgressTrigger(botAI);
     }
-    static Trigger* sunwell_aura_to_remove(PlayerbotAI* botAI) {
+    static Trigger* sunwell_aura_to_remove(PlayerbotAI* botAI)
+    {
         return new SunwellAuraToRemoveTrigger(botAI);
     }
 
     // Trash
-    static Trigger* volatile_fiend_self_destructs_when_near(PlayerbotAI* botAI) {
+    static Trigger* volatile_fiend_self_destructs_when_near(PlayerbotAI* botAI)
+    {
         return new VolatileFiendSelfDestructsWhenNearTrigger(botAI);
     }
-    static Trigger* apocalypse_guard_protected_by_infernal_defense(PlayerbotAI* botAI) {
+    static Trigger* apocalypse_guard_protected_by_infernal_defense(PlayerbotAI* botAI)
+    {
         return new ApocalypseGuardProtectedByInfernalDefenseTrigger(botAI);
     }
 
     // Kalecgos
-    static Trigger* kalecgos_pulling_boss(PlayerbotAI* botAI) {
-        return new KalecgosPullingBossTrigger(botAI);
+    static Trigger* kalecgos_hunter_should_misdirect(PlayerbotAI* botAI)
+    {
+        return new SunwellHunterShouldMisdirectTrigger(
+            botAI, "kalecgos hunter should misdirect", "kalecgos");
     }
-    static Trigger* kalecgos_should_communicate_boss_health(PlayerbotAI* botAI) {
+    static Trigger* kalecgos_should_communicate_boss_health(PlayerbotAI* botAI)
+    {
         return new KalecgosShouldCommunicateBossHealthTrigger(botAI);
     }
-    static Trigger* kalecgos_requires_tank_rotation(PlayerbotAI* botAI) {
+    static Trigger* kalecgos_requires_tank_rotation(PlayerbotAI* botAI)
+    {
         return new KalecgosRequiresTankRotationTrigger(botAI);
     }
-    static Trigger* kalecgos_spectral_rift_is_open(PlayerbotAI* botAI) {
+    static Trigger* kalecgos_spectral_rift_is_open(PlayerbotAI* botAI)
+    {
         return new KalecgosSpectralRiftIsOpenTrigger(botAI);
     }
-    static Trigger* kalecgos_ranged_should_spread(PlayerbotAI* botAI) {
+    static Trigger* kalecgos_ranged_should_spread(PlayerbotAI* botAI)
+    {
         return new KalecgosRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* kalecgos_humanoid_kalec_tanks_sathrovarr(PlayerbotAI* botAI) {
+    static Trigger* kalecgos_humanoid_kalec_tanks_sathrovarr(PlayerbotAI* botAI)
+    {
         return new KalecgosHumanoidKalecTanksSathrovarrTrigger(botAI);
     }
-    static Trigger* kalecgos_too_many_arcane_buffet_stacks(PlayerbotAI* botAI) {
+    static Trigger* kalecgos_too_many_arcane_buffet_stacks(PlayerbotAI* botAI)
+    {
         return new KalecgosTooManyArcaneBuffetStacksTrigger(botAI);
     }
-    static Trigger* kalecgos_bots_dont_observe_gravity(PlayerbotAI* botAI) {
+    static Trigger* kalecgos_bots_dont_observe_gravity(PlayerbotAI* botAI)
+    {
         return new KalecgosBotsDontObserveGravityTrigger(botAI);
     }
 
     // Brutallus
-    static Trigger* brutallus_pulling_boss(PlayerbotAI* botAI) {
-        return new BrutallusPullingBossTrigger(botAI);
+    static Trigger* brutallus_hunter_should_misdirect(PlayerbotAI* botAI)
+    {
+        return new SunwellHunterShouldMisdirectTrigger(
+            botAI, "brutallus hunter should misdirect", "brutallus");
     }
-    static Trigger* brutallus_requires_two_tanks(PlayerbotAI* botAI) {
+    static Trigger* brutallus_requires_two_tanks(PlayerbotAI* botAI)
+    {
         return new BrutallusRequiresTwoTanksTrigger(botAI);
     }
-    static Trigger* brutallus_melee_should_stand_in_place(PlayerbotAI* botAI) {
+    static Trigger* brutallus_melee_should_stand_in_place(PlayerbotAI* botAI)
+    {
         return new BrutallusMeleeShouldStandInPlaceTrigger(botAI);
     }
-    static Trigger* brutallus_ranged_should_soak_meteor_slash(PlayerbotAI* botAI) {
+    static Trigger* brutallus_ranged_should_soak_meteor_slash(PlayerbotAI* botAI)
+    {
         return new BrutallusRangedShouldSoakMeteorSlashTrigger(botAI);
     }
-    static Trigger* brutallus_burn_on_non_tank(PlayerbotAI* botAI) {
+    static Trigger* brutallus_burn_on_non_tank(PlayerbotAI* botAI)
+    {
         return new BrutallusBurnOnNonTankTrigger(botAI);
     }
 
     // Felmyst
-    static Trigger* felmyst_pulling_boss(PlayerbotAI* botAI) {
-        return new FelmystPullingBossTrigger(botAI);
+    static Trigger* felmyst_hunter_should_misdirect(PlayerbotAI* botAI)
+    {
+        return new FelmystHunterShouldMisdirectTrigger(botAI);
     }
-    static Trigger* felmyst_ground_phase_should_be_tanked(PlayerbotAI* botAI) {
+    static Trigger* felmyst_ground_phase_should_be_tanked(PlayerbotAI* botAI)
+    {
         return new FelmystGroundPhaseShouldBeTankedTrigger(botAI);
     }
-    static Trigger* felmyst_ranged_should_position_to_dispel_and_flee(PlayerbotAI* botAI) {
+    static Trigger* felmyst_ranged_should_position_to_dispel_and_flee(PlayerbotAI* botAI)
+    {
         return new FelmystRangedShouldPositionToDispelAndFleeTrigger(botAI);
     }
-    static Trigger* felmyst_melee_should_stay_together(PlayerbotAI* botAI) {
+    static Trigger* felmyst_melee_should_stay_together(PlayerbotAI* botAI)
+    {
         return new FelmystMeleeShouldStayTogetherTrigger(botAI);
     }
-    static Trigger* felmyst_encapsulate_on_mage_or_paladin(PlayerbotAI* botAI) {
+    static Trigger* felmyst_encapsulate_on_mage_or_paladin(PlayerbotAI* botAI)
+    {
         return new FelmystEncapsulateOnMageOrPaladinTrigger(botAI);
     }
-    static Trigger* felmyst_near_encapsulated_player(PlayerbotAI* botAI) {
+    static Trigger* felmyst_near_encapsulated_player(PlayerbotAI* botAI)
+    {
         return new FelmystNearEncapsulatedPlayerTrigger(botAI);
     }
-    static Trigger* felmyst_player_has_gas_nova(PlayerbotAI* botAI) {
+    static Trigger* felmyst_player_has_gas_nova(PlayerbotAI* botAI)
+    {
         return new FelmystPlayerHasGasNovaTrigger(botAI);
     }
-    static Trigger* felmyst_should_avoid_demonic_vapor_trails(PlayerbotAI* botAI) {
+    static Trigger* felmyst_should_avoid_demonic_vapor_trails(PlayerbotAI* botAI)
+    {
         return new FelmystShouldAvoidDemonicVaporTrailsTrigger(botAI);
     }
-    static Trigger* felmyst_targeted_by_demonic_vapor(PlayerbotAI* botAI) {
+    static Trigger* felmyst_targeted_by_demonic_vapor(PlayerbotAI* botAI)
+    {
         return new FelmystTargetedByDemonicVaporTrigger(botAI);
     }
-    static Trigger* felmyst_fog_of_corruption_is_active(PlayerbotAI* botAI) {
+    static Trigger* felmyst_fog_of_corruption_is_active(PlayerbotAI* botAI)
+    {
         return new FelmystFogOfCorruptionIsActiveTrigger(botAI);
     }
-    static Trigger* felmyst_melee_cannot_reach_flying_boss(PlayerbotAI* botAI) {
+    static Trigger* felmyst_melee_cannot_reach_flying_boss(PlayerbotAI* botAI)
+    {
         return new FelmystMeleeCannotReachFlyingBossTrigger(botAI);
     }
-    static Trigger* felmyst_player_is_charmed_by_fog(PlayerbotAI* botAI) {
+    static Trigger* felmyst_player_is_charmed_by_fog(PlayerbotAI* botAI)
+    {
         return new FelmystPlayerIsCharmedByFogTrigger(botAI);
     }
-    static Trigger* felmyst_should_hold_dps_while_landing(PlayerbotAI* botAI) {
+    static Trigger* felmyst_should_hold_dps_while_landing(PlayerbotAI* botAI)
+    {
         return new FelmystShouldHoldDpsWhileLandingTrigger(botAI);
     }
 
     // Eredar Twins
-    static Trigger* eredar_twins_melee_is_at_balcony(PlayerbotAI* botAI) {
+    static Trigger* eredar_twins_melee_is_at_balcony(PlayerbotAI* botAI)
+    {
         return new EredarTwinsMeleeIsAtBalconyTrigger(botAI);
     }
-    static Trigger* eredar_twins_should_announce_alythess_tank(PlayerbotAI* botAI) {
+    static Trigger* eredar_twins_should_announce_alythess_tank(PlayerbotAI* botAI)
+    {
         return new EredarTwinsShouldAnnounceAlythessTankTrigger(botAI);
     }
-    static Trigger* eredar_twins_pulling_bosses(PlayerbotAI* botAI) {
-        return new EredarTwinsPullingBossesTrigger(botAI);
+    static Trigger* eredar_twins_hunter_should_misdirect(PlayerbotAI* botAI)
+    {
+        return new SunwellHunterShouldMisdirectTrigger(
+            botAI, "eredar twins hunter should misdirect", "grand warlock alythess");
     }
-    static Trigger* eredar_twins_sacrolash_requires_two_tanks(PlayerbotAI* botAI) {
+    static Trigger* eredar_twins_sacrolash_requires_two_tanks(PlayerbotAI* botAI)
+    {
         return new EredarTwinsSacrolashRequiresTwoTanksTrigger(botAI);
     }
-    static Trigger* eredar_twins_alythess_casts_blaze_on_tank(PlayerbotAI* botAI) {
+    static Trigger* eredar_twins_alythess_casts_blaze_on_tank(PlayerbotAI* botAI)
+    {
         return new EredarTwinsAlythessCastsBlazeOnTankTrigger(botAI);
     }
-    static Trigger* eredar_twins_ranged_needs_los(PlayerbotAI* botAI) {
+    static Trigger* eredar_twins_ranged_needs_los(PlayerbotAI* botAI)
+    {
         return new EredarTwinsRangedNeedsLosTrigger(botAI);
     }
-    static Trigger* eredar_twins_only_alythess_remains(PlayerbotAI* botAI) {
+    static Trigger* eredar_twins_only_alythess_remains(PlayerbotAI* botAI)
+    {
         return new EredarTwinsOnlyAlythessRemainsTrigger(botAI);
     }
-    static Trigger* eredar_twins_too_many_flame_touched_stacks(PlayerbotAI* botAI) {
+    static Trigger* eredar_twins_too_many_flame_touched_stacks(PlayerbotAI* botAI)
+    {
         return new EredarTwinsTooManyFlameTouchedStacksTrigger(botAI);
     }
-    static Trigger* eredar_twins_should_focus_dps(PlayerbotAI* botAI) {
+    static Trigger* eredar_twins_should_focus_dps(PlayerbotAI* botAI)
+    {
         return new EredarTwinsShouldFocusDpsTrigger(botAI);
     }
-    static Trigger* eredar_twins_active_conflagration_target(PlayerbotAI* botAI) {
+    static Trigger* eredar_twins_active_conflagration_target(PlayerbotAI* botAI)
+    {
         return new EredarTwinsActiveConflagrationTargetTrigger(botAI);
     }
-    static Trigger* eredar_twins_sacrolash_victim_has_conflagration(PlayerbotAI* botAI) {
+    static Trigger* eredar_twins_sacrolash_victim_has_conflagration(PlayerbotAI* botAI)
+    {
         return new EredarTwinsSacrolashVictimHasConflagrationTrigger(botAI);
     }
 
     // M'uru
-    static Trigger* muru_void_sentinel_or_entropius_has_appeared(PlayerbotAI* botAI) {
-        return new MuruVoidSentinelOrEntropiusHasAppearedTrigger(botAI);
+    static Trigger* muru_hunter_should_misdirect_new_enemy(PlayerbotAI* botAI)
+    {
+        return new MuruHunterShouldMisdirectNewEnemyTrigger(botAI);
     }
-    static Trigger* muru_transformed_into_entropius(PlayerbotAI* botAI) {
+    static Trigger* muru_transformed_into_entropius(PlayerbotAI* botAI)
+    {
         return new MuruTransformedIntoEntropiusTrigger(botAI);
     }
-    static Trigger* muru_ranged_should_stack_or_spread(PlayerbotAI* botAI) {
+    static Trigger* muru_ranged_should_stack_or_spread(PlayerbotAI* botAI)
+    {
         return new MuruRangedShouldStackOrSpreadTrigger(botAI);
     }
-    static Trigger* muru_should_assign_dps_priority(PlayerbotAI* botAI) {
+    static Trigger* muru_should_assign_dps_priority(PlayerbotAI* botAI)
+    {
         return new MuruShouldAssignDpsPriorityTrigger(botAI);
     }
-    static Trigger* muru_void_sentinel_pulses_shadow(PlayerbotAI* botAI) {
-        return new MuruVoidSentinelPulsesShadowTrigger(botAI);
+    static Trigger* muru_void_sentinel_should_be_tanked(PlayerbotAI* botAI)
+    {
+        return new MuruVoidSentinelShouldBeTankedTrigger(botAI);
     }
-    static Trigger* muru_adds_spawn_at_entrance(PlayerbotAI* botAI) {
+    static Trigger* muru_adds_spawn_at_entrance(PlayerbotAI* botAI)
+    {
         return new MuruAddsSpawnAtEntranceTrigger(botAI);
     }
-    static Trigger* muru_dark_fiends_spawned(PlayerbotAI* botAI) {
+    static Trigger* muru_dark_fiends_spawned(PlayerbotAI* botAI)
+    {
         return new MuruDarkFiendsSpawnedTrigger(botAI);
     }
-    static Trigger* muru_darkness_is_coming(PlayerbotAI* botAI) {
+    static Trigger* muru_darkness_is_coming(PlayerbotAI* botAI)
+    {
         return new MuruDarknessIsComingTrigger(botAI);
     }
-    static Trigger* muru_berserker_is_buffed_with_flurry(PlayerbotAI* botAI) {
-        return new MuruBerserkerIsBuffedWithFlurryTrigger(botAI);
+    static Trigger* muru_berserker_has_flurry(PlayerbotAI* botAI)
+    {
+        return new MuruBerserkerHasFlurryTrigger(botAI);
     }
-    static Trigger* muru_fury_mage_casting_fel_fireball(PlayerbotAI* botAI) {
+    static Trigger* muru_fury_mage_casting_fel_fireball(PlayerbotAI* botAI)
+    {
         return new MuruFuryMageCastingFelFireballTrigger(botAI);
     }
-    static Trigger* muru_fury_mage_is_buffed_with_spell_fury(PlayerbotAI* botAI) {
-        return new MuruFuryMageIsBuffedWithSpellFuryTrigger(botAI);
+    static Trigger* muru_fury_mage_has_spell_fury(PlayerbotAI* botAI)
+    {
+        return new MuruFuryMageHasSpellFuryTrigger(botAI);
     }
-    static Trigger* muru_void_spawn_available_for_enslave(PlayerbotAI* botAI) {
+    static Trigger* muru_void_spawn_available_for_enslave(PlayerbotAI* botAI)
+    {
         return new MuruVoidSpawnAvailableForEnslaveTrigger(botAI);
     }
-    static Trigger* muru_warlock_has_enslaved_void_spawn(PlayerbotAI* botAI) {
+    static Trigger* muru_warlock_has_enslaved_void_spawn(PlayerbotAI* botAI)
+    {
         return new MuruWarlockHasEnslavedVoidSpawnTrigger(botAI);
     }
-    static Trigger* muru_entropius_darkness_pools_spawn_dark_fiends(PlayerbotAI* botAI) {
-        return new MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger(botAI);
+    static Trigger* muru_entropius_summons_void_zones(PlayerbotAI* botAI)
+    {
+        return new MuruEntropiusSummonsVoidZonesTrigger(botAI);
     }
-    static Trigger* muru_the_singularity_is_near(PlayerbotAI* botAI) {
+    static Trigger* muru_the_singularity_is_near(PlayerbotAI* botAI)
+    {
         return new MuruTheSingularityIsNearTrigger(botAI);
     }
 
     // Kil'jaeden <The Deceiver>
-    static Trigger* kiljaeden_should_coordinate_orb_use(PlayerbotAI* botAI) {
+    static Trigger* kiljaeden_should_coordinate_orb_use(PlayerbotAI* botAI)
+    {
         return new KiljaedenShouldCoordinateOrbUseTrigger(botAI);
     }
-    static Trigger* kiljaeden_hands_of_the_deceiver_are_active(PlayerbotAI* botAI) {
+    static Trigger* kiljaeden_hands_of_the_deceiver_are_active(PlayerbotAI* botAI)
+    {
         return new KiljaedenHandsOfTheDeceiverAreActiveTrigger(botAI);
     }
-    static Trigger* kiljaeden_tanks_should_hold_boss_and_reflections(PlayerbotAI* botAI) {
+    static Trigger* kiljaeden_tanks_should_hold_boss_and_reflections(PlayerbotAI* botAI)
+    {
         return new KiljaedenTanksShouldHoldBossAndReflectionsTrigger(botAI);
     }
-    static Trigger* kiljaeden_melee_should_split_into_two_groups(PlayerbotAI* botAI) {
+    static Trigger* kiljaeden_melee_should_split_into_two_groups(PlayerbotAI* botAI)
+    {
         return new KiljaedenMeleeShouldSplitIntoTwoGroupsTrigger(botAI);
     }
-    static Trigger* kiljaeden_ranged_should_spread_in_two_arcs(PlayerbotAI* botAI) {
+    static Trigger* kiljaeden_ranged_should_spread_in_two_arcs(PlayerbotAI* botAI)
+    {
         return new KiljaedenRangedShouldSpreadInTwoArcsTrigger(botAI);
     }
-    static Trigger* kiljaeden_fire_bloom_on_immunity_class(PlayerbotAI* botAI) {
+    static Trigger* kiljaeden_fire_bloom_on_immunity_class(PlayerbotAI* botAI)
+    {
         return new KiljaedenFireBloomOnImmunityClassTrigger(botAI);
     }
-    static Trigger* kiljaeden_says_chaos_destruction_oblivion(PlayerbotAI* botAI) {
+    static Trigger* kiljaeden_says_chaos_destruction_oblivion(PlayerbotAI* botAI)
+    {
         return new KiljaedenSaysChaosDestructionOblivionTrigger(botAI);
     }
-    static Trigger* kiljaeden_dragon_orb_is_active(PlayerbotAI* botAI) {
+    static Trigger* kiljaeden_dragon_orb_is_active(PlayerbotAI* botAI)
+    {
         return new KiljaedenDragonOrbIsActiveTrigger(botAI);
     }
-    static Trigger* kiljaeden_bot_controls_dragon(PlayerbotAI* botAI) {
+    static Trigger* kiljaeden_bot_controls_dragon(PlayerbotAI* botAI)
+    {
         return new KiljaedenBotControlsDragonTrigger(botAI);
     }
-    static Trigger* kiljaeden_stale_root_after_dragon(PlayerbotAI* botAI) {
+    static Trigger* kiljaeden_stale_root_after_dragon(PlayerbotAI* botAI)
+    {
         return new KiljaedenStaleRootAfterDragonTrigger(botAI);
     }
 };

@@ -75,8 +75,6 @@ inline constexpr uint32 HAND_CACHE_INTERVAL_MS = 200;
 // The presence of Dragon Orbs is cached, but GO_FLAG_IN_USE and GO_FLAG_NOT_SELECTABLE are not.
 inline constexpr uint32 DRAGON_ORB_CACHE_INTERVAL_MS = 200;
 
-// Position check to gate trying to find Hands.
-inline constexpr float SUNWELL_CENTER_RADIUS = 100.0f;
 inline constexpr float HAND_SEARCH_RADIUS = 75.0f;
 // Hammer of Justice is a single-target spell that counts both CombatReaches so its actual range is
 // its tooltip range of 10y + 1.5y (player) + 2.5y (Hand) = 14y. Holding a little inside that
@@ -121,7 +119,7 @@ inline constexpr float KILJAEDEN_DRAGON_STANDOFF_TOLERANCE = 1.0f;
 inline constexpr float KILJAEDEN_DRAGON_CLUSTER_RADIUS = 6.0f;
 inline constexpr uint8 KILJAEDEN_DRAGON_MIN_CLUSTER_SIZE = 3;
 
-inline Position const SUNWELL_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
+inline Position const SUNWELL_CENTER_POSITION =     { 1698.450f, 628.030f, 28.199f };
 inline Position const KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };
 inline Position const KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.823f };
 inline Position const KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };

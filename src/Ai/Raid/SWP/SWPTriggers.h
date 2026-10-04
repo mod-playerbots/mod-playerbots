@@ -68,6 +68,24 @@ public:
     bool IsActive() override;
 };
 
+// Shared Bosses
+
+// A Hunter while the named boss is above BOSS_ENGAGED_HEALTH_PCT, so Misdirection goes out on the
+// pull. Used for Kalecgos, Brutallus and the Eredar Twins (on Alythess).
+class SunwellHunterShouldMisdirectTrigger : public SunwellEncounterTrigger
+{
+public:
+    SunwellHunterShouldMisdirectTrigger(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : SunwellEncounterTrigger(botAI, name), _bossName(bossName) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+
+private:
+    std::string const _bossName;
+};
+
 // Kalecgos
 
 class KalecgosShouldCommunicateBossHealthTrigger : public SunwellEncounterTrigger
@@ -75,16 +93,6 @@ class KalecgosShouldCommunicateBossHealthTrigger : public SunwellEncounterTrigge
 public:
     KalecgosShouldCommunicateBossHealthTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(botAI, "kalecgos should communicate boss health") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class KalecgosPullingBossTrigger : public SunwellEncounterTrigger
-{
-public:
-    KalecgosPullingBossTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kalecgos pulling boss") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -152,16 +160,6 @@ protected:
 
 // Brutallus
 
-class BrutallusPullingBossTrigger : public SunwellEncounterTrigger
-{
-public:
-    BrutallusPullingBossTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "brutallus pulling boss") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class BrutallusRequiresTwoTanksTrigger : public SunwellEncounterTrigger
 {
 public:
@@ -204,11 +202,11 @@ protected:
 
 // Felmyst
 
-class FelmystPullingBossTrigger : public SunwellEncounterTrigger
+class FelmystHunterShouldMisdirectTrigger : public SunwellEncounterTrigger
 {
 public:
-    FelmystPullingBossTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst pulling boss") {}
+    FelmystHunterShouldMisdirectTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "felmyst hunter should misdirect") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -357,16 +355,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class EredarTwinsPullingBossesTrigger : public SunwellEncounterTrigger
-{
-public:
-    EredarTwinsPullingBossesTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "eredar twins pulling bosses") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class EredarTwinsSacrolashRequiresTwoTanksTrigger : public SunwellEncounterTrigger
 {
 public:
@@ -450,11 +438,11 @@ protected:
 
 // M'uru
 
-class MuruVoidSentinelOrEntropiusHasAppearedTrigger : public SunwellEncounterTrigger
+class MuruHunterShouldMisdirectNewEnemyTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruVoidSentinelOrEntropiusHasAppearedTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru void sentinel or entropius has appeared") {}
+    MuruHunterShouldMisdirectNewEnemyTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "m'uru hunter should misdirect new enemy") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -490,10 +478,10 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MuruVoidSentinelPulsesShadowTrigger : public SunwellEncounterTrigger
+class MuruVoidSentinelShouldBeTankedTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruVoidSentinelPulsesShadowTrigger(PlayerbotAI* botAI)
+    MuruVoidSentinelShouldBeTankedTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(botAI, "m'uru void sentinel pulses shadow") {}
 
 protected:
@@ -530,11 +518,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MuruBerserkerIsBuffedWithFlurryTrigger : public SunwellEncounterTrigger
+class MuruBerserkerHasFlurryTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruBerserkerIsBuffedWithFlurryTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru berserker is buffed with flurry") {}
+    MuruBerserkerHasFlurryTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "m'uru berserker has flurry") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -550,11 +538,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MuruFuryMageIsBuffedWithSpellFuryTrigger : public SunwellEncounterTrigger
+class MuruFuryMageHasSpellFuryTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruFuryMageIsBuffedWithSpellFuryTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru fury mage is buffed with spell fury") {}
+    MuruFuryMageHasSpellFuryTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "m'uru fury mage has spell fury") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -580,12 +568,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger : public SunwellEncounterTrigger
+class MuruEntropiusSummonsVoidZonesTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger(PlayerbotAI* botAI)
+    MuruEntropiusSummonsVoidZonesTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "m'uru entropius darkness pools spawn dark fiends") {}
+            botAI, "m'uru entropius summons void zones") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -603,26 +591,24 @@ protected:
 
 // Kil'jaeden <The Deceiver>
 
-// Kil'jaeden is the one Sunwell encounter that does not report IN_PROGRESS on engage:
-// boss_kiljaeden does not chain BossAI::JustEngagedWith, and the controller sets the state only
-// once the first Hand of the Deceiver dies. The two triggers below are the ones that run before
-// that, so they cannot inherit from SunwellEncounterTrigger. Every trigger after them needs
-// Kil'jaeden himself so they can be subclassed.
-
-class KiljaedenShouldCoordinateOrbUseTrigger : public Trigger
+class KiljaedenShouldCoordinateOrbUseTrigger : public SunwellEncounterTrigger
 {
 public:
     KiljaedenShouldCoordinateOrbUseTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kil'jaeden should coordinate orb use") {}
-    bool IsActive() override;
+        : SunwellEncounterTrigger(botAI, "kil'jaeden should coordinate orb use") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class KiljaedenHandsOfTheDeceiverAreActiveTrigger : public Trigger
+class KiljaedenHandsOfTheDeceiverAreActiveTrigger : public SunwellEncounterTrigger
 {
 public:
     KiljaedenHandsOfTheDeceiverAreActiveTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kil'jaeden hands of the deceiver are active") {}
-    bool IsActive() override;
+        : SunwellEncounterTrigger(botAI, "kil'jaeden hands of the deceiver are active") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 class KiljaedenTanksShouldHoldBossAndReflectionsTrigger : public SunwellEncounterTrigger
