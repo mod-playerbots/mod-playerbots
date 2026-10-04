@@ -842,26 +842,41 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
 void RandomPlayerbotMgr::LoadBattleMastersCache()
 {
     BattleMastersCache.clear();
+    BattleMasterSpawnIds.clear();
 
     LOG_INFO("playerbots", "Loading Battlemasters Cache...");
 
     QueryResult result = WorldDatabase.Query("SELECT `entry`,`bg_template` FROM `battlemaster_entry`");
-
-    uint32 count = 0;
 
     if (!result)
     {
         return;
     }
 
+    std::vector<std::pair<uint32, uint32>> battleMasterEntries;
     do
     {
-        ++count;
-
         Field* fields = result->Fetch();
+        battleMasterEntries.emplace_back(fields[0].Get<uint32>(), fields[1].Get<uint32>());
+    } while (result->NextRow());
 
-        uint32 entry = fields[0].Get<uint32>();
-        uint32 bgTypeId = fields[1].Get<uint32>();
+    std::unordered_set<uint32> wantedEntries;
+    for (auto const& entryPair : battleMasterEntries)
+        wantedEntries.insert(entryPair.first);
+
+    // Resolve each template to its first spawn once, instead of scanning the whole creature store
+    // again for every lookup during a battleground join.
+    for (auto const& [spawnId, creatureData] : sObjectMgr->GetAllCreatureData())
+    {
+        if (wantedEntries.count(creatureData.id))
+            BattleMasterSpawnIds.try_emplace(creatureData.id, spawnId);
+    }
+
+    uint32 count = 0;
+
+    for (auto const& [entry, bgTypeId] : battleMasterEntries)
+    {
+        ++count;
 
         CreatureTemplate const* bmaster = sObjectMgr->GetCreatureTemplate(entry);
         if (!bmaster)
@@ -890,8 +905,7 @@ void RandomPlayerbotMgr::LoadBattleMastersCache()
                   bmTeam == TEAM_ALLIANCE ? "Alliance"
                   : bmTeam == TEAM_HORDE  ? "Horde"
                                           : "Neutral");
-
-    } while (result->NextRow());
+    }
 
     LOG_INFO("playerbots", ">> Loaded {} battlemaster entries", count);
 }
@@ -3197,7 +3211,14 @@ ObjectGuid RandomPlayerbotMgr::GetBattleMasterGUID(Player* bot, BattlegroundType
 
     for (auto i = begin(Bms); i != end(Bms); ++i)
     {
-        CreatureData const* data = sRandomPlayerbotMgr.GetCreatureDataByEntry(*i);
+        CreatureData const* data = nullptr;
+        auto spawnIt = BattleMasterSpawnIds.find(*i);
+        if (spawnIt != BattleMasterSpawnIds.end())
+            data = sObjectMgr->GetCreatureData(spawnIt->second);
+
+        if (!data)
+            data = sRandomPlayerbotMgr.GetCreatureDataByEntry(*i);
+
         if (!data)
             continue;
 
