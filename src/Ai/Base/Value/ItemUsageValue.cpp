@@ -32,12 +32,10 @@ ItemUsage ItemUsageValue::Calculate()
     if (!proto)
         return ITEM_USAGE_NONE;
 
-    // A unique item already at its cap cannot be stored, bought, or sold; the one copy the
-    // bot owns can still be destroyed, so an item that qualifies for disenchanting must
-    // keep reporting so or DisEnchantRandomItemAction would never pick it out of the bags.
-    if (proto->MaxCount > 0 && bot->HasItemCount(itemId, proto->MaxCount, true))
-        return IsDisenchantable(proto, bot->GetItemByEntry(itemId)) ? ITEM_USAGE_DISENCHANT : ITEM_USAGE_NONE;
-
+    // No special MaxCount handling here: looting already stops at the cap (IsLootAllowed and
+    // StoreLootAction), and reporting capped items as NONE put unique quest items and keys in
+    // SmartDestroyItemAction's first destroy bucket. Capped armor/weapons still report
+    // DISENCHANT through IsDisenchantable() on the normal path below.
     if (IsRealPlayer(botAI->GetMaster()))
     {
         if (IsItemUsefulForSkill(proto) || IsItemNeededForSkill(proto))
