@@ -7,6 +7,7 @@
 #include "StatsWeightCalculator.h"
 #include "AiFactory.h"
 #include "DBCStores.h"
+#include "Item.h"
 #include "ItemEnchantmentMgr.h"
 #include "ItemTemplate.h"
 #include "ObjectMgr.h"
@@ -98,8 +99,9 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
 
     collector_->CollectItemStats(proto);
 
+    bool setBonusValued = false;
     if (enable_item_set_bonus_ && sPlayerbotAIConfig.itemSetSpellScoring)
-        CollectItemSetBonus(player_, proto);
+        setBonusValued = CollectItemSetBonus(player_, proto, slot);
 
     if (randomPropertyIds != 0)
         CalculateRandomProperty(randomPropertyIds, itemId);
@@ -115,7 +117,10 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
 
     CalculateItemTypePenalty(proto);
 
-    if (enable_item_set_bonus_ && !sPlayerbotAIConfig.itemSetSpellScoring)
+    // When spell scoring is enabled but the newly activated tier has no stats the weights
+    // can use (most raid tier bonuses only produce STATS_TYPE_BONUS), fall back to the
+    // legacy completeness multiplier so tier pieces are not undervalued.
+    if (enable_item_set_bonus_ && (!sPlayerbotAIConfig.itemSetSpellScoring || !setBonusValued))
         CalculateItemSetMod(player_, proto);
 
     CalculateSocketBonus(player_, proto);
@@ -553,34 +558,63 @@ void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
         stats_weights_[STATS_TYPE_RESILIENCE] += 7.0f;
 }
 
-void StatsWeightCalculator::CollectItemSetBonus(Player* player, ItemTemplate const* proto)
+bool StatsWeightCalculator::CollectItemSetBonus(Player* player, ItemTemplate const* proto, int32 slot)
 {
     uint32 itemSet = proto->ItemSet;
     if (!itemSet)
-        return;
+        return false;
 
     ItemSetEntry const* setEntry = sItemSetStore.LookupEntry(itemSet);
     if (!setEntry)
-        return;
+        return false;
 
-    uint32 itemCount = 0;
+    // Pieces worn while the candidate is evaluated: the item currently in the candidate's
+    // slot (if it is from the same set) is replaced, so it must not count. The candidate
+    // itself adds one piece, so only the tier at (worn + 1) is newly activated.
+    uint32 worn = 0;
     for (ItemSetEffect* eff : player->ItemSetEff)
     {
         if (eff && eff->setid == itemSet)
         {
-            itemCount = eff->item_count;
+            worn = eff->item_count;
             break;
         }
     }
 
-    // Value the set bonus spells for every tier the player currently has unlocked.
+    if (worn && slot >= 0 && slot < EQUIPMENT_SLOT_END)
+    {
+        if (Item* oldItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, uint8(slot)))
+        {
+            if (oldItem->GetTemplate()->ItemSet == itemSet)
+                --worn;
+        }
+    }
+
+    // Value only the tier this item switches on. Tiers that are already active stay
+    // credited to the item providing them, so candidates are compared on their delta.
+    float beforeOther = 0.0f;
+    for (uint32 i = 0; i < STATS_TYPE_MAX; ++i)
+        if (i != STATS_TYPE_BONUS)
+            beforeOther += collector_->stats[i];
+
+    bool valued = false;
     for (uint32 j = 0; j < MAX_ITEM_SET_SPELLS; ++j)
     {
         uint32 threshold = setEntry->items_to_triggerspell[j];
         uint32 spellId = setEntry->spells[j];
-        if (threshold && spellId && itemCount >= threshold)
+        if (threshold && spellId && threshold == worn + 1)
+        {
             collector_->CollectSpellStats(spellId, 1.0f, Milliseconds(0));
+
+            float afterOther = 0.0f;
+            for (uint32 i = 0; i < STATS_TYPE_MAX; ++i)
+                if (i != STATS_TYPE_BONUS)
+                    afterOther += collector_->stats[i];
+            valued = (afterOther - beforeOther) > 0.01f;
+        }
     }
+
+    return valued;
 }
 
 void StatsWeightCalculator::CalculateItemSetMod(Player* player, ItemTemplate const* proto)
