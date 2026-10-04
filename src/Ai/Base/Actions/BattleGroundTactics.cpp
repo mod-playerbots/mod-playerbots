@@ -1306,8 +1306,11 @@ std::string const BGTactics::HandleConsoleCommandPrivate(WorldSession* session, 
     BattlegroundTypeId bgType = bg->GetBgTypeID();
     if (bgType == BATTLEGROUND_RB)
         bgType = bg->GetBgTypeID(true);
+    char const* usage = "usage: showpath(=[num]) / showcreature=[num] / showobject=[num]";
     char* cmd = strtok((char*)args, " ");
     // char* charname = strtok(nullptr, " ");
+    if (!cmd)
+        return usage;
 
     if (!strncmp(cmd, "showpath", 8))
     {
@@ -1426,7 +1429,7 @@ std::string const BGTactics::HandleConsoleCommandPrivate(WorldSession* session, 
             num, o->GetPositionX(), o->GetPositionY(), o->GetPositionZ(), distance, exactDistance);
     }
 
-    return "usage: showpath(=[num]) / showcreature=[num] / showobject=[num]";
+    return usage;
 }
 
 // Depends on OnBattlegroundStart in playerbots.cpp
