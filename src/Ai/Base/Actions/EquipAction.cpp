@@ -332,23 +332,19 @@ void EquipAction::EquipItem(Item* item)
 
 ItemIds EquipAction::SelectInventoryItemsToEquip()
 {
-    CollectItemsVisitor visitor;
+    // Collect GUIDs while iterating: the item pointers themselves can dangle after an
+    // AI_VALUE2 evaluation below mutates the inventory.
+    CollectItemGuidsVisitor visitor;
     IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
 
     ItemIds items;
-    for (auto i = visitor.items.begin(); i != visitor.items.end(); ++i)
+    for (ObjectGuid const guid : visitor.guids)
     {
-        Item* item = *i;
+        Item* item = bot->GetItemByGuid(guid);
         if (!item)
             continue;
 
-        // Re-validate item is still in inventory — prevents use-after-free
-        // when AI_VALUE2 evaluation in a previous iteration triggered inventory mutations
-        Item* validatedItem = bot->GetItemByGuid(item->GetGUID());
-        if (!validatedItem)
-            continue;
-
-        ItemTemplate const* itemTemplate = validatedItem->GetTemplate();
+        ItemTemplate const* itemTemplate = item->GetTemplate();
         if (!itemTemplate)
             continue;
 
@@ -357,8 +353,8 @@ ItemIds EquipAction::SelectInventoryItemsToEquip()
         if (itemTemplate->InventoryType == INVTYPE_NON_EQUIP)
             continue;
 
-        int32 randomProperty = validatedItem->GetItemRandomPropertyId();
-        uint32 itemId = validatedItem->GetTemplate()->ItemId;
+        int32 randomProperty = item->GetItemRandomPropertyId();
+        uint32 itemId = item->GetTemplate()->ItemId;
         std::string itemUsageParam;
         if (randomProperty != 0)
             itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);

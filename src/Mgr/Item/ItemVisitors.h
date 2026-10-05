@@ -321,6 +321,20 @@ public:
     }
 };
 
+class CollectItemGuidsVisitor : public IterateItemsVisitor
+{
+public:
+    CollectItemGuidsVisitor() : IterateItemsVisitor() {}
+
+    std::vector<ObjectGuid> guids;
+
+    bool Visit(Item* item) override
+    {
+        guids.push_back(item->GetGUID());
+        return true;
+    }
+};
+
 class ItemCountByQuality : public IterateItemsVisitor
 {
 public:
