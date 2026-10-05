@@ -938,7 +938,7 @@ void RandomPlayerbotMgr::CheckBgQueue()
                                BattlegroundQueueTypeId queueTypeId, uint32 mapId) -> PvPDifficultyEntry const*
     {
         if (participant->InBattleground() && participant->GetCurrentBattlegroundQueueSlot() == slot)
-            return bg ? GetBattlegroundBracketById(bg->GetMapId(), bg->GetBracketId()) : nullptr;
+            return bg ? GetBattlegroundBracketById(mapId, bg->GetBracketId()) : nullptr;
 
         GroupQueueInfo groupInfo;
         BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(queueTypeId);
