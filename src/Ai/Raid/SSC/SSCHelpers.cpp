@@ -33,7 +33,7 @@ Creature* GetCachedCreature(PlayerbotAI* botAI, char const* value)
     return creature && creature->IsAlive() ? creature : nullptr;
 }
 
-std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value)
+std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, char const* value)
 {
     return botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet();
 }
@@ -2527,16 +2527,16 @@ Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 station)
         }
     }
 
-    if (looter)
-        return looter;
-
-    for (Player* member : GetVashjStationRanged(bot, station))
+    if (!looter)
     {
-        float const distance = member->GetExactDist(tainted);
-        if (distance < looterDistance)
+        for (Player* member : GetVashjStationRanged(bot, station))
         {
-            looterDistance = distance;
-            looter = member;
+            float const distance = member->GetExactDist(tainted);
+            if (distance < looterDistance)
+            {
+                looterDistance = distance;
+                looter = member;
+            }
         }
     }
 
