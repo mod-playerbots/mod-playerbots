@@ -37,7 +37,7 @@ Unit* PartyMemberToHeal::Calculate()
     Battleground* bg = bot->GetBattleground();
     bool isWarsong = bg && (bg->GetBgTypeID() == BATTLEGROUND_WS ||
                             (bg->GetBgTypeID() == BATTLEGROUND_RB && bg->GetBgTypeID(true) == BATTLEGROUND_WS));
-    bool useWsgCarrierHealing = sPlayerbotAIConfig.wsgTacticsEnabled && isWarsong;
+    bool useWsgCarrierHealing = isWarsong;
     if (!group && !useWsgCarrierHealing)
         return bot;
 

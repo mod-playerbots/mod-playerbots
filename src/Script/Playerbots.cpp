@@ -563,7 +563,7 @@ public:
     {
         BGStrategyData data;
         BattlegroundTypeId type = bg->GetBgTypeID();
-        if (sPlayerbotAIConfig.wsgTacticsEnabled && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
+        if (bg->GetBgTypeID(true) == BATTLEGROUND_WS)
             type = BATTLEGROUND_WS;
 
         switch (type)

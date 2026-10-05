@@ -67,7 +67,7 @@ ReachPartyMemberToResurrectAction::ReachPartyMemberToResurrectAction(PlayerbotAI
 bool ReachPartyMemberToResurrectAction::Execute(Event event)
 {
     Battleground* bg = bot->GetBattleground();
-    if (sPlayerbotAIConfig.wsgTacticsEnabled && bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
+    if (bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
         return false;
     return ReachTargetAction::Execute(event);
 }

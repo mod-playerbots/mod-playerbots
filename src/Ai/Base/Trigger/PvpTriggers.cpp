@@ -21,8 +21,7 @@
 bool WsgSupportThreat::IsActive()
 {
     Battleground* bg = bot->GetBattleground();
-    return sPlayerbotAIConfig.wsgTacticsEnabled && bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS &&
-           bg->GetStatus() == STATUS_IN_PROGRESS && bot->IsAlive() &&
+    return bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS && bg->GetStatus() == STATUS_IN_PROGRESS && bot->IsAlive() &&
            !context->GetValue<ObjectGuid>("wsg support target")->Get().IsEmpty();
 }
 
@@ -31,7 +30,7 @@ bool EnemyPlayerNear::IsActive() { return AI_VALUE(Unit*, "enemy player target")
 bool PlayerHasNoFlag::IsActive()
 {
     Battleground* bg = bot->GetBattleground();
-    if (sPlayerbotAIConfig.wsgTacticsEnabled && bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
+    if (bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
         return static_cast<BattlegroundWS*>(bg)->GetFlagPickerGUID(bg->GetOtherTeamId(bot->GetTeamId())) !=
                bot->GetGUID();
 
@@ -116,7 +115,7 @@ bool InsideBGTrigger::IsActive() { return bot->InBattleground() && bot->GetBattl
 bool PlayerIsInBattlegroundWithoutFlag::IsActive()
 {
     Battleground* bg = bot->GetBattleground();
-    if (sPlayerbotAIConfig.wsgTacticsEnabled && bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
+    if (bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
         return static_cast<BattlegroundWS*>(bg)->GetFlagPickerGUID(bg->GetOtherTeamId(bot->GetTeamId())) !=
                bot->GetGUID();
 
@@ -151,9 +150,8 @@ bool PlayerHasFlag::IsCapturingFlag(Player* bot)
     if (bot->InBattleground())
     {
         Battleground* battleground = bot->GetBattleground();
-        bool enhancedWarsong =
-            sPlayerbotAIConfig.wsgTacticsEnabled && battleground && battleground->GetBgTypeID(true) == BATTLEGROUND_WS;
-        if (bot->GetBattlegroundTypeId() == BATTLEGROUND_WS || enhancedWarsong)
+        bool isWarsong = battleground && battleground->GetBgTypeID(true) == BATTLEGROUND_WS;
+        if (isWarsong)
         {
             BattlegroundWS* bg = (BattlegroundWS*)bot->GetBattleground();
             // bot is horde and has ally flag
@@ -275,7 +273,7 @@ bool EnemyFlagCarrierNear::IsActive()
     Battleground* bg = bot->GetBattleground();
     bool isWarsong = bg && (bg->GetBgTypeID() == BATTLEGROUND_WS ||
                             (bg->GetBgTypeID() == BATTLEGROUND_RB && bg->GetBgTypeID(true) == BATTLEGROUND_WS));
-    if (sPlayerbotAIConfig.wsgTacticsEnabled && isWarsong)
+    if (isWarsong)
     {
         BattlegroundWS* warsong = static_cast<BattlegroundWS*>(bg);
         if (!carrier || !carrier->IsPlayer() || !carrier->IsAlive() || !carrier->IsInWorld() ||
@@ -293,7 +291,7 @@ bool EnemyFlagCarrierNear::IsActive()
                         ServerFacade::instance().GetDistance2d(bot, carrier), 100.f))
         return false;
 
-    if (!(sPlayerbotAIConfig.wsgTacticsEnabled && isWarsong))
+    if (!isWarsong)
     {
         // Check if there is another enemy player target closer than the FC
         Unit* nearbyEnemy = AI_VALUE(Unit*, "enemy player target");
@@ -317,7 +315,7 @@ bool TeamFlagCarrierNear::IsActive()
     Battleground* bg = bot->GetBattleground();
     bool isWarsong = bg && (bg->GetBgTypeID() == BATTLEGROUND_WS ||
                             (bg->GetBgTypeID() == BATTLEGROUND_RB && bg->GetBgTypeID(true) == BATTLEGROUND_WS));
-    if (!sPlayerbotAIConfig.wsgTacticsEnabled || !isWarsong)
+    if (!isWarsong)
         return false;
 
     WsgTeamAssignment assignment = context->GetValue<WsgTeamAssignment>("wsg team assignment")->Get();
@@ -336,9 +334,8 @@ bool TeamFlagCarrierNear::IsActive()
 bool WsgEscortSeparated::IsActive()
 {
     Battleground* bg = bot->GetBattleground();
-    if (!sPlayerbotAIConfig.wsgTacticsEnabled || !bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS ||
-        bg->GetStatus() != STATUS_IN_PROGRESS || !bot->IsAlive() || !bot->IsInCombat() ||
-        bot->IsNonMeleeSpellCast(false))
+    if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS || bg->GetStatus() != STATUS_IN_PROGRESS || !bot->IsAlive() ||
+        !bot->IsInCombat() || bot->IsNonMeleeSpellCast(false))
         return false;
     WsgTeamAssignment assignment = context->GetValue<WsgTeamAssignment>("wsg team assignment")->Get();
     if (!assignment.Valid || !assignment.Escort)
@@ -365,7 +362,7 @@ bool WsgFlagStateChanged::IsActive()
     Battleground* bg = bot->GetBattleground();
     bool isWarsong = bg && (bg->GetBgTypeID() == BATTLEGROUND_WS ||
                             (bg->GetBgTypeID() == BATTLEGROUND_RB && bg->GetBgTypeID(true) == BATTLEGROUND_WS));
-    if (!sPlayerbotAIConfig.wsgTacticsEnabled || !isWarsong || bg->GetStatus() != STATUS_IN_PROGRESS || !bot->IsAlive())
+    if (!isWarsong || bg->GetStatus() != STATUS_IN_PROGRESS || !bot->IsAlive())
     {
         _initialized = false;
         _markerValid = false;

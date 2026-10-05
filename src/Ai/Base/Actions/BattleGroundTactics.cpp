@@ -1684,9 +1684,9 @@ bool BGTactics::Execute(Event /*event*/)
 
     if (getName() == "reset objective force")
     {
-        // Enhanced WSG uses flag/roster changes to refresh objectives; the legacy timer
+        // WSG uses flag/roster changes to refresh objectives; the legacy timer
         // must not clear an otherwise valid route every minute.
-        if (sPlayerbotAIConfig.wsgTacticsEnabled && bgType == BATTLEGROUND_WS)
+        if (bgType == BATTLEGROUND_WS)
             return false;
 
         bool isCarryingFlag =
@@ -1704,7 +1704,7 @@ bool BGTactics::Execute(Event /*event*/)
 
     if (getName() == "refresh wsg objective")
     {
-        if (!sPlayerbotAIConfig.wsgTacticsEnabled || bgType != BATTLEGROUND_WS || bg->GetStatus() != STATUS_IN_PROGRESS)
+        if (bgType != BATTLEGROUND_WS || bg->GetStatus() != STATUS_IN_PROGRESS)
             return false;
 
         PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
@@ -1744,19 +1744,17 @@ bool BGTactics::Execute(Event /*event*/)
             return false;
         // Relevance lets healing win when usable; don't freeze an injured healer
         // merely because its heal is unavailable (mana, cooldown or range).
-        if (sPlayerbotAIConfig.wsgTacticsEnabled && bgType == BATTLEGROUND_WS && bot->IsNonMeleeSpellCast(false))
+        if (bgType == BATTLEGROUND_WS && bot->IsNonMeleeSpellCast(false))
             return false;
 
-        if (sPlayerbotAIConfig.wsgTacticsEnabled && bgType == BATTLEGROUND_WS &&
-            (ClearObsoleteWsgFollow() || CheckWsgRouteProgress()))
+        if (bgType == BATTLEGROUND_WS && (ClearObsoleteWsgFollow() || CheckWsgRouteProgress()))
             return true;
 
         if (bot->isMoving())
         {
             // Continue our own corridor before stopping at every small segment.
             // Never replace chase, forced motion, combat movement or a changed goal.
-            if (sPlayerbotAIConfig.wsgTacticsEnabled && bgType == BATTLEGROUND_WS && _wsgPath && !bot->IsInCombat() &&
-                !bot->IsImmobilizedState() &&
+            if (bgType == BATTLEGROUND_WS && _wsgPath && !bot->IsInCombat() && !bot->IsImmobilizedState() &&
                 bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
             {
                 PositionInfo goal = context->GetValue<PositionMap&>("position")->Get()["bg objective"];
@@ -1807,7 +1805,7 @@ bool BGTactics::Execute(Event /*event*/)
             return false;
         }
 
-        if (sPlayerbotAIConfig.wsgTacticsEnabled && bgType == BATTLEGROUND_WS)
+        if (bgType == BATTLEGROUND_WS)
         {
             // Finish the selected corridor even within direct-move range; otherwise
             // a short final shortcut can undo route variety and forget the entrance.
@@ -1869,7 +1867,7 @@ bool BGTactics::moveToStart(bool force)
         uint32 role = context->GetValue<uint32>("bg role")->Get();
 
         int startSpot = role < 4 ? BB_WSG_WAIT_SPOT_LEFT : role > 6 ? BB_WSG_WAIT_SPOT_RIGHT : BB_WSG_WAIT_SPOT_SPAWN;
-        if (sPlayerbotAIConfig.wsgTacticsEnabled && bg->GetStatus() == STATUS_WAIT_JOIN)
+        if (bg->GetStatus() == STATUS_WAIT_JOIN)
         {
             WsgTeamAssignment assignment = context->GetValue<WsgTeamAssignment>("wsg team assignment")->Get();
             constexpr uint32 startSpotCount = 3;
@@ -1983,7 +1981,7 @@ bool BGTactics::ShouldYieldWsgTactics(PlayerbotAI* ai)
 {
     Player* player = ai->GetBot();
     Battleground* bg = player->GetBattleground();
-    if (!sPlayerbotAIConfig.wsgTacticsEnabled || !bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS)
+    if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS)
         return false;
     if (player->IsNonMeleeSpellCast(false))
         return true;
@@ -2304,7 +2302,7 @@ bool BGTactics::selectObjective(bool reset)
             Position target;
             TeamId team = bot->GetTeamId();
 
-            if (sPlayerbotAIConfig.wsgTacticsEnabled)
+            if (bg->GetBgTypeID(true) == BATTLEGROUND_WS)
             {
                 BattlegroundWS* warsong = static_cast<BattlegroundWS*>(bg);
                 TeamId enemyTeam = bg->GetOtherTeamId(team);
@@ -3576,10 +3574,10 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
             return true;
     }
 
-    bool enhancedWarsong = bgType == BATTLEGROUND_WS && sPlayerbotAIConfig.wsgTacticsEnabled;
+    bool isWarsong = bgType == BATTLEGROUND_WS;
     uint32 now = getMSTime();
     bool avoidPreviousPath = _wsgAvoidPath && now - _wsgAvoidMs < 20 * IN_MILLISECONDS;
-    if (enhancedWarsong)
+    if (isWarsong)
     {
         bool carrying =
             static_cast<BattlegroundWS*>(bg)->GetFlagPickerGUID(bg->GetOtherTeamId(bot->GetTeamId())) == bot->GetGUID();
@@ -3661,7 +3659,7 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
 
     avoidPreviousPath = _wsgAvoidPath && now - _wsgAvoidMs < 20 * IN_MILLISECONDS;
     GuidVector observedEnemies;
-    if (enhancedWarsong)
+    if (isWarsong)
         observedEnemies = AI_VALUE(GuidVector, "nearest enemy players");
 
     float chosenPathScore = FLT_MAX;  // lower score is better
@@ -3698,12 +3696,12 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
     for (auto const& path : vPaths)
     {
         // wsJumpDown owns the ledge descent; generic point movement cannot represent that jump.
-        if (enhancedWarsong && (path == &vPath_WSG_AllianceGraveyardJump || path == &vPath_WSG_HordeGraveyardJump))
+        if (isWarsong && (path == &vPath_WSG_AllianceGraveyardJump || path == &vPath_WSG_HordeGraveyardJump))
             continue;
-        if (enhancedWarsong && avoidPreviousPath && path == _wsgAvoidPath)
+        if (isWarsong && avoidPreviousPath && path == _wsgAvoidPath)
             continue;
         constexpr float completedExitRadius = 30.0f;
-        if (enhancedWarsong && path == _wsgCompletedPath)
+        if (isWarsong && path == _wsgCompletedPath)
         {
             BattleBotWaypoint const& exit = _wsgCompletedReverse ? path->front() : path->back();
             if (bot->GetDistance(exit.x, exit.y, exit.z) < completedExitRadius)
@@ -3748,7 +3746,7 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
         }
 
         constexpr float wsgResumeRadius = 90.0f;
-        if (enhancedWarsong && closestPointRealDistance > wsgResumeRadius)
+        if (isWarsong && closestPointRealDistance > wsgResumeRadius)
             continue;
 
         // don't pick path where bot is already closest to the paths closest point to target (it means path cant lead it
@@ -3756,7 +3754,7 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
         if (closestPointIndex == int(reverse ? 0 : path->size() - 1) || closestPointDistToBot > botDistanceLimit)
             continue;
         uint32 entryPoint = reverse ? closestPointIndex - 1 : closestPointIndex + 1;
-        if (enhancedWarsong && (IsUnsafeWsgCliffApproach(path->at(closestPointIndex).z) ||
+        if (isWarsong && (IsUnsafeWsgCliffApproach(path->at(closestPointIndex).z) ||
                                 IsUnsafeWsgCliffApproach(path->at(entryPoint).z)))
             continue;
 
@@ -3773,7 +3771,7 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
         // LOG_INFO("playerbots", "bot={}\t{:6.1f}\t{:4.1f}\t{:4.1f}\t{}", bot->GetName(), pathScore,
         // closestPointDistToBot, distToDestination, vPaths_AB_name[pathNum]);
 
-        if (enhancedWarsong)
+        if (isWarsong)
         {
             // Use only locally detected enemies, never remote roster positions.
             constexpr float dangerRadius = 45.0f;
@@ -3803,12 +3801,9 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
     }
 
     if (!chosenPath)
-        return enhancedWarsong && MoveAwayFromWsgCliff();
+        return isWarsong && MoveAwayFromWsgCliff();
 
-    // LOG_INFO("playerbots", "{} bot={} path={}", (bot->GetTeamId() == TEAM_HORDE ? "HORDE" : "ALLIANCE"),
-    // bot->GetName(), chosenPathIndex);
-
-    if (enhancedWarsong)
+    if (isWarsong)
     {
         _wsgPath = chosenPath;
         _wsgReverse = chosenPathReverse;
@@ -3842,10 +3837,9 @@ bool BGTactics::resetObjective()
                           bot->HasAura(BG_EY_NETHERSTORM_FLAG_SPELL);
 
     // Change role if allowed by odds and not carrying flag
-    bool enhancedWarsong =
-        sPlayerbotAIConfig.wsgTacticsEnabled &&
-        (bgType == BATTLEGROUND_WS || (bgType == BATTLEGROUND_RB && bg->GetBgTypeID(true) == BATTLEGROUND_WS));
-    if (!enhancedWarsong && urand(0, 99) < oddsToChangeRole && !isCarryingFlag)
+    bool isWarsong =
+        bgType == BATTLEGROUND_WS || (bgType == BATTLEGROUND_RB && bg->GetBgTypeID(true) == BATTLEGROUND_WS);
+    if (!isWarsong && urand(0, 99) < oddsToChangeRole && !isCarryingFlag)
         context->GetValue<uint32>("bg role")->Set(urand(0, 9));
 
     // Reset objective position
@@ -3899,8 +3893,7 @@ bool BGTactics::moveToObjectiveWp(BattleBotPath* const& currentPath, uint32 curr
 BattleBotPath const* BGTactics::GetWsgCliffBelowBot() const
 {
     Battleground* bg = bot->GetBattleground();
-    if (!sPlayerbotAIConfig.wsgTacticsEnabled || !bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS ||
-        bg->GetStatus() != STATUS_IN_PROGRESS || !bot->IsAlive())
+    if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS || bg->GetStatus() != STATUS_IN_PROGRESS || !bot->IsAlive())
         return nullptr;
     constexpr float cliffRadius = 80.0f;
     for (BattleBotPath const* path : {&vPath_WSG_HordeGraveyardJump, &vPath_WSG_AllianceGraveyardJump})
@@ -4707,8 +4700,7 @@ bool BGTactics::teamFlagTaken()
 bool BGTactics::ClearObsoleteWsgFollow()
 {
     Battleground* bg = bot->GetBattleground();
-    if (!sPlayerbotAIConfig.wsgTacticsEnabled || !bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS ||
-        bot->IsNonMeleeSpellCast(false))
+    if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS || bot->IsNonMeleeSpellCast(false))
         return false;
     Value<ObjectGuid>* ownership = context->GetValue<ObjectGuid>("wsg follow carrier");
     ObjectGuid guid = ownership->Get();
@@ -4743,8 +4735,6 @@ bool BGTactics::ClearObsoleteWsgFollow()
 bool BGTactics::protectFC()
 {
     if (bot->IsNonMeleeSpellCast(false))
-        return false;
-    if (!sPlayerbotAIConfig.wsgTacticsEnabled)
         return false;
 
     Battleground* bg = bot->GetBattleground();
@@ -4806,7 +4796,7 @@ bool BGTactics::useBuff()
     if (bgType == BATTLEGROUND_RB)
         bgType = bg->GetBgTypeID(true);
 
-    if (sPlayerbotAIConfig.wsgTacticsEnabled && bgType == BATTLEGROUND_WS)
+    if (bgType == BATTLEGROUND_WS)
     {
         BattlegroundWS* warsong = static_cast<BattlegroundWS*>(bg);
         if (warsong->GetFlagState(bot->GetTeamId()) != BG_WS_FLAG_STATE_ON_BASE ||
@@ -4834,7 +4824,7 @@ bool BGTactics::useBuff()
 
         if (!go->isSpawned())
             continue;
-        if (sPlayerbotAIConfig.wsgTacticsEnabled && bgType == BATTLEGROUND_WS && go->getLootState() != GO_READY)
+        if (bgType == BATTLEGROUND_WS && go->getLootState() != GO_READY)
             continue;
 
         // use speed buff only if close

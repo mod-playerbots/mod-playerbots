@@ -23,7 +23,7 @@
 bool IsUnavailableWsgCombatTarget(Player const* player, Unit const* target)
 {
     Battleground const* bg = player ? player->GetBattleground() : nullptr;
-    if (!sPlayerbotAIConfig.wsgTacticsEnabled || !bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS)
+    if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS)
         return false;
     if (!target || !target->IsInWorld() || target->GetMap() != player->GetMap() || !target->IsAlive() ||
         target->HasSpiritOfRedemptionAura() ||
@@ -40,8 +40,7 @@ WsgTeamAssignment WsgTeamAssignmentValue::Calculate()
 {
     WsgTeamAssignment assignment;
     Battleground* bg = bot->GetBattleground();
-    if (!sPlayerbotAIConfig.wsgTacticsEnabled || !bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS || !bot->IsAlive() ||
-        !bot->IsInWorld())
+    if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS || !bot->IsAlive() || !bot->IsInWorld())
         return assignment;
 
     if (bg->GetStatus() == STATUS_WAIT_JOIN)
@@ -223,8 +222,7 @@ WsgTeamAssignment WsgTeamAssignmentValue::Calculate()
 ObjectGuid WsgSupportTargetValue::Calculate()
 {
     Battleground* bg = bot->GetBattleground();
-    if (!sPlayerbotAIConfig.wsgTacticsEnabled || !bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS ||
-        bg->GetStatus() != STATUS_IN_PROGRESS || !bot->IsAlive())
+    if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS || bg->GetStatus() != STATUS_IN_PROGRESS || !bot->IsAlive())
         return ObjectGuid::Empty;
     BattlegroundWS* warsong = static_cast<BattlegroundWS*>(bg);
     ObjectGuid carrierGuid = warsong->GetFlagPickerGUID(bg->GetOtherTeamId(bot->GetTeamId()));
@@ -268,8 +266,8 @@ ObjectGuid WsgSupportTargetValue::Calculate()
 ObjectGuid WsgHealTargetValue::Calculate()
 {
     Battleground* bg = bot->GetBattleground();
-    if (!sPlayerbotAIConfig.wsgTacticsEnabled || !bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS ||
-        bg->GetStatus() != STATUS_IN_PROGRESS || !bot->IsAlive() || !botAI->IsHeal(bot))
+    if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS || bg->GetStatus() != STATUS_IN_PROGRESS || !bot->IsAlive() ||
+        !botAI->IsHeal(bot))
         return ObjectGuid::Empty;
     BattlegroundWS* warsong = static_cast<BattlegroundWS*>(bg);
     ObjectGuid carrier = warsong->GetFlagPickerGUID(bg->GetOtherTeamId(bot->GetTeamId()));
@@ -303,10 +301,8 @@ Unit* FlagCarrierValue::Calculate()
     if (botAI->GetBot()->InBattleground())
     {
         Battleground* battleground = bot->GetBattleground();
-        bool enhancedRandomWarsong = sPlayerbotAIConfig.wsgTacticsEnabled && battleground &&
-                                     battleground->GetBgTypeID() == BATTLEGROUND_RB &&
-                                     battleground->GetBgTypeID(true) == BATTLEGROUND_WS;
-        if (bot->GetBattlegroundTypeId() == BATTLEGROUND_WS || enhancedRandomWarsong)
+        bool isWarsong = battleground && battleground->GetBgTypeID(true) == BATTLEGROUND_WS;
+        if (isWarsong)
         {
             BattlegroundWS* bg = static_cast<BattlegroundWS*>(battleground);
 

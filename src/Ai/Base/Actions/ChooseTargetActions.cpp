@@ -22,7 +22,7 @@
 Unit* AttackEnemyPlayerAction::GetTarget()
 {
     Battleground* bg = bot->GetBattleground();
-    if (sPlayerbotAIConfig.wsgTacticsEnabled && bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
+    if (bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
     {
         ObjectGuid guid = context->GetValue<ObjectGuid>("wsg support target")->Get();
         Unit* supportTarget = guid.IsEmpty() ? nullptr : botAI->GetUnit(guid);
@@ -67,7 +67,7 @@ bool AttackEnemyFlagCarrierAction::isUseful()
     Battleground* bg = bot->GetBattleground();
     bool isWarsong = bg && (bg->GetBgTypeID() == BATTLEGROUND_WS ||
                             (bg->GetBgTypeID() == BATTLEGROUND_RB && bg->GetBgTypeID(true) == BATTLEGROUND_WS));
-    if (sPlayerbotAIConfig.wsgTacticsEnabled && isWarsong)
+    if (isWarsong)
     {
         if (BGTactics::ShouldYieldWsgTactics(botAI))
             return false;

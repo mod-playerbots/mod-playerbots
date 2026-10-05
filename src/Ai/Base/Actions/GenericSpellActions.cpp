@@ -184,7 +184,7 @@ bool CastSpellAction::Execute(Event /*event*/)
 bool ResurrectPartyMemberAction::Execute(Event event)
 {
     Battleground* bg = bot->GetBattleground();
-    if (sPlayerbotAIConfig.wsgTacticsEnabled && bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
+    if (bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
         return false;
     return CastSpellAction::Execute(event);
 }
