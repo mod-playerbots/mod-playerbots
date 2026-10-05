@@ -1847,7 +1847,7 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
     }
     std::vector<WorldLocation> locs = sTravelMgr.GetTeleportLocations(bot);
 
-    if (sPlayerbotAIConfig.RandomBotConcentrateInPlayerZone && !locs.empty())
+    if (sPlayerbotAIConfig.RandomBotConcentrateInPlayerZone)
     {
         std::vector<WorldLocation> playerZoneLocs = GetPlayerZoneTeleportLocations(locs, bot);
         if (!playerZoneLocs.empty())
@@ -1862,9 +1862,9 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
 }
 
 // Returns the subset of teleport locations that lie in a zone currently occupied by a real
-// (non-GM) player, so random bots can be gathered where players actually are. Returns an empty
-// vector when no player is online or none of the locations match, letting the caller fall back
-// to the default world-wide behaviour.
+// (non-GM) player, so random bots can be gathered where players actually are, or failing that the
+// matching hubs of a nearby level. Returns an empty vector when no player is online or nothing
+// matches, letting the caller fall back to the default world-wide behaviour.
 std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocations(std::vector<WorldLocation> const& locs,
                                                                               Player* bot)
 {
@@ -1874,10 +1874,44 @@ std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocations(st
         playerMapZones = _playerZones;
     }
 
-    std::vector<WorldLocation> filtered;
     if (playerMapZones.empty())
+        return {};
+
+    std::vector<WorldLocation> filtered = FilterPlayerZoneTeleportLocations(locs, bot, playerMapZones);
+
+    // Hubs are listed only for the levels of their zone's range, so a bot just outside it is never
+    // sent to that zone. Allow the RandomBotTeleLowerLevel / RandomBotTeleHigherLevel margin, nearest
+    // level first. The legacy location cache already includes that margin.
+    if (!filtered.empty() || !sPlayerbotAIConfig.EnableNewRpgStrategy)
         return filtered;
 
+    // A bot may be up to RandomBotTeleHigherLevel above a zone's range and RandomBotTeleLowerLevel below it.
+    uint32 botLevel = bot->GetLevel();
+    uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    uint32 higher = sPlayerbotAIConfig.RandomBotTeleHigherLevel;
+    uint32 lower = sPlayerbotAIConfig.RandomBotTeleLowerLevel;
+    uint32 maxOffset = std::min(std::max(higher, lower), maxLevel);
+    for (uint32 offset = 1; offset <= maxOffset; ++offset)
+    {
+        if (offset <= higher && botLevel > offset)
+            filtered = FilterPlayerZoneTeleportLocations(sTravelMgr.GetTeleportLocations(bot, botLevel - offset), bot,
+                                                         playerMapZones);
+
+        if (filtered.empty() && offset <= lower && botLevel + offset <= maxLevel)
+            filtered = FilterPlayerZoneTeleportLocations(sTravelMgr.GetTeleportLocations(bot, botLevel + offset), bot,
+                                                         playerMapZones);
+
+        if (!filtered.empty())
+            break;
+    }
+
+    return filtered;
+}
+
+std::vector<WorldLocation> RandomPlayerbotMgr::FilterPlayerZoneTeleportLocations(
+    std::vector<WorldLocation> const& locs, Player* bot, std::set<std::pair<uint32, uint32>> const& playerMapZones)
+{
+    std::vector<WorldLocation> filtered;
     std::set<uint32> playerMaps;
     for (auto const& mapZone : playerMapZones)
         playerMaps.insert(mapZone.first);

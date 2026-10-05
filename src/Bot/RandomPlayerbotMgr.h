@@ -246,6 +246,8 @@ private:
     uint32 GetZoneLevel(uint16 mapId, float teleX, float teleY, float teleZ);
     void UpdatePlayerZones();
     std::vector<WorldLocation> GetPlayerZoneTeleportLocations(std::vector<WorldLocation> const& locs, Player* bot);
+    std::vector<WorldLocation> FilterPlayerZoneTeleportLocations(
+        std::vector<WorldLocation> const& locs, Player* bot, std::set<std::pair<uint32, uint32>> const& playerMapZones);
     typedef void (RandomPlayerbotMgr::*ConsoleCommandHandler)(Player*);
     std::vector<Player*> players;
 
