@@ -29,6 +29,7 @@ constexpr uint32 SPELL_HUNTER_VS_WILD = 56341;
 constexpr uint32 SPELL_ARMORED_TO_THE_TEETH = 61222;
 constexpr uint32 SPELL_MENTAL_DEXTERITY = 51885;
 constexpr uint32 SPELL_ROGUE_SWORD_SPECIALIZATION = 13964;
+constexpr uint32 SPELL_ROGUE_DAGGER_SPECIALIZATION = 13807;
 constexpr uint32 SPELL_POLEAXE_SPECIALIZATION = 12785;
 constexpr uint32 SPELL_NERVES_OF_COLD_STEEL = 50138;
 constexpr uint32 SPELL_SHADOW_FOCUS = 15835;
@@ -116,7 +117,6 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
         CalculateItemSetMod(player_, proto);
 
     CalculateSocketBonus(player_, proto);
-
     // Apply weapon speed governance if slot is provided and this is a weapon
     if (sPlayerbotAIConfig.preferredSpecWeapons && slot >= 0 && proto->Class == ITEM_CLASS_WEAPON)
         weight_ *= ApplyPreferredSpecWeapons(proto, slot);
@@ -630,7 +630,7 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
 
         if (isDoubleHand)
         {
-            weight_ *= 0.5;
+            weight_ *= 0.5f;
             // spec without double hand
             // enhancement, rogue, ice dk, unholy dk, shield tank, fury warrior without titan's grip but with duel wield
             if (((cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT && player_->CanDualWield()) ||
@@ -641,7 +641,7 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
                  (cls == CLASS_PALADIN && tab == PALADIN_TAB_PROTECTION) ||
                  (cls == CLASS_PALADIN && tab == PALADIN_TAB_HOLY)))
             {
-                weight_ *= 0.1;
+                weight_ *= 0.1f;
             }
         }
         // spec with double hand
@@ -655,18 +655,18 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
                 (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_BLOOD) ||
                 (cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT && !player_->CanDualWield()))
             {
-                weight_ *= 0.1;
+                weight_ *= 0.1f;
             }
             // caster's main hand (cannot duel weapon but can equip two-hands stuff)
             if ((cls == CLASS_MAGE || cls == CLASS_PRIEST || cls == CLASS_WARLOCK || cls == CLASS_DRUID ||
                 (cls == CLASS_SHAMAN && !player_->CanDualWield())) &&
                 !(cls == CLASS_PALADIN && tab == PALADIN_TAB_HOLY))
             {
-                weight_ *= 0.65;
+                weight_ *= 0.65f;
             }
             if (cls == CLASS_PALADIN && tab == PALADIN_TAB_HOLY)
             {
-                weight_ *= 0.8;
+                weight_ *= 0.8f;
             }
         }
         // fury with titan's grip
@@ -674,37 +674,82 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
              proto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF) &&
             (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_FURY && player_->CanTitanGrip()))
         {
-            weight_ *= 0.1;
+            weight_ *= 0.1f;
         }
 
         if (cls == CLASS_HUNTER && proto->SubClass == ITEM_SUBCLASS_WEAPON_THROWN)
         {
-            weight_ *= 0.1;
+            weight_ *= 0.1f;
         }
 
         if (lvl >= 10 && cls == CLASS_ROGUE && (tab == ROGUE_TAB_ASSASSINATION || tab == ROGUE_TAB_SUBTLETY) &&
             proto->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)
         {
-            weight_ *= 1.5;
+            weight_ *= 1.50f;
         }
 
-        if (cls == CLASS_ROGUE && player_->HasAura(SPELL_ROGUE_SWORD_SPECIALIZATION) &&
-            (proto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD || proto->SubClass == ITEM_SUBCLASS_WEAPON_AXE))
+        //For Combat Dagger spec
+        if (cls == CLASS_ROGUE && player_->HasAura(SPELL_ROGUE_DAGGER_SPECIALIZATION) &&
+            proto->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)
         {
-            weight_ *= 1.1;
+            weight_ *= 1.50f;
         }
+
+        //Combat Sword spec
+        if (cls == CLASS_ROGUE && player_->HasAura(SPELL_ROGUE_SWORD_SPECIALIZATION))
+        {
+            if (proto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD ||
+                proto->SubClass == ITEM_SUBCLASS_WEAPON_AXE)
+            {
+                weight_ *= 1.25f;
+            }
+        }
+
         if (cls == CLASS_WARRIOR && player_->HasAura(SPELL_POLEAXE_SPECIALIZATION) &&
             (proto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM || proto->SubClass == ITEM_SUBCLASS_WEAPON_AXE2))
         {
-            weight_ *= 1.1;
+            weight_ *= 1.25f;
         }
         if (cls == CLASS_DEATH_KNIGHT && player_->HasAura(SPELL_NERVES_OF_COLD_STEEL) && !isDoubleHand)
         {
-            weight_ *= 1.3;
+            weight_ *= 1.3f;
         }
         bool slowDelay = proto->Delay > 2500;
         if (cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT && slowDelay)
-            weight_ *= 1.1;
+            weight_ *= 1.1f;
+
+        // Add weight to racials
+        // Human Swords / Maces
+        if (player_->getRace() == RACE_HUMAN)
+        {
+            // If melee
+            bool isMeleeClassAndSpec = (cls == CLASS_ROGUE || cls == CLASS_WARRIOR || cls == CLASS_DEATH_KNIGHT ||
+                                    (cls == CLASS_PALADIN && tab != PALADIN_TAB_HOLY));
+            if (isMeleeClassAndSpec)
+            {
+                if (proto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD ||
+                    proto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD2 ||
+                    proto->SubClass == ITEM_SUBCLASS_WEAPON_MACE ||
+                    proto->SubClass == ITEM_SUBCLASS_WEAPON_MACE2)
+                {
+                    weight_ *= 1.25f;
+                }
+            }
+        }
+        //Orc Axes
+        else if (player_->getRace() == RACE_ORC)
+        {
+            // If melee
+            bool isMeleeClassAndSpec = (cls == CLASS_WARRIOR || cls == CLASS_ROGUE || cls == CLASS_DEATH_KNIGHT ||
+                                    (cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT));
+            if (isMeleeClassAndSpec)
+            {
+                if (proto->SubClass == ITEM_SUBCLASS_WEAPON_AXE || proto->SubClass == ITEM_SUBCLASS_WEAPON_AXE2)
+                {
+                    weight_ *= 1.25f;
+                }
+            }
+        }
     }
 }
 

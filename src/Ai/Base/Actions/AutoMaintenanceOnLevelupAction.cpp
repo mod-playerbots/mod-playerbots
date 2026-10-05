@@ -8,6 +8,7 @@
 #include "BroadcastHelper.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
+#include "Playerbots.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
 #include "SpellMgr.h"
@@ -36,14 +37,48 @@ void AutoMaintenanceOnLevelupAction::AutoTeleportForLevel()
 
 void AutoMaintenanceOnLevelupAction::AutoPickTalents()
 {
-    if (!sPlayerbotAIConfig.autoPickTalents || !sRandomPlayerbotMgr.IsRandomBot(bot))
+    if (!sRandomPlayerbotMgr.IsRandomBot(bot) && !sRandomPlayerbotMgr.IsAddclassBot(bot))
+        return;
+
+    if (sRandomPlayerbotMgr.IsRandomBot(bot) && !sPlayerbotAIConfig.autoPickTalents)
+        return;
+
+    if (sRandomPlayerbotMgr.IsAddclassBot(bot) && !sPlayerbotAIConfig.AutoPickTalentsForAddClassBots)
         return;
 
     if (bot->GetFreeTalentPoints() <= 0)
         return;
 
-    PlayerbotFactory factory(bot, bot->GetLevel());
-    factory.InitTalentsTree(true, true, true);
+    uint32 currentLevel = bot->GetLevel();
+    int targetSpecLevel = 80; // Default fallback - Will aim for the .80 spec.
+    bool resetTalents = false;
+    
+    //Choose .60, .70 and .80 specs.
+    if (sPlayerbotAIConfig.ProgressiveTalentSpecs)
+    {
+        if (currentLevel <= 60) targetSpecLevel = 60;
+        else if (currentLevel <= 70) targetSpecLevel = 70;
+        else targetSpecLevel = 80;
+
+        resetTalents = (currentLevel == 61 || currentLevel == 71);
+    }
+
+    //Choose .59, .60, .69, .70, .79 and .80 specs.
+    if (sPlayerbotAIConfig.ProgressiveLevelingTalentSpecs)
+    {
+        if (currentLevel <= 59) targetSpecLevel = 59;
+        else if (currentLevel == 60) targetSpecLevel = 60;
+        else if (currentLevel >= 61 && currentLevel <= 69) targetSpecLevel = 69;
+        else if (currentLevel == 70) targetSpecLevel = 70;
+        else if (currentLevel >= 71 && currentLevel <= 79) targetSpecLevel = 79;
+        else targetSpecLevel = 80;
+
+        resetTalents = (currentLevel == 60 || currentLevel == 61 || currentLevel == 70 || currentLevel == 71 || currentLevel == 80);
+    }
+
+    PlayerbotFactory factory(bot, targetSpecLevel);
+    factory.InitTalentsTree(true, true, resetTalents);
+
     factory.InitPetTalents();
 }
 
