@@ -215,16 +215,6 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
                 }
                 break;
             }
-            case SPELL_EFFECT_TRIGGER_SPELL:
-            {
-                // Follow the trigger spell, mirroring SPELL_AURA_PROC_TRIGGER_SPELL.
-                // On-use wrappers have no proc entry (triggerCooldown == 0); propagate the
-                // wrapper's activation cooldown instead so the child effect is still valued.
-                if (canNextTrigger)
-                    CollectSpellStats(effectInfo.TriggerSpell, multiplier,
-                        triggerCooldown.count() ? triggerCooldown : spellCooldown);
-                break;
-            }
             default:
                 break;
         }
@@ -410,7 +400,6 @@ bool StatsCollector::CanBeTriggeredByType(SpellInfo const* spellInfo, uint32 pro
             triggerMask |= MELEE_PROC_FLAG_MASK;
             triggerMask |= SPELL_PROC_FLAG_MASK;
             triggerMask |= PROC_FLAG_DONE_PERIODIC;
-            triggerMask |= PROC_FLAG_KILL;
             if (procFlags & triggerMask)
                 return true;
             break;
@@ -420,7 +409,6 @@ bool StatsCollector::CanBeTriggeredByType(SpellInfo const* spellInfo, uint32 pro
             triggerMask |= MELEE_PROC_FLAG_MASK;
             triggerMask |= SPELL_PROC_FLAG_MASK;
             triggerMask |= PERIODIC_PROC_FLAG_MASK;
-            triggerMask |= PROC_FLAG_KILL;
             if (procFlags & triggerMask)
                 return true;
             break;
@@ -430,7 +418,6 @@ bool StatsCollector::CanBeTriggeredByType(SpellInfo const* spellInfo, uint32 pro
             triggerMask |= RANGED_PROC_FLAG_MASK;
             triggerMask |= SPELL_PROC_FLAG_MASK;
             triggerMask |= PROC_FLAG_DONE_PERIODIC;
-            triggerMask |= PROC_FLAG_KILL;
             if (procFlags & triggerMask)
                 return true;
             break;
@@ -439,7 +426,6 @@ bool StatsCollector::CanBeTriggeredByType(SpellInfo const* spellInfo, uint32 pro
         {
             triggerMask |= SPELL_PROC_FLAG_MASK;
             triggerMask |= PROC_FLAG_DONE_PERIODIC;
-            triggerMask |= PROC_FLAG_KILL;
             // Healing spell cannot trigger
             triggerMask &= ~PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
             triggerMask &= ~PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
