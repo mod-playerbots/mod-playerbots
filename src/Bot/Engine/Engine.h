@@ -93,6 +93,7 @@ public:
     bool testMode;
 
 private:
+    std::string const ResolveStrategyName(std::string const name);
     void PushDefaultActions();
     ActionNode* CreateActionNode(std::string const name);
 

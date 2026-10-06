@@ -152,24 +152,39 @@ public:
 
 class RearFlankAction : public MovementAction
 {
-    // 90 degree minimum angle prevents any frontal cleaves/breaths and avoids parry-hasting the boss.
+    // 90 degree minimum angle prevents any frontal cleaves/breaths and avoids parry-hasting the current target.
     // 120 degree maximum angle leaves a 120 degree symmetrical cone at the tail end which is usually enough to avoid
     // tail swipes. Some dragons or mobs may have different danger zone angles, override if needed.
 public:
     RearFlankAction(PlayerbotAI* botAI, float distance = 0.0f, float minAngle = ANGLE_90_DEG,
-                    float maxAngle = ANGLE_120_DEG)
-        : MovementAction(botAI, "rear flank")
+                    float maxAngle = ANGLE_120_DEG, std::string const& name = "rear flank")
+        : MovementAction(botAI, name)
     {
         this->distance = distance;
         this->minAngle = minAngle;
         this->maxAngle = maxAngle;
     }
 
+    std::string const GetTargetName() override { return "current target"; };
     bool Execute(Event event) override;
     bool isUseful() override;
 
 protected:
     float distance, minAngle, maxAngle;
+};
+
+class BossRearFlankAction : public RearFlankAction
+{
+public:
+    BossRearFlankAction(PlayerbotAI* botAI, std::string bossName, float distance = 0.0f, float minAngle = ANGLE_90_DEG,
+                        float maxAngle = ANGLE_120_DEG)
+        : RearFlankAction(botAI, distance, minAngle, maxAngle, bossName + " rear flank"),
+          bossName(std::move(bossName)) {}
+
+    Unit* GetTarget() override;
+
+protected:
+    const std::string bossName;
 };
 
 class DisperseSetAction : public Action

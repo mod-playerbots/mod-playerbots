@@ -12,7 +12,6 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
-#include "ServerFacade.h"
 #include "SharedDefines.h"
 
 bool KillCommandTrigger::IsActive()
@@ -109,24 +108,8 @@ bool HunterHasAmmoTrigger::IsActive()
     return !AmmoCountTrigger::IsActive();
 }
 
-bool SwitchToRangedTrigger::IsActive()
-{
-    Unit* target = AI_VALUE(Unit*, "current target");
-    return botAI->HasStrategy("close", BOT_STATE_COMBAT) && target &&
-           (target->GetVictim() != bot &&
-            ServerFacade::instance().IsDistanceGreaterThan(AI_VALUE2(float, "distance", "current target"), 8.0f));
-}
-
-bool SwitchToMeleeTrigger::IsActive()
-{
-    Unit* target = AI_VALUE(Unit*, "current target");
-    return botAI->HasStrategy("ranged", BOT_STATE_COMBAT) && target &&
-           (target->GetVictim() == bot &&
-            ServerFacade::instance().IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", "current target"), 8.0f));
-}
-
 // Valid targets for "Improved Tracking".
-// Optional/Utility targets (uncomment for selfbot).
+// Optional/Utility targets (uncomment for SelfBot).
 bool NoTrackTrigger::IsActive()
 {
     std::vector<std::string> track_list = {

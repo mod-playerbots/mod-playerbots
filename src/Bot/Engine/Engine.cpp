@@ -186,11 +186,20 @@ bool Engine::DoNextAction(Unit* /*unit*/, uint32 /*depth*/, bool minimal)
             // Apply multipliers early to avoid unnecessary iterations
             for (Multiplier* multiplier : multipliers)
             {
-                relevance *= multiplier->GetValue(action);
+                float value;
+                {
+                    PerfMonitorScope scope(multiplier->GetPerfData());
+                    value = multiplier->GetValue(action);
+                }
+
+                relevance *= value;
                 action->setRelevance(relevance);
 
                 if (relevance <= 0)
                 {
+                    if (value <= 0)
+                        multiplier->NoteBlock();
+
                     LogAction("Multiplier %s made action %s useless", multiplier->getName().c_str(), action->getName().c_str());
                     break;
                 }
@@ -656,6 +665,15 @@ void Engine::LogAction(char const* format, ...)
     }
 }
 
+std::string const Engine::ResolveStrategyName(std::string const name)
+{
+    if (HasStrategy(name))
+        return name;
+
+    Strategy* strategy = aiObjectContext->GetStrategy(name);
+    return strategy ? strategy->getName() : name;
+}
+
 void Engine::ChangeStrategy(std::string const names)
 {
     std::vector<std::string> splitted = split(names, ',');
@@ -668,10 +686,10 @@ void Engine::ChangeStrategy(std::string const names)
                 addStrategy(name + 1);
                 break;
             case '-':
-                removeStrategy(name + 1);
+                removeStrategy(ResolveStrategyName(name + 1));
                 break;
             case '~':
-                toggleStrategy(name + 1);
+                toggleStrategy(ResolveStrategyName(name + 1));
                 break;
             case '?':
                 botAI->TellMaster(ListStrategies());

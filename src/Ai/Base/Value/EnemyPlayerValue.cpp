@@ -45,8 +45,7 @@ Unit* EnemyPlayerValue::Calculate()
         VehicleSeatEntry const* seat = vehicle->GetSeatForPassenger(bot);
         if (!seat || !seat->CanControl())  // not in control of vehicle so cant attack anyone
             return nullptr;
-        VehicleEntry const* vi = vehicle->GetVehicleInfo();
-        if (vi && vi->m_flags & VEHICLE_FLAG_FIXED_POSITION)
+        if (botAI->IsInVehicle(false, false, false, false, true))
             controllingCannon = true;
         else
             controllingVehicle = true;

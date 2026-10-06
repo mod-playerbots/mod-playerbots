@@ -6,6 +6,7 @@
 
 #include "UPActions.h"
 #include "Playerbots.h"
+#include "UPTriggers.h"
 
 bool AvoidFreezingCloudAction::Execute(Event /*event*/)
 {

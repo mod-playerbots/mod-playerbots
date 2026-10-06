@@ -7,11 +7,7 @@
 #ifndef PLAYERBOTS_UPACTIONS_H
 #define PLAYERBOTS_UPACTIONS_H
 
-#include "Action.h"
-#include "AttackAction.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
-#include "UPTriggers.h"
+#include "MovementActions.h"
 
 class AvoidFreezingCloudAction : public MovementAction
 {

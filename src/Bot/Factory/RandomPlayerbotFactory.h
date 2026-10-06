@@ -56,6 +56,7 @@ public:
     static std::string const CreateRandomGuildName();
     static uint32 CalculateTotalAccountCount();
     static uint32 CalculateAvailableCharsPerAccount();
+    static std::string GetLocalizedNameSelector(std::string const& column);
 
     // Arena team management
     static void AssignBotToArenaTeam(Player* bot);
@@ -69,6 +70,7 @@ private:
     static bool IsValidRaceClassCombination(uint8 race, uint8 class_, uint32 expansion);
     std::string const CreateRandomBotName(NameRaceAndGender raceAndGender);
 
+    static bool IsEligibleForBotArenaTeam(Player* bot);
     static void AssignBotToArenaTeamInternal(Player* bot);
     static void CollectJoinableBotArenaTeams(ArenaType type, TeamId faction, std::vector<ArenaTeam*>& out);
     static void CreateBotArenaTeam(Player* bot, ArenaType type);

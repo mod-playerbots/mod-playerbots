@@ -4,11 +4,15 @@
  * or (at your option) any later version.
  */
 
-#include "NearestAdsValue.h"
-#include "Playerbots.h"
+#ifndef PLAYERBOTS_RAMPBOSSHELPER_H
+#define PLAYERBOTS_RAMPBOSSHELPER_H
 
-bool NearestAddsValue::AcceptUnit(Unit* unit)
+#include "Player.h"
+
+class OmorBossHelper
 {
-    Unit* target = AI_VALUE(Unit*, "current target");
-    return unit != target;
-}
+public:
+    bool HasTreacheryAura(Player const* bot);
+};
+
+#endif

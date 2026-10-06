@@ -6,7 +6,6 @@
 
 #include "PvpTriggers.h"
 #include "BattleGroundTactics.h"
-#include "BattlegroundAV.h"
 #include "BattlegroundEY.h"
 #include "BattlegroundMgr.h"
 #include "BattlegroundWS.h"
@@ -309,28 +308,3 @@ bool VehicleNearTrigger::IsActive()
 }
 
 bool InVehicleTrigger::IsActive() { return botAI->IsInVehicle(); }
-
-bool AllianceNoSnowfallGY::IsActive()
-{
-    if (!bot || bot->GetTeamId() != TEAM_ALLIANCE)
-        return false;
-
-    Battleground* bg = bot->GetBattleground();
-    if (bg && BGTactics::GetBotStrategyForTeam(bg, TEAM_ALLIANCE) != AV_STRATEGY_BALANCED)
-        return false;
-
-    float botX = bot->GetPositionX();
-    if (botX <= -562.0f)
-        return false;
-
-    if (bot->GetBattlegroundTypeId() != BATTLEGROUND_AV)
-        return false;
-
-    if (BattlegroundAV* av = dynamic_cast<BattlegroundAV*>(bg))
-    {
-        BG_AV_NodeInfo const& snowfall = av->GetAVNodeInfo(BG_AV_NODES_SNOWFALL_GRAVE);
-        return snowfall.OwnerId != TEAM_ALLIANCE; // Active if the Snowfall Graveyard is NOT fully controlled by the Alliance
-    }
-
-    return false;
-}

@@ -187,6 +187,7 @@ public:
     bool enableBroadcasts;
     bool enableGreet;
     bool randomBotSayWithoutMaster;
+    bool AnnounceConsumableUse;
 
     uint32 broadcastChanceMaxValue;
 
@@ -271,7 +272,6 @@ public:
     uint32 randomBotTeleLowerLevel, randomBotTeleHigherLevel;
     std::map<uint32, std::pair<uint32, uint32>> zoneBrackets;
     bool logInGroupOnly, logValuesPerTick;
-    bool fleeingEnabled;
     bool summonAtInnkeepersEnabled;
     std::string combatStrategies, nonCombatStrategies;
     std::string randomBotCombatStrategies, randomBotNonCombatStrategies;
@@ -426,6 +426,7 @@ public:
     int32 maxAddedBots;
     int32 addClassCommand;
     int32 addClassAccountPoolSize;
+    bool addClassRandomCharacter;
     int32 maintenanceCommand;
     bool altMaintenanceAttunementQs,
             altMaintenanceBags,

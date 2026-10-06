@@ -7,8 +7,11 @@
 #include "AiObjectContext.h"
 #include "GDValueContext.h"
 #include "GruulValueContext.h"
+#include "HyjalValueContext.h"
+#include "MagValueContext.h"
 #include "MechValueContext.h"
 #include "MgTValueContext.h"
+#include "TKValueContext.h"
 #include "UBValueContext.h"
 #include "ZAValueContext.h"
 #include "ValueContext.h"
@@ -18,6 +21,9 @@ void AiObjectContext::BuildSharedValueContexts(
 {
     valueContexts.Add(new ValueContext());
     valueContexts.Add(new RaidGruulsLairValueContext());
+    valueContexts.Add(new RaidHyjalValueContext());
+    valueContexts.Add(new RaidMagtheridonValueContext());
+    valueContexts.Add(new RaidTempestKeepValueContext());
     valueContexts.Add(new RaidZulAmanValueContext());
     valueContexts.Add(new TbcDungeonMechValueContext());
     valueContexts.Add(new TbcDungeonMgTValueContext());

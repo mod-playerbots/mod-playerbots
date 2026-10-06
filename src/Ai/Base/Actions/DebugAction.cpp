@@ -468,7 +468,7 @@ bool DebugAction::Execute(Event event)
     else if (text.find("spell ") != std::string::npos)
     {
         uint32 spellEffect = stoi(text.substr(6));
-        master->SendPlaySpellVisual(bot->GetGUID(), spellEffect);
+        bot->SendPlaySpellVisual(spellEffect);
         return true;
     }
     else if (text.find("tspellmap") != std::string::npos)
@@ -849,7 +849,7 @@ bool DebugAction::Execute(Event event)
                     if (!target)
                         target = master;
 
-                    master->SendPlaySpellVisual(caster->GetGUID(), 5036);
+                    caster->SendPlaySpellVisual(5036);
                     FakeSpell(effect, realCaster, caster, target->GetGUID(), hits, miss, WorldPosition(caster),
                               WorldPosition(target));
 

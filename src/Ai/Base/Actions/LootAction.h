@@ -35,6 +35,7 @@ private:
     bool DoLoot(LootObject& lootObject);
     uint32 GetOpeningSpell(LootObject& lootObject);
     uint32 GetOpeningSpell(LootObject& lootObject, GameObject* go);
+    uint32 GetKeySpell(uint32 keyItemId);
     bool CanOpenLock(LootObject& lootObject, SpellInfo const* spellInfo, GameObject* go);
     bool CanOpenLock(uint32 skillId, uint32 reqSkillValue);
 };
