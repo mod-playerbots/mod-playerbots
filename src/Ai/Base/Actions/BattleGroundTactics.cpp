@@ -1944,6 +1944,45 @@ bool BGTactics::selectObjective(bool reset)
                     isDefender = false;
             }
 
+            TeamId enemyTeam = (team == TEAM_HORDE) ? TEAM_ALLIANCE : TEAM_HORDE;
+            uint32 enemyBossId = (team == TEAM_HORDE) ? AV_CREATURE_A_BOSS : AV_CREATURE_H_BOSS;
+            uint32 ownBossId = (team == TEAM_HORDE) ? AV_CREATURE_H_BOSS : AV_CREATURE_A_BOSS;
+
+            uint32 towersDown = 0;
+            bool attackNodesLeft = false;
+            for (auto const& [nodeId, _] : attackObjectives)
+            {
+                BG_AV_NodeInfo const& node = av->GetAVNodeInfo(nodeId);
+                if (node.State == POINT_DESTROYED)
+                    towersDown++;
+                else if (node.TotalOwnerId != team)
+                    attackNodesLeft = true;
+            }
+
+            bool pushPhase = towersDown >= 2 || !attackNodesLeft || strategy == AV_STRATEGY_OFFENSIVE;
+
+            // Once the team pushes the enemy boss, only a home guard stays unless the base is under attack
+            if (isDefender && pushPhase && role >= 2)
+            {
+                bool underThreat = false;
+                for (auto const& [nodeId, _] : defendObjectives)
+                {
+                    BG_AV_NodeInfo const& node = av->GetAVNodeInfo(nodeId);
+                    if (node.State == POINT_ASSAULTED && node.OwnerId != team)
+                        underThreat = true;
+                }
+
+                if (!underThreat)
+                    if (Creature* ownBoss = bg->GetBGCreature(ownBossId))
+                        underThreat = getPlayersInArea(enemyTeam, ownBoss->GetPosition(), 150.0f) > 0;
+
+                if (!underThreat)
+                    isDefender = false;
+            }
+
+            // Engage the enemy boss only once about half the team has gathered for it
+            uint32 bossGatherCount = std::clamp<uint32>(bg->GetPlayersCountByTeam(team) / 2, 5, 20);
+
             // --- Mine Capture (rarely works, needs some improvement) ---
             if (!BgObjective && enableMineCapture && role == 0)
             {
@@ -2027,9 +2066,9 @@ bool BGTactics::selectObjective(bool reset)
             }
 
             // --- Captain ---
-            if (!BgObjective && !isDefender && stableRoll(4, 100) < 50)
+            if (!BgObjective && !isDefender && stableRoll(4, 100) < 33)
             {
-                if (av->IsCaptainAlive(team == TEAM_HORDE ? TEAM_ALLIANCE : TEAM_HORDE))
+                if (av->IsCaptainAlive(enemyTeam))
                 {
                     uint32 creatureId = (team == TEAM_HORDE) ? AV_CREATURE_A_CAPTAIN : AV_CREATURE_H_CAPTAIN;
                     if (Creature* captain = bg->GetBGCreature(creatureId))
@@ -2043,30 +2082,17 @@ bool BGTactics::selectObjective(bool reset)
             }
 
             // --- Enemy Boss ---
-            if (!BgObjective)
-            {
-                uint32 towersDown = 0;
-                for (auto const& [nodeId, _] : attackObjectives)
-                    if (av->GetAVNodeInfo(nodeId).State == POINT_DESTROYED)
-                        towersDown++;
+            uint8 lastGY = (team == TEAM_HORDE) ? BG_AV_NODES_FIRSTAID_STATION : BG_AV_NODES_FROSTWOLF_HUT;
+            bool ownsFinalGY = av->GetAVNodeInfo(lastGY).OwnerId == team;
+            Creature* enemyBoss = bg->GetBGCreature(enemyBossId);
+            if (enemyBoss && !enemyBoss->IsAlive())
+                enemyBoss = nullptr;
 
-                if ((towersDown >= 2) || (strategy == AV_STRATEGY_OFFENSIVE))
-                {
-                    uint8 lastGY = (team == TEAM_HORDE) ? BG_AV_NODES_FIRSTAID_STATION : BG_AV_NODES_FROSTWOLF_HUT;
-                    bool ownsFinalGY = av->GetAVNodeInfo(lastGY).OwnerId == team;
+            // Counts teammates already fighting there too, so late arrivals join a pull in progress
+            bool bossGroupReady = enemyBoss && (ownsFinalGY || getPlayersInArea(team, enemyBoss->GetPosition(), 200.0f) >= bossGatherCount);
 
-                    uint32 bossId = (team == TEAM_HORDE) ? AV_CREATURE_A_BOSS : AV_CREATURE_H_BOSS;
-                    if (Creature* boss = bg->GetBGCreature(bossId))
-                    {
-                        if (boss->IsAlive())
-                        {
-                            uint32 nearbyCount = getPlayersInArea(team, boss->GetPosition(), 200.0f, false);
-                            if (ownsFinalGY || nearbyCount >= 20)
-                                BgObjective = boss;
-                        }
-                    }
-                }
-            }
+            if (!BgObjective && enemyBoss && pushPhase && bossGroupReady)
+                BgObjective = enemyBoss;
 
             // --- Attacker Logic ---
             if (!BgObjective)
@@ -2112,10 +2138,11 @@ bool BGTactics::selectObjective(bool reset)
                     pos.Set(rx, ry, rz, bot->GetMapId());
                     posMap["bg objective"] = pos;
 
-                    uint32 bossId = (team == TEAM_HORDE) ? AV_CREATURE_A_BOSS : AV_CREATURE_H_BOSS;
-                    if (Creature* boss = bg->GetBGCreature(bossId))
-                        if (boss->IsAlive())
-                            BgObjective = boss;
+                    // Wait at the rally point instead of pulling the boss alone; arriving there re-checks the group
+                    if (!bossGroupReady)
+                        return true;
+
+                    BgObjective = enemyBoss;
                 }
             }
 
