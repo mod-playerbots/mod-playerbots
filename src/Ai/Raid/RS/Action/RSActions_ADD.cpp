@@ -140,7 +140,7 @@ namespace
         return true;
     }
 
-    bool MarkableAdd(PlayerbotAI* botAI, Unit* mob)
+    bool MarkableAdd(Unit* mob)
     {
         if (!mob || !mob->IsAlive())
             return false;
@@ -175,7 +175,7 @@ Unit* RsTrashAddsAction::FindPriorityAdd()
 
     std::vector<Unit*> markable;
     for (Unit* mob : mobs)
-        if (MarkableAdd(botAI, mob))
+        if (MarkableAdd(mob))
             markable.push_back(mob);
 
     if (markable.empty())
@@ -186,7 +186,7 @@ Unit* RsTrashAddsAction::FindPriorityAdd()
         bestRank = std::min(bestRank, RsTrashPriorityRank(mob->GetEntry()));
 
     Unit* current = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
-    if (current && MarkableAdd(botAI, current) && RsTrashIsTrashEntry(current->GetEntry()) &&
+    if (current && MarkableAdd(current) && RsTrashIsTrashEntry(current->GetEntry()) &&
         RsTrashPriorityRank(current->GetEntry()) == bestRank)
         return current;
 

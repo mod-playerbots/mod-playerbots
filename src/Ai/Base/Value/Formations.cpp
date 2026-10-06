@@ -420,7 +420,6 @@ float Formation::GetFollowAngle()
 {
     Player* master = GetMaster();
     Group* group = bot->GetGroup();
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
 
     // If there's no master and no group
     if (!master && !group)
