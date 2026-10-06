@@ -857,16 +857,12 @@ void RandomPlayerbotMgr::LoadBattleMastersCache()
     do
     {
         Field* fields = result->Fetch();
-        battleMasterEntries.emplace_back(fields[0].Get<uint32>(), fields[1].Get<uint32>());
+        uint32 entry = fields[0].Get<uint32>();
+        battleMasterEntries.emplace_back(entry, fields[1].Get<uint32>());
+        BattleMasterSpawnIds.emplace(entry, 0);
     } while (result->NextRow());
 
-    // Track every battlemaster entry up front, so a template with no spawn is known to have none
-    // instead of falling back to a full creature-store scan on every battleground join.
-    for (auto const& entryPair : battleMasterEntries)
-        BattleMasterSpawnIds.emplace(entryPair.first, 0);
-
-    // Resolve each template to its first spawn once, instead of scanning the whole creature store
-    // again for every lookup during a battleground join.
+    // Resolve every entry to its first spawn once; 0 marks entries with no static spawn.
     for (auto const& [spawnId, creatureData] : sObjectMgr->GetAllCreatureData())
     {
         auto spawnIt = BattleMasterSpawnIds.find(creatureData.id);
@@ -3215,15 +3211,10 @@ ObjectGuid RandomPlayerbotMgr::GetBattleMasterGUID(Player* bot, BattlegroundType
     {
         CreatureData const* data = nullptr;
         auto spawnIt = BattleMasterSpawnIds.find(*i);
-        if (spawnIt != BattleMasterSpawnIds.end())
-        {
-            if (spawnIt->second)
-                data = sObjectMgr->GetCreatureData(spawnIt->second);
-        }
-        else
-        {
+        if (spawnIt == BattleMasterSpawnIds.end())
             data = sRandomPlayerbotMgr.GetCreatureDataByEntry(*i);
-        }
+        else if (spawnIt->second)
+            data = sObjectMgr->GetCreatureData(spawnIt->second);
 
         if (!data)
             continue;

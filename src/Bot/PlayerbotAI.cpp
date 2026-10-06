@@ -2659,7 +2659,7 @@ Player* PlayerbotAI::GetPlayer(ObjectGuid guid)
 
 uint32 GetCreatureIdForCreatureTemplateId(uint32 creatureTemplateId)
 {
-    // In-memory spawn lookup; avoids a synchronous world DB query on the map thread.
+    // Map-thread safe: resolve from memory, never the world DB.
     for (auto const& [spawnId, creatureData] : sObjectMgr->GetAllCreatureData())
     {
         if (creatureData.id == creatureTemplateId)
