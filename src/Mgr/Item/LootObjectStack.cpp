@@ -9,6 +9,7 @@
 #include "Object.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
+#include "QuestValues.h"
 #include "Unit.h"
 
 #define MAX_LOOT_OBJECT_COUNT 200
@@ -244,6 +245,10 @@ bool LootObject::IsNeededForQuest(Player* bot, uint32 itemId)
 
             return true;
         }
+
+        // ItemDrops and use-reagents: needed for the quest, but named by no RequiredItemId.
+        if (IsQuestExtraItemWanted(bot, qInfo, itemId))
+            return true;
     }
 
     return false;

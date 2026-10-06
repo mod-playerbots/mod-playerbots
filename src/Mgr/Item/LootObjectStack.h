@@ -42,7 +42,6 @@ public:
     uint32 reqSkillValue;
     uint32 reqItem;
 
-private:
     static bool IsNeededForQuest(Player* bot, uint32 itemId);
 };
 
