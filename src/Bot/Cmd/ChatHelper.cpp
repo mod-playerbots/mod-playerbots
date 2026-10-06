@@ -7,10 +7,12 @@
 #include "ChatHelper.h"
 #include "AiFactory.h"
 #include "Common.h"
+#include "DBCStores.h"
 #include "ItemTemplate.h"
 #include "ObjectMgr.h"
 #include "Playerbots.h"
 #include "SpellInfo.h"
+#include "World.h"
 #include <regex>
 
 std::map<std::string, uint32> ChatHelper::consumableSubClasses;
@@ -151,7 +153,7 @@ ChatHelper::ChatHelper(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
     specs[CLASS_PRIEST][2] = "shadow";
 
     classes[CLASS_ROGUE] = "rogue";
-    specs[CLASS_ROGUE][0] = "assasination";
+    specs[CLASS_ROGUE][0] = "assassination";
     specs[CLASS_ROGUE][1] = "combat";
     specs[CLASS_ROGUE][2] = "subtlety";
 
@@ -379,7 +381,7 @@ std::string const ChatHelper::FormatQuest(Quest const* quest)
 std::string const ChatHelper::FormatGameobject(GameObject* go)
 {
     std::ostringstream out;
-    out << "|cFFFFFF00|Hfound:" << go->GetGUID().GetRawValue() << ":" << go->GetEntry() << ":"
+    out << "|cffffff00|Hfound:" << go->GetGUID().GetRawValue() << ":" << go->GetEntry() << ":"
         << "|h[" << go->GetNameForLocaleIdx(sWorld->GetDefaultDbcLocale()) << "]|h|r";
     return out.str();
 }
@@ -387,7 +389,7 @@ std::string const ChatHelper::FormatGameobject(GameObject* go)
 std::string const ChatHelper::FormatWorldobject(WorldObject* wo)
 {
     std::ostringstream out;
-    out << "|cFFFFFF00|Hfound:" << wo->GetGUID().GetRawValue() << ":" << wo->GetEntry() << ":"
+    out << "|cffffff00|Hfound:" << wo->GetGUID().GetRawValue() << ":" << wo->GetEntry() << ":"
         << "|h[";
     out << (wo->ToGameObject() ? ((GameObject*)wo)->GetNameForLocaleIdx(sWorld->GetDefaultDbcLocale())
                                : wo->GetNameForLocaleIdx(sWorld->GetDefaultDbcLocale()))
@@ -658,7 +660,24 @@ std::string const ChatHelper::FormatClass(Player* player, int8 spec)
 
 std::string const ChatHelper::FormatClass(uint8 cls) { return classes[cls]; }
 
-std::string const ChatHelper::FormatRace(uint8 race) { return races[race]; }
+std::string const ChatHelper::FormatRace(uint8 race)
+{
+    auto itr = races.find(race);
+    if (itr != races.end())
+        return itr->second;
+
+    if (ChrRacesEntry const* entry = sChrRacesStore.LookupEntry(race))
+    {
+        // English like the races map; DBCs from another locale leave enUS empty.
+        char const* name = entry->name[LOCALE_enUS];
+        if (!name || !*name)
+            name = entry->name[sWorld->GetDefaultDbcLocale()];
+        if (name && *name)
+            return name;
+    }
+
+    return "";
+}
 
 uint32 ChatHelper::parseSkill(std::string const text)
 {

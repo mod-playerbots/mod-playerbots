@@ -58,11 +58,11 @@ bool DrinkAction::Execute(Event event)
         float delay;
 
         if (!bot->InBattleground())
-            delay = 18000.0f * (100 - p) / 100.0f;
+            delay = 18.0f * IN_MILLISECONDS * (100 - p) / 100.0f;
         else
-            delay = 12000.0f * (100 - p) / 100.0f;
+            delay = 12.0f * IN_MILLISECONDS * (100 - p) / 100.0f;
 
-        botAI->SetNextCheckDelay(delay);
+        SetDuration((uint32)delay);
 
         bot->AddAura(25990, bot);
         return true;
@@ -75,7 +75,7 @@ bool DrinkAction::Execute(Event event)
 bool DrinkAction::isUseful()
 {
     return UseItemAction::isUseful() && AI_VALUE2(bool, "has mana", "self target") &&
-           AI_VALUE2(uint8, "mana", "self target") < 100;
+           AI_VALUE2(uint8, "mana", "self target") < 85;
 }
 
 bool DrinkAction::isPossible()
@@ -118,11 +118,11 @@ bool EatAction::Execute(Event event)
         float delay;
 
         if (!bot->InBattleground())
-            delay = 18000.0f * (100 - p) / 100.0f;
+            delay = 18.0f * IN_MILLISECONDS * (100 - p) / 100.0f;
         else
-            delay = 12000.0f * (100 - p) / 100.0f;
+            delay = 12.0f * IN_MILLISECONDS * (100 - p) / 100.0f;
 
-        botAI->SetNextCheckDelay(delay);
+        SetDuration((uint32)delay);
 
         bot->AddAura(25990, bot);
         return true;
@@ -131,7 +131,11 @@ bool EatAction::Execute(Event event)
     return UseItemAction::Execute(event);
 }
 
-bool EatAction::isUseful() { return UseItemAction::isUseful() && AI_VALUE2(uint8, "health", "self target") < 100; }
+bool EatAction::isUseful()
+{
+    return UseItemAction::isUseful() &&
+           AI_VALUE2(uint8, "health", "self target") < sPlayerbotAIConfig.lowHealth;
+}
 
 bool EatAction::isPossible()
 {
