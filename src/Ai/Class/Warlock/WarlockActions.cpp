@@ -111,7 +111,8 @@ bool CastSoulshatterAction::isUseful()
 {
     if (botAI->HasStrategy("tank", BOT_STATE_COMBAT))
         return false;
-    return true;
+    Unit* target = AI_VALUE(Unit*, "current target");
+    return !(target && target->IsPlayer());  // players have no threat
 }
 
 // Checks if the bot has enough bag space to create a soul shard, then does so

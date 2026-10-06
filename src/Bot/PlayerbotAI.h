@@ -16,6 +16,7 @@
 #include "Item.h"
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
+#include "ObjectGuid.h"
 #include "PlayerbotAIBase.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotSecurity.h"
@@ -25,14 +26,15 @@
 #include "WorldPacket.h"
 #include <stack>
 
+class Action;
 class AiObjectContext;
 class Creature;
 class Engine;
 class ExternalEventHelper;
 class Group;
+class ReactionEngine;
 class Gameobject;
 class Item;
-class ObjectGuid;
 class Player;
 class PlayerbotMgr;
 class Spell;
@@ -74,6 +76,7 @@ enum BotState
     BOT_STATE_COMBAT = 0,
     BOT_STATE_NON_COMBAT = 1,
     BOT_STATE_DEAD = 2,
+    BOT_STATE_REACTION = 3,
 
     BOT_STATE_MAX
 };
@@ -263,7 +266,8 @@ enum ActivityType
     PACKET_ACTIVITY = 5,
     DETAILED_MOVE_ACTIVITY = 6,
     PARTY_ACTIVITY = 7,
-    ALL_ACTIVITY = 8,
+    REACT_ACTIVITY = 8,
+    ALL_ACTIVITY = 9,
 
     MAX_ACTIVITY_TYPE
 };
@@ -361,30 +365,39 @@ private:
 class ChatCommandHolder
 {
 public:
-    ChatCommandHolder(std::string const command, Player* owner = nullptr, uint32 type = CHAT_MSG_WHISPER,
-                      time_t time = 0)
-        : command(command), owner(owner), type(type), time(time)
+    ChatCommandHolder(std::string const command, ObjectGuid owner, PlayerbotSecurityLevel requiredLevel,
+                      uint32 type = CHAT_MSG_WHISPER, time_t time = 0)
+        : command(command), owner(owner), requiredLevel(requiredLevel), type(type), time(time)
     {
     }
     ChatCommandHolder(ChatCommandHolder const& other)
-        : command(other.command), owner(other.owner), type(other.type), time(other.time)
+        : command(other.command),
+          owner(other.owner),
+          requiredLevel(other.requiredLevel),
+          type(other.type),
+          time(other.time)
     {
     }
 
     std::string const& GetCommand() { return command; }
-    Player* GetOwner() { return owner; }
+    ObjectGuid GetOwnerGuid() { return owner; }
+    PlayerbotSecurityLevel GetRequiredLevel() { return requiredLevel; }
     uint32& GetType() { return type; }
     time_t& GetTime() { return time; }
 
 private:
     std::string const command;
-    Player* owner;
+    ObjectGuid owner;
+    PlayerbotSecurityLevel requiredLevel;  // what the sender needed when the command was accepted
     uint32 type;
     time_t time;
 };
 
 class PlayerbotAI : public PlayerbotAIBase
 {
+    // Consumes queued chat commands from FindReaction(); needs HandleCommands().
+    friend class ReactionEngine;
+
 public:
     PlayerbotAI();
     PlayerbotAI(Player* bot);
@@ -392,6 +405,10 @@ public:
 
     void UpdateAI(uint32 elapsed, bool minimal = false) override;
     void UpdateAIInternal(uint32 elapsed, bool minimal = false) override;
+    bool UpdateAIReaction(uint32 elapsed, bool minimal, bool canControlSelf);
+    Engine* GetCurrentEngine() const { return currentEngine; }
+    void SetActionDuration(Action const* action);
+    using PlayerbotAIBase::SetActionDuration;
 
     std::string const HandleRemoteCommand(std::string const command);
     void HandleCommand(uint32 type, std::string const text, Player* fromPlayer);
@@ -513,7 +530,7 @@ public:
     virtual bool HasAuraToDispel(Unit* player, uint32 dispelType);
     bool CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell = true, Item* itemTarget = nullptr,
                       Item* castItem = nullptr);
-    bool CanCastSpell(uint32 spellid, GameObject* goTarget, bool checkHasSpell = true);
+    bool CanCastSpell(uint32 spellid, GameObject* goTarget, bool checkHasSpell = true, Item* castItem = nullptr);
     bool CanCastSpell(uint32 spellid, float x, float y, float z, bool checkHasSpell = true,
                       Item* itemTarget = nullptr);
 
@@ -649,6 +666,7 @@ protected:
     static std::set<std::string> unsecuredCommands;
     bool allowActive[MAX_ACTIVITY_TYPE];
     time_t allowActiveCheckTimer[MAX_ACTIVITY_TYPE];
+    ReactionEngine* reactionEngine = nullptr;
     bool inCombat = false;
     BotCheatMask cheatMask = BotCheatMask::none;
     Position jumpDestination = Position();
