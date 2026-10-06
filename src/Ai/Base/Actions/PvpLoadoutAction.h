@@ -11,9 +11,8 @@
 
 class PlayerbotAI;
 
-// Enters, re-applies or restores the PvP loadout, whichever the bot's location calls for. Entering takes two passes:
-// the first plans the match gear and saves copies of the PvE items it replaces, the second equips it once they are
-// saved.
+// Enters, re-applies or restores the PvP loadout. Entering plans the gear and saves copies of the PvE items it
+// replaces; a later pass equips it once they are saved.
 class SwapPvpLoadoutAction : public Action
 {
 public:

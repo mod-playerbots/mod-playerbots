@@ -35,14 +35,12 @@ public:
     // The opponents' rating for the bot's arena; not ready while a skirmish waits for its opponents.
     static PvpLoadout::MatchRating ResolveMatchRating(Player* bot);
 
-    // Chooses the match gear for the rating into snapshot.plannedItems and copies the PvE item of every slot it will
-    // replace into snapshot.pveCopies; changes nothing on the bot. Save the snapshot before ApplyPlannedGear. Call
-    // after ApplyPvpTalents, since the bot's PvP talents decide its rankings, dual wield and Titan's Grip.
+    // Plans the match gear and copies the PvE items it replaces, without touching the bot; save before applying. Call
+    // after ApplyPvpTalents: the PvP talents decide rankings, dual wield and Titan's Grip.
     static void PlanMatchGear(Player* bot, uint32 rating, PvpLoadout::Snapshot& snapshot);
 
-    // Destroys the copied PvE items and equips the planned match gear in their slots, created for the match (added to
-    // snapshot.matchItems), then gems and enchants it. Only once the copies are saved: a slot whose item is not the
-    // copied one is left alone, so nothing without a copy is destroyed.
+    // Once the copies are saved: destroys the copied PvE items, creates the match gear in their slots and gems it. A
+    // slot whose item is not the copied one is left alone.
     static void ApplyPlannedGear(Player* bot, PvpLoadout::Snapshot& snapshot);
 
     // In a skirmish, tells the real players on the bot's team its PvP spec, average item level and the rating its gear

@@ -343,9 +343,8 @@ void PvpLoadoutMgr::PlanMatchGear(Player* bot, uint32 rating, PvpLoadout::Snapsh
     std::vector<PvpGearListMgr::Pick> picks = loadout.picks;
     AlignPairedSlots(bot, picks);
 
-    // Own item or cached pick, slot by slot, from the bot's measured hit, spell penetration and resilience. The items
-    // the loadout decides on come out of the measurement; their gems and enchants stay in, as an estimate of what the
-    // slot carries either way (the match items get theirs afterwards), so both sides are compared without them.
+    // Own item or cached pick against the bot's measured caps. The decided items come out of the measurement but their
+    // gems and enchants stay in, standing in for the ones the match items get afterwards.
     PvpLoadout::StatVector base = PvpLoadoutStats::MeasureCappedTotals(bot, loadout.role);
     std::vector<PvpGearListMgr::LoadoutItem const*> items;
     std::vector<PvpLoadout::Group> groups;

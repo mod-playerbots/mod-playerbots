@@ -12,10 +12,8 @@
 class Player;
 struct ItemTemplate;
 
-// Reads gear and bots into PvpLoadoutEp's stat vectors. Item and enchant stats come from StatsCollector, so procs and
-// on-use effects count at their average uptime, as everywhere else the module scores gear. Ratings are scaled to their
-// level-80 equivalent at the bot's level, because the profiles' targets and weights are level-80 values: a rating
-// point is worth more at lower levels, so lower-bracket gear loses value as a bot levels through its bracket.
+// Reads gear and bots into EP stat vectors. Ratings are scaled to their level-80 equivalent at the bot's level, since
+// the profiles' targets are level-80 values.
 class PvpLoadoutStats
 {
 public:

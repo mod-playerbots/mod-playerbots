@@ -98,9 +98,8 @@ struct Opponent
     bool realPlayer;
 };
 
-// Rated: the opposing team's MMR. Skirmish: once the whole opposing team is present, the highest personal rating among
-// its real players, or among its bots when no real player has one; until then wait, and when prep is nearly over use
-// whoever is present (0 with nobody).
+// Rated: the opposing MMR. Skirmish: the highest rating among the opposing real players, else its bots, once the whole
+// team is present; near the end of prep, whoever is there (0 with nobody).
 MatchRating ResolveMatchRating(bool rated, uint32 opposingMmr, std::vector<Opponent> const& opponents,
                                uint32 opposingTeamSize, uint32 prepRemainingMs, uint32 fallbackThresholdMs);
 
@@ -113,9 +112,8 @@ enum class Transition
     Restore
 };
 
-// arenaInstanceId is 0 outside an arena; loadoutInstanceId is the arena the loadout was built for. Restore happens at
-// match end or anywhere outside an arena (crash, relog), even with the feature disabled. gearPending: the loadout has
-// planned match gear not yet equipped.
+// Restore happens at match end or anywhere outside an arena (crash, relog), even with the feature disabled.
+// arenaInstanceId is 0 outside an arena; gearPending: planned match gear not yet equipped.
 Transition Decide(bool featureEnabled, uint32 arenaInstanceId, bool matchOver, bool hasLoadout,
                   uint32 loadoutInstanceId, bool gearPending = false);
 

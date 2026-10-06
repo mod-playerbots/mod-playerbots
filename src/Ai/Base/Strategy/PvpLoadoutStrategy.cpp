@@ -9,7 +9,6 @@
 
 void PvpLoadoutStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // Above arena tactics (ACTION_BG) so the swap finishes during preparation.
     triggers.push_back(new TriggerNode("pvp loadout mismatch", {NextAction("swap pvp loadout", ACTION_HIGH)}));
 }
 

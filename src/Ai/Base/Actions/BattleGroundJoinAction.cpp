@@ -718,9 +718,7 @@ bool BGStatusAction::LeaveBG(PlayerbotAI* botAI)
              bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName(),
              isArena ? "Arena" : "BG");
 
-    // Bots leave as soon as the match ends, so this is the one point a PvP loadout can be restored inside the arena,
-    // where bots are always active. Armor cannot be equipped in combat, and the match is over, so a bot holding a
-    // loadout drops its combat state first.
+    // Armor cannot be equipped in combat, and the match is over.
     if (botAI->GetAiObjectContext()->GetValue<std::optional<PvpLoadout::Snapshot>>("pvp loadout")->RefGet())
     {
         bot->CombatStop(true, true);

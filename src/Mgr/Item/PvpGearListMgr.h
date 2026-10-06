@@ -17,11 +17,8 @@
 class Player;
 struct ItemTemplate;
 
-// PvP gear for the arena loadout swap. The pool is every equippable armor or weapon with resilience that a spawned
-// vendor outside GM Island sells, with the personal rating its vendors require; it is built once from the core's
-// in-memory item, vendor and spawn data. Per-spec rankings are cached by class, PvP premade and level; match loadouts
-// additionally by faction and rating tier. Neither cache is persisted: both only depend on config and world data,
-// which change on restart.
+// PvP gear sold by vendors outside GM Island, ranked per class, premade and level; match loadouts are cached per
+// faction and rating tier too. Neither cache is persisted: config and world data only change on restart.
 class PvpGearListMgr
 {
 public:
@@ -65,9 +62,8 @@ public:
     // The bot must already be in the PvP premade specNo, so its talents match every bot sharing the cached ranking.
     std::vector<PvpLoadout::ItemCandidate> const& GetRanked(Player* bot, int32 specNo, uint8 slot);
 
-    // The match gear for the bot's spec at this rating: a four-piece of one set, then the remaining slots biggest
-    // marginal EP first, chosen once per rating tier and shared by every bot of the spec. Same precondition as
-    // GetRanked; specNo is NO_SPEC when the bot's tree has no PvP premade, which leaves PvE items only.
+    // A four-piece of one set, then the remaining slots by marginal EP; shared per rating tier by the spec's bots.
+    // Same precondition as GetRanked; NO_SPEC (no PvP premade for the tree) leaves PvE items only.
     Loadout const& GetLoadout(Player* bot, int32 specNo, uint32 rating);
 
     static PvpLoadout::ItemCandidate ToCandidate(ItemTemplate const* proto, uint32 requiredRating);

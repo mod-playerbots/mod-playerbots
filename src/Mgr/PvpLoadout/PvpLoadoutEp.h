@@ -84,9 +84,8 @@ struct SetPiece
     uint32 itemLevel;
 };
 
-// The set with at least `required` eligible slots and the highest average item level over its best
-// `required` pieces (ties go to the higher item set id, the later season) gives exactly `required` pieces, the best
-// one per slot. Returns slot -> item id; empty when no set reaches `required`.
+// Slot -> item id: the best `required` pieces of the set with the highest total item level (later season on ties);
+// empty when no set has `required` eligible slots.
 std::map<uint8, uint32> PickSetPieces(std::vector<SetPiece> const& pieces, uint32 required);
 
 // One way to fill a group of slots, e.g. one ring, or a two-hander (main hand plus an empty off-hand).
@@ -104,9 +103,8 @@ struct Group
     std::vector<Option> options;
 };
 
-// Fills every group, biggest marginal EP first: each round applies the single (group, option) worth most given the
-// totals so far. A unique item already taken is not offered again; the bot's own option wins ties. `base` is the
-// bot's totals without the items in these groups. Returns the chosen option index per group (-1 when none fits).
+// The chosen option per group (-1 when none fits), each round taking the biggest marginal EP over `base` and the
+// choices so far; unique items are taken once and the bot's own option wins ties.
 std::vector<int32> SelectBiggestGainFirst(StatVector const& base, std::vector<Group> const& groups,
                                           Profile const& profile);
 }  // namespace PvpLoadout
