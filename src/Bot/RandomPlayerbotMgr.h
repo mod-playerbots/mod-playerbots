@@ -12,6 +12,9 @@
 #include "ObjectGuid.h"
 #include "PlayerbotCommandServer.h"
 #include "PlayerbotMgr.h"
+#include <atomic>
+#include <mutex>
+#include <set>
 #include <unordered_set>
 
 struct BattlegroundInfo
@@ -242,7 +245,10 @@ private:
     void RandomTeleport(Player* bot);
     void RandomTeleport(Player* bot, std::vector<WorldLocation>& locs, bool hearth = false);
     uint32 GetZoneLevel(uint16 mapId, float teleX, float teleY, float teleZ);
+    void UpdatePlayerZones();
     std::vector<WorldLocation> GetPlayerZoneTeleportLocations(std::vector<WorldLocation> const& locs, Player* bot);
+    std::vector<WorldLocation> GetPlayerZoneTeleportLocationsNearLevel(Player* bot);
+    bool GetPlayerLevelWindow(uint32& minLevel, uint32& maxLevel) const;
     typedef void (RandomPlayerbotMgr::*ConsoleCommandHandler)(Player*);
     std::vector<Player*> players;
 
@@ -252,6 +258,11 @@ private:
     std::unordered_map<uint32, BotEventCache> eventCache;
     std::unordered_set<uint32> currentBots;
     uint32 playersLevel;
+    // No +3 offset and can go down, unlike playersLevel; map threads read it (AutoTeleportForLevel).
+    std::atomic<uint32> _realPlayersMaxLevel{0};
+    // Real players' (map, zone), built on the world thread: teleports also run on map threads.
+    std::set<std::pair<uint32, uint32>> _playerZones;
+    std::mutex _playerZonesLock;
 
     // Account lists
     std::vector<uint32> rndBotTypeAccounts;             // Accounts marked as RNDbot (type 1)
