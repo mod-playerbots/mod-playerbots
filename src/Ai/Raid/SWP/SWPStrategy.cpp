@@ -5,12 +5,16 @@
  */
 
 #include "SWPStrategy.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPMultipliers.h"
 #include "SWPShared.h"
+
+using namespace SwpHelpers;
+using namespace EncounterHelpers;
 
 void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -278,8 +282,6 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 namespace
 {
 
-using namespace SwpHelpers;
-
 void AppendVolatileFiendMeleeDpsExclusions(
     PlayerbotAI* botAI, Player* bot, AiObjectContext* context, GuidSet& exclusions)
 {
@@ -292,22 +294,19 @@ void AppendVolatileFiendMeleeDpsExclusions(
 }
 
 void AppendFelmystVaporPhaseMeleeExclusions(
-    PlayerbotAI* botAI, Player* bot, AiObjectContext* context, GuidSet& exclusions)
+    Player* bot, AiObjectContext* context, GuidSet& exclusions)
 {
     if (!PlayerbotAI::IsMelee(bot))
         return;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (IsFelmystAirPhaseTargetSuppressed(felmyst))
+    if (felmyst && IsFelmystAirPhaseTargetSuppressed(felmyst))
         exclusions.insert(felmyst->GetGUID());
 }
 
 void AppendMuruDarkFiendExclusions(
     PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
-    if (!AI_VALUE2(Unit*, "find target", "m'uru"))
-        return;
-
     for (auto const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
     {
         Unit* attacker = botAI->GetUnit(guid);
@@ -323,7 +322,7 @@ void AppendMuruTankExclusions(
         return;
 
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!IsMuruPhaseActive(muru))
+    if (!muru || !IsMuruPhaseActive(muru))
         return;
 
     bool const darknessActive = PeekMuruDarknessActiveState(bot);
@@ -359,9 +358,6 @@ void AppendKiljaedenShieldOrbExclusions(
     if (!PlayerbotAI::IsMelee(bot))
         return;
 
-    if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
-        return;
-
     for (auto const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
     {
         Unit* attacker = botAI->GetUnit(guid);
@@ -381,7 +377,11 @@ void RaidSwpStrategy::AppendTargetExclusions(
 
     AiObjectContext* context = botAI->GetAiObjectContext();
     AppendVolatileFiendMeleeDpsExclusions(botAI, bot, context, exclusions);
-    AppendFelmystVaporPhaseMeleeExclusions(botAI, bot, context, exclusions);
+
+    if (!IsEncounterInProgress(bot, SWP_MAP_ID))
+        return;
+
+    AppendFelmystVaporPhaseMeleeExclusions(bot, context, exclusions);
     AppendMuruDarkFiendExclusions(botAI, context, exclusions);
     AppendMuruTankExclusions(botAI, bot, context, exclusions);
     AppendKiljaedenShieldOrbExclusions(botAI, bot, context, exclusions);
