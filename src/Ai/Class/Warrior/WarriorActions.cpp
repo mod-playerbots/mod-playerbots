@@ -7,6 +7,7 @@
 #include "WarriorActions.h"
 #include "AiFactory.h"
 #include "Playerbots.h"
+#include "SpellAuraEffects.h"
 
 namespace
 {
