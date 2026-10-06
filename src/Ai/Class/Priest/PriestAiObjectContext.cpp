@@ -5,6 +5,7 @@
  */
 
 #include "PriestAiObjectContext.h"
+#include "DiscPriestStrategy.h"
 #include "GenericPriestStrategy.h"
 #include "HolyPriestStrategy.h"
 #include "NamedObjectContext.h"
@@ -52,17 +53,19 @@ class PriestCombatStrategyFactoryInternal : public NamedObjectContext<Strategy>
 public:
     PriestCombatStrategyFactoryInternal() : NamedObjectContext<Strategy>(false, true)
     {
-        creators["heal"] = &PriestCombatStrategyFactoryInternal::heal;
-        creators["shadow"] = &PriestCombatStrategyFactoryInternal::dps;
-        creators["dps"] = &PriestCombatStrategyFactoryInternal::dps;
+        creators["disc"] = &PriestCombatStrategyFactoryInternal::disc;
+        creators["heal"] = &PriestCombatStrategyFactoryInternal::disc;
+        creators["shadow"] = &PriestCombatStrategyFactoryInternal::shadow;
+        creators["dps"] = &PriestCombatStrategyFactoryInternal::shadow;
         creators["holy dps"] = &PriestCombatStrategyFactoryInternal::holy_dps;
+        creators["holy"] = &PriestCombatStrategyFactoryInternal::holy_heal;
         creators["holy heal"] = &PriestCombatStrategyFactoryInternal::holy_heal;
     }
 
 private:
-    static Strategy* heal(PlayerbotAI* botAI) { return new HealPriestStrategy(botAI); }
-    static Strategy* dps(PlayerbotAI* botAI) { return new ShadowPriestStrategy(botAI); }
-    static Strategy* holy_dps(PlayerbotAI* botAI) { return new HolyPriestStrategy(botAI); }
+    static Strategy* disc(PlayerbotAI* botAI) { return new DiscPriestStrategy(botAI); }
+    static Strategy* shadow(PlayerbotAI* botAI) { return new ShadowPriestStrategy(botAI); }
+    static Strategy* holy_dps(PlayerbotAI* botAI) { return new HolyDpsPriestStrategy(botAI); }
     static Strategy* holy_heal(PlayerbotAI* botAI) { return new HolyHealPriestStrategy(botAI); }
 };
 

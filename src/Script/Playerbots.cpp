@@ -45,8 +45,9 @@ public:
             return false;
         }
 
+        uint8 const workerThreads = sConfigMgr->GetOption<uint8>("PlayerbotsDatabase.WorkerThreads", 1);
         uint8 const synchThreads = sConfigMgr->GetOption<uint8>("PlayerbotsDatabase.SynchThreads", 2);
-        PlayerbotsDatabase.SetConnectionInfo(dbString, synchThreads);
+        PlayerbotsDatabase.SetConnectionInfo(dbString, workerThreads, synchThreads);
 
         bool const updatesEnabled = sConfigMgr->GetOption<bool>("Playerbots.Updates.EnableDatabases", true);
         if (updatesEnabled && !DBUpdaterUtil::CheckExecutable())
@@ -260,9 +261,9 @@ public:
 
     using PlayerScript::OnPlayerCanUseChat;  // keep the base overloads visible
 
-    bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Player* receiver) override
+    bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 lang, std::string& msg, Player* receiver) override
     {
-        if (type != CHAT_MSG_WHISPER)
+        if (type != CHAT_MSG_WHISPER || lang == LANG_ADDON)
         {
             return true;
         }
@@ -285,8 +286,12 @@ public:
         return true;
     }
 
-    bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Group* group) override
+    bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 lang, std::string& msg, Group* group) override
     {
+        // Addon traffic (DBM, Carbonite, ...) is no bot command; its text used to trigger item commands like trade.
+        if (lang == LANG_ADDON)
+            return true;
+
         for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             Player* const member = itr->GetSource();
@@ -305,9 +310,9 @@ public:
         return true;
     }
 
-    bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Guild* /*guild*/) override
+    bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 lang, std::string& msg, Guild* /*guild*/) override
     {
-        if (type != CHAT_MSG_GUILD)
+        if (type != CHAT_MSG_GUILD || lang == LANG_ADDON)
             return true;
 
         PlayerbotMgr* playerbotMgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
@@ -559,7 +564,11 @@ public:
     {
         BGStrategyData data;
 
-        switch (bg->GetBgTypeID())
+        BattlegroundTypeId bgType = bg->GetBgTypeID();
+        if (bgType == BATTLEGROUND_RB)  // a random-queue game: the rolled map
+            bgType = bg->GetBgTypeID(true);
+
+        switch (bgType)
         {
             case BATTLEGROUND_WS:
                 data.allianceStrategy = urand(0, WS_STRATEGY_MAX - 1);

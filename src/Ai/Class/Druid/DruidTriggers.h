@@ -17,7 +17,8 @@
 #include "Trigger.h"
 #include <set>
 
-constexpr uint32 AURA_OMEN_OF_CLARITY = 16864;
+inline constexpr uint32 AURA_OMEN_OF_CLARITY = 16864;
+inline constexpr uint32 SPELL_TREE_OF_LIFE = 33891;
 
 class PlayerbotAI;
 
@@ -442,6 +443,30 @@ public:
     {
         return !botAI->HasStrategy("healer dps", BOT_STATE_COMBAT);
     }
+};
+
+// Blanketing and healer dps compete for a druid in tree form, so healer dps does not take effect
+// for a grouped resto druid with tree form.
+class HealerShouldAttackAndNotBlanketingTrigger : public HealerShouldAttackTrigger
+{
+public:
+    HealerShouldAttackAndNotBlanketingTrigger(PlayerbotAI* botAI) : HealerShouldAttackTrigger(botAI) {}
+
+    std::string const getName() override { return "healer should attack and not blanketing"; }
+    bool IsActive() override;
+};
+
+class BlanketHotTrigger : public Trigger
+{
+public:
+    BlanketHotTrigger(PlayerbotAI* botAI, std::string const& name, std::string const& spell)
+        : Trigger(botAI, name), _spell(spell) {}
+
+    Unit* GetTarget() override;
+    bool IsActive() override;
+
+private:
+    std::string _spell;
 };
 
 class ProwlTrigger : public Trigger

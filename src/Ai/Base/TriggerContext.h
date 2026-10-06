@@ -91,7 +91,6 @@ public:
         creators["target in sight"] = &TriggerContext::TargetInSight;
         creators["not dps target active"] = &TriggerContext::not_dps_target_active;
         creators["not dps aoe target active"] = &TriggerContext::not_dps_aoe_target_active;
-        creators["has nearest adds"] = &TriggerContext::has_nearest_adds;
         creators["enemy player near"] = &TriggerContext::enemy_player_near;
 
         creators["tank assist"] = &TriggerContext::TankAssist;
@@ -146,8 +145,6 @@ public:
         creators["no drink"] = &TriggerContext::no_drink;
         creators["no food"] = &TriggerContext::no_food;
 
-        creators["panic"] = &TriggerContext::panic;
-        creators["outnumbered"] = &TriggerContext::outnumbered;
         creators["behind target"] = &TriggerContext::behind_target;
         creators["not behind target"] = &TriggerContext::not_behind_target;
         creators["not facing target"] = &TriggerContext::not_facing_target;
@@ -195,7 +192,6 @@ public:
         creators["in Battleground"] = &TriggerContext::player_is_in_BATTLEGROUND;
         creators["in Battleground without flag"] = &TriggerContext::player_is_in_BATTLEGROUND_no_flag;
         creators["wants in bg"] = &TriggerContext::player_wants_in_bg;
-        creators["alliance no snowfall gy"] = &TriggerContext::alliance_no_snowfall_gy;
 
         creators["mounted"] = &TriggerContext::mounted;
 
@@ -302,8 +298,6 @@ private:
     static Trigger* behind_target(PlayerbotAI* botAI) { return new IsBehindTargetTrigger(botAI); }
     static Trigger* not_behind_target(PlayerbotAI* botAI) { return new IsNotBehindTargetTrigger(botAI); }
     static Trigger* not_facing_target(PlayerbotAI* botAI) { return new IsNotFacingTargetTrigger(botAI); }
-    static Trigger* panic(PlayerbotAI* botAI) { return new PanicTrigger(botAI); }
-    static Trigger* outnumbered(PlayerbotAI* botAI) { return new OutNumberedTrigger(botAI); }
     static Trigger* no_drink(PlayerbotAI* botAI) { return new NoDrinkTrigger(botAI); }
     static Trigger* no_food(PlayerbotAI* botAI) { return new NoFoodTrigger(botAI); }
     static Trigger* LightAoe(PlayerbotAI* botAI) { return new LightAoeTrigger(botAI); }
@@ -342,7 +336,6 @@ private:
     static Trigger* TargetInSight(PlayerbotAI* botAI) { return new TargetInSightTrigger(botAI); }
     static Trigger* not_dps_target_active(PlayerbotAI* botAI) { return new NotDpsTargetActiveTrigger(botAI); }
     static Trigger* not_dps_aoe_target_active(PlayerbotAI* botAI) { return new NotDpsAoeTargetActiveTrigger(botAI); }
-    static Trigger* has_nearest_adds(PlayerbotAI* botAI) { return new HasNearestAddsTrigger(botAI); }
     static Trigger* enemy_player_near(PlayerbotAI* botAI) { return new EnemyPlayerNear(botAI); }
     static Trigger* Random(PlayerbotAI* botAI) { return new RandomTrigger(botAI, "random", 20); }
     static Trigger* seldom(PlayerbotAI* botAI) { return new RandomTrigger(botAI, "seldom", 300); }
@@ -416,7 +409,6 @@ private:
     static Trigger* enemy_flagcarrier_near(PlayerbotAI* botAI) { return new EnemyFlagCarrierNear(botAI); }
     static Trigger* player_is_in_BATTLEGROUND(PlayerbotAI* botAI) { return new PlayerIsInBattleground(botAI); }
     static Trigger* player_is_in_BATTLEGROUND_no_flag(PlayerbotAI* botAI) { return new PlayerIsInBattlegroundWithoutFlag(botAI); }
-    static Trigger* alliance_no_snowfall_gy(PlayerbotAI* botAI) { return new AllianceNoSnowfallGY(botAI); }
     static Trigger* mounted(PlayerbotAI* botAI) { return new IsMountedTrigger(botAI); }
     static Trigger* at_dark_portal_outland(PlayerbotAI* botAI) { return new AtDarkPortalOutlandTrigger(botAI); }
     static Trigger* at_dark_portal_azeroth(PlayerbotAI* botAI) { return new AtDarkPortalAzerothTrigger(botAI); }
