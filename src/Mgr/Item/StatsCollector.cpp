@@ -15,7 +15,10 @@
 #include "SpellMgr.h"
 #include "Util.h"
 
-StatsCollector::StatsCollector(CollectorType type, int32 cls) : type_(type), cls_(cls) { Reset(); }
+StatsCollector::StatsCollector(CollectorType type, int32 cls, int32 lvl) : type_(type), cls_(cls), lvl_(lvl)
+{
+    Reset();
+}
 
 void StatsCollector::Reset()
 {
@@ -25,19 +28,20 @@ void StatsCollector::Reset()
     }
 }
 
-void StatsCollector::CollectItemStats(ItemTemplate const* proto, uint8 playerLevel)
+void StatsCollector::CollectItemStats(ItemTemplate const* proto)
 {
     // Heirlooms and other scaling items hold their real stats in DBC, keyed by wearer level (Player::_ApplyItemBonuses)
     ScalingStatDistributionEntry const* ssd =
         proto->ScalingStatDistribution ? sScalingStatDistributionStore.LookupEntry(proto->ScalingStatDistribution)
                                        : nullptr;
 
-    uint32 ssdLevel = playerLevel;
+    uint32 ssdLevel = lvl_ > 0 ? uint32(lvl_) : 0;
     if (ssd && ssdLevel > ssd->MaxLevel)
         ssdLevel = ssd->MaxLevel;
 
+    // Without a wearer level (lvl_ -1) a scaling item keeps its template values.
     ScalingStatValuesEntry const* ssv =
-        proto->ScalingStatValue ? sScalingStatValuesStore.LookupEntry(ssdLevel) : nullptr;
+        proto->ScalingStatValue && ssdLevel ? sScalingStatValuesStore.LookupEntry(ssdLevel) : nullptr;
 
     CollectWeaponDamageStats(proto, ssv);
     CollectItemStatValues(proto, ssd, ssv);
