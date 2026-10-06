@@ -11,6 +11,7 @@
 #include "PlayerbotDungeonRepository.h"
 #include "PlayerbotFactory.h"
 #include "PlayerbotGuildMgr.h"
+#include "PvpGearListMgr.h"
 #include "Playerbots.h"
 #include "RandomItemMgr.h"
 #include "RandomPlayerbotFactory.h"
@@ -20,6 +21,11 @@
 #include <cctype>
 #include <iostream>
 #include <sstream>
+
+namespace
+{
+constexpr char PVP_LOADOUT_DEFAULT_CURVE[] = "0:200,1400:224,1600:245,1800:258,2000:264,2200:290";
+}
 
 template <class T>
 void LoadList(std::string const value, T& list)
@@ -483,6 +489,9 @@ bool PlayerbotAIConfig::Initialize()
 
     LOG_INFO("server.loading", "Loading TalentSpecs...");
 
+    for (std::array<int32, PvpLoadout::TALENT_TAB_COUNT>& specs : pvpSpecNoByTab)
+        specs.fill(PvpLoadout::NO_SPEC);
+
     for (uint32 cls = 1; cls < MAX_CLASSES; ++cls)
     {
         if (cls == 10)
@@ -542,6 +551,8 @@ bool PlayerbotAIConfig::Initialize()
             os << "AiPlayerbot.RandomClassSpecIndex." << cls << "." << spec;
             randomClassSpecIndex[cls][spec] = sConfigMgr->GetOption<uint32>(os.str().c_str(), spec, false);
         }
+
+        pvpSpecNoByTab[cls] = BuildPvpSpecNoByTab(cls);
     }
 
     botCheats.clear();
@@ -675,6 +686,34 @@ bool PlayerbotAIConfig::Initialize()
     autoGearQualityLimit = sConfigMgr->GetOption<int32>("AiPlayerbot.AutoGearQualityLimit", 3);
     autoGearScoreLimit = sConfigMgr->GetOption<int32>("AiPlayerbot.AutoGearScoreLimit", 0);
 
+    pvpLoadoutSwap = sConfigMgr->GetOption<bool>("AiPlayerbot.PvpLoadoutSwap", false);
+    pvpLoadoutMinRating = sConfigMgr->GetOption<uint32>("AiPlayerbot.PvpLoadoutMinRating", 1400);
+    pvpLoadoutRatingMargin = sConfigMgr->GetOption<uint32>("AiPlayerbot.PvpLoadoutRatingMargin", 100);
+    pvpLoadoutQualityLimit = sConfigMgr->GetOption<int32>("AiPlayerbot.PvpLoadoutQualityLimit", -1);
+    pvpLoadoutScoreLimit = sConfigMgr->GetOption<int32>("AiPlayerbot.PvpLoadoutScoreLimit", -1);
+    pvpLoadoutAnnounce = sConfigMgr->GetOption<bool>("AiPlayerbot.PvpLoadoutAnnounce", false);
+    pvpLoadoutDebug = sConfigMgr->GetOption<bool>("AiPlayerbot.PvpLoadoutDebug", false);
+    for (auto const& [role, option] : {std::pair{PvpLoadout::Role::Melee, "AiPlayerbot.PvpProfile.Melee"},
+                                       std::pair{PvpLoadout::Role::Hunter, "AiPlayerbot.PvpProfile.Hunter"},
+                                       std::pair{PvpLoadout::Role::Caster, "AiPlayerbot.PvpProfile.Caster"},
+                                       std::pair{PvpLoadout::Role::Healer, "AiPlayerbot.PvpProfile.Healer"}})
+    {
+        PvpLoadout::Profile& profile = pvpProfiles[static_cast<size_t>(role)];
+        profile = PvpLoadout::DefaultProfile(role);
+        std::string const text = sConfigMgr->GetOption<std::string>(option, "", false);
+        if (!text.empty() && !PvpLoadout::ParseProfile(text, role, profile))
+            LOG_ERROR("server.loading", "{} '{}' is invalid, using the defaults", option, text);
+    }
+    std::string const pvpCurve =
+        sConfigMgr->GetOption<std::string>("AiPlayerbot.PvpLoadoutPveIlvlCurve", PVP_LOADOUT_DEFAULT_CURVE);
+    pvpLoadoutPveIlvlCurve = PvpLoadout::ParseItemLevelCurve(pvpCurve);
+    if (pvpLoadoutPveIlvlCurve.empty())
+    {
+        LOG_ERROR("server.loading", "AiPlayerbot.PvpLoadoutPveIlvlCurve '{}' is invalid, using '{}'", pvpCurve,
+                  PVP_LOADOUT_DEFAULT_CURVE);
+        pvpLoadoutPveIlvlCurve = PvpLoadout::ParseItemLevelCurve(PVP_LOADOUT_DEFAULT_CURVE);
+    }
+
     randomBotXPRate = sConfigMgr->GetOption<float>("AiPlayerbot.RandomBotXPRate", 1.0);
     randomBotAllianceRatio = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAllianceRatio", 50);
     randomBotHordeRatio = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotHordeRatio", 50);
@@ -773,6 +812,8 @@ bool PlayerbotAIConfig::Initialize()
     sRandomItemMgr.Init();
     sRandomItemMgr.InitAfterAhBot();
     sBisListMgr->LoadAll();
+    if (pvpLoadoutSwap)
+        PvpGearListMgr::instance().LoadAll();
     PlayerbotTextMgr::instance().LoadBotTexts();
     PlayerbotTextMgr::instance().LoadBotTextChance();
     PlayerbotFactory::Init();
@@ -1181,6 +1222,35 @@ std::vector<std::vector<uint32>> PlayerbotAIConfig::ParseTempTalentsOrder(uint32
         res.insert(res.end(), order.begin(), order.end());
     }
     return res;
+}
+
+std::array<int32, PvpLoadout::TALENT_TAB_COUNT> PlayerbotAIConfig::BuildPvpSpecNoByTab(uint32 cls) const
+{
+    std::vector<std::string> names;
+    std::vector<int32> mainTabs;
+    for (uint32 spec = 0; spec < MAX_SPECNO; ++spec)
+    {
+        names.push_back(premadeSpecName[cls][spec]);
+
+        int32 mainTab = PvpLoadout::NO_SPEC;
+        for (int32 level = MAX_LEVEL - 1; level >= 0; --level)
+        {
+            std::vector<std::vector<uint32>> const& order = parsedSpecLinkOrder[cls][spec][level];
+            if (order.empty())
+                continue;
+
+            std::array<uint32, PvpLoadout::TALENT_TAB_COUNT> points = {};
+            for (std::vector<uint32> const& talent : order)
+                if (talent[0] < PvpLoadout::TALENT_TAB_COUNT)
+                    points[talent[0]] += talent[3];
+
+            mainTab = static_cast<int32>(std::max_element(points.begin(), points.end()) - points.begin());
+            break;
+        }
+        mainTabs.push_back(mainTab);
+    }
+
+    return PvpLoadout::MapPvpSpecsByTab(names, mainTabs);
 }
 
 std::vector<std::vector<uint32>> PlayerbotAIConfig::ParseTempPetTalentsOrder(uint32 spec, std::string tab_link)
