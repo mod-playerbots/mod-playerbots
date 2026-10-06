@@ -654,6 +654,15 @@ void Engine::LogAction(char const* format, ...)
     }
 }
 
+std::string const Engine::ResolveStrategyName(std::string const name)
+{
+    if (HasStrategy(name))
+        return name;
+
+    Strategy* strategy = aiObjectContext->GetStrategy(name);
+    return strategy ? strategy->getName() : name;
+}
+
 void Engine::ChangeStrategy(std::string const names)
 {
     std::vector<std::string> splitted = split(names, ',');
@@ -666,10 +675,10 @@ void Engine::ChangeStrategy(std::string const names)
                 addStrategy(name + 1);
                 break;
             case '-':
-                removeStrategy(name + 1);
+                removeStrategy(ResolveStrategyName(name + 1));
                 break;
             case '~':
-                toggleStrategy(name + 1);
+                toggleStrategy(ResolveStrategyName(name + 1));
                 break;
             case '?':
                 botAI->TellMaster(ListStrategies());

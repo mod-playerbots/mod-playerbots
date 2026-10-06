@@ -95,6 +95,7 @@ private:
     bool MultiplyAndPush(std::vector<NextAction> actions, float forceRelevance, bool skipPrerequisites, Event event,
                          char const* pushType);
     void Reset();
+    std::string const ResolveStrategyName(std::string const name);
     void ProcessTriggers(bool minimal);
     void PushDefaultActions();
     void PushAgain(ActionNode* actionNode, float relevance, Event event);
