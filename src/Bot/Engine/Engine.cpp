@@ -576,6 +576,13 @@ Action* Engine::InitializeAction(ActionNode* actionNode)
         actionNode->setAction(action);
     }
 
+    if (action)
+    {
+        action->SetReaction(false);
+        // Clear duration leftovers so ListenAndExecute doesn't re-apply a stale delay
+        action->ResetDuration();
+    }
+
     return action;
 }
 
@@ -616,6 +623,10 @@ bool Engine::ListenAndExecute(Action* action, Event event)
 
     actionExecuted = actionExecutionListeners.OverrideResult(action, actionExecuted, event);
     actionExecutionListeners.After(action, actionExecuted, event);
+
+    if (actionExecuted && action->GetDuration() > 0)
+        botAI->SetActionDuration(action);
+
     return actionExecuted;
 }
 
@@ -654,6 +665,15 @@ void Engine::LogAction(char const* format, ...)
     }
 }
 
+std::string const Engine::ResolveStrategyName(std::string const name)
+{
+    if (HasStrategy(name))
+        return name;
+
+    Strategy* strategy = aiObjectContext->GetStrategy(name);
+    return strategy ? strategy->getName() : name;
+}
+
 void Engine::ChangeStrategy(std::string const names)
 {
     std::vector<std::string> splitted = split(names, ',');
@@ -666,10 +686,10 @@ void Engine::ChangeStrategy(std::string const names)
                 addStrategy(name + 1);
                 break;
             case '-':
-                removeStrategy(name + 1);
+                removeStrategy(ResolveStrategyName(name + 1));
                 break;
             case '~':
-                toggleStrategy(name + 1);
+                toggleStrategy(ResolveStrategyName(name + 1));
                 break;
             case '?':
                 botAI->TellMaster(ListStrategies());

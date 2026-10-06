@@ -261,7 +261,7 @@ public:
 class MoveInsideAction : public MovementAction
 {
 public:
-    MoveInsideAction(PlayerbotAI* ai, float x, float y, float distance = 5.0f) : MovementAction(ai, "move inside")
+    MoveInsideAction(PlayerbotAI* botAI, float x, float y, float distance = 5.0f) : MovementAction(botAI, "move inside")
     {
         this->x = x;
         this->y = y;
@@ -276,10 +276,10 @@ protected:
 class RotateAroundTheCenterPointAction : public MovementAction
 {
 public:
-    RotateAroundTheCenterPointAction(PlayerbotAI* ai, std::string name, float center_x, float center_y,
+    RotateAroundTheCenterPointAction(PlayerbotAI* botAI, std::string name, float center_x, float center_y,
                                      float radius = 40.0f, uint32 intervals = 16, bool clockwise = true,
                                      float start_angle = 0)
-        : MovementAction(ai, name)
+        : MovementAction(botAI, name)
     {
         this->center_x = center_x;
         this->center_y = center_y;
