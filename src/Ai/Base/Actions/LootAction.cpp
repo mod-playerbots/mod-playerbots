@@ -365,8 +365,18 @@ static bool IsQuestLoot(ItemTemplate const* proto, Player* receiver)
     if (receiver->HasQuestForItem(proto->ItemId))
         return true;
 
-    return proto->StartQuest && receiver->GetQuestStatus(proto->StartQuest) == QUEST_STATUS_NONE &&
-           !receiver->GetQuestRewardStatus(proto->StartQuest);
+    if (!proto->StartQuest)
+        return false;
+
+    // A quest starter is shown to the receiver under the same conditions as in LootItem::AllowedForPlayer.
+    uint32 prevQuestId = 0;
+    if (Quest const* startQuest = sObjectMgr->GetQuestTemplate(proto->StartQuest))
+        prevQuestId = startQuest->GetPrevQuestId();
+
+    return receiver->GetQuestStatus(proto->StartQuest) == QUEST_STATUS_NONE &&
+           !receiver->GetQuestRewardStatus(proto->StartQuest) &&
+           !(proto->MaxCount && receiver->HasItemCount(proto->ItemId, proto->MaxCount, true)) &&
+           (!prevQuestId || receiver->GetQuestRewardStatus(prevQuestId));
 }
 
 bool StoreLootAction::Execute(Event event)
