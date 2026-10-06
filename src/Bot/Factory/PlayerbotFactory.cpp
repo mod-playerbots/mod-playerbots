@@ -31,6 +31,7 @@
 #include "PlayerbotRepository.h"
 #include "PlayerbotSpellRepository.h"
 #include "Playerbots.h"
+#include "PvpLoadoutMgr.h"
 #include "QuestDef.h"
 #include "RandomItemMgr.h"
 #include "RandomPlayerbotFactory.h"
@@ -831,6 +832,10 @@ void PlayerbotFactory::Randomize(bool incremental)
     LOG_DEBUG("playerbots", "{} randomizing {} (level {} class = {})...", (incremental ? "Incremental" : "Full"),
              bot->GetName().c_str(), level, bot->getClass());
     // LOG_DEBUG("playerbots", "Preparing to {} randomize...", (incremental ? "incremental" : "full"));
+    // A held PvP loadout is restored first, so it is never restored later over the build made here.
+    if (botAI)
+        PvpLoadoutMgr::Restore(botAI);
+
     uint32 oldLevel = bot->GetLevel();
     Prepare();
     LOG_DEBUG("playerbots", "Resetting player...");
@@ -1089,6 +1094,10 @@ void PlayerbotFactory::Randomize(bool incremental)
 
 void PlayerbotFactory::Refresh()
 {
+    // A held PvP loadout is restored first, so the refresh works on the bot's PvE talents and gear.
+    if (botAI)
+        PvpLoadoutMgr::Restore(botAI);
+
     // Prepare();
     // if (!sPlayerbotAIConfig.equipAndSpecPersistence ||
     //     bot->GetLevel() < sPlayerbotAIConfig.equipAndSpecPersistenceLevel)

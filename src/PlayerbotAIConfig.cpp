@@ -11,6 +11,7 @@
 #include "PlayerbotDungeonRepository.h"
 #include "PlayerbotFactory.h"
 #include "PlayerbotGuildMgr.h"
+#include "PlayerbotPvpLoadoutRepository.h"
 #include "PvpGearListMgr.h"
 #include "Playerbots.h"
 #include "RandomItemMgr.h"
@@ -812,6 +813,7 @@ bool PlayerbotAIConfig::Initialize()
     sRandomItemMgr.Init();
     sRandomItemMgr.InitAfterAhBot();
     sBisListMgr->LoadAll();
+    PlayerbotPvpLoadoutRepository::instance().LoadAll();
     if (pvpLoadoutSwap)
         PvpGearListMgr::instance().LoadAll();
     PlayerbotTextMgr::instance().LoadBotTexts();
