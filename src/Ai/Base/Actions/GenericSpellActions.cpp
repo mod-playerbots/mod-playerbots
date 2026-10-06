@@ -639,6 +639,8 @@ bool UseTrinketAction::UseTrinket(Item* item)
     targetFlag = TARGET_FLAG_NONE;
     packet << targetFlag << bot->GetPackGUID();
 
+    // HandleUseItemOpcode can destroy the trinket on its last charge.
+    uint32 const itemId = item->GetEntry();
     bot->GetSession()->HandleUseItemOpcode(packet);
 
     uint32 const now = getMSTime();
@@ -647,7 +649,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
     {
         if (itemSpellCooldown > 0)
         {
-            uint64 const itemCooldownKey = (static_cast<uint64>(item->GetEntry()) << 32) | spellId;
+            uint64 const itemCooldownKey = (static_cast<uint64>(itemId) << 32) | spellId;
             trinketItemCooldownExpiries[itemCooldownKey] = now + static_cast<uint32>(itemSpellCooldown);
         }
 

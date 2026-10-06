@@ -63,3 +63,13 @@ void PlayerbotAIBase::YieldThread(Player* bot, uint32 delay)
 bool PlayerbotAIBase::IsActive() { return nextAICheckDelay < sPlayerbotAIConfig.MaxWaitForMove; }
 
 bool PlayerbotAIBase::IsBotAI() const { return _isBotAI; }
+
+void PlayerbotAIBase::SetActionDuration(uint32 duration)
+{
+    nextAICheckDelay = duration;
+}
+
+void PlayerbotAIBase::ResetActionDuration()
+{
+    nextAICheckDelay = 0;
+}

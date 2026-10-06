@@ -406,7 +406,6 @@ bool PlayerbotAIConfig::Initialize()
         sConfigMgr->GetOption<int32>("Playerbots.RandomBotAutoJoinBGRatedArena5v5Count", 0);
     LogInGroupOnly = sConfigMgr->GetOption<bool>("Playerbots.LogInGroupOnly", true);
     LogValuesPerTick = sConfigMgr->GetOption<bool>("Playerbots.LogValuesPerTick", false);
-    FleeingEnabled = sConfigMgr->GetOption<bool>("Playerbots.FleeingEnabled", true);
     SummonAtInnkeepersEnabled = sConfigMgr->GetOption<bool>("Playerbots.SummonAtInnkeepersEnabled", true);
     RandomBotMinLevel = sConfigMgr->GetOption<int32>("Playerbots.RandomBotMinLevel", 1);
     RandomBotMaxLevel = sConfigMgr->GetOption<int32>("Playerbots.RandomBotMaxLevel", 80);
@@ -461,6 +460,8 @@ bool PlayerbotAIConfig::Initialize()
     RandomBotNonCombatStrategies = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotNonCombatStrategies", "");
     CombatStrategies = sConfigMgr->GetOption<std::string>("Playerbots.CombatStrategies", "");
     NonCombatStrategies = sConfigMgr->GetOption<std::string>("Playerbots.NonCombatStrategies", "");
+    ReactStrategies = sConfigMgr->GetOption<std::string>("Playerbots.ReactStrategies", "");
+    RandomBotReactStrategies = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotReactStrategies", "");
     ApplyInstanceStrategies = sConfigMgr->GetOption<bool>("Playerbots.ApplyInstanceStrategies", true);
 
     CommandPrefix = sConfigMgr->GetOption<std::string>("Playerbots.CommandPrefix", "");

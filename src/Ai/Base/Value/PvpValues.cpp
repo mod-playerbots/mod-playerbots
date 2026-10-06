@@ -11,13 +11,25 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
+namespace
+{
+// a game from the random queue records BATTLEGROUND_RB as the player's type: use the rolled map
+BattlegroundTypeId RealBgType(Player* bot)
+{
+    BattlegroundTypeId bgType = bot->GetBattlegroundTypeId();
+    if (bgType == BATTLEGROUND_RB && bot->GetBattleground())
+        bgType = bot->GetBattleground()->GetBgTypeID(true);
+    return bgType;
+}
+}  // namespace
+
 Unit* FlagCarrierValue::Calculate()
 {
     Unit* carrier = nullptr;
 
     if (botAI->GetBot()->InBattleground())
     {
-        if (botAI->GetBot()->GetBattlegroundTypeId() == BattlegroundTypeId::BATTLEGROUND_WS)
+        if (RealBgType(botAI->GetBot()) == BattlegroundTypeId::BATTLEGROUND_WS)
         {
             BattlegroundWS* bg = (BattlegroundWS*)botAI->GetBot()->GetBattleground();
 
@@ -43,7 +55,7 @@ Unit* FlagCarrierValue::Calculate()
             }
         }
 
-        if (botAI->GetBot()->GetBattlegroundTypeId() == BATTLEGROUND_EY)
+        if (RealBgType(botAI->GetBot()) == BATTLEGROUND_EY)
         {
             BattlegroundEY* bg = (BattlegroundEY*)botAI->GetBot()->GetBattleground();
 

@@ -49,14 +49,16 @@ GuidVector AttackersValue::Calculate()
     if (bot->duel && bot->duel->Opponent)
         result.push_back(bot->duel->Opponent->GetGUID());
 
-    // workaround for bots of same faction not fighting in arena
-    if (bot->InArena())
+    // players are never on threat lists: add valid enemy players in arenas, and within 40 yd in battlegrounds (the
+    // distance an idle bot picks enemy players from)
+    if (bot->InBattleground())
     {
         GuidVector possibleTargets = AI_VALUE(GuidVector, "possible targets");
         for (ObjectGuid const guid : possibleTargets)
         {
             Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsPlayer() && IsValidTarget(unit, bot))
+            if (unit && unit->IsPlayer() && IsValidTarget(unit, bot) &&
+                (bot->InArena() || bot->IsWithinDist(unit, 40.0f)))
                 result.push_back(unit->GetGUID());
         }
     }

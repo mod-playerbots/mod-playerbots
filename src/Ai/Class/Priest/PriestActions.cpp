@@ -14,6 +14,12 @@ bool CastRemoveShadowformAction::Execute(Event /*event*/)
     return true;
 }
 
+bool CastFadeAction::isUseful()
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    return bot->GetGroup() && !(target && target->IsPlayer());  // players have no threat
+}
+
 bool CastRemoveShadowformAction::isUseful() { return botAI->HasAura("shadowform", AI_VALUE(Unit*, "self target")); }
 
 Unit* CastPowerWordShieldOnAlmostFullHealthBelowAction::GetTarget()

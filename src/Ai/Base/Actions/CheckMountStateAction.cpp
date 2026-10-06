@@ -14,6 +14,7 @@
 #include "Event.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotSpellRepository.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "SpellAuraEffects.h"
@@ -27,6 +28,7 @@ std::unordered_map<uint32, PreferredMountCache> CheckMountStateAction::mountCach
 MountData CollectMountData(Player const* bot)
 {
     MountData data;
+    uint32 const ridingSkill = bot->GetPureSkillValue(SKILL_RIDING);
     for (auto& entry : bot->GetSpellMap())
     {
         uint32 spellId = entry.first;
@@ -35,6 +37,10 @@ MountData CollectMountData(Player const* bot)
             continue;
 
         if (entry.second->State == PLAYERSPELL_REMOVED || !entry.second->Active || spellInfo->IsPassive())
+            continue;
+
+        // The core casts a known mount without checking Riding.
+        if (PlayerbotSpellRepository::Instance().GetRequiredRidingSkill(spellInfo) > ridingSkill)
             continue;
 
         int32 effect1 = spellInfo->Effects[1].BasePoints;
