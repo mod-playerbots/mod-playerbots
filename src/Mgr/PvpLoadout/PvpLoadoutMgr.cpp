@@ -69,13 +69,13 @@ void AlignPairedSlots(Player* bot, std::vector<PvpGearListMgr::Pick>& picks)
         pick.slots = {slot};
     };
 
-    for (auto const [first, second] : {std::pair<uint8, uint8>{EQUIPMENT_SLOT_FINGER1, EQUIPMENT_SLOT_FINGER2},
-                                       std::pair<uint8, uint8>{EQUIPMENT_SLOT_TRINKET1, EQUIPMENT_SLOT_TRINKET2}})
+    for (auto const& [first, second] : {std::pair<uint8, uint8>{EQUIPMENT_SLOT_FINGER1, EQUIPMENT_SLOT_FINGER2},
+                                        std::pair<uint8, uint8>{EQUIPMENT_SLOT_TRINKET1, EQUIPMENT_SLOT_TRINKET2}})
     {
         for (PvpGearListMgr::Pick& pick : picks)
         {
-            uint8 const slot = pick.items.size() == 1 ? pick.items.front().slot : NULL_SLOT;
-            uint8 const paired = slot == first ? second : slot == second ? first : NULL_SLOT;
+            uint8 const slot = pick.items.size() == 1 ? pick.items.front().slot : uint8(NULL_SLOT);
+            uint8 const paired = slot == first ? second : slot == second ? first : uint8(NULL_SLOT);
             if (paired == NULL_SLOT || !pick.items.front().unique ||
                 EquippedEntry(bot, paired) != pick.items.front().itemId)
                 continue;
