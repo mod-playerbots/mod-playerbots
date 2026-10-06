@@ -38,12 +38,13 @@ bool GiveItemAction::Execute(Event /*event*/)
         InventoryResult msg = receiver->CanStoreItem(NULL_BAG, NULL_SLOT, dest, item, false);
         if (msg == EQUIP_ERR_OK)
         {
+            std::ostringstream out;
+            out << "Got " << chat->FormatItem(item->GetTemplate(), item->GetCount()) << " from " << bot->GetName();
+
             bot->MoveItemFromInventory(item->GetBagSlot(), item->GetSlot(), true);
             item->SetOwnerGUID(target->GetGUID());
             receiver->MoveItemToInventory(dest, item, true);
 
-            std::ostringstream out;
-            out << "Got " << chat->FormatItem(item->GetTemplate(), item->GetCount()) << " from " << bot->GetName();
             receiverAi->TellMasterNoFacing(out.str());
         }
         else

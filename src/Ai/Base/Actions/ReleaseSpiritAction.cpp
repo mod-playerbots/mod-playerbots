@@ -138,11 +138,9 @@ bool AutoReleaseSpiritAction::HandleBattlegroundSpiritHealer()
     for (auto const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsFriendlyTo(bot) && unit->IsSpiritService())
-        {
-            spiritHealer = unit;
-            break;
-        }
+        if (unit && unit->IsFriendlyTo(bot) && unit->IsSpiritService() &&
+            (!spiritHealer || bot->GetDistance(unit) < bot->GetDistance(spiritHealer)))
+            spiritHealer = unit;  // nearest: the list is not sorted
     }
 
     if (!spiritHealer)

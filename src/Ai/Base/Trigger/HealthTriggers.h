@@ -164,7 +164,7 @@ public:
 class CombatPartyMemberDeadTrigger : public Trigger
 {
 public:
-    CombatPartyMemberDeadTrigger(PlayerbotAI* ai) : Trigger(ai, "combat party member to resurrect", 1) {}
+    CombatPartyMemberDeadTrigger(PlayerbotAI* botAI) : Trigger(botAI, "combat party member to resurrect", 1) {}
     std::string const GetTargetName() override { return "party member to resurrect"; }
     bool IsActive() override;
 };
@@ -195,8 +195,8 @@ protected:
 class AoeInGroupTrigger : public Trigger
 {
 public:
-    AoeInGroupTrigger(PlayerbotAI* ai, std::string name, std::string type)
-        : Trigger(ai, name), type(type)
+    AoeInGroupTrigger(PlayerbotAI* botAI, std::string name, std::string type)
+        : Trigger(botAI, name), type(type)
     {
     }
     bool IsActive() override;
