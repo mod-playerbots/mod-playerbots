@@ -312,29 +312,33 @@ void AppendFathomLordKarathressBlessingHoldExclusions(
     exclusions.insert(karathress->GetGUID());
 }
 
-void AppendLadyVashjGeneratorPhaseExclusions(AiObjectContext* context, GuidSet& exclusions)
-{
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (vashj && vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER)))
-        exclusions.insert(vashj->GetGUID());
-}
-
 void AppendMorogrimTidewalkerMurlocExclusions(
     PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
-    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
-    if (!tidewalker)
-        return;
-
+    Unit* tidewalker = nullptr;
     for (auto const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
     {
         if (guid.GetEntry() != Id(SscNpcs::NPC_TIDEWALKER_LURKER))
             continue;
 
+        if (!tidewalker)
+        {
+            tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+            if (!tidewalker)
+                return;
+        }
+
         Unit* unit = botAI->GetUnit(guid);
         if (unit && unit->GetExactDist2d(tidewalker) > TIDEWALKER_MURLOC_MAX_TARGET_DISTANCE)
             exclusions.insert(guid);
     }
+}
+
+void AppendLadyVashjGeneratorPhaseExclusions(AiObjectContext* context, GuidSet& exclusions)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (vashj && vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER)))
+        exclusions.insert(vashj->GetGUID());
 }
 
 } // end anonymous namespace
