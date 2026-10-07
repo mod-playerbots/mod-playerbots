@@ -42,8 +42,8 @@ public:
         creators["hydross the unstable aggro resets upon phase change"] =
             &RaidSscTriggerContext::hydross_the_unstable_aggro_resets_upon_phase_change;
 
-        creators["hydross the unstable non-phase tank attacking"] =
-            &RaidSscTriggerContext::hydross_the_unstable_non_phase_tank_attacking;
+        creators["hydross the unstable off phase tank attacking"] =
+            &RaidSscTriggerContext::hydross_the_unstable_off_phase_tank_attacking;
 
         creators["hydross the unstable should manage phase timers"] =
             &RaidSscTriggerContext::hydross_the_unstable_should_manage_phase_timers;
@@ -155,6 +155,9 @@ public:
         creators["lady vashj ranged should position in phase 3"] =
             &RaidSscTriggerContext::lady_vashj_ranged_should_position_in_phase_3;
 
+        creators["lady vashj out of sight in phase 3"] =
+            &RaidSscTriggerContext::lady_vashj_out_of_sight_in_phase_3;
+
         creators["lady vashj main tank needs grounding shaman"] =
             &RaidSscTriggerContext::lady_vashj_main_tank_needs_grounding_shaman;
 
@@ -257,9 +260,9 @@ private:
     {
         return new HydrossTheUnstableAggroResetsUponPhaseChangeTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_non_phase_tank_attacking(PlayerbotAI* botAI)
+    static Trigger* hydross_the_unstable_off_phase_tank_attacking(PlayerbotAI* botAI)
     {
-        return new HydrossTheUnstableNonPhaseTankAttackingTrigger(botAI);
+        return new HydrossTheUnstableOffPhaseTankAttackingTrigger(botAI);
     }
     static Trigger* hydross_the_unstable_should_manage_phase_timers(PlayerbotAI* botAI)
     {
@@ -412,6 +415,10 @@ private:
     static Trigger* lady_vashj_ranged_should_position_in_phase_3(PlayerbotAI* botAI)
     {
         return new LadyVashjRangedShouldPositionInPhase3Trigger(botAI);
+    }
+    static Trigger* lady_vashj_out_of_sight_in_phase_3(PlayerbotAI* botAI)
+    {
+        return new LadyVashjOutOfSightInPhase3Trigger(botAI);
     }
     static Trigger* lady_vashj_main_tank_needs_grounding_shaman(PlayerbotAI* botAI)
     {

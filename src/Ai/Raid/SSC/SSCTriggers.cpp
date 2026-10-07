@@ -104,7 +104,7 @@ bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActiveInEncounter()
         (window == HydrossDpsHoldWindow::AfterPhaseChange && bot->getClass() != CLASS_HUNTER);
 }
 
-bool HydrossTheUnstableNonPhaseTankAttackingTrigger::IsActiveInEncounter()
+bool HydrossTheUnstableOffPhaseTankAttackingTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -113,9 +113,9 @@ bool HydrossTheUnstableNonPhaseTankAttackingTrigger::IsActiveInEncounter()
     if (!hydross)
         return false;
 
-    bool const phaseTank =
-        IsHydrossInFrostPhase(hydross) ? IsHydrossFrostTank(bot) : IsHydrossNatureTank(bot);
-    if (phaseTank)
+    bool const isOffPhaseTank =
+        IsHydrossInFrostPhase(hydross) ? IsHydrossNatureTank(bot) : IsHydrossFrostTank(bot);
+    if (!isOffPhaseTank)
         return false;
 
     return bot->GetVictim() == hydross || AI_VALUE(Unit*, "current target") == hydross;
@@ -217,7 +217,10 @@ bool TheLurkerBelowMeleeInWaterTrigger::IsActiveInEncounter()
 
 bool LeotherasTheBlindRangedShouldSpreadUponPullTrigger::IsActive()
 {
-    if (bot->GetMapId() != SSC_MAP_ID || !PlayerbotAI::IsRanged(bot))
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
+    if (bot->GetExactDist(LEOTHERAS_SPAWN_POSITION) <= LEOTHERAS_SEARCH_DISTANCE)
         return false;
 
     Creature* leotheras = GetLeotheras(botAI);
@@ -422,7 +425,7 @@ bool FathomLordKarathressShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 
 bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()
 {
-    if (karathressDpsWaitTimer.find(bot->GetInstanceId()) != karathressDpsWaitTimer.end())
+    if (SscState(bot->GetInstanceId()).karathressDpsWaitTimer)
         return false;
 
     return IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
@@ -528,15 +531,21 @@ bool LadyVashjStationSlotsNeedHoldersTrigger::IsActiveInEncounter()
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && GetLadyVashjPhase(vashj) == 2 && HasVashjStationVacancy(bot);
+    if (!vashj || GetLadyVashjPhase(vashj) != 2)
+        return false;
+
+    return HasVashjStationVacancy(bot);
 }
 
 bool LadyVashjShouldHoldStationInPhase2Trigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsRangedDps(bot) && !PlayerbotAI::IsHeal(bot))
+    if (!PlayerbotAI::IsRanged(bot))
         return false;
 
     if (!GetVashjStationPositionToReturnTo(bot, AI_VALUE(Unit*, "current target")))
+        return false;
+
+    if (HasVashjStaticCharge(bot))
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -549,7 +558,24 @@ bool LadyVashjRangedShouldPositionInPhase3Trigger::IsActiveInEncounter()
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && GetLadyVashjPhase(vashj) == 3 && IsVashjPhase3RangedTooClose(bot, vashj);
+    if (!vashj || GetLadyVashjPhase(vashj) != 3)
+        return false;
+
+    if (!IsOnVashjDais(bot->GetPositionX(), bot->GetPositionY(), 0.0f, 0.0f))
+        return false;
+
+    return IsVashjPhase3RangedTooClose(bot, vashj);
+}
+
+// Attack() rejects targets out of LoS. Thus, bots down the stairs or behind generators in phase 3
+// cannot acquire a target, and with follow zeroed, nothing else moves them in phase 3.
+bool LadyVashjOutOfSightInPhase3Trigger::IsActiveInEncounter()
+{
+    if (AI_VALUE(Unit*, "current target") || HasVashjStaticCharge(bot))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && GetLadyVashjPhase(vashj) == 3 && !bot->IsWithinLOSInMap(vashj);
 }
 
 bool LadyVashjMainTankNeedsGroundingShamanTrigger::IsActiveInEncounter()
@@ -593,6 +619,8 @@ bool LadyVashjShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
     return phase == 2 || phase == 3;
 }
 
+// Intentionally not gated on BotCheatMask as the foundation for the positioning in this strategy
+// would not work without the Striders being tankable.
 bool LadyVashjTankNeedsFearWardTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot) || bot->HasAura(Id(SscSpells::SPELL_FEAR_WARD)))
@@ -672,11 +700,12 @@ bool LadyVashjTaintedElementalNeedsLooterTrigger::IsActiveInEncounter()
     if (!tainted)
         return false;
 
-    auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
-    if (it == vashjTaintedCoreLooter.end() || it->second.tainted != tainted->GetGUID())
+    std::optional<TaintedCoreLooter> const& assigned =
+        SscState(bot->GetInstanceId()).vashjTaintedCoreLooter;
+    if (!assigned || assigned->tainted != tainted->GetGUID())
         return true;
 
-    Player* looter = ObjectAccessor::GetPlayer(*bot, it->second.looter);
+    Player* looter = ObjectAccessor::GetPlayer(*bot, assigned->looter);
     return !looter || !looter->IsAlive();
 }
 
@@ -795,12 +824,12 @@ bool LadyVashjBotInToxicSporesTrigger::IsActiveInEncounter()
     if (!vashj || GetLadyVashjPhase(vashj) != 3 || IsVashjRingMelee(bot, vashj))
         return false;
 
-    bool const tanking = vashj->GetVictim() == bot;
+    bool const isTanking = vashj->GetVictim() == bot;
 
-    if (!tanking && bot->isMoving() && CanWalkThroughToxicSpores(bot))
+    if (!isTanking && bot->isMoving() && CanWalkThroughToxicSpores(bot))
         return false;
 
-    float const radius = tanking ? TOXIC_SPORES_TANK_AVOID_RADIUS : TOXIC_SPORES_AVOID_RADIUS;
+    float const radius = isTanking ? TOXIC_SPORES_TANK_AVOID_RADIUS : TOXIC_SPORES_AVOID_RADIUS;
     return IsNearToxicSpores(botAI, radius);
 }
 

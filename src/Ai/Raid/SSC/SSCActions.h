@@ -12,6 +12,7 @@
 #include "MovementActions.h"
 #include "Position.h"
 #include "SSCHelpers.h"
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -263,7 +264,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool TrackWhirlwindEnd(Unit* leotheras, uint32 instanceId, uint32 now);
+    bool TrackWhirlwindEnd(Unit* leotheras, std::optional<uint32>& whirlwindEnd, uint32 now);
 };
 
 // Fathom-Lord Karathress
@@ -407,6 +408,14 @@ class LadyVashjPhase3PositionRangedAction : public MovementAction
 public:
     LadyVashjPhase3PositionRangedAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "lady vashj phase 3 position ranged") {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjPhase3MoveIntoSightAction : public MovementAction
+{
+public:
+    LadyVashjPhase3MoveIntoSightAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "lady vashj phase 3 move into sight") {}
     bool Execute(Event event) override;
 };
 

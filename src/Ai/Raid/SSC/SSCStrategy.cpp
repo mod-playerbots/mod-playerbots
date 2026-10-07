@@ -42,7 +42,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("hydross the unstable aggro resets upon phase change",
         { NextAction("hydross the unstable stop attacking upon phase change", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("hydross the unstable non-phase tank attacking",
+    triggers.push_back(new TriggerNode("hydross the unstable off phase tank attacking",
         { NextAction("hydross the unstable stop attacking upon phase change", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable should manage phase timers",
@@ -156,6 +156,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("lady vashj ranged should position in phase 3",
         { NextAction("lady vashj phase 3 position ranged", ACTION_RAID) }));
+
+    triggers.push_back(new TriggerNode("lady vashj out of sight in phase 3",
+        { NextAction("lady vashj phase 3 move into sight", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("lady vashj main tank needs grounding shaman",
         { NextAction("lady vashj assign grounding shaman", ACTION_EMERGENCY + 14) }));
@@ -282,17 +285,6 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 namespace
 {
 
-void AppendHydrossAddTankExclusions(
-    Player* bot, AiObjectContext* context, GuidSet& exclusions)
-{
-    if (!PlayerbotAI::IsTank(bot))
-        return;
-
-    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-    if (hydross && IsHydrossAddTank(bot))
-        exclusions.insert(hydross->GetGUID());
-}
-
 void AppendFathomLordKarathressBlessingHoldExclusions(
     Player* bot, AiObjectContext* context, GuidSet& exclusions)
 {
@@ -350,7 +342,6 @@ void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExc
         return;
 
     AiObjectContext* context = botAI->GetAiObjectContext();
-    AppendHydrossAddTankExclusions(bot, context, exclusions);
     AppendFathomLordKarathressBlessingHoldExclusions(bot, context, exclusions);
     AppendMorogrimTidewalkerMurlocExclusions(botAI, context, exclusions);
     AppendLadyVashjGeneratorPhaseExclusions(context, exclusions);

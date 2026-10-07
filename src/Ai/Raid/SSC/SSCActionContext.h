@@ -152,6 +152,9 @@ public:
         creators["lady vashj phase 3 position ranged"] =
             &RaidSscActionContext::lady_vashj_phase_3_position_ranged;
 
+        creators["lady vashj phase 3 move into sight"] =
+            &RaidSscActionContext::lady_vashj_phase_3_move_into_sight;
+
         creators["lady vashj assign grounding shaman"] =
             &RaidSscActionContext::lady_vashj_assign_grounding_shaman;
 
@@ -413,6 +416,10 @@ private:
     static Action* lady_vashj_phase_3_position_ranged(PlayerbotAI* botAI)
     {
         return new LadyVashjPhase3PositionRangedAction(botAI);
+    }
+    static Action* lady_vashj_phase_3_move_into_sight(PlayerbotAI* botAI)
+    {
+        return new LadyVashjPhase3MoveIntoSightAction(botAI);
     }
     static Action* lady_vashj_assign_grounding_shaman(PlayerbotAI* botAI)
     {

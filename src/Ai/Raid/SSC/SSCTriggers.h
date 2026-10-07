@@ -123,11 +123,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HydrossTheUnstableNonPhaseTankAttackingTrigger : public SscEncounterTrigger
+class HydrossTheUnstableOffPhaseTankAttackingTrigger : public SscEncounterTrigger
 {
 public:
-    HydrossTheUnstableNonPhaseTankAttackingTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "hydross the unstable non-phase tank attacking") {}
+    HydrossTheUnstableOffPhaseTankAttackingTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "hydross the unstable off phase tank attacking") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -469,6 +469,16 @@ class LadyVashjRangedShouldPositionInPhase3Trigger : public SscEncounterTrigger
 public:
     LadyVashjRangedShouldPositionInPhase3Trigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(botAI, "lady vashj ranged should position in phase 3") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class LadyVashjOutOfSightInPhase3Trigger : public SscEncounterTrigger
+{
+public:
+    LadyVashjOutOfSightInPhase3Trigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj out of sight in phase 3") {}
 
 protected:
     bool IsActiveInEncounter() override;

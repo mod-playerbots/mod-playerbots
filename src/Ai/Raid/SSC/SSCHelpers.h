@@ -12,9 +12,11 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
+#include <initializer_list>
 #include <limits>
+#include <optional>
 #include <type_traits>
-#include <unordered_map>
+#include <utility>
 #include <vector>
 
 class Creature;
@@ -117,6 +119,10 @@ enum class SscNpcs : uint32
     NPC_TIDEWALKER_LURKER        = 21920,
 
     // Fathom-Lord Karathress
+    NPC_FATHOM_LORD_KARATHRESS   = 21214,
+    NPC_FATHOM_GUARD_CARIBDIS    = 21964,
+    NPC_FATHOM_GUARD_TIDALVESS   = 21965,
+    NPC_FATHOM_GUARD_SHARKKIS    = 21966,
     NPC_SPITFIRE_TOTEM           = 22091,
     NPC_FATHOM_LURKER            = 22119,
     NPC_FATHOM_SPOREBAT          = 22120,
@@ -146,6 +152,7 @@ inline constexpr uint32 HAZARD_CACHE_INTERVAL_MS = 200;
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
 
+bool ClearSscTargetIcon(Player* bot, uint8 iconId, std::initializer_list<uint32> entries);
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
 bool CastTankTaunt(PlayerbotAI* botAI, Unit* target);
 bool FindHazardEscapeStep(
@@ -197,11 +204,6 @@ inline Position const HYDROSS_FROST_TANK_POSITION =  { -235.653f, -354.823f, -0.
 inline Position const HYDROSS_NATURE_TANK_POSITION = { -224.721f, -324.755f, -3.682f };
 inline Position const HYDROSS_CLEANSING_FIELD_CENTER = { -239.715f, -366.440f, -0.745f };
 
-extern std::unordered_map<uint32, uint32> hydrossFrostPhaseStartTime;
-extern std::unordered_map<uint32, uint32> hydrossNaturePhaseStartTime;
-extern std::unordered_map<uint32, uint32> hydrossNatureMarkMaxedTime;
-extern std::unordered_map<uint32, uint32> hydrossFrostMarkMaxedTime;
-
 // The main tank holds Hydross in frost phase, the first assist tank in nature phase. Every other
 // tank is an add tank and picks up the Elementals that spawn upon phase changes.
 bool IsHydrossFrostTank(Player* bot);
@@ -240,15 +242,13 @@ inline constexpr float LURKER_SPOUT_RUN_RADIAL_DEADZONE = 2.0f;
 inline constexpr float LURKER_SPOUT_RUN_OVERTAKE_MARGIN = static_cast<float>(M_PI) / 6.0f;
 
 inline constexpr size_t LURKER_GUARDIAN_TANK_COUNT = 3;
+using LurkerGuardianTankAssignments = std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>;
 inline constexpr uint32 LURKER_GUARDIAN_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 LURKER_GUARDIAN_TANK_CACHE_INTERVAL_MS = 1000;
 inline constexpr float LURKER_GUARDIAN_SEARCH_RADIUS = 100.0f;
 
 // In front of a pillar to limit the distance that the main tank gets knocked back by Whirl.
 inline Position const LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
-
-extern std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
-    lurkerGuardianTankAssignments;
 
 // Lurker is passive during Spout: a 3s wind-up (37431), then a 16s spin aura, turning 0.1 rad every
 // 250ms (37429 counterclockwise or 37430 clockwise).
@@ -280,10 +280,7 @@ inline constexpr float LEOTHERAS_RANGED_SPREAD_DISTANCE = 4.0f;
 inline constexpr float LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE = 10.0f;
 inline constexpr float LEOTHERAS_SHADOW_SEPARATION_DISTANCE = 20.0f;
 
-extern std::unordered_map<uint32, uint32> leotherasHumanoidPhaseStartTime;
-extern std::unordered_map<uint32, uint32> leotherasWhirlwindEndTime;
-extern std::unordered_map<uint32, uint32> leotherasDemonPhaseStartTime;
-extern std::unordered_map<uint32, uint32> leotherasFinalPhaseStartTime;
+inline Position const LEOTHERAS_SPAWN_POSITION = { 376.543f, -438.631f, 29.608f };
 
 ObjectGuid FindLeotherasGuid(Player* bot);
 ObjectGuid FindShadowOfLeotherasGuid(Player* bot);
@@ -356,8 +353,6 @@ inline Position const CARIBDIS_TANK_POSITION =   { 464.462f, -475.820f, -13.158f
 inline Position const SHARKKIS_TANK_POSITION =   { 508.057f, -541.109f, -10.133f };
 inline Position const TIDALVESS_TANK_POSITION =  { 521.833f, -503.329f, -13.158f };
 
-extern std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
-
 ObjectGuid FindSpitfireTotemGuid(Player* bot);
 Creature* GetSpitfireTotem(PlayerbotAI* botAI);
 bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem);
@@ -426,8 +421,6 @@ inline constexpr float VASHJ_STATIC_CHARGE_SAFE_DISTANCE = 11.0f;
 // Vashj's Entangle has a 15y range, so ranged bots stay at least this far back from her.
 inline constexpr float VASHJ_PHASE_3_RANGED_DISTANCE = 15.0f;
 inline constexpr float VASHJ_PHASE_3_RANGED_SPREAD_DISTANCE = 4.0f;
-
-extern std::unordered_map<uint32, ObjectGuid> vashjGroundingShaman;
 
 bool HasVashjStaticCharge(Player* player);
 bool IsVashjPhase3RangedTooClose(Player* bot, Unit* vashj);
@@ -547,8 +540,6 @@ inline constexpr std::array VASHJ_STATION_FILL_ORDER = {
 static_assert(VASHJ_STATION_FILL_ORDER.size() == VASHJ_STATION_COUNT);
 using VashjStationHolders =
     std::array<std::array<ObjectGuid, VASHJ_STATION_RANGED_SLOTS + 1>, VASHJ_STATION_COUNT>;
-
-extern std::unordered_map<uint32, VashjStationHolders> vashjStationHolders;
 
 std::vector<VashjStationSlot> GetVashjStationFillOrder();
 bool IsLiveVashjStationHolder(Player* bot, ObjectGuid guid);
@@ -712,8 +703,6 @@ struct TaintedCoreLooter
 
 inline constexpr float VASHJ_CORE_LOOT_RANGE = INTERACTION_DISTANCE - 2.0f;
 
-extern std::unordered_map<uint32, TaintedCoreLooter> vashjTaintedCoreLooter;
-
 Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 station);
 Creature* GetAssignedTaintedElemental(Player* bot);
 int8 GetTaintedCoreLootSlot(Creature* tainted);
@@ -816,8 +805,6 @@ inline std::array const VASHJ_SHIELD_GENERATOR_POSITIONS = {
     Position{  7.417f, -901.109f, 44.0f },
 };
 
-extern std::unordered_map<uint32, VashjCorePassingChain> vashjCorePassingChains;
-
 void PlanVashjCorePassingChain(Player* bot, Unit* tainted, Player* looter);
 bool ReplanVashjCorePassingChain(Player* holder, VashjCorePassingChain& chain, ObjectGuid excluded);
 bool ReassignVashjCoreCatcher(Player* bot, VashjCorePassingChain& chain, size_t index);
@@ -826,6 +813,46 @@ VashjCorePassingChain* GetVashjCorePassingChain(Player* bot);
 int8 GetVashjCoreCatcherIndex(VashjCorePassingChain const& chain, Player* bot);
 bool IsVashjCoreCatcherActive(Player* bot, VashjCorePassingChain const& chain, int8 index);
 float GetVashjCoreSpotArrivalDistance(VashjCorePassingChain const& chain, int8 index);
+
+// Shared encounter state
+struct SscInstanceState
+{
+    std::optional<uint32> hydrossFrostPhaseStartTime;
+    std::optional<uint32> hydrossNaturePhaseStartTime;
+    std::optional<uint32> hydrossFrostMarkMaxedTime;
+    std::optional<uint32> hydrossNatureMarkMaxedTime;
+    std::optional<LurkerGuardianTankAssignments> lurkerGuardianTankAssignments;
+    std::optional<uint32> leotherasHumanoidPhaseStartTime;
+    std::optional<uint32> leotherasWhirlwindEndTime;
+    std::optional<uint32> leotherasDemonPhaseStartTime;
+    std::optional<uint32> leotherasFinalPhaseStartTime;
+    std::optional<uint32> karathressDpsWaitTimer;
+    std::optional<ObjectGuid> vashjGroundingShaman;
+    std::optional<VashjStationHolders> vashjStationHolders;
+    std::optional<TaintedCoreLooter> vashjTaintedCoreLooter;
+    std::optional<VashjCorePassingChain> vashjCorePassingChain;
+};
+
+SscInstanceState& SscState(uint32 instanceId);
+bool SscResetInstance(uint32 instanceId);
+
+template <typename T, typename U>
+bool EmplaceIfUnset(std::optional<T>& field, U&& value)
+{
+    if (field)
+        return false;
+
+    field.emplace(std::forward<U>(value));
+    return true;
+}
+
+template <typename T>
+bool ResetIfSet(std::optional<T>& field)
+{
+    bool const wasSet = field.has_value();
+    field.reset();
+    return wasSet;
+}
 
 }
 
