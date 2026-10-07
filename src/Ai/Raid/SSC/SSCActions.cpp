@@ -289,7 +289,7 @@ bool MoveStraightTo(PlayerbotAI* botAI, float x, float y, float z, MovementPrior
     float const delay = std::clamp(
         IN_MILLISECONDS * distance / bot->GetSpeed(MOVE_RUN) -
             static_cast<float>(botAI->GetReactDelay()),
-        0.0f, static_cast<float>(sPlayerbotAIConfig.maxWaitForMove));
+        0.0f, static_cast<float>(sPlayerbotAIConfig.MaxWaitForMove));
 
     botAI->GetAiObjectContext()->GetValue<LastMovement&>("last movement")->Get().Set(
         SSC_MAP_ID, x, y, z, bot->GetOrientation(), delay, priority);
@@ -2100,7 +2100,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
     *releasePacket << tainted->GetGUID();
     bot->GetSession()->QueuePacket(releasePacket);
 
-    botAI->SetNextCheckDelay(sPlayerbotAIConfig.lootDelay); // 1s default; for realism before throw.
+    botAI->SetNextCheckDelay(sPlayerbotAIConfig.LootDelay); // 1s default; for realism before throw.
     return true;
 }
 
