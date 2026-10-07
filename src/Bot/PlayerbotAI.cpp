@@ -162,7 +162,7 @@ PlayerbotAI::PlayerbotAI(Player* bot)
     engines[BOT_STATE_DEAD] = AiFactory::createDeadEngine(bot, this, aiObjectContext);
     engines[BOT_STATE_REACTION] = reactionEngine = AiFactory::createReactionEngine(bot, this, aiObjectContext);
 
-    if (sPlayerbotAIConfig.applyInstanceStrategies)
+    if (sPlayerbotAIConfig.ApplyInstanceStrategies)
         ApplyInstanceStrategies(bot->GetMapId());
 
     currentEngine = engines[BOT_STATE_NON_COMBAT];
@@ -267,7 +267,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
     // Handle cheat options (set bot health and power if cheats are enabled)
     if (bot->IsAlive() &&
-        (static_cast<uint32>(GetCheat()) > 0 || static_cast<uint32>(sPlayerbotAIConfig.botCheatMask) > 0))
+        (static_cast<uint32>(GetCheat()) > 0 || static_cast<uint32>(sPlayerbotAIConfig.BotCheatMask) > 0))
     {
         if (HasCheat(BotCheatMask::health))
             bot->SetFullHealth();
@@ -612,7 +612,7 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
             return;
         }
 
-        SetNextCheckDelay(sPlayerbotAIConfig.reactDelay);
+        SetNextCheckDelay(sPlayerbotAIConfig.ReactDelay);
         return;
     }
 
@@ -688,10 +688,10 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const& text, Player& fr
     if (type == CHAT_MSG_SYSTEM)
         return;
 
-    if (filtered.find(sPlayerbotAIConfig.commandSeparator) != std::string::npos)
+    if (filtered.find(sPlayerbotAIConfig.CommandSeparator) != std::string::npos)
     {
         std::vector<std::string> commands;
-        split(commands, filtered, sPlayerbotAIConfig.commandSeparator.c_str());
+        split(commands, filtered, sPlayerbotAIConfig.CommandSeparator.c_str());
         for (std::vector<std::string>::iterator i = commands.begin(); i != commands.end(); ++i)
         {
             HandleCommand(type, *i, fromPlayer);
@@ -699,12 +699,12 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const& text, Player& fr
         return;
     }
 
-    if (!sPlayerbotAIConfig.commandPrefix.empty())
+    if (!sPlayerbotAIConfig.CommandPrefix.empty())
     {
-        if (filtered.find(sPlayerbotAIConfig.commandPrefix) != 0)
+        if (filtered.find(sPlayerbotAIConfig.CommandPrefix) != 0)
             return;
 
-        filtered = filtered.substr(sPlayerbotAIConfig.commandPrefix.size());
+        filtered = filtered.substr(sPlayerbotAIConfig.CommandPrefix.size());
     }
 
     if (chatMap.empty())
@@ -870,10 +870,10 @@ void PlayerbotAI::HandleTeleportAck()
         }
 
         // apply instance-related strategies after map attach
-        if (sPlayerbotAIConfig.applyInstanceStrategies)
+        if (sPlayerbotAIConfig.ApplyInstanceStrategies)
             ApplyInstanceStrategies(bot->GetMapId(), true);
 
-        if (sPlayerbotAIConfig.restrictHealerDPS)
+        if (sPlayerbotAIConfig.RestrictHealerDPS)
             EvaluateHealerDpsStrategy();
 
         // reset AI state after teleport
@@ -1033,10 +1033,10 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     if (type == CHAT_MSG_SYSTEM)
         return;
 
-    if (text.find(sPlayerbotAIConfig.commandSeparator) != std::string::npos)
+    if (text.find(sPlayerbotAIConfig.CommandSeparator) != std::string::npos)
     {
         std::vector<std::string> commands;
-        split(commands, text, sPlayerbotAIConfig.commandSeparator.c_str());
+        split(commands, text, sPlayerbotAIConfig.CommandSeparator.c_str());
         for (std::vector<std::string>::iterator i = commands.begin(); i != commands.end(); ++i)
         {
             HandleCommand(type, *i, fromPlayer);
@@ -1046,12 +1046,12 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     }
 
     std::string filtered = text;
-    if (!sPlayerbotAIConfig.commandPrefix.empty())
+    if (!sPlayerbotAIConfig.CommandPrefix.empty())
     {
-        if (filtered.find(sPlayerbotAIConfig.commandPrefix) != 0)
+        if (filtered.find(sPlayerbotAIConfig.CommandPrefix) != 0)
             return;
 
-        filtered = filtered.substr(sPlayerbotAIConfig.commandPrefix.size());
+        filtered = filtered.substr(sPlayerbotAIConfig.CommandPrefix.size());
     }
 
     if (chatMap.empty())
@@ -1248,7 +1248,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
         }
         case SMSG_MESSAGECHAT:  // do not react to self or if not ready to reply
         {
-            if (!sPlayerbotAIConfig.randomBotTalk)
+            if (!sPlayerbotAIConfig.RandomBotTalk)
                 return;
 
             if (!AllowActivity())
@@ -1324,16 +1324,16 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                         return;
 
                     auto itemIds = GetChatHelper()->ExtractAllItemIds(message);
-                    if (message.starts_with(sPlayerbotAIConfig.toxicLinksPrefix) &&
+                    if (message.starts_with(sPlayerbotAIConfig.ToxicLinksPrefix) &&
                         (itemIds.size() > 0 || GetChatHelper()->ExtractAllQuestIds(message).size() > 0) &&
-                        sPlayerbotAIConfig.toxicLinksRepliesChance)
+                        sPlayerbotAIConfig.ToxicLinksRepliesChance)
                     {
-                        if (urand(0, 50) > 0 || urand(1, 100) > sPlayerbotAIConfig.toxicLinksRepliesChance)
+                        if (urand(0, 50) > 0 || urand(1, 100) > sPlayerbotAIConfig.ToxicLinksRepliesChance)
                             return;
                     }
-                    else if (itemIds.count(19019) && sPlayerbotAIConfig.thunderfuryRepliesChance)
+                    else if (itemIds.count(19019) && sPlayerbotAIConfig.ThunderfuryRepliesChance)
                     {
-                        if (urand(0, 60) > 0 || urand(1, 100) > sPlayerbotAIConfig.thunderfuryRepliesChance)
+                        if (urand(0, 60) > 0 || urand(1, 100) > sPlayerbotAIConfig.ThunderfuryRepliesChance)
                             return;
                     }
                     else
@@ -1341,8 +1341,8 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                         if (isFromFreeBot && urand(0, 20))
                             return;
 
-                        // if (msgtype == CHAT_MSG_GUILD && (!sPlayerbotAIConfig.guildRepliesRate || urand(1, 100) >=
-                        // sPlayerbotAIConfig.guildRepliesRate)) return;
+                        // if (msgtype == CHAT_MSG_GUILD && (!sPlayerbotAIConfig.GuildRepliesRate || urand(1, 100) >=
+                        // sPlayerbotAIConfig.GuildRepliesRate)) return;
 
                         if (!isFromFreeBot)
                         {
@@ -1496,9 +1496,9 @@ int32 PlayerbotAI::CalculateGlobalCooldown(uint32 spellid)
         return 0;
 
     if (bot->HasSpellCooldown(spellid))
-        return sPlayerbotAIConfig.globalCoolDown;
+        return sPlayerbotAIConfig.GlobalCoolDown;
 
-    return sPlayerbotAIConfig.reactDelay;
+    return sPlayerbotAIConfig.ReactDelay;
 }
 
 void PlayerbotAI::HandleMasterIncomingPacket(WorldPacket const& packet)
@@ -1565,7 +1565,7 @@ void PlayerbotAI::DoNextAction(bool min)
 {
     if (!bot->IsInWorld() || bot->IsBeingTeleported() || (GetMaster() && GetMaster()->IsBeingTeleported()))
     {
-        SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
+        SetNextCheckDelay(sPlayerbotAIConfig.GlobalCoolDown);
         return;
     }
 
@@ -1619,7 +1619,7 @@ void PlayerbotAI::DoNextAction(bool min)
         if (!bot->isAFK() && !bot->InBattleground() && !HasGameClientMaster())
             bot->ToggleAFK();
 
-        SetNextCheckDelay(sPlayerbotAIConfig.passiveDelay);
+        SetNextCheckDelay(sPlayerbotAIConfig.PassiveDelay);
         return;
     }
     else if (bot->isAFK() && !IsSelfBot(bot))
@@ -1694,7 +1694,7 @@ void PlayerbotAI::SelectiveResetStrategies(BotState type)
     else if (type == BOT_STATE_NON_COMBAT)
         AiFactory::AddDefaultNonCombatStrategies(bot, this, e);
 
-    if (sPlayerbotAIConfig.applyInstanceStrategies)
+    if (sPlayerbotAIConfig.ApplyInstanceStrategies)
         ApplyInstanceStrategies(bot->GetMapId());
 
     e->Init();
@@ -1985,7 +1985,7 @@ void PlayerbotAI::ResetStrategies(bool /*load*/)
     AiFactory::AddDefaultNonCombatStrategies(bot, this, engines[BOT_STATE_NON_COMBAT]);
     AiFactory::AddDefaultDeadStrategies(bot, this, engines[BOT_STATE_DEAD]);
     AiFactory::AddDefaultReactionStrategies(bot, this, reactionEngine);
-    if (sPlayerbotAIConfig.applyInstanceStrategies)
+    if (sPlayerbotAIConfig.ApplyInstanceStrategies)
         ApplyInstanceStrategies(bot->GetMapId());
 
     for (uint8 i = 0; i < BOT_STATE_MAX; i++)
@@ -2737,13 +2737,13 @@ Player* PlayerbotAI::GetPlayer(ObjectGuid guid)
 
 uint32 GetCreatureIdForCreatureTemplateId(uint32 creatureTemplateId)
 {
-    QueryResult results =
-        WorldDatabase.Query("SELECT guid FROM `creature` WHERE id = {} LIMIT 1;", creatureTemplateId);
-    if (results)
+    // Map-thread safe: resolve from memory, never the world DB.
+    for (auto const& [spawnId, creatureData] : sObjectMgr->GetAllCreatureData())
     {
-        Field* fields = results->Fetch();
-        return fields[0].Get<uint32>();
+        if (creatureData.id == creatureTemplateId)
+            return spawnId;
     }
+
     return 0;
 }
 
@@ -3107,7 +3107,7 @@ bool PlayerbotAI::TellMasterNoFacing(std::string const text, PlayerbotSecurityLe
         masterBotAI = GET_PLAYERBOT_AI(master);
 
     if ((!master || (masterBotAI && !IsSelfBot(master))) &&
-        (sPlayerbotAIConfig.randomBotSayWithoutMaster || HasStrategy("debug", BOT_STATE_NON_COMBAT)))
+        (sPlayerbotAIConfig.RandomBotSayWithoutMaster || HasStrategy("debug", BOT_STATE_NON_COMBAT)))
     {
         bot->Say(text, (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
         return true;
@@ -3118,7 +3118,7 @@ bool PlayerbotAI::TellMasterNoFacing(std::string const text, PlayerbotSecurityLe
 
     time_t lastSaid = whispers[text];
 
-    if (!lastSaid || (time(nullptr) - lastSaid) >= sPlayerbotAIConfig.repeatDelay / 1000)
+    if (!lastSaid || (time(nullptr) - lastSaid) >= sPlayerbotAIConfig.RepeatDelay / 1000)
     {
         whispers[text] = time(nullptr);
 
@@ -3156,10 +3156,10 @@ bool PlayerbotAI::IsTellAllowed(PlayerbotSecurityLevel securityLevel)
     if (!GetSecurity()->CheckLevelFor(securityLevel, true, master))
         return false;
 
-    if (sPlayerbotAIConfig.whisperDistance && !bot->GetGroup() && sRandomPlayerbotMgr.IsRandomBot(bot) &&
+    if (sPlayerbotAIConfig.WhisperDistance && !bot->GetGroup() && sRandomPlayerbotMgr.IsRandomBot(bot) &&
         !master->CanBeGameMaster() &&
         (bot->GetMapId() != master->GetMapId() ||
-         ServerFacade::instance().GetDistance2d(bot, master) > sPlayerbotAIConfig.whisperDistance))
+         ServerFacade::instance().GetDistance2d(bot, master) > sPlayerbotAIConfig.WhisperDistance))
         return false;
 
     return true;
@@ -3174,7 +3174,7 @@ bool PlayerbotAI::TellMaster(std::string const text, PlayerbotSecurityLevel secu
 {
     if (!master)
     {
-        if (sPlayerbotAIConfig.randomBotSayWithoutMaster)
+        if (sPlayerbotAIConfig.RandomBotSayWithoutMaster)
             return TellMasterNoFacing(text, securityLevel);
 
         return false;
@@ -3185,7 +3185,7 @@ bool PlayerbotAI::TellMaster(std::string const text, PlayerbotSecurityLevel secu
     if (!bot->isMoving() && !bot->IsInCombat() && bot->GetMapId() == master->GetMapId() &&
         !bot->HasUnitState(UNIT_STATE_IN_FLIGHT) && !bot->IsFlying())
     {
-        if (!bot->HasInArc(EMOTE_ANGLE_IN_FRONT, master, sPlayerbotAIConfig.sightDistance))
+        if (!bot->HasInArc(EMOTE_ANGLE_IN_FRONT, master, sPlayerbotAIConfig.SightDistance))
             bot->SetFacingToObject(master);
 
         bot->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
@@ -3389,7 +3389,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
 {
     if (!spellid)
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+        if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
             LOG_DEBUG("playerbots", "Can cast spell failed. No spellid. - spellid: {}, bot name: {}", spellid, bot->GetName());
 
         return false;
@@ -3397,7 +3397,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
 
     if (bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+        if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
             LOG_DEBUG("playerbots", "Can cast spell failed. Unit state lost control. - spellid: {}, bot name: {}", spellid, bot->GetName());
 
         return false;
@@ -3415,7 +3415,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
 
     if (checkHasSpell && !bot->HasSpell(spellid))
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+        if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
             LOG_DEBUG("playerbots", "Can cast spell failed. Bot not has spell. - target name: {}, spellid: {}, bot name: {}",
                 target->GetName(), spellid, bot->GetName());
 
@@ -3424,7 +3424,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
 
     if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) != nullptr)
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+        if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
             LOG_DEBUG("playerbots", "CanCastSpell() target name: {}, spellid: {}, bot name: {}, failed because has current channeled spell",
                 target->GetName(), spellid, bot->GetName());
 
@@ -3433,7 +3433,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
 
     if (bot->HasSpellCooldown(spellid))
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+        if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
             LOG_DEBUG("playerbots", "Can cast spell failed. Spell not has cooldown. - target name: {}, spellid: {}, bot name: {}",
                 target->GetName(), spellid, bot->GetName());
 
@@ -3443,7 +3443,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
     if (!spellInfo)
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+        if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
             LOG_DEBUG("playerbots", "Can cast spell failed. No spellInfo. - target name: {}, spellid: {}, bot name: {}",
                 target->GetName(), spellid, bot->GetName());
 
@@ -3452,7 +3452,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
 
     if ((bot->GetShapeshiftForm() == FORM_FLIGHT || bot->GetShapeshiftForm() == FORM_FLIGHT_EPIC) && !bot->IsInCombat())
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+        if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
             LOG_DEBUG("playerbots", "Can cast spell failed. In flight form (not in combat). - target name: {}, spellid: {}, bot name: {}",
                 target->GetName(), spellid, bot->GetName());
 
@@ -3463,7 +3463,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
     // bool interruptOnMove = spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT;
     if ((CastingTime || spellInfo->IsAutoRepeatRangedSpell()) && bot->isMoving())
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+        if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
             LOG_DEBUG("playerbots", "Casting time and bot is moving - target name: {}, spellid: {}, bot name: {}",
                 target->GetName(), spellid, bot->GetName());
 
@@ -3477,7 +3477,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
         {
             if (spellid != 44572)  // Deep Freeze
             {
-                if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+                if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
                     LOG_DEBUG("playerbots", "target is immuned to spell - target name: {}, spellid: {}, bot name: {}",
                         target->GetName(), spellid, bot->GetName());
 
@@ -3486,9 +3486,9 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
             // Otherwise, allow Deep Freeze even if immune
         }
 
-        if (bot != target && ServerFacade::instance().GetDistance2d(bot, target) > sPlayerbotAIConfig.sightDistance)
+        if (bot != target && ServerFacade::instance().GetDistance2d(bot, target) > sPlayerbotAIConfig.SightDistance)
         {
-            if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+            if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
                 LOG_DEBUG("playerbots", "target is out of sight distance - target name: {}, spellid: {}, bot name: {}",
                     target->GetName(), spellid, bot->GetName());
 
@@ -3511,7 +3511,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
     SpellCastResult result = spell->CheckCast(true);
     delete spell;
 
-    // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+    // if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
     // {
     //     if (result != SPELL_FAILED_NOT_READY && result != SPELL_CAST_OK)
     //         LOG_DEBUG("playerbots", "CanCastSpell - target name: {}, spellid: {}, bot name: {}, result: {}",
@@ -3533,7 +3533,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
         case SPELL_FAILED_OUT_OF_RANGE:
             return true;
         default:
-            if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+            if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
                 LOG_DEBUG("playerbots", "CanCastSpell Check Failed. - target name: {}, spellid: {}, bot name: {}, result: {}",
                     target->GetName(), spellid, bot->GetName(), result);
 
@@ -3567,7 +3567,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, GameObject* goTarget, bool checkH
     if (CastingTime > 0 && bot->isMoving())
         return false;
 
-    if (ServerFacade::instance().GetDistance2d(bot, goTarget) > sPlayerbotAIConfig.sightDistance)
+    if (ServerFacade::instance().GetDistance2d(bot, goTarget) > sPlayerbotAIConfig.SightDistance)
         return false;
 
     // ObjectGuid oldSel = bot->GetTarget();
@@ -3621,7 +3621,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, float x, float y, float z, bool c
 
     if (!itemTarget)
     {
-        if (bot->GetDistance(x, y, z) > sPlayerbotAIConfig.sightDistance)
+        if (bot->GetDistance(x, y, z) > sPlayerbotAIConfig.SightDistance)
             return false;
     }
 
@@ -3748,7 +3748,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
 
     if (failWithDelay)
     {
-        SetNextCheckDelay(sPlayerbotAIConfig.reactDelay);
+        SetNextCheckDelay(sPlayerbotAIConfig.ReactDelay);
         return false;
     }
 
@@ -3766,7 +3766,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
         {
             bot->GetTradeData()->SetSpell(spellId);
             delete spell;
-            // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+            // if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
             //     LOG_DEBUG("playerbots", "Spell cast no item - target name: {}, spellid: {}, bot name: {}",
             //         target->GetName(), spellId, bot->GetName());
 
@@ -3848,7 +3848,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
     if (bot->isMoving() && spell->GetCastTime())
     {
         // bot->StopMoving();
-        SetNextCheckDelay(sPlayerbotAIConfig.reactDelay);
+        SetNextCheckDelay(sPlayerbotAIConfig.ReactDelay);
         spell->cancel();
         delete spell;
         return false;
@@ -3856,7 +3856,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
 
     // spell->m_targets.SetUnitTarget(target);
     // SpellCastResult spellSuccess = spell->CheckCast(true);
-    // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+    // if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
     //     LOG_DEBUG("playerbots", "Spell cast result - target name: {}, spellid: {}, bot name: {}, result: {}",
     //         target->GetName(), spellId, bot->GetName(), spellSuccess);
 
@@ -3867,7 +3867,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
 
     if (result != SPELL_CAST_OK)
     {
-        // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+        // if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
         //     LOG_DEBUG("playerbots", "Spell cast failed. - target name: {}, spellid: {}, bot name: {}, result: {}",
         //         target->GetName(), spellId, bot->GetName(), result);
 
@@ -3934,7 +3934,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
     //     {
     //         spell->cancel();
     //         delete spell;
-    //         if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
+    //         if (!sPlayerbotAIConfig.LogInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
     //             LOG_DEBUG("playerbots", "Spell cast loot - target name: {}, spellid: {}, bot name: {}",
     //                 target->GetName(), spellId, bot->GetName());
 
@@ -4018,7 +4018,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, float x, float y, float z, Item* ite
 
     if (failWithDelay)
     {
-        SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
+        SetNextCheckDelay(sPlayerbotAIConfig.GlobalCoolDown);
         return false;
     }
 
@@ -4064,7 +4064,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, float x, float y, float z, Item* ite
     if (bot->isMoving() && spell->GetCastTime())
     {
         // bot->StopMoving();
-        SetNextCheckDelay(sPlayerbotAIConfig.reactDelay);
+        SetNextCheckDelay(sPlayerbotAIConfig.ReactDelay);
         spell->cancel();
         delete spell;
         return false;
@@ -4270,7 +4270,7 @@ bool PlayerbotAI::CastVehicleSpell(uint32 spellId, Unit* target)
 
     if (failWithDelay)
     {
-        SetNextCheckDelay(sPlayerbotAIConfig.reactDelay);
+        SetNextCheckDelay(sPlayerbotAIConfig.ReactDelay);
         return false;
     }
 
@@ -4311,7 +4311,7 @@ bool PlayerbotAI::CastVehicleSpell(uint32 spellId, Unit* target)
     if (seat->CanControl() && vehicleBase->isMoving() && spell->GetCastTime())
     {
         vehicleBase->StopMoving();
-        SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
+        SetNextCheckDelay(sPlayerbotAIConfig.GlobalCoolDown);
         spell->cancel();
         // delete spell;
         return false;
@@ -4388,7 +4388,7 @@ void PlayerbotAI::WaitForSpellCast(Spell* spell)
             castTime += duration;
     }
 
-    SetNextCheckDelay(castTime + sPlayerbotAIConfig.reactDelay);
+    SetNextCheckDelay(castTime + sPlayerbotAIConfig.ReactDelay);
 }
 
 void PlayerbotAI::RemoveAura(std::string const name)
@@ -4465,8 +4465,8 @@ bool PlayerbotAI::HasAuraToDispel(Unit* target, uint32 dispelType)
         if (!aura || aura->IsPassive() || aura->IsRemoved())
             continue;
 
-        if (sPlayerbotAIConfig.dispelAuraDuration && aura->GetDuration() &&
-            aura->GetDuration() < (int32)sPlayerbotAIConfig.dispelAuraDuration)
+        if (sPlayerbotAIConfig.DispelAuraDuration && aura->GetDuration() &&
+            aura->GetDuration() < (int32)sPlayerbotAIConfig.DispelAuraDuration)
             continue;
 
         SpellInfo const* spellInfo = aura->GetSpellInfo();
@@ -4730,7 +4730,7 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
         return true;
 
     // all bots forced active, no rotation or scaling needed
-    if (sPlayerbotAIConfig.botActiveAlone >= 100 && !sPlayerbotAIConfig.botActiveAloneSmartScale)
+    if (sPlayerbotAIConfig.BotActiveAlone >= 100 && !sPlayerbotAIConfig.BotActiveAloneSmartScale)
         return true;
 
     // bot is in combat, always defend yourself
@@ -4884,16 +4884,16 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     // #######################################################################################
     // Acitivity throttling logic
     // #######################################################################################
-    if (sPlayerbotAIConfig.botActiveAlone <= 0)
+    if (sPlayerbotAIConfig.BotActiveAlone <= 0)
         return false;
 
     // base threshold capped at 100
-    uint32 mod = sPlayerbotAIConfig.botActiveAlone > 100 ? 100 : sPlayerbotAIConfig.botActiveAlone;
+    uint32 mod = sPlayerbotAIConfig.BotActiveAlone > 100 ? 100 : sPlayerbotAIConfig.BotActiveAlone;
 
     // reduce threshold based on server tick time when SmartScale is enabled
-    if (sPlayerbotAIConfig.botActiveAloneSmartScale &&
-        bot->GetLevel() >= sPlayerbotAIConfig.botActiveAloneSmartScaleWhenMinLevel &&
-        bot->GetLevel() <= sPlayerbotAIConfig.botActiveAloneSmartScaleWhenMaxLevel)
+    if (sPlayerbotAIConfig.BotActiveAloneSmartScale &&
+        bot->GetLevel() >= sPlayerbotAIConfig.BotActiveAloneSmartScaleWhenMinLevel &&
+        bot->GetLevel() <= sPlayerbotAIConfig.BotActiveAloneSmartScaleWhenMaxLevel)
     {
         mod = AutoScaleActivity(mod);
     }
@@ -4927,8 +4927,8 @@ uint32 PlayerbotAI::AutoScaleActivity(uint32 mod)
 {
     // Current max server update time (ms), and the configured floor/ceiling values for bot scaling
     uint32 maxDiff = sWorldUpdateTime.GetMaxUpdateTimeOfCurrentTable();
-    uint32 diffLimitFloor = sPlayerbotAIConfig.botActiveAloneSmartScaleDiffLimitfloor;
-    uint32 diffLimitCeiling = sPlayerbotAIConfig.botActiveAloneSmartScaleDiffLimitCeiling;
+    uint32 diffLimitFloor = sPlayerbotAIConfig.BotActiveAloneSmartScaleDiffLimitFloor;
+    uint32 diffLimitCeiling = sPlayerbotAIConfig.BotActiveAloneSmartScaleDiffLimitCeiling;
 
     if (diffLimitCeiling <= diffLimitFloor)
     {
@@ -5521,19 +5521,19 @@ float PlayerbotAI::GetRange(std::string const type)
         return val;
 
     if (type == "spell")
-        return sPlayerbotAIConfig.spellDistance;
+        return sPlayerbotAIConfig.SpellDistance;
 
     if (type == "shoot")
-        return sPlayerbotAIConfig.shootDistance;
+        return sPlayerbotAIConfig.ShootDistance;
 
     if (type == "flee")
-        return sPlayerbotAIConfig.fleeDistance;
+        return sPlayerbotAIConfig.FleeDistance;
 
     if (type == "heal")
-        return sPlayerbotAIConfig.healDistance;
+        return sPlayerbotAIConfig.HealDistance;
 
     if (type == "melee")
-        return sPlayerbotAIConfig.meleeDistance;
+        return sPlayerbotAIConfig.MeleeDistance;
 
     return 0;
 }
@@ -6733,17 +6733,17 @@ std::set<uint32> PlayerbotAI::GetCurrentIncompleteQuestIds()
 
 uint32 PlayerbotAI::GetReactDelay()
 {
-    uint32 base = sPlayerbotAIConfig.reactDelay;  // Default 100(ms)
+    uint32 base = sPlayerbotAIConfig.ReactDelay;  // Default 100(ms)
 
     // If dynamic react delay is disabled, use a static calculation
-    if (!sPlayerbotAIConfig.dynamicReactDelay)
+    if (!sPlayerbotAIConfig.DynamicReactDelay)
     {
         if (HasGameClientMaster())
             return base;
 
         bool inBG = bot->InBattleground() || bot->InArena();
 
-        if (sPlayerbotAIConfig.fastReactInBG && inBG)
+        if (sPlayerbotAIConfig.FastReactInBG && inBG)
             return base;
 
         bool inCombat = bot->IsInCombat();
@@ -6768,11 +6768,11 @@ uint32 PlayerbotAI::GetReactDelay()
     {
         if (bot->IsInCombat() || currentState == BOT_STATE_COMBAT)
         {
-            return static_cast<uint32>(base * (sPlayerbotAIConfig.fastReactInBG ? 2.5f : 5.0f));
+            return static_cast<uint32>(base * (sPlayerbotAIConfig.FastReactInBG ? 2.5f : 5.0f));
         }
         else
         {
-            return static_cast<uint32>(base * (sPlayerbotAIConfig.fastReactInBG ? 1.0f : 10.0f));
+            return static_cast<uint32>(base * (sPlayerbotAIConfig.FastReactInBG ? 1.0f : 10.0f));
         }
     }
 
