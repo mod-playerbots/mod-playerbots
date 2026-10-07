@@ -241,7 +241,7 @@ ObjectGuid WsgSupportTargetValue::Calculate()
         return ObjectGuid::Empty;
     GameObject* base = bg->GetBGObject(bot->GetTeamId() == TEAM_ALLIANCE ? BG_WS_OBJECT_A_FLAG : BG_WS_OBJECT_H_FLAG);
     ObjectGuid result;
-    float bestDistance = sPlayerbotAIConfig.sightDistance;
+    float bestDistance = sPlayerbotAIConfig.SightDistance;
     constexpr float carrierThreatRadius = 30.0f;
     constexpr float baseThreatRadius = 45.0f;
     for (ObjectGuid const& guid : AI_VALUE(GuidVector, "nearest enemy players"))
@@ -267,7 +267,7 @@ ObjectGuid WsgHealTargetValue::Calculate()
 {
     Battleground* bg = bot->GetBattleground();
     if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS || bg->GetStatus() != STATUS_IN_PROGRESS || !bot->IsAlive() ||
-        !botAI->IsHeal(bot))
+        !PlayerbotAI::IsHeal(bot))
         return ObjectGuid::Empty;
     BattlegroundWS* warsong = static_cast<BattlegroundWS*>(bg);
     ObjectGuid carrier = warsong->GetFlagPickerGUID(bg->GetOtherTeamId(bot->GetTeamId()));
@@ -279,8 +279,8 @@ ObjectGuid WsgHealTargetValue::Calculate()
     {
         if (!player || !player->IsAlive() || !player->IsInWorld() || player->GetMap() != bot->GetMap() ||
             player->GetTeamId() != bot->GetTeamId() || player->IsCharmed() ||
-            player->GetHealthPct() >= sPlayerbotAIConfig.mediumHealth ||
-            bot->GetDistance2d(player) > sPlayerbotAIConfig.healDistance || !bot->IsWithinLOSInMap(player))
+            player->GetHealthPct() >= sPlayerbotAIConfig.MediumHealth ||
+            bot->GetDistance2d(player) > sPlayerbotAIConfig.HealDistance || !bot->IsWithinLOSInMap(player))
             continue;
         float score = player->GetHealthPct() + bot->GetDistance2d(player) / distanceScale;
         if (guid == carrier)
@@ -294,6 +294,18 @@ ObjectGuid WsgHealTargetValue::Calculate()
     return result;
 }
 
+namespace
+{
+// a game from the random queue records BATTLEGROUND_RB as the player's type: use the rolled map
+BattlegroundTypeId RealBgType(Player* bot)
+{
+    BattlegroundTypeId bgType = bot->GetBattlegroundTypeId();
+    if (bgType == BATTLEGROUND_RB && bot->GetBattleground())
+        bgType = bot->GetBattleground()->GetBgTypeID(true);
+    return bgType;
+}
+}  // namespace
+
 Unit* FlagCarrierValue::Calculate()
 {
     Unit* carrier = nullptr;
@@ -301,8 +313,7 @@ Unit* FlagCarrierValue::Calculate()
     if (botAI->GetBot()->InBattleground())
     {
         Battleground* battleground = bot->GetBattleground();
-        bool isWarsong = battleground && battleground->GetBgTypeID(true) == BATTLEGROUND_WS;
-        if (isWarsong)
+        if (RealBgType(bot) == BattlegroundTypeId::BATTLEGROUND_WS)
         {
             BattlegroundWS* bg = static_cast<BattlegroundWS*>(battleground);
 
@@ -319,7 +330,7 @@ Unit* FlagCarrierValue::Calculate()
 
             if (carrier)
             {
-                if (ignoreRange || bot->IsWithinDistInMap(carrier, sPlayerbotAIConfig.sightDistance))
+                if (ignoreRange || bot->IsWithinDistInMap(carrier, sPlayerbotAIConfig.SightDistance))
                 {
                     return carrier;
                 }
@@ -328,7 +339,7 @@ Unit* FlagCarrierValue::Calculate()
             }
         }
 
-        if (botAI->GetBot()->GetBattlegroundTypeId() == BATTLEGROUND_EY)
+        if (RealBgType(botAI->GetBot()) == BATTLEGROUND_EY)
         {
             BattlegroundEY* bg = (BattlegroundEY*)botAI->GetBot()->GetBattleground();
 
@@ -350,7 +361,7 @@ Unit* FlagCarrierValue::Calculate()
 
             if (carrier)
             {
-                if (ignoreRange || bot->IsWithinDistInMap(carrier, sPlayerbotAIConfig.sightDistance))
+                if (ignoreRange || bot->IsWithinDistInMap(carrier, sPlayerbotAIConfig.SightDistance))
                 {
                     return carrier;
                 }
