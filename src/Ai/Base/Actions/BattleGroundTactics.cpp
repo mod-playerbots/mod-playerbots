@@ -1884,17 +1884,20 @@ bool BGTactics::selectObjective(bool reset)
             AVBotStrategy enemyStrategy = (team == TEAM_ALLIANCE) ? strategyHorde : strategyAlliance;
 
             // Same value for this bot all game, so re-selecting keeps the objective until the battle state changes
-            auto stableRoll = [&](uint32 salt, uint32 range) -> uint32
+            auto stableHash = [&](uint32 guidCounter, uint32 salt) -> uint32
             {
-                uint32 h = (bot->GetGUID().GetCounter() ^ (bg->GetInstanceID() << 16)) * 2654435761u + salt * 40503u;
+                uint32 h = (guidCounter ^ (bg->GetInstanceID() << 16)) * 2654435761u + salt * 40503u;
                 h ^= h >> 15;
                 h *= 2246822519u;
                 h ^= h >> 13;
-                return h % range;
+                return h;
+            };
+            auto stableRoll = [&](uint32 salt, uint32 range) -> uint32
+            {
+                return stableHash(bot->GetGUID().GetCounter(), salt) % range;
             };
 
             uint8 defendersProhab = 4;
-            bool enableMineCapture = true;
             bool enableSnowfall = true;
 
             switch (strategy)
@@ -1904,7 +1907,6 @@ bool BGTactics::selectObjective(bool reset)
                     break;
                 case AV_STRATEGY_OFFENSIVE:
                     defendersProhab = 1;
-                    enableMineCapture = false;
                     break;
                 case AV_STRATEGY_DEFENSIVE:
                     defendersProhab = 9;
@@ -1983,22 +1985,41 @@ bool BGTactics::selectObjective(bool reset)
             // Engage the enemy boss only once about half the team has gathered for it
             uint32 bossGatherCount = std::clamp<uint32>(bg->GetPlayersCountByTeam(team) / 2, 5, 20);
 
-            // --- Mine Capture (rarely works, needs some improvement) ---
-            if (!BgObjective && enableMineCapture && role == 0)
+            // --- Mine Capture ---
+            // The two bots of the team with the lowest roll take our side's mine, and go back whenever it is lost
+            BG_AV_OTHER_VALUES mineType = (team == TEAM_HORDE) ? AV_SOUTH_MINE : AV_NORTH_MINE;
+            if (!BgObjective && av->GetMineOwner(mineType) != team)
             {
-                BG_AV_OTHER_VALUES mineType = (team == TEAM_HORDE) ? AV_SOUTH_MINE : AV_NORTH_MINE;
-                if (av->GetMineOwner(mineType) != team)
+                uint32 ownCounter = bot->GetGUID().GetCounter();
+                uint32 ownHash = stableHash(ownCounter, 8);
+                uint32 lowerBots = 0;
+                for (auto const& [guid, player] : bg->GetPlayers())
+                {
+                    if (!player || player == bot || player->GetTeamId() != team || !GET_PLAYERBOT_AI(player))
+                        continue;
+
+                    uint32 hash = stableHash(guid.GetCounter(), 8);
+                    if (hash < ownHash || (hash == ownHash && guid.GetCounter() < ownCounter))
+                        ++lowerBots;
+                }
+
+                if (lowerBots < 2)
                 {
                     uint32 bossEntry = (team == TEAM_HORDE) ? AV_CPLACE_MINE_S_3 : AV_CPLACE_MINE_N_3;
-                    Creature* mBossNeutral = bg->GetBGCreature(bossEntry);
-                    Position const* minePositions[] = {(team == TEAM_HORDE) ? &AV_MINE_SOUTH_1 : &AV_MINE_NORTH_1,
-                                                       (team == TEAM_HORDE) ? &AV_MINE_SOUTH_2 : &AV_MINE_NORTH_2,
-                                                       (team == TEAM_HORDE) ? &AV_MINE_SOUTH_3 : &AV_MINE_NORTH_3};
+                    Creature* mineBoss = bg->GetBGCreature(bossEntry);
+                    if (mineBoss && mineBoss->IsAlive())
+                        BgObjective = mineBoss;
+                    else
+                    {
+                        Position const* minePositions[] = {(team == TEAM_HORDE) ? &AV_MINE_SOUTH_1 : &AV_MINE_NORTH_1,
+                                                           (team == TEAM_HORDE) ? &AV_MINE_SOUTH_2 : &AV_MINE_NORTH_2,
+                                                           (team == TEAM_HORDE) ? &AV_MINE_SOUTH_3 : &AV_MINE_NORTH_3};
 
-                    Position const* chosen = minePositions[urand(0, 2)];
-                    pos.Set(chosen->GetPositionX(), chosen->GetPositionY(), chosen->GetPositionZ(), bot->GetMapId());
-                    posMap["bg objective"] = pos;
-                    BgObjective = mBossNeutral;
+                        Position const* chosen = minePositions[stableRoll(9, 3)];
+                        pos.Set(chosen->GetPositionX(), chosen->GetPositionY(), chosen->GetPositionZ(), bot->GetMapId());
+                        posMap["bg objective"] = pos;
+                        return true;
+                    }
                 }
             }
 
@@ -2063,6 +2084,35 @@ bool BGTactics::selectObjective(bool reset)
                     BgObjective = contestedObjectives[stableRoll(2, contestedObjectives.size())];
                 else if (!availableObjectives.empty())
                     BgObjective = availableObjectives[stableRoll(3, availableObjectives.size())];
+            }
+
+            // --- Retake ---
+            // Our nodes the enemy is assaulting or holds, or that we are assaulting back: bots nearby and a quarter of
+            // the rest go back, a tower only until its capture timer runs out, a graveyard until it is ours again
+            if (!BgObjective)
+            {
+                GameObject* retakeTarget = nullptr;
+                float retakeDist = 0.0f;
+                for (auto const& [nodeId, goId] : defendObjectives)
+                {
+                    BG_AV_NodeInfo const& node = av->GetAVNodeInfo(nodeId);
+                    if (node.State == POINT_DESTROYED || (node.OwnerId != enemyTeam && node.State != POINT_ASSAULTED))
+                        continue;
+
+                    GameObject* go = bg->GetBGObject(goId);
+                    if (!go)
+                        continue;
+
+                    float dist = bot->GetDistance(go);
+                    if (!retakeTarget || dist < retakeDist)
+                    {
+                        retakeTarget = go;
+                        retakeDist = dist;
+                    }
+                }
+
+                if (retakeTarget && (retakeDist < 250.0f || stableRoll(10, 100) < 25))
+                    BgObjective = retakeTarget;
             }
 
             // --- Captain ---
