@@ -124,6 +124,9 @@ public:
     PlayerBotMap GetAllBots() { return playerBots; };
     void InitArenaTeams();
     void PrintStats();
+    void PrintQuestTotals();
+    void PrintQuestStats();
+    void ExportQuestStatsToJson();
     double GetBuyMultiplier(Player* bot);
     double GetSellMultiplier(Player* bot);
     void AddTradeDiscount(Player* bot, Player* master, int32 value);

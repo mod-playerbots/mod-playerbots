@@ -22,6 +22,7 @@
 #include "LFGMgr.h"
 #include "MapMgr.h"
 #include "NewRpgInfo.h"
+#include "JsonUtils.h"
 #include "NewRpgStrategy.h"
 #include "ObjectGuid.h"
 #include "PerfMonitor.h"
@@ -2508,7 +2509,7 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* /*handler*/,
 
     if (!args || !*args)
     {
-        LOG_ERROR("playerbots", "Usage: rndbot stats/update/reset/init/refresh/add/remove");
+        LOG_ERROR("playerbots", "Usage: rndbot stats/queststats/questdump/update/reset/init/refresh/add/remove");
         return false;
     }
 
@@ -2526,6 +2527,18 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* /*handler*/,
     {
         sRandomPlayerbotMgr.PrintStats();
         // activatePrintStatsThread();
+        return true;
+    }
+
+    if (cmd == "queststats")
+    {
+        sRandomPlayerbotMgr.PrintQuestStats();
+        return true;
+    }
+
+    if (cmd == "questdump")
+    {
+        sRandomPlayerbotMgr.ExportQuestStatsToJson();
         return true;
     }
 
@@ -2943,6 +2956,7 @@ void RandomPlayerbotMgr::PrintStats()
         if (sPlayerbotAIConfig.EnableNewRpgStrategy)
         {
             rpgStatusCount[botAI->rpgInfo.GetStatus()]++;
+            std::lock_guard<std::mutex> guard(botAI->rpgStatisticMutex);
             rpgStasticTotal += botAI->rpgStatistic;
             botAI->rpgStatistic = NewRpgStatistic();
         }
@@ -3024,13 +3038,258 @@ void RandomPlayerbotMgr::PrintStats()
                  rpgStatusCount[RPG_GO_CAMP], rpgStatusCount[RPG_WANDER_RANDOM], rpgStatusCount[RPG_WANDER_NPC],
                  rpgStatusCount[RPG_DO_QUEST], rpgStatusCount[RPG_TRAVEL_FLIGHT], rpgStatusCount[RPG_OUTDOOR_PVP]);
 
-        LOG_INFO("playerbots", "Bots total quests:");
-        LOG_INFO("playerbots", "    Accepted: {}, Rewarded: {}, Dropped: {}", rpgStasticTotal.questAccepted,
-                 rpgStasticTotal.questRewarded, rpgStasticTotal.questDropped);
+        PrintQuestTotals();
+
+        if (sPlayerbotAIConfig.CollectDetailedQuestStats)
+        {
+            std::map<uint32, uint32> problemCounts;
+            for (auto const& [questId, count] : rpgStasticTotal.questDroppedByID)
+                problemCounts[questId] += count;
+            for (auto const& [questId, count] : rpgStasticTotal.questAbandonedByID)
+                problemCounts[questId] += count;
+
+            if (!problemCounts.empty())
+            {
+                std::vector<std::pair<uint32, uint32>> problems(problemCounts.begin(), problemCounts.end());
+                std::sort(problems.begin(), problems.end(), [](auto const& a, auto const& b) {
+                    return a.second > b.second;
+                });
+
+                LOG_INFO("playerbots", "Top quest problems (dropped + abandoned):");
+                for (size_t i = 0; i < problems.size() && i < 10; ++i)
+                {
+                    Quest const* quest = sObjectMgr->GetQuestTemplate(problems[i].first);
+                    LOG_INFO("playerbots", "    [{}] {} x{}", problems[i].first,
+                             quest ? quest->GetTitle() : "Unknown Quest", problems[i].second);
+                }
+            }
+        }
     }
 
     LOG_INFO("playerbots", "Bots engine:", dead);
     LOG_INFO("playerbots", "    Non-combat: {}, Combat: {}, Dead: {}", engine_noncombat, engine_combat, engine_dead);
+}
+
+void RandomPlayerbotMgr::PrintQuestTotals()
+{
+    LOG_INFO("playerbots", "Bots total quests:");
+    LOG_INFO("playerbots", "    Accepted: {}, Completed: {}, Rewarded: {}, Dropped: {}, Abandoned: {}",
+             rpgStasticTotal.questAccepted, rpgStasticTotal.questCompleted, rpgStasticTotal.questRewarded,
+             rpgStasticTotal.questDropped, rpgStasticTotal.questAbandoned);
+
+    if (rpgStasticTotal.questAccepted > 0)
+    {
+        LOG_INFO("playerbots", "    Completed: {:.2f}%, Rewarded: {:.2f}%, Dropped: {:.2f}%, Abandoned: {:.2f}%",
+                 rpgStasticTotal.questCompleted * 100.0f / rpgStasticTotal.questAccepted,
+                 rpgStasticTotal.questRewarded * 100.0f / rpgStasticTotal.questAccepted,
+                 rpgStasticTotal.questDropped * 100.0f / rpgStasticTotal.questAccepted,
+                 rpgStasticTotal.questAbandoned * 100.0f / rpgStasticTotal.questAccepted);
+    }
+}
+
+void RandomPlayerbotMgr::PrintQuestStats()
+{
+    if (!sPlayerbotAIConfig.EnableNewRpgStrategy)
+    {
+        LOG_INFO("playerbots", "New RPG strategy is not enabled. Quest stats not available.");
+        return;
+    }
+
+    LOG_INFO("playerbots", "=== QUEST STATISTICS REPORT ===");
+    PrintQuestTotals();
+    LOG_INFO("playerbots", "");
+
+    if (!sPlayerbotAIConfig.CollectDetailedQuestStats)
+    {
+        LOG_INFO("playerbots", "Detailed quest stats are disabled. Set Playerbots.CollectDetailedQuestStats = 1.");
+        return;
+    }
+
+    if (!rpgStasticTotal.questDropReasons.empty())
+    {
+        LOG_INFO("playerbots", "Quest drop reasons:");
+        for (auto const& [reason, count] : rpgStasticTotal.questDropReasons)
+            LOG_INFO("playerbots", "    {}: {}", reason, count);
+        LOG_INFO("playerbots", "");
+    }
+
+    if (!rpgStasticTotal.questAbandonReasons.empty())
+    {
+        LOG_INFO("playerbots", "Quest abandon reasons:");
+        for (auto const& [reason, count] : rpgStasticTotal.questAbandonReasons)
+            LOG_INFO("playerbots", "    {}: {}", reason, count);
+        LOG_INFO("playerbots", "");
+    }
+
+    auto printProblemQuests = [](std::map<uint32, uint32> const& counts,
+                                 std::map<uint32, std::map<std::string, uint32>> const& reasons, char const* label)
+    {
+        if (counts.empty())
+            return;
+
+        std::vector<std::pair<uint32, uint32>> sorted(counts.begin(), counts.end());
+        std::sort(sorted.begin(), sorted.end(),
+                  [](std::pair<uint32, uint32> const& a, std::pair<uint32, uint32> const& b) {
+                      return a.second > b.second;
+                  });
+
+        LOG_INFO("playerbots", "{}:", label);
+        for (auto const& [questId, count] : sorted)
+        {
+            Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+            std::string reasonSummary;
+
+            auto reasonsIt = reasons.find(questId);
+            if (reasonsIt != reasons.end())
+            {
+                for (auto const& [reason, reasonCount] : reasonsIt->second)
+                {
+                    if (!reasonSummary.empty())
+                        reasonSummary += ", ";
+                    reasonSummary += reason + " x" + std::to_string(reasonCount);
+                }
+            }
+
+            LOG_INFO("playerbots", "    [{}] {} x{} ({})", questId, quest ? quest->GetTitle() : "Unknown Quest", count,
+                     reasonSummary);
+        }
+        LOG_INFO("playerbots", "");
+    };
+
+    printProblemQuests(rpgStasticTotal.questDroppedByID, rpgStasticTotal.questDropReasonsByID, "Dropped quests");
+    printProblemQuests(rpgStasticTotal.questAbandonedByID, rpgStasticTotal.questAbandonReasonsByID, "Abandoned quests");
+
+    LOG_INFO("playerbots", "=== END QUEST STATISTICS REPORT ===");
+}
+
+void RandomPlayerbotMgr::ExportQuestStatsToJson()
+{
+    if (!sPlayerbotAIConfig.EnableNewRpgStrategy)
+    {
+        LOG_ERROR("playerbots", "New RPG strategy is not enabled. Quest stats not available.");
+        return;
+    }
+
+    if (!sPlayerbotAIConfig.CollectDetailedQuestStats)
+    {
+        LOG_ERROR("playerbots", "Detailed quest stats are disabled. Set Playerbots.CollectDetailedQuestStats = 1.");
+        return;
+    }
+
+    auto reasonsJson = [](std::map<std::string, uint32> const& reasons)
+    {
+        std::ostringstream out;
+        out << "{";
+        bool first = true;
+        for (auto const& [reason, count] : reasons)
+        {
+            if (!first)
+                out << ", ";
+            out << "\"" << JsonEscape(reason) << "\": " << count;
+            first = false;
+        }
+        out << "}";
+        return out.str();
+    };
+
+    struct QuestRow
+    {
+        uint32 questId{0};
+        uint32 accepted{0};
+        uint32 completed{0};
+        uint32 rewarded{0};
+        uint32 dropped{0};
+        uint32 abandoned{0};
+        std::map<std::string, uint32> dropReasons;
+        std::map<std::string, uint32> abandonReasons;
+
+        uint32 Total() const { return completed + rewarded + dropped + abandoned; }
+    };
+
+    std::set<uint32> questIds;
+    for (auto const& [questId, count] : rpgStasticTotal.questAcceptedByID)
+        questIds.insert(questId);
+    for (auto const& [questId, count] : rpgStasticTotal.questCompletedByID)
+        questIds.insert(questId);
+    for (auto const& [questId, count] : rpgStasticTotal.questRewardedByID)
+        questIds.insert(questId);
+    for (auto const& [questId, count] : rpgStasticTotal.questDroppedByID)
+        questIds.insert(questId);
+    for (auto const& [questId, count] : rpgStasticTotal.questAbandonedByID)
+        questIds.insert(questId);
+
+    auto countFor = [](std::map<uint32, uint32> const& counts, uint32 questId) -> uint32
+    {
+        auto it = counts.find(questId);
+        return it != counts.end() ? it->second : 0;
+    };
+
+    std::vector<QuestRow> rows;
+    for (uint32 questId : questIds)
+    {
+        QuestRow row;
+        row.questId = questId;
+        row.accepted = countFor(rpgStasticTotal.questAcceptedByID, questId);
+        row.completed = countFor(rpgStasticTotal.questCompletedByID, questId);
+        row.rewarded = countFor(rpgStasticTotal.questRewardedByID, questId);
+        row.dropped = countFor(rpgStasticTotal.questDroppedByID, questId);
+        row.abandoned = countFor(rpgStasticTotal.questAbandonedByID, questId);
+
+        auto dropReasonsIt = rpgStasticTotal.questDropReasonsByID.find(questId);
+        if (dropReasonsIt != rpgStasticTotal.questDropReasonsByID.end())
+            row.dropReasons = dropReasonsIt->second;
+
+        auto abandonReasonsIt = rpgStasticTotal.questAbandonReasonsByID.find(questId);
+        if (abandonReasonsIt != rpgStasticTotal.questAbandonReasonsByID.end())
+            row.abandonReasons = abandonReasonsIt->second;
+
+        rows.push_back(row);
+    }
+
+    std::sort(rows.begin(), rows.end(), [](QuestRow const& a, QuestRow const& b) { return a.Total() > b.Total(); });
+
+    char stamp[32] = "";
+    std::time_t const now = std::time(nullptr);
+    if (std::tm const* utc = std::gmtime(&now))
+        std::strftime(stamp, sizeof(stamp), "%Y-%m-%dT%H:%M:%SZ", utc);
+
+    std::ostringstream out;
+    out << "{\n";
+    out << "  \"generatedAt\": " << static_cast<uint64>(now) << ",\n";
+    out << "  \"generatedAtUtc\": \"" << stamp << "\",\n";
+    out << "  \"totals\": {\n";
+    out << "    \"accepted\": " << rpgStasticTotal.questAccepted << ",\n";
+    out << "    \"completed\": " << rpgStasticTotal.questCompleted << ",\n";
+    out << "    \"rewarded\": " << rpgStasticTotal.questRewarded << ",\n";
+    out << "    \"dropped\": " << rpgStasticTotal.questDropped << ",\n";
+    out << "    \"abandoned\": " << rpgStasticTotal.questAbandoned << "\n";
+    out << "  },\n";
+    out << "  \"dropReasons\": " << reasonsJson(rpgStasticTotal.questDropReasons) << ",\n";
+    out << "  \"abandonReasons\": " << reasonsJson(rpgStasticTotal.questAbandonReasons) << ",\n";
+    out << "  \"quests\": [\n";
+
+    for (size_t i = 0; i < rows.size(); ++i)
+    {
+        QuestRow const& row = rows[i];
+        Quest const* quest = sObjectMgr->GetQuestTemplate(row.questId);
+
+        out << "    {\n";
+        out << "      \"id\": " << row.questId << ",\n";
+        out << "      \"name\": \"" << JsonEscape(quest ? quest->GetTitle() : "Unknown Quest") << "\",\n";
+        out << "      \"accepted\": " << row.accepted << ",\n";
+        out << "      \"completed\": " << row.completed << ",\n";
+        out << "      \"rewarded\": " << row.rewarded << ",\n";
+        out << "      \"dropped\": " << row.dropped << ",\n";
+        out << "      \"abandoned\": " << row.abandoned << ",\n";
+        out << "      \"dropReasons\": " << reasonsJson(row.dropReasons) << ",\n";
+        out << "      \"abandonReasons\": " << reasonsJson(row.abandonReasons) << "\n";
+        out << "    }" << (i + 1 < rows.size() ? "," : "") << "\n";
+    }
+
+    out << "  ]\n";
+    out << "}\n";
+
+    WriteJsonFile(LogsJsonPath("playerbots_quest_stats.json"), out.str(), "Quest stats");
 }
 
 double RandomPlayerbotMgr::GetBuyMultiplier(Player* bot)
