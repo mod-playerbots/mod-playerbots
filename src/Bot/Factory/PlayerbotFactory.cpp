@@ -3904,6 +3904,34 @@ void PlayerbotFactory::ClearAllItems()
     IterateItems(&visitor, ITERATE_ALL_ITEMS);
 }
 
+static void DestroyObsoleteAmmo(Player* bot, ItemTemplate const* ammo)
+{
+    std::vector<Item*> obsolete;
+    auto const collect = [&](Item* item)
+    {
+        ItemTemplate const* proto = item->GetTemplate();
+        if (proto->Class != ITEM_CLASS_PROJECTILE || proto->ItemId == ammo->ItemId)
+            return;
+
+        // Stronger ammo is left alone, it was handed over by a player
+        if (proto->SubClass != ammo->SubClass || proto->Damage[0].DamageMax < ammo->Damage[0].DamageMax)
+            obsolete.push_back(item);
+    };
+
+    for (uint8 slot = INVENTORY_SLOT_ITEM_START; slot < INVENTORY_SLOT_ITEM_END; ++slot)
+        if (Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            collect(item);
+
+    for (uint8 bagSlot = INVENTORY_SLOT_BAG_START; bagSlot < INVENTORY_SLOT_BAG_END; ++bagSlot)
+        if (Bag* bag = bot->GetBagByPos(bagSlot))
+            for (uint32 slot = 0; slot < bag->GetBagSize(); ++slot)
+                if (Item* item = bag->GetItemByPos(slot))
+                    collect(item);
+
+    for (Item* item : obsolete)
+        bot->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+}
+
 void PlayerbotFactory::InitAmmo()
 {
     uint8 const botClass = bot->getClass();
@@ -3935,6 +3963,12 @@ void PlayerbotFactory::InitAmmo()
     uint32 entry = sRandomItemMgr.GetAmmo(level, subClass);
     if (!entry)
         return;
+
+    ItemTemplate const* ammoProto = sObjectMgr->GetItemTemplate(entry);
+    if (!ammoProto)
+        return;
+
+    DestroyObsoleteAmmo(bot, ammoProto);
 
     uint32 count = bot->GetItemCount(entry);
     uint32 maxCount = botClass == CLASS_HUNTER ? 6000 : 1000;
