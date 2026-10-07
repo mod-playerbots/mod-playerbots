@@ -16,7 +16,6 @@
 #include "SSCHelpers.h"
 #include <algorithm>
 #include <cmath>
-#include <optional>
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
