@@ -94,7 +94,7 @@ bool CastSunderArmorAction::isUseful()
     if (!group)
         return false;
 
-    if (!botAI->IsTank(bot, false))
+    if (!PlayerbotAI::IsTank(bot, false))
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -106,7 +106,7 @@ bool CastSunderArmorAction::isUseful()
             }
 
             if (member->getClass() == CLASS_WARRIOR &&
-                botAI->IsTank(member, false))
+                PlayerbotAI::IsTank(member, false))
                 return false;
         }
     }
@@ -140,7 +140,7 @@ Unit* CastVigilanceAction::GetTarget()
 
         // And it must be in range and be a dps.
         if (member->GetMapId() != bot->GetMapId() || !PlayerbotAI::IsDps(member) ||
-            bot->GetDistance(member) > sPlayerbotAIConfig.spellDistance)
+            bot->GetDistance(member) > sPlayerbotAIConfig.SpellDistance)
         {
             continue;
         }
@@ -187,7 +187,7 @@ bool CastRetaliationAction::isUseful()
         else if (attacker->IsPlayer())
         {
             Player* playerAttacker = attacker->ToPlayer();
-            if (playerAttacker && botAI->IsMelee(playerAttacker)) // Reuse existing Player melee check
+            if (playerAttacker && PlayerbotAI::IsMelee(playerAttacker)) // Reuse existing Player melee check
             {
                 ++meleeAttackers;
             }

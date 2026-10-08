@@ -19,7 +19,7 @@ constexpr uint32 SPELL_BLESSING_OF_PROTECTION = 41450;
 
 bool BloodrageBuffTrigger::IsActive()
 {
-    return AI_VALUE2(uint8, "health", "self target") >= sPlayerbotAIConfig.mediumHealth &&
+    return AI_VALUE2(uint8, "health", "self target") >= sPlayerbotAIConfig.MediumHealth &&
            AI_VALUE2(uint8, "rage", "self target") < 20;
 }
 
