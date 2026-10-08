@@ -4566,7 +4566,7 @@ std::vector<WorldLocation> TravelMgr::GetCityLocations(Player* bot)
 std::vector<WorldLocation> TravelMgr::GetValidQuestGiverLocations(Player* bot)
 {
     std::vector<WorldLocation> out;
-    if (!sPlayerbotAIConfig.enabled)
+    if (!sPlayerbotAIConfig.Enabled)
         return out;
 
     // The index is keyed by exact level and built up to CONFIG_MAX_PLAYER_LEVEL.
@@ -4585,7 +4585,7 @@ std::vector<WorldLocation> TravelMgr::GetValidQuestGiverLocations(Player* bot)
     uint32 raceMask = bot->getRaceMask();
     uint32 classMask = bot->getClassMask();
     int32 lowLevelDiff = sWorld->getIntConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF);
-    int32 levelWindow = sPlayerbotAIConfig.questGiverTeleportLevelWindow;
+    int32 levelWindow = sPlayerbotAIConfig.QuestGiverTeleportLevelWindow;
 
     for (auto const& cand : teamIt->second)
     {
@@ -4952,7 +4952,7 @@ void TravelMgr::PrepareQuestGiverTeleportIndex()
     questGiverTeleportIndex.clear();
 
     uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
-    int32 window = sPlayerbotAIConfig.questGiverTeleportLevelWindow;
+    int32 window = sPlayerbotAIConfig.QuestGiverTeleportLevelWindow;
     uint32 candidateCount = 0;
 
     // Spawns tagged for a positive game event sit in the upper half of GameEventCreatureGuids and
@@ -4971,8 +4971,8 @@ void TravelMgr::PrepareQuestGiverTeleportIndex()
         if (eventSpawns.count(guid))
             continue;
 
-        if (std::find(sPlayerbotAIConfig.randomBotMaps.begin(), sPlayerbotAIConfig.randomBotMaps.end(),
-                      creData.mapid) == sPlayerbotAIConfig.randomBotMaps.end())
+        if (std::find(sPlayerbotAIConfig.RandomBotMaps.begin(), sPlayerbotAIConfig.RandomBotMaps.end(),
+                      creData.mapid) == sPlayerbotAIConfig.RandomBotMaps.end())
             continue;
 
         CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creData.id);
