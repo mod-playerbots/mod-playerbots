@@ -701,6 +701,8 @@ bool PlayerbotAIConfig::Initialize()
     RandomBotStartingLevel = sConfigMgr->GetOption<int32>("Playerbots.RandombotStartingLevel", 1);
     EnablePeriodicOnlineOffline = sConfigMgr->GetOption<bool>("Playerbots.EnablePeriodicOnlineOffline", false);
     EnableRandomBotTrading = sConfigMgr->GetOption<int32>("Playerbots.EnableRandomBotTrading", 1);
+    EnableAltBotAutoBuy = sConfigMgr->GetOption<bool>("Playerbots.EnableAltBotAutoBuy", false);
+    AltBotAutoSellLevel = sConfigMgr->GetOption<int32>("Playerbots.EnableAltBotAutoSell", 0);
     PeriodicOnlineOfflineRatio = sConfigMgr->GetOption<float>("Playerbots.PeriodicOnlineOfflineRatio", 2.0);
     GearScoreCheck = sConfigMgr->GetOption<bool>("Playerbots.GearScoreCheck", false);
     RandomBotPreQuests = sConfigMgr->GetOption<bool>("Playerbots.PreQuests", false);
