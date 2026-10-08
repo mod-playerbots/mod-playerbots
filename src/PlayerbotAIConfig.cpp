@@ -538,7 +538,7 @@ bool PlayerbotAIConfig::Initialize()
                 {
                     baseProb = std::stoul(probBaseStr);
                 }
-                catch (const std::exception&)
+                catch (std::exception const&)
                 {
                     LOG_ERROR("playerbots", "Invalid config value for '{}': '{}'. Using default: {}", osProbBase.str().c_str(), probBaseStr.c_str(), def);
                     baseProb = def;
@@ -555,7 +555,7 @@ bool PlayerbotAIConfig::Initialize()
                 {
                     baseIndex = std::stoul(idxBaseStr);
                 }
-                catch (const std::exception&)
+                catch (std::exception const&)
                 {
                     LOG_ERROR("playerbots", "Invalid config value for '{}': '{}'. Using default: {}", osIdxBase.str().c_str(), idxBaseStr.c_str(), spec);
                     baseIndex = spec;
@@ -592,7 +592,7 @@ bool PlayerbotAIConfig::Initialize()
                         currentProb = std::stoul(probStr);
                         LOG_DEBUG("playerbots", "Loaded probability: Class {} | Spec {} ({}) | Level {} | Probability: {}", cls, spec, PremadeSpecName[cls][spec], level, currentProb);
                     }
-                    catch (const std::exception&)
+                    catch (std::exception const&)
                     {
                         LOG_ERROR("playerbots", "Invalid config value for '{}': '{}'. Using default: {}", osProb.str().c_str(), probStr.c_str(), def);
                         currentProb = def;
