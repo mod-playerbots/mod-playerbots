@@ -4587,15 +4587,15 @@ void PlayerbotFactory::InitGlyphs(bool increment)
     // Rogue PvP exceptions
     if (bot->getClass() == CLASS_ROGUE)
     {
-        // Assassination PvP (spec index 3): If the bot has the Deadly Brew talent
+        // Assassination PvP (spec index 4): If the bot has the Deadly Brew talent
         if (bot->HasAura(SPELL_DEADLY_BREW))
-            tab = 3;
-        // Combat PvP (spec index 4): If the bot has the Throwing Specialization talent
-        else if (bot->HasAura(SPELL_THROWING_SPECIALIZATION))
             tab = 4;
-        // Subtlety PvP (spec index 5): If the bot has the Waylay talent
-        else if (bot->HasAura(SPELL_WAYLAY))
+        // Combat PvP (spec index 5): If the bot has the Throwing Specialization talent
+        else if (bot->HasAura(SPELL_THROWING_SPECIALIZATION))
             tab = 5;
+        // Subtlety PvP (spec index 6): If the bot has the Waylay talent
+        else if (bot->HasAura(SPELL_WAYLAY))
+            tab = 6;
     }
 
     // Priest PvP exceptions
