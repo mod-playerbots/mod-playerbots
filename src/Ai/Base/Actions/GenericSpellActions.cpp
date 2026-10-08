@@ -5,10 +5,6 @@
  */
 
 #include "GenericSpellActions.h"
-
-#include <ctime>
-#include <unordered_set>
-
 #include "Battleground.h"
 #include "Chat.h"
 #include "Event.h"
@@ -22,6 +18,8 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "WorldPacket.h"
+#include <ctime>
+#include <unordered_set>
 
 using ai::buff::BuffBelowRefreshTarget;
 using ai::buff::MakeAuraQualifierForBuff;

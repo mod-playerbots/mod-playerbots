@@ -5,10 +5,6 @@
  */
 
 #include "BattleGroundTactics.h"
-
-#include <algorithm>
-#include <mutex>
-
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
 #include "BattleGroundJoinAction.h"
@@ -38,6 +34,8 @@
 #include "TargetedMovementGenerator.h"
 #include "Timer.h"
 #include "Vehicle.h"
+#include <algorithm>
+#include <mutex>
 
 // common bg positions
 Position const WS_WAITING_POS_HORDE_1 = {944.981f, 1423.478f, 345.434f, 6.18f};
@@ -1987,17 +1985,17 @@ bool BGTactics::moveToStart(bool force)
     return true;
 }
 
-bool BGTactics::ShouldYieldWsgTactics(PlayerbotAI* ai)
+bool BGTactics::ShouldYieldWsgTactics(PlayerbotAI* botAI)
 {
-    Player* player = ai->GetBot();
+    Player* player = botAI->GetBot();
     Battleground* bg = player->GetBattleground();
     if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS)
         return false;
     if (player->IsNonMeleeSpellCast(false))
         return true;
-    if (!ai->IsHeal(player))
+    if (!botAI->IsHeal(player))
         return false;
-    Unit* healTarget = ai->GetAiObjectContext()->GetValue<Unit*>("party member to heal")->Get();
+    Unit* healTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("party member to heal")->Get();
     return healTarget && healTarget->IsAlive() && healTarget->IsInWorld() && healTarget->GetMap() == player->GetMap() &&
            healTarget->GetHealthPct() < sPlayerbotAIConfig.MediumHealth &&
            player->IsWithinDistInMap(healTarget, sPlayerbotAIConfig.HealDistance) &&

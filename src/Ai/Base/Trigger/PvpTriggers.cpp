@@ -5,7 +5,6 @@
  */
 
 #include "PvpTriggers.h"
-
 #include "BattleGroundTactics.h"
 #include "BattlegroundEY.h"
 #include "BattlegroundMgr.h"

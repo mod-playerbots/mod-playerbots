@@ -7,10 +7,9 @@
 #ifndef PLAYERBOTS_HUMANPLAYERROSTER_H
 #define PLAYERBOTS_HUMANPLAYERROSTER_H
 
+#include "ObjectGuid.h"
 #include <mutex>
 #include <set>
-
-#include "ObjectGuid.h"
 
 // World-thread login/logout publishes GUIDs; map-thread AI never reads sessions or the bot manager.
 class HumanPlayerRoster

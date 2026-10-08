@@ -5,9 +5,6 @@
  */
 
 #include "PvpValues.h"
-
-#include <algorithm>
-
 #include "BattleGroundTactics.h"
 #include "BattlegroundEY.h"
 #include "BattlegroundMgr.h"
@@ -19,6 +16,7 @@
 #include "PositionValue.h"
 #include "ServerFacade.h"
 #include "World.h"
+#include <algorithm>
 
 bool IsUnavailableWsgCombatTarget(Player const* player, Unit const* target)
 {

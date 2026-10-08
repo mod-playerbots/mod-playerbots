@@ -5,7 +5,6 @@
  */
 
 #include "PartyMemberToHeal.h"
-
 #include "BattlegroundWS.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"

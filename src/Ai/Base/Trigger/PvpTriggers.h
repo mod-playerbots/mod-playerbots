@@ -15,7 +15,7 @@ class PlayerbotAI;
 class WsgSupportThreat : public Trigger
 {
 public:
-    WsgSupportThreat(PlayerbotAI* ai) : Trigger(ai, "wsg support threat", 250) {}
+    WsgSupportThreat(PlayerbotAI* botAI) : Trigger(botAI, "wsg support threat", 250) {}
     bool IsActive() override;
 };
 
@@ -65,7 +65,7 @@ public:
 class WsgEscortSeparated : public Trigger
 {
 public:
-    WsgEscortSeparated(PlayerbotAI* ai) : Trigger(ai, "wsg escort separated", 250) {}
+    WsgEscortSeparated(PlayerbotAI* botAI) : Trigger(botAI, "wsg escort separated", 250) {}
     bool IsActive() override;
 };
 

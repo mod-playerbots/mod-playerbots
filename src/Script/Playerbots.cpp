@@ -5,9 +5,6 @@
  */
 
 #include "Playerbots.h"
-
-#include <mysqld_error.h>
-
 #include "AllMapScript.h"
 #include "BattleGroundTactics.h"
 #include "BattlefieldScript.h"
@@ -33,6 +30,7 @@
 #include "SessionScript.h"
 #include "WorldScript.h"
 #include "cmath"
+#include <mysqld_error.h>
 
 class PlayerbotsDatabaseScript : public DatabaseScript
 {

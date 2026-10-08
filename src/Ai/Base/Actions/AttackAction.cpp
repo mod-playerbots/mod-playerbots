@@ -5,7 +5,6 @@
  */
 
 #include "AttackAction.h"
-
 #include "CreatureAI.h"
 #include "Event.h"
 #include "LastMovementValue.h"

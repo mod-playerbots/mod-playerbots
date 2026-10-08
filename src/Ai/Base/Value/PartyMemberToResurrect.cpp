@@ -5,7 +5,6 @@
  */
 
 #include "PartyMemberToResurrect.h"
-
 #include "Battleground.h"
 #include "Playerbots.h"
 

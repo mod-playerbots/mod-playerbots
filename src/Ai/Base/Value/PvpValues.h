@@ -7,15 +7,14 @@
 #ifndef PLAYERBOTS_PVPVALUES_H
 #define PLAYERBOTS_PVPVALUES_H
 
-#include <map>
-#include <vector>
-
 #include "NamedObjectContext.h"
 #include "SharedDefines.h"
 #include "Value.h"
+#include <map>
+#include <vector>
 
-class PlayerbotAI;
 class Player;
+class PlayerbotAI;
 class Unit;
 
 bool IsUnavailableWsgCombatTarget(Player const* player, Unit const* target);

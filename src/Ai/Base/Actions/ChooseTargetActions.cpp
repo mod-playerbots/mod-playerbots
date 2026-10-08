@@ -5,7 +5,6 @@
  */
 
 #include "ChooseTargetActions.h"
-
 #include "BattleGroundTactics.h"
 #include "BattlegroundWS.h"
 #include "ChooseRpgTargetAction.h"
