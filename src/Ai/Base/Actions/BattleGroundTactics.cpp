@@ -1896,6 +1896,23 @@ bool BGTactics::selectObjective(bool reset)
             {
                 return stableHash(bot->GetGUID().GetCounter(), salt) % range;
             };
+            // Each bot ranks every node by its own score, so a node joining or leaving the list only moves the bots
+            // that were headed there; an index into the list would send everyone elsewhere whenever it changed
+            auto stablePick = [&](std::vector<GameObject*> const& objectives, uint32 salt) -> GameObject*
+            {
+                GameObject* best = nullptr;
+                uint32 bestScore = 0;
+                for (GameObject* go : objectives)
+                {
+                    uint32 score = stableHash(go->GetGUID().GetCounter(), stableHash(bot->GetGUID().GetCounter(), salt));
+                    if (!best || score > bestScore)
+                    {
+                        best = go;
+                        bestScore = score;
+                    }
+                }
+                return best;
+            };
 
             uint8 defendersProhab = 4;
             bool enableSnowfall = true;
@@ -2081,9 +2098,9 @@ bool BGTactics::selectObjective(bool reset)
                 }
 
                 if (!contestedObjectives.empty())
-                    BgObjective = contestedObjectives[stableRoll(2, contestedObjectives.size())];
+                    BgObjective = stablePick(contestedObjectives, 2);
                 else if (!availableObjectives.empty())
-                    BgObjective = availableObjectives[stableRoll(3, availableObjectives.size())];
+                    BgObjective = stablePick(availableObjectives, 3);
             }
 
             // --- Retake ---
@@ -2116,19 +2133,14 @@ bool BGTactics::selectObjective(bool reset)
             }
 
             // --- Captain ---
-            if (!BgObjective && !isDefender && stableRoll(4, 100) < 33)
+            // A third of the attackers go for him, and every attacker already fighting nearby joins in, so he isn't
+            // pulled by two or three bots while the rest fight at the tower next to him
+            if (!BgObjective && !isDefender && av->IsCaptainAlive(enemyTeam))
             {
-                if (av->IsCaptainAlive(enemyTeam))
-                {
-                    uint32 creatureId = (team == TEAM_HORDE) ? AV_CREATURE_A_CAPTAIN : AV_CREATURE_H_CAPTAIN;
-                    if (Creature* captain = bg->GetBGCreature(creatureId))
-                    {
-                        if (captain->IsAlive())
-                        {
-                            BgObjective = captain;
-                        }
-                    }
-                }
+                uint32 creatureId = (team == TEAM_HORDE) ? AV_CREATURE_A_CAPTAIN : AV_CREATURE_H_CAPTAIN;
+                if (Creature* captain = bg->GetBGCreature(creatureId))
+                    if (captain->IsAlive() && (stableRoll(4, 100) < 33 || bot->GetDistance(captain) < 150.0f))
+                        BgObjective = captain;
             }
 
             // --- Enemy Boss ---
@@ -2150,6 +2162,12 @@ bool BGTactics::selectObjective(bool reset)
                 std::vector<GameObject*> candidates;
                 std::vector<GameObject*> assaultedByTeam;
 
+                // Nodes we are assaulting still fill the window, so it doesn't slide forward and back as they flip
+                size_t windowSize = isAdvanced ? 1
+                                    : strategy == AV_STRATEGY_OFFENSIVE ? 3
+                                    : strategy == AV_STRATEGY_DEFENSIVE ? 1
+                                                                        : 2;
+
                 for (auto const& [nodeId, goId] : attackObjectives)
                 {
                     BG_AV_NodeInfo const& node = av->GetAVNodeInfo(nodeId);
@@ -2158,25 +2176,19 @@ bool BGTactics::selectObjective(bool reset)
                         continue;
 
                     if (node.State == POINT_ASSAULTED && node.OwnerId == team)
-                    {
                         assaultedByTeam.push_back(go);
-                        continue;
-                    }
+                    else
+                        candidates.push_back(go);
 
-                    candidates.push_back(go);
-
-                    if (((strategy == AV_STRATEGY_BALANCED && candidates.size() >= 2) ||
-                         (strategy == AV_STRATEGY_OFFENSIVE && candidates.size() >= 3) ||
-                         (strategy == AV_STRATEGY_DEFENSIVE && candidates.size() >= 1)) ||
-                        isAdvanced)
+                    if (!candidates.empty() && candidates.size() + assaultedByTeam.size() >= windowSize)
                         break;
                 }
 
                 // Some attackers hold the nodes we assaulted so the enemy can't retake them during the capture timer
                 if (!assaultedByTeam.empty() && stableRoll(5, 100) < 25)
-                    BgObjective = assaultedByTeam[stableRoll(6, assaultedByTeam.size())];
+                    BgObjective = stablePick(assaultedByTeam, 6);
                 else if (!candidates.empty())
-                    BgObjective = candidates[stableRoll(7, candidates.size())];
+                    BgObjective = stablePick(candidates, 7);
                 else
                 {
                     // Fallback: move to boss wait position
