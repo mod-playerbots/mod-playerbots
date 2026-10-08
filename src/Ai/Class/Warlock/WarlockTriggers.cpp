@@ -93,7 +93,7 @@ bool DecimationTrigger::IsActive()
 // Checks if the bot's mana is below 85% and health is above a low health threshold
 bool LifeTapTrigger::IsActive()
 {
-    if (AI_VALUE2(uint8, "health", "self target") <= sPlayerbotAIConfig.lowHealth)
+    if (AI_VALUE2(uint8, "health", "self target") <= sPlayerbotAIConfig.LowHealth)
         return false;
 
     if (!AI_VALUE2(bool, "has mana", "self target"))
@@ -249,7 +249,7 @@ bool RainOfFireChannelCheckTrigger::IsActive()
     {
         // Only trigger if the spell being channeled is Rain of Fire
         if (RAIN_OF_FIRE_SPELL_IDS.count(spell->m_spellInfo->Id))
-            return !HasEnoughAoeTargets(botAI, bot->GetPosition(), sPlayerbotAIConfig.sightDistance, minEnemies);
+            return !HasEnoughAoeTargets(botAI, bot->GetPosition(), sPlayerbotAIConfig.SightDistance, minEnemies);
     }
 
     // Not channeling Rain of Fire

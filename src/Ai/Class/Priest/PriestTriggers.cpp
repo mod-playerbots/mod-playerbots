@@ -48,14 +48,14 @@ bool ShadowformTrigger::IsActive() { return !botAI->HasAura("shadowform", bot); 
 bool ShadowfiendTrigger::IsActive() { return BoostTrigger::IsActive() && !bot->HasSpellCooldown(34433); }
 
 BindingHealTrigger::BindingHealTrigger(PlayerbotAI* botAI)
-    : PartyMemberLowHealthTrigger(botAI, "binding heal", sPlayerbotAIConfig.lowHealth, 0)
+    : PartyMemberLowHealthTrigger(botAI, "binding heal", sPlayerbotAIConfig.LowHealth, 0)
 {
 }
 
 bool BindingHealTrigger::IsActive()
 {
     return PartyMemberLowHealthTrigger::IsActive() &&
-           AI_VALUE2(uint8, "health", "self target") < sPlayerbotAIConfig.mediumHealth;
+           AI_VALUE2(uint8, "health", "self target") < sPlayerbotAIConfig.MediumHealth;
 }
 
 const std::set<uint32> MindSearChannelCheckTrigger::MIND_SEAR_SPELL_IDS = {
@@ -72,7 +72,7 @@ bool MindSearChannelCheckTrigger::IsActive()
     {
         // Only trigger if the spell being channeled is Mind Sear
         if (MIND_SEAR_SPELL_IDS.count(spell->m_spellInfo->Id))
-            return !HasEnoughAoeTargets(botAI, bot->GetPosition(), sPlayerbotAIConfig.sightDistance, minEnemies);
+            return !HasEnoughAoeTargets(botAI, bot->GetPosition(), sPlayerbotAIConfig.SightDistance, minEnemies);
     }
 
     // Not channeling Mind Sear

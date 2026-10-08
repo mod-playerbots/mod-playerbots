@@ -138,7 +138,7 @@ public:
 class CastEnvenomAction : public CastMeleeSpellAction
 {
 public:
-    CastEnvenomAction(PlayerbotAI* ai) : CastMeleeSpellAction(ai, "envenom") {}
+    CastEnvenomAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "envenom") {}
 
     bool isUseful() override;
     bool isPossible() override;
@@ -147,7 +147,7 @@ public:
 class CastTricksOfTheTradeOnMainTankAction : public BuffOnMainTankAction
 {
 public:
-    CastTricksOfTheTradeOnMainTankAction(PlayerbotAI* ai) : BuffOnMainTankAction(ai, "tricks of the trade", true) {}
+    CastTricksOfTheTradeOnMainTankAction(PlayerbotAI* botAI) : BuffOnMainTankAction(botAI, "tricks of the trade", true) {}
 
     bool isUseful() override;
 };
@@ -183,7 +183,7 @@ public:
 class FanOfKnivesAction : public CastMeleeSpellAction
 {
 public:
-    FanOfKnivesAction(PlayerbotAI* ai) : CastMeleeSpellAction(ai, "fan of knives") {}
+    FanOfKnivesAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "fan of knives") {}
 
     ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
 };
