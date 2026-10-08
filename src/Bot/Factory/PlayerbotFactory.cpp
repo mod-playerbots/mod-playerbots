@@ -3537,8 +3537,8 @@ void PlayerbotFactory::InitClassSpells()
     switch (bot->getClass())
     {
         case CLASS_WARRIOR:
-            bot->learnSpell(78, true);
-            bot->learnSpell(2457, true);
+            bot->learnSpell(78, false);
+            bot->learnSpell(2457, false);
             if (level >= 10)
             {
                 bot->learnSpell(71, false);    // Defensive Stance
@@ -3549,22 +3549,22 @@ void PlayerbotFactory::InitClassSpells()
                 bot->learnSpell(2458, false);  // Berserker Stance
             break;
         case CLASS_PALADIN:
-            bot->learnSpell(21084, true);
-            bot->learnSpell(635, true);
+            bot->learnSpell(21084, false);
+            bot->learnSpell(635, false);
             if (level >= 12)
                 bot->learnSpell(7328, false);  // Redemption
             if (level >= 20)
                 bot->learnSpell(5502, false); // Sense Undead
             break;
         case CLASS_ROGUE:
-            bot->learnSpell(1752, true);
-            bot->learnSpell(2098, true);
+            bot->learnSpell(1752, false);
+            bot->learnSpell(2098, false);
             break;
         case CLASS_DEATH_KNIGHT:
-            bot->learnSpell(45477, true);
-            bot->learnSpell(47541, true);
-            bot->learnSpell(45462, true);
-            bot->learnSpell(45902, true);
+            bot->learnSpell(45477, false);
+            bot->learnSpell(47541, false);
+            bot->learnSpell(45462, false);
+            bot->learnSpell(45902, false);
             // to leave DK starting area
             bot->learnSpell(53428, false);
             bot->learnSpell(50977, false);
@@ -3572,8 +3572,8 @@ void PlayerbotFactory::InitClassSpells()
             bot->learnSpell(48778, false);
             break;
         case CLASS_HUNTER:
-            bot->learnSpell(2973, true);
-            bot->learnSpell(75, true);
+            bot->learnSpell(2973, false);
+            bot->learnSpell(75, false);
             if (level >= 10)
             {
                 bot->learnSpell(883, false);   // call pet
@@ -3584,16 +3584,16 @@ void PlayerbotFactory::InitClassSpells()
             }
             break;
         case CLASS_PRIEST:
-            bot->learnSpell(585, true);
-            bot->learnSpell(2050, true);
+            bot->learnSpell(585, false);
+            bot->learnSpell(2050, false);
             break;
         case CLASS_MAGE:
-            bot->learnSpell(133, true);
-            bot->learnSpell(168, true);
+            bot->learnSpell(133, false);
+            bot->learnSpell(168, false);
             break;
         case CLASS_WARLOCK:
-            bot->learnSpell(687, true);
-            bot->learnSpell(686, true);
+            bot->learnSpell(687, false);
+            bot->learnSpell(686, false);
             bot->learnSpell(688, false);  // summon imp
             if (level >= 10)
                 bot->learnSpell(697, false);  // summon voidwalker
@@ -3603,8 +3603,8 @@ void PlayerbotFactory::InitClassSpells()
                 bot->learnSpell(691, false);  // summon felhunter
             break;
         case CLASS_DRUID:
-            bot->learnSpell(5176, true);
-            bot->learnSpell(5185, true);
+            bot->learnSpell(5176, false);
+            bot->learnSpell(5185, false);
             if (level >= 10)
             {
                 bot->learnSpell(5487, false);  // bear form
@@ -3613,9 +3613,9 @@ void PlayerbotFactory::InitClassSpells()
             }
             break;
         case CLASS_SHAMAN:
-            bot->learnSpell(403, true);
-            bot->learnSpell(331, true);
-            // bot->learnSpell(66747, true); // Totem of the Earthen Ring
+            bot->learnSpell(403, false);
+            bot->learnSpell(331, false);
+            // bot->learnSpell(66747, false); // Totem of the Earthen Ring
             if (level >= 4)
                 bot->learnSpell(8071, false);  // stoneskin totem
             if (level >= 10)
