@@ -98,9 +98,7 @@ WsgTeamAssignment WsgTeamAssignmentValue::Calculate()
               });
     uint32 teamSize = bots.size();
     WSBotStrategy strategy = static_cast<WSBotStrategy>(BGTactics::GetBotStrategyForTeam(bg, bot->GetTeamId()));
-    uint32 targetDefenders = strategy == WS_STRATEGY_OFFENSIVE   ? WSG_DEFENDER_ROLES_OFFENSIVE
-                             : strategy == WS_STRATEGY_DEFENSIVE ? WSG_DEFENDER_ROLES_DEFENSIVE
-                                                                 : WSG_DEFENDER_ROLES_BALANCED;
+    uint32 targetDefenders = BGTactics::GetWsgDefenderCount(bg, bot->GetTeamId());
     uint32 targetAttackers = strategy == WS_STRATEGY_OFFENSIVE   ? WSG_ATTACKER_ROLES_OFFENSIVE
                              : strategy == WS_STRATEGY_DEFENSIVE ? WSG_ATTACKER_ROLES_DEFENSIVE
                                                                  : WSG_ATTACKER_ROLES_BALANCED;

@@ -2333,7 +2333,8 @@ bool BGTactics::selectObjective(bool reset)
                         constexpr float patrolSpread = 25.0f;
                         constexpr uint32 laneCount = 3;
                         float direction = team == TEAM_ALLIANCE ? -1.0f : 1.0f;
-                        if (role < defendersCount && !escortRole && !returnerRole)
+                        bool defenderRole = assignment.Valid ? assignment.Defender : role < defendersCount;
+                        if (defenderRole && !escortRole && !returnerRole)
                             direction = -direction;
                         float lane = static_cast<float>(role % laneCount) - 1.0f;
                         Position center(WS_ROAM_POS.GetPositionX() + direction * forwardOffset,
