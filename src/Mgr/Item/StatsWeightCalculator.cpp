@@ -29,6 +29,7 @@ constexpr uint32 SPELL_HUNTER_VS_WILD = 56341;
 constexpr uint32 SPELL_ARMORED_TO_THE_TEETH = 61222;
 constexpr uint32 SPELL_MENTAL_DEXTERITY = 51885;
 constexpr uint32 SPELL_ROGUE_SWORD_SPECIALIZATION = 13964;
+constexpr uint32 SPELL_ROGUE_DAGGER_SPECIALIZATION = 13807;
 constexpr uint32 SPELL_POLEAXE_SPECIALIZATION = 12785;
 constexpr uint32 SPELL_NERVES_OF_COLD_STEEL = 50138;
 constexpr uint32 SPELL_SHADOW_FOCUS = 15835;
@@ -688,11 +689,20 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
             weight_ *= 1.5;
         }
 
+        //Sword combat
         if (cls == CLASS_ROGUE && player_->HasAura(SPELL_ROGUE_SWORD_SPECIALIZATION) &&
             (proto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD || proto->SubClass == ITEM_SUBCLASS_WEAPON_AXE))
         {
-            weight_ *= 1.1;
+            weight_ *= 1.15f;
         }
+
+        //Dagger combat
+        if (cls == CLASS_ROGUE && player_->HasAura(SPELL_ROGUE_DAGGER_SPECIALIZATION) &&
+        (proto->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER || proto->SubClass == ITEM_SUBCLASS_WEAPON_FIST))
+        {
+            weight_ *= 1.15f;
+        }
+
         if (cls == CLASS_WARRIOR && player_->HasAura(SPELL_POLEAXE_SPECIALIZATION) &&
             (proto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM || proto->SubClass == ITEM_SUBCLASS_WEAPON_AXE2))
         {
