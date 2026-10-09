@@ -5,11 +5,292 @@
  */
 
 #include "PvpValues.h"
+#include "BattleGroundTactics.h"
 #include "BattlegroundEY.h"
 #include "BattlegroundMgr.h"
 #include "BattlegroundWS.h"
+#include "GameObject.h"
+#include "HumanPlayerRoster.h"
+#include "ObjectAccessor.h"
 #include "Playerbots.h"
+#include "PositionValue.h"
 #include "ServerFacade.h"
+#include "World.h"
+#include <algorithm>
+
+bool IsUnavailableWsgCombatTarget(Player const* player, Unit const* target)
+{
+    Battleground const* bg = player ? player->GetBattleground() : nullptr;
+    if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS)
+        return false;
+    if (!target || !target->IsInWorld() || target->GetMap() != player->GetMap() || !target->IsAlive() ||
+        target->HasSpiritOfRedemptionAura() ||
+        (target->IsPlayer() && target->ToPlayer()->HasPlayerFlag(PLAYER_FLAGS_GHOST)))
+        return true;
+    if (BGTactics::IsUnsafeWsgCliffApproach(player, target->GetPositionZ()))
+        return true;
+    BattlegroundWS const* warsong = static_cast<BattlegroundWS const*>(bg);
+    bool carrier = target->GetGUID() == warsong->GetFlagPickerGUID(TEAM_ALLIANCE) ||
+                   target->GetGUID() == warsong->GetFlagPickerGUID(TEAM_HORDE);
+    return target->IsPlayer() && !carrier &&
+           !player->IsWithinDistInMap(target, sWorld->getFloatConfig(CONFIG_SIGHT_MONSTER));
+}
+
+WsgTeamAssignment WsgTeamAssignmentValue::Calculate()
+{
+    WsgTeamAssignment assignment;
+    Battleground* bg = bot->GetBattleground();
+    if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS || !bot->IsAlive() || !bot->IsInWorld())
+        return assignment;
+
+    if (bg->GetStatus() == STATUS_WAIT_JOIN)
+    {
+        // Only populate the waiting-position rank, not live roles or human-defense observations.
+        for (auto const& [guid, player] : bg->GetPlayers())
+        {
+            if (!player || !player->IsInWorld() || !player->IsAlive() || player->GetMap() != bot->GetMap() ||
+                player->GetTeamId() != bot->GetTeamId() || HumanPlayerRoster::Instance().Contains(guid))
+                continue;
+            if (guid < bot->GetGUID())
+                ++assignment.Role;
+        }
+        return assignment;
+    }
+    if (bg->GetStatus() != STATUS_IN_PROGRESS)
+        return assignment;
+
+    BattlegroundWS* warsong = static_cast<BattlegroundWS*>(bg);
+    ObjectGuid carrierGuid = warsong->GetFlagPickerGUID(bg->GetOtherTeamId(bot->GetTeamId()));
+    ObjectGuid friendlyCarrierGuid = carrierGuid;
+    Player* friendlyCarrier =
+        friendlyCarrierGuid.IsEmpty() ? nullptr : ObjectAccessor::GetPlayer(bg->GetBgMap(), friendlyCarrierGuid);
+    if (friendlyCarrier && (!friendlyCarrier->IsAlive() || !friendlyCarrier->IsInWorld() ||
+                            friendlyCarrier->GetTeamId() != bot->GetTeamId()))
+        friendlyCarrier = nullptr;
+    std::vector<ObjectGuid> bots;
+    std::vector<ObjectGuid> allBots;
+    std::map<ObjectGuid, std::pair<uint8, float>> strength;
+    bool foundSelf = false;
+    for (auto const& [guid, player] : bg->GetPlayers())
+    {
+        if (!player || !player->IsInWorld() || player->GetMap() != bot->GetMap() ||
+            player->GetTeamId() != bot->GetTeamId())
+            continue;
+        if (HumanPlayerRoster::Instance().Contains(guid))
+            continue;
+        allBots.push_back(guid);
+        if (guid == bot->GetGUID())
+            foundSelf = true;
+        if (player->IsAlive() && guid != carrierGuid)
+        {
+            bots.push_back(guid);
+            strength.emplace(guid, std::make_pair(player->GetLevel(), player->GetAverageItemLevel()));
+        }
+    }
+    if (!foundSelf)
+        return assignment;
+
+    std::sort(allBots.begin(), allBots.end());
+    std::sort(bots.begin(), bots.end(),
+              [&](ObjectGuid const& left, ObjectGuid const& right)
+              {
+                  if (strength.at(left) != strength.at(right))
+                      return strength.at(left) > strength.at(right);
+                  return left < right;
+              });
+    uint32 teamSize = bots.size();
+    WSBotStrategy strategy = static_cast<WSBotStrategy>(BGTactics::GetBotStrategyForTeam(bg, bot->GetTeamId()));
+    uint32 targetDefenders = BGTactics::GetWsgDefenderCount(bg, bot->GetTeamId());
+    uint32 targetAttackers = strategy == WS_STRATEGY_OFFENSIVE   ? WSG_ATTACKER_ROLES_OFFENSIVE
+                             : strategy == WS_STRATEGY_DEFENSIVE ? WSG_ATTACKER_ROLES_DEFENSIVE
+                                                                 : WSG_ATTACKER_ROLES_BALANCED;
+    uint32 defenderQuota = std::min<uint32>(targetDefenders, teamSize);
+    uint32 attackerQuota = std::min<uint32>(targetAttackers, teamSize - defenderQuota);
+    std::vector<ObjectGuid> defenders;
+    std::vector<ObjectGuid> attackers;
+    bool strongestDefenders = strategy == WS_STRATEGY_OFFENSIVE;
+    if (strongestDefenders)
+        defenders.assign(bots.begin(), bots.begin() + defenderQuota);
+    else
+        attackers.assign(bots.begin(), bots.begin() + attackerQuota);
+    for (ObjectGuid const& guid : bots)
+    {
+        if (strongestDefenders && attackers.size() < attackerQuota &&
+            std::find(defenders.begin(), defenders.end(), guid) == defenders.end())
+            attackers.push_back(guid);
+        else if (!strongestDefenders && defenders.size() < defenderQuota &&
+                 std::find(attackers.begin(), attackers.end(), guid) == attackers.end())
+            defenders.push_back(guid);
+    }
+    ObjectGuid baseGuard = defenders.empty() ? ObjectGuid::Empty : defenders.front();
+    _escortGuids.clear();
+    if (friendlyCarrier)
+        for (ObjectGuid const& guid : bots)
+        {
+            if (_escortGuids.size() >= 2)
+                break;
+            if (std::find(defenders.begin(), defenders.end(), guid) == defenders.end() &&
+                std::find(attackers.begin(), attackers.end(), guid) == attackers.end())
+                _escortGuids.push_back(guid);
+        }
+    if (friendlyCarrier)
+        for (ObjectGuid const& guid : attackers)
+        {
+            constexpr uint32 maxEscorts = 2;
+            if (_escortGuids.size() >= maxEscorts)
+                break;
+            _escortGuids.push_back(guid);
+        }
+    assignment.Role = static_cast<uint32>(std::find(allBots.begin(), allBots.end(), bot->GetGUID()) - allBots.begin());
+    assignment.Defenders = static_cast<uint8>(defenderQuota);
+    assignment.Escorts = static_cast<uint8>(_escortGuids.size());
+    assignment.Escort = std::find(_escortGuids.begin(), _escortGuids.end(), bot->GetGUID()) != _escortGuids.end();
+    assignment.BaseDefender = bot->GetGUID() == baseGuard;
+    assignment.Defender = std::find(defenders.begin(), defenders.end(), bot->GetGUID()) != defenders.end();
+    assignment.Attacker = std::find(attackers.begin(), attackers.end(), bot->GetGUID()) != attackers.end();
+    GameObject* enemyBase =
+        bg->GetBGObject(bot->GetTeamId() == TEAM_ALLIANCE ? BG_WS_OBJECT_H_FLAG : BG_WS_OBJECT_A_FLAG);
+    bool enemyBaseReady = enemyBase && enemyBase->isSpawned() && enemyBase->GetGoState() == GO_STATE_READY &&
+                          warsong->GetFlagState(bg->GetOtherTeamId(bot->GetTeamId())) == BG_WS_FLAG_STATE_ON_BASE;
+    constexpr float flagRoomCommitRadius = 100.0f;
+    constexpr float flagObjectiveTolerance = 25.0f;
+    PositionInfo objective = context->GetValue<PositionMap&>("position")->Get()["bg objective"];
+    assignment.CommittedAttack = !assignment.Defender && !assignment.Escort && enemyBaseReady && objective.isSet() &&
+                                 objective.mapId == bot->GetMapId() &&
+                                 bot->IsWithinDistInMap(enemyBase, flagRoomCommitRadius) &&
+                                 enemyBase->GetDistance(objective.x, objective.y, objective.z) < flagObjectiveTolerance;
+
+    // Flexible bots respond by proximity to the public EFC marker, not by GUID
+    // rank. Escorts and near-complete flag-room pushes remain committed.
+    constexpr uint32 maxReturners = 3;
+    ObjectGuid enemyCarrierGuid = warsong->GetFlagPickerGUID(bot->GetTeamId());
+    Player* enemyCarrier =
+        enemyCarrierGuid.IsEmpty() ? nullptr : ObjectAccessor::GetPlayer(bot->GetMap(), enemyCarrierGuid);
+    if (warsong->GetFlagState(bot->GetTeamId()) == BG_WS_FLAG_STATE_ON_PLAYER && enemyCarrier &&
+        enemyCarrier->IsAlive() && enemyCarrier->IsInWorld() && enemyCarrier->GetMap() == bot->GetMap())
+    {
+        std::vector<std::pair<uint32, ObjectGuid>> responders;
+        constexpr float returnDistanceBand = 25.0f;
+        for (ObjectGuid const& guid : bots)
+        {
+            if (std::find(_escortGuids.begin(), _escortGuids.end(), guid) != _escortGuids.end())
+                continue;
+            Player* player = ObjectAccessor::GetPlayer(bot->GetMap(), guid);
+            if (!player)
+                continue;
+            if (enemyBaseReady && player->IsWithinDistInMap(enemyBase, flagRoomCommitRadius))
+                continue;
+            // Coarse distance bands plus GUID ties avoid tiny-distance switches
+            // without keeping incompatible per-bot responder histories.
+            uint32 band = static_cast<uint32>(player->GetDistance2d(enemyCarrier) / returnDistanceBand);
+            responders.emplace_back(band, guid);
+        }
+        // If everyone eligible is at the enemy room, still keep one responder
+        // rather than silently losing all return coverage on a zero-defense team.
+        if (responders.empty())
+            for (ObjectGuid const& guid : bots)
+            {
+                if (std::find(_escortGuids.begin(), _escortGuids.end(), guid) != _escortGuids.end())
+                    continue;
+                Player* player = ObjectAccessor::GetPlayer(bot->GetMap(), guid);
+                if (player)
+                    responders.emplace_back(
+                        static_cast<uint32>(player->GetDistance2d(enemyCarrier) / returnDistanceBand), guid);
+            }
+        std::sort(responders.begin(), responders.end());
+        bool bothFlagsHeld = warsong->GetFlagState(bg->GetOtherTeamId(bot->GetTeamId())) == BG_WS_FLAG_STATE_ON_PLAYER;
+        // In a standoff, every available non-carrier/non-escort bot helps return.
+        // Keep the small response quota only while an offensive flag push is possible.
+        uint32 returnQuota = bothFlagsHeld ? static_cast<uint32>(responders.size())
+                                           : std::min<uint32>(maxReturners, std::max<uint32>(1, defenderQuota));
+        for (uint32 i = 0; i < std::min<uint32>(returnQuota, responders.size()); ++i)
+        {
+            if (responders[i].second == bot->GetGUID())
+                assignment.Returner = true;
+        }
+    }
+    if (assignment.Returner)
+        assignment.CommittedAttack = false;
+    if (assignment.CommittedAttack)
+        assignment.Returner = false;
+    assignment.Valid = true;
+    return assignment;
+}
+
+ObjectGuid WsgSupportTargetValue::Calculate()
+{
+    Battleground* bg = bot->GetBattleground();
+    if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS || bg->GetStatus() != STATUS_IN_PROGRESS || !bot->IsAlive())
+        return ObjectGuid::Empty;
+    BattlegroundWS* warsong = static_cast<BattlegroundWS*>(bg);
+    ObjectGuid carrierGuid = warsong->GetFlagPickerGUID(bg->GetOtherTeamId(bot->GetTeamId()));
+    if (carrierGuid == bot->GetGUID())
+        return ObjectGuid::Empty;
+    Player* carrier = carrierGuid.IsEmpty() ? nullptr : ObjectAccessor::GetPlayer(bot->GetMap(), carrierGuid);
+    if (carrier && (!carrier->IsAlive() || !carrier->IsInWorld() || carrier->GetMap() != bot->GetMap() ||
+                    carrier->GetTeamId() != bot->GetTeamId()))
+        carrier = nullptr;
+    WsgTeamAssignment assignment = context->GetValue<WsgTeamAssignment>("wsg team assignment")->Get();
+    if (!assignment.Valid)
+        return ObjectGuid::Empty;
+    bool defender = assignment.Defender && !assignment.Escort;
+    bool support = carrier && assignment.Escort;
+    if (!defender && !support)
+        return ObjectGuid::Empty;
+    GameObject* base = bg->GetBGObject(bot->GetTeamId() == TEAM_ALLIANCE ? BG_WS_OBJECT_A_FLAG : BG_WS_OBJECT_H_FLAG);
+    ObjectGuid result;
+    float bestDistance = sPlayerbotAIConfig.SightDistance;
+    constexpr float carrierThreatRadius = 30.0f;
+    constexpr float baseThreatRadius = 45.0f;
+    for (ObjectGuid const& guid : AI_VALUE(GuidVector, "nearest enemy players"))
+    {
+        Player* enemy = ObjectAccessor::GetPlayer(bot->GetMap(), guid);
+        if (!enemy || IsUnavailableWsgCombatTarget(bot, enemy) || enemy->GetTeamId() == bot->GetTeamId() ||
+            !bot->CanSeeOrDetect(enemy) || !bot->IsValidAttackTarget(enemy) || !bot->IsWithinLOSInMap(enemy))
+            continue;
+        bool threatensCarrier =
+            support && (enemy->GetVictim() == carrier || enemy->IsWithinDistInMap(carrier, carrierThreatRadius));
+        bool threatensBase = defender && base && enemy->IsWithinDistInMap(base, baseThreatRadius);
+        float distance = bot->GetDistance(enemy);
+        if ((threatensCarrier || threatensBase) && distance < bestDistance)
+        {
+            bestDistance = distance;
+            result = guid;
+        }
+    }
+    return result;
+}
+
+ObjectGuid WsgHealTargetValue::Calculate()
+{
+    Battleground* bg = bot->GetBattleground();
+    if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS || bg->GetStatus() != STATUS_IN_PROGRESS || !bot->IsAlive() ||
+        !PlayerbotAI::IsHeal(bot))
+        return ObjectGuid::Empty;
+    BattlegroundWS* warsong = static_cast<BattlegroundWS*>(bg);
+    ObjectGuid carrier = warsong->GetFlagPickerGUID(bg->GetOtherTeamId(bot->GetTeamId()));
+    ObjectGuid result;
+    float bestScore = 100.0f;
+    constexpr float carrierBonus = 15.0f;
+    constexpr float distanceScale = 10.0f;
+    for (auto const& [guid, player] : bg->GetPlayers())
+    {
+        if (!player || !player->IsAlive() || !player->IsInWorld() || player->GetMap() != bot->GetMap() ||
+            player->GetTeamId() != bot->GetTeamId() || player->IsCharmed() ||
+            player->GetHealthPct() >= sPlayerbotAIConfig.MediumHealth ||
+            bot->GetDistance2d(player) > sPlayerbotAIConfig.HealDistance || !bot->IsWithinLOSInMap(player))
+            continue;
+        float score = player->GetHealthPct() + bot->GetDistance2d(player) / distanceScale;
+        if (guid == carrier)
+            score -= carrierBonus;
+        if (score < bestScore)
+        {
+            bestScore = score;
+            result = guid;
+        }
+    }
+    return result;
+}
 
 namespace
 {
@@ -29,9 +310,10 @@ Unit* FlagCarrierValue::Calculate()
 
     if (botAI->GetBot()->InBattleground())
     {
-        if (RealBgType(botAI->GetBot()) == BattlegroundTypeId::BATTLEGROUND_WS)
+        Battleground* battleground = bot->GetBattleground();
+        if (RealBgType(bot) == BattlegroundTypeId::BATTLEGROUND_WS)
         {
-            BattlegroundWS* bg = (BattlegroundWS*)botAI->GetBot()->GetBattleground();
+            BattlegroundWS* bg = static_cast<BattlegroundWS*>(battleground);
 
             if (!bg)
                 return nullptr;

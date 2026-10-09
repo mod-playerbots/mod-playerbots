@@ -9,6 +9,7 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "Playerbots.h"
+#include "PvpValues.h"
 #include "ReputationMgr.h"
 #include "ServerFacade.h"
 
@@ -136,7 +137,7 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
         return false;
 
     // Basic check
-    if (!attacker)
+    if (!attacker || IsUnavailableWsgCombatTarget(bot, attacker))
         return false;
 
     // bool inCannon = botAI->IsInVehicle(false, true);

@@ -12,6 +12,7 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
+#include "PvpValues.h"
 #include "ServerFacade.h"
 #include "Unit.h"
 #include "WaitForAttackStrategy.h"
@@ -110,13 +111,11 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
         return false;
     }
 
-    if (target->isDead())
+    if (target->isDead() || IsUnavailableWsgCombatTarget(bot, target))
     {
         if (verbose)
             botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                "attack_target_dead_error",
-                "%target is dead.",
-                {{"%target", target->GetName()}}));
+                "attack_target_dead_error", "%target is dead.", {{"%target", target->GetName()}}));
 
         return false;
     }

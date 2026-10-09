@@ -5,6 +5,7 @@
  */
 
 #include "PartyMemberToHeal.h"
+#include "BattlegroundWS.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
@@ -32,15 +33,22 @@ Unit* PartyMemberToHeal::Calculate()
     IsTargetOfHealingSpell predicate;
 
     Group* group = bot->GetGroup();
-    if (!group)
+    Battleground* bg = bot->GetBattleground();
+    bool isWarsong = bg && (bg->GetBgTypeID() == BATTLEGROUND_WS ||
+                            (bg->GetBgTypeID() == BATTLEGROUND_RB && bg->GetBgTypeID(true) == BATTLEGROUND_WS));
+    bool useWsgCarrierHealing = isWarsong;
+    if (!group && !useWsgCarrierHealing)
         return bot;
 
-    bool isRaid = bot->GetGroup()->isRaidGroup();
+    bool isRaid = group && group->isRaidGroup();
     MinValueCalculator calc(100);
 
     // If focus heal targets strategy is active, only heal those targets
     if (botAI->HasStrategy("focus heal targets", BOT_STATE_COMBAT))
     {
+        if (!group)
+            return bot;
+
         std::list<ObjectGuid> const focusHealTargets =
             AI_VALUE(std::list<ObjectGuid>, "focus heal targets");
 
@@ -67,6 +75,29 @@ Unit* PartyMemberToHeal::Calculate()
 
         return (Unit*)calc.param;
     }
+
+    if (useWsgCarrierHealing && PlayerbotAI::IsHeal(bot))
+    {
+        // BG teammates need not be members of the healer's ordinary party.
+        // The bounded roster scan is cached separately; resolve and recheck here.
+        ObjectGuid guid = context->GetValue<ObjectGuid>("wsg heal target")->Get();
+        Player* player = guid.IsEmpty() ? nullptr : ObjectAccessor::GetPlayer(bot->GetMap(), guid);
+        if (player && player->IsInWorld() && player->IsAlive() && player->GetMap() == bot->GetMap() &&
+            player->GetTeamId() == bot->GetTeamId() && player->GetHealthPct() < sPlayerbotAIConfig.MediumHealth &&
+            Check(player) && !IsTargetOfSpellCast(player, predicate))
+        {
+            constexpr float wsgCarrierPriority = 15.0f;
+            float probeValue = player->GetHealthPct() + player->GetDistance2d(bot) / 10.0f;
+            BattlegroundWS* warsong = static_cast<BattlegroundWS*>(bg);
+            if (warsong->GetFlagPickerGUID(bg->GetOtherTeamId(bot->GetTeamId())) == guid)
+                probeValue -= wsgCarrierPriority;
+            if (probeValue < calc.minValue)
+                calc.probe(probeValue, player);
+        }
+    }
+
+    if (!group)
+        return calc.param ? static_cast<Unit*>(calc.param) : bot;
 
     for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
     {

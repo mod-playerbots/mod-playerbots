@@ -5,6 +5,7 @@
  */
 
 #include "GenericSpellActions.h"
+#include "Battleground.h"
 #include "Chat.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"
@@ -178,6 +179,14 @@ bool CastSpellAction::Execute(Event /*event*/)
     }
 
     return botAI->CastSpell(spell, GetTarget());
+}
+
+bool ResurrectPartyMemberAction::Execute(Event event)
+{
+    Battleground* bg = bot->GetBattleground();
+    if (bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
+        return false;
+    return CastSpellAction::Execute(event);
 }
 
 bool CastSpellAction::isUseful()

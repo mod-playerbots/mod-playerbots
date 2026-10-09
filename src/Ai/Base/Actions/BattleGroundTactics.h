@@ -25,6 +25,13 @@ enum WSBotStrategy : uint8
     WS_STRATEGY_MAX           = 3,
 };
 
+constexpr uint8 WSG_DEFENDER_ROLES_BALANCED = 3;
+constexpr uint8 WSG_DEFENDER_ROLES_OFFENSIVE = 2;
+constexpr uint8 WSG_DEFENDER_ROLES_DEFENSIVE = 5;
+constexpr uint8 WSG_ATTACKER_ROLES_BALANCED = 3;
+constexpr uint8 WSG_ATTACKER_ROLES_OFFENSIVE = 5;
+constexpr uint8 WSG_ATTACKER_ROLES_DEFENSIVE = 2;
+
 enum ABBotStrategy : uint8
 {
     AB_STRATEGY_BALANCED      = 0,
@@ -57,8 +64,6 @@ struct BGStrategyData
     uint8 allianceStrategy = 0;
     uint8 hordeStrategy = 0;
 };
-
-extern std::unordered_map<uint32, BGStrategyData> bgStrategies;
 
 struct BattleBotWaypoint
 {
@@ -108,6 +113,11 @@ class BGTactics : public MovementAction
 public:
     static bool HandleConsoleCommand(ChatHandler* handler, char const* args);
     uint8 static GetBotStrategyForTeam(Battleground* bg, TeamId teamId);
+    static void SetBotStrategies(uint32 instanceId, BGStrategyData const& data);
+    static void ClearBotStrategies(uint32 instanceId);
+    static uint8 GetWsgDefenderCount(Battleground* bg, TeamId teamId);
+    static bool IsUnsafeWsgCliffApproach(Player const* player, float destinationZ);
+    static bool ShouldYieldWsgTactics(PlayerbotAI* botAI);
 
     BGTactics(PlayerbotAI* botAI, std::string const name = "bg tactics") : MovementAction(botAI, name) {}
 
@@ -120,6 +130,12 @@ private:
     bool moveToObjective(bool ignoreDist);
     bool selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths);
     bool moveToObjectiveWp(BattleBotPath* const& currentPath, uint32 currentPoint, bool reverse = false);
+    bool MoveToWsgWaypoint();
+    bool CheckWsgRouteProgress();
+    void ClearWsgRoute();
+    BattleBotPath const* GetWsgCliffBelowBot() const;
+    bool IsUnsafeWsgCliffApproach(float destinationZ) const;
+    bool MoveAwayFromWsgCliff();
     bool startNewPathBegin(std::vector<BattleBotPath*> const& vPaths);
     bool startNewPathFree(std::vector<BattleBotPath*> const& vPaths);
     bool resetObjective();
@@ -129,9 +145,28 @@ private:
     bool flagTaken();
     bool teamFlagTaken();
     bool protectFC();
+    bool ClearObsoleteWsgFollow();
     bool useBuff();
     uint32 getPlayersInArea(TeamId teamId, Position point, float range, bool combat = true);
     bool IsLockedInsideKeep();
+
+    BattleBotPath* _wsgPath = nullptr;
+    BattleBotPath* _wsgApproachPath = nullptr;
+    BattleBotPath* _wsgAvoidPath = nullptr;
+    BattleBotPath* _wsgCompletedPath = nullptr;
+    bool _wsgCompletedReverse = false;
+    uint32 _wsgInstanceId = 0;
+    uint32 _wsgNextPoint = 0;
+    uint32 _wsgApproachMs = 0;
+    uint32 _wsgAvoidMs = 0;
+    uint32 _wsgProgressMs = 0;
+    float _wsgGoalX = 0.0f;
+    float _wsgGoalY = 0.0f;
+    float _wsgProgressDistance = 0.0f;
+    uint8 _wsgStalledSamples = 0;
+    bool _wsgReverse = false;
+    bool _wsgApproachReverse = false;
+    bool _wsgCarrying = false;
 };
 
 class ArenaTactics : public MovementAction

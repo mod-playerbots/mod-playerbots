@@ -5,7 +5,6 @@
  */
 
 #include "BattlegroundStrategy.h"
-#include "Playerbots.h"
 
 void BGStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -26,19 +25,24 @@ void BattlegroundStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void WarsongStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("bg active", { NextAction("bg check flag", ACTION_EMERGENCY )}));
-    triggers.push_back(new TriggerNode("enemy flagcarrier near", { NextAction("attack enemy flag carrier", ACTION_RAID + 1.0f)}));
-    triggers.push_back(new TriggerNode("team flagcarrier near", { NextAction("bg protect fc", ACTION_RAID)}));
-    triggers.push_back(new TriggerNode("often", { NextAction("bg use buff", ACTION_BG)}));
-    triggers.push_back(new TriggerNode("low health", { NextAction("bg use buff", ACTION_MOVE)}));
-    triggers.push_back(new TriggerNode("low mana", { NextAction("bg use buff", ACTION_MOVE)}));
-    triggers.push_back(new TriggerNode("player has flag", { NextAction("bg move to objective", ACTION_EMERGENCY)}));
-    triggers.push_back(new TriggerNode("timer bg", { NextAction("bg reset objective force", ACTION_EMERGENCY)}));
+    triggers.push_back(
+        new TriggerNode("wsg flag state changed", {NextAction("bg refresh wsg objective", ACTION_BG + 3)}));
+    triggers.push_back(new TriggerNode("wsg support threat", {NextAction("attack enemy player", ACTION_DEFAULT + 1)}));
+    triggers.push_back(new TriggerNode("wsg escort separated", {NextAction("drop target", ACTION_MOVE - 1)}));
+    triggers.push_back(new TriggerNode("bg active", {NextAction("bg check flag", ACTION_EMERGENCY)}));
+    triggers.push_back(
+        new TriggerNode("enemy flagcarrier near", {NextAction("attack enemy flag carrier", ACTION_RAID + 1.0f)}));
+    triggers.push_back(new TriggerNode("team flagcarrier near", {NextAction("bg protect fc", ACTION_BG + 2)}));
+    triggers.push_back(new TriggerNode("often", {NextAction("bg use buff", ACTION_BG)}));
+    triggers.push_back(new TriggerNode("low health", {NextAction("bg use buff", ACTION_MOVE)}));
+    triggers.push_back(new TriggerNode("low mana", {NextAction("bg use buff", ACTION_MOVE)}));
+    triggers.push_back(new TriggerNode("player has flag", {NextAction("bg move to objective", ACTION_EMERGENCY)}));
+    triggers.push_back(new TriggerNode("timer bg", {NextAction("bg reset objective force", ACTION_EMERGENCY)}));
 }
 
 void AlteracStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("timer bg", { NextAction("bg reset objective force", ACTION_EMERGENCY)}));
+    triggers.push_back(new TriggerNode("timer bg", {NextAction("bg reset objective force", ACTION_EMERGENCY)}));
 }
 
 void ArathiStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
