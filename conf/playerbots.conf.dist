@@ -1364,7 +1364,7 @@ Playerbots.AutoPickTalents = 1
 # players usually want manual control over their own character's talents. Enabling this resets and
 # rebuilds the talent tree on levelup, so leave it disabled if you assign talents yourself.
 # Default: 0 (disabled)
-AiPlayerbot.AutoPickTalentsForPlayerControlledBots = 0
+Playerbots.AutoPickTalentsForPlayerControlledBots = 0
 
 # Spells every randombot will learn automatically and every altbot will learn with maintenance
 # Default: 54197 (Cold Weather Flying)
