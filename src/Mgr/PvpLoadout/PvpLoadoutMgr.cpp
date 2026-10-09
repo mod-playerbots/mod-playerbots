@@ -555,9 +555,12 @@ bool PvpLoadoutMgr::Restore(PlayerbotAI* botAI)
     RestoreTalents(bot, *loadout);
     RestoreGear(bot, *loadout);
 
-    // The recreated PvE items exist only in memory until saved; their copies are deleted once they are.
+    // The recreated PvE items, talents and glyphs exist only in memory until saved; the snapshot is deleted once
+    // they are. Mid far-teleport the core defers the full save and adds nothing, so the items are saved anyway.
     CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
-    bot->SaveInventoryAndGoldToDB(trans);
+    bot->SaveToDB(trans, false, false);
+    if (bot->IsBeingTeleportedFar())
+        bot->SaveInventoryAndGoldToDB(trans);
     PlayerbotPvpLoadoutRepository::instance().Forget(bot->GetGUID().GetCounter(),
                                                      CharacterDatabase.AsyncCommitTransaction(trans));
     loadout.reset();
