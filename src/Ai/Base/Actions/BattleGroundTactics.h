@@ -116,6 +116,7 @@ public:
     static void SetBotStrategies(uint32 instanceId, BGStrategyData const& data);
     static void ClearBotStrategies(uint32 instanceId);
     static uint8 GetWsgDefenderCount(Battleground* bg, TeamId teamId);
+    static bool IsUnsafeWsgCliffApproach(Player const* player, float destinationZ);
     static bool ShouldYieldWsgTactics(PlayerbotAI* botAI);
 
     BGTactics(PlayerbotAI* botAI, std::string const name = "bg tactics") : MovementAction(botAI, name) {}

@@ -27,6 +27,8 @@ bool IsUnavailableWsgCombatTarget(Player const* player, Unit const* target)
         target->HasSpiritOfRedemptionAura() ||
         (target->IsPlayer() && target->ToPlayer()->HasPlayerFlag(PLAYER_FLAGS_GHOST)))
         return true;
+    if (BGTactics::IsUnsafeWsgCliffApproach(player, target->GetPositionZ()))
+        return true;
     BattlegroundWS const* warsong = static_cast<BattlegroundWS const*>(bg);
     bool carrier = target->GetGUID() == warsong->GetFlagPickerGUID(TEAM_ALLIANCE) ||
                    target->GetGUID() == warsong->GetFlagPickerGUID(TEAM_HORDE);

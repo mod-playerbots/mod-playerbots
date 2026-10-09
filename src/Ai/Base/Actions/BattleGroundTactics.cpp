@@ -111,7 +111,10 @@ Position const IC_GATE_ATTACK_POS_HORDE = {478.3f, -830.2f, 40.0f, 0.0f};  // z 
 Position const IC_GATE_ATTACK_POS_ALLIANCE = {1091.273f, -763.619f, 42.352f, 0.0f};
 
 constexpr uint8 WSG_DEFENDER_ROLES_VS_DEFENSIVE = 2;
-constexpr float WSG_CLIFF_HEIGHT_TOLERANCE = 8.0f;
+constexpr float WSG_CLIFF_HEIGHT_TOLERANCE = 10.0f;
+constexpr float WSG_CLIFF_LOWER_APPROACH_RADIUS = 140.0f;
+constexpr float WSG_ROOF_LOCATION_RADIUS = 100.0f;
+constexpr float WSG_ROOF_HEIGHT_TOLERANCE = 10.0f;
 
 enum BattleBotWsgWaitSpot
 {
@@ -335,6 +338,21 @@ BattleBotPath vPath_WSG_HordeGraveyardLower_to_AllianceFlagRoom = {
     {1466.64f, 1493.50f, 351.869f, nullptr},
     {1511.51f, 1493.75f, 352.009f, nullptr},
     {1531.44f, 1481.79f, 351.959f, nullptr},
+};
+
+// Horde Graveyard (lower) to Horde Tunnel
+BattleBotPath vPath_WSG_HordeGraveyardLower_to_HordeTunnel = {
+    {1164.96f, 1356.91f, 313.884f, nullptr}, {1155.38f, 1378.91f, 311.360f, nullptr},
+    {1148.72f, 1397.70f, 311.160f, nullptr}, {1144.07f, 1417.15f, 311.140f, nullptr},
+    {1139.53f, 1432.42f, 311.060f, nullptr}, {1132.54f, 1446.81f, 313.040f, nullptr},
+    {1124.37f, 1462.28f, 315.853f, nullptr},
+};
+
+// Alliance Graveyard (lower) to Alliance Tunnel
+BattleBotPath vPath_WSG_AllianceGraveyardLower_to_AllianceTunnel = {
+    {1316.07f, 1533.53f, 315.700f, nullptr}, {1322.52f, 1518.89f, 315.800f, nullptr},
+    {1328.98f, 1504.25f, 316.630f, nullptr}, {1335.43f, 1489.61f, 322.550f, nullptr},
+    {1341.89f, 1474.97f, 324.010f, nullptr}, {1348.02f, 1461.06f, 323.167f, nullptr},
 };
 
 // Alliance Graveyard Jump
@@ -1096,21 +1114,21 @@ BattleBotPath vPath_IC_Hanger_to_Workshop = {
     {790.787f, -809.678f, 6.450f, nullptr},
 };
 
-std::vector<BattleBotPath*> const vPaths_WS = {
-    &vPath_WSG_HordeFlagRoom_to_HordeGraveyard,
-    &vPath_WSG_HordeGraveyard_to_HordeTunnel,
-    &vPath_WSG_HordeTunnel_to_HordeFlagRoom,
-    &vPath_WSG_AllianceFlagRoom_to_AllianceGraveyard,
-    &vPath_WSG_AllianceGraveyard_to_AllianceTunnel,
-    &vPath_WSG_AllianceTunnel_to_AllianceFlagRoom,
-    &vPath_WSG_HordeTunnel_to_HordeBaseRoof,
-    &vPath_WSG_AllianceTunnel_to_AllianceBaseRoof,
-    &vPath_WSG_AllianceTunnel_to_HordeTunnel,
-    &vPath_WSG_AllianceGraveyardLower_to_HordeFlagRoom,
-    &vPath_WSG_HordeGraveyardLower_to_AllianceFlagRoom,
-    &vPath_WSG_AllianceGraveyardJump,
-    &vPath_WSG_HordeGraveyardJump
-};
+std::vector<BattleBotPath*> const vPaths_WS = {&vPath_WSG_HordeFlagRoom_to_HordeGraveyard,
+                                               &vPath_WSG_HordeGraveyard_to_HordeTunnel,
+                                               &vPath_WSG_HordeTunnel_to_HordeFlagRoom,
+                                               &vPath_WSG_AllianceFlagRoom_to_AllianceGraveyard,
+                                               &vPath_WSG_AllianceGraveyard_to_AllianceTunnel,
+                                               &vPath_WSG_AllianceTunnel_to_AllianceFlagRoom,
+                                               &vPath_WSG_HordeTunnel_to_HordeBaseRoof,
+                                               &vPath_WSG_AllianceTunnel_to_AllianceBaseRoof,
+                                               &vPath_WSG_AllianceTunnel_to_HordeTunnel,
+                                               &vPath_WSG_AllianceGraveyardLower_to_HordeFlagRoom,
+                                               &vPath_WSG_HordeGraveyardLower_to_AllianceFlagRoom,
+                                               &vPath_WSG_HordeGraveyardLower_to_HordeTunnel,
+                                               &vPath_WSG_AllianceGraveyardLower_to_AllianceTunnel,
+                                               &vPath_WSG_AllianceGraveyardJump,
+                                               &vPath_WSG_HordeGraveyardJump};
 
 std::vector<BattleBotPath*> const vPaths_AB = {
     &vPath_AB_AllianceBase_to_Stables,  &vPath_AB_AllianceBase_to_GoldMine, &vPath_AB_AllianceBase_to_LumberMill,
@@ -1750,6 +1768,19 @@ bool BGTactics::Execute(Event /*event*/)
 
         if (bgType == BATTLEGROUND_WS && (ClearObsoleteWsgFollow() || CheckWsgRouteProgress()))
             return true;
+
+        if (bgType == BATTLEGROUND_WS && !_wsgPath && bot->isMoving() &&
+            bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
+        {
+            LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
+            if (lastMove.priority <= MovementPriority::MOVEMENT_NORMAL &&
+                IsUnsafeWsgCliffApproach(lastMove.lastMoveShort.GetPositionZ()))
+            {
+                bot->StopMoving();
+                bot->GetMotionMaster()->Clear();
+                return true;
+            }
+        }
 
         if (bot->isMoving())
         {
@@ -3648,12 +3679,29 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
         botDistanceScoreMultiply = 4.0f;
     }
 
+    auto isAtWsgRoof = [](BattleBotPath const& roofPath, float x, float y, float z)
+    {
+        BattleBotWaypoint const& roof = roofPath.back();
+        float deltaX = x - roof.x;
+        float deltaY = y - roof.y;
+        float deltaZ = z - roof.z;
+        return deltaX * deltaX + deltaY * deltaY <= WSG_ROOF_LOCATION_RADIUS * WSG_ROOF_LOCATION_RADIUS &&
+               deltaZ * deltaZ <= WSG_ROOF_HEIGHT_TOLERANCE * WSG_ROOF_HEIGHT_TOLERANCE;
+    };
+
     // uint32 index = -1;
     // uint32 chosenPathIndex = -1;
     for (auto const& path : vPaths)
     {
         // wsJumpDown owns the ledge descent; generic point movement cannot represent that jump.
         if (isWarsong && (path == &vPath_WSG_AllianceGraveyardJump || path == &vPath_WSG_HordeGraveyardJump))
+            continue;
+        // Roof corridors are detours; score them only for a roof objective or a route back down.
+        if (isWarsong &&
+            (path == &vPath_WSG_AllianceTunnel_to_AllianceBaseRoof ||
+             path == &vPath_WSG_HordeTunnel_to_HordeBaseRoof) &&
+            !isAtWsgRoof(*path, pos.x, pos.y, pos.z) &&
+            !isAtWsgRoof(*path, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ()))
             continue;
         if (isWarsong && avoidPreviousPath && path == _wsgAvoidPath)
             continue;
@@ -3711,8 +3759,9 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
         if (closestPointIndex == int(reverse ? 0 : path->size() - 1) || closestPointDistToBot > botDistanceLimit)
             continue;
         uint32 entryPoint = reverse ? closestPointIndex - 1 : closestPointIndex + 1;
-        if (isWarsong && (IsUnsafeWsgCliffApproach(path->at(closestPointIndex).z) ||
-                          IsUnsafeWsgCliffApproach(path->at(entryPoint).z)))
+        BattleBotWaypoint const& closestPoint = path->at(closestPointIndex);
+        BattleBotWaypoint const& entry = path->at(entryPoint);
+        if (isWarsong && (IsUnsafeWsgCliffApproach(closestPoint.z) || IsUnsafeWsgCliffApproach(entry.z)))
             continue;
 
         // creates a score based on dist-to-bot and dist-to-destination, where lower is better, and dist-to-bot is more
@@ -3866,7 +3915,26 @@ BattleBotPath const* BGTactics::GetWsgCliffBelowBot() const
 
 bool BGTactics::IsUnsafeWsgCliffApproach(float destinationZ) const
 {
-    return destinationZ > bot->GetPositionZ() + WSG_CLIFF_HEIGHT_TOLERANCE && GetWsgCliffBelowBot();
+    return IsUnsafeWsgCliffApproach(bot, destinationZ);
+}
+
+bool BGTactics::IsUnsafeWsgCliffApproach(Player const* player, float destinationZ)
+{
+    Battleground const* bg = player ? player->GetBattleground() : nullptr;
+    if (!bg || bg->GetBgTypeID(true) != BATTLEGROUND_WS || bg->GetStatus() != STATUS_IN_PROGRESS ||
+        !player->IsAlive() || destinationZ <= player->GetPositionZ() + WSG_CLIFF_HEIGHT_TOLERANCE)
+        return false;
+
+    for (BattleBotPath const* path : {&vPath_WSG_HordeGraveyardJump, &vPath_WSG_AllianceGraveyardJump})
+    {
+        BattleBotWaypoint const& top = path->front();
+        BattleBotWaypoint const& landing = path->back();
+        if (player->GetPositionZ() + WSG_CLIFF_HEIGHT_TOLERANCE < top.z &&
+            player->GetExactDist2dSq(landing.x, landing.y) <
+                WSG_CLIFF_LOWER_APPROACH_RADIUS * WSG_CLIFF_LOWER_APPROACH_RADIUS)
+            return true;
+    }
+    return false;
 }
 
 bool BGTactics::MoveAwayFromWsgCliff()

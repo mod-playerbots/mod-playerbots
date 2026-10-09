@@ -36,7 +36,7 @@ void WarsongStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("often", {NextAction("bg use buff", ACTION_BG)}));
     triggers.push_back(new TriggerNode("low health", {NextAction("bg use buff", ACTION_MOVE)}));
     triggers.push_back(new TriggerNode("low mana", {NextAction("bg use buff", ACTION_MOVE)}));
-    triggers.push_back(new TriggerNode("player has flag", {NextAction("bg move to objective", ACTION_BG)}));
+    triggers.push_back(new TriggerNode("player has flag", {NextAction("bg move to objective", ACTION_EMERGENCY)}));
     triggers.push_back(new TriggerNode("timer bg", {NextAction("bg reset objective force", ACTION_EMERGENCY)}));
 }
 
