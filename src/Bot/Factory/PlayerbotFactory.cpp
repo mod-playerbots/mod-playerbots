@@ -3975,8 +3975,14 @@ void PlayerbotFactory::InitAmmo()
 
     if (count < maxCount)
     {
-        if (Item* newItem = StoreNewItemInInventorySlot(bot, entry, maxCount - count))
-            newItem->AddToUpdateQueueOf(bot);
+        // Stock as much as fits: each stack destroyed above has freed a slot for a full stack of the new ammo
+        ItemPosCountVec dest;
+        bot->CanStoreNewItem(INVENTORY_SLOT_BAG_0, NULL_SLOT, dest, entry, maxCount - count);
+        if (!dest.empty())
+        {
+            if (Item* newItem = bot->StoreNewItem(dest, entry, true))
+                newItem->AddToUpdateQueueOf(bot);
+        }
     }
 
     bot->SetAmmo(entry);
