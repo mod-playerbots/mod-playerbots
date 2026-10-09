@@ -7,6 +7,9 @@
 #ifndef PLAYERBOTS_RANDOMPLAYERBOTMGR_H
 #define PLAYERBOTS_RANDOMPLAYERBOTMGR_H
 
+#include <algorithm>
+#include <array>
+
 #include "GameTime.h"
 #include "NewRpgInfo.h"
 #include "ObjectGuid.h"
@@ -43,6 +46,34 @@ struct BattlegroundInfo
     // Players (Battleground)
     uint32 bgHordePlayerCount = 0;
     uint32 bgAlliancePlayerCount = 0;
+
+    // Instances with real players, per-instance team capacity and bots per team, and the auto-join instance target
+    std::vector<uint32> bgPlayerInstances;
+    std::map<uint32, uint32> bgInstanceCapacity;  // every instance in bgInstances -> max players per team
+    std::map<uint32, std::array<uint32, 2>> bgInstanceBots;  // instance id -> bots in it, by TeamId
+    uint32 bgAutoJoinTarget = 0;
+
+    // Per-team slots to fill: open player queue + player instances + bot-only instances up to the auto-join target.
+    // A bot-only instance past the target counts the bots it already has on that team: it neither asks for more nor
+    // hides them from a player's queue.
+    uint32 DemandedBgSlotsPerTeam(uint32 queueTeamSize, TeamId team) const
+    {
+        uint32 slots = activeBgQueue * queueTeamSize;
+        uint32 botOnlyCounted = 0;
+        for (auto const& [instanceId, capacity] : bgInstanceCapacity)
+        {
+            if (std::find(bgPlayerInstances.begin(), bgPlayerInstances.end(), instanceId) != bgPlayerInstances.end())
+                slots += capacity;
+            else if (botOnlyCounted < bgAutoJoinTarget)
+            {
+                slots += capacity;
+                ++botOnlyCounted;
+            }
+            else if (auto bots = bgInstanceBots.find(instanceId); bots != bgInstanceBots.end() && team < 2)
+                slots += bots->second[team];
+        }
+        return slots;
+    }
 };
 
 class ChatHandler;
