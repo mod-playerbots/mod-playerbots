@@ -5243,7 +5243,7 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool /*destroyOld*/)
                     continue;
 
                 float score = calculator.CalculateEnchant(enchant_id);
-                if (score >= bestScore)
+                if (score > 0.0f && score >= bestScore)
                 {
                     bestScore = score;
                     bestEnchantId = enchant_id;
