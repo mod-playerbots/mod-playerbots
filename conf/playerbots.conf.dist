@@ -1207,7 +1207,7 @@ Playerbots.PreferredSpecWeapons = 0
 # an unrecognized-bonus point) fall back to the legacy multiplier; tiers with real stats use the
 # spell values only. Disabled by default so default scoring is unchanged.
 # Default: 0 (disabled)
-AiPlayerbot.ItemSetSpellScoring = 0
+Playerbots.ItemSetSpellScoring = 0
 
 # Set minimum level of bots that will enchant and socket gems into their equipment with maintenance
 # If greater than RandomBotMaxlevel, bots will not automatically enchant equipment or socket gems

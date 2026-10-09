@@ -100,7 +100,7 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
     collector_->CollectItemStats(proto);
 
     bool setBonusValued = false;
-    if (enable_item_set_bonus_ && sPlayerbotAIConfig.itemSetSpellScoring)
+    if (enable_item_set_bonus_ && sPlayerbotAIConfig.ItemSetSpellScoring)
         setBonusValued = CollectItemSetBonus(player_, proto, slot);
 
     if (randomPropertyIds != 0)
@@ -120,7 +120,7 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
     // When spell scoring is enabled but the newly activated tier has no stats the weights
     // can use (most raid tier bonuses only produce STATS_TYPE_BONUS), fall back to the
     // legacy completeness multiplier so tier pieces are not undervalued.
-    if (enable_item_set_bonus_ && (!sPlayerbotAIConfig.itemSetSpellScoring || !setBonusValued))
+    if (enable_item_set_bonus_ && (!sPlayerbotAIConfig.ItemSetSpellScoring || !setBonusValued))
         CalculateItemSetMod(player_, proto);
 
     CalculateSocketBonus(player_, proto);
