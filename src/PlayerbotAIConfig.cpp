@@ -483,8 +483,7 @@ bool PlayerbotAIConfig::Initialize()
 
     LOG_INFO("server.loading", "Loading TalentSpecs...");
 
-    BotTalentRespecs = sConfigMgr->GetOption<bool>("Playerbots.BotTalentRespecs", false);
-    BotTalentRespecsExtended = sConfigMgr->GetOption<bool>("Playerbots.BotTalentRespecsExtended", false);
+    BotAdaptiveTalents = sConfigMgr->GetOption<bool>("Playerbots.BotAdaptiveTalents", false);
 
     for (uint32 cls = 1; cls < MAX_CLASSES; ++cls)
     {
@@ -564,7 +563,7 @@ bool PlayerbotAIConfig::Initialize()
 
             RandomClassSpecIndex[cls][spec] = baseIndex;
 
-            LOG_DEBUG("playerbots", "Loaded Spec: Class {} | Spec {} ({}) | Base Probability: {}", cls, spec, PremadeSpecName[cls][spec], baseProb);
+            LOG_DEBUG("PlayerbotsTalentRevampDebug", "Loaded Spec: Class {} | Spec {} ({}) | Base Probability: {}", cls, spec, PremadeSpecName[cls][spec], baseProb);
 
             // Set initial/base values
             uint32 currentProb = baseProb;
@@ -590,7 +589,7 @@ bool PlayerbotAIConfig::Initialize()
                     try
                     {
                         currentProb = std::stoul(probStr);
-                        LOG_DEBUG("playerbots", "Loaded probability: Class {} | Spec {} ({}) | Level {} | Probability: {}", cls, spec, PremadeSpecName[cls][spec], level, currentProb);
+                        LOG_DEBUG("PlayerbotsTalentRevampDebug", "Loaded probability: Class {} | Spec {} ({}) | Level {} | Probability: {}", cls, spec, PremadeSpecName[cls][spec], level, currentProb);
                     }
                     catch (std::exception const&)
                     {
@@ -607,7 +606,7 @@ bool PlayerbotAIConfig::Initialize()
             for (uint32 points = 0; points < 21; ++points)
             {
                 std::ostringstream os;
-                os << "AiPlayerbot.PremadeHunterPetLink." << spec << "." << points;
+                os << "Playerbots.PremadeHunterPetLink." << spec << "." << points;
                 PremadeHunterPetLink[spec][points] = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
                 ParsedHunterPetLinkOrder[spec][points] = ParseTempPetTalentsOrder(spec, PremadeHunterPetLink[spec][points]);
             }

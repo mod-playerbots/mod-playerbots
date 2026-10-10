@@ -283,8 +283,7 @@ public:
     // std::string premadeLevelSpec[MAX_CLASSES][10][91]; //lvl 10 - 100
     // ClassSpecs classSpecs[MAX_CLASSES];
 
-    bool BotTalentRespecs;
-    bool BotTalentRespecsExtended;
+    bool BotAdaptiveTalents;
 
     std::string PremadeSpecName[MAX_CLASSES][MAX_SPECNO];
     std::string PremadeSpecGlyph[MAX_CLASSES][MAX_SPECNO];

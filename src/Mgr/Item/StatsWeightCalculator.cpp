@@ -28,20 +28,7 @@ constexpr uint32 SPELL_CAREFUL_AIM = 34484;
 constexpr uint32 SPELL_HUNTER_VS_WILD = 56341;
 constexpr uint32 SPELL_ARMORED_TO_THE_TEETH = 61222;
 constexpr uint32 SPELL_MENTAL_DEXTERITY = 51885;
-
-//Rogue Hack and Slash (Sword / Axe) ranks
-constexpr uint32 SPELL_ROGUE_SWORD_AXE_SPECIALIZATION_5 = 13964;
-constexpr uint32 SPELL_ROGUE_SWORD_AXE_SPECIALIZATION_4 = 13963;
-constexpr uint32 SPELL_ROGUE_SWORD_AXE_SPECIALIZATION_3 = 13962;
-constexpr uint32 SPELL_ROGUE_SWORD_AXE_SPECIALIZATION_2 = 13961;
-constexpr uint32 SPELL_ROGUE_SWORD_AXE_SPECIALIZATION_1 = 13960;
-//Rogue Close Quarters Combat (Dagger/Fist) ranks
-constexpr uint32 SPELL_ROGUE_DAGGER_FIST_SPECIALIZATION_5 = 13807;
-constexpr uint32 SPELL_ROGUE_DAGGER_FIST_SPECIALIZATION_4 = 13806;
-constexpr uint32 SPELL_ROGUE_DAGGER_FIST_SPECIALIZATION_3 = 13805;
-constexpr uint32 SPELL_ROGUE_DAGGER_FIST_SPECIALIZATION_2 = 13804;
-constexpr uint32 SPELL_ROGUE_DAGGER_FIST_SPECIALIZATION_1 = 13706;
-
+constexpr uint32 SPELL_ROGUE_SWORD_SPECIALIZATION = 13964;
 constexpr uint32 SPELL_POLEAXE_SPECIALIZATION = 12785;
 constexpr uint32 SPELL_NERVES_OF_COLD_STEEL = 50138;
 constexpr uint32 SPELL_SHADOW_FOCUS = 15835;
@@ -700,27 +687,11 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
         {
             weight_ *= 1.5;
         }
-        // Rogue Hack and Slash (Sword/Axe) - Checks all ranks.
-        if (cls == CLASS_ROGUE &&
-            (player_->HasAura(SPELL_ROGUE_SWORD_AXE_SPECIALIZATION_5) ||
-             player_->HasAura(SPELL_ROGUE_SWORD_AXE_SPECIALIZATION_4) ||
-             player_->HasAura(SPELL_ROGUE_SWORD_AXE_SPECIALIZATION_3) ||
-             player_->HasAura(SPELL_ROGUE_SWORD_AXE_SPECIALIZATION_2) ||
-             player_->HasAura(SPELL_ROGUE_SWORD_AXE_SPECIALIZATION_1)) &&
+
+        if (cls == CLASS_ROGUE && player_->HasAura(SPELL_ROGUE_SWORD_SPECIALIZATION) &&
             (proto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD || proto->SubClass == ITEM_SUBCLASS_WEAPON_AXE))
         {
-            weight_ *= 1.15f;
-        }
-        // Rogue Close Quarters Combat (Dagger/Fist) - Checks all ranks.
-        if (cls == CLASS_ROGUE &&
-            (player_->HasAura(SPELL_ROGUE_DAGGER_FIST_SPECIALIZATION_5) ||
-             player_->HasAura(SPELL_ROGUE_DAGGER_FIST_SPECIALIZATION_4) ||
-             player_->HasAura(SPELL_ROGUE_DAGGER_FIST_SPECIALIZATION_3) ||
-             player_->HasAura(SPELL_ROGUE_DAGGER_FIST_SPECIALIZATION_2) ||
-             player_->HasAura(SPELL_ROGUE_DAGGER_FIST_SPECIALIZATION_1)) &&
-            (proto->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER || proto->SubClass == ITEM_SUBCLASS_WEAPON_FIST))
-        {
-            weight_ *= 1.15f;
+            weight_ *= 1.1;
         }
         if (cls == CLASS_WARRIOR && player_->HasAura(SPELL_POLEAXE_SPECIALIZATION) &&
             (proto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM || proto->SubClass == ITEM_SUBCLASS_WEAPON_AXE2))

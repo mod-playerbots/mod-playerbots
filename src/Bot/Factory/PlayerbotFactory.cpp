@@ -176,7 +176,7 @@ bool HasCreatureSpawnRow(uint32 entry)
     }();
 
     return spawnedEntries.find(entry) != spawnedEntries.end();
-}
+    }
 }
 
 bool PlayerbotFactory::IsPrimaryTradeSkill(uint16 skillId)
@@ -540,6 +540,27 @@ uint16 PlayerbotFactory::ChooseComplementaryProfession(
     }
 
     return candidates.back().first;
+}
+
+uint32 PlayerbotFactory::GetClassSpecProbability(uint32 cls, uint32 specIndex, uint32 currentLevel)
+{
+    uint32 searchLevel = currentLevel;
+
+    while (searchLevel <= 80 && sPlayerbotAIConfig.RandomClassSpecProb[cls][specIndex][searchLevel] == 0)
+    {
+        searchLevel++;
+    }
+
+    if (searchLevel > 80 || sPlayerbotAIConfig.RandomClassSpecProb[cls][specIndex][searchLevel] == 0)
+    {
+        searchLevel = currentLevel;
+        while (searchLevel > 1 && sPlayerbotAIConfig.RandomClassSpecProb[cls][specIndex][searchLevel] == 0)
+        {
+            searchLevel--;
+        }
+    }
+
+    return sPlayerbotAIConfig.RandomClassSpecProb[cls][specIndex][searchLevel];
 }
 
 uint32 PlayerbotFactory::GetStoredOrRandomValue(Player* bot,
@@ -1710,63 +1731,27 @@ uint32 PlayerbotFactory::InitTalentsTree(bool increment /*false*/, bool use_temp
     uint32 specTab;
     uint8 cls = bot->getClass();
     std::map<uint8, uint32> tabs = AiFactory::GetPlayerSpecTabs(bot);
-    int currentLevel = bot->GetLevel();
-
-    int targetSpecLevel = 80; // Default fallback - Will aim for the .80 spec.
-    //Choose .60, .70 and .80 specs.
-    if (sPlayerbotAIConfig.BotTalentRespecs)
-    {
-        if (currentLevel <= 60) targetSpecLevel = 60;
-        else if (currentLevel <= 70) targetSpecLevel = 70;
-        else targetSpecLevel = 80;
-    }
-
-    //Choose .59, .60, .69, .70, .79 and .80 specs.
-    if (sPlayerbotAIConfig.BotTalentRespecsExtended)
-    {
-        if (currentLevel <= 59) targetSpecLevel = 59;
-        else if (currentLevel == 60) targetSpecLevel = 60;
-        else if (currentLevel >= 61 && currentLevel <= 69) targetSpecLevel = 69;
-        else if (currentLevel == 70) targetSpecLevel = 70;
-        else if (currentLevel >= 71 && currentLevel <= 79) targetSpecLevel = 79;
-        else targetSpecLevel = 80;
-    }
-
     uint32 total_tabs = tabs[0] + tabs[1] + tabs[2];
+    uint8 currentLevel = bot->GetLevel();
+
     if (increment && total_tabs != 0)
     {
-        /// @todo: match current talent with template
+        // match current talent with template
         specTab = AiFactory::GetPlayerSpecTab(bot);
-        /// @todo: fix cat druid hardcode
-        if (bot->getClass() == CLASS_DRUID && specTab == DRUID_TAB_FERAL && bot->GetLevel() >= 20)
-        {
-            bool isCat = !bot->HasAura(SPELL_DRUID_THICK_HIDE);
-            if (!isCat && bot->GetLevel() == 20)
-            {
-                uint32 bearP = sPlayerbotAIConfig.RandomClassSpecProb[cls][1][targetSpecLevel];
-                uint32 catP = sPlayerbotAIConfig.RandomClassSpecProb[cls][3][targetSpecLevel];
-                if (urand(1, bearP + catP) <= catP)
-                    isCat = true;
-            }
-            if (isCat)
-            {
-                specTab = 3;
-            }
-        }
     }
     else
     {
         uint32 pointSum = 0;
         for (int i = 0; i < MAX_SPECNO; i++)
         {
-            pointSum += sPlayerbotAIConfig.RandomClassSpecProb[cls][i][targetSpecLevel];
+            pointSum += GetClassSpecProbability(cls, i, currentLevel);
         }
         uint32 point = urand(1, pointSum);
         uint32 currentP = 0;
         int i;
         for (i = 0; i < MAX_SPECNO; i++)
         {
-            currentP += sPlayerbotAIConfig.RandomClassSpecProb[cls][i][targetSpecLevel];
+            currentP += GetClassSpecProbability(cls, i, currentLevel);
             if (point <= currentP)
             {
                 specTab = i;
@@ -1779,6 +1764,50 @@ uint32 PlayerbotFactory::InitTalentsTree(bool increment /*false*/, bool use_temp
             LOG_ERROR("playerbots", "Fail to select spec num for bot {}! Set to 0.", bot->GetName());
         }
     }
+
+    // --- CUSTOM SPEC OVERRIDES ---
+    // fix cat druid hardcode
+    if (bot->getClass() == CLASS_DRUID && specTab == DRUID_TAB_FERAL && bot->GetLevel() >= 20)
+    {
+        bool isCat = !bot->HasAura(SPELL_DRUID_THICK_HIDE);
+
+        if (!isCat && currentLevel == 20)
+        {
+            uint32 bearP = GetClassSpecProbability(cls, 1, currentLevel);
+            uint32 catP = GetClassSpecProbability(cls, 3, currentLevel);
+
+            if (urand(1, bearP + catP) <= catP)
+                isCat = true;
+        }
+
+        if (isCat)
+        {
+            specTab = 3;
+        }
+    }
+
+    // FrostFire check/roll
+    if (bot->getClass() == CLASS_MAGE && specTab == MAGE_TAB_FIRE)
+    {
+        bool isFrostfire = bot->HasAura(SPELL_BURNOUT) && bot->HasAura(SPELL_INCINERATION) &&
+            (bot->HasAura(SPELL_ICE_SHARDS_1) || bot->HasAura(SPELL_ICE_SHARDS_2) || bot->HasAura(SPELL_ICE_SHARDS_3));
+
+        if (!isFrostfire && currentLevel == 71) //Not 100% sure about this level, it works however both when LimitTalentsExpansion is 1 and 0.
+        {
+            uint32 fireP = GetClassSpecProbability(cls, 1, currentLevel);
+            uint32 frostFireP = GetClassSpecProbability(cls, 3, currentLevel);
+
+            if (urand(1, fireP + frostFireP) <= frostFireP)
+                isFrostfire = true;
+        }
+
+        if (isFrostfire)
+        {
+            specTab = 3;
+        }
+    }
+    // --- END OF CUSTOM OVERRIDES ---
+
     if (reset)
     {
         bot->resetTalents(true);
@@ -3728,10 +3757,12 @@ void PlayerbotFactory::InitTalentsByTemplate(uint32 specTab)
     // {
     //     return;
     // }
+
     uint32 cls = bot->getClass();
-    int startLevel = bot->GetLevel();
     uint32 specIndex = sPlayerbotAIConfig.RandomClassSpecIndex[cls][specTab];
     uint32 classMask = bot->getClassMask();
+    uint32 startLevel = bot->GetLevel();
+
     std::unordered_map<uint32, std::vector<TalentEntry const*>> spells_row;
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
     {
@@ -3748,68 +3779,78 @@ void PlayerbotFactory::InitTalentsByTemplate(uint32 specTab)
 
         spells_row[talentInfo->Row].push_back(talentInfo);
     }
-    while (startLevel > 1 && startLevel < 80 &&
-           sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specIndex][startLevel].size() == 0)
+
+    //Look "upwards" for next spec.
+    while (startLevel <= 80 && sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specIndex][startLevel].empty())
     {
-        startLevel--;
+        startLevel++;
     }
-    for (int level = startLevel; level <= 80; level++)
+
+    //Fallback, look for "downwards" instead.
+    if (startLevel > 80 || sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specIndex][startLevel].empty())
     {
-        if (sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specIndex][level].size() == 0)
+        startLevel = bot->GetLevel();
+        while (startLevel > 1 && sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specIndex][startLevel].empty())
         {
+            startLevel--;
+        }
+    }
+
+    if (sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specIndex][startLevel].empty())
+    {
+        return;
+    }
+
+    for (std::vector<uint32>& p : sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specIndex][startLevel])
+    {
+        uint32 tab = p[0], row = p[1], col = p[2], lvl = p[3];
+
+        if (sPlayerbotAIConfig.LimitTalentsExpansion && bot->GetLevel() <= 60 && (row > 6 || (row == 6 && col != 1)))
             continue;
-        }
-        for (std::vector<uint32>& p : sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specIndex][level])
+
+        if (sPlayerbotAIConfig.LimitTalentsExpansion && bot->GetLevel() <= 70 && (row > 8 || (row == 8 && col != 1)))
+            continue;
+
+        uint32 talentID = 0;
+        uint32 learnLevel = 0;
+        std::vector<TalentEntry const*>& spells = spells_row[row];
+        if (spells.empty())
         {
-            uint32 tab = p[0], row = p[1], col = p[2], lvl = p[3];
-            if (sPlayerbotAIConfig.LimitTalentsExpansion && bot->GetLevel() <= 60 && (row > 6 || (row == 6 && col != 1)))
-                continue;
-
-            if (sPlayerbotAIConfig.LimitTalentsExpansion && bot->GetLevel() <= 70 && (row > 8 || (row == 8 && col != 1)))
-                continue;
-
-            uint32 talentID = 0;
-            uint32 learnLevel = 0;
-            std::vector<TalentEntry const*>& spells = spells_row[row];
-            if (spells.size() <= 0)
-            {
-                return;
-            }
-            for (TalentEntry const* talentInfo : spells)
-            {
-                if (talentInfo->Col != col)
-                {
-                    continue;
-                }
-                TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
-                if (talentTabInfo->tabpage != tab)
-                {
-                    continue;
-                }
-                if (talentInfo->DependsOn)
-                {
-                    bot->LearnTalent(talentInfo->DependsOn,
-                                     std::min(talentInfo->DependsOnRank, bot->GetFreeTalentPoints() - 1));
-                }
-                talentID = talentInfo->TalentID;
-
-                uint32 currentTalentRank = 0;
-                for (uint8 rank = 0; rank < MAX_TALENT_RANK; ++rank)
-                {
-                    if (talentInfo->RankID[rank] && bot->HasTalent(talentInfo->RankID[rank], bot->GetActiveSpec()))
-                    {
-                        currentTalentRank = rank + 1;
-                        break;
-                    }
-                }
-                learnLevel = std::min(lvl, bot->GetFreeTalentPoints() + currentTalentRank) - 1;
-            }
-            bot->LearnTalent(talentID, learnLevel);
-            if (bot->GetFreeTalentPoints() == 0)
-            {
-                break;
-            }
+            return;
         }
+
+        for (TalentEntry const* talentInfo : spells)
+        {
+            if (talentInfo->Col != col)
+            {
+                continue;
+            }
+            TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
+            if (talentTabInfo->tabpage != tab)
+            {
+                continue;
+            }
+            if (talentInfo->DependsOn)
+            {
+                bot->LearnTalent(talentInfo->DependsOn,
+                                 std::min(talentInfo->DependsOnRank, bot->GetFreeTalentPoints() - 1));
+            }
+            talentID = talentInfo->TalentID;
+
+            uint32 currentTalentRank = 0;
+            for (uint8 rank = 0; rank < MAX_TALENT_RANK; ++rank)
+            {
+                if (talentInfo->RankID[rank] && bot->HasTalent(talentInfo->RankID[rank], bot->GetActiveSpec()))
+                {
+                    currentTalentRank = rank + 1;
+                    break;
+                }
+            }
+            learnLevel = std::min(lvl, bot->GetFreeTalentPoints() + currentTalentRank) - 1;
+        }
+
+        bot->LearnTalent(talentID, learnLevel);
+
         if (bot->GetFreeTalentPoints() == 0)
         {
             break;

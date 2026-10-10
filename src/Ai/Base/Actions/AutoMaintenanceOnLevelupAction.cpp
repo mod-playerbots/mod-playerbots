@@ -43,35 +43,20 @@ void AutoMaintenanceOnLevelupAction::AutoPickTalents()
         return;
 
     uint32 currentLevel = bot->GetLevel();
-    int targetSpecLevel = 80; // Default fallback - Will aim for the .80 spec.
-    bool resetTalents = false;
+    bool resetTalents = true;
+    bool increment = true;
 
-    //Choose .60, .70 and .80 specs.
-    if (sPlayerbotAIConfig.BotTalentRespecs)
+    //Reroll specs at 60, 61, 70, 71 and 80 if enabled.
+    if (sPlayerbotAIConfig.BotAdaptiveTalents)
     {
-        if (currentLevel <= 60) targetSpecLevel = 60;
-        else if (currentLevel <= 70) targetSpecLevel = 70;
-        else targetSpecLevel = 80;
+        resetTalents = (currentLevel == 60 || currentLevel == 61 ||
+            currentLevel == 70 ||currentLevel == 71 || currentLevel == 80);
 
-        resetTalents = (currentLevel == 61 || currentLevel == 71);
+        increment = !resetTalents;
     }
 
-    //Choose .59, .60, .69, .70, .79 and .80 specs.
-    if (sPlayerbotAIConfig.BotTalentRespecsExtended)
-    {
-        if (currentLevel <= 59) targetSpecLevel = 59;
-        else if (currentLevel == 60) targetSpecLevel = 60;
-        else if (currentLevel >= 61 && currentLevel <= 69) targetSpecLevel = 69;
-        else if (currentLevel == 70) targetSpecLevel = 70;
-        else if (currentLevel >= 71 && currentLevel <= 79) targetSpecLevel = 79;
-        else targetSpecLevel = 80;
-
-        resetTalents = (currentLevel == 60 || currentLevel == 61 || currentLevel == 70 ||
-            currentLevel == 71 || currentLevel == 80);
-    }
-
-    PlayerbotFactory factory(bot, targetSpecLevel);
-    factory.InitTalentsTree(true, true, resetTalents);
+    PlayerbotFactory factory(bot, currentLevel);
+    factory.InitTalentsTree(increment, true, resetTalents);
     factory.InitPetTalents();
 }
 

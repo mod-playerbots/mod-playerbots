@@ -1770,14 +1770,9 @@ Playerbots.PermanentlyInWorldTime = 31104000
 # INFORMATION
 #
 
-# Playerbots.BotTalentRespecs.
-# When enabled: Bots respecs automatically at level 61 and 71.
-# the specs that were common during that level and expansion.
-# When disabled: Bots pick a .80 spec, and work towards the final spec
-#
-# Playerbots.BotTalentRespecsExtended
-# When enabled respecs specs at 60, 61, 70, 71 and 80.
-# When disabled: Bots pick a .80 spec, and work towards the final spec
+# Playerbots.BotAdaptiveTalents.
+# When enabled: Bots respecs at 60, 61, 70, 71 and 80, and might choose a completely new spec.
+# When disabled: Chooses a spec and increments on it, from 10-80.
 
 # Playerbots.PremadeSpecName.<class>.<specno> = <name>         #Name of the talent specialisation
 # Playerbots.PremadeSpecLink.<class>.<specno>.<level> = <link> #Wowhead style link the bot should work towards at given level.
@@ -1792,8 +1787,7 @@ Playerbots.PermanentlyInWorldTime = 31104000
 #
 ####################################################################################################
 
-Playerbots.BotTalentRespecs = 0
-Playerbots.BotTalentRespecsExtended = 0
+Playerbots.BotAdaptiveTalents = 1
 
 ####################################################################################################
 # WARRIOR
@@ -2177,90 +2171,73 @@ Playerbots.PremadeSpecLink.4.1.80 = 00532000523-0252051000035015223100501251
 Playerbots.RandomClassSpecProb.4.1.79 = 35
 Playerbots.RandomClassSpecProb.4.1.80 = 35
 
-# COMBAT PVE (Dagger)
-Playerbots.PremadeSpecName.4.2 = combat dagger pve
-Playerbots.RandomClassSpecIndex.4.2 = 2
-Playerbots.PremadeSpecGlyph.4.2 = 42962,43379,45762,43380,43378,42969
-
-Playerbots.PremadeSpecLink.4.2.60 = -0252051050035010223100501251
-Playerbots.RandomClassSpecProb.4.2.59 = 25
-Playerbots.RandomClassSpecProb.4.2.60 = 20
-
-Playerbots.PremadeSpecLink.4.2.70 = 00502-0252051050035010223100501251-3
-Playerbots.RandomClassSpecProb.4.2.69 = 20
-Playerbots.RandomClassSpecProb.4.2.70 = 20
-
-Playerbots.PremadeSpecLink.4.2.80 = 00532000532-0252051050035010223100501251
-Playerbots.RandomClassSpecProb.4.2.79 = 20
-Playerbots.RandomClassSpecProb.4.2.80 = 10
-
 # SUBTLETY PVE
-Playerbots.PremadeSpecName.4.3 = subtlety pve
-Playerbots.RandomClassSpecIndex.4.3 = 3
-Playerbots.PremadeSpecGlyph.4.3 = 42967,43379,45764,43380,43378,45767
+Playerbots.PremadeSpecName.4.2 = subtlety pve
+Playerbots.RandomClassSpecIndex.4.2 = 2
+Playerbots.PremadeSpecGlyph.4.2 = 42967,43379,45764,43380,43378,45767
 
-Playerbots.PremadeSpecLink.4.3.60 = --5022012030321121350115031151
+Playerbots.PremadeSpecLink.4.2.60 = --5022012030321121350115031151
+Playerbots.RandomClassSpecProb.4.2.59 = 0
+Playerbots.RandomClassSpecProb.4.2.60 = 0
+
+Playerbots.PremadeSpecLink.4.2.70 = 004-005-5020032030321121350115031251
+Playerbots.RandomClassSpecProb.4.2.69 = 0
+Playerbots.RandomClassSpecProb.4.2.70 = 0
+
+Playerbots.PremadeSpecLink.4.2.80 = 30532010114--5022012030321121350115031151
+Playerbots.RandomClassSpecProb.4.2.79 = 0
+Playerbots.RandomClassSpecProb.4.2.80 = 0
+
+# AS PVP
+Playerbots.PremadeSpecName.4.3 = as pvp
+Playerbots.RandomClassSpecIndex.4.3 = 3
+Playerbots.PremadeSpecGlyph.4.3 = 42974,43380,45768,43379,43376,42971
+
+Playerbots.PremadeSpecLink.4.3.60 = 005303103342102522103031--50002
 Playerbots.RandomClassSpecProb.4.3.59 = 0
 Playerbots.RandomClassSpecProb.4.3.60 = 0
 
-Playerbots.PremadeSpecLink.4.3.70 = 004-005-5020032030321121350115031251
+Playerbots.PremadeSpecLink.4.3.70 = 0053031033421025221031--532023203
 Playerbots.RandomClassSpecProb.4.3.69 = 0
 Playerbots.RandomClassSpecProb.4.3.70 = 0
 
-Playerbots.PremadeSpecLink.4.3.80 = 30532010114--5022012030321121350115031151
+Playerbots.PremadeSpecLink.4.3.80 = 005303103342102522103031-004-532023203000012
 Playerbots.RandomClassSpecProb.4.3.79 = 0
 Playerbots.RandomClassSpecProb.4.3.80 = 0
 
-# AS PVP
-Playerbots.PremadeSpecName.4.4 = as pvp
+# COMBAT PVP
+Playerbots.PremadeSpecName.4.4 = combat pvp
 Playerbots.RandomClassSpecIndex.4.4 = 4
-Playerbots.PremadeSpecGlyph.4.4 = 42974,43380,45768,43379,43376,42971
+Playerbots.PremadeSpecGlyph.4.4 = 42972,43380,45762,43376,43378,42971
 
-Playerbots.PremadeSpecLink.4.4.60 = 005303103342102522103031--50002
+Playerbots.PremadeSpecLink.4.4.60 = -3250002050225010223102321251
 Playerbots.RandomClassSpecProb.4.4.59 = 0
 Playerbots.RandomClassSpecProb.4.4.60 = 0
 
-Playerbots.PremadeSpecLink.4.4.70 = 0053031033421025221031--532023203
+Playerbots.PremadeSpecLink.4.4.70 = 305120105-325000205023501022310251
 Playerbots.RandomClassSpecProb.4.4.69 = 0
 Playerbots.RandomClassSpecProb.4.4.70 = 0
 
-Playerbots.PremadeSpecLink.4.4.80 = 005303103342102522103031-004-532023203000012
+Playerbots.PremadeSpecLink.4.4.80 = 305120105-3250002050235010223102521251
 Playerbots.RandomClassSpecProb.4.4.79 = 0
 Playerbots.RandomClassSpecProb.4.4.80 = 0
 
-# COMBAT PVP
-Playerbots.PremadeSpecName.4.5 = combat pvp
+# SUBTLETY PVP
+Playerbots.PremadeSpecName.4.5 = subtlety pvp
 Playerbots.RandomClassSpecIndex.4.5 = 5
-Playerbots.PremadeSpecGlyph.4.5 = 42972,43380,45762,43376,43378,42971
+Playerbots.PremadeSpecGlyph.4.5 = 42968,43376,45764,43380,43379,42971
 
-Playerbots.PremadeSpecLink.4.5.60 = -3250002050225010223102321251
+Playerbots.PremadeSpecLink.4.5.60 = --5120212030320121330133221251
 Playerbots.RandomClassSpecProb.4.5.59 = 0
 Playerbots.RandomClassSpecProb.4.5.60 = 0
 
-Playerbots.PremadeSpecLink.4.5.70 = 305120105-325000205023501022310251
+Playerbots.PremadeSpecLink.4.5.70 = 3023031--51202120303201213501352311
 Playerbots.RandomClassSpecProb.4.5.69 = 0
 Playerbots.RandomClassSpecProb.4.5.70 = 0
 
-Playerbots.PremadeSpecLink.4.5.80 = 305120105-3250002050235010223102521251
+Playerbots.PremadeSpecLink.4.5.80 = 3023031-3-5120212030320121350135231251
 Playerbots.RandomClassSpecProb.4.5.79 = 0
 Playerbots.RandomClassSpecProb.4.5.80 = 0
-
-# SUBTLETY PVP
-Playerbots.PremadeSpecName.4.6 = subtlety pvp
-Playerbots.RandomClassSpecIndex.4.6 = 6
-Playerbots.PremadeSpecGlyph.4.6 = 42968,43376,45764,43380,43379,42971
-
-Playerbots.PremadeSpecLink.4.6.60 = --5120212030320121330133221251
-Playerbots.RandomClassSpecProb.4.6.59 = 0
-Playerbots.RandomClassSpecProb.4.6.60 = 0
-
-Playerbots.PremadeSpecLink.4.6.70 = 3023031--51202120303201213501352311
-Playerbots.RandomClassSpecProb.4.6.69 = 0
-Playerbots.RandomClassSpecProb.4.6.70 = 0
-
-Playerbots.PremadeSpecLink.4.6.80 = 3023031-3-5120212030320121350135231251
-Playerbots.RandomClassSpecProb.4.6.79 = 0
-Playerbots.RandomClassSpecProb.4.6.80 = 0
 
 #
 #
@@ -2624,16 +2601,16 @@ Playerbots.RandomClassSpecIndex.8.0 = 0
 Playerbots.PremadeSpecGlyph.8.0 = 42735,43339,44955,43364,43361,42751
 
 Playerbots.PremadeSpecLink.8.0.60 = 230005231100330150323102500321
-Playerbots.RandomClassSpecProb.8.0.59 = 20
-Playerbots.RandomClassSpecProb.8.0.60 = 20
+Playerbots.RandomClassSpecProb.8.0.59 = 5
+Playerbots.RandomClassSpecProb.8.0.60 = 10
 
 Playerbots.PremadeSpecLink.8.0.70 = 23000503110033014032310050532--023203001
-Playerbots.RandomClassSpecProb.8.0.69 = 20
+Playerbots.RandomClassSpecProb.8.0.69 = 10
 Playerbots.RandomClassSpecProb.8.0.70 = 45
 
 Playerbots.PremadeSpecLink.8.0.80 = 230005231100330150323102505321-03-203303001
 Playerbots.RandomClassSpecProb.8.0.79 = 15
-Playerbots.RandomClassSpecProb.8.0.80 = 30
+Playerbots.RandomClassSpecProb.8.0.80 = 40
 
 # FIRE PVE
 Playerbots.PremadeSpecName.8.1 = fire pve
@@ -2641,11 +2618,11 @@ Playerbots.RandomClassSpecIndex.8.1 = 1
 Playerbots.PremadeSpecGlyph.8.1 = 42739,43339,45737,43364,44920,42751
 
 Playerbots.PremadeSpecLink.8.1.60 = -0055030011302231053120321341
-Playerbots.RandomClassSpecProb.8.1.59 = 35
-Playerbots.RandomClassSpecProb.8.1.60 = 35
+Playerbots.RandomClassSpecProb.8.1.59 = 20
+Playerbots.RandomClassSpecProb.8.1.60 = 30
 
 Playerbots.PremadeSpecLink.8.1.70 = -0055032012300331053120311351-023003
-Playerbots.RandomClassSpecProb.8.1.69 = 35
+Playerbots.RandomClassSpecProb.8.1.69 = 25
 Playerbots.RandomClassSpecProb.8.1.70 = 35
 
 Playerbots.PremadeSpecLink.8.1.80 = 23000503110003-0055032012303330053120300351
@@ -2658,16 +2635,16 @@ Playerbots.RandomClassSpecIndex.8.2 = 2
 Playerbots.PremadeSpecGlyph.8.2 = 42742,43339,50045,43364,43361,42751
 
 Playerbots.PremadeSpecLink.8.2.60 = --0533030313203100030152231151
-Playerbots.RandomClassSpecProb.8.2.59 = 45
-Playerbots.RandomClassSpecProb.8.2.60 = 45
+Playerbots.RandomClassSpecProb.8.2.59 = 75
+Playerbots.RandomClassSpecProb.8.2.60 = 60
 
 Playerbots.PremadeSpecLink.8.2.70 = 23000501310003--0533030311133100230152201
-Playerbots.RandomClassSpecProb.8.2.69 = 45
+Playerbots.RandomClassSpecProb.8.2.69 = 65
 Playerbots.RandomClassSpecProb.8.2.70 = 20
 
 Playerbots.PremadeSpecLink.8.2.80 = 23002303110003--0533030313203100030152231351
 Playerbots.RandomClassSpecProb.8.2.79 = 45
-Playerbots.RandomClassSpecProb.8.2.80 = 15
+Playerbots.RandomClassSpecProb.8.2.80 = 10
 
 # FROSTFIRE PVE
 Playerbots.PremadeSpecName.8.3 = frostfire pve
@@ -2675,16 +2652,16 @@ Playerbots.RandomClassSpecIndex.8.3 = 3
 Playerbots.PremadeSpecGlyph.8.3 = 44684,44920,42751,43339,43364,45737
 
 Playerbots.PremadeSpecLink.8.3.60 = -2305032012303331053120300051
-Playerbots.RandomClassSpecProb.8.3.59 = 0
-Playerbots.RandomClassSpecProb.8.3.60 = 0
+Playerbots.RandomClassSpecProb.8.2.59 = 0
+Playerbots.RandomClassSpecProb.8.2.60 = 0
 
 Playerbots.PremadeSpecLink.8.3.70 = -2305032012303331053120300051-203302
-Playerbots.RandomClassSpecProb.8.3.69 = 0
-Playerbots.RandomClassSpecProb.8.3.70 = 0
+Playerbots.RandomClassSpecProb.8.2.69 = 0
+Playerbots.RandomClassSpecProb.8.2.70 = 0
 
 Playerbots.PremadeSpecLink.8.3.80 = -2305032012303331053120321351-023302031
 Playerbots.RandomClassSpecProb.8.3.79 = 15
-Playerbots.RandomClassSpecProb.8.3.80 = 20
+Playerbots.RandomClassSpecProb.8.3.80 = 15
 
 # ARCANE PVP
 Playerbots.PremadeSpecName.8.4 = arcane pvp
