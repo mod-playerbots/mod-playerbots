@@ -4692,7 +4692,7 @@ void PlayerbotFactory::InitGlyphs(bool increment)
     if (bot->getClass() == CLASS_MAGE)
     {
         // Frostfire PvE (spec index 3): If the bot has both the Burnout talent and the Ice Shards talent
-        if (bot->HasAura(SPELL_BURNOUT) && bot->HasAura(SPELL_ICE_SHARDS))
+        if (bot->HasAura(SPELL_BURNOUT) && bot->HasAura(SPELL_ICE_SHARDS_3))
             tab = 3;
         // Arcane PvP (spec index 4): If the bot has the Improved Blink talent
         else if (bot->HasAura(SPELL_IMPROVED_BLINK))
