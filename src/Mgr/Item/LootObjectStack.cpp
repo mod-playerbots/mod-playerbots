@@ -324,10 +324,12 @@ bool LootObject::IsLootPossible(Player* bot)
             return true;
 
         uint32 const phase = bot->GetPhaseMask();
+        float const collisionHeight = bot->GetCollisionHeight();
         float const x = obj->GetPositionX();
         float const y = obj->GetPositionY();
         float const z = obj->GetPositionZ();
-        return bot->GetMap()->IsInWater(phase, x, y, z, 2.0f) || bot->GetMap()->IsUnderWater(phase, x, y, z, 2.0f);
+        return bot->GetMap()->IsInWater(phase, x, y, z, collisionHeight) ||
+               bot->GetMap()->IsUnderWater(phase, x, y, z, collisionHeight);
     };
     if (!inWater(bot) && !inWater(worldObj) &&
         abs(worldObj->GetPositionZ() - bot->GetPositionZ()) > INTERACTION_DISTANCE - 2.0f)

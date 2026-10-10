@@ -2648,11 +2648,12 @@ bool MoveToLootAction::Execute(Event /*event*/)
 
     // No navmesh under water: move straight at the target while the direct swim has line of sight.
     // The map query also covers a stale cached liquid state, e.g. right after a teleport.
+    float const collisionHeight = bot->GetCollisionHeight();
     bool const botInWater = bot->IsInWater() || bot->IsUnderWater() ||
                             bot->GetMap()->IsInWater(bot->GetPhaseMask(), bot->GetPositionX(), bot->GetPositionY(),
-                                                     bot->GetPositionZ(), 2.0f) ||
+                                                     bot->GetPositionZ(), collisionHeight) ||
                             bot->GetMap()->IsUnderWater(bot->GetPhaseMask(), bot->GetPositionX(),
-                                                        bot->GetPositionY(), bot->GetPositionZ(), 2.0f);
+                                                        bot->GetPositionY(), bot->GetPositionZ(), collisionHeight);
     if (botInWater)
     {
         Creature* creature = botAI->GetCreature(loot.guid);
