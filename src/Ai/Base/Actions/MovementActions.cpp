@@ -2646,6 +2646,40 @@ bool MoveToLootAction::Execute(Event /*event*/)
         return false;
     }
 
+    // No navmesh under water: move straight at the target while the direct swim has line of sight.
+    // The map query also covers a stale cached liquid state, e.g. right after a teleport.
+    bool const botInWater = bot->IsInWater() || bot->IsUnderWater() ||
+                            bot->GetMap()->IsInWater(bot->GetPhaseMask(), bot->GetPositionX(), bot->GetPositionY(),
+                                                     bot->GetPositionZ(), 2.0f) ||
+                            bot->GetMap()->IsUnderWater(bot->GetPhaseMask(), bot->GetPositionX(),
+                                                        bot->GetPositionY(), bot->GetPositionZ(), 2.0f);
+    if (botInWater)
+    {
+        Creature* creature = botAI->GetCreature(loot.guid);
+        GameObject* go = botAI->GetGameObject(loot.guid);
+        float const interactRange = creature ? INTERACTION_DISTANCE
+                                             : (go ? go->GetInteractionDistance() : INTERACTION_DISTANCE);
+        float const range = std::max(1.0f, interactRange - 1.0f);
+
+        float const dx = bot->GetPositionX() - target->GetPositionX();
+        float const dy = bot->GetPositionY() - target->GetPositionY();
+        float const dz = bot->GetPositionZ() - target->GetPositionZ();
+        float const dist = std::sqrt(dx * dx + dy * dy + dz * dz);
+        if (dist <= range)
+            return false;
+
+        float const scale = (dist - range) / dist;
+        float const x = bot->GetPositionX() - dx * scale;
+        float const y = bot->GetPositionY() - dy * scale;
+        float const z = bot->GetPositionZ() - dz * scale;
+
+        if (!bot->IsWithinLOS(x, y, z))
+            return false;
+
+        // exact_waypoint forces a direct point move: a generated path under water has no navmesh
+        return MoveTo(bot->GetMapId(), x, y, z, false, false, false, true);
+    }
+
     return MoveNear(target, sPlayerbotAIConfig.ContactDistance);
 }
 
