@@ -410,8 +410,8 @@ Playerbots.ShootDistance = 5.0
 Playerbots.HealDistance = 38.5
 Playerbots.LootDistance = 15.0
 
-# LootPriorityTimeout is how many seconds a loot target the bot cannot reach (ledge, across water,
-# bad path) is ignored before it is retried. This keeps an unreachable target from blocking the bot.
+# LootPriorityTimeout caps the exponential retry backoff (1s, 2s, 4s, 8s, 16s) for a loot target
+# the bot cannot reach (ledge, across water, bad path); lower values retry it again sooner.
 Playerbots.LootPriorityTimeout = 30
 Playerbots.FleeDistance = 5.0
 Playerbots.AggroDistance = 22

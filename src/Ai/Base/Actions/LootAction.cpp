@@ -30,8 +30,7 @@ bool LootAction::Execute(Event /*event*/)
         return false;
 
     LootObject prevLoot = AI_VALUE(LootObject, "loot target");
-    LootObject const& lootObject =
-        AI_VALUE(LootObjectStack*, "available loot")->GetLoot(sPlayerbotAIConfig.LootDistance);
+    LootObject const& lootObject = AI_VALUE(LootObject, "nearest loot");
 
     if (!prevLoot.IsEmpty() && prevLoot.guid != lootObject.guid)
     {

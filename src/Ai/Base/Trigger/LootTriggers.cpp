@@ -16,7 +16,7 @@ bool LootAvailableTrigger::IsActive()
     if (AI_VALUE(bool, "can loot"))
         return false;
 
-    LootObject nearest = AI_VALUE(LootObjectStack*, "available loot")->GetLoot(sPlayerbotAIConfig.LootDistance);
+    LootObject nearest = AI_VALUE(LootObject, "nearest loot");
     if (nearest.IsEmpty())
         return false;
 

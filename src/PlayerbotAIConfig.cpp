@@ -111,7 +111,7 @@ bool PlayerbotAIConfig::Initialize()
     ShootDistance = sConfigMgr->GetOption<float>("Playerbots.ShootDistance", 5.0f);
     HealDistance = sConfigMgr->GetOption<float>("Playerbots.HealDistance", 38.5f);
     LootDistance = sConfigMgr->GetOption<float>("Playerbots.LootDistance", 15.0f);
-    LootPriorityTimeout = sConfigMgr->GetOption<int32>("Playerbots.LootPriorityTimeout", 30);
+    LootPriorityTimeout = sConfigMgr->GetOption<uint32>("Playerbots.LootPriorityTimeout", 30);
     FleeDistance = sConfigMgr->GetOption<float>("Playerbots.FleeDistance", 5.0f);
     AggroDistance = sConfigMgr->GetOption<float>("Playerbots.AggroDistance", 22.0f);
     TooCloseDistance = sConfigMgr->GetOption<float>("Playerbots.TooCloseDistance", 5.0f);

@@ -29,8 +29,7 @@ bool LootTarget::IsReady() const { return std::chrono::steady_clock::now() >= _r
 void LootTarget::Defer(uint32 maxDelaySecs)
 {
     _retryCount = std::min<uint8>(_retryCount + 1, MAX_LOOT_RETRY_ATTEMPTS);
-    std::chrono::seconds const maxDelay =
-        maxDelaySecs ? std::max(LOOT_RETRY_MAX_DELAY, std::chrono::seconds(maxDelaySecs)) : LOOT_RETRY_MAX_DELAY;
+    std::chrono::seconds const maxDelay = maxDelaySecs ? std::chrono::seconds(maxDelaySecs) : LOOT_RETRY_MAX_DELAY;
     _retryUntil = std::chrono::steady_clock::now() +
                   std::min(LOOT_RETRY_MIN_DELAY * (1u << (_retryCount - 1)), maxDelay);
 }
@@ -538,6 +537,13 @@ LootObject LootObjectStack::GetNearest(float maxDistance)
     for (LootTargetList::iterator i = availableLoot.begin(); i != availableLoot.end();)
     {
         ObjectGuid guid = i->guid;
+
+        // Disallowed objects are never lootable, so they must not be picked as the nearest target.
+        if (guid.IsGameObject() && sPlayerbotAIConfig.DisallowedGameObjects.contains(guid.GetEntry()))
+        {
+            ++i;
+            continue;
+        }
 
         if (!i->IsReady())
         {
