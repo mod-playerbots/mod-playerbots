@@ -543,7 +543,7 @@ bool NewRpgDoQuestAction::ScanForObjectiveTarget(NewRpgInfo::DoQuest& data, floa
 
     // Item objectives name no source entry, so they scan by loot predicate, not by entry.
     // Clamped to sightDistance: the bot cannot act on anything further out.
-    float const scanRange = std::min({maxDist, objectiveScanRange, sPlayerbotAIConfig.sightDistance});
+    float const scanRange = std::min({maxDist, objectiveScanRange, sPlayerbotAIConfig.SightDistance});
     WorldObject* target = data.objectiveIdx < QUEST_OBJECTIVES_COUNT ? ScanEntryObjectives(data, scanRange)
                                                                      : ScanItemObjective(data, scanRange);
     if (!target)
@@ -713,7 +713,7 @@ bool NewRpgDoQuestAction::EngageGameObject(NewRpgInfo::DoQuest& data, GameObject
     {
         LootObject currentTarget = AI_VALUE(LootObject, "loot target");
         bool keepCurrent = !currentTarget.IsEmpty() && currentTarget.IsLootPossible(bot) &&
-                           AI_VALUE2(float, "distance", "loot target") <= sPlayerbotAIConfig.lootDistance;
+                           AI_VALUE2(float, "distance", "loot target") <= sPlayerbotAIConfig.LootDistance;
         if (currentTarget.guid != go->GetGUID() && !keepCurrent)
             context->GetValue<LootObject>("loot target")->Set(LootObject(bot, go->GetGUID()));
         return AI_VALUE(LootObjectStack*, "available loot")->Add(go->GetGUID());
