@@ -483,52 +483,41 @@ bool PlayerbotAIConfig::Initialize()
 
     LOG_INFO("server.loading", "Loading TalentSpecs...");
 
+    BotAdaptiveTalents = sConfigMgr->GetOption<bool>("Playerbots.BotAdaptiveTalents", false);
+
     for (uint32 cls = 1; cls < MAX_CLASSES; ++cls)
     {
         if (cls == 10)
         {
             continue;
         }
+
         for (uint32 spec = 0; spec < MAX_SPECNO; ++spec)
         {
             std::ostringstream os;
             os << "Playerbots.PremadeSpecName." << cls << "." << spec;
             PremadeSpecName[cls][spec] = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
+
+            // If no more named specs, early return.
+            if (PremadeSpecName[cls][spec].empty())
+            {
+                continue;
+            }
+
             os.str("");
             os.clear();
             os << "Playerbots.PremadeSpecGlyph." << cls << "." << spec;
             PremadeSpecGlyph[cls][spec] = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
             std::vector<std::string> splitSpecGlyph = split(PremadeSpecGlyph[cls][spec], ',');
-            for (std::string& split : splitSpecGlyph)
+            for (std::string& splitStr : splitSpecGlyph)
             {
-                if (split.size() != 0)
+                if (!splitStr.empty())
                 {
-                    ParsedSpecGlyph[cls][spec].push_back(atoi(split.c_str()));
+                    ParsedSpecGlyph[cls][spec].push_back(atoi(splitStr.c_str()));
                 }
             }
-            for (uint32 level = 0; level < MAX_LEVEL; ++level)
-            {
-                std::ostringstream os;
-                os << "Playerbots.PremadeSpecLink." << cls << "." << spec << "." << level;
-                PremadeSpecLink[cls][spec][level] = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
-                ParsedSpecLinkOrder[cls][spec][level] = ParseTempTalentsOrder(cls, PremadeSpecLink[cls][spec][level]);
-            }
-        }
-        for (uint32 spec = 0; spec < 3; ++spec)
-        {
-            for (uint32 points = 0; points < 21; ++points)
-            {
-                std::ostringstream os;
-                os << "Playerbots.PremadeHunterPetLink." << spec << "." << points;
-                PremadeHunterPetLink[spec][points] = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
-                ParsedHunterPetLinkOrder[spec][points] =
-                    ParseTempPetTalentsOrder(spec, PremadeHunterPetLink[spec][points]);
-            }
-        }
-        for (uint32 spec = 0; spec < MAX_SPECNO; ++spec)
-        {
-            std::ostringstream os;
-            os << "Playerbots.RandomClassSpecProb." << cls << "." << spec;
+
+            // Default RandomClassSpecProb
             uint32 def;
             if (spec <= 1)
                 def = 33;
@@ -536,11 +525,91 @@ bool PlayerbotAIConfig::Initialize()
                 def = 34;
             else
                 def = 0;
-            RandomClassSpecProb[cls][spec] = sConfigMgr->GetOption<uint32>(os.str().c_str(), def, false);
-            os.str("");
-            os.clear();
-            os << "Playerbots.RandomClassSpecIndex." << cls << "." << spec;
-            RandomClassSpecIndex[cls][spec] = sConfigMgr->GetOption<uint32>(os.str().c_str(), spec, false);
+
+            std::ostringstream osProbBase, osIdxBase;
+            osProbBase << "Playerbots.RandomClassSpecProb." << cls << "." << spec;
+            std::string probBaseStr = sConfigMgr->GetOption<std::string>(osProbBase.str().c_str(), "", false);
+
+            uint32 baseProb = def;
+            if (!probBaseStr.empty())
+            {
+                try
+                {
+                    baseProb = std::stoul(probBaseStr);
+                }
+                catch (std::exception const&)
+                {
+                    LOG_ERROR("playerbots", "Invalid config value for '{}': '{}'. Using default: {}", osProbBase.str().c_str(), probBaseStr.c_str(), def);
+                    baseProb = def;
+                }
+            }
+
+            osIdxBase << "Playerbots.RandomClassSpecIndex." << cls << "." << spec;
+            std::string idxBaseStr = sConfigMgr->GetOption<std::string>(osIdxBase.str().c_str(), "", false);
+
+            uint32 baseIndex = spec;
+            if (!idxBaseStr.empty())
+            {
+                try
+                {
+                    baseIndex = std::stoul(idxBaseStr);
+                }
+                catch (std::exception const&)
+                {
+                    LOG_ERROR("playerbots", "Invalid config value for '{}': '{}'. Using default: {}", osIdxBase.str().c_str(), idxBaseStr.c_str(), spec);
+                    baseIndex = spec;
+                }
+            }
+
+            RandomClassSpecIndex[cls][spec] = baseIndex;
+
+            LOG_DEBUG("PlayerbotsTalentRevampDebug", "Loaded Spec: Class {} | Spec {} ({}) | Base Probability: {}", cls, spec, PremadeSpecName[cls][spec], baseProb);
+
+            // Set initial/base values
+            uint32 currentProb = baseProb;
+            std::string currentLink = "";
+
+            for (uint32 level = 0; level < MAX_LEVEL; ++level)
+            {
+                std::ostringstream osLink, osProb;
+
+                osLink << "Playerbots.PremadeSpecLink." << cls << "." << spec << "." << level;
+                std::string explicitLink = sConfigMgr->GetOption<std::string>(osLink.str().c_str(), "", false);
+                if (!explicitLink.empty())
+                {
+                    currentLink = explicitLink;
+                }
+                PremadeSpecLink[cls][spec][level] = currentLink;
+                ParsedSpecLinkOrder[cls][spec][level] = ParseTempTalentsOrder(cls, currentLink);
+
+                osProb << "Playerbots.RandomClassSpecProb." << cls << "." << spec << "." << level;
+                std::string probStr = sConfigMgr->GetOption<std::string>(osProb.str().c_str(), "", false);
+                if (!probStr.empty())
+                {
+                    try
+                    {
+                        currentProb = std::stoul(probStr);
+                        LOG_DEBUG("PlayerbotsTalentRevampDebug", "Loaded probability: Class {} | Spec {} ({}) | Level {} | Probability: {}", cls, spec, PremadeSpecName[cls][spec], level, currentProb);
+                    }
+                    catch (std::exception const&)
+                    {
+                        LOG_ERROR("playerbots", "Invalid config value for '{}': '{}'. Using default: {}", osProb.str().c_str(), probStr.c_str(), def);
+                        currentProb = def;
+                    }
+                }
+                RandomClassSpecProb[cls][spec][level] = currentProb;
+            }
+        }
+
+        for (uint32 spec = 0; spec < 3; ++spec)
+        {
+            for (uint32 points = 0; points < 21; ++points)
+            {
+                std::ostringstream os;
+                os << "Playerbots.PremadeHunterPetLink." << spec << "." << points;
+                PremadeHunterPetLink[spec][points] = sConfigMgr->GetOption<std::string>(os.str().c_str(), "", false);
+                ParsedHunterPetLinkOrder[spec][points] = ParseTempPetTalentsOrder(spec, PremadeHunterPetLink[spec][points]);
+            }
         }
     }
 
