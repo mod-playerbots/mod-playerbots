@@ -410,8 +410,11 @@ Playerbots.ShootDistance = 5.0
 Playerbots.HealDistance = 38.5
 Playerbots.LootDistance = 15.0
 
+# Finish looting before mounting, grinding, or starting new RPG activities.
 # LootPriorityTimeout is how many seconds a loot target the bot cannot reach (ledge, across water,
-# bad path) is ignored before it is retried. This keeps an unreachable target from blocking the bot.
+# bad path) is ignored before it is retried. This keeps an unreachable target from blocking
+# grinding, without switching the loot priority off while loot is genuinely available.
+Playerbots.LootPriority = 1
 Playerbots.LootPriorityTimeout = 30
 Playerbots.FleeDistance = 5.0
 Playerbots.AggroDistance = 22
