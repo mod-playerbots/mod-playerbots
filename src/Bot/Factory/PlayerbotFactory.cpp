@@ -145,9 +145,7 @@ constexpr uint32 SPELL_EARTHEN_POWER = 51524;
 constexpr uint32 SPELL_FOCUSED_MIND = 30866;
 
 constexpr uint32 SPELL_BURNOUT = 44472;
-constexpr uint32 SPELL_ICE_SHARDS_3 = 15047;
-constexpr uint32 SPELL_ICE_SHARDS_2 = 12672;
-constexpr uint32 SPELL_ICE_SHARDS_1 = 11207;
+constexpr uint32 SPELL_ICE_SHARDS = 15047;
 constexpr uint32 SPELL_IMPROVED_BLINK = 31570;
 constexpr uint32 SPELL_FIERY_PAYBACK = 64357;
 constexpr uint32 SPELL_SHATTERED_BARRIER = 54787;
@@ -1789,26 +1787,6 @@ uint32 PlayerbotFactory::InitTalentsTree(bool increment /*false*/, bool use_temp
         }
     }
 
-    // FrostFire check/roll
-    if (bot->getClass() == CLASS_MAGE && specTab == MAGE_TAB_FIRE)
-    {
-        bool isFrostfire = bot->HasAura(SPELL_BURNOUT) && bot->HasAura(SPELL_INCINERATION) &&
-            (bot->HasAura(SPELL_ICE_SHARDS_1) || bot->HasAura(SPELL_ICE_SHARDS_2) || bot->HasAura(SPELL_ICE_SHARDS_3));
-
-        if (!isFrostfire && currentLevel == 71) //Not 100% sure about this level, it works however both when LimitTalentsExpansion is 1 and 0.
-        {
-            uint32 fireP = GetClassSpecProbability(cls, 1, currentLevel);
-            uint32 frostFireP = GetClassSpecProbability(cls, 3, currentLevel);
-
-            if (urand(1, fireP + frostFireP) <= frostFireP)
-                isFrostfire = true;
-        }
-
-        if (isFrostfire)
-        {
-            specTab = 3;
-        }
-    }
     // --- END OF CUSTOM OVERRIDES ---
 
     if (reset)
@@ -4692,7 +4670,7 @@ void PlayerbotFactory::InitGlyphs(bool increment)
     if (bot->getClass() == CLASS_MAGE)
     {
         // Frostfire PvE (spec index 3): If the bot has both the Burnout talent and the Ice Shards talent
-        if (bot->HasAura(SPELL_BURNOUT) && bot->HasAura(SPELL_ICE_SHARDS_3))
+        if (bot->HasAura(SPELL_BURNOUT) && bot->HasAura(SPELL_ICE_SHARDS))
             tab = 3;
         // Arcane PvP (spec index 4): If the bot has the Improved Blink talent
         else if (bot->HasAura(SPELL_IMPROVED_BLINK))
