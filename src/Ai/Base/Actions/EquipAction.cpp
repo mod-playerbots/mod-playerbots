@@ -19,16 +19,16 @@ bool EquipAction::Execute(Event event)
 {
     std::string const text = event.getParam();
     ItemIds ids = chat->parseItems(text);
-    EquipItems(ids);
+    EquipItems(ids, true);
     return true;
 }
 
-void EquipAction::EquipItems(ItemIds ids)
+void EquipAction::EquipItems(ItemIds ids, bool notifyOnHeirloomProtection)
 {
     for (ItemIds::iterator i = ids.begin(); i != ids.end(); i++)
     {
         FindItemByIdVisitor visitor(*i);
-        EquipItem(&visitor);
+        EquipItem(&visitor, notifyOnHeirloomProtection);
     }
 }
 
@@ -55,21 +55,32 @@ uint8 EquipAction::GetSmallestBagSlot()
     return curBag;
 }
 
-void EquipAction::EquipItem(FindItemVisitor* visitor)
+void EquipAction::EquipItem(FindItemVisitor* visitor, bool notifyOnHeirloomProtection)
 {
     IterateItems(visitor);
     std::vector<Item*> items = visitor->GetResult();
     if (!items.empty())
-        EquipItem(*items.begin());
+        EquipItem(*items.begin(), notifyOnHeirloomProtection);
 }
 
-void EquipAction::EquipItem(Item* item)
+void EquipAction::EquipItem(Item* item, bool notifyOnHeirloomProtection)
 {
     uint8 bagIndex = item->GetBagSlot();
     uint8 slot = item->GetSlot();
     ItemTemplate const* itemProto = item->GetTemplate();
     uint32 itemId = itemProto->ItemId;
     uint8 invType = itemProto->InventoryType;
+
+    auto reportProtectedHeirloom = [&]()
+    {
+        if (!notifyOnHeirloomProtection)
+            return;
+
+        std::ostringstream out;
+        out << "Cannot equip upgrade: " << chat->FormatItem(itemProto)
+            << ". Experience bonus heirloom equipment is protected.";
+        botAI->TellMaster(out);
+    };
 
     auto canReplaceEquipped = [&](Item* equippedItem) -> bool
     {
@@ -81,7 +92,10 @@ void EquipAction::EquipItem(Item* item)
             return true;
 
         if (!RandomItemMgr::IsLevelingHeirloom(itemProto, bot))
+        {
+            reportProtectedHeirloom();
             return false;
+        }
 
         StatsWeightCalculator calc(bot);
         calc.SetItemSetBonus(false);
@@ -340,9 +354,23 @@ void EquipAction::EquipItem(Item* item)
                     bool betterThanFirst = isBetterForSlot(itemProto, newItemScore, equippedItems[0], firstItemScore);
                     bool betterThanSecond = isBetterForSlot(itemProto, newItemScore, equippedItems[1], secondItemScore);
 
-                    // Early return if new item is not better than either equipped item
+                    // Explain a manual ring equip blocked by XP heirloom protection.
+                    // Do not warn if a normal ring is simply not an upgrade.
                     if (!betterThanFirst && !betterThanSecond)
+                    {
+                        if (!RandomItemMgr::IsLevelingHeirloom(itemProto, bot))
+                        {
+                            bool const firstProtected =
+                                RandomItemMgr::IsLevelingHeirloom(equippedItems[0]->GetTemplate(), bot);
+                            bool const secondProtected =
+                                RandomItemMgr::IsLevelingHeirloom(equippedItems[1]->GetTemplate(), bot);
+
+                            if ((firstProtected && (secondProtected || newItemScore > firstItemScore)) ||
+                                (secondProtected && newItemScore > secondItemScore))
+                                reportProtectedHeirloom();
+                        }
                         return;
+                    }
 
                     if (betterThanFirst && betterThanSecond)
                     {
