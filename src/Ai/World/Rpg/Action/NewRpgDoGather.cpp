@@ -204,7 +204,7 @@ bool NewRpgDoGatherAction::Execute(Event /*event*/)
     // range (e.g. a corpse right next to us).
     LootObject currentTarget = AI_VALUE(LootObject, "loot target");
     bool keepCurrent = !currentTarget.IsEmpty() && currentTarget.IsLootPossible(bot) &&
-                       AI_VALUE2(float, "distance", "loot target") <= sPlayerbotAIConfig.lootDistance;
+                       AI_VALUE2(float, "distance", "loot target") <= sPlayerbotAIConfig.LootDistance;
     if (currentTarget.guid != go->GetGUID() && !keepCurrent)
         context->GetValue<LootObject>("loot target")->Set(LootObject(bot, go->GetGUID()));
 
