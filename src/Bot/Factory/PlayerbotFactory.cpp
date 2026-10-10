@@ -145,10 +145,13 @@ constexpr uint32 SPELL_EARTHEN_POWER = 51524;
 constexpr uint32 SPELL_FOCUSED_MIND = 30866;
 
 constexpr uint32 SPELL_BURNOUT = 44472;
-constexpr uint32 SPELL_ICE_SHARDS = 15047;
+constexpr uint32 SPELL_ICE_SHARDS_3 = 15047;
+constexpr uint32 SPELL_ICE_SHARDS_2 = 12672;
+constexpr uint32 SPELL_ICE_SHARDS_1 = 11207;
 constexpr uint32 SPELL_IMPROVED_BLINK = 31570;
 constexpr uint32 SPELL_FIERY_PAYBACK = 64357;
 constexpr uint32 SPELL_SHATTERED_BARRIER = 54787;
+constexpr uint32 SPELL_INCINERATION = 54734;
 
 constexpr uint32 SPELL_IMPROVED_HOWL_OF_TERROR = 30057;
 constexpr uint32 SPELL_NEMESIS = 63123;
