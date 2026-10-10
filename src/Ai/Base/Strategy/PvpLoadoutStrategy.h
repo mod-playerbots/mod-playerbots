@@ -15,7 +15,7 @@
 
 class PlayerbotAI;
 
-// Swaps random bots into a PvP loadout in arenas and back out afterwards (AiPlayerbot.PvpLoadoutSwap).
+// Swaps random bots into a PvP loadout in arenas and back out afterwards (Playerbots.PvpLoadoutSwap).
 class PvpLoadoutStrategy : public Strategy
 {
 public:

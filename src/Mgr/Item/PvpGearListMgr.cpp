@@ -305,7 +305,7 @@ void LogLoadout(Player* bot, uint32 pveItemLevel, uint32 unlockedRequirement, Pv
         "PvP loadout for class {} tree {} level {} team {}, PvE item level {}, rating requirement {}:{}; {}",
         uint32(bot->getClass()), uint32(AiFactory::GetPlayerSpecTab(bot)), bot->GetLevel(), uint32(bot->GetTeamId()),
         pveItemLevel, unlockedRequirement, items.str(),
-        PvpLoadout::FormatTargets(totals, sPlayerbotAIConfig.pvpProfiles[static_cast<size_t>(loadout.role)]));
+        PvpLoadout::FormatTargets(totals, sPlayerbotAIConfig.PvpProfiles[static_cast<size_t>(loadout.role)]));
 }
 }  // namespace
 
@@ -440,8 +440,8 @@ PvpLoadout::ItemCandidate PvpGearListMgr::ToCandidate(ItemTemplate const* proto,
 PvpGearListMgr::Loadout const& PvpGearListMgr::GetLoadout(Player* bot, int32 specNo, uint32 rating)
 {
     PvpLoadout::RatingRules const rules = {
-        sPlayerbotAIConfig.pvpLoadoutMinRating, sPlayerbotAIConfig.pvpLoadoutRatingMargin,
-        PvpLoadout::CurveItemLevel(sPlayerbotAIConfig.pvpLoadoutPveIlvlCurve, rating)};
+        sPlayerbotAIConfig.PvpLoadoutMinRating, sPlayerbotAIConfig.PvpLoadoutRatingMargin,
+        PvpLoadout::CurveItemLevel(sPlayerbotAIConfig.PvpLoadoutPveIlvlCurve, rating)};
     uint32 const unlocked = PvpLoadout::UnlockedRequirement(_requirements, rating, rules);
     uint64 const key = LoadoutKey(bot, AiFactory::GetPlayerSpecTab(bot), rules.freeItemLevelCap, unlocked);
     {
@@ -463,11 +463,11 @@ PvpGearListMgr::Loadout const& PvpGearListMgr::GetLoadout(Player* bot, int32 spe
 PvpGearListMgr::Loadout PvpGearListMgr::BuildLoadout(Player* bot, int32 specNo, uint32 rating,
                                                      PvpLoadout::RatingRules const& rules)
 {
-    uint32 const qualityLimit = sPlayerbotAIConfig.pvpLoadoutQualityLimit >= 0
-                                    ? sPlayerbotAIConfig.pvpLoadoutQualityLimit
-                                    : sPlayerbotAIConfig.randomGearQualityLimit;
-    uint32 const scoreLimit = sPlayerbotAIConfig.pvpLoadoutScoreLimit >= 0 ? sPlayerbotAIConfig.pvpLoadoutScoreLimit
-                                                                           : sPlayerbotAIConfig.randomGearScoreLimit;
+    uint32 const qualityLimit = sPlayerbotAIConfig.PvpLoadoutQualityLimit >= 0
+                                    ? sPlayerbotAIConfig.PvpLoadoutQualityLimit
+                                    : sPlayerbotAIConfig.RandomGearQualityLimit;
+    uint32 const scoreLimit = sPlayerbotAIConfig.PvpLoadoutScoreLimit >= 0 ? sPlayerbotAIConfig.PvpLoadoutScoreLimit
+                                                                           : sPlayerbotAIConfig.RandomGearScoreLimit;
     BuildContext const ctx{
         bot,
         rating,
@@ -531,7 +531,7 @@ PvpGearListMgr::Loadout PvpGearListMgr::BuildLoadout(Player* bot, int32 specNo, 
             group.options.push_back(ToOption(pick));
     }
 
-    PvpLoadout::Profile const& profile = sPlayerbotAIConfig.pvpProfiles[static_cast<size_t>(ctx.role)];
+    PvpLoadout::Profile const& profile = sPlayerbotAIConfig.PvpProfiles[static_cast<size_t>(ctx.role)];
     std::vector<int32> const chosen = PvpLoadout::SelectBiggestGainFirst(setTotals, groups, profile);
     for (size_t g = 0; g < builders.size(); ++g)
         if (chosen[g] >= 0)

@@ -45,7 +45,7 @@ uint32 EquippedEntry(Player* bot, uint8 slot)
 int32 PvpSpecNo(Player* bot)
 {
     uint8 const tab = AiFactory::GetPlayerSpecTab(bot);
-    return tab < PvpLoadout::TALENT_TAB_COUNT ? sPlayerbotAIConfig.pvpSpecNoByTab[bot->getClass()][tab]
+    return tab < PvpLoadout::TALENT_TAB_COUNT ? sPlayerbotAIConfig.PvpSpecNoByTab[bot->getClass()][tab]
                                               : PvpLoadout::NO_SPEC;
 }
 
@@ -240,7 +240,7 @@ PvpLoadout::Transition PvpLoadoutMgr::GetTransition(Player* bot, std::optional<P
 {
     uint32 const arenaInstanceId = GetArenaInstanceId(bot);
     bool const matchOver = arenaInstanceId && bot->GetBattleground()->GetStatus() == STATUS_WAIT_LEAVE;
-    return PvpLoadout::Decide(sPlayerbotAIConfig.pvpLoadoutSwap, arenaInstanceId, matchOver, loadout.has_value(),
+    return PvpLoadout::Decide(sPlayerbotAIConfig.PvpLoadoutSwap, arenaInstanceId, matchOver, loadout.has_value(),
                               loadout ? loadout->arenaInstanceId : 0, loadout && !loadout->plannedItems.empty());
 }
 
@@ -339,7 +339,7 @@ PvpLoadout::MatchRating PvpLoadoutMgr::ResolveMatchRating(Player* bot)
 void PvpLoadoutMgr::PlanMatchGear(Player* bot, uint32 rating, PvpLoadout::Snapshot& snapshot)
 {
     PvpGearListMgr::Loadout const& loadout = PvpGearListMgr::instance().GetLoadout(bot, PvpSpecNo(bot), rating);
-    PvpLoadout::Profile const& profile = sPlayerbotAIConfig.pvpProfiles[static_cast<size_t>(loadout.role)];
+    PvpLoadout::Profile const& profile = sPlayerbotAIConfig.PvpProfiles[static_cast<size_t>(loadout.role)];
     std::vector<PvpGearListMgr::Pick> picks = loadout.picks;
     AlignPairedSlots(bot, picks);
 
@@ -477,14 +477,14 @@ void PvpLoadoutMgr::ApplyPlannedGear(Player* bot, PvpLoadout::Snapshot& snapshot
                   [&replaced](PvpLoadout::ItemCopy const& copy) { return !replaced.count(copy.slot); });
 
     PvpLoadout::Role const role = PvpLoadoutStats::RoleOf(bot);
-    PvpLoadout::Profile const& profile = sPlayerbotAIConfig.pvpProfiles[static_cast<size_t>(role)];
+    PvpLoadout::Profile const& profile = sPlayerbotAIConfig.PvpProfiles[static_cast<size_t>(role)];
     // slot:item equipped, then the bot's totals against the role's targets
     if (PvpLoadout::DebugLogging())
         PvpLoadout::LogDebug("Bot {} match gear for rating {}:{}; {}", bot->GetName(), snapshot.plannedRating,
                              summary.str(),
                              PvpLoadout::FormatTargets(PvpLoadoutStats::MeasureCappedTotals(bot, role), profile));
 
-    if (snapshot.matchItems.empty() || bot->GetLevel() < sPlayerbotAIConfig.minEnchantingBotLevel)
+    if (snapshot.matchItems.empty() || bot->GetLevel() < sPlayerbotAIConfig.MinEnchantingBotLevel)
         return;
 
     std::unordered_set<uint32> const matchItems(snapshot.matchItems.begin(), snapshot.matchItems.end());
@@ -501,11 +501,11 @@ void PvpLoadoutMgr::Announce(PlayerbotAI* botAI, uint32 rating)
 {
     Player* bot = botAI->GetBot();
     Battleground* arena = bot->GetBattleground();
-    if (!sPlayerbotAIConfig.pvpLoadoutAnnounce || !arena || arena->isRated())
+    if (!sPlayerbotAIConfig.PvpLoadoutAnnounce || !arena || arena->isRated())
         return;
 
     int32 const specNo = PvpSpecNo(bot);
-    std::string const spec = specNo != PvpLoadout::NO_SPEC ? sPlayerbotAIConfig.premadeSpecName[bot->getClass()][specNo]
+    std::string const spec = specNo != PvpLoadout::NO_SPEC ? sPlayerbotAIConfig.PremadeSpecName[bot->getClass()][specNo]
                                                            : AiFactory::GetPlayerSpecName(bot);
     std::map<std::string, std::string> const placeholders = {
         {"%spec", spec}, {"%ilvl", std::to_string(botAI->GetEquipGearScore(bot))}, {"%rating", std::to_string(rating)}};

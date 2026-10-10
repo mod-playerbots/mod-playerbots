@@ -13,10 +13,10 @@
 
 namespace PvpLoadout
 {
-// Whether the PvP loadout writes its debug lines (AiPlayerbot.PvpLoadoutDebug).
-inline bool DebugLogging() { return sPlayerbotAIConfig.pvpLoadoutDebug; }
+// Whether the PvP loadout writes its debug lines (Playerbots.PvpLoadoutDebug).
+inline bool DebugLogging() { return sPlayerbotAIConfig.PvpLoadoutDebug; }
 
-// A PvP loadout debug line (logger "playerbots", debug level), written only with AiPlayerbot.PvpLoadoutDebug. Its
+// A PvP loadout debug line (logger "playerbots", debug level), written only with Playerbots.PvpLoadoutDebug. Its
 // arguments are evaluated either way, so callers building costly ones check DebugLogging first.
 template <typename... Args>
 void LogDebug(Acore::FormatStringView fmt, Args&&... args)

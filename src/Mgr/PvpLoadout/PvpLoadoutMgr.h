@@ -44,7 +44,7 @@ public:
     static void ApplyPlannedGear(Player* bot, PvpLoadout::Snapshot& snapshot);
 
     // In a skirmish, tells the real players on the bot's team its PvP spec, average item level and the rating its gear
-    // was scaled to (AiPlayerbot.PvpLoadoutAnnounce).
+    // was scaled to (Playerbots.PvpLoadoutAnnounce).
     static void Announce(PlayerbotAI* botAI, uint32 rating);
 
     // Destroys the match items and recreates the snapshot's PvE items in their slots, re-equipping any original the bot
