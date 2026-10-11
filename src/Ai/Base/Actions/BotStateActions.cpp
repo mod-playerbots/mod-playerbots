@@ -30,8 +30,8 @@ bool WakeOnCombatStartAction::Execute(Event /*event*/)
 {
     botAI->ResetActionDuration();
 
-    // Engage the bot's own attacker right away: the combat engine needs a current target, and
-    // "dps assist" waits for the 1s cached "attackers" vector. Group pulls are left alone.
+    // Engage the bot's own attacker: the combat engine needs a current target and "dps assist"
+    // waits for the 1s cached "attackers" vector. PlayerbotAI::DoNextAction makes the switch.
     if (botAI->GetState() == BOT_STATE_COMBAT || !bot->IsInCombat() ||
         context->GetValue<Unit*>("current target")->Get())
         return true;
@@ -41,7 +41,6 @@ bool WakeOnCombatStartAction::Execute(Event /*event*/)
         return true;
 
     context->GetValue<Unit*>("current target")->Set(attacker);
-    botAI->ChangeEngine(BOT_STATE_COMBAT);
     return true;
 }
 

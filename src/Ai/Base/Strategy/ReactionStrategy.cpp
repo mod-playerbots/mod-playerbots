@@ -14,8 +14,8 @@
 
 void ReactionStrategy::InitReactionTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // Upstream cmangos switches engines here; this port switches only for the bot's own attacker,
-    // target-first ("wake on combat start"), since a targetless entry would bounce straight back.
+    // Only the bot's own attacker may wake the combat engine: "wake on combat start" sets it as
+    // the current target and the transition happens in PlayerbotAI::DoNextAction, never targetless.
     triggers.push_back(
         new TriggerNode(
             "combat start",
