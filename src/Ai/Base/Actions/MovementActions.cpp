@@ -2656,6 +2656,9 @@ bool MoveToLootAction::Execute(Event /*event*/)
                                                         bot->GetPositionY(), bot->GetPositionZ(), collisionHeight);
     if (botInWater)
     {
+        if (bot->IsMounted())
+            bot->Dismount();
+
         Creature* creature = botAI->GetCreature(loot.guid);
         GameObject* go = botAI->GetGameObject(loot.guid);
         float const interactRange = creature ? INTERACTION_DISTANCE
