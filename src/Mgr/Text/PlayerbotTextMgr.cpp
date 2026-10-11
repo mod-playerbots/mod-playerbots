@@ -10,6 +10,27 @@
 #include "QueryResult.h"    // Required due to a poor implementation by AC
 #include "Random.h"
 #include "WorldSessionMgr.h"
+#include <algorithm>
+
+namespace
+{
+// replaceAll does a plain string substitution, so a short placeholder would otherwise
+// corrupt every longer placeholder that starts with it: %max would eat %maxcount, %z
+// would eat %zone and %skill would eat %skillByLockType. Longest key first prevents it.
+void ApplyPlaceholders(std::string& text, std::map<std::string, std::string> const& placeholders)
+{
+    std::vector<std::string> keys;
+    keys.reserve(placeholders.size());
+    for (auto const& placeholder : placeholders)
+        keys.push_back(placeholder.first);
+
+    std::sort(keys.begin(), keys.end(),
+              [](std::string const& left, std::string const& right) { return left.size() > right.size(); });
+
+    for (std::string const& key : keys)
+        PlayerbotTextMgr::replaceAll(text, key, placeholders.at(key));
+}
+}
 
 void PlayerbotTextMgr::replaceAll(std::string& str, std::string const& from, std::string const& to)
 {
@@ -99,8 +120,7 @@ std::string PlayerbotTextMgr::GetBotText(std::string name, std::map<std::string,
     if (botText.empty())
         return "";
 
-    for (std::map<std::string, std::string>::iterator i = placeholders.begin(); i != placeholders.end(); ++i)
-        replaceAll(botText, i->first, i->second);
+    ApplyPlaceholders(botText, placeholders);
 
     return botText;
 }
@@ -111,10 +131,7 @@ std::string PlayerbotTextMgr::GetBotTextOrDefault(std::string name, std::string 
     std::string botText = GetBotText(name, placeholders);
     if (botText.empty())
     {
-        for (std::map<std::string, std::string>::iterator i = placeholders.begin(); i != placeholders.end(); ++i)
-        {
-            replaceAll(defaultText, i->first, i->second);
-        }
+        ApplyPlaceholders(defaultText, placeholders);
         return defaultText;
     }
 
@@ -150,8 +167,7 @@ std::string PlayerbotTextMgr::GetBotText(ChatReplyType replyType, std::map<std::
     BotTextEntry textEntry = proper_list[urand(0, proper_list.size() - 1)];
     std::string botText =
         !textEntry.m_text[GetLocalePriority()].empty() ? textEntry.m_text[GetLocalePriority()] : textEntry.m_text[0];
-    for (auto& placeholder : placeholders)
-        replaceAll(botText, placeholder.first, placeholder.second);
+    ApplyPlaceholders(botText, placeholders);
 
     return botText;
 }
