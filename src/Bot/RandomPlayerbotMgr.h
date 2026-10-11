@@ -124,7 +124,8 @@ public:
     PlayerBotMap GetAllBots() { return playerBots; };
     void InitArenaTeams();
     void PrintStats();
-    void PrintQuestTotals();
+    void PrintQuestTotals(NewRpgStatistic const& stats);
+    NewRpgStatistic CollectQuestStats();
     void PrintQuestStats();
     void ExportQuestStatsToJson();
     double GetBuyMultiplier(Player* bot);

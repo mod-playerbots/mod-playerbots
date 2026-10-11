@@ -3038,7 +3038,7 @@ void RandomPlayerbotMgr::PrintStats()
                  rpgStatusCount[RPG_GO_CAMP], rpgStatusCount[RPG_WANDER_RANDOM], rpgStatusCount[RPG_WANDER_NPC],
                  rpgStatusCount[RPG_DO_QUEST], rpgStatusCount[RPG_TRAVEL_FLIGHT], rpgStatusCount[RPG_OUTDOOR_PVP]);
 
-        PrintQuestTotals();
+        PrintQuestTotals(rpgStasticTotal);
 
         if (sPlayerbotAIConfig.CollectDetailedQuestStats)
         {
@@ -3070,20 +3070,37 @@ void RandomPlayerbotMgr::PrintStats()
     LOG_INFO("playerbots", "    Non-combat: {}, Combat: {}, Dead: {}", engine_noncombat, engine_combat, engine_dead);
 }
 
-void RandomPlayerbotMgr::PrintQuestTotals()
+NewRpgStatistic RandomPlayerbotMgr::CollectQuestStats()
+{
+    // Merge each bot's pending statistics on top of the last aggregation, so the report is fresh
+    // even when PrintStats has not run yet.
+    NewRpgStatistic total = rpgStasticTotal;
+    for (PlayerBotMap::iterator i = playerBots.begin(); i != playerBots.end(); ++i)
+    {
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(i->second);
+        if (!botAI)
+            continue;
+
+        std::lock_guard<std::mutex> guard(botAI->rpgStatisticMutex);
+        total += botAI->rpgStatistic;
+    }
+    return total;
+}
+
+void RandomPlayerbotMgr::PrintQuestTotals(NewRpgStatistic const& stats)
 {
     LOG_INFO("playerbots", "Bots total quests:");
     LOG_INFO("playerbots", "    Accepted: {}, Completed: {}, Rewarded: {}, Dropped: {}, Abandoned: {}",
-             rpgStasticTotal.questAccepted, rpgStasticTotal.questCompleted, rpgStasticTotal.questRewarded,
-             rpgStasticTotal.questDropped, rpgStasticTotal.questAbandoned);
+             stats.questAccepted, stats.questCompleted, stats.questRewarded, stats.questDropped,
+             stats.questAbandoned);
 
-    if (rpgStasticTotal.questAccepted > 0)
+    if (stats.questAccepted > 0)
     {
         LOG_INFO("playerbots", "    Completed: {:.2f}%, Rewarded: {:.2f}%, Dropped: {:.2f}%, Abandoned: {:.2f}%",
-                 rpgStasticTotal.questCompleted * 100.0f / rpgStasticTotal.questAccepted,
-                 rpgStasticTotal.questRewarded * 100.0f / rpgStasticTotal.questAccepted,
-                 rpgStasticTotal.questDropped * 100.0f / rpgStasticTotal.questAccepted,
-                 rpgStasticTotal.questAbandoned * 100.0f / rpgStasticTotal.questAccepted);
+                 stats.questCompleted * 100.0f / stats.questAccepted,
+                 stats.questRewarded * 100.0f / stats.questAccepted,
+                 stats.questDropped * 100.0f / stats.questAccepted,
+                 stats.questAbandoned * 100.0f / stats.questAccepted);
     }
 }
 
@@ -3096,7 +3113,8 @@ void RandomPlayerbotMgr::PrintQuestStats()
     }
 
     LOG_INFO("playerbots", "=== QUEST STATISTICS REPORT ===");
-    PrintQuestTotals();
+    NewRpgStatistic const total = CollectQuestStats();
+    PrintQuestTotals(total);
     LOG_INFO("playerbots", "");
 
     if (!sPlayerbotAIConfig.CollectDetailedQuestStats)
@@ -3105,18 +3123,18 @@ void RandomPlayerbotMgr::PrintQuestStats()
         return;
     }
 
-    if (!rpgStasticTotal.questDropReasons.empty())
+    if (!total.questDropReasons.empty())
     {
         LOG_INFO("playerbots", "Quest drop reasons:");
-        for (auto const& [reason, count] : rpgStasticTotal.questDropReasons)
+        for (auto const& [reason, count] : total.questDropReasons)
             LOG_INFO("playerbots", "    {}: {}", reason, count);
         LOG_INFO("playerbots", "");
     }
 
-    if (!rpgStasticTotal.questAbandonReasons.empty())
+    if (!total.questAbandonReasons.empty())
     {
         LOG_INFO("playerbots", "Quest abandon reasons:");
-        for (auto const& [reason, count] : rpgStasticTotal.questAbandonReasons)
+        for (auto const& [reason, count] : total.questAbandonReasons)
             LOG_INFO("playerbots", "    {}: {}", reason, count);
         LOG_INFO("playerbots", "");
     }
@@ -3156,8 +3174,8 @@ void RandomPlayerbotMgr::PrintQuestStats()
         LOG_INFO("playerbots", "");
     };
 
-    printProblemQuests(rpgStasticTotal.questDroppedByID, rpgStasticTotal.questDropReasonsByID, "Dropped quests");
-    printProblemQuests(rpgStasticTotal.questAbandonedByID, rpgStasticTotal.questAbandonReasonsByID, "Abandoned quests");
+    printProblemQuests(total.questDroppedByID, total.questDropReasonsByID, "Dropped quests");
+    printProblemQuests(total.questAbandonedByID, total.questAbandonReasonsByID, "Abandoned quests");
 
     LOG_INFO("playerbots", "=== END QUEST STATISTICS REPORT ===");
 }
@@ -3175,6 +3193,8 @@ void RandomPlayerbotMgr::ExportQuestStatsToJson()
         LOG_ERROR("playerbots", "Detailed quest stats are disabled. Set Playerbots.CollectDetailedQuestStats = 1.");
         return;
     }
+
+    NewRpgStatistic const total = CollectQuestStats();
 
     auto reasonsJson = [](std::map<std::string, uint32> const& reasons)
     {
@@ -3207,15 +3227,15 @@ void RandomPlayerbotMgr::ExportQuestStatsToJson()
     };
 
     std::set<uint32> questIds;
-    for (auto const& [questId, count] : rpgStasticTotal.questAcceptedByID)
+    for (auto const& [questId, count] : total.questAcceptedByID)
         questIds.insert(questId);
-    for (auto const& [questId, count] : rpgStasticTotal.questCompletedByID)
+    for (auto const& [questId, count] : total.questCompletedByID)
         questIds.insert(questId);
-    for (auto const& [questId, count] : rpgStasticTotal.questRewardedByID)
+    for (auto const& [questId, count] : total.questRewardedByID)
         questIds.insert(questId);
-    for (auto const& [questId, count] : rpgStasticTotal.questDroppedByID)
+    for (auto const& [questId, count] : total.questDroppedByID)
         questIds.insert(questId);
-    for (auto const& [questId, count] : rpgStasticTotal.questAbandonedByID)
+    for (auto const& [questId, count] : total.questAbandonedByID)
         questIds.insert(questId);
 
     auto countFor = [](std::map<uint32, uint32> const& counts, uint32 questId) -> uint32
@@ -3229,18 +3249,18 @@ void RandomPlayerbotMgr::ExportQuestStatsToJson()
     {
         QuestRow row;
         row.questId = questId;
-        row.accepted = countFor(rpgStasticTotal.questAcceptedByID, questId);
-        row.completed = countFor(rpgStasticTotal.questCompletedByID, questId);
-        row.rewarded = countFor(rpgStasticTotal.questRewardedByID, questId);
-        row.dropped = countFor(rpgStasticTotal.questDroppedByID, questId);
-        row.abandoned = countFor(rpgStasticTotal.questAbandonedByID, questId);
+        row.accepted = countFor(total.questAcceptedByID, questId);
+        row.completed = countFor(total.questCompletedByID, questId);
+        row.rewarded = countFor(total.questRewardedByID, questId);
+        row.dropped = countFor(total.questDroppedByID, questId);
+        row.abandoned = countFor(total.questAbandonedByID, questId);
 
-        auto dropReasonsIt = rpgStasticTotal.questDropReasonsByID.find(questId);
-        if (dropReasonsIt != rpgStasticTotal.questDropReasonsByID.end())
+        auto dropReasonsIt = total.questDropReasonsByID.find(questId);
+        if (dropReasonsIt != total.questDropReasonsByID.end())
             row.dropReasons = dropReasonsIt->second;
 
-        auto abandonReasonsIt = rpgStasticTotal.questAbandonReasonsByID.find(questId);
-        if (abandonReasonsIt != rpgStasticTotal.questAbandonReasonsByID.end())
+        auto abandonReasonsIt = total.questAbandonReasonsByID.find(questId);
+        if (abandonReasonsIt != total.questAbandonReasonsByID.end())
             row.abandonReasons = abandonReasonsIt->second;
 
         rows.push_back(row);
@@ -3258,14 +3278,14 @@ void RandomPlayerbotMgr::ExportQuestStatsToJson()
     out << "  \"generatedAt\": " << static_cast<uint64>(now) << ",\n";
     out << "  \"generatedAtUtc\": \"" << stamp << "\",\n";
     out << "  \"totals\": {\n";
-    out << "    \"accepted\": " << rpgStasticTotal.questAccepted << ",\n";
-    out << "    \"completed\": " << rpgStasticTotal.questCompleted << ",\n";
-    out << "    \"rewarded\": " << rpgStasticTotal.questRewarded << ",\n";
-    out << "    \"dropped\": " << rpgStasticTotal.questDropped << ",\n";
-    out << "    \"abandoned\": " << rpgStasticTotal.questAbandoned << "\n";
+    out << "    \"accepted\": " << total.questAccepted << ",\n";
+    out << "    \"completed\": " << total.questCompleted << ",\n";
+    out << "    \"rewarded\": " << total.questRewarded << ",\n";
+    out << "    \"dropped\": " << total.questDropped << ",\n";
+    out << "    \"abandoned\": " << total.questAbandoned << "\n";
     out << "  },\n";
-    out << "  \"dropReasons\": " << reasonsJson(rpgStasticTotal.questDropReasons) << ",\n";
-    out << "  \"abandonReasons\": " << reasonsJson(rpgStasticTotal.questAbandonReasons) << ",\n";
+    out << "  \"dropReasons\": " << reasonsJson(total.questDropReasons) << ",\n";
+    out << "  \"abandonReasons\": " << reasonsJson(total.questAbandonReasons) << ",\n";
     out << "  \"quests\": [\n";
 
     for (size_t i = 0; i < rows.size(); ++i)
