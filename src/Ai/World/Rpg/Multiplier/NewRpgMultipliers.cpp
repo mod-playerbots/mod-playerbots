@@ -13,7 +13,7 @@ float NewRpgLootPriorityMultiplier::GetValue(Action* action)
 {
     // Filter first: "has available loot" walks the loot stack, so only pay for it for the actions
     // this multiplier can actually block.
-    if (!sPlayerbotAIConfig.LootPriority || !action || !dynamic_cast<NewRpgBaseAction*>(action))
+    if (!sPlayerbotAIConfig.PrioritiseLooting || !action || !dynamic_cast<NewRpgBaseAction*>(action))
         return 1.0f;
 
     // Unreachable targets are deferred by the move-to-loot watchdog, so no global fail-open is

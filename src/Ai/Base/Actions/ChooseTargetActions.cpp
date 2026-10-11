@@ -135,7 +135,7 @@ bool AttackAnythingAction::isUseful()
 
     // Block new grind targets while loot is available or openable; unreachable loot is deferred
     // by the move-to-loot watchdog, so no time based fail-open is needed.
-    if (sPlayerbotAIConfig.LootPriority &&
+    if (sPlayerbotAIConfig.PrioritiseLooting &&
         (AI_VALUE(bool, "has available loot") || AI_VALUE(bool, "can loot")))
         return false;
 
