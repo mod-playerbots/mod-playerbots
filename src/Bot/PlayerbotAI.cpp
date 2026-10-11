@@ -6728,6 +6728,51 @@ std::set<uint32> PlayerbotAI::GetCurrentIncompleteQuestIds()
     return result;
 }
 
+void PlayerbotAI::RecordQuestAccepted(uint32 questId)
+{
+    if (!sPlayerbotAIConfig.CollectDetailedQuestStats)
+        return;
+
+    std::lock_guard<std::mutex> guard(rpgStatisticMutex);
+    rpgStatistic.questAcceptedByID[questId]++;
+}
+
+void PlayerbotAI::RecordQuestCompleted(uint32 questId)
+{
+    if (!sPlayerbotAIConfig.CollectDetailedQuestStats)
+        return;
+
+    std::lock_guard<std::mutex> guard(rpgStatisticMutex);
+    rpgStatistic.questCompletedByID[questId]++;
+}
+
+void PlayerbotAI::RecordQuestRewarded(uint32 questId)
+{
+    if (!sPlayerbotAIConfig.CollectDetailedQuestStats)
+        return;
+
+    std::lock_guard<std::mutex> guard(rpgStatisticMutex);
+    rpgStatistic.questRewardedByID[questId]++;
+}
+
+void PlayerbotAI::RecordQuestDropped(uint32 questId, std::string const& reason)
+{
+    if (!sPlayerbotAIConfig.CollectDetailedQuestStats)
+        return;
+
+    std::lock_guard<std::mutex> guard(rpgStatisticMutex);
+    rpgStatistic.RecordDrop(questId, reason);
+}
+
+void PlayerbotAI::RecordQuestAbandoned(uint32 questId, std::string const& reason)
+{
+    if (!sPlayerbotAIConfig.CollectDetailedQuestStats)
+        return;
+
+    std::lock_guard<std::mutex> guard(rpgStatisticMutex);
+    rpgStatistic.RecordAbandon(questId, reason);
+}
+
 uint32 PlayerbotAI::GetReactDelay()
 {
     uint32 base = sPlayerbotAIConfig.ReactDelay;  // Default 100(ms)

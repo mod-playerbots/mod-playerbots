@@ -330,6 +330,7 @@ bool NewRpgBaseAction::InteractWithNpcOrGameObjectForQuest(ObjectGuid guid)
                     {{"%quest", ChatHelper::FormatQuest(quest)}}));
             BroadcastHelper::BroadcastQuestAccepted(botAI, bot, quest);
             botAI->rpgStatistic.questAccepted++;
+            botAI->RecordQuestAccepted(quest->GetQuestId());
             LOG_DEBUG("playerbots", "[New RPG] {} accept quest {}", bot->GetName(), quest->GetQuestId());
         }
         if (status == QUEST_STATUS_COMPLETE && bot->CanRewardQuest(quest, 0, false))
@@ -342,6 +343,7 @@ bool NewRpgBaseAction::InteractWithNpcOrGameObjectForQuest(ObjectGuid guid)
                     {{"%quest", ChatHelper::FormatQuest(quest)}}));
             BroadcastHelper::BroadcastQuestTurnedIn(botAI, bot, quest);
             botAI->rpgStatistic.questRewarded++;
+            botAI->RecordQuestRewarded(quest->GetQuestId());
             LOG_DEBUG("playerbots", "[New RPG] {} turned in quest {}", bot->GetName(), quest->GetQuestId());
         }
     }
@@ -626,6 +628,7 @@ bool NewRpgBaseAction::OrganizeQuestLog()
                     "Quest dropped %quest",
                     {{"%quest", ChatHelper::FormatQuest(quest)}}));
             botAI->rpgStatistic.questDropped++;
+            botAI->RecordQuestDropped(questId, "not_worth_or_capable_or_failed");
             dropped++;
         }
     }
@@ -658,6 +661,7 @@ bool NewRpgBaseAction::OrganizeQuestLog()
                     "Quest dropped %quest",
                     {{"%quest", ChatHelper::FormatQuest(quest)}}));
             botAI->rpgStatistic.questDropped++;
+            botAI->RecordQuestDropped(questId, "wrong_zone");
             dropped++;
         }
     }
@@ -685,6 +689,7 @@ bool NewRpgBaseAction::OrganizeQuestLog()
                 "Quest dropped %quest",
                 {{"%quest", ChatHelper::FormatQuest(quest)}}));
         botAI->rpgStatistic.questDropped++;
+        botAI->RecordQuestDropped(questId, "clear_log");
     }
 
     return true;

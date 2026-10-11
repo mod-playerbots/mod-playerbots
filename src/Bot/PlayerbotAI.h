@@ -24,6 +24,7 @@
 #include "SpellAuras.h"
 #include "Util.h"
 #include "WorldPacket.h"
+#include <mutex>
 #include <stack>
 
 class Action;
@@ -621,6 +622,12 @@ public:
     static SpellFamilyNames Class2SpellFamilyName(uint8 cls);
     NewRpgInfo rpgInfo;
     NewRpgStatistic rpgStatistic;
+    std::mutex rpgStatisticMutex;
+    void RecordQuestAccepted(uint32 questId);
+    void RecordQuestCompleted(uint32 questId);
+    void RecordQuestRewarded(uint32 questId);
+    void RecordQuestDropped(uint32 questId, std::string const& reason);
+    void RecordQuestAbandoned(uint32 questId, std::string const& reason);
     std::unordered_set<uint32> lowPriorityQuest;
     time_t bgReleaseAttemptTime = 0;
     ForceRebuffState forceRebuff;

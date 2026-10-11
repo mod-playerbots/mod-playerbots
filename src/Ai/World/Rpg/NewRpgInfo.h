@@ -15,6 +15,9 @@
 #include "Timer.h"
 #include "TravelMgr.h"
 
+#include <map>
+#include <string>
+
 using NewRpgStatusTransitionProb = std::vector<std::vector<int>>;
 
 struct NewRpgInfo
@@ -121,14 +124,35 @@ struct NewRpgStatistic
     uint32 questAbandoned{0};
     uint32 questRewarded{0};
     uint32 questDropped{0};
+
+    std::map<uint32, uint32> questAcceptedByID;
+    std::map<uint32, uint32> questCompletedByID;
+    std::map<uint32, uint32> questAbandonedByID;
+    std::map<uint32, uint32> questRewardedByID;
+    std::map<uint32, uint32> questDroppedByID;
+
+    std::map<std::string, uint32> questDropReasons;
+    std::map<std::string, uint32> questAbandonReasons;
+    std::map<uint32, std::map<std::string, uint32>> questDropReasonsByID;
+    std::map<uint32, std::map<std::string, uint32>> questAbandonReasonsByID;
+
+    void RecordDrop(uint32 questId, std::string const& reason)
+    {
+        questDroppedByID[questId]++;
+        questDropReasons[reason]++;
+        questDropReasonsByID[questId][reason]++;
+    }
+    void RecordAbandon(uint32 questId, std::string const& reason)
+    {
+        questAbandonedByID[questId]++;
+        questAbandonReasons[reason]++;
+        questAbandonReasonsByID[questId][reason]++;
+    }
+
     NewRpgStatistic operator+(NewRpgStatistic const& other) const
     {
-        NewRpgStatistic result;
-        result.questAccepted = this->questAccepted + other.questAccepted;
-        result.questCompleted = this->questCompleted + other.questCompleted;
-        result.questAbandoned = this->questAbandoned + other.questAbandoned;
-        result.questRewarded = this->questRewarded + other.questRewarded;
-        result.questDropped = this->questDropped + other.questDropped;
+        NewRpgStatistic result = *this;
+        result += other;
         return result;
     }
     NewRpgStatistic& operator+=(NewRpgStatistic const& other)
@@ -138,6 +162,28 @@ struct NewRpgStatistic
         this->questAbandoned += other.questAbandoned;
         this->questRewarded += other.questRewarded;
         this->questDropped += other.questDropped;
+
+        for (auto const& [questId, count] : other.questAcceptedByID)
+            this->questAcceptedByID[questId] += count;
+        for (auto const& [questId, count] : other.questCompletedByID)
+            this->questCompletedByID[questId] += count;
+        for (auto const& [questId, count] : other.questAbandonedByID)
+            this->questAbandonedByID[questId] += count;
+        for (auto const& [questId, count] : other.questRewardedByID)
+            this->questRewardedByID[questId] += count;
+        for (auto const& [questId, count] : other.questDroppedByID)
+            this->questDroppedByID[questId] += count;
+        for (auto const& [reason, count] : other.questDropReasons)
+            this->questDropReasons[reason] += count;
+        for (auto const& [reason, count] : other.questAbandonReasons)
+            this->questAbandonReasons[reason] += count;
+        for (auto const& [questId, reasons] : other.questDropReasonsByID)
+            for (auto const& [reason, count] : reasons)
+                this->questDropReasonsByID[questId][reason] += count;
+        for (auto const& [questId, reasons] : other.questAbandonReasonsByID)
+            for (auto const& [reason, count] : reasons)
+                this->questAbandonReasonsByID[questId][reason] += count;
+
         return *this;
     }
 };
