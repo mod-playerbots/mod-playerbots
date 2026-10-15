@@ -8,7 +8,9 @@
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "Creature.h"
+#include "CreatureData.h"
 #include "GameObject.h"
+#include "GameObjectData.h"
 #include "GatherNodeMgr.h"
 #include "GossipDef.h"
 #include "GridTerrainData.h"
@@ -16,6 +18,7 @@
 #include "NewRpgHelpers.h"
 #include "NewRpgInfo.h"
 #include "QuestLevelRules.h"
+#include "QuestValues.h"
 #include "NewRpgStrategy.h"
 #include "Object.h"
 #include "ObjectAccessor.h"
@@ -39,6 +42,7 @@
 #include "Timer.h"
 #include "TravelMgr.h"
 #include "G3D/Vector2.h"
+#include <bit>
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 {
@@ -490,6 +494,128 @@ uint32 NewRpgBaseAction::BestRewardIndex(Quest const* quest)
     }
 }
 
+namespace
+{
+// Compact quest-objective spawn index, built once on first use from the core stores (spawn data
+// is read-only by then): kill objectives, GO objectives and quest enders. Item-dropper relations
+// are not part of it yet; collect objectives resolve through the baked POI floors instead.
+struct QuestObjectiveSpawnIndex
+{
+    std::unordered_map<uint32, std::vector<std::pair<uint32, WorldPosition>>> byQuest;
+};
+
+QuestObjectiveSpawnIndex const& GetQuestObjectiveSpawnIndex()
+{
+    static QuestObjectiveSpawnIndex const index = []()
+    {
+        QuestObjectiveSpawnIndex result;
+
+        // key: creature entry, or negative gameobject entry (QuestValues convention)
+        std::unordered_map<int32, std::vector<std::pair<uint32, uint32>>> relations;
+
+        for (auto const& questPair : sObjectMgr->GetQuestTemplates())
+        {
+            Quest const* quest = questPair.second;
+            for (uint32 objective = 0; objective < QUEST_OBJECTIVES_COUNT; ++objective)
+            {
+                int32 const entry = quest->RequiredNpcOrGo[objective];
+                if (entry)
+                    relations[entry].push_back({questPair.first, 1u << objective});
+            }
+        }
+
+        for (auto const& relation : *sObjectMgr->GetCreatureQuestInvolvedRelationMap())
+            relations[int32(relation.first)].push_back({relation.second, uint32(QuestRelationFlag::questTaker)});
+
+        for (auto const& relation : *sObjectMgr->GetGOQuestInvolvedRelationMap())
+            relations[-int32(relation.first)].push_back({relation.second, uint32(QuestRelationFlag::questTaker)});
+
+        auto addSpawn = [&result, &relations](int32 key, uint32 mapId, float x, float y, float z)
+        {
+            auto itr = relations.find(key);
+            if (itr == relations.end())
+                return;
+
+            for (auto const& questFlag : itr->second)
+                result.byQuest[questFlag.first].push_back({questFlag.second, WorldPosition(mapId, x, y, z)});
+        };
+
+        for (auto const& spawnPair : sObjectMgr->GetAllCreatureData())
+        {
+            CreatureData const& creatureData = spawnPair.second;
+            for (uint32 entry : {creatureData.id, creatureData.id2, creatureData.id3})
+            {
+                if (!entry)
+                    continue;
+
+                addSpawn(int32(entry), creatureData.mapid, creatureData.posX, creatureData.posY, creatureData.posZ);
+            }
+        }
+
+        for (auto const& spawnPair : sObjectMgr->GetAllGOData())
+        {
+            GameObjectData const& goData = spawnPair.second;
+            addSpawn(-int32(goData.id), goData.mapid, goData.posX, goData.posY, goData.posZ);
+        }
+
+        return result;
+    }();
+
+    return index;
+}
+} // namespace
+
+bool NewRpgBaseAction::GetQuestObjectivePositions(Player* bot, uint32 questId,
+                                                  std::vector<QuestObjectivePosition>& outPositions, bool toComplete)
+{
+    outPositions.clear();
+
+    QuestObjectiveSpawnIndex const& index = GetQuestObjectiveSpawnIndex();
+    auto questItr = index.byQuest.find(questId);
+    if (questItr == index.byQuest.end())
+        return false;
+
+    if (toComplete)
+    {
+        for (auto const& flagPos : questItr->second)
+            if (flagPos.first == uint32(QuestRelationFlag::questTaker) && flagPos.second.GetMapId() == bot->GetMapId())
+                outPositions.push_back({-1, flagPos.second});
+
+        return !outPositions.empty();
+    }
+
+    Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+    auto statusItr = bot->getQuestStatusMap().find(questId);
+    if (!quest || statusItr == bot->getQuestStatusMap().end())
+        return false;
+
+    QuestStatusData const& status = statusItr->second;
+
+    for (auto const& flagPos : questItr->second)
+    {
+        if (flagPos.first == uint32(QuestRelationFlag::questTaker) || flagPos.second.GetMapId() != bot->GetMapId())
+            continue;
+
+        // One flag bit per slot, shared between kill/collect and item objectives: pick the
+        // combined objective index of whichever kind is still incomplete (item first).
+        uint32 const slot = std::countr_zero(flagPos.first);
+        if (slot >= QUEST_OBJECTIVES_COUNT)
+            continue;
+
+        bool const itemIncomplete = quest->RequiredItemId[slot] &&
+            status.ItemCount[slot] < quest->RequiredItemCount[slot];
+        bool const npcIncomplete = quest->RequiredNpcOrGo[slot] &&
+            status.CreatureOrGOCount[slot] < quest->RequiredNpcOrGoCount[slot];
+        if (!itemIncomplete && !npcIncomplete)
+            continue;
+
+        int32 const combinedIdx = itemIncomplete ? int32(QUEST_OBJECTIVES_COUNT + slot) : int32(slot);
+        outPositions.push_back({combinedIdx, flagPos.second});
+    }
+
+    return !outPositions.empty();
+}
+
 bool NewRpgBaseAction::OrganizeQuestLog()
 {
     int32 freeSlotNum = 0;
@@ -703,7 +829,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
             if (bot->GetZoneId() != bot->GetMap()->GetZoneId(bot->GetPhaseMask(), dx, dy, dz))
                 continue;
 
-            poiInfo.push_back({{dx, dy}, qPoi.ObjectiveIndex});
+            poiInfo.push_back({{dx, dy}, qPoi.ObjectiveIndex, qPoi.Id});
         }
 
         if (poiInfo.empty())
@@ -775,7 +901,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
         if (bot->GetZoneId() != bot->GetMap()->GetZoneId(bot->GetPhaseMask(), dx, dy, dz))
             continue;
 
-        poiInfo.push_back({{dx, dy}, qPoi.ObjectiveIndex});
+        poiInfo.push_back({{dx, dy}, qPoi.ObjectiveIndex, qPoi.Id});
     }
 
     if (poiInfo.size() == 0)
