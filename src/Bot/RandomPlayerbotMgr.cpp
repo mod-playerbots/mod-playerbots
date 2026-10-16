@@ -289,6 +289,9 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
     if (!sPlayerbotAIConfig.RandomBotAutologin || !sPlayerbotAIConfig.Enabled)
         return;
 
+    if (sPlayerbotAIConfig.RandomBotConcentrateInPlayerZone)
+        UpdatePlayerZones();
+
     /*if (sPlayerbotAIConfig.enablePrototypePerformanceDiff)
     {
         LOG_INFO("playerbots", "---------------------------------------");
@@ -1844,7 +1847,7 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
     }
     std::vector<WorldLocation> locs = sTravelMgr.GetTeleportLocations(bot);
 
-    if (sPlayerbotAIConfig.RandomBotConcentrateInPlayerZone && !locs.empty())
+    if (sPlayerbotAIConfig.RandomBotConcentrateInPlayerZone)
     {
         std::vector<WorldLocation> playerZoneLocs = GetPlayerZoneTeleportLocations(locs, bot);
         if (!playerZoneLocs.empty())
@@ -1859,44 +1862,61 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
 }
 
 // Returns the subset of teleport locations that lie in a zone currently occupied by a real
-// (non-GM) player, so random bots can be gathered where players actually are. Returns an empty
-// vector when no player is online or none of the locations match, letting the caller fall back
-// to the default world-wide behaviour.
+// (non-GM) player, so random bots can be gathered where players actually are, or failing that the
+// matching hubs of a nearby level. Returns an empty vector when no player is online or nothing
+// matches, letting the caller fall back to the default world-wide behaviour.
 std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocations(std::vector<WorldLocation> const& locs,
                                                                               Player* bot)
 {
-    std::set<uint32> playerMaps;
     std::set<std::pair<uint32, uint32>> playerMapZones;
-
-    // players only ever holds real (non random bot) players and is maintained on login/logout, so
-    // this is a pass over the online player list, not a world-wide scan.
-    for (Player* player : players)
     {
-        if (!player || !player->IsInWorld() || player->IsGameMaster())
-            continue;
-
-        Map* map = player->GetMap();
-        if (!map)
-            continue;
-
-        // Instanceable maps (dungeons, raids, battlegrounds, arenas) are never valid targets: a
-        // WorldLocation carries no instance id, so a bot would be sent to another instance of the
-        // same map rather than to the player.
-        if (map->Instanceable())
-            continue;
-
-        // Resolve the player zone the same way as the candidate locations below (unphased terrain),
-        // so a player standing in a phased area still matches its underlying zone.
-        uint32 zoneId = map->GetZoneId(PHASEMASK_NORMAL, player->GetPositionX(), player->GetPositionY(),
-                                       player->GetPositionZ());
-        playerMaps.insert(map->GetId());
-        playerMapZones.insert(std::make_pair(map->GetId(), zoneId));
+        std::lock_guard<std::mutex> lock(_playerZonesLock);
+        playerMapZones = _playerZones;
     }
 
-    std::vector<WorldLocation> filtered;
     if (playerMapZones.empty())
+        return {};
+
+    std::vector<WorldLocation> filtered = FilterPlayerZoneTeleportLocations(locs, bot, playerMapZones);
+
+    // Hubs are listed only for the levels of their zone's range, so a bot just outside it is never
+    // sent to that zone. Allow the RandomBotTeleLowerLevel / RandomBotTeleHigherLevel margin, nearest
+    // level first. The legacy location cache already includes that margin.
+    if (!filtered.empty() || !sPlayerbotAIConfig.EnableNewRpgStrategy)
         return filtered;
 
+    // A bot may be up to RandomBotTeleHigherLevel above a zone's range and RandomBotTeleLowerLevel below it.
+    uint32 botLevel = bot->GetLevel();
+    uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    uint32 higher = sPlayerbotAIConfig.RandomBotTeleHigherLevel;
+    uint32 lower = sPlayerbotAIConfig.RandomBotTeleLowerLevel;
+    uint32 maxOffset = std::min(std::max(higher, lower), maxLevel);
+    for (uint32 offset = 1; offset <= maxOffset; ++offset)
+    {
+        if (offset <= higher && botLevel > offset)
+            filtered = FilterPlayerZoneTeleportLocations(sTravelMgr.GetTeleportLocations(bot, botLevel - offset), bot,
+                                                         playerMapZones);
+
+        if (filtered.empty() && offset <= lower && botLevel + offset <= maxLevel)
+            filtered = FilterPlayerZoneTeleportLocations(sTravelMgr.GetTeleportLocations(bot, botLevel + offset), bot,
+                                                         playerMapZones);
+
+        if (!filtered.empty())
+            break;
+    }
+
+    return filtered;
+}
+
+std::vector<WorldLocation> RandomPlayerbotMgr::FilterPlayerZoneTeleportLocations(
+    std::vector<WorldLocation> const& locs, Player* bot, std::set<std::pair<uint32, uint32>> const& playerMapZones)
+{
+    std::vector<WorldLocation> filtered;
+    std::set<uint32> playerMaps;
+    for (auto const& mapZone : playerMapZones)
+        playerMaps.insert(mapZone.first);
+
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     for (WorldLocation const& loc : locs)
     {
         if (playerMaps.find(loc.GetMapId()) == playerMaps.end())
@@ -1918,10 +1938,53 @@ std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocations(st
                 continue;
         }
 
+        // Same reason: RandomTeleport also rejects maps outside RandomBotMaps and far starter-level spots.
+        if (std::find(sPlayerbotAIConfig.RandomBotMaps.begin(), sPlayerbotAIConfig.RandomBotMaps.end(),
+                      loc.GetMapId()) == sPlayerbotAIConfig.RandomBotMaps.end())
+            continue;
+
+        if (botAI && !botAI->StarterLevelDistanceCheck(bot, loc, true))
+            continue;
+
         filtered.push_back(loc);
     }
 
     return filtered;
+}
+
+// World thread only: reads the players list and their positions.
+void RandomPlayerbotMgr::UpdatePlayerZones()
+{
+    std::set<std::pair<uint32, uint32>> playerMapZones;
+
+    // players holds real players and their alt and addclass bots, never random bots: a pass over the online
+    // player list, not a world-wide scan.
+    for (Player* player : players)
+    {
+        if (!player || !player->IsInWorld() || player->IsGameMaster())
+            continue;
+
+        // Alt and addclass bots do not attract random bots, only human-controlled characters do.
+        if (!IsRealPlayer(player) && !IsSelfBot(player))
+            continue;
+
+        Map* map = player->GetMap();
+        if (!map)
+            continue;
+
+        // A WorldLocation carries no instance id: a bot sent to a dungeon, raid or battleground map
+        // would land in another instance than the player's.
+        if (map->Instanceable())
+            continue;
+
+        // Unphased terrain, as for the candidate locations, so a player in a phased area matches its zone.
+        uint32 zoneId =
+            map->GetZoneId(PHASEMASK_NORMAL, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
+        playerMapZones.insert(std::make_pair(map->GetId(), zoneId));
+    }
+
+    std::lock_guard<std::mutex> lock(_playerZonesLock);
+    _playerZones = std::move(playerMapZones);
 }
 
 void RandomPlayerbotMgr::RandomTeleportGrindForLevel(Player* bot)

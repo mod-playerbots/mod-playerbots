@@ -4485,12 +4485,19 @@ std::vector<std::vector<uint32>> TravelMgr::GetOptimalFlightDestinations(Player*
 
 const std::vector<WorldLocation> TravelMgr::GetTeleportLocations(Player* bot)
 {
-    uint32 level = bot->GetLevel();
-    uint8 isAlliance = bot->GetTeamId() == TEAM_ALLIANCE;
-    if (sPlayerbotAIConfig.EnableNewRpgStrategy)
-        return isAlliance ? allianceHubsPerLevelCache[level] : hordeHubsPerLevelCache[level];
+    return GetTeleportLocations(bot, bot->GetLevel());
+}
 
-    return locsPerLevelCache[level];
+const std::vector<WorldLocation> TravelMgr::GetTeleportLocations(Player* bot, uint32 level)
+{
+    std::map<uint8, std::vector<WorldLocation>> const& cache =
+        !sPlayerbotAIConfig.EnableNewRpgStrategy ? locsPerLevelCache
+        : bot->GetTeamId() == TEAM_ALLIANCE      ? allianceHubsPerLevelCache
+                                                 : hordeHubsPerLevelCache;
+
+    // find(), not operator[]: this is called from map threads and must not insert into the shared caches.
+    auto itr = cache.find(static_cast<uint8>(level));
+    return itr != cache.end() ? itr->second : std::vector<WorldLocation>();
 }
 
 const std::vector<WorldLocation> TravelMgr::GetTravelHubs(Player* bot)
