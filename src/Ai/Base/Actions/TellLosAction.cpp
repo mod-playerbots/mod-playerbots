@@ -187,7 +187,7 @@ bool TellCalculateItemAction::Execute(Event event)
         "dodge",     "parry",      "block_value",   "block_rating",    "resilience",
         "health_regen", "spell_power", "spell_penetration", "heal_power", "mana_regen",
         "attack_power", "armor_penetration", "expertise", "melee_dps", "ranged_dps",
-        "bonus"
+        "threat_reduction", "resistance", "bonus"
     };
     // clang-format on
     static_assert(std::size(statNames) == STATS_TYPE_MAX, "statNames must stay in sync with StatsType");
