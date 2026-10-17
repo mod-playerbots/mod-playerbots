@@ -6,6 +6,7 @@
 
 #include "PlayerbotAI.h"
 #include "AiFactory.h"
+#include "WsgRouteState.h"
 #include "BudgetValues.h"
 #include "ChannelMgr.h"
 #include "CharacterPackets.h"
@@ -1586,6 +1587,11 @@ void PlayerbotAI::DoNextAction(bool min)
         aiObjectContext->GetValue<ObjectGuid>("pull target")->Set(ObjectGuid::Empty);
         aiObjectContext->GetValue<ObjectGuid>("pull strategy target")->Set(ObjectGuid::Empty);
         aiObjectContext->GetValue<LootObject>("loot target")->Set(LootObject());
+
+        // The dead engine has no battleground strategy, so its "dead" trigger cannot reset this route.
+        if (Battleground* bg = bot->GetBattleground())
+            if (sPlayerbotAIConfig.EnableWsgTactics && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
+                aiObjectContext->GetValue<WsgRouteState>("wsg route")->Reset();
 
         ChangeEngine(BOT_STATE_DEAD);
         return;

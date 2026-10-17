@@ -5,6 +5,7 @@
  */
 
 #include "ReachTargetActions.h"
+#include "Battleground.h"
 #include "Event.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
