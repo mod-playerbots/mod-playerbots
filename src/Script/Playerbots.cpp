@@ -619,6 +619,7 @@ void AddSC_HyjalBotScripts();
 void AddSC_IcecrownBotScripts();
 void AddSC_RubySanctumBotScripts();
 void AddSC_randombot_level_mgr();
+void AddSC_RaidInstanceStateScripts();
 
 void AddPlayerbotsScripts()
 {
@@ -643,4 +644,5 @@ void AddPlayerbotsScripts()
     AddSC_IcecrownBotScripts();
     AddSC_RubySanctumBotScripts();
     AddSC_randombot_level_mgr();
+    AddSC_RaidInstanceStateScripts();
 }
