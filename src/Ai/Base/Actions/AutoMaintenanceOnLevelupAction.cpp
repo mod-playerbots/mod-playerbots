@@ -39,11 +39,28 @@ void AutoMaintenanceOnLevelupAction::AutoPickTalents()
     if (!sPlayerbotAIConfig.AutoPickTalents || !sRandomPlayerbotMgr.IsRandomBot(bot))
         return;
 
+    uint32 currentLevel = bot->GetLevel();
+
+    if (currentLevel < 10)
+        return;
+
     if (bot->GetFreeTalentPoints() <= 0)
         return;
 
-    PlayerbotFactory factory(bot, bot->GetLevel());
-    factory.InitTalentsTree(true, true, true);
+    bool resetTalents = true;
+    bool increment = true;
+
+    //Reroll specs at 60, 61, 70, 71 and 80 if enabled.
+    if (sPlayerbotAIConfig.BotAdaptiveTalents)
+    {
+        resetTalents = (currentLevel == 60 || currentLevel == 61 ||
+            currentLevel == 70 ||currentLevel == 71 || currentLevel == 80);
+
+        increment = !resetTalents;
+    }
+
+    PlayerbotFactory factory(bot, currentLevel);
+    factory.InitTalentsTree(increment, true, resetTalents);
     factory.InitPetTalents();
 }
 
