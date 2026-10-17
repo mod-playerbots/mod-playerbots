@@ -47,6 +47,9 @@ public:
 
     bool IsEmpty() { return !guid; }
     bool IsLootPossible(Player* bot);
+    // True when the bot is within the server's interaction range for this target: the core
+    // creature range for corpses, or the gameobject's own type/display/spell based range.
+    bool IsAtInteractDistance(Player* bot);
     void Refresh(Player* bot, ObjectGuid guid);
     WorldObject* GetWorldObject(Player* bot);
     uint32 GetLockType() const { return _lockType; }
@@ -77,7 +80,7 @@ public:
     LootTarget& operator=(LootTarget const& other) = default;
     bool operator<(LootTarget const& other) const;
     bool IsReady() const;
-    void Defer();
+    void Defer(uint32 maxDelaySecs = 0);
 
 public:
     ObjectGuid guid;
@@ -110,7 +113,8 @@ public:
     void LootOpened(ObjectGuid guid);
     void CancelLoot(ObjectGuid guid);
     void RetryLoot(ObjectGuid guid);
-    void DeferLoot(ObjectGuid guid);
+    // maxDelaySecs > 0 caps the exponential retry backoff for entries that are not reachable.
+    void DeferLoot(ObjectGuid guid, uint32 maxDelaySecs = 0);
     bool CanAttemptLoot(ObjectGuid guid) const;
 
 private:

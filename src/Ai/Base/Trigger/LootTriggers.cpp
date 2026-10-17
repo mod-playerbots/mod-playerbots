@@ -11,9 +11,16 @@
 
 bool LootAvailableTrigger::IsActive()
 {
-    if (!AI_VALUE(bool, "has available loot"))
+    // Same gate as the "has available loot" value (!can loot && a lootable entry exists), but keep
+    // the nearest entry so a closer target can replace a stale one.
+    if (AI_VALUE(bool, "can loot"))
         return false;
 
+    LootObject nearest = AI_VALUE(LootObjectStack*, "available loot")->GetLoot(sPlayerbotAIConfig.LootDistance);
+    if (nearest.IsEmpty())
+        return false;
+
+    LootObject lootTarget = AI_VALUE(LootObject, "loot target");
     bool distanceCheck = false;
     if (botAI->HasStrategy("stay", BOT_STATE_NON_COMBAT))
     {
@@ -22,16 +29,19 @@ bool LootAvailableTrigger::IsActive()
     }
     else
     {
-        distanceCheck = ServerFacade::instance().IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", "loot target"),
-                                                                 INTERACTION_DISTANCE - 2.0f);
+        distanceCheck = lootTarget.IsAtInteractDistance(bot);
     }
 
     // Loot target in range, or no hostile targets to deal with first.
     if (distanceCheck || AI_VALUE(GuidVector, "all targets").empty())
         return true;
 
-    LootObject lootTarget = AI_VALUE(LootObject, "loot target");
-    return !lootTarget.IsEmpty() && !lootTarget.IsLootPossible(bot);
+    if (lootTarget.IsEmpty() || !lootTarget.IsLootPossible(bot))
+        return true;
+
+    // Re-run the loot action when the nearest entry differs from the target, instead of chasing
+    // the old target past fresh corpses.
+    return nearest.guid != lootTarget.guid;
 }
 
 bool FarFromCurrentLootTrigger::IsActive()
@@ -40,7 +50,7 @@ bool FarFromCurrentLootTrigger::IsActive()
     if (!loot.IsLootPossible(bot))
         return false;
 
-    return AI_VALUE2(float, "distance", "loot target") >= INTERACTION_DISTANCE - 2.0f;
+    return !loot.IsAtInteractDistance(bot);
 }
 
 bool CanLootTrigger::IsActive() { return AI_VALUE(bool, "can loot"); }

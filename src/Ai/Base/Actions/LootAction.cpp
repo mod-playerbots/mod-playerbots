@@ -85,10 +85,15 @@ bool OpenLootAction::Execute(Event /*event*/)
     if (!availableLoot->CanAttemptLoot(lootObject.guid))
         return false;
 
-    bool result = DoLoot(lootObject);
+    // DoLoot stops the bot first, which means "try again", not a failure; deferring after that
+    // stop would make the bot walk away and come back. Only a dry failure at rest defers.
+    bool const wasMoving = bot->isMoving();
+    bool const wasMounted = bot->IsMounted();
+
+    bool const result = DoLoot(lootObject);
     if (result)
         availableLoot->BeginLoot(lootObject.guid);
-    else if (!lootObject.IsEmpty() && !bot->isMoving() && !bot->IsMounted())
+    else if (!lootObject.IsEmpty() && !wasMoving && !wasMounted)
     {
         availableLoot->DeferLoot(lootObject.guid);
         if (AI_VALUE(LootObject, "loot target").guid == lootObject.guid)
@@ -104,7 +109,7 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
         return false;
 
     Creature* creature = botAI->GetCreature(lootObject.guid);
-    if (creature && bot->GetDistance(creature) > INTERACTION_DISTANCE - 2.0f)
+    if (creature && !bot->IsWithinDistInMap(creature, INTERACTION_DISTANCE))
         return false;
 
     if (bot->isMoving())
@@ -151,7 +156,7 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
     }
 
     GameObject* go = botAI->GetGameObject(lootObject.guid);
-    if (go && bot->GetDistance(go) > INTERACTION_DISTANCE - 2.0f)
+    if (go && !go->IsAtInteractDistance(bot))
         return false;
 
     if (go && (go->GetGoState() != GO_STATE_READY))
