@@ -32,6 +32,13 @@ class NewRpgBaseAction : public MovementAction
 public:
     NewRpgBaseAction(PlayerbotAI* botAI, std::string name) : MovementAction(botAI, name) {}
 
+    // Standalone so values and multipliers can reuse the same interaction search the actions use.
+    static ObjectGuid FindQuestGiverToInteract(PlayerbotAI* botAI, Player* bot, bool questgiverOnly = false,
+                                               float distanceLimit = 0.0f);
+
+    // QuestGiverSearchDistance capped at the candidate caches' current radius (they only see loaded grids).
+    static float GetQuestGiverSearchDistance(Player* bot);
+
 protected:
     /* MOVEMENT RELATED */
     bool MoveFarTo(WorldPosition dest);
@@ -41,13 +48,13 @@ protected:
 
     /* QUEST RELATED CHECK */
     ObjectGuid ChooseNpcOrGameObjectToInteract(bool questgiverOnly = false, float distanceLimit = 0.0f);
-    bool HasQuestToAcceptOrReward(WorldObject* object);
+    static bool HasQuestToAcceptOrReward(Player* bot, WorldObject* object);
     bool InteractWithNpcOrGameObjectForQuest(ObjectGuid guid);
-    bool CanInteractWithQuestGiver(Object* questGiver);
+    static bool CanInteractWithQuestGiver(Player* bot, Object* questGiver);
     bool IsWithinInteractionDist(Object* object);
     uint32 BestRewardIndex(Quest const* quest);
-    bool IsQuestWorthDoing(Quest const* quest);
-    bool IsQuestCapableDoing(Quest const* quest);
+    static bool IsQuestWorthDoing(Player* bot, Quest const* quest);
+    static bool IsQuestCapableDoing(Player* bot, Quest const* quest);
 
     /* QUEST RELATED ACTION */
     bool SearchQuestGiverAndAcceptOrReward();
@@ -55,11 +62,17 @@ protected:
     bool TurnInQuest(Quest const* quest, ObjectGuid guid);
     bool OrganizeQuestLog();
 
+    /* STUCK / UNUSABLE AREA RECOVERY */
+    WorldPosition FindRecoveryAnchor();
+    bool RecoverToRpgArea();
+
 protected:
-    bool GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector<POIInfo>& poiInfo, bool toComplete = false);
+    bool GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector<POIInfo>& poiInfo, bool toComplete = false,
+                                       bool includeDistant = false);
     static WorldPosition SelectRandomGrindPos(Player* bot);
     static WorldPosition SelectRandomCampPos(Player* bot);
-    bool SelectRandomFlightTaxiNode(uint32& flightMasterEntry, WorldPosition& flightMasterPos, std::vector<uint32>& path);
+    bool SelectRandomFlightTaxiNode(uint32& flightMasterEntry, WorldPosition& flightMasterPos,
+                                    std::vector<uint32>& path, bool questAware = true);
     bool RandomChangeStatus(std::vector<NewRpgStatus> candidateStatus);
     bool CheckRpgStatusAvailable(NewRpgStatus status);
 
@@ -74,6 +87,11 @@ protected:
     // the teleport fires, but long enough that a genuine long
     // walk that is slowly making progress never triggers it.
     const uint32 stuckTime = 90 * IN_MILLISECONDS;
+
+    /* FOR RECOVERY */
+    // A same-zone anchor within this distance means a serviced area (empty level cache) where
+    // recovering would only bounce the bot to its feet.
+    const float recoverySameZoneDistance = 500.0f;
 };
 
 #endif

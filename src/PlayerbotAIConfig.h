@@ -114,7 +114,11 @@ public:
     bool DynamicReactDelay;
     float SightDistance, SpellDistance, ReactDistance, GrindDistance, LootDistance, ShootDistance, FleeDistance,
         TooCloseDistance, MeleeDistance, FollowDistance, WhisperDistance, ContactDistance, AoeRadius, RpgDistance,
-        TargetPosRecalcDistance, FarDistance, HealDistance, AggroDistance;
+        TargetPosRecalcDistance, FarDistance, HealDistance, AggroDistance, QuestGiverSearchDistance;
+    bool PrioritiseQuestGivers;
+    bool CrossZoneQuests;
+    bool QuestAwareTaxi;
+    bool RpgAreaRecovery;
     uint32 CriticalHealth, LowHealth, MediumHealth, AlmostFullHealth;
     uint32 LowMana, MediumMana, HighMana;
     bool AutoSaveMana;
@@ -395,6 +399,7 @@ public:
     bool AutoLearnTrainerSpells;
     bool AutoDoQuests;
     bool EnableNewRpgStrategy;
+    float RpgTargetSearchDistance;
     std::unordered_map<NewRpgStatus, uint32> RpgStatusProbWeight;
     bool SyncLevelWithPlayers;
     bool RandomBotConcentrateInPlayerZone;
