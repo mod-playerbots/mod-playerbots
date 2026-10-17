@@ -1424,6 +1424,10 @@ Playerbots.RestrictedHealerDPSMaps = "33,34,36,43,47,48,70,90,109,129,209,229,23
 # Default: 1 (enabled)
 Playerbots.EnableNewRpgStrategy = 1
 
+# Radius (yards) of the new RPG strategy's NPC and gameobject scans. Cost grows with the square of the radius. 
+# Default: 150.0
+Playerbots.RpgTargetSearchDistance = 150.0
+
 # Control probability weights for RPG status of bots. Takes effect only when the status meets its premise.​
 # Sum of weights need not be 100. Set to 0 to disable the status.
 #
