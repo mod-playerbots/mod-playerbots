@@ -33,6 +33,8 @@
 #include <algorithm>
 
 // common bg positions
+constexpr float BG_OBJECTIVE_REACHED_DISTANCE = 4.0f;  // close enough to count as standing at a point
+
 Position const WS_WAITING_POS_HORDE_1 = {944.981f, 1423.478f, 345.434f, 6.18f};
 Position const WS_WAITING_POS_HORDE_2 = {948.488f, 1459.834f, 343.066f, 6.27f};
 Position const WS_WAITING_POS_HORDE_3 = {933.484f, 1433.726f, 345.535f, 0.08f};
@@ -1685,20 +1687,26 @@ bool BGTactics::Execute(Event /*event*/)
             return false;
         }
 
-        if (!moveToObjective(false))
-            if (!selectObjectiveWp(*vPaths))
-                return moveToObjective(true);
+        PositionInfo const objective = context->GetValue<PositionMap&>("position")->Get()["bg objective"];
+        float objectiveDist = FLT_MAX;
+        if (objective.isSet())
+            objectiveDist = bot->GetDistance(objective.x, objective.y, objective.z);
+        if (objectiveDist < BG_OBJECTIVE_REACHED_DISTANCE)
+            moveToObjective(false);  // arrived: resets the objective and picks a new one without moving
+        else if (moveToObjective(false) || selectObjectiveWp(*vPaths))
+            return true;
+        else
+            return moveToObjective(true);
 
         // bot with flag should only move to objective
         if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) ||
             bot->HasAura(BG_EY_NETHERSTORM_FLAG_SPELL))
             return false;
 
-        if (!startNewPathBegin(*vPaths))
-            return moveToObjective(true);
+        if (startNewPathBegin(*vPaths) || startNewPathFree(*vPaths))
+            return true;
 
-        if (!startNewPathFree(*vPaths))
-            return moveToObjective(true);
+        return moveToObjective(true);
     }
 
     if (getName() == "use buff")
@@ -3204,7 +3212,7 @@ bool BGTactics::moveToObjective(bool ignoreDist)
         }
 
         // don't try to move if already close
-        if (bot->GetDistance(pos.x, pos.y, pos.z) < 4.0f)
+        if (bot->GetDistance(pos.x, pos.y, pos.z) < BG_OBJECTIVE_REACHED_DISTANCE)
         {
             resetObjective();
             return true;
