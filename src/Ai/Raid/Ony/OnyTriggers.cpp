@@ -8,6 +8,7 @@
 #include "GenericTriggers.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
+#include "OnyHelpers.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 
@@ -97,6 +98,13 @@ bool RaidOnyxiaWhelpsSpawnTrigger::IsActive()
         return false;
 
     return !PlayerbotAI::IsHeal(bot) && boss->IsFlying();  // DPS + Tanks only
+}
+
+bool OnyxiaPhaseThreeThreatHoldTrigger::IsActive()
+{
+    Unit* victim = bot->GetVictim();
+    return OnyxiaHelpers::IsOnyxia(victim) &&
+           OnyxiaHelpers::MustHoldPhaseThreeThreat(bot, victim, OnyxiaHelpers::THREAT_LEAD_KEEP);
 }
 
 OnyxiaAvoidEggsTrigger::OnyxiaAvoidEggsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "ony avoid eggs") {}
