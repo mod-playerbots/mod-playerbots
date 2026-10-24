@@ -123,8 +123,9 @@ float NefarianCorruptedHealingMultiplier::GetValue(Action* action)
 
 float NefarianCorruptedTotemMultiplier::GetValue(Action* action)
 {
-    // Keeps DPS on a corrupted totem until it dies instead of switching back to the dps or RTI target.
-    if ((!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<AttackRtiTargetAction*>(action)) ||
+    // Keeps DPS on a corrupted totem until it dies instead of switching back to the dps, AoE or RTI target.
+    if ((!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<DpsAoeAction*>(action) &&
+         !dynamic_cast<AttackRtiTargetAction*>(action)) ||
         !PlayerbotAI::IsDps(bot))
         return 1.0f;
 

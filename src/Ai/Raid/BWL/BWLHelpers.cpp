@@ -87,17 +87,15 @@ namespace BlackwingLairHelpers
     {
         // Ranged take the nearest totem, melee only one they can already reach.
         Player* bot = botAI->GetBot();
-        bool const melee = !PlayerbotAI::IsRanged(bot);
         Unit* nearest = nullptr;
         float nearestDistance = 0.0f;
-        GuidVector const attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
-        for (ObjectGuid const guid : attackers)
+        for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet())
         {
             if (!IsCorruptedTotemEntry(guid.GetEntry()))
                 continue;
 
             Unit* unit = botAI->GetUnit(guid);
-            if (!unit || !unit->IsAlive() || (melee && !bot->IsWithinMeleeRange(unit)))
+            if (!unit || !unit->IsAlive() || (!bot->IsWithinMeleeRange(unit) && !PlayerbotAI::IsRanged(bot)))
                 continue;
 
             float const distance = bot->GetExactDist(unit);
