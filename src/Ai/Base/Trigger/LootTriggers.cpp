@@ -41,7 +41,11 @@ bool FarFromCurrentLootTrigger::IsActive()
         !AI_VALUE(LootObjectStack*, "available loot")->CanAttemptLoot(loot.guid))
         return false;
 
-    return loot.IsLootPossible(bot);
+    bool const possible = loot.IsLootPossible(bot);
+    if (!possible)
+        LOG_DEBUG("playerbots", "swim-trace {}: far-trigger: target {} not loot-possible", bot->GetName(),
+                  loot.guid.ToString());
+    return possible;
 }
 
 bool CanLootTrigger::IsActive() { return AI_VALUE(bool, "can loot"); }

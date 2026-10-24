@@ -2600,6 +2600,7 @@ bool MoveToLootAction::Execute(Event /*event*/)
     LootObjectStack* availableLoot = AI_VALUE(LootObjectStack*, "available loot");
     if (availableLoot->IsLootPending() || bot->GetLootGUID())
     {
+        LOG_DEBUG("playerbots", "swim-trace {}: move-to-loot: pending or looting", bot->GetName());
         lootWatchGuid.Clear();
         return false;
     }
@@ -2607,13 +2608,19 @@ bool MoveToLootAction::Execute(Event /*event*/)
     LootObject loot = AI_VALUE(LootObject, "loot target");
     if (!loot.IsLootPossible(bot))
     {
+        LOG_DEBUG("playerbots", "swim-trace {}: move-to-loot: target {} not loot-possible", bot->GetName(),
+                  loot.guid.ToString());
         lootWatchGuid.Clear();
         return false;
     }
 
     WorldObject* target = loot.GetWorldObject(bot);
     if (!target)
+    {
+        LOG_DEBUG("playerbots", "swim-trace {}: move-to-loot: target {} has no world object", bot->GetName(),
+                  loot.guid.ToString());
         return false;
+    }
 
     float const distance = bot->GetDistance(target);
     uint32 const nowMs = getMSTime();
@@ -2639,6 +2646,7 @@ bool MoveToLootAction::Execute(Event /*event*/)
     // pickup chooses a closer reachable one.
     if (distance > sPlayerbotAIConfig.ContactDistance + reachedMargin && nowMs - lootWatchMs >= noProgressMs)
     {
+        LOG_DEBUG("playerbots", "swim-trace {}: defer loot {} after no progress", bot->GetName(), loot.guid.ToString());
         availableLoot->DeferLoot(loot.guid);
         if (AI_VALUE(LootObject, "loot target").guid == loot.guid)
             context->GetValue<LootObject>("loot target")->Set(LootObject());
@@ -2678,8 +2686,13 @@ bool MoveToLootAction::Execute(Event /*event*/)
         float const z = bot->GetPositionZ() - dz * scale;
 
         if (!bot->IsWithinLOS(x, y, z))
+        {
+            LOG_DEBUG("playerbots", "swim-trace {}: no LOS to swim point {:.1f} {:.1f} {:.1f}", bot->GetName(), x, y, z);
             return false;
+        }
 
+        LOG_DEBUG("playerbots", "swim-trace {}: direct swim to {:.1f} {:.1f} {:.1f} (dist {:.1f})", bot->GetName(), x, y,
+                  z, dist);
         // exact_waypoint forces a direct point move: a generated path under water has no navmesh
         return MoveTo(bot->GetMapId(), x, y, z, false, false, false, true);
     }
