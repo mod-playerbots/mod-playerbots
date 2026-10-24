@@ -327,7 +327,23 @@ bool LootObject::IsLootPossible(Player* bot)
     if (!botAI)
         return false;
 
-    if (abs(worldObj->GetPositionZ() - bot->GetPositionZ()) > INTERACTION_DISTANCE - 2.0f)
+    // Vertical gate: on land loot far above/below is unreachable, but in water the bot can swim
+    // straight to it; the map query also covers a stale cached liquid state after a teleport.
+    auto const inWater = [bot](WorldObject const* obj)
+    {
+        if (obj->GetGUID() == bot->GetGUID() && (bot->IsInWater() || bot->IsUnderWater()))
+            return true;
+
+        uint32 const phase = bot->GetPhaseMask();
+        float const collisionHeight = bot->GetCollisionHeight();
+        float const x = obj->GetPositionX();
+        float const y = obj->GetPositionY();
+        float const z = obj->GetPositionZ();
+        return bot->GetMap()->IsInWater(phase, x, y, z, collisionHeight) ||
+               bot->GetMap()->IsUnderWater(phase, x, y, z, collisionHeight);
+    };
+    if (!inWater(bot) && !inWater(worldObj) &&
+        abs(worldObj->GetPositionZ() - bot->GetPositionZ()) > INTERACTION_DISTANCE - 2.0f)
         return false;
 
     Creature* creature = botAI->GetCreature(guid);
