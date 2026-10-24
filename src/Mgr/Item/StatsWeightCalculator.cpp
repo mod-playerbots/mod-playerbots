@@ -102,6 +102,8 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
     if (randomPropertyIds != 0)
         CalculateRandomProperty(randomPropertyIds, itemId);
 
+    ApplyRacialWeaponBonus(proto);
+
     bool const checkSetBonus = enable_item_set_bonus_;
     std::array<float, STATS_TYPE_MAX> setBonusStats{};
     std::array<float, STATS_TYPE_MAX> setBonusBaseline{};
@@ -1081,4 +1083,51 @@ float StatsWeightCalculator::ApplyPreferredSpecWeapons(ItemTemplate const* proto
     }
 
     return 1.0f;
+}
+
+void StatsWeightCalculator::ApplyRacialWeaponBonus(ItemTemplate const* proto)
+{
+    if (proto->Class != ITEM_CLASS_WEAPON)
+        return;
+
+    uint32 const sub = proto->SubClass;
+    float expertiseSkill = 0.0f;   // Expertise skill points (Not rating)
+    float critPct = 0.0f;          // Ranged crit %
+
+    // Racial weapon specializations are added to the item's stats, as if the weapon had them.
+    // The troll Throwing Specialization is intentionally ignored.
+    switch (player_->getRace())
+    {
+        case RACE_ORC: // Orc Axe Specialization
+            if (sub == ITEM_SUBCLASS_WEAPON_AXE || sub == ITEM_SUBCLASS_WEAPON_AXE2 ||
+                sub == ITEM_SUBCLASS_WEAPON_FIST)
+                expertiseSkill = 5.0f;
+            break;
+        case RACE_HUMAN: // Human Sword & Mace Specialization
+            if (sub == ITEM_SUBCLASS_WEAPON_SWORD || sub == ITEM_SUBCLASS_WEAPON_SWORD2 ||
+                sub == ITEM_SUBCLASS_WEAPON_MACE || sub == ITEM_SUBCLASS_WEAPON_MACE2)
+                expertiseSkill = 3.0f;
+            break;
+        case RACE_DWARF: // Dwarf Mace Specialization + Gun Specialization
+            if (sub == ITEM_SUBCLASS_WEAPON_MACE || sub == ITEM_SUBCLASS_WEAPON_MACE2)
+                expertiseSkill = 5.0f;
+            else if (sub == ITEM_SUBCLASS_WEAPON_GUN)
+                critPct = 1.0f;
+            break;
+        case RACE_TROLL: // Troll Bow Specialization
+            if (sub == ITEM_SUBCLASS_WEAPON_BOW)
+                critPct = 1.0f;
+            break;
+        default:
+            return;
+    }
+
+    if (expertiseSkill > 0.0f && (type_ & CollectorType::MELEE))
+        collector_->stats[STATS_TYPE_EXPERTISE] += expertiseSkill / player_->GetRatingMultiplier(CR_EXPERTISE);
+
+    if (type_ & CollectorType::RANGED)
+    {
+        if (critPct > 0.0f)
+            collector_->stats[STATS_TYPE_CRIT] += critPct / player_->GetRatingMultiplier(CR_CRIT_RANGED);
+    }
 }
