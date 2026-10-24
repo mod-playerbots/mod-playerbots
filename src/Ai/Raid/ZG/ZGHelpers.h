@@ -18,6 +18,19 @@ enum class ZulGurubSpells : uint32
     // Hakkar
     SPELL_POISONOUS_BLOOD = 24321,
 };
+
+enum class ZulGurubNpcs : uint32
+{
+    // High Priest Thekal
+    NPC_HIGH_PRIEST_THEKAL = 14509,
+    NPC_ZEALOT_LORKHAN     = 11347,
+    NPC_ZEALOT_ZATH        = 11348,
+};
+
+// A member that goes down is restored to full health 10 s later (a zealot's death also restores Thekal) unless
+// all three are down by then.
+// At 15% a member can be finished inside that window.
+constexpr float THEKAL_TRIO_SYNC_HEALTH_PCT = 15.0f;
 }  // namespace ZulGurubHelpers
 
 #endif
