@@ -630,6 +630,7 @@ public:
     // until air is back to half before any diving movement resumes.
     uint32 diveSubmergedSince = 0;
     uint32 diveLastTickMs = 0;
+    uint32 diveIdleSince = 0;
     int32 diveAirMs = 0;
     bool diveSurfacing = false;
     bool diveHoldSurface = false;

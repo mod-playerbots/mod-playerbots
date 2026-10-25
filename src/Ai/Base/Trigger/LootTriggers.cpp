@@ -88,21 +88,34 @@ bool UnderwaterSafetyTrigger::IsActive()
         // Surface with a quarter of the breath left (15s floor): "low air" has to fire on every
         // realm config, including long-breath ones like WaterBreathTimer = 180000 (ms).
         int32 const diveAirSafetyMs = std::max(int32(15 * IN_MILLISECONDS), maxAir / 4);
-        bool const idle = AI_VALUE(LootObject, "loot target").IsEmpty();
+        // "Idle" means nothing is being done under water: a bot grinding, fighting or swimming
+        // to a destination must not be dragged up every tick (it yoyos with the grind skipper).
+        bool const stationary = !bot->IsInCombat() && !bot->getVictim() && !bot->isMoving();
+        if (!stationary || !AI_VALUE(LootObject, "loot target").IsEmpty())
+        {
+            botAI->diveIdleSince = 0;
+        }
+        else if (!botAI->diveIdleSince)
+        {
+            botAI->diveIdleSince = now;
+        }
+        constexpr uint32 diveIdleGraceMs = 3000;
+        bool const idle = botAI->diveIdleSince && now - botAI->diveIdleSince >= diveIdleGraceMs;
+
         // After an emergency surface the bot holds at the surface until air is back to half;
         // dips below that bounce straight back up via this trigger.
         bool const holding = botAI->diveHoldSurface && botAI->diveAirMs < maxAir / 2;
         bool const active = idle || holding || botAI->diveAirMs <= diveAirSafetyMs;
-        if (active)
+        if (active && !idle)
             LOG_DEBUG("playerbots", "swim-trace {}: dive safety (air {:.0f}s, {})", bot->GetName(),
-                      float(botAI->diveAirMs) / IN_MILLISECONDS,
-                      idle ? "target none" : (holding ? "holding at surface" : "low air"));
+                      float(botAI->diveAirMs) / IN_MILLISECONDS, holding ? "holding at surface" : "low air");
         return active;
     }
 
     // At the surface / on land: air regenerates at the mirror timer's 10x rate.
     botAI->diveSubmergedSince = 0;
     botAI->diveSurfacing = false;
+    botAI->diveIdleSince = 0;
     if (botAI->diveAirMs < maxAir)
         botAI->diveAirMs = std::min(maxAir, botAI->diveAirMs + int32(10 * elapsed));
     if (botAI->diveHoldSurface && (botAI->diveAirMs >= maxAir / 2 || !bot->IsInWater()))
