@@ -5714,9 +5714,7 @@ Item* PlayerbotAI::FindStoneFor(Item* weapon) const
     if (!item_template)
         return nullptr;
 
-    // Stones apply to weapons only. Armor shares subclass numbers with weapons (a shield's
-    // SHIELD == 6 == POLEARM), so an offhand shield would otherwise match the bladed list
-    // and a sharpening stone would be cast at it (core: "Must have an Axe equipped").
+    // Weapons only: a shield's SHIELD (6) collides with POLEARM (6).
     if (item_template->Class != ITEM_CLASS_WEAPON)
         return nullptr;
 
@@ -5726,9 +5724,8 @@ Item* PlayerbotAI::FindStoneFor(Item* weapon) const
         ADAMANTITE_WEIGHTSTONE,      FEL_WEIGHTSTONE,        DENSE_WEIGHTSTONE,          SOLID_WEIGHTSTONE,
         HEAVY_WEIGHTSTONE,           COARSE_WEIGHTSTONE,     ROUGH_WEIGHTSTONE};
 
-    // The use spell carries the real weapon rule: sharpening stones are bladed-only, the
-    // Elemental Sharpening Stone's spell is generic, and weightstones are blunt-only. Item
-    // names and hand-kept weapon lists get these wrong, so ask the spell.
+    // Ask the stone's own use spell: sharpening is bladed-only, Elemental Sharpening is
+    // all-melee, weightstones are blunt-only.
     uint32 const subclassBit = 1u << item_template->SubClass;
     for (uint32_t stoneId : uPrioritizedStoneIds)
     {
@@ -5771,8 +5768,7 @@ Item* PlayerbotAI::FindOilFor(Item* weapon) const
     if (!item_template)
         return nullptr;
 
-    // Oils apply to weapons only; shields share subclass numbers with weapons and would
-    // otherwise match the caster-weapon lists below.
+    // Weapons only: shields share subclass numbers with weapons.
     if (item_template->Class != ITEM_CLASS_WEAPON)
         return nullptr;
 

@@ -219,10 +219,9 @@ ItemUsage ItemUsageValue::Calculate()
 
             if (isBest)
             {
-                // Apply and keep at most one full stack; the surplus goes to the auction house
-                // exactly like mismatched stones/oils do. The old "< 1" boundary classified a
-                // full stack (CurrentStacks == 1.0) as useless via the sell fall-through.
-                return CurrentStacks(proto) <= 1.0f ? ITEM_USAGE_USE : ITEM_USAGE_AH;
+                // Keep at most one full stack for use; send surplus to the auction house.
+                constexpr float maxUseStacks = 1.0f;
+                return CurrentStacks(proto) <= maxUseStacks ? ITEM_USAGE_USE : ITEM_USAGE_AH;
             }
         }
     }
