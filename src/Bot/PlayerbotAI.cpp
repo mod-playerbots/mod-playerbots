@@ -51,6 +51,7 @@
 #include "SocialMgr.h"
 #include "SpellAuraEffects.h"
 #include "SpellInfo.h"
+#include "SpellMgr.h"
 #include "Transport.h"
 #include "Unit.h"
 #include "UpdateTime.h"
@@ -5719,44 +5720,46 @@ Item* PlayerbotAI::FindStoneFor(Item* weapon) const
     if (item_template->Class != ITEM_CLASS_WEAPON)
         return nullptr;
 
-    static const std::vector<uint32_t> uPrioritizedSharpStoneIds = {
+    static const std::vector<uint32_t> uPrioritizedStoneIds = {
         ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE,   ELEMENTAL_SHARPENING_STONE, DENSE_SHARPENING_STONE,
-        SOLID_SHARPENING_STONE,      HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE,    ROUGH_SHARPENING_STONE};
+        SOLID_SHARPENING_STONE,      HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE,    ROUGH_SHARPENING_STONE,
+        ADAMANTITE_WEIGHTSTONE,      FEL_WEIGHTSTONE,        DENSE_WEIGHTSTONE,          SOLID_WEIGHTSTONE,
+        HEAVY_WEIGHTSTONE,           COARSE_WEIGHTSTONE,     ROUGH_WEIGHTSTONE};
 
-    static const std::vector<uint32_t> uPrioritizedWeightStoneIds = {
-        ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
-        HEAVY_WEIGHTSTONE,      COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
-
-    Item* stone = nullptr;
-    ItemTemplate const* pProto = weapon->GetTemplate();
-    if (pProto && (pProto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD || pProto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD2 ||
-                   pProto->SubClass == ITEM_SUBCLASS_WEAPON_AXE || pProto->SubClass == ITEM_SUBCLASS_WEAPON_AXE2 ||
-                   pProto->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER || pProto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM))
+    // The use spell carries the real weapon rule: sharpening stones are bladed-only, the
+    // Elemental Sharpening Stone's spell is generic, and weightstones are blunt-only. Item
+    // names and hand-kept weapon lists get these wrong, so ask the spell.
+    uint32 const subclassBit = 1u << item_template->SubClass;
+    for (uint32_t stoneId : uPrioritizedStoneIds)
     {
-        for (uint8 i = 0; i < std::size(uPrioritizedSharpStoneIds); ++i)
+        Item* stone = FindConsumable(stoneId);
+        if (!stone)
+            continue;
+
+        ItemTemplate const* stoneProto = stone->GetTemplate();
+        bool fits = false;
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS && !fits; ++i)
         {
-            stone = FindConsumable(uPrioritizedSharpStoneIds[i]);
-            if (stone)
-            {
-                return stone;
-            }
+            uint32 const spellId = stoneProto->Spells[i].SpellId;
+            if (!spellId)
+                continue;
+
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+            if (!spellInfo)
+                continue;
+
+            if (spellInfo->EquippedItemClass != -1 && spellInfo->EquippedItemClass != ITEM_CLASS_WEAPON)
+                continue;
+
+            fits = spellInfo->EquippedItemSubClassMask == 0 ||
+                   (spellInfo->EquippedItemSubClassMask & subclassBit) != 0;
         }
-    }
-    else if (pProto &&
-             (pProto->SubClass == ITEM_SUBCLASS_WEAPON_MACE || pProto->SubClass == ITEM_SUBCLASS_WEAPON_MACE2 ||
-              pProto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF || pProto->SubClass == ITEM_SUBCLASS_WEAPON_FIST))
-    {
-        for (uint8 i = 0; i < std::size(uPrioritizedWeightStoneIds); ++i)
-        {
-            stone = FindConsumable(uPrioritizedWeightStoneIds[i]);
-            if (stone)
-            {
-                return stone;
-            }
-        }
+
+        if (fits)
+            return stone;
     }
 
-    return stone;
+    return nullptr;
 }
 
 Item* PlayerbotAI::FindOilFor(Item* weapon) const
