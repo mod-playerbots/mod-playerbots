@@ -54,6 +54,14 @@ bool CanLootTrigger::IsActive() { return AI_VALUE(bool, "can loot"); }
 
 bool UnderwaterSafetyTrigger::IsActive()
 {
+    // Fast path for dry bots: the overwhelming majority of evaluations. Only bots currently
+    // under water, or carrying dive state from a recent dive, need the air math below.
+    if (!bot->IsUnderWater() && !botAI->diveSubmergedSince && botAI->diveAirMs == 0 &&
+        !botAI->diveSurfacing && !botAI->diveHoldSurface)
+    {
+        return false;
+    }
+
     // Bot-only concern; players drive themselves.
     if (!bot->IsAlive() || bot->HasWaterBreathingAura())
         return false;
@@ -103,5 +111,10 @@ bool UnderwaterSafetyTrigger::IsActive()
         LOG_DEBUG("playerbots", "swim-trace {}: hold released (air {:.0f}s)", bot->GetName(),
                   float(botAI->diveAirMs) / IN_MILLISECONDS);
     }
+
+    // Fully dry: drop the air model so the dry fast path applies again.
+    if (!bot->IsInWater())
+        botAI->diveAirMs = 0;
+
     return false;
 }
