@@ -5713,12 +5713,18 @@ Item* PlayerbotAI::FindStoneFor(Item* weapon) const
     if (!item_template)
         return nullptr;
 
+    // Stones apply to weapons only. Armor shares subclass numbers with weapons (a shield's
+    // SHIELD == 6 == POLEARM), so an offhand shield would otherwise match the bladed list
+    // and a sharpening stone would be cast at it (core: "Must have an Axe equipped").
+    if (item_template->Class != ITEM_CLASS_WEAPON)
+        return nullptr;
+
     static const std::vector<uint32_t> uPrioritizedSharpStoneIds = {
         ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE,   ELEMENTAL_SHARPENING_STONE, DENSE_SHARPENING_STONE,
         SOLID_SHARPENING_STONE,      HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE,    ROUGH_SHARPENING_STONE};
 
     static const std::vector<uint32_t> uPrioritizedWeightStoneIds = {
-        ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE,    ELEMENTAL_SHARPENING_STONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
+        ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
         HEAVY_WEIGHTSTONE,      COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
 
     Item* stone = nullptr;
@@ -5760,6 +5766,11 @@ Item* PlayerbotAI::FindOilFor(Item* weapon) const
 
     ItemTemplate const* item_template = weapon->GetTemplate();
     if (!item_template)
+        return nullptr;
+
+    // Oils apply to weapons only; shields share subclass numbers with weapons and would
+    // otherwise match the caster-weapon lists below.
+    if (item_template->Class != ITEM_CLASS_WEAPON)
         return nullptr;
 
     static const std::vector<uint32_t> uPrioritizedWizardOilIds = {
