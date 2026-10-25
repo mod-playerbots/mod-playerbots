@@ -2650,9 +2650,10 @@ bool SurfaceFromDiveAction::Execute(Event /*event*/)
     {
         if (botAI->diveSurfacing)
         {
-            LOG_DEBUG("playerbots", "swim-trace {}: surfaced, air {:.0f}s", bot->GetName(),
+            LOG_DEBUG("playerbots", "swim-trace {}: surfaced, holding for air {:.0f}s", bot->GetName(),
                       float(botAI->diveAirMs) / IN_MILLISECONDS);
             botAI->diveSurfacing = false;
+            botAI->diveHoldSurface = true;
         }
         return true;
     }
@@ -2673,9 +2674,9 @@ bool MoveToLootAction::Execute(Event /*event*/)
 {
     LootObjectStack* availableLoot = AI_VALUE(LootObjectStack*, "available loot");
 
-    // A dive-safety ascent owns movement; dropping the watchdog state here also gives the
-    // re-dive a fresh no-progress budget once the bot is back under water.
-    if (botAI->diveSurfacing)
+    // A dive-safety ascent or a post-emergency surface hold owns movement; dropping the watchdog
+    // state here also gives the re-dive a fresh no-progress budget once the bot goes under again.
+    if (botAI->diveSurfacing || botAI->diveHoldSurface)
     {
         lootWatchGuid.Clear();
         return false;

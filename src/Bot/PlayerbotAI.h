@@ -626,11 +626,13 @@ public:
     // Underwater dive tracking shared by UnderwaterSafetyTrigger/SurfaceFromDiveAction.
     // diveAirMs mirrors the core's BREATH mirror timer (config value is already in ms, scaled by
     // MOD_WATER_BREATHING), regenerating 10x while not under water; HasWaterBreathingAura bots
-    // never trigger surfacing.
+    // never trigger surfacing. diveHoldSurface keeps an emergency-surfaced bot at the surface
+    // until air is back to half before any diving movement resumes.
     uint32 diveSubmergedSince = 0;
     uint32 diveLastTickMs = 0;
     int32 diveAirMs = 0;
     bool diveSurfacing = false;
+    bool diveHoldSurface = false;
     uint32 diveSurfaceMap = 0;
     float diveSurfaceX = 0, diveSurfaceY = 0, diveSurfaceZ = 0;
     NewRpgStatistic rpgStatistic;

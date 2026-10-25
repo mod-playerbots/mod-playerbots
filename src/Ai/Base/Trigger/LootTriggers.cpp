@@ -81,10 +81,14 @@ bool UnderwaterSafetyTrigger::IsActive()
         // realm config, including long-breath ones like WaterBreathTimer = 180000 (ms).
         int32 const diveAirSafetyMs = std::max(int32(15 * IN_MILLISECONDS), maxAir / 4);
         bool const idle = AI_VALUE(LootObject, "loot target").IsEmpty();
-        bool const active = idle || botAI->diveAirMs <= diveAirSafetyMs;
+        // After an emergency surface the bot holds at the surface until air is back to half;
+        // dips below that bounce straight back up via this trigger.
+        bool const holding = botAI->diveHoldSurface && botAI->diveAirMs < maxAir / 2;
+        bool const active = idle || holding || botAI->diveAirMs <= diveAirSafetyMs;
         if (active)
-            LOG_DEBUG("playerbots", "swim-trace {}: dive safety (air {:.0f}s, target {})", bot->GetName(),
-                      float(botAI->diveAirMs) / IN_MILLISECONDS, idle ? "none" : "pending");
+            LOG_DEBUG("playerbots", "swim-trace {}: dive safety (air {:.0f}s, {})", bot->GetName(),
+                      float(botAI->diveAirMs) / IN_MILLISECONDS,
+                      idle ? "target none" : (holding ? "holding at surface" : "low air"));
         return active;
     }
 
@@ -93,5 +97,11 @@ bool UnderwaterSafetyTrigger::IsActive()
     botAI->diveSurfacing = false;
     if (botAI->diveAirMs < maxAir)
         botAI->diveAirMs = std::min(maxAir, botAI->diveAirMs + int32(10 * elapsed));
+    if (botAI->diveHoldSurface && (botAI->diveAirMs >= maxAir / 2 || !bot->IsInWater()))
+    {
+        botAI->diveHoldSurface = false;
+        LOG_DEBUG("playerbots", "swim-trace {}: hold released (air {:.0f}s)", bot->GetName(),
+                  float(botAI->diveAirMs) / IN_MILLISECONDS);
+    }
     return false;
 }
