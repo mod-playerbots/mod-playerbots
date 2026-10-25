@@ -5,9 +5,11 @@
  */
 
 #include "ZGMultipliers.h"
+#include "AttackAction.h"
 #include "GenericSpellActions.h"
 #include "Playerbots.h"
 #include "TotemsShamanStrategy.h"
+#include "UseItemAction.h"
 #include "ZGHelpers.h"
 #include <string>
 #include <unordered_set>
@@ -44,4 +46,12 @@ float HakkarKeepPoisonousBloodMultiplier::GetValueInEncounter(Action* action)
 
     Unit* target = action->GetTarget();
     return target && target->HasAura(static_cast<uint32>(ZulGurubSpells::SPELL_POISONOUS_BLOOD)) ? 0.0f : 1.0f;
+}
+
+float BloodlordMandokirCauseNoThreatUnderGazeMultiplier::GetValueInEncounter(Action* action)
+{
+    // Heals, potions and trinkets cause threat too.
+    bool const causesThreat = dynamic_cast<CastSpellAction*>(action) || dynamic_cast<AttackAction*>(action) ||
+                              dynamic_cast<UseItemAction*>(action) || dynamic_cast<UseTrinketAction*>(action);
+    return causesThreat && IsGazedByMandokir(bot) ? 0.0f : 1.0f;
 }
