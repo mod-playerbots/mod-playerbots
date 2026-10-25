@@ -2678,7 +2678,10 @@ bool MoveToLootAction::Execute(Event /*event*/)
         float const dz = bot->GetPositionZ() - target->GetPositionZ();
         float const dist = std::sqrt(dx * dx + dy * dy + dz * dz);
         if (dist <= range)
+        {
+            LOG_DEBUG("playerbots", "swim-trace {}: within swim range {:.1f} of target", bot->GetName(), dist);
             return false;
+        }
 
         float const scale = (dist - range) / dist;
         float const x = bot->GetPositionX() - dx * scale;
@@ -2697,6 +2700,8 @@ bool MoveToLootAction::Execute(Event /*event*/)
         return MoveTo(bot->GetMapId(), x, y, z, false, false, false, true);
     }
 
+    LOG_DEBUG("playerbots", "swim-trace {}: land approach (not in water) MoveNear {}", bot->GetName(),
+              loot.guid.ToString());
     return MoveNear(target, sPlayerbotAIConfig.ContactDistance);
 }
 
