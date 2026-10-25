@@ -22,9 +22,17 @@ bool IsThekalTrioMember(uint32 entry)
 }
 }  // namespace
 
+void RaidZulGurubStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+{
+    // Bloodlord Mandokir
+    triggers.push_back(new TriggerNode("bloodlord mandokir threatening gaze",
+        { NextAction("bloodlord mandokir stop causing threat", ACTION_EMERGENCY + 6) }));
+}
+
 void RaidZulGurubStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new HakkarKeepPoisonousBloodMultiplier(botAI));
+    multipliers.push_back(new BloodlordMandokirCauseNoThreatUnderGazeMultiplier(botAI));
 }
 
 void RaidZulGurubStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)

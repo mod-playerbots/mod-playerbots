@@ -38,4 +38,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class BloodlordMandokirCauseNoThreatUnderGazeMultiplier : public ZulGurubEncounterMultiplier
+{
+public:
+    BloodlordMandokirCauseNoThreatUnderGazeMultiplier(PlayerbotAI* botAI)
+        : ZulGurubEncounterMultiplier(botAI, "bloodlord mandokir cause no threat under gaze")
+    {
+    }
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 #endif
