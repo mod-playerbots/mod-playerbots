@@ -2646,6 +2646,8 @@ bool SurfaceFromDiveAction::isUseful()
 
 bool SurfaceFromDiveAction::Execute(Event /*event*/)
 {
+    uint32 const now = getMSTime();
+
     if (!bot->IsUnderWater())
     {
         if (botAI->diveSurfacing)
@@ -2655,6 +2657,11 @@ bool SurfaceFromDiveAction::Execute(Event /*event*/)
             botAI->diveSurfacing = false;
             botAI->diveHoldSurface = true;
         }
+        botAI->diveAscendIssueMs = 0;
+        botAI->diveAscendProgressMs = 0;
+        botAI->diveAscendGiveUpMs = 0;
+        botAI->diveAscendLastZ = 0;
+        botAI->diveAscendRetries = 0;
         return true;
     }
 
@@ -2662,12 +2669,74 @@ bool SurfaceFromDiveAction::Execute(Event /*event*/)
     {
         botAI->diveSurfacing = true;
         bool const withLOS = FindSurfacePoint();
+        botAI->diveAscendLastZ = bot->GetPositionZ();
+        botAI->diveAscendProgressMs = now;
+        botAI->diveAscendRetries = 0;
         LOG_DEBUG("playerbots", "swim-trace {}: surfacing to {:.1f} {:.1f} {:.1f} ({})", bot->GetName(),
                   botAI->diveSurfaceX, botAI->diveSurfaceY, botAI->diveSurfaceZ, withLOS ? "los" : "blind");
     }
 
-    return MoveTo(botAI->diveSurfaceMap, botAI->diveSurfaceX, botAI->diveSurfaceY, botAI->diveSurfaceZ, false, false,
-                  false, true);
+    float const z = bot->GetPositionZ();
+    if (z > botAI->diveAscendLastZ + 0.3f)
+    {
+        botAI->diveAscendLastZ = z;
+        botAI->diveAscendProgressMs = now;
+        botAI->diveAscendRetries = 0;
+    }
+    else if (!botAI->diveAscendProgressMs)
+    {
+        botAI->diveAscendProgressMs = now;
+    }
+
+    // No rise for 2s: slide toward the surface column to clear the obstruction, then re-sample.
+    constexpr uint32 diveAscentStallMs = 2000;
+    if (now - botAI->diveAscendProgressMs >= diveAscentStallMs)
+    {
+        if (botAI->diveAscendRetries < 2)
+        {
+            ++botAI->diveAscendRetries;
+            botAI->diveAscendProgressMs = now;
+            botAI->diveAscendLastZ = z;
+
+            float const dx = botAI->diveSurfaceX - bot->GetPositionX();
+            float const dy = botAI->diveSurfaceY - bot->GetPositionY();
+            float const len = std::sqrt(dx * dx + dy * dy);
+            if (len > 0.5f)
+            {
+                float const step = std::min(4.0f, len);
+                LOG_DEBUG("playerbots", "swim-trace {}: ascent stalled, sidestep {:.0f} yd", bot->GetName(), step);
+                UpdateMovementState();
+                DoMovePoint(bot, bot->GetPositionX() + dx / len * step, bot->GetPositionY() + dy / len * step, z,
+                            false, false);
+                return true;
+            }
+        }
+
+        // Still blocked: stop forcing movement and let the loot watchdog defer the dive.
+        LOG_DEBUG("playerbots", "swim-trace {}: ascent blocked, giving up for now", bot->GetName());
+        botAI->diveSurfacing = false;
+        botAI->diveAscendGiveUpMs = now;
+        return false;
+    }
+
+    // Re-issue only when needed: the plain MoveTo duplicate guard made the ascent a no-op while
+    // combat/grind splines kept winning, but re-forcing every tick can push through WMO walls,
+    // so issue on a stopped mover or once a second, after re-validating the clear column.
+    bool const needIssue = !bot->isMoving() || now - botAI->diveAscendIssueMs >= 1000;
+    if (needIssue)
+    {
+        if (!bot->IsWithinLOS(botAI->diveSurfaceX, botAI->diveSurfaceY, botAI->diveSurfaceZ))
+        {
+            if (FindSurfacePoint())
+                LOG_DEBUG("playerbots", "swim-trace {}: surface column obstructed, re-sampled", bot->GetName());
+        }
+
+        UpdateMovementState();
+        DoMovePoint(bot, botAI->diveSurfaceX, botAI->diveSurfaceY, botAI->diveSurfaceZ, false, false);
+        botAI->diveAscendIssueMs = now;
+    }
+
+    return true;
 }
 
 bool MoveToLootAction::Execute(Event /*event*/)

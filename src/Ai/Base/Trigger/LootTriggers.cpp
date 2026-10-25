@@ -85,12 +85,17 @@ bool UnderwaterSafetyTrigger::IsActive()
         }
         botAI->diveAirMs -= int32(elapsed);
 
+        // A failed ascent backs off before retrying (SurfaceFromDiveAction sets this).
+        constexpr uint32 diveAscendGiveUpBackoffMs = 30000;
+        if (botAI->diveAscendGiveUpMs && now - botAI->diveAscendGiveUpMs < diveAscendGiveUpBackoffMs)
+            return false;
+
         // Surface with a quarter of the breath left (15s floor): "low air" has to fire on every
         // realm config, including long-breath ones like WaterBreathTimer = 180000 (ms).
         int32 const diveAirSafetyMs = std::max(int32(15 * IN_MILLISECONDS), maxAir / 4);
         // "Idle" means nothing is being done under water: a bot grinding, fighting or swimming
         // to a destination must not be dragged up every tick (it yoyos with the grind skipper).
-        bool const stationary = !bot->IsInCombat() && !bot->getVictim() && !bot->isMoving();
+        bool const stationary = !bot->IsInCombat() && !bot->GetVictim() && !bot->isMoving();
         if (!stationary || !AI_VALUE(LootObject, "loot target").IsEmpty())
         {
             botAI->diveIdleSince = 0;
@@ -116,6 +121,7 @@ bool UnderwaterSafetyTrigger::IsActive()
     botAI->diveSubmergedSince = 0;
     botAI->diveSurfacing = false;
     botAI->diveIdleSince = 0;
+    botAI->diveAscendGiveUpMs = 0;
     if (botAI->diveAirMs < maxAir)
         botAI->diveAirMs = std::min(maxAir, botAI->diveAirMs + int32(10 * elapsed));
     if (botAI->diveHoldSurface && (botAI->diveAirMs >= maxAir / 2 || !bot->IsInWater()))
