@@ -64,7 +64,8 @@ bool UnderwaterSafetyTrigger::IsActive()
         elapsed = std::min<uint32>(now - botAI->diveLastTickMs, 1000);
     botAI->diveLastTickMs = now;
 
-    int32 const maxAir = int32(sWorld->getIntConfig(CONFIG_WATER_BREATH_TIMER)) * IN_MILLISECONDS
+    // WaterBreath.Timer is already in milliseconds and the core consumes it raw.
+    int32 const maxAir = int32(sWorld->getIntConfig(CONFIG_WATER_BREATH_TIMER))
                          * bot->GetTotalAuraMultiplier(SPELL_AURA_MOD_WATER_BREATHING);
 
     if (bot->IsUnderWater())
