@@ -76,7 +76,9 @@ bool UnderwaterSafetyTrigger::IsActive()
         }
         botAI->diveAirMs -= int32(elapsed);
 
-        constexpr int32 diveAirSafetyMs = 15 * IN_MILLISECONDS;
+        // Surface with a quarter of the breath left (15s floor): "low air" has to fire on every
+        // realm config, including long-breath ones like WaterBreathTimer = 180000 (ms).
+        int32 const diveAirSafetyMs = std::max(int32(15 * IN_MILLISECONDS), maxAir / 4);
         bool const idle = AI_VALUE(LootObject, "loot target").IsEmpty();
         bool const active = idle || botAI->diveAirMs <= diveAirSafetyMs;
         if (active)
