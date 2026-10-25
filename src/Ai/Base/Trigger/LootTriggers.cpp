@@ -5,6 +5,8 @@
  */
 
 #include "LootTriggers.h"
+#include <algorithm>
+
 #include "LootObjectStack.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
@@ -49,3 +51,44 @@ bool FarFromCurrentLootTrigger::IsActive()
 }
 
 bool CanLootTrigger::IsActive() { return AI_VALUE(bool, "can loot"); }
+
+bool UnderwaterSafetyTrigger::IsActive()
+{
+    // Bot-only concern; players drive themselves.
+    if (!bot->IsAlive() || bot->HasWaterBreathingAura())
+        return false;
+
+    uint32 const now = getMSTime();
+    uint32 elapsed = 0;
+    if (botAI->diveLastTickMs)
+        elapsed = std::min<uint32>(now - botAI->diveLastTickMs, 1000);
+    botAI->diveLastTickMs = now;
+
+    int32 const maxAir = int32(sWorld->getIntConfig(CONFIG_WATER_BREATH_TIMER)) * IN_MILLISECONDS
+                         * bot->GetTotalAuraMultiplier(SPELL_AURA_MOD_WATER_BREATHING);
+
+    if (bot->IsUnderWater())
+    {
+        if (!botAI->diveSubmergedSince)
+        {
+            botAI->diveSubmergedSince = now;
+            botAI->diveAirMs = maxAir;
+        }
+        botAI->diveAirMs -= int32(elapsed);
+
+        constexpr int32 diveAirSafetyMs = 15 * IN_MILLISECONDS;
+        bool const idle = AI_VALUE(LootObject, "loot target").IsEmpty();
+        bool const active = idle || botAI->diveAirMs <= diveAirSafetyMs;
+        if (active)
+            LOG_DEBUG("playerbots", "swim-trace {}: dive safety (air {:.0f}s, target {})", bot->GetName(),
+                      float(botAI->diveAirMs) / IN_MILLISECONDS, idle ? "none" : "pending");
+        return active;
+    }
+
+    // At the surface / on land: air regenerates at the mirror timer's 10x rate.
+    botAI->diveSubmergedSince = 0;
+    botAI->diveSurfacing = false;
+    if (botAI->diveAirMs < maxAir)
+        botAI->diveAirMs = std::min(maxAir, botAI->diveAirMs + int32(10 * elapsed));
+    return false;
+}

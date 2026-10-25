@@ -153,6 +153,7 @@ public:
         creators["not facing target"] = &TriggerContext::not_facing_target;
         creators["far from master"] = &TriggerContext::far_from_master;
         creators["far from loot target"] = &TriggerContext::far_from_loot_target;
+        creators["underwater safety"] = &TriggerContext::underwater_safety;
         creators["can loot"] = &TriggerContext::can_loot;
         creators["swimming"] = &TriggerContext::swimming;
         creators["target changed"] = &TriggerContext::target_changed;
@@ -301,6 +302,7 @@ private:
     static Trigger* return_to_pull_position(PlayerbotAI* botAI) { return new ReturnToPullPositionTrigger(botAI); }
     static Trigger* can_loot(PlayerbotAI* botAI) { return new CanLootTrigger(botAI); }
     static Trigger* far_from_loot_target(PlayerbotAI* botAI) { return new FarFromCurrentLootTrigger(botAI); }
+    static Trigger* underwater_safety(PlayerbotAI* botAI) { return new UnderwaterSafetyTrigger(botAI); }
     static Trigger* far_from_master(PlayerbotAI* botAI) { return new FarFromMasterTrigger(botAI); }
     static Trigger* behind_target(PlayerbotAI* botAI) { return new IsBehindTargetTrigger(botAI); }
     static Trigger* not_behind_target(PlayerbotAI* botAI) { return new IsNotBehindTargetTrigger(botAI); }

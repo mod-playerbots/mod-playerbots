@@ -27,6 +27,16 @@ public:
     bool IsActive() override;
 };
 
+// Fires while the bot is under water with fading air, or idling under water with no loot
+// target, so SurfaceFromDiveAction can surface before drowning / terrain clipping.
+class UnderwaterSafetyTrigger : public Trigger
+{
+public:
+    UnderwaterSafetyTrigger(PlayerbotAI* botAI, std::string const name = "underwater safety") : Trigger(botAI, name) {}
+
+    bool IsActive() override;
+};
+
 class CanLootTrigger : public Trigger
 {
 public:

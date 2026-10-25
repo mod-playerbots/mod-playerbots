@@ -41,7 +41,7 @@ bool LootAction::Execute(Event /*event*/)
     context->GetValue<LootObject>("loot target")->Set(lootObject);
     if (WorldObject* obj = lootObject.GetWorldObject(bot))
         LOG_DEBUG("playerbots", "swim-trace {}: loot target set to {} entry {} dist {:.1f}", bot->GetName(),
-                  lootObject.guid.ToString(), lootObject.entry, bot->GetDistance(obj));
+                  lootObject.guid.ToString(), obj->GetEntry(), bot->GetDistance(obj));
     return true;
 }
 

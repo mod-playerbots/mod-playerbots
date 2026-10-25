@@ -2595,9 +2595,92 @@ bool DisperseSetAction::Execute(Event event)
 
 bool RunAwayAction::Execute(Event /*event*/) { return Flee(AI_VALUE(Unit*, "group leader")); }
 
+bool SurfaceFromDiveAction::FindSurfacePoint()
+{
+    Map* map = bot->GetMap();
+    float const bx = bot->GetPositionX();
+    float const by = bot->GetPositionY();
+    float const bz = bot->GetPositionZ();
+
+    auto tryColumn = [&](float x, float y)
+    {
+        float const level = map->GetWaterLevel(x, y);
+        if (level == INVALID_HEIGHT || level == VMAP_INVALID_HEIGHT_VALUE || level <= bz)
+            return false;
+
+        if (!bot->IsWithinLOS(x, y, level))
+            return false;
+
+        botAI->diveSurfaceMap = bot->GetMapId();
+        botAI->diveSurfaceX = x;
+        botAI->diveSurfaceY = y;
+        botAI->diveSurfaceZ = level + 0.5f;
+        return true;
+    };
+
+    if (tryColumn(bx, by))
+        return true;
+
+    for (float const distance : {5.0f, 10.0f, 15.0f, 20.0f})
+    {
+        for (uint8 i = 0; i < 8; ++i)
+        {
+            float const angle = (float(i) + 0.5f) * (2.0f * static_cast<float>(M_PI) / 8.0f);
+            if (tryColumn(bx + cos(angle) * distance, by + sin(angle) * distance))
+                return true;
+        }
+    }
+
+    // Enclosed cave: go straight up and let the movement watchdog bound it.
+    botAI->diveSurfaceMap = bot->GetMapId();
+    botAI->diveSurfaceX = bx;
+    botAI->diveSurfaceY = by;
+    botAI->diveSurfaceZ = std::max(bz, map->GetWaterLevel(bx, by)) + 1.0f;
+    return false;
+}
+
+bool SurfaceFromDiveAction::isUseful()
+{
+    return bot->IsAlive() && (bot->IsUnderWater() || botAI->diveSurfacing);
+}
+
+bool SurfaceFromDiveAction::Execute(Event /*event*/)
+{
+    if (!bot->IsUnderWater())
+    {
+        if (botAI->diveSurfacing)
+        {
+            LOG_DEBUG("playerbots", "swim-trace {}: surfaced, air {:.0f}s", bot->GetName(),
+                      float(botAI->diveAirMs) / IN_MILLISECONDS);
+            botAI->diveSurfacing = false;
+        }
+        return true;
+    }
+
+    if (!botAI->diveSurfacing)
+    {
+        botAI->diveSurfacing = true;
+        bool const withLOS = FindSurfacePoint();
+        LOG_DEBUG("playerbots", "swim-trace {}: surfacing to {:.1f} {:.1f} {:.1f} ({})", bot->GetName(),
+                  botAI->diveSurfaceX, botAI->diveSurfaceY, botAI->diveSurfaceZ, withLOS ? "los" : "blind");
+    }
+
+    return MoveTo(botAI->diveSurfaceMap, botAI->diveSurfaceX, botAI->diveSurfaceY, botAI->diveSurfaceZ, false, false,
+                  false, true);
+}
+
 bool MoveToLootAction::Execute(Event /*event*/)
 {
     LootObjectStack* availableLoot = AI_VALUE(LootObjectStack*, "available loot");
+
+    // A dive-safety ascent owns movement; dropping the watchdog state here also gives the
+    // re-dive a fresh no-progress budget once the bot is back under water.
+    if (botAI->diveSurfacing)
+    {
+        lootWatchGuid.Clear();
+        return false;
+    }
+
     if (availableLoot->IsLootPending() || bot->GetLootGUID())
     {
         LOG_DEBUG("playerbots", "swim-trace {}: move-to-loot: pending or looting", bot->GetName());

@@ -146,6 +146,7 @@ public:
         creators["suggest dungeon"] = &ActionContext::suggest_dungeon;
         creators["return"] = &ActionContext::_return;
         creators["move to loot"] = &ActionContext::move_to_loot;
+        creators["surface from dive"] = &ActionContext::surface_from_dive;
         creators["open loot"] = &ActionContext::open_loot;
         creators["guard"] = &ActionContext::guard;
         creators["return to stay position"] = &ActionContext::return_to_stay_position;
@@ -312,6 +313,7 @@ private:
     static Action* return_to_stay_position(PlayerbotAI* botAI) { return new ReturnToStayPositionAction(botAI); }
     static Action* open_loot(PlayerbotAI* botAI) { return new OpenLootAction(botAI); }
     static Action* move_to_loot(PlayerbotAI* botAI) { return new MoveToLootAction(botAI); }
+    static Action* surface_from_dive(PlayerbotAI* botAI) { return new SurfaceFromDiveAction(botAI); }
     static Action* _return(PlayerbotAI* botAI) { return new ReturnAction(botAI); }
     static Action* shoot(PlayerbotAI* botAI) { return new CastShootAction(botAI); }
     static Action* melee(PlayerbotAI* botAI) { return new MeleeAction(botAI); }

@@ -285,6 +285,8 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
 {
     uint8 tab = GetPlayerSpecTab(player);
 
+    engine->addStrategy("diving", false);
+
     if (!player->InBattleground())
         engine->addStrategiesNoInit("racials", "chat", "default", "cast time", "potions", "duel", "boost", nullptr);
 
@@ -508,6 +510,8 @@ Engine* AiFactory::createCombatEngine(Player* player, PlayerbotAI* const facade,
 void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const facade, Engine* nonCombatEngine)
 {
     uint8 tab = GetPlayerSpecTab(player);
+
+    nonCombatEngine->addStrategy("diving", false);
 
     switch (player->getClass())
     {

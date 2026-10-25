@@ -220,6 +220,20 @@ private:
     uint32 lootWatchLastEvalMs = 0;
 };
 
+// Emergency surfacing for a bot under water: swims to the closest water-surface column with
+// line of sight (straight up first, then a widening ring) before normal pathing resumes.
+class SurfaceFromDiveAction : public MovementAction
+{
+public:
+    SurfaceFromDiveAction(PlayerbotAI* botAI) : MovementAction(botAI, "surface from dive") {}
+
+    bool isUseful() override;
+    bool Execute(Event event) override;
+
+private:
+    bool FindSurfacePoint();
+};
+
 class MoveOutOfEnemyContactAction : public MovementAction
 {
 public:
