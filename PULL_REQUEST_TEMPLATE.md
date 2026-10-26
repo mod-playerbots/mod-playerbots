@@ -32,12 +32,11 @@ Before submitting, make sure your changes aligns with these principles.
 
 **1. Performance cost at scale**
 <!--
-Tiny fixes (typo, wrong ID) can tick "None" and skip the explanation.
-Otherwise, say what runs per bot and how often, and why it can't be done more cheaply.
-
-pmon before/after numbers help. Set BotActiveAlone = 100 and botActiveAloneSmartScale = 0,
-run `playerbot pmon toggle` once the bots finish logging in, then `playerbot pmon stack` 5 minutes later.
-Post the last "Total" line from each run.
+Every line of code incurs processing costs that may cause unexpected results at scale. Small fixes can tick "None" and skip the explanation.
+It's important to know whether the feature incurs minimal costs vs very large ones.
+Use pmon to determine the performance hit by taking measurements before and after implementing the changes.
+In some cases direct code profiling of specific functions may be needed.
+If there is a high impact then there needs to be some justification for the change.
 -->
 - [ ] None
 - [ ] Minimal (explain below)
@@ -52,39 +51,30 @@ Post the last "Total" line from each run.
 
 
 
-**3. Does this add new pieces that need maintaining?**
-<!--
-For example a new strategy, trigger/action pair, config option, state flag or multiplier.
-Every one of these is something future changes have to keep working, so tell us why it's worth it.
--->
-- [ ] No
-- [ ] Yes (list them and explain below)
-
-
-
 ## AI Use and Self-Review
-<!-- AI help is allowed, but you must understand and stand behind every line you submit. -->
+<!--
+AI help is allowed, but you must understand and stand behind every line you submit, and be able to
+explain it when a maintainer asks. AI-assisted work follows the AzerothCore guidelines linked below.
+-->
 
 **Did you use AI while writing this change?**
 - [ ] No
 - [ ] Yes (say what you used it for and which parts it wrote)
 
-**Review before submitting** (tick one)
+- [ ] I have read and understood the [AC guidelines for AI Agentic Engineering](https://www.azerothcore.org/wiki/agentic-engineering) (required if you ticked Yes)
+
+**Review before submitting**
 <!--
-A self-review catches the obvious problems before a maintainer spends time on them. Use a capable model (Claude, Codex or similar).
-
-Paste the review, or a summary of what it found and what you changed, in the details block below.
-
-If you can't run one, tick the second box to request a review.
+A self-review is used as a first pass to catch obvious problems before a maintainer spends time on them.
+Run /self-review with a capable model, as described in step 5 of the guidelines above, and paste the
+resulting SELF-REVIEW.md verbatim as a comment on this PR.
 -->
 - [ ] I ran a self-review. Tool and model: ______
-- [ ] I could not run a review and am requesting one
 
 ## Code Provenance
 <!--
 mod-playerbots is GPLv2 and derives from the CMaNGOS playerbots (ike3). Code ported or adapted from
-another GPLv2 project must keep its upstream attribution (GPLv2 §1 and §2(a)). Never replace an
-upstream copyright notice with the project header.
+another GPLv2 project must keep its upstream attribution (GPLv2 §1 and §2(a)).
 
 If yes, give:
 - Source project and URL (file or commit if you know it).

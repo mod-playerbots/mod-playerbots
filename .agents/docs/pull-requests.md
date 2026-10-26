@@ -35,16 +35,19 @@ instructional `<!-- -->` comments.
 - **Description**: the concrete, observable failure before and after. "Adds support for X" or
   "more realistic" is not a problem statement.
 - **How to Test**: steps, required setup (bot count, config), expected behaviour.
-- **Impact**: three questions (performance cost, default behaviour, new maintenance surface),
-  each explained when not "None" or "No". The performance answer says what runs per bot, how
-  often, and why it can't be done more cheaply; only trivial changes (typos, wrong IDs) skip it.
+- **Impact Assessment**: two questions (performance cost, default behaviour), each explained
+  when not "None" or "No". The performance answer says what runs per bot, how
+  often, and when there is a moderate/high impact,  why it can't be done more cheaply; only trivial changes (typos, wrong IDs) skip it.
   The standard measurement is `playerbot pmon` before and after: set `BotActiveAlone = 100` and
   `botActiveAloneSmartScale = 0`, boot, run `playerbot pmon toggle` once the bots have logged
   in, then `playerbot pmon stack` five minutes later and compare the last "Total" line.
-- **AI Use and Self-Review**: tick the AI question honestly and say what the AI wrote. Tick exactly
-  one review box: either a self-review, naming the tool and model and pasting its output or a
-  summary in the details block, or a request for a review, which adds the `Review requested`
-  label. A maintainer-run review is posted unverified; reply on the PR where a finding is wrong.
+- **AI Use and Self-Review**: tick the AI question honestly and say what the AI wrote. AI-assisted
+  work follows the
+  [AC guidelines for AI Agentic Engineering](https://www.azerothcore.org/wiki/agentic-engineering)
+  (the RPAC workflow from the agent-toolkit), and the author ticks that they read them. A
+  self-review is required: tick its box, name the tool and model, and paste
+  `<slug>.SELF-REVIEW.md` verbatim as a PR comment. A maintainer-run review is posted
+  unverified; reply on the PR where a finding is wrong.
 - **Code Provenance**: per the upstream credit section above.
 - **Checklist**: new bot lines translated, GPLv2 header on new files, docs and
   `playerbots.conf.dist` comments updated, no new compiler warnings.

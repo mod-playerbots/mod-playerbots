@@ -26,9 +26,8 @@ so one change reaches impacts every bot on the server.
 - No synchronous database query on a map-thread path.
 - New `GetBotTextOrDefault` keys ship with their translation SQL.
 - New config options are in `conf/playerbots.conf.dist` with a default and a comment.
-- The PR body's Feature Evaluation and Impact Assessment match the diff: per-tick work added, a
-  default strategy set or default config value changed, or a new decision branch is not ticked
-  "No".
+- The PR body's Impact Assessment matches the diff: per-tick work added is not ticked "None",
+  and a changed default strategy set or config default is not ticked "No".
 - Ported code carries its upstream notice and the PR's Code Provenance names the source; a
   missing credit is a finding.
 
