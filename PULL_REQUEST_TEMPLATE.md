@@ -9,7 +9,6 @@ DESIGN PHILOSOPHY: We prioritize STABILITY, PERFORMANCE, AND PREDICTABILITY over
 Every action and decision executes PER BOT AND PER TRIGGER. Small increases in logic complexity scale
 poorly across thousands of bots and negatively affect all. We prioritize a stable system over a smarter
 one. Bots don't need to behave perfectly; believable behavior is the goal, not human simulation.
-Default behavior must be cheap in processing; expensive behavior must be opt-in.
 
 Before submitting, make sure your changes aligns with these principles.
 -->
