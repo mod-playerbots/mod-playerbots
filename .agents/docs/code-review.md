@@ -23,7 +23,6 @@ Any new feature needs maintainer approval and a clear understanding of runtime c
 - Built at the right layer: a per-class rotation fix belongs in that class's directory, an
   encounter fix in `Dungeon/` or `Raid/`, shared behaviour in `Base/`.
 - It does not defeat an exclusive mechanism (sibling strategy groups, `ApplyInstanceStrategies`).
-- Opt-in is not validation: a config knob does not excuse a design that is wrong when enabled.
 - One PR, one feature.
 
 ## Design quality

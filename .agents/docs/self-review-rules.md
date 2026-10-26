@@ -22,7 +22,8 @@ so one change reaches impacts every bot on the server.
 
 - Every new action, trigger, strategy, and value name resolves to a registered creator, and no
   registration is left orphaned (grep per `ai-engine.md`).
-- New per-tick work is behind a gate or a cached value; a trigger that scans is a finding.
+- New per-tick work is behind a cheap check (`isUseful()`, a timer) or a cached value; a trigger
+  that scans is a finding.
 - No synchronous database query on a map-thread path.
 - New `GetBotTextOrDefault` keys ship with their translation SQL.
 - New config options are in `conf/playerbots.conf.dist` with a default and a comment.
