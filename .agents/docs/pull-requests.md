@@ -34,17 +34,20 @@ instructional `<!-- -->` comments.
 
 - **Description**: the concrete, observable failure before and after. "Adds support for X" or
   "more realistic" is not a problem statement.
-- **Feature Evaluation**: the minimum logic needed, and the processing cost when it runs across
-  thousands of bots. Skippable only for trivial changes (typos, wrong IDs).
 - **How to Test**: steps, required setup (bot count, config), expected behaviour.
-- **Impact Assessment**: the three checkboxes, each explained when not "No". The standard
-  measurement is `playerbot pmon` before and after: set `BotActiveAlone = 100` and
+- **Impact**: three questions (performance cost, default behaviour, new maintenance surface),
+  each explained when not "None" or "No". The performance answer says what runs per bot, how
+  often, and why it can't be done more cheaply; only trivial changes (typos, wrong IDs) skip it.
+  The standard measurement is `playerbot pmon` before and after: set `BotActiveAlone = 100` and
   `botActiveAloneSmartScale = 0`, boot, run `playerbot pmon toggle` once the bots have logged
   in, then `playerbot pmon stack` five minutes later and compare the last "Total" line.
-- **AI Assistance**: tick honestly; name the tool, what it produced, and that it was reviewed.
+- **AI Use and Self-Review**: tick the AI question honestly and say what the AI wrote. Tick exactly
+  one review box: either a self-review, naming the tool and model and pasting its output or a
+  summary in the details block, or a request for a review, which adds the `Review requested`
+  label. A maintainer-run review is posted unverified; reply on the PR where a finding is wrong.
 - **Code Provenance**: per the upstream credit section above.
-- **Final Checklist**: stability and performance tested, new bot lines translated, GPLv2 header on
-  new files, docs and `playerbots.conf.dist` comments updated, no new compiler warnings.
+- **Checklist**: new bot lines translated, GPLv2 header on new files, docs and
+  `playerbots.conf.dist` comments updated, no new compiler warnings.
 
 ## Scope
 

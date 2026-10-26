@@ -19,108 +19,96 @@ Before submitting, make sure your changes aligns with these principles.
 
 
 
-## Feature Evaluation
+## How to Test
 <!--
-If your PR is very minimal (comment typo, wrong ID reference, etc), and it is very obvious it will not have
-any impact on performance, you may skip these question. If necessary, a maintainer may ask you for them later.
--->
-
-<!-- Please answer the following: -->
-- Describe the **minimum logic** required to achieve the intended behavior.
-- Describe the **processing cost** when this logic executes across many bots.
-
-
-
-## How to Test the Changes
-<!--
-- Step-by-step instructions to test the change.
-- Any required setup (e.g. multiple players, number of bots, specific configuration).
-- Expected behavior and how to verify it.
+- Steps to see the old behavior and the new one.
+- Setup needed (number of bots, party or raid, config values).
+- What you should see when it works.
 -->
 
 
 
 ## Impact Assessment
+
+**1. Performance cost at scale**
 <!--
-As a generic test, pmon checks before and after your edits are helpful. To standardize the measurement, set the configs
-BotActiveAlone = 100 & botActiveAloneSmartScale = 0. After server boot, enable the monitor `playerbot pmon toggle`
-right after the bots finished logging-in, and run the stack command `playerbot pmon stack` 5 minutes after that.
-The last "Total" line is the main result to look for.
+Tiny fixes (typo, wrong ID) can tick "None" and skip the explanation.
+Otherwise, say what runs per bot and how often, and why it can't be done more cheaply.
+
+pmon before/after numbers help. Set BotActiveAlone = 100 and botActiveAloneSmartScale = 0,
+run `playerbot pmon toggle` once the bots finish logging in, then `playerbot pmon stack` 5 minutes later.
+Post the last "Total" line from each run.
 -->
-- Does this change increase per-bot/per-tick processing or risk scaling poorly with thousands of bots?
-    - - [ ] No, not at all
-    - - [ ] Minimal impact (**explain below**)
-    - - [ ] Moderate impact (**explain below**)
+- [ ] None
+- [ ] Minimal (explain below)
+- [ ] Moderate or more (explain below)
 
 
 
-- Does this change modify default bot behavior?
-    - - [ ] No
-    - - [ ] Yes (**explain why**)
+**2. Does this change what bots do by default?**
+<!-- Default means without the player turning on a new strategy or config option. -->
+- [ ] No
+- [ ] Yes (explain why the new default is better)
 
 
 
-- Does this change add new decision branches or increase maintenance complexity?
-    - - [ ] No
-    - - [ ] Yes (**explain below**)
-
-
-
-## AI Assistance
+**3. Does this add new pieces that need maintaining?**
 <!--
-AI assistance is allowed, but all submitted code must be fully understood, reviewed, and owned by the contributor.
-We expect contributors to be honest about what they do and do not understand.
+For example a new strategy, trigger/action pair, config option, state flag or multiplier.
+Every one of these is something future changes have to keep working, so tell us why it's worth it.
 -->
-Was AI assistance used while working on this change?
-- - [ ] No
-- - [ ] Yes (**explain below**)
+- [ ] No
+- [ ] Yes (list them and explain below)
+
+
+
+## AI Use and Self-Review
+<!-- AI help is allowed, but you must understand and stand behind every line you submit. -->
+
+**Did you use AI while writing this change?**
+- [ ] No
+- [ ] Yes (say what you used it for and which parts it wrote)
+
+**Review before submitting** (tick one)
 <!--
-If yes, please specify:
-- Purpose of usage (e.g. brainstorming, refactoring, documentation, code generation).
-- Which parts of the change were influenced or generated, and whether it was thoroughly reviewed.
+A self-review catches the obvious problems before a maintainer spends time on them. Use a capable model (Claude, Codex or similar).
+
+Paste the review, or a summary of what it found and what you changed, in the details block below.
+
+If you can't run one, tick the second box to request a review.
 -->
+- [ ] I ran a self-review. Tool and model: ______
+- [ ] I could not run a review and am requesting one
 
-
-
-## Code Provenance / Attribution
+## Code Provenance
 <!--
-mod-playerbots is GPLv2 and is derived from the CMaNGOS playerbots (ike3). Code may be ported or
-adapted from other GPLv2 projects, but upstream attribution MUST be preserved (GPLv2 §1 and §2(a)).
-Never replace an upstream copyright notice with the project header.
+mod-playerbots is GPLv2 and derives from the CMaNGOS playerbots (ike3). Code ported or adapted from
+another GPLv2 project must keep its upstream attribution (GPLv2 §1 and §2(a)). Never replace an
+upstream copyright notice with the project header.
+
+If yes, give:
+- Source project and URL (file or commit if you know it).
+- Original author(s), each with a `Co-authored-by: Name <email>` trailer on your commit.
+- An in-file "Ported/adapted from <project>" note on substantially ported files, or an inline
+  "// Adapted from <project>" comment on small snippets.
 -->
-Was any code in this PR copied or adapted from a sister / upstream project (e.g. CMaNGOS playerbots,
- MaNGOS, another module)?
-- - [ ] No, all code in this PR is original
-- - [ ] Yes (**name the project and the original author(s) below**)
+Was any code copied or adapted from another project (CMaNGOS playerbots, MaNGOS, another module)?
+- [ ] No, all code is original
+- [ ] Yes (name the project and original authors below)
+
+
+
+## Checklist
 <!--
-If yes, please provide:
-- Source project + URL (and the specific file/commit if known).
-- Original author(s) — add a `Co-authored-by: Name <email>` trailer for each to your commit.
-- Attribution in code: an in-file "Ported/adapted from <project>" note on substantially-ported files,
-  or an inline "// Adapted from <project>" comment for small snippets.
+Translations: anything new that bots say in chat must go through GetBotTextOrDefault with English
+as the fallback, and the translations for all nine AzerothCore locales go in an SQL update. Example:
+data/sql/playerbots/updates/2025_12_27_ai_playerbot_fishing_text.sql, used in
+src/Ai/Base/Actions/FishingAction.cpp.
 -->
-
-
-
-<!--
-TRANSLATIONS:
-Anything new that the bots say in chat must be in a translatable format. This is done using GetBotTextOrDefault,
-which you can search for in the codebase to find examples. Your code needs to have English as the default fallback,
-while the full translations need to be in an SQL update file. The languages in the file are the nine language
-options supported by AzerothCore: English, Korean, French, German, Chinese, Taiwanese, Spanish, Spanish Mexico, and
-Russian. See data/sql/playerbots/updates/2025_12_27_ai_playerbot_fishing_text.sql as an example of a translation SQL
-update, whose content are called within the codebase at src/Ai/Base/Actions/FishingAction.cpp
--->
-
-## Final Checklist
-
-- - [ ] Changes are understood and tested for server stability and performance impact.
-- - [ ] Any new bot dialogue lines are translated.
-- - [ ] New source files use the GPLv2 header.
-- - [ ] Documentation updated if needed (Code comments, Conf comments, WiKi commands).
-- - [ ] New and modified files do not introduce new compiler warnings.
+- [ ] New bot chat lines are translated (see comment above), or there are none.
+- [ ] New source files use the GPLv2 header.
+- [ ] Docs updated where needed (code comments, conf comments, wiki commands).
+- [ ] No new compiler warnings.
 
 ## Notes for Reviewers
-<!-- Anything else that's helpful to review or test your pull request. -->
-
-
+<!-- Anything else that helps someone review or test this. -->
