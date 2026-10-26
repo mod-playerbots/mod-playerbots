@@ -32,22 +32,20 @@ from CMaNGOS, MaNGOS, or another GPLv2 project:
 Fill in `PULL_REQUEST_TEMPLATE.md` completely; do not delete sections. Strip only the
 instructional `<!-- -->` comments.
 
-- **Description**: the concrete, observable failure before and after. "Adds support for X" or
-  "more realistic" is not a problem statement.
-- **How to Test**: steps, required setup (bot count, config), expected behaviour.
-- **Impact Assessment**: two questions (performance cost, default behaviour), each explained
-  when not "None" or "No". The performance answer says what runs per bot, how
-  often, and when there is a moderate/high impact,  why it can't be done more cheaply; only trivial changes (typos, wrong IDs) skip it.
-  The standard measurement is `playerbot pmon` before and after: set `BotActiveAlone = 100` and
+- **Description**: what the problem is today and what they do after the change. - **How to Test**: steps, required setup (bot count, config), expected behaviour.
+- **Impact Assessment**: two questions, performance cost and default behaviour. Any answer other
+  than "None" or "No" gets an explanation. Small fixes can tick "None" and skip it. Otherwise,
+  say what runs per bot and how often; a high impact also needs a reason the change is worth
+  it. Measure with `playerbot pmon` before and after. Set `BotActiveAlone = 100` and
   `botActiveAloneSmartScale = 0`, boot, run `playerbot pmon toggle` once the bots have logged
-  in, then `playerbot pmon stack` five minutes later and compare the last "Total" line.
-- **AI Use and Self-Review**: tick the AI question honestly and say what the AI wrote. AI-assisted
-  work follows the
-  [AC guidelines for AI Agentic Engineering](https://www.azerothcore.org/wiki/agentic-engineering)
-  (the RPAC workflow from the agent-toolkit), and the author ticks that they read them. A
-  self-review is required: tick its box, name the tool and model, and paste
-  `<slug>.SELF-REVIEW.md` verbatim as a PR comment. A maintainer-run review is posted
-  unverified; reply on the PR where a finding is wrong.
+  in, run `playerbot pmon stack` five minutes later, and compare the last "Total" line.
+- **AI Use and Self-Review**: answer the AI question honestly and say which parts the AI wrote.
+  If AI was used, tick the box confirming you read the
+  [AC guidelines for AI Agentic Engineering](https://www.azerothcore.org/wiki/agentic-engineering);
+  they recommend the RPAC workflow from the agent-toolkit. Every PR needs a self-review, with or
+  without AI. Tick its box, name the tool and model, and paste `<slug>.SELF-REVIEW.md` verbatim
+  as a PR comment. When a maintainer runs the review instead, they post it without checking it
+  first, so reply on the PR to any finding that is wrong.
 - **Code Provenance**: per the upstream credit section above.
 - **Checklist**: new bot lines translated, GPLv2 header on new files, docs and
   `playerbots.conf.dist` comments updated, no new compiler warnings.

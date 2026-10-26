@@ -35,12 +35,15 @@ Before submitting, make sure your changes aligns with these principles.
 Every line of code incurs processing costs that may cause unexpected results at scale. Small fixes can tick "None" and skip the explanation.
 It's important to know whether the feature incurs minimal costs vs very large ones.
 Use pmon to determine the performance hit by taking measurements before and after implementing the changes.
+For comparable numbers, set BotActiveAlone = 100 and botActiveAloneSmartScale = 0, run `playerbot pmon toggle`
+once the bots finish logging in, then `playerbot pmon stack` 5 minutes later, and post the last "Total" line
+from each run.
 In some cases direct code profiling of specific functions may be needed.
 If there is a high impact then there needs to be some justification for the change.
 -->
 - [ ] None
 - [ ] Minimal (explain below)
-- [ ] Moderate or more (explain below)
+- [ ] Moderate or high (explain below)
 
 
 
