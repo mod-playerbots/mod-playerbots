@@ -543,10 +543,10 @@ bool TkResetInstance(uint32 instanceId)
         !state.voidReaverArcaneOrbs.empty() || state.advisorDpsWaitTimer;
 
     // Not erased: the class roles outlive encounters, see ClassRoleAssignment.
-    state = {
-        .capernianTank = state.capernianTank,
-        .sanguinarDebuffHunter = state.sanguinarDebuffHunter,
-    };
+    TkInstanceState kept;
+    kept.capernianTank = state.capernianTank;
+    kept.sanguinarDebuffHunter = state.sanguinarDebuffHunter;
+    state = std::move(kept);
     return wasSet;
 }
 

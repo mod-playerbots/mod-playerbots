@@ -2758,7 +2758,9 @@ bool SscResetInstance(uint32 instanceId)
         state.vashjCorePassingChain;
 
     // Not erased: the class roles outlive encounters, see ClassRoleAssignment.
-    state = { .leotherasWarlockTank = state.leotherasWarlockTank };
+    SscInstanceState kept;
+    kept.leotherasWarlockTank = state.leotherasWarlockTank;
+    state = std::move(kept);
     return wasSet;
 }
 
