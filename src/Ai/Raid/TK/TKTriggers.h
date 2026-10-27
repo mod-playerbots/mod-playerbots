@@ -47,6 +47,15 @@ public:
     bool IsActive() override;
 };
 
+// In and out of encounters: the roles are re-ranked out of one and passed on in one.
+class TempestKeepClassRolesShouldBeAssignedTrigger : public Trigger
+{
+public:
+    TempestKeepClassRolesShouldBeAssignedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "tempest keep class roles should be assigned", 1000) {}
+    bool IsActive() override;
+};
+
 // Trash
 
 class CrimsonHandCenturionCastsArcaneFlurryTrigger : public Trigger

@@ -38,6 +38,15 @@ public:
     bool IsActive() override;
 };
 
+// In and out of encounters: the roles are re-ranked out of one and passed on in one.
+class SscClassRolesShouldBeAssignedTrigger : public Trigger
+{
+public:
+    SscClassRolesShouldBeAssignedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "ssc class roles should be assigned", 1000) {}
+    bool IsActive() override;
+};
+
 // Used for Fathom-Lord Karathress, Morogrim Tidewalker, and Lady Vashj.
 class SscHunterShouldMisdirectTrigger : public SscEncounterTrigger
 {
