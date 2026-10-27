@@ -573,6 +573,11 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
     }
     PlayerbotRepository::instance().Load(botAI);
 
+    // The loaded strategies were saved at the bot's last strategy change and can include another
+    // instance's strategy, so apply the current map's again.
+    if (sPlayerbotAIConfig.ApplyInstanceStrategies)
+        botAI->ApplyInstanceStrategies(bot->GetMapId());
+
     if (master && !master->HasUnitState(UNIT_STATE_IN_FLIGHT))
     {
         bot->GetMotionMaster()->MovementExpired();
