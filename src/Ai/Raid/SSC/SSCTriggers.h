@@ -38,7 +38,6 @@ public:
     bool IsActive() override;
 };
 
-// In and out of encounters: the roles are re-ranked out of one and passed on in one.
 class SscClassRolesShouldBeAssignedTrigger : public Trigger
 {
 public:
