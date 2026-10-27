@@ -93,6 +93,12 @@ void GenericWarlockNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tr
     triggers.push_back(new TriggerNode("life tap", { NextAction("life tap", 23.0f) }));
 }
 
+void WarlockRitualOfSoulsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+{
+    RitualOfSoulsStrategy::InitTriggers(triggers);
+    triggers.push_back(new TriggerNode("group needs healthstones", { NextAction("ritual of souls", 26.5f) }));
+}
+
 // Non-combat strategy for summoning a Imp
 // Enabled by default for the Destruction spec
 // To enable, type "nc +imp"

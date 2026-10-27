@@ -18,6 +18,7 @@
 #include "UseItemAction.h"
 #include "WarlockActions.h"
 #include "WarlockTriggers.h"
+#include "WarlockValues.h"
 
 class WarlockStrategyFactoryInternal : public NamedObjectContext<Strategy>
 {
@@ -25,6 +26,7 @@ public:
     WarlockStrategyFactoryInternal()
     {
         creators["nc"] = &WarlockStrategyFactoryInternal::nc;
+        creators["ritualofsouls"] = &WarlockStrategyFactoryInternal::ritual_of_souls;
         creators["pull"] = &WarlockStrategyFactoryInternal::pull;
         creators["boost"] = &WarlockStrategyFactoryInternal::boost;
         creators["cc"] = &WarlockStrategyFactoryInternal::cc;
@@ -36,6 +38,7 @@ public:
 
 private:
     static Strategy* nc(PlayerbotAI* botAI) { return new GenericWarlockNonCombatStrategy(botAI); }
+    static Strategy* ritual_of_souls(PlayerbotAI* botAI) { return new WarlockRitualOfSoulsStrategy(botAI); }
     static Strategy* pull(PlayerbotAI* botAI) { return new PullStrategy(botAI, "shoot"); }
     static Strategy* boost(PlayerbotAI* botAI) { return new WarlockBoostStrategy(botAI); }
     static Strategy* cc(PlayerbotAI* botAI) { return new WarlockCcStrategy(botAI); }
@@ -148,6 +151,7 @@ public:
         creators["no soul shard"] = &WarlockTriggerFactoryInternal::no_soul_shard;
         creators["too many soul shards"] = &WarlockTriggerFactoryInternal::too_many_soul_shards;
         creators["no healthstone"] = &WarlockTriggerFactoryInternal::HasHealthstone;
+        creators["group needs healthstones"] = &WarlockTriggerFactoryInternal::group_needs_healthstones;
         creators["no firestone"] = &WarlockTriggerFactoryInternal::HasFirestone;
         creators["no spellstone"] = &WarlockTriggerFactoryInternal::HasSpellstone;
         creators["no soulstone"] = &WarlockTriggerFactoryInternal::OutOfSoulstone;
@@ -196,6 +200,7 @@ private:
     static Trigger* no_soul_shard(PlayerbotAI* botAI) { return new OutOfSoulShardsTrigger(botAI); }
     static Trigger* too_many_soul_shards(PlayerbotAI* botAI) { return new TooManySoulShardsTrigger(botAI); }
     static Trigger* HasHealthstone(PlayerbotAI* botAI) { return new HasHealthstoneTrigger(botAI); }
+    static Trigger* group_needs_healthstones(PlayerbotAI* botAI) { return new RitualOfSoulsTrigger(botAI); }
     static Trigger* HasFirestone(PlayerbotAI* botAI) { return new HasFirestoneTrigger(botAI); }
     static Trigger* HasSpellstone(PlayerbotAI* botAI) { return new HasSpellstoneTrigger(botAI); }
     static Trigger* OutOfSoulstone(PlayerbotAI* botAI) { return new OutOfSoulstoneTrigger(botAI); }
@@ -249,6 +254,7 @@ public:
         creators["create soul shard"] = &WarlockAiObjectContextInternal::create_soul_shard;
         creators["destroy soul shard"] = &WarlockAiObjectContextInternal::destroy_soul_shard;
         creators["create healthstone"] = &WarlockAiObjectContextInternal::create_healthstone;
+        creators["ritual of souls"] = &WarlockAiObjectContextInternal::ritual_of_souls;
         creators["create firestone"] = &WarlockAiObjectContextInternal::create_firestone;
         creators["create spellstone"] = &WarlockAiObjectContextInternal::create_spellstone;
         creators["create soulstone"] = &WarlockAiObjectContextInternal::create_soulstone;
@@ -324,6 +330,7 @@ private:
     static Action* create_soul_shard(PlayerbotAI* botAI) { return new CreateSoulShardAction(botAI); }
     static Action* destroy_soul_shard(PlayerbotAI* botAI) { return new DestroySoulShardAction(botAI); }
     static Action* create_healthstone(PlayerbotAI* botAI) { return new CastCreateHealthstoneAction(botAI); }
+    static Action* ritual_of_souls(PlayerbotAI* botAI) { return new CastRitualOfSoulsAction(botAI); }
     static Action* create_firestone(PlayerbotAI* botAI) { return new CastCreateFirestoneAction(botAI); }
     static Action* create_spellstone(PlayerbotAI* botAI) { return new CastCreateSpellstoneAction(botAI); }
     static Action* create_soulstone(PlayerbotAI* botAI) { return new CastCreateSoulstoneAction(botAI); }
@@ -380,6 +387,18 @@ private:
     static Action* curse_of_weakness(PlayerbotAI* botAI) { return new CastCurseOfWeaknessAction(botAI); }
 };
 
+class WarlockValueContextInternal : public NamedObjectContext<UntypedValue>
+{
+public:
+    WarlockValueContextInternal()
+    {
+        creators["should cast ritual of souls"] = &WarlockValueContextInternal::should_cast_ritual_of_souls;
+    }
+
+private:
+    static UntypedValue* should_cast_ritual_of_souls(PlayerbotAI* botAI) { return new ShouldCastRitualOfSoulsValue(botAI); }
+};
+
 SharedNamedObjectContextList<Strategy> WarlockAiObjectContext::sharedStrategyContexts;
 SharedNamedObjectContextList<Action> WarlockAiObjectContext::sharedActionContexts;
 SharedNamedObjectContextList<Trigger> WarlockAiObjectContext::sharedTriggerContexts;
@@ -424,4 +443,5 @@ void WarlockAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContext
 void WarlockAiObjectContext::BuildSharedValueContexts(SharedNamedObjectContextList<UntypedValue>& valueContexts)
 {
     AiObjectContext::BuildSharedValueContexts(valueContexts);
+    valueContexts.Add(new WarlockValueContextInternal());
 }
