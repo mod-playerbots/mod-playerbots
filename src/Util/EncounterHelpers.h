@@ -88,11 +88,11 @@ struct ClassRoleText
 struct ClassRole
 {
     uint8 playerClass;
-    std::optional<uint8> requiredSpec;
-    std::optional<uint8> preferredSpec;
+    std::optional<uint8> requiredSpec = std::nullopt;
+    std::optional<uint8> preferredSpec = std::nullopt;
     ClassRoleText role;
     ClassRoleText candidate;
-    ClassRoleText preferredCandidate;
+    ClassRoleText preferredCandidate = {};
 };
 
 // Not cleared by the raids' instance resets, since clearing announcedChoice would make the
