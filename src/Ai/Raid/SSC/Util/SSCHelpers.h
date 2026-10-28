@@ -603,7 +603,7 @@ struct VashjTargetFacts
     Unit* vashj = nullptr;
     Unit* tainted = nullptr;
     int8 phase = -1;
-    // Measured from the bot, and in phase 2 also from the platform centre, so bots don't chase
+    // Measured from the bot, and in phase 2 also from the platform center, so bots don't chase
     // adds down the stairs.
     float maxPursueRange = 0.0f;
     float maxSearchRange = 0.0f;

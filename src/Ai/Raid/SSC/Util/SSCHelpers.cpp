@@ -1234,7 +1234,7 @@ std::vector<GameObject*> GetUsableVashjGenerators(Map* map)
 
 float GetVashjGroundZ(Map* map, uint32 phaseMask, float x, float y)
 {
-    constexpr float centreZ = 43.0f;
+    constexpr float centerZ = 43.0f;
     constexpr float rimZ = 41.1f;
     constexpr float stairRun = 33.15f;
     constexpr float stairDrop = 18.9f;
@@ -1244,7 +1244,7 @@ float GetVashjGroundZ(Map* map, uint32 phaseMask, float x, float y)
         return INVALID_HEIGHT;
 
     float const slopeZ = distance <= VASHJ_DAIS_APOTHEM ?
-        centreZ - (centreZ - rimZ) * distance / VASHJ_DAIS_APOTHEM :
+        centerZ - (centerZ - rimZ) * distance / VASHJ_DAIS_APOTHEM :
         rimZ - (distance - VASHJ_DAIS_APOTHEM) / stairRun * stairDrop;
 
     constexpr float searchAbove = 2.0f;
