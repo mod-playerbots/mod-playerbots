@@ -114,6 +114,8 @@ Position ValidateStaticFloorPoint(Player* bot, Position const& point);
 // false for a class without a taunt
 bool CastClassTaunt(PlayerbotAI* botAI, Unit* target);
 bool ClassTauntReady(PlayerbotAI* botAI);
+// The cooldown casting it now would start, talents and glyphs included
+int32 SpellCooldownMs(Player* bot, uint32 spellId);
 
 // Nitro Boosts, the engineering boot tinker
 inline constexpr uint32 NITRO_BOOSTS_ENCHANT = 3606;

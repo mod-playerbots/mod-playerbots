@@ -23,6 +23,8 @@
 #include "RogueActions.h"
 #include "RtiTargetValue.h"
 #include "ShamanActions.h"
+#include "SpellInfo.h"
+#include "SpellMgr.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include <algorithm>
@@ -877,6 +879,23 @@ bool ClassTauntReady(PlayerbotAI* botAI)
     char const* taunt = ClassTauntSpell(botAI->GetBot());
     uint32 const spellId = taunt ? botAI->GetAiObjectContext()->GetValue<uint32>("spell id", taunt)->Get() : 0;
     return spellId && !botAI->GetBot()->HasSpellCooldown(spellId);
+}
+
+int32 SpellCooldownMs(Player* bot, uint32 spellId)
+{
+    SpellInfo const* info = sSpellMgr->GetSpellInfo(spellId);
+    if (!bot || !info)
+        return 0;
+
+    int32 recovery = static_cast<int32>(info->RecoveryTime);
+    int32 category = static_cast<int32>(info->CategoryRecoveryTime);
+    if (recovery > 0)
+        bot->ApplySpellMod(spellId, SPELLMOD_COOLDOWN, recovery);
+
+    if (category > 0 && !info->HasAttribute(SPELL_ATTR6_NO_CATEGORY_COOLDOWN_MODS))
+        bot->ApplySpellMod(spellId, SPELLMOD_COOLDOWN, category);
+
+    return std::max(recovery, category);
 }
 
 Item* GetNitroBoostBoots(Player* bot)
