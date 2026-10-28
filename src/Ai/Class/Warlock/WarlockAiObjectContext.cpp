@@ -396,7 +396,10 @@ public:
     }
 
 private:
-    static UntypedValue* should_cast_ritual_of_souls(PlayerbotAI* botAI) { return new ShouldCastRitualOfSoulsValue(botAI); }
+    static UntypedValue* should_cast_ritual_of_souls(PlayerbotAI* botAI)
+    {
+        return new ShouldCastRitualOfSoulsValue(botAI);
+    }
 };
 
 SharedNamedObjectContextList<Strategy> WarlockAiObjectContext::sharedStrategyContexts;

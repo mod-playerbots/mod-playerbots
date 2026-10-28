@@ -10,28 +10,18 @@
 #include "MovementActions.h"
 
 class PlayerbotAI;
-class GameObject;
 
-class UseRitualOfSoulsObjectAction : public MovementAction
+class JoinRitualOfSoulsAction : public MovementAction
 {
 public:
-    UseRitualOfSoulsObjectAction(PlayerbotAI* botAI, std::string const name) : MovementAction(botAI, name) {}
-
-protected:
-    bool MoveToAndUse(GameObject* go);
-};
-
-class JoinRitualOfSoulsAction : public UseRitualOfSoulsObjectAction
-{
-public:
-    JoinRitualOfSoulsAction(PlayerbotAI* botAI) : UseRitualOfSoulsObjectAction(botAI, "join ritual of souls") {}
+    JoinRitualOfSoulsAction(PlayerbotAI* botAI) : MovementAction(botAI, "join ritual of souls") {}
     bool Execute(Event event) override;
 };
 
-class UseSoulwellAction : public UseRitualOfSoulsObjectAction
+class UseSoulwellAction : public MovementAction
 {
 public:
-    UseSoulwellAction(PlayerbotAI* botAI) : UseRitualOfSoulsObjectAction(botAI, "use soulwell") {}
+    UseSoulwellAction(PlayerbotAI* botAI) : MovementAction(botAI, "use soulwell") {}
     bool isUseful() override;
     bool Execute(Event event) override;
 };

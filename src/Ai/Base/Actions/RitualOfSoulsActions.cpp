@@ -58,18 +58,17 @@ namespace
         ritualReservations.push_back({goGuid, botGuid, now + RITUAL_SLOT_RESERVATION_MS});
         return true;
     }
+
+    float UseDistance(GameObject* go) { return fmaxf(go->GetInteractionDistance() - 1.0f, 0.0f); }
+
+    bool UseGameObject(Player* bot, GameObject* go)
+    {
+        WorldPacket data(CMSG_GAMEOBJ_USE);
+        data << go->GetGUID();
+        bot->GetSession()->HandleGameObjectUseOpcode(data);
+        return true;
+    }
 }  // namespace
-
-bool UseRitualOfSoulsObjectAction::MoveToAndUse(GameObject* go)
-{
-    if (!go->IsAtInteractDistance(bot))
-        return MoveTo(go, fmaxf(go->GetInteractionDistance() - 1.0f, 0.0f));
-
-    WorldPacket data(CMSG_GAMEOBJ_USE);
-    data << go->GetGUID();
-    bot->GetSession()->HandleGameObjectUseOpcode(data);
-    return true;
-}
 
 bool JoinRitualOfSoulsAction::Execute(Event /*event*/)
 {
@@ -86,7 +85,10 @@ bool JoinRitualOfSoulsAction::Execute(Event /*event*/)
     if (!TryReserveRitualSlot(portal->GetGUID(), bot->GetGUID(), reqHelpers))
         return false;
 
-    return MoveToAndUse(portal);
+    if (!portal->IsAtInteractDistance(bot))
+        return MoveTo(portal, UseDistance(portal));
+
+    return UseGameObject(bot, portal);
 }
 
 bool UseSoulwellAction::isUseful()
@@ -100,5 +102,8 @@ bool UseSoulwellAction::Execute(Event /*event*/)
     if (!soulwell)
         return false;
 
-    return MoveToAndUse(soulwell);
+    if (!soulwell->IsAtInteractDistance(bot))
+        return MoveTo(soulwell, UseDistance(soulwell));
+
+    return UseGameObject(bot, soulwell);
 }

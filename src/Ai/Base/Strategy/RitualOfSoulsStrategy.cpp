@@ -10,6 +10,7 @@
 
 void RitualOfSoulsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("ritual of souls portal nearby", { NextAction("join ritual of souls", 27.0f) }));
-    triggers.push_back(new TriggerNode("soulwell nearby", { NextAction("use soulwell", 26.0f) }));
+    triggers.push_back(
+        new TriggerNode("ritual of souls portal nearby", { NextAction("join ritual of souls", ACTION_HIGH + 7) }));
+    triggers.push_back(new TriggerNode("soulwell nearby", { NextAction("use soulwell", ACTION_HIGH + 6) }));
 }
