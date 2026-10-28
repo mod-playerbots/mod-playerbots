@@ -148,6 +148,17 @@ public:
     bool isUseful() override;
 };
 
+// Spends this bot's own survival button on the Lightning Charge.
+class ThorimCastPersonalDefensiveAction : public Action
+{
+public:
+    static constexpr char const* Name = "thorim cast personal defensive action";
+
+    ThorimCastPersonalDefensiveAction(PlayerbotAI* ai) : Action(ai, Name) {}
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
 // Sends a strayed pet back to the arena. Not a MovementAction: it moves the pet, not the bot, so it
 // has no business in the movement guards or the leash exemption lists.
 class ThorimPetLeashAction : public Action

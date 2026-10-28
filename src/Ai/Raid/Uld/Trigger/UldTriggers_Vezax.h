@@ -21,7 +21,7 @@ class VezaxResetEncounterStateTrigger : public Trigger
 public:
     static constexpr char const* Name = "vezax reset encounter state";
 
-    VezaxResetEncounterStateTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name, 5) {}
+    VezaxResetEncounterStateTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name, 5000) {}
     bool IsActive() override;
 };
 
@@ -134,7 +134,7 @@ public:
 
     // Two seconds, not every tick: this is the one Vezax trigger that has to sweep the grid, and the
     // field lands on a 10s cadence and lasts 20s, so reacting a little late costs almost nothing.
-    VezaxShadowCrashSoakTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name, 2) {}
+    VezaxShadowCrashSoakTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name, 2000) {}
     bool IsActive() override;
 };
 
@@ -165,7 +165,7 @@ class VezaxRaidPositionTrigger : public Trigger
 public:
     static constexpr char const* Name = "vezax raid position";
 
-    VezaxRaidPositionTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name, 2) {}
+    VezaxRaidPositionTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name, 2000) {}
     bool IsActive() override;
 };
 

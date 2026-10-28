@@ -13,6 +13,8 @@
 #include "MovementActions.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "RaidResistAura.h"
+#include "UldEncounter_IronAssembly.h"
 #include "UldTriggers.h"
 
 class IronAssemblyResetEncounterStateAction : public Action
@@ -118,15 +120,62 @@ private:
     Player* GetRedirectTank();
 };
 
-class IronAssemblyRuneOfPowerSoakAction : public MovementAction
+class IronAssemblyRuneOfPowerMeleeAction : public MovementAction
 {
 public:
-    static constexpr char const* Name = "iron assembly rune of power soak action";
+    static constexpr char const* Name = "iron assembly rune of power melee action";
 
-    IronAssemblyRuneOfPowerSoakAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, Name)
+    IronAssemblyRuneOfPowerMeleeAction(PlayerbotAI* botAI) : MovementAction(botAI, Name) {}
+    bool Execute(Event event) override;
+};
+
+class IronAssemblyMeltdownRunOutAction : public MovementAction
+{
+public:
+    static constexpr char const* Name = "iron assembly meltdown run out action";
+
+    IronAssemblyMeltdownRunOutAction(PlayerbotAI* botAI) : MovementAction(botAI, Name) {}
+    bool Execute(Event event) override;
+};
+
+// The weakest magic defensive that covers the cast's remaining time.
+class IronAssemblyFusionPunchDefensiveAction : public Action
+{
+public:
+    static constexpr char const* Name = "iron assembly fusion punch defensive action";
+
+    IronAssemblyFusionPunchDefensiveAction(PlayerbotAI* botAI) : Action(botAI, Name) {}
+    bool Execute(Event event) override;
+};
+
+class IronAssemblyNatureAspectAction : public RaidRaiseResistAuraAction
+{
+public:
+    static constexpr char const* Name = "iron assembly nature aspect action";
+
+    IronAssemblyNatureAspectAction(PlayerbotAI* botAI)
+        : RaidRaiseResistAuraAction(botAI, Name, ULD_IRON_ASSEMBLY_RESIST_AURA)
     {
     }
+};
+
+// Cast directly, not through ChangeStrategy: nothing removes an added "nature resistance", so it would
+// outlive the fight. The totem hold rule keeps the shaman's own air nodes off the slot meanwhile.
+class IronAssemblyNatureTotemAction : public Action
+{
+public:
+    static constexpr char const* Name = "iron assembly nature totem action";
+
+    IronAssemblyNatureTotemAction(PlayerbotAI* botAI) : Action(botAI, Name) {}
+    bool Execute(Event event) override;
+};
+
+class IronAssemblyUnheldTauntAction : public Action
+{
+public:
+    static constexpr char const* Name = "iron assembly unheld taunt action";
+
+    IronAssemblyUnheldTauntAction(PlayerbotAI* botAI) : Action(botAI, Name) {}
     bool Execute(Event event) override;
 };
 

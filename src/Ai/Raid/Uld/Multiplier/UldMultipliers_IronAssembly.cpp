@@ -37,6 +37,26 @@
 
 using namespace EncounterHelpers;
 
+namespace
+{
+// One round at the pull. Lust is out by name: Sated makes it once per 10 min. Trinkets go through by
+// name since the action carries no spell to measure.
+bool IronAssemblyOpenerBurstAllowed(PlayerbotAI* botAI, Player* bot, std::string const& name)
+{
+    if (name == "bloodlust" || name == "heroism")
+        return false;
+
+    if (!IronAssemblyOpenerBurstWindowOpen(botAI))
+        return false;
+
+    if (name == "use trinket")
+        return true;
+
+    uint32 const spellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", name)->Get();
+    return spellId && SpellCooldownMs(bot, spellId) <= ULDUAR_IRON_ASSEMBLY_OPENER_BURST_MAX_COOLDOWN_MS;
+}
+}  // namespace
+
 // Iron Assembly
 float IronAssemblyHoldDpsCooldownsMultiplier::GetValue(Action* action)
 {
@@ -59,7 +79,10 @@ float IronAssemblyHoldDpsCooldownsMultiplier::GetValue(Action* action)
 
     // Released the moment Steelbreaker is the last one standing. Under the normal order he dies first
     // and this would never release, which is why it is gated on the option rather than the phase.
-    return IsSteelbreakerEmpowered(botAI) ? 1.0f : 0.0f;
+    if (IsSteelbreakerEmpowered(botAI))
+        return 1.0f;
+
+    return IronAssemblyOpenerBurstAllowed(botAI, bot, name) ? 1.0f : 0.0f;
 }
 
 float IronAssemblyTauntGuardMultiplier::GetValue(Action* action)
@@ -72,6 +95,9 @@ float IronAssemblyTauntGuardMultiplier::GetValue(Action* action)
         return 1.0f;
 
     // No current target check, unlike Thorim's guard: righteous defense goes on the ally, and nothing
-    // else in this phase is worth a taunt.
-    return IronAssemblyHeldByOtherTank(bot, GetIronAssemblyMember(botAI, NPC_STEELBREAKER)) ? 0.0f : 1.0f;
+    // else in this phase is worth a taunt. The Meltdown swap is the one taunt off another tank.
+    if (!IronAssemblyHeldByOtherTank(bot, GetIronAssemblyMember(botAI, NPC_STEELBREAKER)))
+        return 1.0f;
+
+    return IronAssemblyMeltdownRoleFor(botAI, bot) == IronAssemblyMeltdownRole::Taunt ? 1.0f : 0.0f;
 }

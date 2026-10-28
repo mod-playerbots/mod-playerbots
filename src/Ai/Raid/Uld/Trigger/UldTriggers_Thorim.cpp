@@ -51,7 +51,8 @@ bool ThorimDpsPriorityTrigger::IsActive()
 
 bool ThorimGauntletPositioningTrigger::IsActive()
 {
-    if (bot->GetDistance(ULDUAR_THORIM_NEAR_ARENA_CENTER) > ULDUAR_THORIM_FLOOR_RANGE)
+    // The corridor runs about 190 yd out, well past the floor range the arena rows use.
+    if (bot->GetDistance(ULDUAR_THORIM_NEAR_ARENA_CENTER) > ULDUAR_THORIM_ENCOUNTER_PROXIMITY)
         return false;
 
     if (GetThorimSquad(botAI, bot) != ThorimSquad::Gauntlet)
@@ -76,9 +77,13 @@ bool ThorimGauntletPositioningTrigger::IsActive()
         uint8 botIndex = 0;
         if (!ThorimGauntletLaneIndexInLane(bot, leftLane, botIndex))
             return bot->GetPositionZ() <= ULDUAR_THORIM_AXIS_Z_FLOOR_THRESHOLD;
+
+        return false;
     }
 
-    return false;
+    // Master past the last waypoint, so nothing places the formation any more. Healers only: everyone else
+    // keeps up on its own chase, and a tether on them would fight reach melee for the whole squad.
+    return PlayerbotAI::IsHeal(bot) && bot->GetDistance2d(master) > ULDUAR_THORIM_GAUNTLET_TETHER_DISTANCE;
 }
 
 bool ThorimBalconyAdvanceTrigger::IsActive()
@@ -304,6 +309,13 @@ bool ThorimTankPickupTrigger::IsActive()
 
     Player* tank = ObjectAccessor::FindPlayer(mainTank);
     return !tank || !tank->IsAlive() || !NearThorimEncounter(tank);
+}
+
+bool ThorimPersonalDefensiveTrigger::IsActive()
+{
+    RaidPredictedHit hit;
+    return static_cast<bool>(GetRaidPersonalDefensive(
+        botAI, ULDUAR_THORIM_DEFENSIVE_SCOPE, GetThorimLightningChargeHit(botAI, hit) ? &hit : nullptr));
 }
 
 bool ThorimSifBlizzardTrigger::IsActive()

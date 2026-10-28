@@ -32,8 +32,7 @@ bool AuriayaFallFromFloorTrigger::IsActive()
 bool AuriayaSeepingEssenceTrigger::IsActive()
 {
     // 7 yd is a cell or two, so the pool search goes ahead of the boss.
-    return !CollectAuriayaEssencePools(bot, ULDUAR_AURIAYA_SEEPING_ESSENCE_RADIUS).empty() &&
-           AuriayaEncounterActive(botAI);
+    return IsInAuriayaPool(bot) && AuriayaEncounterActive(botAI);
 }
 
 bool AuriayaRaidPositionTrigger::IsActive()
@@ -47,9 +46,9 @@ bool AuriayaRaidPositionTrigger::IsActive()
     if (!boss || !boss->IsInCombat())
         return false;
 
-    // Standing in a pool beats standing on a spot. No stand-down for Sonic Screech, the cast is when
-    // the stack most needs its anchors. CanFreeMove already covers fear and stuns.
-    if (!CollectAuriayaEssencePools(bot, ULDUAR_AURIAYA_SEEPING_ESSENCE_RADIUS).empty())
+    // A bot in a pool is the dodge's. No stand-down for Sonic Screech, the cast is when the raid most
+    // needs its spots. CanFreeMove already covers fear and stuns.
+    if (IsInAuriayaPool(bot))
         return false;
 
     // Off the boss, not the bot: the bot is off its anchor here, so the pool fouling it can be out of reach.
@@ -57,13 +56,14 @@ bool AuriayaRaidPositionTrigger::IsActive()
 
     Position anchor;
     float tolerance = 0.0f;
-    if (!GetAuriayaAnchor(botAI, bot, boss, &roomPools, anchor, tolerance))
+    if (!GetAuriayaAnchor(botAI, bot, boss, roomPools, anchor, tolerance))
         return false;
 
-    // Stand down on a fouled anchor, or this and the dodge take turns walking the bot in and out of the pool.
-    for (Unit* pool : roomPools)
-        if (pool->GetExactDist2d(&anchor) < ULDUAR_AURIAYA_SEEPING_ESSENCE_RADIUS)
-            return false;
+    // A spot lands in a pool only once every station, or the whole soak band, is fouled. Stand down
+    // there, or this and the dodge take turns walking the bot in and out.
+    if (GetAuriayaPoolClearance(roomPools, anchor.GetPositionX(), anchor.GetPositionY()) <
+        ULDUAR_AURIAYA_SEEPING_ESSENCE_RADIUS)
+        return false;
 
     return bot->GetExactDist2d(&anchor) > tolerance;
 }

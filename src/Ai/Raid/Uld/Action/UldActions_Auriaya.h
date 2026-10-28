@@ -28,8 +28,9 @@ public:
     bool isUseful() override;
 };
 
-// Leashed to the anchor. Not MoveAwayFromCreatureAction: maximising distance from the nearest pool
-// walks bots out of the room once the pools pile up.
+// The bot's own spot when that's clean, else the nearest clean ground leashed to it. Not
+// MoveAwayFromCreatureAction: maximising distance from the nearest pool walks bots out of the room
+// once the pools pile up.
 class AuriayaSeepingEssenceAction : public MovementAction
 {
 public:

@@ -9,6 +9,7 @@
 
 #include "ObjectGuid.h"
 #include "Position.h"
+#include "RaidDefensive.h"
 #include "UldData.h"
 
 #include <array>
@@ -93,6 +94,10 @@ inline constexpr float ULDUAR_THORIM_FLOOR_RANGE = 110.0f;
 inline constexpr float ULDUAR_THORIM_GATE_RADIUS = 10.0f;
 inline constexpr float ULDUAR_THORIM_GATE_FOLLOW_DISTANCE = 5.0f;
 
+// How far a corridor healer may trail the master once the lane waypoints run out. Inside heal range with
+// room to spare, since the squad spreads: a healer that stops has no chase of its own to catch up on.
+inline constexpr float ULDUAR_THORIM_GAUNTLET_TETHER_DISTANCE = 20.0f;
+
 // Cheap first gate for both halves. Distance alone reaches Hodir's room, height doesn't: corridor z 412,
 // arena 420, Hodir 433.
 inline constexpr float ULDUAR_THORIM_ENCOUNTER_PROXIMITY = 200.0f;
@@ -173,6 +178,15 @@ inline constexpr float ULDUAR_THORIM_LIGHTNING_CHARGE_RANGE = 150.0f;
 // Camp margin, far tighter than the ring's: a yard of boss drift is 7 degrees at 8 yd but 2-4 at 15-32 yd.
 // Any wider and no shelter set fits the room.
 inline constexpr float ULDUAR_THORIM_LIGHTNING_CHARGE_RANGED_MARGIN = 0.0436f;  // 2.5 degrees
+
+// Orb lit to damage, measured 4.6-4.9 s on every cast of a pull.
+inline constexpr uint32 ULDUAR_THORIM_LIGHTNING_CHARGE_WARNING_MS = 4800;
+
+// Before resistance, which the defensive row applies per bot. The measured median; one cast spans
+// 13.0-41.5 k pre-mitigation, so a mid figure spends a button on the bots it would drop and no others.
+inline constexpr uint32 ULDUAR_THORIM_LIGHTNING_CHARGE_DAMAGE = 27000;
+
+inline constexpr RaidDefensiveScope ULDUAR_THORIM_DEFENSIVE_SCOPE = {ULDUAR_MAP_ID};
 
 // How close a lit orb has to be to one of the seven known positions before the shelter table trusts the
 // match. Nothing within this and the bot stays home rather than walking off a guess.
@@ -331,6 +345,8 @@ struct ThorimEncounterState
 
     ObjectGuid lightningOrbGuid{};
     uint32 lightningOrbScanMs = 0;
+    // When that orb lit, so the hit below can be timed off it. Zero while none is lit.
+    uint32 lightningOrbLitMs = 0;
 
     // Sif's Blizzard zones and bunny, swept once per instance per interval. Zones never move, so the interval
     // only delays seeing a fresh one, and those come every 2s.
@@ -639,6 +655,11 @@ bool ThorimCampBlizzardEscape(PlayerbotAI* botAI, Player* bot, Position& out);
 // Thunder Orb carrying markerSpell, or nullptr. Neither orb mechanic has a cast bar, so the aura is the
 // only tell.
 Unit* ThorimChargedThunderOrb(PlayerbotAI* botAI, uint32 markerSpell);
+
+// The Lightning Charge coming at this bot, for the shared defensive row. False for a tank: tanks hold
+// their buttons for his melee and Unbalancing Strike, which is what kills them, and cannot leave the
+// anchor anyway.
+bool GetThorimLightningChargeHit(PlayerbotAI* botAI, RaidPredictedHit& hit);
 
 // Where this bot should stand to be clear of the Charge Orb field, or false if it is already clear.
 // Pure, so the trigger can ask as often as it likes; the action records the answer separately.

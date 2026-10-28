@@ -7,6 +7,7 @@
 #include "UldMultipliers_Algalon.h"
 
 #include "AttackAction.h"
+#include "EncounterHelpers.h"
 #include "GenericSpellActions.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -178,9 +179,10 @@ float AlgalonCooldownReserveMultiplier::GetValue(Action* action)
     // The soak casts it with SOAK_DISPERSION_MS of the cast left.
     int32 const untilHit = AlgalonMsToBigBangHit(botAI);
     if (reserve.dispersion)
-        return untilHit == 0 || AlgalonCooldownMs(bot, reserve.spellId) > untilHit - ULDUAR_ALGALON_SOAK_DISPERSION_MS
-                   ? 0.0f
-                   : 1.0f;
+    {
+        int32 const cooldown = EncounterHelpers::SpellCooldownMs(bot, reserve.spellId);
+        return untilHit == 0 || cooldown > untilHit - ULDUAR_ALGALON_SOAK_DISPERSION_MS ? 0.0f : 1.0f;
+    }
 
     // A priest soaks and the tanks hide, so their buttons are free. The holder's own and the externals on it
     // belong to the tank defensive node, one at a time: the class nodes would stack a second on the same dip.
@@ -217,7 +219,7 @@ float AlgalonCooldownReserveMultiplier::GetValue(Action* action)
     if (reserve.alwaysForSwapTanks && swapTank)
         return 0.0f;
 
-    return untilHit == 0 || AlgalonCooldownMs(bot, reserve.spellId) > untilHit ? 0.0f : 1.0f;
+    return untilHit == 0 || EncounterHelpers::SpellCooldownMs(bot, reserve.spellId) > untilHit ? 0.0f : 1.0f;
 }
 
 float AlgalonHideCastMultiplier::GetValue(Action* action)

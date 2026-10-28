@@ -13,6 +13,7 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "Group.h"
+#include "Map.h"
 #include "ObjectGuid.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -23,9 +24,12 @@
 #include "UldTargets.h"
 #include "Unit.h"
 
+#include <algorithm>
 #include <cmath>
+#include <iterator>
 #include <limits>
 #include <list>
+#include <string>
 #include <vector>
 
 using namespace EncounterHelpers;
@@ -68,11 +72,16 @@ struct AuriayaRoomScan
     uint32 atMs = 0;
     ObjectGuid boss;
     GuidVector pools;
+
+    // Trigger and action both ask for the soak spot in one tick, and picking one costs raycasts.
+    bool soakPicked = false;
+    bool soakFound = false;
+    Position soak;
 };
 
 thread_local AuriayaRoomScan auriayaRoomScan;
 
-AuriayaRoomScan const& RefreshedAuriayaRoomScan(PlayerbotAI* botAI)
+AuriayaRoomScan& RefreshedAuriayaRoomScan(PlayerbotAI* botAI)
 {
     uint32 const now = getMSTime();
     if (auriayaRoomScan.botAI == botAI && auriayaRoomScan.atMs == now)
@@ -92,16 +101,105 @@ AuriayaRoomScan const& RefreshedAuriayaRoomScan(PlayerbotAI* botAI)
 
     return auriayaRoomScan;
 }
+
+// Her cone faces whoever she's hitting, a human tank or a taunting player included.
+float GetSoakAxis(Unit* boss)
+{
+    Unit* victim = boss->GetVictim();
+    return victim && victim != boss ? boss->GetAngle(victim) : boss->GetOrientation();
+}
+
+bool IsInSoakBand(Unit* boss, float axis, float x, float y, float halfAngle, float minDistance, float maxDistance)
+{
+    float const distance = boss->GetExactDist2d(x, y);
+    if (distance < minDistance || distance > maxDistance)
+        return false;
+
+    float const offset = Position::NormalizeOrientation(boss->GetAngle(x, y) - axis);
+    return std::min(offset, 2.0f * static_cast<float>(M_PI) - offset) <= halfAngle;
+}
+
+// Clear spots first, then fewest pools, then shortest walk. Every candidate tried costs a navmesh
+// raycast, so they go in that order and the first one on the floor wins.
+bool PickSoakSpot(WorldObject* floorFrom, Unit* boss, std::vector<Unit*> const& pools, Position& out)
+{
+    struct Candidate
+    {
+        float x;
+        float y;
+        bool clear;
+        int fouling;
+        float walk;
+    };
+
+    constexpr int stepsPerSide = 4;
+    constexpr float distances[] = {12.0f, 16.0f, 20.0f, 24.0f};
+    static_assert(distances[0] >= ULDUAR_AURIAYA_SOAK_TARGET_MIN &&
+                  distances[3] <= ULDUAR_AURIAYA_SOAK_TARGET_MAX);
+
+    float const axis = GetSoakAxis(boss);
+    float const angleStep = ULDUAR_AURIAYA_SOAK_TARGET_HALF_ANGLE / stepsPerSide;
+
+    std::vector<Candidate> candidates;
+    candidates.reserve((2 * stepsPerSide + 1) * std::size(distances));
+    for (int step = -stepsPerSide; step <= stepsPerSide; ++step)
+    {
+        float const angle = axis + step * angleStep;
+        for (float distance : distances)
+        {
+            float const x = boss->GetPositionX() + distance * std::cos(angle);
+            float const y = boss->GetPositionY() + distance * std::sin(angle);
+
+            int fouling = 0;
+            for (Unit* pool : pools)
+                if (pool->GetExactDist2d(x, y) < ULDUAR_AURIAYA_SEEPING_ESSENCE_RADIUS)
+                    ++fouling;
+
+            candidates.push_back({x, y, GetAuriayaPoolClearance(pools, x, y) >= ULDUAR_AURIAYA_ESSENCE_CLEARANCE,
+                                  fouling, floorFrom->GetExactDist2d(x, y)});
+        }
+    }
+
+    std::sort(candidates.begin(), candidates.end(),
+              [](Candidate const& a, Candidate const& b)
+              {
+                  if (a.clear != b.clear)
+                      return a.clear;
+
+                  if (a.fouling != b.fouling)
+                      return a.fouling < b.fouling;
+
+                  return a.walk < b.walk;
+              });
+
+    for (Candidate const& candidate : candidates)
+    {
+        float x = candidate.x;
+        float y = candidate.y;
+        float z = boss->GetPositionZ();
+        if (!floorFrom->GetMap()->CheckCollisionAndGetValidCoords(floorFrom, floorFrom->GetPositionX(),
+                                                                  floorFrom->GetPositionY(),
+                                                                  floorFrom->GetPositionZ(), x, y, z))
+            continue;
+
+        // The raycast stops at the floor's edge, so a spot past it comes back clipped. The room is
+        // round with a drop past it, and her far stations sit near that edge.
+        if (std::hypot(x - candidate.x, y - candidate.y) > 1.0f)
+            continue;
+
+        out = Position(x, y, z);
+        return true;
+    }
+
+    return false;
+}
 }  // namespace
 
-// Off her spawn (1956.2, 49.32) along her home facing (-0.955, 0.296), away from the corridor: tank
-// spots 5/15/25 yd out, raid points 15 yd past each. All six are on the floor, x 1909-1956, y 43-82.
+// Off her spawn (1956.2, 49.32) along her home facing (-0.955, 0.296), away from the corridor, at
+// 5/15/25 yd. All on the floor. The soak band, not a fixed point, fits the raid in past each one.
 const Position ULDUAR_AURIAYA_MAINTANK_SPOTS[ULDUAR_AURIAYA_STATION_COUNT] = {
     Position(1951.42f, 50.79f, 411.36f), Position(1941.87f, 53.75f, 411.36f),
     Position(1932.32f, 56.71f, 411.36f)};
-const Position ULDUAR_AURIAYA_NOMINAL_RAID_POINTS[ULDUAR_AURIAYA_STATION_COUNT] = {
-    Position(1937.10f, 55.23f, 411.36f), Position(1927.54f, 58.19f, 411.36f),
-    Position(1917.99f, 61.15f, 411.36f)};
 
 bool AuriayaFearWindowActive(PlayerbotAI* botAI) { return AuriayaEncounterActive(botAI); }
 
@@ -170,25 +268,36 @@ std::vector<Unit*> CollectAuriayaEssencePools(WorldObject* from, float radius)
     return pools;
 }
 
-// A count over fixed spots only ever grows, so the station moves west and never comes back.
+float GetAuriayaPoolClearance(std::vector<Unit*> const& pools, float x, float y)
+{
+    float clearance = std::numeric_limits<float>::max();
+    for (Unit* pool : pools)
+        clearance = std::min(clearance, pool->GetExactDist2d(x, y));
+
+    return clearance;
+}
+
+bool IsInAuriayaPool(Player* bot)
+{
+    return GetAuriayaPoolClearance(CollectAuriayaEssencePools(bot, ULDUAR_AURIAYA_SEEPING_ESSENCE_RADIUS),
+                                   bot->GetPositionX(), bot->GetPositionY()) < ULDUAR_AURIAYA_SEEPING_ESSENCE_RADIUS;
+}
+
 int GetAuriayaStationIndex(std::vector<Unit*> const& roomPools)
 {
     int best = 0;
-    int bestFouling = std::numeric_limits<int>::max();
+    float bestClearance = -1.0f;
 
     for (int i = 0; i < ULDUAR_AURIAYA_STATION_COUNT; ++i)
     {
-        int fouling = 0;
-        for (Unit* pool : roomPools)
-        {
-            if (pool->GetExactDist2d(&ULDUAR_AURIAYA_MAINTANK_SPOTS[i]) < ULDUAR_AURIAYA_STATION_FOUL_RADIUS ||
-                pool->GetExactDist2d(&ULDUAR_AURIAYA_NOMINAL_RAID_POINTS[i]) < ULDUAR_AURIAYA_STATION_FOUL_RADIUS)
-                ++fouling;
-        }
+        Position const& spot = ULDUAR_AURIAYA_MAINTANK_SPOTS[i];
+        float const clearance = GetAuriayaPoolClearance(roomPools, spot.GetPositionX(), spot.GetPositionY());
+        if (clearance >= ULDUAR_AURIAYA_STATION_FOUL_RADIUS)
+            return i;
 
-        if (fouling < bestFouling)
+        if (clearance > bestClearance)
         {
-            bestFouling = fouling;
+            bestClearance = clearance;
             best = i;
         }
     }
@@ -196,13 +305,43 @@ int GetAuriayaStationIndex(std::vector<Unit*> const& roomPools)
     return best;
 }
 
-bool GetAuriayaAnchor(PlayerbotAI* botAI, Player* bot, Position& out, float& tolerance)
+bool GetAuriayaSoakSpot(PlayerbotAI* botAI, Player* bot, Unit* boss, std::vector<Unit*> const& pools,
+                        Position& out)
 {
-    Unit* boss = GetAuriaya(botAI);
-    return boss && GetAuriayaAnchor(botAI, bot, boss, nullptr, out, tolerance);
+    AuriayaRoomScan& scan = RefreshedAuriayaRoomScan(botAI);
+    if (!scan.soakPicked)
+    {
+        scan.soakPicked = true;
+
+        bool const clear = GetAuriayaPoolClearance(pools, bot->GetPositionX(), bot->GetPositionY()) >=
+                           ULDUAR_AURIAYA_SEEPING_ESSENCE_RADIUS;
+
+        // Judge drift only once she stops. The band rides on her, so a tank walking to its next
+        // station would otherwise re-aim every ranged bot at once.
+        if (clear && (boss->isMoving() ||
+                      IsInSoakBand(boss, GetSoakAxis(boss), bot->GetPositionX(), bot->GetPositionY(),
+                                   ULDUAR_AURIAYA_SOAK_STAY_HALF_ANGLE, ULDUAR_AURIAYA_SOAK_STAY_MIN,
+                                   ULDUAR_AURIAYA_SOAK_STAY_MAX)))
+        {
+            scan.soakFound = true;
+            scan.soak = bot->GetPosition();
+        }
+        else
+        {
+            scan.soakFound = PickSoakSpot(bot, boss, pools, scan.soak);
+        }
+    }
+
+    out = scan.soak;
+    return scan.soakFound;
 }
 
-bool GetAuriayaAnchor(PlayerbotAI* botAI, Player* bot, Unit* boss, std::vector<Unit*> const* roomPools,
+bool PickAuriayaSoakSpotFromBoss(Unit* boss, std::vector<Unit*> const& pools, Position& out)
+{
+    return boss && PickSoakSpot(boss, boss, pools, out);
+}
+
+bool GetAuriayaAnchor(PlayerbotAI* botAI, Player* bot, Unit* boss, std::vector<Unit*> const& roomPools,
                       Position& out, float& tolerance)
 {
     if (!boss)
@@ -210,9 +349,7 @@ bool GetAuriayaAnchor(PlayerbotAI* botAI, Player* bot, Unit* boss, std::vector<U
 
     if (PlayerbotAI::IsMainTank(bot))
     {
-        int const station =
-            GetAuriayaStationIndex(roomPools ? *roomPools : GetAuriayaRoomPools(botAI));
-
+        int const station = GetAuriayaStationIndex(roomPools);
         out = ULDUAR_AURIAYA_MAINTANK_SPOTS[station];
         tolerance = ULDUAR_AURIAYA_MAINTANK_SPOT_TOLERANCE;
         return true;
@@ -221,18 +358,6 @@ bool GetAuriayaAnchor(PlayerbotAI* botAI, Player* bot, Unit* boss, std::vector<U
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    // Her victim, not a fixed bearing: the cone points at whoever she chases, human tank included.
-    Unit* victim = boss->GetVictim();
-    float bearing = victim && victim != boss
-                        ? boss->GetAngle(victim)
-                        : boss->GetOrientation();
-
-    bearing = std::round(bearing / ULDUAR_AURIAYA_BEARING_QUANTUM) * ULDUAR_AURIAYA_BEARING_QUANTUM;
-
-    out = Position(boss->GetPositionX() + std::cos(bearing) * ULDUAR_AURIAYA_RAID_STANDOFF,
-                   boss->GetPositionY() + std::sin(bearing) * ULDUAR_AURIAYA_RAID_STANDOFF,
-                   boss->GetPositionZ());
-    tolerance = PlayerbotAI::IsRangedDps(bot) ? ULDUAR_AURIAYA_RANGED_SPOT_TOLERANCE
-                                        : ULDUAR_AURIAYA_HEALER_SPOT_TOLERANCE;
-    return true;
+    tolerance = ULDUAR_AURIAYA_SOAK_SPOT_TOLERANCE;
+    return GetAuriayaSoakSpot(botAI, bot, boss, roomPools, out);
 }

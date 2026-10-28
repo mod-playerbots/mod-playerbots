@@ -9,7 +9,9 @@
 
 #include "EventMap.h"
 #include "GenericTriggers.h"
+#include "RaidResistAura.h"
 #include "Trigger.h"
+#include "UldEncounter_IronAssembly.h"
 
 // Iron Assembly
 
@@ -105,14 +107,64 @@ public:
     bool IsActive() override;
 };
 
-// Ranged and healers walk into the rune for the +50%. The tank half is not a node: his spot shifts
-// clear of it instead, so nothing here has to fight him for the move.
-class IronAssemblyRuneOfPowerSoakTrigger : public Trigger
+// Melee step into the focus's Rune of Power behind him. Ranged have no node: the rune is their raid spot,
+// and the tank's spot backs his boss off it.
+class IronAssemblyRuneOfPowerMeleeTrigger : public Trigger
 {
 public:
-    static constexpr char const* Name = "iron assembly rune of power soak trigger";
+    static constexpr char const* Name = "iron assembly rune of power melee trigger";
 
-    IronAssemblyRuneOfPowerSoakTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name) {}
+    IronAssemblyRuneOfPowerMeleeTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name) {}
+    bool IsActive() override;
+};
+
+// The other tank has Steelbreaker off an Overwhelming Power carrier, who walks to the Meltdown point.
+class IronAssemblyMeltdownRunOutTrigger : public Trigger
+{
+public:
+    static constexpr char const* Name = "iron assembly meltdown run out trigger";
+
+    IronAssemblyMeltdownRunOutTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name) {}
+    bool IsActive() override;
+};
+
+// Empowered Steelbreaker is casting Fusion Punch at this tank and it has a magic defensive for it.
+class IronAssemblyFusionPunchDefensiveTrigger : public Trigger
+{
+public:
+    static constexpr char const* Name = "iron assembly fusion punch defensive trigger";
+
+    IronAssemblyFusionPunchDefensiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name) {}
+    bool IsActive() override;
+};
+
+class IronAssemblyNatureAspectTrigger : public RaidResistAuraTrigger
+{
+public:
+    static constexpr char const* Name = "iron assembly nature aspect trigger";
+
+    IronAssemblyNatureAspectTrigger(PlayerbotAI* botAI)
+        : RaidResistAuraTrigger(botAI, Name, ULD_IRON_ASSEMBLY_RESIST_AURA)
+    {
+    }
+};
+
+// The totem shaman's air button or totem isn't Nature Resistance, or it walked away from the totem.
+class IronAssemblyNatureTotemTrigger : public Trigger
+{
+public:
+    static constexpr char const* Name = "iron assembly nature totem trigger";
+
+    IronAssemblyNatureTotemTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name) {}
+    bool IsActive() override;
+};
+
+class IronAssemblyUnheldTauntTrigger : public Trigger
+{
+public:
+    static constexpr char const* Name = "iron assembly unheld taunt trigger";
+
+    IronAssemblyUnheldTauntTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name) {}
     bool IsActive() override;
 };
 

@@ -616,8 +616,6 @@ Player* GetAlgalonBeaconTarget(PlayerbotAI* botAI);
 
 // A disperser is latched for the next hit: the tanks hide and keep their buttons for him.
 bool AlgalonDispersionSoak(Player* bot);
-// The cooldown casting it now would start, talents included.
-int32 AlgalonCooldownMs(Player* bot, uint32 spellId);
 
 // A damage cutter or Lay on Hands this bot puts on the holder now. Cheapest first and one at a time, so each bot
 // asks whether it's the first provider able to.

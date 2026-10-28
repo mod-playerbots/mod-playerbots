@@ -2085,7 +2085,7 @@ void CallHumanTankCut(Group* group, PlayerbotAI* botAI, Creature* boss, AlgalonE
         return;
 
     bool const reserved = state.disperser.IsEmpty() && AlgalonLoneHolder(botAI) != holder;
-    if (reserved && AlgalonCooldownMs(holder, spellId) > AlgalonMsToBigBangHit(botAI))
+    if (reserved && SpellCooldownMs(holder, spellId) > AlgalonMsToBigBangHit(botAI))
         return;
 
     if (Player* sender = FindTracker(group))
@@ -3265,7 +3265,7 @@ AlgalonTankCut GetAlgalonTankCut(PlayerbotAI* botAI)
     int32 const untilHit = AlgalonMsToBigBangHit(botAI);
     bool const reserved = state->disperser.IsEmpty() && AlgalonLoneHolder(botAI) != holder;
     auto const usable = [&](Player* provider, uint32 spellId)
-    { return spellId && (!reserved || AlgalonCooldownMs(provider, spellId) <= untilHit); };
+    { return spellId && (!reserved || SpellCooldownMs(provider, spellId) <= untilHit); };
 
     // The reserve goes ahead of range, sight and the cast check: every provider asks this of every other one
     // each tick, and a reserved spell is refused again on the next.
@@ -3366,23 +3366,6 @@ AlgalonTankCut GetAlgalonTankCut(PlayerbotAI* botAI)
     }
 
     return none;
-}
-
-int32 AlgalonCooldownMs(Player* bot, uint32 spellId)
-{
-    SpellInfo const* info = sSpellMgr->GetSpellInfo(spellId);
-    if (!info)
-        return 0;
-
-    int32 recovery = static_cast<int32>(info->RecoveryTime);
-    int32 category = static_cast<int32>(info->CategoryRecoveryTime);
-    if (recovery > 0)
-        bot->ApplySpellMod(spellId, SPELLMOD_COOLDOWN, recovery);
-
-    if (category > 0 && !info->HasAttribute(SPELL_ATTR6_NO_CATEGORY_COOLDOWN_MODS))
-        bot->ApplySpellMod(spellId, SPELLMOD_COOLDOWN, category);
-
-    return std::max(recovery, category);
 }
 
 void ClaimAlgalonTankCut(Player* bot, AlgalonTankCut const& cut)
@@ -3633,7 +3616,7 @@ AlgalonPersonalPick GetAlgalonExplosionPersonal(PlayerbotAI* botAI)
         // The soaker's, and a backup's that wouldn't be back for the hit: the reserve's own test.
         if (!std::strcmp(button.spell, "dispersion") &&
             (state->disperser == bot->GetGUID() || untilHit == 0 ||
-             AlgalonCooldownMs(bot, spellId) > untilHit - ULDUAR_ALGALON_SOAK_DISPERSION_MS))
+             SpellCooldownMs(bot, spellId) > untilHit - ULDUAR_ALGALON_SOAK_DISPERSION_MS))
             continue;
 
         if (left < health)

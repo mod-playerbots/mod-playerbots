@@ -697,7 +697,7 @@ struct ThorimShelterSpot
     Position spot;
 };
 
-std::array<ThorimShelterSpot, 12> const ULDUAR_THORIM_SHELTER_SPOTS = {{
+std::array<ThorimShelterSpot, 13> const ULDUAR_THORIM_SHELTER_SPOTS = {{
     {0, 4, Position(2142.00f, -255.35f, 419.771f)},
     {0, 5, Position(2113.00f, -227.35f, 420.293f)},
     {1, 3, Position(2132.00f, -276.35f, 419.755f)},
@@ -707,6 +707,9 @@ std::array<ThorimShelterSpot, 12> const ULDUAR_THORIM_SHELTER_SPOTS = {{
     {2, 1, Position(2107.50f, -283.35f, 420.104f)},
     {2, 2, Position(2114.50f, -274.35f, 419.562f)},
     {2, 3, Position(2140.00f, -241.35f, 419.502f)},
+    // Slot 4's home is inside this cone, so this row has to exist: with none the camp stays home.
+    // 29 yd of walk, the longest here, against a 4.8 s warning.
+    {2, 4, Position(2130.00f, -224.00f, 420.146f)},
     {3, 0, Position(2129.50f, -278.35f, 419.702f)},
     // Both under 3 yd from a home just inside the arc: they walk only because the camp moves at 1 yd.
     {3, 1, Position(2126.00f, -269.85f, 419.761f)},
@@ -2310,12 +2313,6 @@ bool TryGetThorimPhase2Spot(PlayerbotAI* botAI, Player* bot, ThorimPhase2Role ro
     if (bot->GetPositionZ() > ULDUAR_THORIM_AXIS_Z_FLOOR_THRESHOLD)
         return false;
 
-    if (role == ThorimPhase2Role::MainTank)
-    {
-        position = ULDUAR_THORIM_PHASE2_TANK_SPOT;
-        return true;
-    }
-
     Unit* boss = GetThorim(botAI);
 
     if (role == ThorimPhase2Role::Ranged)
@@ -2346,11 +2343,14 @@ bool TryGetThorimPhase2Spot(PlayerbotAI* botAI, Player* bot, ThorimPhase2Role ro
         return true;
     }
 
-    if (role == ThorimPhase2Role::OffTank)
+    if (role == ThorimPhase2Role::OffTank || role == ThorimPhase2Role::MainTank)
     {
-        // A fixed point, not a bearing off the boss: a ring point moves with him, so a tank towing him from
-        // one drifts the pair across the room. Still inside taunt range for the Unbalancing Strike swap.
-        position = ULDUAR_THORIM_PHASE2_OFFTANK_SPOT;
+        // Fixed points, never a bearing off the boss: a ring point moves with him, so towing from one drifts
+        // the pair across the room. The holder takes the anchor, or he faces wherever the off-tank stands and
+        // the ring ends up in front of him. 3.5 yd apart, inside the ring's tolerance, so a trade is free.
+        position = (role == ThorimPhase2Role::MainTank || (boss && boss->GetVictim() == bot))
+                       ? ULDUAR_THORIM_PHASE2_TANK_SPOT
+                       : ULDUAR_THORIM_PHASE2_OFFTANK_SPOT;
         return true;
     }
 
@@ -2611,6 +2611,47 @@ bool ThorimMeleeRingSettled(PlayerbotAI* botAI, Player* bot)
     return state && state->ringArrived.count(bot->GetGUID()) > 0;
 }
 
+bool GetThorimLightningChargeHit(PlayerbotAI* botAI, RaidPredictedHit& hit)
+{
+    Player* bot = botAI ? botAI->GetBot() : nullptr;
+    if (!bot || !bot->IsAlive() || PlayerbotAI::IsTank(bot))
+        return false;
+
+    ThorimEncounterState const* state = FindState(bot);
+    if (!state || !state->lightningOrbLitMs)
+        return false;
+
+    // One interval early: the sweep can only notice the orb late, and the row opens the pick just a second
+    // before the start it is given.
+    uint32 const startMs = state->lightningOrbLitMs + ULDUAR_THORIM_LIGHTNING_CHARGE_WARNING_MS -
+                           ULDUAR_THORIM_ENCOUNTER_SCAN_INTERVAL_MS;
+
+    // Before anything that reads the world: the row offers nothing outside that last second, and a start
+    // already past takes getMSTimeDiff's overflow branch, so a stale latch fails closed here too.
+    if (getMSTimeDiff(getMSTime(), startMs) > RAID_PERSONAL_LEAD_MS)
+        return false;
+
+    if (!ThorimPhase2Active(botAI))
+        return false;
+
+    Unit* boss = GetThorim(botAI);
+    Unit* orb = ThorimChargedThunderOrb(botAI, SPELL_THORIM_LIGHTNING_ORB_VISUAL);
+    if (!boss || !orb)
+        return false;
+
+    // The camp's own margin, not the ring's: it is the closest read of who the cone actually covers, so a
+    // bot well outside it does not spend anything.
+    float const coneBearing = BearingFromBoss(boss, orb->GetPositionX(), orb->GetPositionY());
+    if (!InLightningChargeConeRanged(BearingFromBoss(boss, bot->GetPositionX(), bot->GetPositionY()),
+                                     coneBearing))
+        return false;
+
+    hit.startMs = startMs;
+    hit.damage = ULDUAR_THORIM_LIGHTNING_CHARGE_DAMAGE;
+    hit.school = SPELL_SCHOOL_MASK_NATURE;
+    return true;
+}
+
 bool ThorimTankOnAnchor(PlayerbotAI* botAI, Player* bot)
 {
     if (!bot || !ThorimPhase2Active(botAI))
@@ -2661,6 +2702,16 @@ Unit* ThorimChargedThunderOrb(PlayerbotAI* botAI, uint32 markerSpell)
             found = orb;
             break;
         }
+    }
+
+    // Only the rescan sees the change, so the lit time is good to the scan interval. Cleared when it goes
+    // dark, or a stale one would time a hit that is not coming.
+    if (lightning)
+    {
+        if (found && cachedGuid.IsEmpty())
+            state.lightningOrbLitMs = getMSTime();
+        else if (!found)
+            state.lightningOrbLitMs = 0;
     }
 
     cachedGuid = found ? found->GetGUID() : ObjectGuid::Empty;

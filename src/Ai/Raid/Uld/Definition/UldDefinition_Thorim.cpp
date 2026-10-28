@@ -138,6 +138,9 @@ void DefineThorim(EncounterBuilder& e)
     // Charge has no node: the phase 2 spot answers the cone, and a second mover would only fight it at the gate.
     e.Node<ThorimChargedOrbTrigger, ThorimChargedOrbAction>(ACTION_RAID + 4);
 
+    // One cast one-shots a camp bot from full, so the button outranks the dodges it cannot replace.
+    e.Node<ThorimPersonalDefensiveTrigger, ThorimCastPersonalDefensiveAction>(ACTION_RAID + 4);
+
     e.Node<ThorimRunicSmashTrigger, ThorimRunicSmashAction>(ACTION_RAID + 3);
     e.Node<ThorimRunicBarrierBailTrigger, ThorimRunicBarrierBailAction>(ACTION_RAID + 2);
 

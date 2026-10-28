@@ -12,6 +12,7 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "EncounterHelpers.h"
+#include "RaidTankDefensive.h"
 #include "ScriptedCreature.h"
 #include "SharedDefines.h"
 #include "Trigger.h"
@@ -93,7 +94,7 @@ bool IronAssemblyTankAssignmentTrigger::IsActive()
     // The boss above, not a second assignment: deriving it ranks the bot tanks and walks the group
     // again, and both answers come from the same tick anyway.
     Position spot;
-    if (!TryGetIronAssemblyBossTankSpot(bot, boss, spot))
+    if (!TryGetIronAssemblyBossTankSpot(botAI, boss, spot))
         return false;
 
     return bot->GetExactDist2d(spot.GetPositionX(), spot.GetPositionY()) >
@@ -144,14 +145,34 @@ bool IronAssemblyRedirectThreatTrigger::IsActive()
     return IronAssemblyFocusTarget(botAI) != nullptr;
 }
 
-bool IronAssemblyRuneOfPowerSoakTrigger::IsActive()
+bool IronAssemblyRuneOfPowerMeleeTrigger::IsActive()
 {
-    Position rune;
-    if (!TryGetIronAssemblyRuneOfPowerSoakSpot(botAI, bot, rune))
+    if (!IronAssemblyFormationActive(botAI))
         return false;
 
-    return bot->GetExactDist2d(rune.GetPositionX(), rune.GetPositionY()) >
-           ULDUAR_IRON_ASSEMBLY_RUNE_OF_POWER_RADIUS;
+    Position spot;
+    return TryGetIronAssemblyMeleeRuneSpot(botAI, bot, spot);
+}
+
+bool IronAssemblyMeltdownRunOutTrigger::IsActive()
+{
+    return IronAssemblyMeltdownRoleFor(botAI, bot) == IronAssemblyMeltdownRole::Run;
+}
+
+bool IronAssemblyFusionPunchDefensiveTrigger::IsActive()
+{
+    uint32 const needMs = IronAssemblyFusionPunchIncomingMs(botAI, bot);
+    return needMs && NextMagicDefensive(botAI, bot, needMs);
+}
+
+bool IronAssemblyNatureTotemTrigger::IsActive()
+{
+    return IronAssemblyNatureTotemNext(botAI) != IronAssemblyNatureTotemStep::None;
+}
+
+bool IronAssemblyUnheldTauntTrigger::IsActive()
+{
+    return IronAssemblyUnheldMemberToTaunt(botAI, bot) != nullptr;
 }
 
 bool IronAssemblySetDpsPriorityTrigger::IsActive()

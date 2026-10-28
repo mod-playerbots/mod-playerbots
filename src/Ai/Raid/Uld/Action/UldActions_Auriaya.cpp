@@ -53,17 +53,115 @@ struct AnyUnitOfEntriesInRangeCheck
         return std::find(entries, entries + count, unit->GetEntry()) != entries + count && inRange(unit);
     }
 };
+
+// Nearest ground within the leash of center, fewest pools first. Spots past the floor's edge come back
+// clipped from the raycast and are dropped, since the room has a drop past it.
+bool FindAuriayaPoolEscape(Player* bot, Position const& center, std::vector<Unit*> const& pools, Position& out)
+{
+    struct Candidate
+    {
+        float x;
+        float y;
+        int inPool;
+        int nearPool;
+        float walk;
+    };
+
+    constexpr int directions = 8;
+    constexpr float increment = 3.0f;
+
+    std::vector<Candidate> candidates;
+    auto const add = [&](float x, float y)
+    {
+        if (center.GetExactDist2d(x, y) > ULDUAR_AURIAYA_ESSENCE_LEASH)
+            return;
+
+        Candidate candidate{x, y, 0, 0, bot->GetExactDist2d(x, y)};
+        for (Unit* pool : pools)
+        {
+            float const distance = pool->GetExactDist2d(x, y);
+            if (distance < ULDUAR_AURIAYA_SEEPING_ESSENCE_RADIUS)
+                ++candidate.inPool;
+
+            if (distance < ULDUAR_AURIAYA_ESSENCE_CLEARANCE)
+                ++candidate.nearPool;
+        }
+
+        candidates.push_back(candidate);
+    };
+
+    add(bot->GetPositionX(), bot->GetPositionY());
+    add(center.GetPositionX(), center.GetPositionY());
+
+    for (int i = 0; i < directions; ++i)
+    {
+        float const angle = (i * 2.0f * static_cast<float>(M_PI)) / directions;
+        for (float distance = increment; distance <= ULDUAR_AURIAYA_ESSENCE_LEASH; distance += increment)
+            add(bot->GetPositionX() + distance * std::cos(angle), bot->GetPositionY() + distance * std::sin(angle));
+    }
+
+    // Shortest walk, not furthest from the pools: a tank dragged 12 yd swings her cone over the raid.
+    std::sort(candidates.begin(), candidates.end(),
+              [](Candidate const& a, Candidate const& b)
+              {
+                  if (a.inPool != b.inPool)
+                      return a.inPool < b.inPool;
+
+                  if (a.nearPool != b.nearPool)
+                      return a.nearPool < b.nearPool;
+
+                  return a.walk < b.walk;
+              });
+
+    for (Candidate const& candidate : candidates)
+    {
+        if (candidate.walk < 0.5f)
+        {
+            out = bot->GetPosition();
+            return true;
+        }
+
+        float x = candidate.x;
+        float y = candidate.y;
+        float z = bot->GetPositionZ();
+        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
+                                                            bot->GetPositionZ(), x, y, z))
+            continue;
+
+        if (std::hypot(x - candidate.x, y - candidate.y) > 1.0f)
+            continue;
+
+        out = Position(x, y, z);
+        return true;
+    }
+
+    return false;
+}
 }  // namespace
 
 bool AuriayaFallFromFloorAction::Execute(Event /*event*/)
 {
-    // Anchor first, it's a known-good spot in the room and the master may be out in the corridor.
-    Position anchor;
-    float tolerance = 0.0f;
-    if (GetAuriayaAnchor(botAI, bot, anchor, tolerance))
+    // A spot in the room first, the master may be out in the corridor. The bot is under the floor, so
+    // a soak spot is checked from her instead.
+    if (Unit* boss = GetAuriaya(botAI))
     {
-        bot->NearTeleportTo(anchor.GetPositionX(), anchor.GetPositionY(), anchor.GetPositionZ(), bot->GetOrientation());
-        return true;
+        std::vector<Unit*> const pools = GetAuriayaRoomPools(botAI);
+
+        Position spot;
+        bool found = false;
+        if (PlayerbotAI::IsMainTank(bot))
+        {
+            spot = ULDUAR_AURIAYA_MAINTANK_SPOTS[GetAuriayaStationIndex(pools)];
+            found = true;
+        }
+        else if (PlayerbotAI::IsRanged(bot))
+            found = PickAuriayaSoakSpotFromBoss(boss, pools, spot);
+
+        if (found)
+        {
+            bot->NearTeleportTo(spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ(), bot->GetOrientation());
+            return true;
+        }
     }
 
     Player* master = botAI->GetMaster();
@@ -98,79 +196,32 @@ bool AuriayaSeepingEssenceAction::Execute(Event /*event*/)
     if (pools.empty())
         return false;
 
-    // Melee ride the boss and are not anchored, so they are leashed to her instead.
+    // A clean spot of its own is the escape: the tank's next station, or a ranged bot's soak spot.
+    // Melee ride the boss and have no spot, so they're leashed to her instead.
     Position anchor;
     float tolerance = 0.0f;
-    if (!GetAuriayaAnchor(botAI, bot, boss, &pools, anchor, tolerance))
+    bool const anchored = GetAuriayaAnchor(botAI, bot, boss, pools, anchor, tolerance);
+    if (!anchored)
         anchor = Position(boss->GetPositionX(), boss->GetPositionY(), boss->GetPositionZ());
 
-    constexpr int directions = 8;
-    constexpr float increment = 3.0f;
-
-    bool found = false;
-    bool bestIsCurrent = false;
-    float bestX = 0.0f;
-    float bestY = 0.0f;
-    int bestFouling = std::numeric_limits<int>::max();
-    float bestClearance = -1.0f;
-    float bestDisplacement = std::numeric_limits<float>::max();
-
-    // Nothing past the leash, so a boxed-in bot takes the least bad point instead of crossing the room.
-    auto const consider = [&](float candX, float candY, bool isCurrent)
-    {
-        if (anchor.GetExactDist2d(candX, candY) > ULDUAR_AURIAYA_ESSENCE_LEASH)
-            return;
-
-        int fouling = 0;
-        float clearance = std::numeric_limits<float>::max();
-        for (Unit* pool : pools)
-        {
-            float const distance = pool->GetExactDist2d(candX, candY);
-            if (distance < ULDUAR_AURIAYA_SEEPING_ESSENCE_RADIUS)
-                ++fouling;
-
-            clearance = std::min(clearance, distance);
-        }
-
-        // Fewest pools, then furthest from the rest, then shortest walk, so a bot on the best ground stays put.
-        float const displacement = bot->GetExactDist2d(candX, candY);
-        bool const better = fouling != bestFouling      ? fouling < bestFouling
-                            : clearance != bestClearance ? clearance > bestClearance
-                                                         : displacement < bestDisplacement;
-
-        if (found && !better)
-            return;
-
-        // LOS last. It's a raycast, and it only matters for a spot that would take over as the best.
-        if (!bot->IsWithinLOS(candX, candY, bot->GetPositionZ()))
-            return;
-
-        found = true;
-        bestIsCurrent = isCurrent;
-        bestX = candX;
-        bestY = candY;
-        bestFouling = fouling;
-        bestClearance = clearance;
-        bestDisplacement = displacement;
-    };
-
-    consider(bot->GetPositionX(), bot->GetPositionY(), true);
-    consider(anchor.GetPositionX(), anchor.GetPositionY(), false);
-
-    for (int i = 0; i < directions; ++i)
-    {
-        float const angle = (i * 2.0f * static_cast<float>(M_PI)) / directions;
-        for (float distance = increment; distance <= ULDUAR_AURIAYA_ESSENCE_LEASH; distance += increment)
-            consider(bot->GetPositionX() + distance * std::cos(angle),
-                     bot->GetPositionY() + distance * std::sin(angle), false);
-    }
-
-    // Already on the best ground it can reach, so hand the tick back to the rotation.
-    if (!found || bestIsCurrent)
+    Position destination;
+    if (anchored && GetAuriayaPoolClearance(pools, anchor.GetPositionX(), anchor.GetPositionY()) >=
+                        ULDUAR_AURIAYA_ESSENCE_CLEARANCE)
+        destination = anchor;
+    else if (!FindAuriayaPoolEscape(bot, anchor, pools, destination))
         return false;
 
-    return MoveTo(bot->GetMapId(), bestX, bestY, bot->GetPositionZ(), false, false, false, false,
-                  MovementPriority::MOVEMENT_COMBAT);
+    // Already on the best ground it can reach, so hand the tick back to the rotation.
+    if (bot->GetExactDist2d(&destination) < 1.0f)
+        return false;
+
+    // A cast pins the feet: MoveTo would book the walk and the bot would keep casting in the pool.
+    // Forced, so it cuts into a spot walk already under way.
+    if (bot->IsMovementPreventedByCasting())
+        bot->InterruptNonMeleeSpells(true);
+
+    return MoveTo(bot->GetMapId(), destination.GetPositionX(), destination.GetPositionY(),
+                  destination.GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_FORCED);
 }
 
 bool AuriayaSentryTauntAction::isUseful()
@@ -192,9 +243,13 @@ bool AuriayaRaidPositionAction::isUseful()
 
 bool AuriayaRaidPositionAction::Execute(Event /*event*/)
 {
+    Unit* boss = GetAuriaya(botAI);
+    if (!boss)
+        return false;
+
     Position anchor;
     float tolerance = 0.0f;
-    if (!GetAuriayaAnchor(botAI, bot, anchor, tolerance))
+    if (!GetAuriayaAnchor(botAI, bot, boss, GetAuriayaRoomPools(botAI), anchor, tolerance))
         return false;
 
     // Parked. Returning false hands the tick back so the rotation still runs.

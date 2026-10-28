@@ -157,6 +157,16 @@ public:
     bool IsActive() override;
 };
 
+// A non-tank the Lightning Charge cone is about to cover, with a survival button worth spending.
+class ThorimPersonalDefensiveTrigger : public Trigger
+{
+public:
+    static constexpr char const* Name = "thorim personal defensive trigger";
+
+    ThorimPersonalDefensiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name) {}
+    bool IsActive() override;
+};
+
 // Hard mode: bot standing inside Sif's moving Blizzard ground AoE.
 class ThorimSifBlizzardTrigger : public Trigger
 {

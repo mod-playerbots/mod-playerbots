@@ -59,12 +59,18 @@ void DefineIronAssembly(EncounterBuilder& e)
                                                                                      EncounterRow::Mover);
     e.Node<IronAssemblyRuneOfDeathTrigger, IronAssemblyRuneOfDeathAction>(ACTION_EMERGENCY + 5, EncounterRow::Mover);
     e.Node<IronAssemblyInterruptTrigger, IronAssemblyInterruptAction>(ACTION_EMERGENCY + 4);
+    e.Node<IronAssemblyMeltdownRunOutTrigger, IronAssemblyMeltdownRunOutAction>(ACTION_EMERGENCY + 3,
+                                                                               EncounterRow::Mover);
+    e.Node<IronAssemblyFusionPunchDefensiveTrigger, IronAssemblyFusionPunchDefensiveAction>(ACTION_EMERGENCY + 2);
     e.Node<IronAssemblyTankAssignmentTrigger, IronAssemblyTankAssignmentAction>(ACTION_RAID + 6);
+    e.Node<IronAssemblyUnheldTauntTrigger, IronAssemblyUnheldTauntAction>(ACTION_RAID + 5);
     e.Node<IronAssemblyShieldOfRunesTrigger, IronAssemblyShieldOfRunesAction>(ACTION_RAID + 4);
     e.Node<IronAssemblyFusionPunchDispelTrigger, IronAssemblyFusionPunchDispelAction>(ACTION_RAID + 3);
+    e.Node<IronAssemblyNatureAspectTrigger, IronAssemblyNatureAspectAction>(ACTION_RAID + 2);
+    e.Node<IronAssemblyNatureTotemTrigger, IronAssemblyNatureTotemAction>(ACTION_RAID + 2);
     e.Node<IronAssemblyRedirectThreatTrigger, IronAssemblyRedirectThreatAction>(ACTION_RAID + 2);
-    e.Node<IronAssemblyRuneOfPowerSoakTrigger, IronAssemblyRuneOfPowerSoakAction>(ACTION_RAID + 1,
-                                                                                 EncounterRow::Mover);
+    e.Node<IronAssemblyRuneOfPowerMeleeTrigger, IronAssemblyRuneOfPowerMeleeAction>(ACTION_RAID + 1,
+                                                                                   EncounterRow::Mover);
     e.Node<IronAssemblySetDpsPriorityTrigger, IronAssemblySetDpsPriorityAction>(ACTION_RAID + 1);
     e.Node<IronAssemblyRaidPositionTrigger, IronAssemblyRaidPositionAction>(ACTION_RAID, EncounterRow::Mover);
 
@@ -84,6 +90,22 @@ void DefineIronAssembly(EncounterBuilder& e)
     // Tank face is a second mover at the tank spot's priority, and the two alternate. Set facing is a
     // separate node.
     e.Block("iron assembly disable tank face", Role::Any, IronAssemblyTankPinned, Family::TankFace);
+
+    // The rune sits inside a big boss's "enemy too close for spell", so the class escape and the raid spot
+    // would trade the caster back and forth. Safe to hold: he faces his tank with the rune behind him.
+    e.Block("iron assembly rune of power hold", Role::Ranged, IronAssemblyOnRuneOfPower,
+            Family::Flee | Family::RunAway | Family::Blink | Family::Disengage);
+
+    // Every aspect, not just Dragonhawk: a vetoed node still pushes its alternatives, and the hunter
+    // buff chain runs dragonhawk, hawk, monkey.
+    e.Block("iron assembly nature aspect hold", Role::Any, IsIronAssemblyNatureHunter, 0,
+            {"aspect of the viper", "aspect of the dragonhawk", "aspect of the hawk", "aspect of the monkey",
+             "aspect of the cheetah", "aspect of the pack"});
+
+    // The air slot holds one totem, so the shaman's own air nodes would trade it back on the next GCD.
+    e.Block("iron assembly nature totem hold", Role::Any, IsIronAssemblyNatureTotemShaman, 0,
+            {"wrath of air totem", "windfury totem", "set wrath of air totem", "set windfury totem",
+             "set grounding totem"});
 
     // Potions and tinkers are on the burst list.
     e.Multiplier<IronAssemblyHoldDpsCooldownsMultiplier>(Family::AnyAction);

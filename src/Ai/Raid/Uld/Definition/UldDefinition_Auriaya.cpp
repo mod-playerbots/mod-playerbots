@@ -20,7 +20,7 @@ namespace
 {
 void DefineAuriaya(EncounterBuilder& e)
 {
-    // No Sonic Screech dodge on purpose: it splits across the cone, so the anchors stack the raid in it.
+    // No Sonic Screech dodge on purpose: it splits across the cone, so the anchors keep the raid in it.
     // Position goes last: the engine stops at the first success, and killing a Sentry beats standing on a spot.
     e.Node<AuriayaFallFromFloorTrigger, AuriayaFallFromFloorAction>(ACTION_RAID + 4);
 

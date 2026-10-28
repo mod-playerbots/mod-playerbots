@@ -26,34 +26,36 @@ enum UlduarAuriayaIds
 
 inline constexpr float ULDUAR_AURIAYA_AXIS_Z_PATHING_ISSUE_DETECT = 410.0f;
 
-// 64459's 5 yd radius (index 8, both sizes) plus 2 yd for the 1s tick and position lag.
+// Centre distances, never IsWithinDist: that adds both units' sizes, up to 4.5 yd here. The tick
+// (64459, 25N 64675) hits at exactly 5 yd from the stalker, so 7 leaves 2 yd for the 1s tick and lag.
 inline constexpr float ULDUAR_AURIAYA_SEEPING_ESSENCE_RADIUS = 7.0f;
+// A yard past the trigger, so a bot parked on a spot it picked can't drift back into a dodge.
+inline constexpr float ULDUAR_AURIAYA_ESSENCE_CLEARANCE = 8.0f;
 
-// Sonic Screech splits its damage across a 120 degree cone, so the raid soaks it instead of dodging.
-// The stack sits this far out on her bearing to the tank, since she faces her victim.
-inline constexpr float ULDUAR_AURIAYA_RAID_STANDOFF = 20.0f;
-// Snapped so tank drift can't shuffle the stack. One step is 3.9 yd of arc at the standoff,
-// within the ranged and healer tolerances.
-inline constexpr float ULDUAR_AURIAYA_BEARING_QUANTUM = static_cast<float>(M_PI) / 16.0f;
+// Sonic Screech is a 120 degree cone reaching 80 yd, so any spot in front of her shares the hit and
+// there's no need for one exact range. A bot inside the stay band holds. One outside walks into the
+// narrower target band, so a small turn of hers moves nobody.
+inline constexpr float ULDUAR_AURIAYA_SOAK_STAY_HALF_ANGLE = static_cast<float>(M_PI) / 4.0f;
+inline constexpr float ULDUAR_AURIAYA_SOAK_STAY_MIN = 8.0f;
+inline constexpr float ULDUAR_AURIAYA_SOAK_STAY_MAX = 28.0f;
+inline constexpr float ULDUAR_AURIAYA_SOAK_TARGET_HALF_ANGLE = static_cast<float>(M_PI) / 6.0f;
+inline constexpr float ULDUAR_AURIAYA_SOAK_TARGET_MIN = 12.0f;
+inline constexpr float ULDUAR_AURIAYA_SOAK_TARGET_MAX = 24.0f;
+inline constexpr float ULDUAR_AURIAYA_SOAK_SPOT_TOLERANCE = 1.0f;
 inline constexpr float ULDUAR_AURIAYA_MAINTANK_SPOT_TOLERANCE = 3.0f;
-inline constexpr float ULDUAR_AURIAYA_RANGED_SPOT_TOLERANCE = 5.0f;
-inline constexpr float ULDUAR_AURIAYA_HEALER_SPOT_TOLERANCE = 8.0f;
 
-// Pools never despawn before she dies, so the fight steps west through fixed stations as they
-// pile up. A fourth station would put the stack past x 1908, off the floor.
+// Pools never despawn before she dies, so the tank steps west through fixed stations as they pile up.
 inline constexpr int ULDUAR_AURIAYA_STATION_COUNT = 3;
-// Raid footprint around a station point: 8 yd healer tolerance plus the 7 yd pool radius.
-inline constexpr float ULDUAR_AURIAYA_STATION_FOUL_RADIUS = 15.0f;
+// Pool radius plus the tank's tolerance, so a tank anywhere on a clean spot is out of the pool.
+inline constexpr float ULDUAR_AURIAYA_STATION_FOUL_RADIUS = 10.0f;
 inline constexpr float ULDUAR_AURIAYA_ROOM_SEARCH_RADIUS = 100.0f;
 
-// How far a pool dodge may take a bot from its anchor, or from the boss for melee.
+// How far a pool dodge may take the main tank from its spot, or melee from the boss.
 inline constexpr float ULDUAR_AURIAYA_ESSENCE_LEASH = 12.0f;
 // Melee only take the Defender this close to her. It re-rolls aggro, so they'd chase it all fight.
 inline constexpr float ULDUAR_AURIAYA_MELEE_DEFENDER_RANGE = 15.0f;
 
-// One per station. Raid points only score a station, the stack's real anchor comes off the live boss.
 extern const Position ULDUAR_AURIAYA_MAINTANK_SPOTS[];
-extern const Position ULDUAR_AURIAYA_NOMINAL_RAID_POINTS[];
 
 // Terrifying Screech fears every 35s from the pull, so the whole fight is the fear window.
 bool AuriayaFearWindowActive(PlayerbotAI* botAI);
@@ -73,23 +75,36 @@ Unit* GetAuriayaFocusTarget(PlayerbotAI* botAI);
 Unit* GetAuriayaLooseSentry(PlayerbotAI* botAI, Player* tank);
 
 // Grid search, not "possible targets": the stalkers aren't selectable. Runs per bot per tick on the
-// dodge path, so pass the smallest radius that answers the question.
+// dodge path, so pass the smallest radius that answers the question. The radius counts both units'
+// sizes, so it over-collects; test GetAuriayaPoolClearance for an exact answer.
 std::vector<Unit*> CollectAuriayaEssencePools(WorldObject* from, float radius);
 
 // Every pool in the room, scanned off the boss once per bot per tick. Empty while she's out of
 // sight. Only good for the current tick.
 std::vector<Unit*> GetAuriayaRoomPools(PlayerbotAI* botAI);
 
-// Fewest pools near either spot wins, ties to the lowest index. Only the main tank reads this, the
-// rest follow her. Never score off her live position: she follows the tank, so it'd oscillate.
+// Centre distance to the nearest pool, or FLT_MAX with none.
+float GetAuriayaPoolClearance(std::vector<Unit*> const& pools, float x, float y);
+
+// Within ULDUAR_AURIAYA_SEEPING_ESSENCE_RADIUS of a pool's centre.
+bool IsInAuriayaPool(Player* bot);
+
+// Lowest station whose spot is clear of every pool by the foul radius. A fouled spot never turns clean
+// again, so this only ever moves west. All fouled: the spot furthest from its nearest pool.
+// Never score off her live position: she follows the tank, so it'd oscillate.
 int GetAuriayaStationIndex(std::vector<Unit*> const& roomPools);
 
-// Main tank gets the station spot, ranged and healers a point off the live boss and her victim,
-// melee and the off-tank get false. Trigger and action both call this so they can't disagree.
-bool GetAuriayaAnchor(PlayerbotAI* botAI, Player* bot, Position& out, float& tolerance);
+// Ranged and healers: the bot's own spot while it still soaks clear of pools, or while she walks,
+// else the nearest clear spot in her target band it can walk to. False with no floor in front of her.
+bool GetAuriayaSoakSpot(PlayerbotAI* botAI, Player* bot, Unit* boss, std::vector<Unit*> const& pools,
+                        Position& out);
 
-// Same, with the boss in hand. Only the main tank reads roomPools, null falls back to GetAuriayaRoomPools.
-bool GetAuriayaAnchor(PlayerbotAI* botAI, Player* bot, Unit* boss, std::vector<Unit*> const* roomPools,
+// Same target band for a bot that fell through the floor. Never holds, and checks the floor from her.
+bool PickAuriayaSoakSpotFromBoss(Unit* boss, std::vector<Unit*> const& pools, Position& out);
+
+// Main tank gets its station spot, ranged and healers their soak spot, melee and the off-tank get
+// false. Trigger and action both call this so they can't disagree.
+bool GetAuriayaAnchor(PlayerbotAI* botAI, Player* bot, Unit* boss, std::vector<Unit*> const& roomPools,
                       Position& out, float& tolerance);
 
 #endif
