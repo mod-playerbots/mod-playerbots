@@ -560,6 +560,7 @@ Unit* IronAssemblyAssignedBoss(PlayerbotAI* botAI, Player* bot)
         return nullptr;
 
     return DeriveIronAssemblyAssignedBoss(botAI, bot);
+}
 
 Unit* IronAssemblyUnheldMemberToTaunt(PlayerbotAI* botAI, Player* bot)
 {
