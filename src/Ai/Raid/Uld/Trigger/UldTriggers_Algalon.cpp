@@ -128,6 +128,12 @@ bool AlgalonShadowAuraTrigger::IsActive()
            botAI->CanCastSpell("shadow resistance aura", bot);
 }
 
+bool AlgalonFireTotemTrigger::IsActive()
+{
+    return IsAlgalonFireTotemShaman(bot) && !IsAlgalonPhased(bot) && !AlgalonBigBangCasting(botAI) &&
+           !AI_VALUE2(bool, "has totem", "fire resistance totem") && botAI->CanCastSpell("fire resistance totem", bot);
+}
+
 bool AlgalonBigBangHideTrigger::IsActive() { return GetAlgalonHideRole(bot) == AlgalonHideRole::Run; }
 
 bool AlgalonCosmicSmashTrigger::IsActive()

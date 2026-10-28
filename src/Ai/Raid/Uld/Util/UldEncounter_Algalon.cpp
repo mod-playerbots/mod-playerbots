@@ -576,8 +576,10 @@ bool BetterTankHealer(Player* a, Player* b)
     return aRank != bRank ? aRank < bRank : a->GetGUID() < b->GetGUID();
 }
 
-// Humans count towards the raid's healers but are never handed the tanks.
-uint8 TankHealerSlots(Player* bot, Group* group)
+// Humans count towards the raid's healers but are never handed the tanks. The half cap leaves the rest to top the
+// raid up for the next star; phase 2 has none, so only one stays on the raid, and a lone healer takes the tanks:
+// one dead there sets him loose on everyone.
+uint8 TankHealerSlots(Player* bot, Group* group, bool stars)
 {
     uint8 healers = 0;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -589,7 +591,7 @@ uint8 TankHealerSlots(Player* bot, Group* group)
 
     uint8 const wanted =
         bot->GetMap()->Is25ManRaid() ? ULDUAR_ALGALON_TANK_HEALERS_25 : ULDUAR_ALGALON_TANK_HEALERS_10;
-    return std::min<uint8>(wanted, healers / 2);
+    return std::min<uint8>(wanted, stars ? healers / 2 : std::max(1, healers - 1));
 }
 
 // Re-derived until the pull like the pair. During it a dead or departed healer is replaced and the list
@@ -600,7 +602,7 @@ void EnsureTankHealers(Player* bot, Creature* boss, AlgalonEncounterState& state
     if (!group)
         return;
 
-    uint8 const slots = TankHealerSlots(bot, group);
+    uint8 const slots = TankHealerSlots(bot, group, state.phase != AlgalonPhase::Two);
     state.tankHealerSlots = slots;
 
     std::vector<Player*> candidates;
@@ -1380,8 +1382,9 @@ char const* StarWindow(Player* bot, Unit* boss, AlgalonEncounterState const& sta
     StarPlan const plan = PlanStars(state, now);
     int32 const gap = static_cast<int32>(ULDUAR_ALGALON_STAR_PACING_GAP_MS);
 
-    // Ahead of the gap, or any other death drops a kill half done. Dropped, a star keeps dying at its own slope
-    // up to the cap, so a drop only goes when that dies clear or sooner than the kill lands.
+    // Ahead of the gap, or any other death drops a kill half done. Dropped, a star dies anywhere from its own slope
+    // up to the cap to the drain alone (one dropped at 9% lost 1.4 %/s and went off under three meteors), so a drop
+    // only goes when that whole span is clear or ends before the kill lands.
     AlgalonScanUnit const* focus = FindScanned(state.stars, state.focusStar);
     if (focus && !focus->under)
     {
@@ -1394,10 +1397,13 @@ char const* StarWindow(Player* bot, Unit* boss, AlgalonEncounterState const& sta
         {
             int32 const keep = static_cast<int32>(ULDUAR_ALGALON_STAR_KEEP_GAP_MS);
             StarSpan const finish = FinishBand(state, group, *focus);
-            int32 const dropped =
+            int32 const fast =
                 StarDeathAt(*focus, std::min(focus->lossPctPerSec, ULDUAR_ALGALON_STAR_DROPPED_PCT_PER_SEC));
+            int32 const slow =
+                std::max(fast, focus->tickHp ? DrainDeathMs(*focus)
+                                             : StarDeathAt(*focus, ULDUAR_ALGALON_STAR_DRAIN_PCT_PER_SEC));
             if (!StarCollision(plan, finish, focus, keep) ||
-                (StarCollision(plan, {dropped, dropped}, focus, keep) && finish.to <= dropped))
+                (StarCollision(plan, {fast, slow}, focus, keep) && finish.to <= slow))
             {
                 star = focus;
                 return state.focusByDeadline ? "deadline" : "open";
@@ -2227,6 +2233,50 @@ Player* ElectShadowAuraPaladin(Group* group, ObjectGuid const& current)
     return kept ? kept : lowest;
 }
 
+// A bot shaman whose water totem another bot shaman also drops, a dps first: an ele and a resto both run Mana Spring.
+// None without a duplicate, since Mana Spring or Healing Stream is worth more than a fifth off the meteors.
+Player* ElectFireTotemShaman(Group* group, ObjectGuid const& current)
+{
+    static char const* const waters[] = {"mana spring", "healing stream", "cleansing"};
+    std::vector<std::pair<Player*, char const*>> shamans;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+        if (!memberAI || !InFight(member) || member->getClass() != CLASS_SHAMAN ||
+            !memberAI->GetAiObjectContext()->GetValue<uint32>("spell id", "fire resistance totem")->Get())
+            continue;
+
+        for (char const* water : waters)
+        {
+            if (memberAI->HasStrategy(water, BOT_STATE_COMBAT))
+            {
+                shamans.emplace_back(member, water);
+                break;
+            }
+        }
+    }
+
+    Player* best = nullptr;
+    for (auto const& [shaman, water] : shamans)
+    {
+        bool const duplicate = std::any_of(shamans.begin(), shamans.end(), [&](auto const& other)
+                                           { return other.first != shaman && std::strcmp(other.second, water) == 0; });
+        if (!duplicate)
+            continue;
+
+        if (shaman->GetGUID() == current)
+            return shaman;
+
+        auto const rank = [](Player* candidate)
+        { return std::make_pair(PlayerbotAI::IsHeal(candidate), candidate->GetGUID()); };
+        if (!best || rank(shaman) < rank(best))
+            best = shaman;
+    }
+
+    return best;
+}
+
 // Per hole, the hiders still out: bots by their shelter, humans by the nearest hole, kite hole included, since
 // the call only says "a black hole".
 void CountHidersOut(Group* group, AlgalonEncounterState& state)
@@ -2829,6 +2879,9 @@ void AlgalonTickEncounterState(PlayerbotAI* botAI)
 
     Player* handler = ElectHandler(bot, *state, tanks);
     state->handler = handler ? handler->GetGUID() : ObjectGuid::Empty;
+
+    Player* fireTotem = ElectFireTotemShaman(group, state->fireTotemShaman);
+    state->fireTotemShaman = fireTotem ? fireTotem->GetGUID() : ObjectGuid::Empty;
 
     if (phase != AlgalonPhase::Intro)
     {
@@ -3659,6 +3712,12 @@ bool IsAlgalonShadowAuraPaladin(Player* bot)
     return state && state->engaged && state->shadowAuraPaladin == bot->GetGUID();
 }
 
+bool IsAlgalonFireTotemShaman(Player* bot)
+{
+    AlgalonEncounterState const* state = FindState(bot);
+    return state && state->engaged && state->fireTotemShaman == bot->GetGUID();
+}
+
 Player* GetAlgalonBigBangSoaker(PlayerbotAI* botAI)
 {
     Player* bot = botAI ? botAI->GetBot() : nullptr;
@@ -3936,10 +3995,13 @@ int32 AlgalonHideSlackMs(Player* bot)
 
     int32 const underExtra = UnderHideExtraMs(*state, remaining, now);
     int32 margin = ULDUAR_ALGALON_HIDE_MARGIN_MS + underExtra;
-    // Its constellations follow it in and close the hole, so it goes last while others still head there. Not with
-    // a star under: the window opens once the others are due in, and waiting on a straggler would leave it out.
+    // Its constellations follow it in and close the hole, so it goes last while others still head there. With a
+    // star under only a tank that outlives the explosion waits: anyone else caught outside by it dies, and a
+    // handler going straight in closed the only hole on the other tank.
+    uint32 const explosion =
+        bot->GetMap()->Is25ManRaid() ? ULDUAR_ALGALON_STAR_EXPLOSION_MAX_25 : ULDUAR_ALGALON_STAR_EXPLOSION_MAX_10;
     bool last = false;
-    if (AlgalonHoldsConstellation(bot) && !underExtra)
+    if (AlgalonHoldsConstellation(bot) && (!underExtra || (tank && bot->GetHealth() > explosion)))
     {
         auto const out = state->hidersOut.find(shelter->guid);
         last = out != state->hidersOut.end() && out->second;
@@ -4332,14 +4394,9 @@ Unit* GetAlgalonHandlerConstellation(Player* bot)
     }
 
     bool const spare = state->holes.size() > ReservedHoles(*state, now);
-    // Held ones go first while the taunt cools, or loose ones taunted 8 s apart after every swap hold the kite up.
-    // A pass past its stage walk is finished first: taunting from behind latches a new kite and drops it.
-    auto const pass = state->kites.find(bot->GetGUID());
-    bool const passUnderWay = pass != state->kites.end() && pass->second.looseTarget.IsEmpty() &&
-                              pass->second.stage != AlgalonKiteStage::Stage;
-    bool const kiteFirst = loose && heldLow && !gathering && spare &&
-                           (passUnderWay || !ClassTauntReady(GET_PLAYERBOT_AI(bot))) &&
-                           HeldKitePossible(*state, bot, now);
+    // A held one goes to a spare hole before any loose one gets taunted. Taunting whenever it came back walked the
+    // handler off its stage every 8 s, and with healers and diseases peeling them it never got to cross.
+    bool const kiteFirst = loose && heldLow && !gathering && spare && HeldKitePossible(*state, bot, now);
     Unit* chosen = nullptr;
     if (loose && !kiteFirst)
         chosen = loose;
@@ -4562,8 +4619,13 @@ bool GetAlgalonKiteSpot(Player* bot, Unit* constellation, Position& spot)
     }
     else
     {
-        // On the handler now, so the pass is its own, not the taunt's.
-        kite.looseTarget = ObjectGuid::Empty;
+        // On the handler now, so the pass is its own, not the taunt's. The taunt's spot is past the hole, and a
+        // stage walk kept on it found no way round and stood still until the next taunt.
+        if (!kite.looseTarget.IsEmpty())
+        {
+            kite.looseTarget = ObjectGuid::Empty;
+            kite.hasSpot = false;
+        }
 
         // Already past the hole from them, after a taunt from behind or a pass round: it waits where it is.
         if (kite.stage == AlgalonKiteStage::Stage)

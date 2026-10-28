@@ -109,11 +109,6 @@ void DefineThorim(EncounterBuilder& e)
         [](PlayerbotAI* botAI) -> Trigger* { return new BossNatureResistanceTrigger(botAI, "thorim"); },
         "thorim nature resistance action",
         [](PlayerbotAI* botAI) -> Action* { return new BossNatureResistanceAction(botAI, "thorim"); }, ACTION_RAID);
-    e.Node(
-        "thorim frost resistance trigger",
-        [](PlayerbotAI* botAI) -> Trigger* { return new BossFrostResistanceTrigger(botAI, "thorim"); },
-        "thorim frost resistance action",
-        [](PlayerbotAI* botAI) -> Action* { return new BossFrostResistanceAction(botAI, "thorim"); }, ACTION_RAID);
     e.Node<ThorimUnbalancingStrikeSwapTrigger, ThorimUnbalancingStrikeSwapAction>(ACTION_RAID + 2);
     e.Node<ThorimTankPickupTrigger, ThorimTankPickupAction>(ACTION_RAID + 2);
     e.Node<ThorimDpsPriorityTrigger, ThorimDpsPriorityAction>(ACTION_RAID);

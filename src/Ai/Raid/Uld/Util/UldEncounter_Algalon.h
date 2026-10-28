@@ -467,6 +467,8 @@ struct AlgalonEncounterState
     ObjectGuid disperser{};
     // The paladin running Shadow Resistance Aura while stars live, so its Aura Mastery doubles it.
     ObjectGuid shadowAuraPaladin{};
+    // Cosmic Smash is fire; totems reach the whole raid, so one duplicate water totem is free to swap.
+    ObjectGuid fireTotemShaman{};
     bool urgent{};
     uint32 holeCount{};
     ObjectGuid focusStar{};
@@ -648,6 +650,8 @@ AlgalonPersonalPick GetAlgalonExplosionPersonal(PlayerbotAI* botAI);
 void ClaimAlgalonExplosionPersonal(Player* bot);
 // Runs Shadow Resistance Aura while stars live.
 bool IsAlgalonShadowAuraPaladin(Player* bot);
+// Drops Fire Resistance Totem in place of a water totem another shaman already drops.
+bool IsAlgalonFireTotemShaman(Player* bot);
 
 // What this bot does about the current Big Bang.
 enum class AlgalonHideRole : uint8

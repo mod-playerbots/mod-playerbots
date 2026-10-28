@@ -111,6 +111,15 @@ public:
     bool Execute(Event event) override;
 };
 
+class AlgalonFireTotemAction : public Action
+{
+public:
+    static constexpr char const* Name = "algalon fire totem action";
+
+    AlgalonFireTotemAction(PlayerbotAI* botAI) : Action(botAI, Name) {}
+    bool Execute(Event event) override;
+};
+
 class AlgalonBigBangHideAction : public MovementAction
 {
 public:

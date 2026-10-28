@@ -221,6 +221,8 @@ bool AlgalonExplosionPersonalAction::Execute(Event /*event*/)
 
 bool AlgalonShadowAuraAction::Execute(Event /*event*/) { return botAI->CastSpell("shadow resistance aura", bot); }
 
+bool AlgalonFireTotemAction::Execute(Event /*event*/) { return botAI->CastSpell("fire resistance totem", bot); }
+
 bool AlgalonBigBangHideAction::Execute(Event /*event*/)
 {
     Position shelter;

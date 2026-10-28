@@ -113,6 +113,15 @@ public:
     bool IsActive() override;
 };
 
+class AlgalonFireTotemTrigger : public Trigger
+{
+public:
+    static constexpr char const* Name = "algalon fire totem";
+
+    AlgalonFireTotemTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name, 1000) {}
+    bool IsActive() override;
+};
+
 class AlgalonBigBangHideTrigger : public Trigger
 {
 public:

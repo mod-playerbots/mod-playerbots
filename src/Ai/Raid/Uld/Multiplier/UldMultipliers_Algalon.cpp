@@ -393,9 +393,10 @@ float AlgalonWalkGuardMultiplier::GetValue(Action* action)
     if (!target)
         return 1.0f;
 
-    // Where the walk stops: in melee range for melee, in heal or spell range for the rest.
+    // Where the walk stops: in melee range for melee and a charge, in heal or spell range for the rest. A charge
+    // runs the straight line whatever lies on it.
     float range = botAI->GetRange("spell");
-    if (name == "reach melee")
+    if (name == "reach melee" || dynamic_cast<CastReachTargetSpellAction*>(action))
         range = bot->GetMeleeRange(target);
     else if (dynamic_cast<ReachPartyMemberToHealAction*>(action))
         range = botAI->GetRange("heal");

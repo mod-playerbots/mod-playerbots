@@ -52,6 +52,8 @@ bool AlgalonYielding(PlayerbotAI* botAI) { return AlgalonYieldsBoss(botAI->GetBo
 
 bool AlgalonTankHealing(PlayerbotAI* botAI) { return IsAlgalonTankHealer(botAI->GetBot()); }
 
+bool AlgalonFireTotemHeld(PlayerbotAI* botAI) { return IsAlgalonFireTotemShaman(botAI->GetBot()); }
+
 bool AlgalonShadowAuraHeld(PlayerbotAI* botAI)
 {
     return AlgalonInPhaseOne(botAI) && IsAlgalonShadowAuraPaladin(botAI->GetBot());
@@ -133,6 +135,7 @@ void DefineAlgalon(EncounterBuilder& e)
     e.Node<AlgalonStarMarkTrigger, AlgalonStarMarkAction>(ACTION_RAID + 2);
     e.Node<AlgalonThreatRedirectTrigger, AlgalonThreatRedirectAction>(ACTION_RAID + 1);
     e.Node<AlgalonRaidPositionTrigger, AlgalonRaidPositionAction>(ACTION_RAID, EncounterRow::Mover);
+    e.Node<AlgalonFireTotemTrigger, AlgalonFireTotemAction>(ACTION_RAID + 0.5f);
     // One global cooldown a pull, above the party heal bands so the heals don't starve it until the first star.
     e.Node<AlgalonShadowAuraTrigger, AlgalonShadowAuraAction>(ACTION_MEDIUM_HEAL + 2.0f);
     e.Node<AlgalonTankBeaconTrigger, AlgalonTankBeaconAction>(ACTION_MEDIUM_HEAL + 1.0f);
@@ -156,6 +159,12 @@ void DefineAlgalon(EncounterBuilder& e)
     e.Block("algalon shadow aura hold", Role::Any, AlgalonShadowAuraHeld, 0,
             {"devotion aura", "retribution aura", "concentration aura", "crusader aura", "sanctity aura",
              "shadow resistance aura", "fire resistance aura", "frost resistance aura"});
+    // The water slot is exclusive, so the shaman's own totem strategy would put its water totem back.
+    e.Block("algalon fire totem hold", Role::Any, AlgalonFireTotemHeld, 0,
+            {"mana spring totem", "healing stream totem", "cleansing totem", "set mana spring totem",
+             "set healing stream totem", "set cleansing totem"});
+    // Nothing here is frost. A paladin can still carry rfrost from an earlier boss, which costs the tank Devotion.
+    e.Block("algalon stray frost aura", Role::Any, AlgalonEngaged, 0, {"frost resistance aura"});
     // The encounter places these on the swap pair itself; the class nodes would move them to the main tank.
     e.Block("algalon tank healer buffs", Role::Heal, AlgalonTankHealing, 0,
             {"beacon of light on main tank", "sacred shield on main tank", "earth shield on main tank",
@@ -186,7 +195,7 @@ void DefineAlgalon(EncounterBuilder& e)
     e.Multiplier<AlgalonTargetGuardMultiplier>(Family::Melee | Family::Spell | Family::PetAttack);
 
     e.Multiplier<AlgalonWalkGuardMultiplier>(Family::Reach | Family::ReachHeal | Family::SetBehind |
-                                             Family::RearFlank);
+                                             Family::RearFlank | Family::Charge);
 
     // Attack would chase the constellation and Reach would walk back to Algalon while the handler leads
     // one to a hole. Its own taunts are AttackActions too, and a swap it can't make phases the holder out.
