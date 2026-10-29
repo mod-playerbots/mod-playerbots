@@ -76,6 +76,14 @@ public:
     CastCreateHealthstoneAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "create healthstone") {}
 };
 
+class CastRitualOfSoulsAction : public CastBuffSpellAction
+{
+public:
+    CastRitualOfSoulsAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "ritual of souls") {}
+    bool isUseful() override;
+    bool Execute(Event event) override;
+};
+
 class CastCreateFirestoneAction : public CastBuffSpellAction
 {
 public:
