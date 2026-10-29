@@ -47,6 +47,7 @@ public:
 
     uint32 GetType() const override { return STRATEGY_TYPE_GENERIC; }
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+    void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
     std::string const getName() override { return "alterac"; }
 };
 
@@ -57,6 +58,7 @@ public:
 
     uint32 GetType() const override { return STRATEGY_TYPE_GENERIC; }
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+    void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
     std::string const getName() override { return "arathi"; }
 };
 
@@ -67,6 +69,7 @@ public:
 
     uint32 GetType() const override { return STRATEGY_TYPE_GENERIC; }
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+    void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
     std::string const getName() override { return "eye"; }
 };
 
@@ -77,6 +80,7 @@ public:
 
     uint32 GetType() const override { return STRATEGY_TYPE_GENERIC; }
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+    void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
     std::string const getName() override { return "isle"; }
 };
 

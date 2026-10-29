@@ -2127,6 +2127,63 @@ bool BGTactics::ShouldYieldWsgTactics(PlayerbotAI* botAI)
            player->IsWithinLOSInMap(healTarget);
 }
 
+bool BGTactics::IsFollowingMaster(PlayerbotAI* botAI)
+{
+    if (!botAI->HasGameClientMaster() || !botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
+        return false;
+
+    Battleground* bg = botAI->GetBot()->GetBattleground();
+    Player* master = botAI->GetMaster();
+    return bg && master && master->GetBattleground() == bg;
+}
+
+bool BGTactics::IsAtBgFlag(PlayerbotAI* botAI)
+{
+    Player* player = botAI->GetBot();
+    Battleground* bg = player->GetBattleground();
+    if (!bg)
+        return false;
+
+    for (CurrentSpellTypes type : {CURRENT_CHANNELED_SPELL, CURRENT_GENERIC_SPELL})
+    {
+        Spell* spell = player->GetCurrentSpell(type);
+        if (spell && spell->m_spellInfo && spell->m_spellInfo->Id == SPELL_CAPTURE_BANNER)
+            return true;
+    }
+
+    std::vector<uint32> const* flagIds = nullptr;
+    switch (bg->GetBgTypeID(true))
+    {
+        case BATTLEGROUND_AB:
+            flagIds = &vFlagsAB;
+            break;
+        case BATTLEGROUND_AV:
+            flagIds = &vFlagsAV;
+            break;
+        case BATTLEGROUND_WS:
+            flagIds = &vFlagsWS;
+            break;
+        case BATTLEGROUND_EY:
+            flagIds = &vFlagsEY;
+            break;
+        case BATTLEGROUND_IC:
+            flagIds = &vFlagsIC;
+            break;
+        default:
+            return false;
+    }
+
+    for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("closest game objects")->Get())
+    {
+        GameObject* go = botAI->GetGameObject(guid);
+        if (go && go->isSpawned() && go->GetGoState() == GO_STATE_READY &&
+            std::find(flagIds->begin(), flagIds->end(), go->GetEntry()) != flagIds->end())
+            return true;
+    }
+
+    return false;
+}
+
 bool BGTactics::selectObjective(bool reset)
 {
     Battleground* bg = bot->GetBattleground();
@@ -4526,6 +4583,11 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
         // If friendlies are capturing, stay to defend but don't capture
         if (numCapturing > 0 && capturingPlayer && bot->GetGUID() != capturingPlayer->GetGUID())
         {
+            // A bot told to follow does not leave for another objective. Returning false lets follow, heals and
+            // combat run instead; the multiplier keeps the other battleground movement off.
+            if (IsFollowingMaster(botAI))
+                return false;
+
             // Move away if too close to avoid crowding
             if (bot->GetDistance2d(capturingPlayer) < 3.0f)
             {
