@@ -18,6 +18,11 @@
 #include "PositionValue.h"
 #include "RandomPlayerbotFactory.h"
 
+namespace
+{
+    constexpr uint32 BG_JOIN_LOGIN_DELAY_MS = 120 * IN_MILLISECONDS;
+}
+
 bool BGJoinAction::Execute(Event /*event*/)
 {
     uint32 queueType = AI_VALUE(uint32, "bg type");
@@ -332,7 +337,7 @@ bool BGJoinAction::isUseful()
         return false;
 
     // do not try right after login
-    if (getMSTimeDiff(bot->GetInGameTime(), GameTime::GetGameTimeMS().count()) < 120 * IN_MILLISECONDS)
+    if (getMSTimeDiff(bot->GetInGameTime(), GameTime::GetGameTimeMS().count()) < BG_JOIN_LOGIN_DELAY_MS)
         return false;
 
     // check level
