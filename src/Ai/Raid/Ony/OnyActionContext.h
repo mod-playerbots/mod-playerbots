@@ -21,6 +21,7 @@ public:
         creators["ony move to safe zone"] = &RaidOnyxiaActionContext::move_to_safe_zone;
         creators["ony kill whelps"] = &RaidOnyxiaActionContext::kill_whelps;
         creators["ony avoid eggs move"] = &RaidOnyxiaActionContext::avoid_eggs;
+        creators["ony stop attack"] = &RaidOnyxiaActionContext::stop_attack;
     }
 
 private:
@@ -29,6 +30,7 @@ private:
     static Action* move_to_safe_zone(PlayerbotAI* botAI) { return new RaidOnyxiaMoveToSafeZoneAction(botAI); }
     static Action* kill_whelps(PlayerbotAI* botAI) { return new RaidOnyxiaKillWhelpsAction(botAI); }
     static Action* avoid_eggs(PlayerbotAI* botAI) { return new OnyxiaAvoidEggsAction(botAI); }
+    static Action* stop_attack(PlayerbotAI* botAI) { return new OnyxiaStopAttackAction(botAI); }
 };
 
 #endif
