@@ -44,14 +44,10 @@ If there is a high impact then there needs to be some justification for the chan
 - [ ] Minimal (explain below)
 - [ ] Moderate or high (explain below)
 
-
-
 **2. Does this change what bots do by default?**
 <!-- Default means without the player turning on a new strategy or config option. -->
 - [ ] No
 - [ ] Yes (explain why the new default is better)
-
-
 
 ## AI Use and Self-Review
 <!--
@@ -88,8 +84,6 @@ Was any code copied or adapted from another project (CMaNGOS playerbots, MaNGOS,
 - [ ] No, all code is original
 - [ ] Yes (name the project and original authors below)
 
-
-
 ## Checklist
 <!--
 Translations: anything new that bots say in chat must go through GetBotTextOrDefault with English
@@ -99,8 +93,6 @@ src/Ai/Base/Actions/FishingAction.cpp.
 -->
 - [ ] New bot chat lines are translated (see comment above), or there are none.
 - [ ] New source files use the GPLv2 header.
-- [ ] Docs updated where needed (code comments, conf comments, wiki commands).
-- [ ] No new compiler warnings.
 
 ## Notes for Reviewers
 <!-- Anything else that helps someone review or test this. -->
