@@ -15,10 +15,13 @@
 #include "GridNotifiersImpl.h"
 #include "Group.h"
 #include "Map.h"
+#include "PetDefines.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
+#include "Spell.h"
+#include "SpellInfo.h"
 #include "ThreatManager.h"
 #include "Timer.h"
 #include "UldScripts.h"
@@ -635,6 +638,41 @@ uint32 GetFreyaRangedDpsRank(PlayerbotAI* botAI)
     }
 
     return rank;
+}
+
+bool IsFreyaArmyTurn(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    Group* group = bot->GetGroup();
+    if (!group)
+        return true;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == bot || !member->IsAlive() || member->GetMapId() != bot->GetMapId() ||
+            member->getClass() != CLASS_DEATH_KNIGHT)
+            continue;
+
+        // A human's Army counts too: the ghouls re-taunt every second (43264) for their 40s, whoever cast them,
+        // so they also hold a wave that shows up while they're still out.
+        Spell const* channel = member->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+        if (channel && channel->GetSpellInfo()->Id == SPELL_ARMY_OF_THE_DEAD)
+            return false;
+
+        for (Unit* minion : member->m_Controlled)
+        {
+            if (minion && minion->IsAlive() && minion->GetEntry() == NPC_ARMY_OF_THE_DEAD)
+                return false;
+        }
+
+        // Bots only here, nobody can plan around a human's cooldown.
+        if (GET_PLAYERBOT_AI(member) && member->IsInCombat() && member->GetGUID() < bot->GetGUID() &&
+            member->HasSpell(SPELL_ARMY_OF_THE_DEAD) && !member->HasSpellCooldown(SPELL_ARMY_OF_THE_DEAD))
+            return false;
+    }
+
+    return true;
 }
 
 uint32 CountFreyaLashersNear(Position const& centre, FreyaWaveState const& state, float radius)

@@ -256,7 +256,7 @@ bool FreyaSummonArmyTrigger::IsActive()
     if (state.detonatingLashers.empty())
         return false;
 
-    return botAI->CanCastSpell("army of the dead", bot);
+    return botAI->CanCastSpell("army of the dead", bot) && IsFreyaArmyTurn(botAI);
 }
 
 bool FreyaGroundTremorHoldCastTrigger::IsActive()

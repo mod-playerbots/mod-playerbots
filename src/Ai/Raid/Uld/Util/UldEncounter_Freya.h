@@ -61,6 +61,9 @@ enum UlduarFreyaIds
     // On allies within 6 yd of a Healthy Spore, immunity to Conservator's Grip. 62541 is the spore's own aura,
     // this is the id that lands on players.
     SPELL_POTENT_PHEROMONES = 64321,
+
+    // 10 min cooldown, 6 with Night of the Dead: either way longer than the gap between the two lasher waves.
+    SPELL_ARMY_OF_THE_DEAD = 42650,
 };
 
 // Hard mode: how far out of an Unstable Sun Beam bots step. The pool itself (62865) is only 5 yd.
@@ -355,6 +358,10 @@ Player* GetFreyaRangedCampAnchor(PlayerbotAI* botAI);
 // This bot's place in the GUID order of the living ranged DPS, so a job can be handed to the first few
 // of them without shared state. UINT32_MAX for anyone who is not ranged DPS.
 uint32 GetFreyaRangedDpsRank(PlayerbotAI* botAI);
+
+// Whether this DK bot opens Army of the Dead on the lasher wave. One per wave, so the next DK still has
+// it for the second one: lowest GUID among bot DKs with it ready, held while any DK's ghouls are up.
+bool IsFreyaArmyTurn(PlayerbotAI* botAI);
 
 // Where the back line balls up for the AoE: on the anchor bot. Never a computed point, a live bot is always on
 // the mesh. Empty when no ranged DPS bot is alive.
