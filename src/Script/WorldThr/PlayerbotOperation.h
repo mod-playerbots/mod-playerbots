@@ -78,6 +78,16 @@ public:
      * @return true if operation should be executed, false to skip
      */
     virtual bool IsValid() const { return true; }
+
+    /**
+     * @brief Check if this operation must never be dropped
+     *
+     * For operations whose loss would lose data, such as items already taken from a bot.
+     * They are queued even when the queue is full, and still run at shutdown.
+     *
+     * @return true if this operation must run, false if it may be dropped
+     */
+    virtual bool MustRun() const { return false; }
 };
 
 /**
