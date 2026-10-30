@@ -4415,7 +4415,7 @@ std::vector<uint32> TravelMgr::GetFlightNodesInZone(uint32 zoneId, TeamId team, 
     return result;
 }
 
-std::vector<std::vector<uint32>> TravelMgr::GetOptimalFlightDestinations(Player* bot)
+std::vector<std::vector<uint32>> TravelMgr::GetOptimalFlightDestinations(Player* bot, bool collectAll)
 {
     std::vector<std::vector<uint32>> validDestinations;
 
@@ -4480,7 +4480,8 @@ std::vector<std::vector<uint32>> TravelMgr::GetOptimalFlightDestinations(Player*
             if (!path.empty())
             {
                 validDestinations.push_back(std::move(path));
-                return validDestinations;
+                if (!collectAll)
+                    return validDestinations;
             }
         }
 

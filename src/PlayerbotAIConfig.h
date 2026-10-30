@@ -161,6 +161,7 @@ public:
     int32 RandomGearScoreLimit;
     bool PreferClassArmorType;
     bool PreferredSpecWeapons;
+    bool QuestAwareTaxi;
     float RandomBotMinLevelChance, RandomBotMaxLevelChance;
     float RandomBotRpgChance;
     uint32 MinRandomBots, MaxRandomBots;
