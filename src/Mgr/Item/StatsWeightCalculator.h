@@ -61,6 +61,8 @@ public:
     void ApplyOverflowPenalty(Player* player);
     void ApplyWeightFinetune(Player* player);
 
+    void ApplyRacialWeaponBonus(ItemTemplate const* proto);
+
 private:
     Player* player_;
     CollectorType type_;

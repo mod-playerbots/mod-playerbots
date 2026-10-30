@@ -34,6 +34,14 @@ constexpr uint32 SPELL_POLEAXE_SPECIALIZATION = 12785;
 constexpr uint32 SPELL_NERVES_OF_COLD_STEEL = 50138;
 constexpr uint32 SPELL_SHADOW_FOCUS = 15835;
 constexpr uint32 SPELL_ARCANE_FOCUS = 12840;
+
+// Racial weapon specialization bonuses (3.3.5)
+constexpr float RACIAL_EXPERTISE_ORC_AXE = 5.0f; // Skill points (Not rating)
+constexpr float RACIAL_EXPERTISE_HUMAN_SWORD_MACE = 3.0f; // Skill points (Not rating)
+constexpr float RACIAL_EXPERTISE_DWARF_MACE = 5.0f; // Skill points (Not rating)
+constexpr float RACIAL_CRIT_PCT_DWARF_GUN = 1.0f; // Percent (Not rating)
+constexpr float RACIAL_CRIT_PCT_TROLL_BOW = 1.0f; // Percent (Not rating)
+
 }
 
 template <size_t Size>
@@ -101,6 +109,8 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
 
     if (randomPropertyIds != 0)
         CalculateRandomProperty(randomPropertyIds, itemId);
+
+    ApplyRacialWeaponBonus(proto);
 
     bool const checkSetBonus = enable_item_set_bonus_;
     std::array<float, STATS_TYPE_MAX> setBonusStats{};
@@ -1081,4 +1091,51 @@ float StatsWeightCalculator::ApplyPreferredSpecWeapons(ItemTemplate const* proto
     }
 
     return 1.0f;
+}
+
+void StatsWeightCalculator::ApplyRacialWeaponBonus(ItemTemplate const* proto)
+{
+    if (proto->Class != ITEM_CLASS_WEAPON)
+        return;
+
+    uint32 const sub = proto->SubClass;
+    float expertiseSkill = 0.0f;   // Expertise skill points (Not rating)
+    float critPct = 0.0f;          // Ranged crit %
+
+    // Racial weapon specializations are added to the item's stats, as if the weapon had them.
+    // The troll Throwing Specialization is intentionally ignored.
+    switch (player_->getRace())
+    {
+        case RACE_ORC: // Orc Axe Specialization
+            if (sub == ITEM_SUBCLASS_WEAPON_AXE || sub == ITEM_SUBCLASS_WEAPON_AXE2 ||
+                sub == ITEM_SUBCLASS_WEAPON_FIST)
+                expertiseSkill = RACIAL_EXPERTISE_ORC_AXE;
+            break;
+        case RACE_HUMAN: // Human Sword & Mace Specialization
+            if (sub == ITEM_SUBCLASS_WEAPON_SWORD || sub == ITEM_SUBCLASS_WEAPON_SWORD2 ||
+                sub == ITEM_SUBCLASS_WEAPON_MACE || sub == ITEM_SUBCLASS_WEAPON_MACE2)
+                expertiseSkill = RACIAL_EXPERTISE_HUMAN_SWORD_MACE;
+            break;
+        case RACE_DWARF: // Dwarf Mace Specialization + Gun Specialization
+            if (sub == ITEM_SUBCLASS_WEAPON_MACE || sub == ITEM_SUBCLASS_WEAPON_MACE2)
+                expertiseSkill = RACIAL_EXPERTISE_DWARF_MACE;
+            else if (sub == ITEM_SUBCLASS_WEAPON_GUN)
+                critPct = RACIAL_CRIT_PCT_DWARF_GUN;
+            break;
+        case RACE_TROLL: // Troll Bow Specialization
+            if (sub == ITEM_SUBCLASS_WEAPON_BOW)
+                critPct = RACIAL_CRIT_PCT_TROLL_BOW;
+            break;
+        default:
+            return;
+    }
+
+    if (expertiseSkill > 0.0f && (type_ & CollectorType::MELEE))
+        collector_->stats[STATS_TYPE_EXPERTISE] += expertiseSkill / player_->GetRatingMultiplier(CR_EXPERTISE);
+
+    if (type_ & CollectorType::RANGED)
+    {
+        if (critPct > 0.0f)
+            collector_->stats[STATS_TYPE_CRIT] += critPct / player_->GetRatingMultiplier(CR_CRIT_RANGED);
+    }
 }
