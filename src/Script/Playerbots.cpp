@@ -562,6 +562,8 @@ public:
     // Runs before the sessions are kicked on server shutdown
     void OnShutdown() override
     {
+        PlayerbotWorldThreadProcessor::instance().Shutdown();
+
         LOG_INFO("playerbots", "Logging out all bots...");
         sRandomPlayerbotMgr.LogoutAllBots();
         PlayerbotHolder::ClearPendingLogins();

@@ -14,7 +14,6 @@
 #include "PlayerbotTextMgr.h"
 #include "PlayerbotWorldThreadProcessor.h"
 #include "Playerbots.h"
-#include "World.h"
 
 #include <algorithm>
 #include <sstream>
@@ -168,6 +167,7 @@ public:
 
     ObjectGuid GetBotGuid() const override { return _botGuid; }
     std::string GetName() const override { return "CraftRefundMail"; }
+    bool MustRun() const override { return true; }
 
 private:
     ObjectGuid _botGuid;
@@ -473,16 +473,15 @@ void CraftOrder::Refund(PlayerbotAI* botAI)
         }
 
         // Mail changes an online customer's mailbox, which another map's thread may be using, so it waits for the world
-        // thread. Once the world has stopped, no map runs and that queue is never processed again.
-        if (owner && !botAI->IsSafe(owner) && !World::IsStopped())
+        // thread. It is only refused once the processor has shut down, when no map is updating, so it is sent now.
+        bool queued = false;
+        if (owner && !botAI->IsSafe(owner))
         {
-            auto operation = std::make_unique<RefundMailOperation>(bot->GetGUID(), data.owner, MailSender(bot),
-                                                                   std::move(mails), std::move(text));
-            if (!PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(operation)))
-                LOG_ERROR("playerbots", "Bot {} could not queue the crafting refund mail to {}", bot->GetName(),
-                          data.owner.ToString());
+            queued = PlayerbotWorldThreadProcessor::instance().QueueOperation(
+                std::make_unique<RefundMailOperation>(bot->GetGUID(), data.owner, MailSender(bot), mails, text));
         }
-        else
+
+        if (!queued)
             DeliverRefund(botAI, data.owner, MailSender(bot), mails, text, trans);
     }
 
