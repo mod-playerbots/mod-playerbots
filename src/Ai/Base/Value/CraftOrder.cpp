@@ -12,7 +12,9 @@
 #include "Mail.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotTextMgr.h"
+#include "PlayerbotWorldThreadProcessor.h"
 #include "Playerbots.h"
+#include "World.h"
 
 #include <algorithm>
 #include <sstream>
@@ -100,17 +102,17 @@ static std::string RefundSubject()
 }
 
 // The fee is split over the mails by the items each carries, so returning one mail does not avoid it on the others.
-static void MailItems(Player* bot, ObjectGuid owner, MailReceiver const& receiver, std::vector<Item*> const& items,
-                      uint32 fee, CharacterDatabaseTransaction trans)
+static void AddRefundMails(std::vector<MailDraft>& mails, ObjectGuid owner, std::vector<Item*> const& items, uint32 fee,
+                           CharacterDatabaseTransaction trans)
 {
-    std::vector<MailDraft> drafts;
+    size_t const first = mails.size();
     std::vector<uint32> mailItemCounts;
     std::string const subject = RefundSubject();
     for (size_t i = 0; i < items.size(); ++i)
     {
         if (i % MAX_MAIL_ITEMS == 0)
         {
-            drafts.emplace_back(subject, "");
+            mails.emplace_back(subject, "");
             mailItemCounts.push_back(0);
         }
 
@@ -119,19 +121,62 @@ static void MailItems(Player* bot, ObjectGuid owner, MailReceiver const& receive
             items[i]->FSetState(ITEM_CHANGED);
         items[i]->SetOwnerGUID(owner);
         items[i]->SaveToDB(trans);
-        drafts.back().AddItem(items[i]);
+        mails.back().AddItem(items[i]);
         mailItemCounts.back() += items[i]->GetCount();
     }
 
     std::vector<uint32> const cods = CraftRules::SplitFee(fee, mailItemCounts);
-    for (size_t mail = 0; mail < drafts.size(); ++mail)
+    for (size_t mail = 0; mail < cods.size(); ++mail)
     {
         if (cods[mail])
-            drafts[mail].AddCOD(cods[mail]);
-
-        drafts[mail].SendMailTo(trans, receiver, MailSender(bot));
+            mails[first + mail].AddCOD(cods[mail]);
     }
 }
+
+static void DeliverRefund(PlayerbotAI* botAI, ObjectGuid owner, MailSender const& sender,
+                          std::vector<MailDraft>& mails, std::string const& text, CharacterDatabaseTransaction trans)
+{
+    Player* customer = ObjectAccessor::FindConnectedPlayer(owner);
+    MailReceiver const receiver(customer, owner.GetCounter());
+    for (MailDraft& mail : mails)
+        mail.SendMailTo(trans, receiver, sender);
+
+    if (botAI && customer && !text.empty())
+        CraftOrder::Tell(botAI, customer, text);
+}
+
+namespace
+{
+// The items are already out of the bot's bags and saved to the customer.
+class RefundMailOperation : public PlayerbotOperation
+{
+public:
+    RefundMailOperation(ObjectGuid botGuid, ObjectGuid owner, MailSender const& sender, std::vector<MailDraft> mails,
+                        std::string text)
+        : _botGuid(botGuid), _owner(owner), _sender(sender), _mails(std::move(mails)), _text(std::move(text))
+    {
+    }
+
+    bool Execute() override
+    {
+        Player* bot = ObjectAccessor::FindConnectedPlayer(_botGuid);
+        CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+        DeliverRefund(bot ? GET_PLAYERBOT_AI(bot) : nullptr, _owner, _sender, _mails, _text, trans);
+        CharacterDatabase.CommitTransaction(trans);
+        return true;
+    }
+
+    ObjectGuid GetBotGuid() const override { return _botGuid; }
+    std::string GetName() const override { return "CraftRefundMail"; }
+
+private:
+    ObjectGuid _botGuid;
+    ObjectGuid _owner;
+    MailSender _sender;
+    std::vector<MailDraft> _mails;
+    std::string _text;
+};
+}  // namespace
 
 static void TellOwner(PlayerbotAI* botAI, CraftData const& data, std::string const& text)
 {
@@ -412,20 +457,33 @@ void CraftOrder::Refund(PlayerbotAI* botAI)
 
     if (!reagents.empty() || !products.empty())
     {
-        Player* receiver = ObjectAccessor::FindConnectedPlayer(data.owner);
-        MailReceiver const mailReceiver(receiver, data.owner.GetCounter());
         uint32 const fee = data.FeePaid() ? 0 : GetFee(bot, data, data.crafted);
+        std::vector<MailDraft> mails;
+        AddRefundMails(mails, data.owner, reagents, 0, trans);
+        AddRefundMails(mails, data.owner, products, fee, trans);
 
-        MailItems(bot, data.owner, mailReceiver, reagents, 0, trans);
-        MailItems(bot, data.owner, mailReceiver, products, fee, trans);
-
-        if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(data.itemId))
+        Player* owner = ObjectAccessor::FindConnectedPlayer(data.owner);
+        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(data.itemId);
+        std::string text;
+        if (owner && proto)
         {
-            TellOwner(botAI, data,
-                      PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                          "craft_refund_mailed", "I've mailed you back what's left of your order for %item",
-                          {{"%item", ChatHelper::FormatItem(proto)}}));
+            text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "craft_refund_mailed", "I've mailed you back what's left of your order for %item",
+                {{"%item", ChatHelper::FormatItem(proto)}});
         }
+
+        // Mail changes an online customer's mailbox, which another map's thread may be using, so it waits for the world
+        // thread. Once the world has stopped, no map runs and that queue is never processed again.
+        if (owner && !botAI->IsSafe(owner) && !World::IsStopped())
+        {
+            auto operation = std::make_unique<RefundMailOperation>(bot->GetGUID(), data.owner, MailSender(bot),
+                                                                   std::move(mails), std::move(text));
+            if (!PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(operation)))
+                LOG_ERROR("playerbots", "Bot {} could not queue the crafting refund mail to {}", bot->GetName(),
+                          data.owner.ToString());
+        }
+        else
+            DeliverRefund(botAI, data.owner, MailSender(bot), mails, text, trans);
     }
 
     bot->SaveInventoryAndGoldToDB(trans);
