@@ -71,13 +71,11 @@ private:
 
 // Trash
 
-// The throttle compensates for this trigger not being encounter gated. The first Shell of Pain is
-// applied 20-30s into the pull.
 class SisterOfPleasureShouldBeFocusedTrigger : public Trigger
 {
 public:
     SisterOfPleasureShouldBeFocusedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "sister of pleasure should be focused", 1000) {}
+        : Trigger(botAI, "sister of pleasure should be focused") {}
     bool IsActive() override;
 };
 

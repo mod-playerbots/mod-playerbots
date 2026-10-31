@@ -671,8 +671,8 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
                 continue;
 
             if (IsExemptFromIllidanInfectionRun(
-                    botAI, illidan, ObjectAccessor::FindPlayer(player)) ||
-                !IsIllidanTrapHunterReady(ObjectAccessor::FindPlayer(infection.hunter)))
+                    botAI, illidan, ObjectAccessor::GetPlayer(*bot, player)) ||
+                !IsIllidanTrapHunterReady(ObjectAccessor::GetPlayer(*bot, infection.hunter)))
             {
                 return true;
             }

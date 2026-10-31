@@ -15,6 +15,17 @@
 
 // Trash
 
+class SistersOfPleasureValue : public CalculatedValue<GuidVector>
+{
+public:
+    SistersOfPleasureValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+            botAI, "sisters of pleasure", BtHelpers::SISTER_OF_PLEASURE_CACHE_INTERVAL_MS) {}
+
+protected:
+    GuidVector Calculate() override { return BtHelpers::FindSisterOfPleasureGuids(botAI); }
+};
+
 class ShadowmoonReaversValue : public CalculatedValue<GuidVector>
 {
 public:
@@ -165,6 +176,7 @@ class RaidBlackTempleValueContext : public NamedObjectContext<UntypedValue>
 public:
     RaidBlackTempleValueContext()
     {
+        creators["sisters of pleasure"] = &RaidBlackTempleValueContext::sisters_of_pleasure;
         creators["shadowmoon reavers"] = &RaidBlackTempleValueContext::shadowmoon_reavers;
         creators["supremus hazards"] = &RaidBlackTempleValueContext::supremus_hazards;
         creators["shade of akama adds"] = &RaidBlackTempleValueContext::shade_of_akama_adds;
@@ -185,6 +197,10 @@ public:
     }
 
 private:
+    static UntypedValue* sisters_of_pleasure(PlayerbotAI* botAI)
+    {
+        return new SistersOfPleasureValue(botAI);
+    }
     static UntypedValue* shadowmoon_reavers(PlayerbotAI* botAI)
     {
         return new ShadowmoonReaversValue(botAI);

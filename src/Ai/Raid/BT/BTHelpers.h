@@ -158,11 +158,7 @@ enum class BtNpcs : uint32
     NPC_SISTER_OF_PLEASURE          = 22964,
     NPC_SHADOWMOON_REAVER           = 22879,
 
-    // High Warlord Naj'entus
-    NPC_HIGH_WARLORD_NAJENTUS       = 22887,
-
     // Supremus
-    NPC_SUPREMUS                    = 22898,
     NPC_SUPREMUS_VOLCANO            = 23085,
 
     // Shade of Akama
@@ -171,26 +167,19 @@ enum class BtNpcs : uint32
     NPC_ASHTONGUE_SORCERER          = 23215,
 
     // Teron Gorefiend
-    NPC_TERON_GOREFIEND             = 22871,
     NPC_SHADOWY_CONSTRUCT           = 23111,
 
     // Gurtogg Bloodboil
     NPC_GURTOGG_BLOODBOIL           = 22948,
 
     // Reliquary of Souls
-    NPC_RELIQUARY_OF_THE_LOST       = 22856,
     NPC_ESSENCE_OF_SUFFERING        = 23418,
     NPC_ESSENCE_OF_DESIRE           = 23419,
     NPC_ESSENCE_OF_ANGER            = 23420,
 
-    // Mother Shahraz
-    NPC_MOTHER_SHAHRAZ              = 22947,
-
     // Illidari Council
-    NPC_GATHIOS_THE_SHATTERER       = 22949,
     NPC_HIGH_NETHERMANCER_ZEREVOR   = 22950,
     NPC_LADY_MALANDE                = 22951,
-    NPC_VERAS_DARKSHADOW            = 22952,
 
     // Illidan Stormrage <The Betrayer>
     NPC_ILLIDAN_STORMRAGE           = 22917,
@@ -259,7 +248,9 @@ void FaceUnit(Player* bot, Unit* unit);
 // Trash
 
 inline constexpr float SISTER_OF_PLEASURE_SEARCH_RADIUS = 100.0f;
+inline constexpr uint32 SISTER_OF_PLEASURE_CACHE_INTERVAL_MS = 1000;
 
+GuidVector FindSisterOfPleasureGuids(PlayerbotAI* botAI);
 Unit* GetLinkedSisterOfPain(Unit* pleasure);
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
 Unit* GetSkulledSisterOfPain(Player* bot);
@@ -354,7 +345,7 @@ inline constexpr float SUPREMUS_BOUNDARY_MAX_X = 820.0f;
 inline constexpr float SUPREMUS_BOUNDARY_MIN_Y = 590.0f;
 inline constexpr float SUPREMUS_BOUNDARY_MAX_Y = 970.0f;
 
-inline Position const SUPREMUS_INITIAL_TANK_POSITION = { 700.678f, 698.270f, 71.514 };
+inline Position const SUPREMUS_INITIAL_TANK_POSITION = { 700.678f, 698.270f, 71.514f };
 
 bool IsSupremusKitePhase(Unit* supremus);
 float GetSupremusFixateTimeRemaining(Unit* supremus);

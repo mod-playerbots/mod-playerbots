@@ -214,6 +214,21 @@ bool CanBuildChaoticCharge(SpellInfo const* spellInfo, bool triggered, uint8 dep
 
 } // end anonymous namespace (Trash)
 
+// Grid search instead of attackers, which has an LoS check. Sisters are often up stairs or around
+// corners, which could delay the skull's application through attackers.
+GuidVector FindSisterOfPleasureGuids(PlayerbotAI* botAI)
+{
+    std::list<Creature*> sisters;
+    botAI->GetBot()->GetCreatureListWithEntryInGrid(
+        sisters, Id(BtNpcs::NPC_SISTER_OF_PLEASURE), SISTER_OF_PLEASURE_SEARCH_RADIUS);
+
+    GuidVector guids;
+    for (Creature* sister : sisters)
+        guids.push_back(sister->GetGUID());
+
+    return guids;
+}
+
 Unit* GetLinkedSisterOfPain(Unit* pleasure)
 {
     if (!pleasure || pleasure->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PLEASURE) ||
@@ -229,11 +244,11 @@ Unit* GetLinkedSisterOfPain(Unit* pleasure)
 
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
 {
-    std::list<Creature*> sisters;
-    botAI->GetBot()->GetCreatureListWithEntryInGrid(
-        sisters, Id(BtNpcs::NPC_SISTER_OF_PLEASURE), SISTER_OF_PLEASURE_SEARCH_RADIUS);
-    for (Creature* sister : sisters)
+    auto const& sisters =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("sisters of pleasure")->RefGet();
+    for (ObjectGuid const& guid : sisters)
     {
+        Unit* sister = botAI->GetUnit(guid);
         if (GetLinkedSisterOfPain(sister))
             return sister;
     }
@@ -2388,8 +2403,11 @@ GuidVector FindPlayersWithParasiticShadowfiendGuids(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && HasParasiticShadowfiend(member))
+        if (member && member->GetMapId() == BT_MAP_ID && member->IsAlive() &&
+            HasParasiticShadowfiend(member))
+        {
             infected.push_back(member->GetGUID());
+        }
     }
 
     return infected;

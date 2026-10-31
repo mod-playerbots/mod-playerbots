@@ -272,7 +272,7 @@ bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
         return restored;
     }
 
-    if (!target || victim->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER))
+    if (!target || !victim || victim->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER))
         return restored;
 
     return sendPet(target);
@@ -2265,10 +2265,10 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 
         for (auto& [guid, infection] : infections)
         {
-            Player* player = ObjectAccessor::FindPlayer(guid);
+            Player* player = ObjectAccessor::GetPlayer(*bot, guid);
             if (!infection.hunter.IsEmpty() &&
                 (IsExemptFromIllidanInfectionRun(botAI, illidan, player) ||
-                 !IsIllidanTrapHunterReady(ObjectAccessor::FindPlayer(infection.hunter))))
+                 !IsIllidanTrapHunterReady(ObjectAccessor::GetPlayer(*bot, infection.hunter))))
             {
                 infection.hunter.Clear();
                 infection.isTrapAssigned = false;
@@ -2302,7 +2302,7 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
 {
     for (auto const& [player, infection] : infections)
     {
-        if (IsIllidanTrapHunterReady(ObjectAccessor::FindPlayer(infection.hunter)))
+        if (IsIllidanTrapHunterReady(ObjectAccessor::GetPlayer(*bot, infection.hunter)))
         {
             hunter = infection.hunter;
             return true;
@@ -2316,7 +2316,7 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     ObjectGuid candidate;
     for (ObjectGuid const& guid : trapHunters)
     {
-        if (IsIllidanTrapHunterReady(ObjectAccessor::FindPlayer(guid)))
+        if (IsIllidanTrapHunterReady(ObjectAccessor::GetPlayer(*bot, guid)))
         {
             candidate = guid;
             break;
