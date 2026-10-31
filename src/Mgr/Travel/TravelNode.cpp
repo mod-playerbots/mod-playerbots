@@ -16,6 +16,7 @@
 #include "TravelNode.h"
 #include "PlayerbotsDatabase.h"
 #include "BudgetValues.h"
+#include "ConditionMgr.h"
 #include "MapMgr.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
@@ -145,6 +146,35 @@ float TravelNodePath::getCost(Player* bot, uint32 cGold)
 
     if (bot)
     {
+        if (getPathType() == TravelNodePathType::staticPortal && pathObject)
+        {
+            // A faction portal (Dalaran enclaves, the faction Shattrath portals) is only for
+            // its own faction: anyone else gets teleported out of the enclave.
+            if (GameObjectTemplateAddon const* addon = sObjectMgr->GetGameObjectTemplateAddon(pathObject))
+            {
+                FactionTemplateEntry const* faction =
+                    addon->faction ? sFactionTemplateStore.LookupEntry(addon->faction) : nullptr;
+                if (faction && Unit::GetFactionReactionTo(faction, bot->GetFactionTemplateEntry()) < REP_NEUTRAL)
+                    return -1.0f;
+            }
+
+            // A portal whose spell the core gates (Portal to Blasted Lands needs level 58, quest
+            // and class gates exist too) refuses the cast, as in Spell::CheckCast. Almost every
+            // portal has no conditions, so the list is empty and nothing is evaluated.
+            GameObjectTemplate const* goTemplate = sObjectMgr->GetGameObjectTemplate(pathObject);
+            if (goTemplate && goTemplate->type == GAMEOBJECT_TYPE_SPELLCASTER && goTemplate->spellcaster.spellId)
+            {
+                ConditionList const conditions = sConditionMgr->GetConditionsForNotGroupedEntry(
+                    CONDITION_SOURCE_TYPE_SPELL, goTemplate->spellcaster.spellId);
+                if (!conditions.empty())
+                {
+                    ConditionSourceInfo condInfo(bot);
+                    if (!sConditionMgr->IsObjectMeetToConditions(condInfo, conditions))
+                        return -1.0f;
+                }
+            }
+        }
+
         if (getPathType() == TravelNodePathType::flightPath && pathObject)
         {
             if (!bot->IsAlive())
@@ -302,7 +332,9 @@ TravelNodePath* TravelNode::BuildPath(TravelNode* endNode, Unit* bot, bool postP
 
     // Forward attempt failed — salvage with the reverse path: use it flipped if
     // it's complete, or stitch the two partials together if their ends meet (<5y).
-    if (!canPath && backNodePath)
+    // Only a walk path qualifies: a transport's own path (an airship's route) is no
+    // walk link.
+    if (!canPath && backNodePath && backNodePath->getPathType() == TravelNodePathType::walk)
     {
         std::vector<WorldPosition> backPath = backNodePath->GetPath();
         if (!backPath.empty())
@@ -744,6 +776,15 @@ bool TravelPath::IsPathCheating(std::vector<WorldPosition> const& rawPath, float
     for (size_t i = 1; i < path.size(); ++i)
         if (path[i - 1].GetMapId() == path[i].GetMapId() &&
             path[i - 1].distance(path[i]) > MAX_WALK_SEGMENT)
+            return true;
+
+    // Guard 0b: inside the path, mesh segments stay under ~8y (p99 7.5y over
+    // a full regen), so a longer one is a straight line the pathfinder fell
+    // back to. The first and last segments only join the raw node positions
+    // to the mesh, and a structure bridge splits its 20y into two halves.
+    constexpr float MAX_INTERIOR_SEGMENT = 10.0f;
+    for (size_t i = 2; i + 1 < path.size(); ++i)
+        if (path[i - 1].GetMapId() == path[i].GetMapId() && path[i - 1].distance(path[i]) > MAX_INTERIOR_SEGMENT)
             return true;
 
     // Guard 1: 2-point path for >5y is navmesh "gave up" — straight
@@ -1418,7 +1459,7 @@ TravelNode* TravelNodeMap::getNode(WorldPosition pos, [[maybe_unused]] std::vect
     uint32 c = 0;
 
     std::vector<TravelNode*> nodes = TravelNodeMap::instance().getNodes(pos, range);
-    for (auto& node : _nodes)
+    for (auto& node : nodes)
     {
         if (!bot || pos.canPathTo(*node->getPosition(), bot))
             return node;
@@ -2022,31 +2063,71 @@ void TravelNodeMap::generateAreaTriggerNodes()
     }
 }
 
-void TravelNodeMap::makeDockNode(TravelNode* node, WorldPosition exitPos, std::string const dockName)
+// Where to wait for a boat that moors over open water: the ground under its stop is the sea floor, and
+// the pier is a WMO (vmap, not terrain) reaching out from the shore. Sweeps bearings around the stop
+// and takes the nearest dry surface the navmesh covers, a few yards in, within the boarding distance.
+bool TravelNodeMap::FindPierWaitPoint(Map* map, WorldPosition stop, WorldPosition& waitPoint)
 {
-    // A hand-placed node named "<ship node name><dockName>" within 75y overrides
-    // the computed dock position: adopt it and wire the boarding links to it.
-    std::string const curatedName = node->getName() + dockName;
-    for (TravelNode* n : _nodes)
-    {
-        if (!n || n == node || n->getName() != curatedName)
-            continue;
-        if (n->getPosition()->GetMapId() != node->getPosition()->GetMapId() ||
-            n->getPosition()->distance(*node->getPosition()) > 75.0f)
-            continue;
+    constexpr uint32 BEARINGS = 32;
+    constexpr float PROBE_STEP = 2.0f;
+    constexpr float PIER_INSET = 3.0f;
+    constexpr float MAX_WAIT_DISTANCE = 35.0f;  // MovementAction's boarding distance
 
-        WorldPosition dockPos = *n->getPosition();
-        WorldPosition nodePos = *node->getPosition();
-        TravelNodePath travelPath(dockPos.distance(nodePos), 0.1f, (uint8)TravelNodePathType::transport, 0, true);
-        travelPath.setComplete(true);
-        travelPath.setPath({dockPos, nodePos});
-        n->setPathTo(node, travelPath, true);
-        travelPath.setPath({nodePos, dockPos});
-        node->setPathTo(n, travelPath, true);
-        node->setLinked(true);
-        return;
+    dtNavMesh const* navMesh = map->GetMapCollisionData().GetMMapData().GetNavMesh();
+    dtNavMeshQuery const* query = map->GetMapCollisionData().GetMMapData().GetNavMeshQuery();
+    if (!navMesh || !query)
+        return false;
+
+    // Pier edges, pilings and railings are dry but off the navmesh, where a bot cannot path: a sample only
+    // counts on ground mesh, and moves onto it.
+    auto const standAt = [&](float angle, float d, WorldPosition& pos)
+    {
+        float const x = stop.GetPositionX() + std::cos(angle) * d;
+        float const y = stop.GetPositionY() + std::sin(angle) * d;
+        map->EnsureGridCreated(Acore::ComputeGridCoord(x, y));
+        float const z = map->GetHeight(x, y, stop.GetPositionZ() + 15.0f, true, 40.0f);
+        if (z <= INVALID_HEIGHT)
+            return false;
+
+        WorldPosition surface(stop.GetMapId(), x, y, z);
+        if (surface.isInWater())
+            return false;
+
+        // Detour axes are (y, z, x)
+        float const point[3] = {y, z, x};
+        float const extents[3] = {1.0f, 3.0f, 1.0f};
+        float nearest[3];
+        dtQueryFilter const filter;
+        dtPolyRef polyRef = 0;
+        unsigned char area = 0;
+        if (!dtStatusSucceed(query->findNearestPoly(point, extents, &filter, &polyRef, nearest)) || !polyRef ||
+            !dtStatusSucceed(navMesh->getPolyArea(polyRef, &area)) || area != NAV_GROUND)
+            return false;
+
+        pos = WorldPosition(stop.GetMapId(), nearest[2], nearest[0], nearest[1]);
+        return true;
+    };
+
+    for (float d = PROBE_STEP; d <= MAX_WAIT_DISTANCE; d += PROBE_STEP)
+    {
+        for (uint32 bearing = 0; bearing < BEARINGS; ++bearing)
+        {
+            float const angle = bearing * 2.0f * float(M_PI) / BEARINGS;
+            WorldPosition edge;
+            if (!standAt(angle, d, edge))
+                continue;
+
+            WorldPosition inset;
+            waitPoint = standAt(angle, std::min(d + PIER_INSET, MAX_WAIT_DISTANCE), inset) ? inset : edge;
+            return true;
+        }
     }
 
+    return false;
+}
+
+void TravelNodeMap::makeDockNode(TravelNode* node, WorldPosition exitPos, std::string const dockName)
+{
     // Settle the exit position onto the sampled ground height, falling back to
     // the raw offset position if the ground can't be sampled.
     if (Map* map = exitPos.getMap())
@@ -2060,32 +2141,63 @@ void TravelNodeMap::makeDockNode(TravelNode* node, WorldPosition exitPos, std::s
         if (gh > INVALID_HEIGHT)
             exitPos.setZ(gh);
 
-        // Ship stops sit mid-harbor, so the settled point may still be in the water.
-        // Search outward in rings for the nearest dry ground and put the dock there;
-        // if nothing dry is found within 40y, keep the settled position.
+        // Ship stops sit mid-harbor, so the settled point is the sea floor: wait on the pier instead.
+        // A stop with no pier in boarding range keeps the settled position.
         if (exitPos.isInWater())
-        {
-            bool found = false;
-            for (float radius = 5.0f; radius <= 40.0f && !found; radius += 5.0f)
-            {
-                for (uint32 step = 0; step < 12 && !found; ++step)
-                {
-                    float const angle = step * 2.0f * float(M_PI) / 12.0f;
-                    float const cx = exitPos.GetPositionX() + radius * std::cos(angle);
-                    float const cy = exitPos.GetPositionY() + radius * std::sin(angle);
-                    float const cz = map->GetHeight(cx, cy, exitPos.GetPositionZ() + 10.0f, true, 50.0f);
-                    if (cz <= INVALID_HEIGHT)
-                        continue;
+            FindPierWaitPoint(map, *node->getPosition(), exitPos);
+    }
 
-                    WorldPosition candidate(exitPos.GetMapId(), cx, cy, cz);
-                    if (candidate.isInWater())
-                        continue;
+    // A hand-placed node named "<ship node name><dockName>" within 75y overrides
+    // the computed dock position: adopt it and wire the boarding links to it.
+    // Older generators settled docks on the sea floor, some next to a dry copy:
+    // keep a dry one and drop the wet copies, or move the only one to the
+    // computed dry point.
+    std::string const curatedName = node->getName() + dockName;
+    std::vector<TravelNode*> curated;
+    for (TravelNode* n : _nodes)
+    {
+        if (!n || n == node || n->getName() != curatedName)
+            continue;
+        WorldPosition* const pos = n->getPosition();
+        WorldPosition* const stop = node->getPosition();
+        if (pos->GetMapId() != stop->GetMapId() ||
+            pos->GetExactDist2d(stop->GetPositionX(), stop->GetPositionY()) > 75.0f)
+            continue;
 
-                    exitPos = candidate;
-                    found = true;
-                }
-            }
-        }
+        if (Map* map = pos->getMap())
+            map->EnsureGridCreated(Acore::ComputeGridCoord(pos->GetPositionX(), pos->GetPositionY()));
+
+        // Elevator stops share x/y on every level, so a dry entry belongs to the stop only within 75y;
+        // a wet copy lies on the sea floor under its ship stop, however deep.
+        if (pos->distance(*stop) > 75.0f && !pos->isInWater())
+            continue;
+
+        curated.push_back(n);
+    }
+
+    if (!curated.empty())
+    {
+        auto const dry =
+            std::find_if(curated.begin(), curated.end(), [](TravelNode* n) { return !n->getPosition()->isInWater(); });
+        TravelNode* n = dry != curated.end() ? *dry : curated.front();
+
+        if (n->getPosition()->isInWater() && !exitPos.isInWater())
+            n->setPoint(exitPos);
+
+        for (TravelNode* copy : curated)
+            if (copy != n && copy->getPosition()->isInWater())
+                removeNode(copy);
+
+        WorldPosition dockPos = *n->getPosition();
+        WorldPosition nodePos = *node->getPosition();
+        TravelNodePath travelPath(dockPos.distance(nodePos), 0.1f, (uint8)TravelNodePathType::transport, 0, true);
+        travelPath.setComplete(true);
+        travelPath.setPath({dockPos, nodePos});
+        n->setPathTo(node, travelPath, true);
+        travelPath.setPath({nodePos, dockPos});
+        node->setPathTo(n, travelPath, true);
+        node->setLinked(true);
+        return;
     }
 
     // Only add paths if we are adding a new node (reuse an existing dock).
@@ -2624,7 +2736,7 @@ void TravelNodeMap::generateTaxiPaths()
         for (auto& n : nodes)
             ppath.push_back(WorldPosition(n->mapid, n->x, n->y, n->z, 0.0));
 
-        float totalTime = startPos.getPathLength(ppath) / (450 * 8.0f);
+        float totalTime = startPos.getPathLength(ppath) / (4.5f * 8.0f);
 
         TravelNodePath travelPath(0.1f, totalTime, (uint8)TravelNodePathType::flightPath, i, true);
         travelPath.setPath(ppath);

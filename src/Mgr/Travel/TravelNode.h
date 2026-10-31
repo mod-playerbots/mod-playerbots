@@ -568,9 +568,7 @@ public:
 
     void ClipPath(PlayerbotAI* ai, Unit* mover, bool ignoreEnemyTargets = false);
 
-    // Reject paths the navmesh accepts but a player can't walk: >50y 3D
-    // segment, 2-point shortcut over 5y, steep terminal stub, or a point in
-    // unswimmable water. Consecutive duplicate points are collapsed first.
+    // Reject navmesh paths a player can't walk: straight-line fallbacks, steep end stubs, unswimmable water.
     static bool IsPathCheating(std::vector<WorldPosition> const& path,
                                float endpointDistance);
 
@@ -724,6 +722,7 @@ public:
     void generatePortalNodes();
     void makeDockNode(TravelNode* node, WorldPosition exitPos,
                       std::string const dockName);
+    bool FindPierWaitPoint(Map* map, WorldPosition stop, WorldPosition& waitPoint);
     void generateZoneMeanNodes();
 
     void generateWalkPathMap(uint32 mapId);
