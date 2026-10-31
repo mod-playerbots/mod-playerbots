@@ -171,28 +171,6 @@ namespace ai::buff
         return IsWithinPostLoginBuffGrace(playerTarget);
     }
 
-    bool ShouldDeferGreaterBlessingAssignmentForRecentLogin(Player* bot)
-    {
-        if (IsWithinPostLoginBuffGrace(bot))
-            return true;
-
-        Group* group = bot->GetGroup();
-        if (!group)
-            return false;
-
-        for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
-        {
-            Player* member = gref->GetSource();
-            if (!member || !member->IsInWorld())
-                continue;
-
-            if (IsWithinPostLoginBuffGrace(member))
-                return true;
-        }
-
-        return false;
-    }
-
     bool HasRequiredReagents(Player* bot, uint32 spellId)
     {
         if (!spellId)

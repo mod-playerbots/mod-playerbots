@@ -324,7 +324,6 @@ PendingBlessing PaladinBlessingPlanner::SelectGreater(
     std::unordered_map<uint8, BaseBlessingCategory> const& classMajority,
     std::vector<BaseBlessingCategory> const& myCats)
 {
-    ObjectGuid const botGuid = _bot->GetGUID();
     for (BaseBlessingCategory const cat : myCats)
     {
         // No id = can't cast this greater (untrained or config-disabled); no reagent = nothing to
@@ -356,7 +355,7 @@ PendingBlessing PaladinBlessingPlanner::SelectGreater(
                 auto intendedIt = _intended.find(member->GetGUID());
                 if (intendedIt == _intended.end() || intendedIt->second != cat)
                     continue;
-                if (IsCoveredByMe(botGuid, member, cat, _coverage))
+                if (IsCoveredByMe(_botAI, member, cat, _coverage))
                     continue;
                 if (HasHumanBlessing(member, cat, _coverage))
                     continue;
@@ -386,7 +385,6 @@ PendingBlessing PaladinBlessingPlanner::SelectSingle(
     std::unordered_map<uint8, BaseBlessingCategory> const& classMajority,
     std::vector<BaseBlessingCategory> const& myCats)
 {
-    ObjectGuid const botGuid = _bot->GetGUID();
     for (BaseBlessingCategory const cat : myCats)
     {
         std::optional<uint32> const singleId = HighestKnownBlessingRank(_bot, cat, false);
@@ -414,7 +412,7 @@ PendingBlessing PaladinBlessingPlanner::SelectSingle(
                 auto intendedIt = _intended.find(member->GetGUID());
                 if (intendedIt == _intended.end() || intendedIt->second != cat)
                     continue;
-                if (IsCoveredByMe(botGuid, member, cat, _coverage))
+                if (IsCoveredByMe(_botAI, member, cat, _coverage))
                     continue;
                 if (HasHumanBlessing(member, cat, _coverage))
                     continue;
@@ -443,6 +441,9 @@ Unit* CastBlessingAction::GetTarget()
 
 bool CastBlessingAction::isUseful()
 {
+    if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
+        return false;
+
     _pending = PaladinBlessingPlanner(botAI).Plan();
     return _pending.spellId && GetTarget();
 }
@@ -458,6 +459,8 @@ bool CastBlessingAction::Execute(Event /*event*/)
     Unit* target = botAI->GetUnit(planned.target);
     if (!target)
         return false;
+
+    botAI->forceRebuff.NoteBuffWork();
 
     bool const cast = botAI->CastSpell(planned.spellId, target);
 

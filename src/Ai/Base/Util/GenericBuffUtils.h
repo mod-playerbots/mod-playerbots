@@ -44,8 +44,6 @@ bool ShouldDeferPartyBuffEvaluationForRecentLogin(
     Unit* target,
     std::string const& spell);
 
-bool ShouldDeferGreaterBlessingAssignmentForRecentLogin(Player* bot);
-
 bool HasRequiredReagents(Player* bot, uint32 spellId);
 
 void ClearMissingBuffReagentNotice(PlayerbotAI* botAI, std::string const& groupName);

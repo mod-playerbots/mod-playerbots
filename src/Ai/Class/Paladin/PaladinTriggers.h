@@ -205,6 +205,7 @@ public:
     BlessingNeededTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "blessing needed", 4) {}
 
+    bool IsBuffTrigger() override { return true; }
     bool IsActive() override { return true; }
 };
 

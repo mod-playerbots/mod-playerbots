@@ -137,6 +137,7 @@ namespace ai::blessing
         bool                 isGreater;             // true = class-wide greater variant; false = single-target
         bool                 isHumanPaladinCaster;  // resolved during the scan so later checks stay map/vector reads
         int32                duration;              // remaining ms (-1 = permanent);
+        int32                maxDuration;
         int32                strength;
     };
 
@@ -173,7 +174,7 @@ namespace ai::blessing
                 : (humanCasters[caster] = IsHumanPaladin(caster));
 
             result.push_back({ cat, caster, IsGreaterBlessingSpell(aura->GetId()),
-                               isHuman, aura->GetDuration(), strength });
+                               isHuman, aura->GetDuration(), aura->GetMaxDuration(), strength });
         }
 
         return result;
@@ -185,19 +186,21 @@ namespace ai::blessing
 
     using CoverageMap = std::unordered_map<ObjectGuid, std::vector<MemberBlessing>>;
 
-    // Does `botGuid` already provide `cat` to `member`, fresh (not near expiry)?
-    inline bool IsCoveredByMe(ObjectGuid botGuid, Unit* member, BaseBlessingCategory cat,
+    // Does this bot already provide `cat` to `member`, fresh (not near expiry, or topped off during
+    // an out-of-combat force-rebuff)?
+    inline bool IsCoveredByMe(PlayerbotAI* botAI, Unit* member, BaseBlessingCategory cat,
                               CoverageMap const& coverage)
     {
         auto it = coverage.find(member->GetGUID());
         if (it == coverage.end())
             return false;
 
-        int64 const refreshMs =
-            static_cast<int64>(sPlayerbotAIConfig.BlessingRefreshThresholdSeconds) * IN_MILLISECONDS;
+        ObjectGuid const botGuid = botAI->GetBot()->GetGUID();
+        uint32 const refreshMs = sPlayerbotAIConfig.BlessingRefreshThresholdSeconds * IN_MILLISECONDS;
         for (auto const& blessing : it->second)
             if (blessing.category == cat && blessing.caster == botGuid)
-                return blessing.duration < 0 || blessing.duration > refreshMs;
+                return blessing.duration < 0 ||
+                       !botAI->forceRebuff.BuffBelowRefreshTarget(blessing.duration, blessing.maxDuration, refreshMs);
 
         return false;
     }
