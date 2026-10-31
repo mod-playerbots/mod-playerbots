@@ -26,7 +26,7 @@ public:
     bool IsAirborne() const { return _airborne; }
     bool CanJump() const;
     // A deliberate jump at the client's takeoff speed. Refused when the landing is off the walkable area or more than
-    // a few yards below the takeoff, unless the bot falls slowly.
+    // a few yards below the takeoff, unless the fall is harmless.
     bool Jump(float heading, float speedXY);
     // Once the bot stands still above a target that no path reaches, walks off the ledge after it, as a player
     // following it would. Refused when the fall could kill the bot, or the landing is off the walkable area or no
@@ -51,6 +51,8 @@ private:
 
     bool CanLeaveGround() const;
     bool IsSlowFalling() const;
+    // No fall damage on landing: slow fall, or fall damage turned off.
+    bool IsFallHarmless() const;
     // The deepest landing below the takeoff the bot survives with some health to spare.
     float SurvivableDrop() const;
     Point BotPoint() const;

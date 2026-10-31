@@ -33,7 +33,7 @@ constexpr float NO_DROP_CAP = 100000.0f;     // falls with no depth limit; the s
 constexpr uint32 DROP_DOWN_RETRY_MS = 2000;  // while the bot waits at an edge its target dropped from
 constexpr float DROP_DOWN_WALK = 10.0f;      // how far the bot walks looking for the edge
 constexpr float LEDGE_HEIGHT = 2.0f;         // a target less far below is down a step the paths take
-constexpr float SURVIVAL_MARGIN = 0.2f;      // share of max health a drop down leaves the bot
+constexpr float SURVIVAL_MARGIN = 0.05f;     // share of max health a drop down leaves the bot
 // Player::HandleFall: the damage share of max health is FALL_DMG_SLOPE * height + FALL_DMG_INTERCEPT.
 constexpr float FALL_DMG_SLOPE = 0.018f;
 constexpr float FALL_DMG_INTERCEPT = -0.2426f;
@@ -116,11 +116,17 @@ bool AirborneController::IsSlowFalling() const
     return _bot->HasFeatherFallAura() || _bot->HasHoverAura();
 }
 
+bool AirborneController::IsFallHarmless() const
+{
+    return !sPlayerbotAIConfig.FallDamage || sWorld->getRate(RATE_DAMAGE_FALL) <= 0.0f || IsSlowFalling();
+}
+
 float AirborneController::SurvivableDrop() const
 {
-    float const rate = sWorld->getRate(RATE_DAMAGE_FALL);
-    if (IsSlowFalling() || rate <= 0.0f)
+    if (IsFallHarmless())
         return NO_DROP_CAP;
+
+    float const rate = sWorld->getRate(RATE_DAMAGE_FALL);
 
     // Without health to spare it still takes the drops that do no damage.
     float const damageShare = std::max(0.0f, (_bot->GetHealthPct() / 100.0f - SURVIVAL_MARGIN) / rate);
@@ -171,7 +177,7 @@ bool AirborneController::Jump(float heading, float speedXY)
         return false;
 
     Point const takeoff = BotPoint();
-    float const minZ = takeoff.z - (IsSlowFalling() ? NO_DROP_CAP : DELIBERATE_DROP_CAP);
+    float const minZ = takeoff.z - (IsFallHarmless() ? NO_DROP_CAP : DELIBERATE_DROP_CAP);
     Point const velocity{std::cos(heading) * speedXY, std::sin(heading) * speedXY, JUMP_VELOCITY};
     Trajectory trajectory = SweepFrom(takeoff, velocity, minZ);
     if (!IsSafeLanding(trajectory))
@@ -547,7 +553,7 @@ void AirborneController::Land()
 {
     MovementInfo landing = _bot->m_movementInfo;
     landing.pos.Relocate(_landing.x, _landing.y, _landing.z);
-    if (!_landingInLiquid)
+    if (!_landingInLiquid && sPlayerbotAIConfig.FallDamage)
         _bot->HandleFall(landing);
 
     // Parachutes and the like end on landing, as the movement handler does for a client.
