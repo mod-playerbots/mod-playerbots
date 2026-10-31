@@ -57,7 +57,7 @@ namespace ai::buff
 
     static bool HasEnoughSameMapMissingPlayersForGroupVariant(
         Player* bot, PlayerbotAI* botAI, std::string const& baseName,
-        std::string const& groupName, uint32 requiredCount = 3)
+        std::string const& groupName, SpellInfo const* groupSpellInfo, uint32 requiredCount = 3)
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -68,7 +68,7 @@ namespace ai::buff
         {
             Player* member = gref->GetSource();
             if (!member || !member->IsInWorld() || !member->IsAlive() ||
-                member->GetMap() != bot->GetMap())
+                member->GetMap() != bot->GetMap() || !groupSpellInfo->GetAuraRankForLevel(member->GetLevel()))
             {
                 continue;
             }
@@ -264,21 +264,24 @@ namespace ai::buff
         if (groupName.empty())
             return baseName;
 
-        // Prefer singles until at least three living, in-world group members on the bot's map
-        // are missing both the single-target buff and its group variant.
-        if (!HasEnoughSameMapMissingPlayersForGroupVariant(bot, botAI, baseName, groupName))
-            return baseName;
-
         uint32 const groupSpellId = botAI->GetAiObjectContext()
             ->GetValue<uint32>("spell id", groupName)->Get();
+        SpellInfo const* groupSpellInfo = sSpellMgr->GetSpellInfo(groupSpellId);
+        if (!groupSpellInfo)
+            return baseName;
 
-        if (groupSpellId && HasRequiredReagents(bot, groupSpellId))
+        // Prefer singles until at least three living, in-world group members on the bot's map
+        // can receive the group buff and are missing both variants.
+        if (!HasEnoughSameMapMissingPlayersForGroupVariant(bot, botAI, baseName, groupName, groupSpellInfo))
+            return baseName;
+
+        if (HasRequiredReagents(bot, groupSpellId))
         {
             ClearMissingBuffReagentNotice(botAI, groupName);
             return groupName;
         }
 
-        if (groupSpellId && outMissingReagentGroupName)
+        if (outMissingReagentGroupName)
             *outMissingReagentGroupName = groupName;
 
         return baseName;
