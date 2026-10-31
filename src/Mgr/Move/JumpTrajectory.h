@@ -17,7 +17,7 @@ namespace JumpTrajectory
 {
 // Client values; the core's Movement::gravity and terminal velocities match them.
 constexpr float GRAVITY = 19.29110527f;
-constexpr float JUMP_VELOCITY = 7.957175f;
+constexpr float JUMP_VELOCITY = 7.9555473f;
 constexpr float TERMINAL_VELOCITY = 60.148003f;
 constexpr float SAFE_FALL_TERMINAL_VELOCITY = 7.0f;
 
@@ -30,6 +30,10 @@ constexpr float FLOOR_SEARCH_MARGIN = 1.0f;
 constexpr float TAKEOFF_SNAP = 0.5f;  // a floor this far above the takeoff point is where the bot stands
 constexpr float WALK_STEP = 0.5f;     // floor probe spacing on a walk toward an edge
 constexpr float SWIM_DEPTH = 0.75f;   // share of collision height; shallower water is stood in, as the core decides
+// The client's body starts this many collision radii above the feet: a ledge lower than that is landed on, a taller one
+// is a wall.
+constexpr float STEP_HEIGHT_PER_RADIUS = 1.849399f;
+constexpr float DEFAULT_COLLISION_RADIUS = 0.33333334f;
 
 struct Point
 {
@@ -57,6 +61,7 @@ enum class Outcome : uint8
 {
     Landed,
     Liquid,   // landed on a liquid surface, which takes no fall damage
+    Void,     // fell below the map's lowest point, which kills
     DropCap,  // fell below Launch::minZ
     StepCap   // still airborne after MAX_STEPS chords
 };
@@ -69,6 +74,8 @@ struct Launch
     float collisionHeight = 2.03f;
     float landingOffset = 0.0f;  // hover height
     float minZ = NO_HEIGHT;      // refuse a trajectory that drops below this
+    float stepHeight = DEFAULT_COLLISION_RADIUS * STEP_HEIGHT_PER_RADIUS;
+    bool waterWalking = false;  // liquid surfaces are floors, and landing on one deals fall damage
 };
 
 class CollisionProbe
@@ -84,6 +91,8 @@ public:
     virtual float FloorZ(float x, float y, float zFrom, float maxSearch) const = 0;
     // The liquid surface when the point is in liquid, NO_HEIGHT otherwise.
     virtual float LiquidZ(float x, float y, float z) const = 0;
+    // The map's lowest point; a fall below it is a fall into the void.
+    virtual float MinZ(float x, float y) const = 0;
 };
 
 struct Trajectory
@@ -94,6 +103,8 @@ struct Trajectory
     Point landing;
 
     bool Landed() const { return outcome == Outcome::Landed || outcome == Outcome::Liquid; }
+    // Lands, or falls into the void: either way the fall plays out.
+    bool Ends() const { return Landed() || outcome == Outcome::Void; }
 };
 
 Trajectory Sweep(Launch const& launch, CollisionProbe const& probe);

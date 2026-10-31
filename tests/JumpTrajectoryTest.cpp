@@ -33,6 +33,7 @@ struct FakeWorld : CollisionProbe
     float ceilingZ = 1e9f;
     float liquidZ = NO_HEIGHT;
     float liquidFromX = -1e9f;
+    float voidZ = -1e9f;
     mutable uint32 rays = 0;
 
     bool RayHit(Point const& from, Point const& to, Point& hit) const override
@@ -71,6 +72,8 @@ struct FakeWorld : CollisionProbe
     {
         return x >= liquidFromX && z <= liquidZ && z >= terrain(x, y) ? liquidZ : NO_HEIGHT;
     }
+
+    float MinZ(float, float) const override { return voidZ; }
 };
 
 Launch RunningJump(Point from)
@@ -190,10 +193,12 @@ TEST(JumpTrajectory, LiquidCatchesTheFall)
     world.platforms.push_back({-10.0f, 1.0f, 10.0f});
     world.liquidZ = 0.0f;
     world.liquidFromX = 1.0f;
-    Trajectory trajectory = Sweep(RunningJump({0.0f, 0.0f, 10.0f}), world);
+    Launch const launch = RunningJump({0.0f, 0.0f, 10.0f});
+    Trajectory trajectory = Sweep(launch, world);
 
+    // A client swims, and stops falling, once it sinks to swim depth.
     ASSERT_EQ(trajectory.outcome, Outcome::Liquid);
-    EXPECT_FLOAT_EQ(trajectory.landing.z, 0.0f);
+    EXPECT_FLOAT_EQ(trajectory.landing.z, -SWIM_DEPTH * launch.collisionHeight);
 }
 
 // Long falls take steps of many yards; one that passes the surface and ends below the bed still lands in the water.
@@ -208,8 +213,40 @@ TEST(JumpTrajectory, LiquidCatchesALongFall)
         Trajectory trajectory = Sweep(launch, world);
 
         ASSERT_EQ(trajectory.outcome, Outcome::Liquid) << "falling from " << height;
-        EXPECT_FLOAT_EQ(trajectory.landing.z, 5.0f);
+        EXPECT_FLOAT_EQ(trajectory.landing.z, 5.0f - SWIM_DEPTH * launch.collisionHeight);
     }
+}
+
+// A client launched under the surface rises through the water and swims on from the apex.
+TEST(JumpTrajectory, LaunchUnderWaterSwimsOnFromTheApex)
+{
+    FakeWorld world;
+    world.terrain = [](float, float) { return -50.0f; };
+    world.liquidZ = 0.0f;
+    Launch launch;
+    launch.position = {0.0f, 0.0f, -10.0f};
+    launch.velocity = {5.0f, 0.0f, 7.0f};
+    Trajectory trajectory = Sweep(launch, world);
+
+    float const apexTime = 7.0f / GRAVITY;
+    ASSERT_EQ(trajectory.outcome, Outcome::Liquid);
+    EXPECT_NEAR(trajectory.landing.x, 5.0f * apexTime, 0.001f);
+    EXPECT_NEAR(trajectory.landing.z, -10.0f + 0.5f * 7.0f * apexTime, 0.001f);
+}
+
+// A fall that starts under the surface, such as a dismount while swimming, ends where it starts.
+TEST(JumpTrajectory, FallUnderWaterSwimsAtOnce)
+{
+    FakeWorld world;
+    world.terrain = [](float, float) { return -50.0f; };
+    world.liquidZ = 0.0f;
+    Launch launch;
+    launch.position = {0.0f, 0.0f, -10.0f};
+    Trajectory trajectory = Sweep(launch, world);
+
+    ASSERT_EQ(trajectory.outcome, Outcome::Liquid);
+    EXPECT_TRUE(trajectory.segments.empty());
+    EXPECT_FLOAT_EQ(trajectory.landing.z, -10.0f);
 }
 
 // Water too shallow to swim in does not catch a fall, short or long.
@@ -265,6 +302,46 @@ TEST(JumpTrajectory, RefusesWhenThereIsNoFloor)
     EXPECT_EQ(Sweep(launch, world).outcome, Outcome::StepCap);
 }
 
+// A client falls on until it passes below the map, where the server kills it.
+TEST(JumpTrajectory, FallsIntoTheVoid)
+{
+    FakeWorld world;
+    world.terrain = [](float, float) { return NO_HEIGHT; };
+    world.voidZ = -500.0f;
+    Trajectory trajectory = Sweep(RunningJump({0.0f, 0.0f, 10.0f}), world);
+
+    ASSERT_EQ(trajectory.outcome, Outcome::Void);
+    EXPECT_FALSE(trajectory.Landed());
+    EXPECT_TRUE(trajectory.Ends());
+    EXPECT_FLOAT_EQ(trajectory.landing.z, -500.0f);
+}
+
+// A deliberate drop is refused at its cap before it reaches the void.
+TEST(JumpTrajectory, DropCapComesBeforeTheVoid)
+{
+    FakeWorld world;
+    world.terrain = [](float, float) { return NO_HEIGHT; };
+    world.voidZ = -500.0f;
+    Launch launch = RunningJump({0.0f, 0.0f, 10.0f});
+    launch.minZ = 4.0f;
+    EXPECT_EQ(Sweep(launch, world).outcome, Outcome::DropCap);
+}
+
+// Floors and liquid above the map's lowest point still catch the fall.
+TEST(JumpTrajectory, FloorAboveTheVoidCatchesTheFall)
+{
+    FakeWorld world;
+    world.voidZ = -1.0f;
+    Trajectory trajectory = Sweep(RunningJump({0.0f, 0.0f, 10.0f}), world);
+    ASSERT_EQ(trajectory.outcome, Outcome::Landed);
+    EXPECT_FLOAT_EQ(trajectory.landing.z, 0.0f);
+
+    world.terrain = [](float, float) { return -50.0f; };
+    world.liquidZ = 0.0f;
+    world.voidZ = -10.0f;
+    EXPECT_EQ(Sweep(RunningJump({0.0f, 0.0f, 10.0f}), world).outcome, Outcome::Liquid);
+}
+
 TEST(JumpTrajectory, LongFallReachesTerminalVelocityOnAStraightLine)
 {
     FakeWorld world;
@@ -305,6 +382,105 @@ TEST(JumpTrajectory, HoverLandsAboveTheFloor)
 
     ASSERT_EQ(trajectory.outcome, Outcome::Landed);
     EXPECT_FLOAT_EQ(trajectory.landing.z, 1.0f);
+}
+
+// A hop that reaches a ledge with its feet more than a step height below the top meets the ledge as a wall.
+TEST(JumpTrajectory, LedgeAboveTheStepHeightIsAWall)
+{
+    FakeWorld world;
+    world.platforms.push_back({1.0f, 10.0f, 0.9f});
+    Launch launch = RunningJump({0.0f, 0.0f, 0.0f});
+    launch.velocity.z = 2.0f;
+    Trajectory trajectory = Sweep(launch, world);
+
+    ASSERT_EQ(trajectory.outcome, Outcome::Landed);
+    EXPECT_LT(trajectory.landing.x, 1.0f);
+    EXPECT_GT(trajectory.landing.x, 0.95f);
+    EXPECT_FLOAT_EQ(trajectory.landing.z, 0.0f);
+}
+
+TEST(JumpTrajectory, LedgeBelowTheStepHeightIsLandedOn)
+{
+    FakeWorld world;
+    world.platforms.push_back({1.0f, 10.0f, 0.4f});
+    Launch launch = RunningJump({0.0f, 0.0f, 0.0f});
+    launch.velocity.z = 2.0f;
+    Trajectory trajectory = Sweep(launch, world);
+
+    ASSERT_EQ(trajectory.outcome, Outcome::Landed);
+    EXPECT_GE(trajectory.landing.x, 1.0f);
+    EXPECT_LT(trajectory.landing.x, 1.05f);
+    EXPECT_FLOAT_EQ(trajectory.landing.z, 0.4f);
+}
+
+TEST(JumpTrajectory, CeilingStopsAStandingJump)
+{
+    FakeWorld world;
+    world.ceilingZ = 2.83f;
+    Launch launch;
+    launch.velocity.z = JUMP_VELOCITY;
+    Trajectory trajectory = Sweep(launch, world);
+
+    ASSERT_EQ(trajectory.outcome, Outcome::Landed);
+    ASSERT_EQ(trajectory.segments.size(), 2u);
+    float const headAtStop = trajectory.segments[0].end.z + launch.collisionHeight;
+    EXPECT_LT(headAtStop, world.ceilingZ);
+    EXPECT_GT(headAtStop, world.ceilingZ - 2.0f * BACKOFF);
+    EXPECT_FLOAT_EQ(trajectory.segments[1].startVz, 0.0f);
+    EXPECT_FLOAT_EQ(trajectory.landing.z, 0.0f);
+}
+
+// At terminal velocity a chord is half a second long; the stop still comes at the cliff, not at the chord's start.
+TEST(JumpTrajectory, CliffStopsAFastFallWhereItRises)
+{
+    FakeWorld world;
+    world.terrain = [](float x, float) { return x < 5.0f ? 0.0f : 300.0f; };
+    Launch launch;
+    launch.position = {0.0f, 0.0f, 200.0f};
+    launch.velocity = {RUN_SPEED, 0.0f, -TERMINAL_VELOCITY};
+    Trajectory trajectory = Sweep(launch, world);
+
+    ASSERT_EQ(trajectory.outcome, Outcome::Landed);
+    EXPECT_LT(trajectory.landing.x, 5.0f);
+    EXPECT_GT(trajectory.landing.x, 4.95f);
+    EXPECT_FLOAT_EQ(trajectory.landing.z, 0.0f);
+}
+
+TEST(JumpTrajectory, WaterWalkerLandsOnTheSurface)
+{
+    FakeWorld world;
+    world.terrain = [](float, float) { return -20.0f; };
+    world.platforms.push_back({-10.0f, 1.0f, 10.0f});
+    world.liquidZ = 0.0f;
+    world.liquidFromX = 1.0f;
+    Launch launch = RunningJump({0.0f, 0.0f, 10.0f});
+    launch.waterWalking = true;
+    Trajectory trajectory = Sweep(launch, world);
+
+    // A floor, so it takes fall damage.
+    ASSERT_EQ(trajectory.outcome, Outcome::Landed);
+    EXPECT_FLOAT_EQ(trajectory.landing.z, 0.0f);
+}
+
+TEST(JumpTrajectory, WaterWalkerJumpsOffTheSurface)
+{
+    FakeWorld world;
+    world.terrain = [](float, float) { return -20.0f; };
+    world.liquidZ = 0.0f;
+    Launch launch = RunningJump({0.0f, 0.0f, 0.0f});
+    launch.waterWalking = true;
+    Trajectory trajectory = Sweep(launch, world);
+
+    ASSERT_EQ(trajectory.outcome, Outcome::Landed);
+    EXPECT_NEAR(trajectory.landing.x, RUN_SPEED * FLAT_FLIGHT_SECONDS, 0.02f);
+    EXPECT_FLOAT_EQ(trajectory.landing.z, 0.0f);
+
+    // Standing on it, it does not fall in.
+    launch.velocity = {};
+    trajectory = Sweep(launch, world);
+    ASSERT_EQ(trajectory.outcome, Outcome::Landed);
+    EXPECT_TRUE(trajectory.segments.empty());
+    EXPECT_FLOAT_EQ(trajectory.landing.z, 0.0f);
 }
 
 TEST(JumpTrajectorySegment, AmplitudeAndVelocityMatchTheSplineMath)

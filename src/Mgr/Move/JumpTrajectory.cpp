@@ -8,12 +8,14 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 namespace JumpTrajectory
 {
 namespace
 {
 constexpr float EPSILON = 0.0001f;
+constexpr uint32 CONTACT_ITERATIONS = 8;  // halvings that place a contact along a chord
 
 enum class Contact : uint8
 {
@@ -28,32 +30,48 @@ Point Lerp(Point const& from, Point const& to, float fraction)
             from.z + (to.z - from.z) * fraction};
 }
 
-// How far along the chord's horizontal travel a hit lies.
-float HorizontalFraction(Point const& from, Point const& to, Point const& hit)
+// How far along a chord a hit lies: by horizontal travel, or by height when the chord is vertical.
+float ChordFraction(Point const& from, Point const& to, Point const& hit)
 {
     float const dx = to.x - from.x;
     float const dy = to.y - from.y;
     float const lengthSquared = dx * dx + dy * dy;
-    if (lengthSquared < EPSILON)
-        return 0.0f;
+    if (lengthSquared >= EPSILON)
+        return std::clamp(((hit.x - from.x) * dx + (hit.y - from.y) * dy) / lengthSquared, 0.0f, 1.0f);
 
-    return std::clamp(((hit.x - from.x) * dx + (hit.y - from.y) * dy) / lengthSquared, 0.0f, 1.0f);
+    float const dz = to.z - from.z;
+    return std::abs(dz) < EPSILON ? 0.0f : std::clamp((hit.z - from.z) / dz, 0.0f, 1.0f);
+}
+
+// Where along a chord `touches` starts to hold, given that it holds at the end: the last fraction clear of it and the
+// first touching it.
+template <typename Touches>
+std::pair<float, float> FirstContact(Touches const& touches)
+{
+    float clear = 0.0f;
+    float touching = 1.0f;
+    for (uint32 i = 0; i < CONTACT_ITERATIONS; ++i)
+    {
+        float const middle = (clear + touching) * 0.5f;
+        if (touches(middle))
+            touching = middle;
+        else
+            clear = middle;
+    }
+
+    return {clear, touching};
 }
 
 float Seconds(uint32 ms) { return static_cast<float>(ms) / 1000.0f; }
 uint32 Milliseconds(float seconds) { return static_cast<uint32>(seconds * 1000.0f + 0.5f); }
 
-// The surface of water deep enough to swim in at `end`, NO_HEIGHT when there is none. Shallower water lands the bot on
-// its bed, as the core decides.
-float SwimmableLiquid(CollisionProbe const& probe, Point const& end, float queryZ, float collisionHeight)
+// The height below which the bot swims in `liquid`, NO_HEIGHT when it is too shallow to swim in. Shallower liquid
+// lands the bot on its bed, as the client and core decide.
+float SwimHeight(CollisionProbe const& probe, Point const& end, float liquid, float collisionHeight)
 {
-    float const liquid = probe.LiquidZ(end.x, end.y, queryZ);
-    if (liquid <= NO_HEIGHT || end.z > liquid)
-        return NO_HEIGHT;
-
     float const swimDepth = SWIM_DEPTH * collisionHeight;
     float const bed = probe.FloorZ(end.x, end.y, liquid, swimDepth);
-    return bed <= NO_HEIGHT || liquid - bed > swimDepth ? liquid : NO_HEIGHT;
+    return bed <= NO_HEIGHT || liquid - bed > swimDepth ? liquid - swimDepth : NO_HEIGHT;
 }
 }  // namespace
 
@@ -71,15 +89,19 @@ Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
     // A takeoff a hair below the floor it stands on would land at once.
     float const takeoffFloor =
         probe.FloorZ(position.x, position.y, position.z + halfHeight, halfHeight + FLOOR_SEARCH_MARGIN);
-    if (takeoffFloor > NO_HEIGHT)
-    {
-        float const standZ = takeoffFloor + launch.landingOffset;
-        if (standZ > position.z && standZ - position.z <= TAKEOFF_SNAP)
-            position.z = standZ;
-    }
+    float const standZ = takeoffFloor > NO_HEIGHT ? takeoffFloor + launch.landingOffset : NO_HEIGHT;
+    if (standZ > position.z && standZ - position.z <= TAKEOFF_SNAP)
+        position.z = standZ;
 
     trajectory.takeoff = position;
-    float floorBelow = takeoffFloor;  // under the chord's start, NO_HEIGHT when the last search found none
+
+    // Not rising off the floor it stands on: it lands where it is.
+    if (takeoffFloor > NO_HEIGHT && vz <= 0.0f && position.z <= standZ)
+    {
+        trajectory.outcome = Outcome::Landed;
+        trajectory.landing = {position.x, position.y, standZ};
+        return trajectory;
+    }
 
     // Under the heightmap (caves, building interiors) the terrain is not a wall. Only horizontal travel meets walls.
     bool underTerrain = true;
@@ -108,6 +130,18 @@ Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
             trajectory.segments.push_back({segmentStart, position, durationMs, segmentStartVz, segmentKind});
     };
     openSegment();
+
+    // The floor under a point of the chord, searched from the body's middle at the chord's higher end.
+    auto floorAt = [&](Point const& point)
+    {
+        float const searchFrom = std::max(position.z, point.z) + halfHeight;
+        return probe.FloorZ(point.x, point.y, searchFrom, searchFrom - point.z + FLOOR_SEARCH_MARGIN);
+    };
+    auto onFloor = [&](Point const& point)
+    {
+        float const floor = floorAt(point);
+        return floor > NO_HEIGHT && point.z <= floor + launch.landingOffset;
+    };
 
     for (uint32 step = 0; step < MAX_STEPS; ++step)
     {
@@ -143,88 +177,122 @@ Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
 
         float fraction = 1.0f;
         Contact contact = Contact::None;
+        Point hit;
         if (horizontal)
         {
-            float const terrain = underTerrain ? NO_HEIGHT : probe.TerrainZ(end.x, end.y);
-            Point hit;
-            if (terrain > NO_HEIGHT && terrain > std::max(position.z, end.z) + halfHeight)
+            // Terrain rising into the body is a wall where it starts to, not at the chord's start.
+            auto intoTerrain = [&](float t)
             {
-                fraction = 0.0f;
+                Point const point = arcAt(dt * t);
+                float const terrain = probe.TerrainZ(point.x, point.y);
+                return terrain > NO_HEIGHT && terrain > std::max(position.z, point.z) + halfHeight;
+            };
+            if (!underTerrain && intoTerrain(1.0f))
+            {
+                fraction = FirstContact(intoTerrain).first;
                 contact = Contact::Wall;
             }
             else if (probe.RayHit({position.x, position.y, position.z + halfHeight}, {end.x, end.y, end.z + halfHeight},
                                   hit))
             {
-                fraction = HorizontalFraction(position, end, hit);
+                fraction = ChordFraction(position, end, hit);
                 contact = Contact::Wall;
-            }
-            else if (vz > 0.0f && probe.RayHit({position.x, position.y, position.z + launch.collisionHeight},
-                                               {end.x, end.y, end.z + launch.collisionHeight}, hit))
-            {
-                fraction = HorizontalFraction(position, end, hit);
-                contact = Contact::Ceiling;
             }
         }
 
-        float const chordTime = dt * fraction;
-        Point const chordEnd = contact == Contact::None ? end : arcAt(chordTime);
-        float const chordEndVz = capped ? -terminal : vz - GRAVITY * chordTime;
-
-        // Lands where the chord crosses the surface, or at its end when it steps up onto a ledge on the way up.
-        // With the surface known under both ends the crossing is exact on a planar slope.
-        auto land = [&](float startSurface, float endSurface, Outcome outcome)
+        Point const head{position.x, position.y, position.z + launch.collisionHeight};
+        Point const endHead{end.x, end.y, end.z + launch.collisionHeight};
+        if (contact == Contact::None && vz > 0.0f && probe.RayHit(head, endHead, hit))
         {
-            if (startSurface <= NO_HEIGHT)
-                startSurface = endSurface;
+            fraction = ChordFraction(head, endHead, hit);
+            contact = Contact::Ceiling;
+        }
 
-            float const startClearance = position.z - startSurface;
-            float const endClearance = chordEnd.z - endSurface;
-            float crossing = vz > 0.0f ? 1.0f : 0.0f;
-            if (startClearance > 0.0f)
-                crossing = startClearance / (startClearance - endClearance);
+        float chordTime = dt * fraction;
+        Point chordEnd = contact == Contact::None ? end : arcAt(chordTime);
 
-            Point landing = Lerp(position, chordEnd, crossing);
-            landing.z = std::lerp(startSurface, endSurface, crossing);
+        auto finish = [&](Point const& landing, float time, Outcome outcome)
+        {
             position = landing;
-            segmentTime += chordTime * crossing;
+            segmentTime += time;
             closeSegment();
             trajectory.outcome = outcome;
             trajectory.landing = landing;
             return trajectory;
         };
 
-        float const searchFrom = std::max(position.z, chordEnd.z) + halfHeight;
-        float const floor =
-            probe.FloorZ(chordEnd.x, chordEnd.y, searchFrom, searchFrom - chordEnd.z + FLOOR_SEARCH_MARGIN);
-        float const floorSurface = floor + launch.landingOffset;
-        bool const reachesFloor = floor > NO_HEIGHT && chordEnd.z <= floorSurface;
-
-        // A long chord can pass through water and end below its bed; the water catches the fall first. The core finds
-        // no water below the bed, so ask at the floor.
-        if (chordEndVz < 0.0f)
+        // Lands where the chord sinks to a level surface, or at its end when it rises onto it.
+        auto land = [&](float surface, Outcome outcome)
         {
-            float const liquid =
-                SwimmableLiquid(probe, chordEnd, reachesFloor ? floor : chordEnd.z, launch.collisionHeight);
-            if (liquid > NO_HEIGHT)
-                return land(liquid, liquid, Outcome::Liquid);
+            float const startClearance = position.z - surface;
+            float crossing = vz > 0.0f ? 1.0f : 0.0f;
+            if (startClearance > 0.0f)
+                crossing = startClearance / (startClearance - (chordEnd.z - surface));
+
+            Point landing = Lerp(position, chordEnd, crossing);
+            landing.z = surface;
+            return finish(landing, chordTime * crossing, outcome);
+        };
+
+        float const floor = floorAt(chordEnd);
+        bool const reachesFloor = floor > NO_HEIGHT && chordEnd.z <= floor + launch.landingOffset;
+
+        // A long chord can pass through liquid and end below its bed, so ask at the floor: the core finds no liquid
+        // below the bed.
+        float const chordEndVz = capped ? -terminal : vz - GRAVITY * chordTime;
+        float const liquid =
+            chordEndVz < 0.0f ? probe.LiquidZ(chordEnd.x, chordEnd.y, reachesFloor ? floor : chordEnd.z) : NO_HEIGHT;
+        if (liquid > NO_HEIGHT)
+        {
+            // A water walker comes down on the surface as on a floor.
+            float const surface = liquid + launch.landingOffset;
+            if (launch.waterWalking && chordEnd.z <= surface && position.z >= surface - TAKEOFF_SNAP)
+                return land(surface, Outcome::Landed);
+
+            // Past the apex a client swims, and stops falling, once it sinks to swim depth.
+            float const swimZ = SwimHeight(probe, chordEnd, liquid, launch.collisionHeight);
+            if (swimZ > NO_HEIGHT && chordEnd.z <= swimZ)
+            {
+                if (position.z > swimZ)
+                    return land(swimZ, Outcome::Liquid);
+
+                // Launched under the surface: it swims on from the apex.
+                float const apexTime = capped || vz <= 0.0f ? 0.0f : vz / GRAVITY;
+                return finish(arcAt(apexTime), apexTime, Outcome::Liquid);
+            }
         }
 
         if (reachesFloor)
         {
-            float const startSurface = floorBelow > NO_HEIGHT ? floorBelow + launch.landingOffset : NO_HEIGHT;
-            return land(startSurface, floorSurface, Outcome::Landed);
-        }
+            auto const [clear, touching] = FirstContact([&](float t) { return onFloor(arcAt(chordTime * t)); });
+            Point landing = arcAt(chordTime * touching);
+            float const landingFloor = floorAt(landing) + launch.landingOffset;
+            if (!horizontal || landingFloor - landing.z <= launch.stepHeight)
+            {
+                landing.z = landingFloor;
+                return finish(landing, chordTime * touching, Outcome::Landed);
+            }
 
-        if (chordEnd.z < launch.minZ)
+            // A ledge above the step height meets the body's side, as a wall.
+            chordTime *= clear;
+            chordEnd = arcAt(chordTime);
+            contact = Contact::Wall;
+        }
+        else if (chordEnd.z < launch.minZ)
         {
             trajectory.outcome = Outcome::DropCap;
             return trajectory;
         }
+        else
+        {
+            float const voidZ = probe.MinZ(chordEnd.x, chordEnd.y);
+            if (chordEnd.z < voidZ)
+                return land(voidZ, Outcome::Void);
+        }
 
         position = chordEnd;
         segmentTime += chordTime;
-        vz = chordEndVz;
-        floorBelow = floor;
+        vz = capped ? -terminal : vz - GRAVITY * chordTime;
 
         if (contact != Contact::None || reachesTerminal || reachesApex)
         {

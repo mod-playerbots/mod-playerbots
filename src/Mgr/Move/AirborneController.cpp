@@ -10,8 +10,8 @@
 #include <cmath>
 
 #include "AiObjectContext.h"
+#include "Battleground.h"
 #include "DetourNavMeshQuery.h"
-#include "GameTime.h"
 #include "LastMovementValue.h"
 #include "Map.h"
 #include "MotionMaster.h"
@@ -42,6 +42,7 @@ constexpr float FACING_TOLERANCE = 0.2f;  // a smaller turn is not worth relaunc
 constexpr float ARRIVAL_TOLERANCE = 0.5f;
 constexpr float GROUND_CONTACT = 1.0f;
 constexpr float MIN_SPLINE_VELOCITY = 0.01f;  // MoveSplineInitArgs::Validate refuses anything slower
+constexpr uint32 HEARTBEAT_MS = 500;          // how often a falling client reports its position
 
 float Normalized(float height) { return height > INVALID_HEIGHT ? height : NO_HEIGHT; }
 
@@ -94,6 +95,8 @@ public:
         return (liquid.Status & MAP_LIQUID_STATUS_SWIMMING) ? liquid.Level : NO_HEIGHT;
     }
 
+    float MinZ(float x, float y) const override { return _map->GetMinHeight(x, y); }
+
 private:
     Map* _map;
     uint32 _phaseMask;
@@ -105,11 +108,14 @@ bool AirborneController::CanLeaveGround() const
 {
     return _bot && _bot->IsInWorld() && _bot->IsAlive() && !IsSelfBot(_bot) && _bot->m_mover == _bot &&
            !_bot->IsBeingTeleported() && !_bot->GetVehicle() && !_bot->GetTransport() &&
-           !_bot->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_SWIMMING) && !_bot->IsInFlight() &&
-           !_bot->IsFlying() && !_bot->IsCharmed();
+           !_bot->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && !_bot->IsInFlight() && !_bot->IsFlying() &&
+           !_bot->IsCharmed();
 }
 
-bool AirborneController::CanJump() const { return CanLeaveGround() && _botAI->CanMove(); }
+bool AirborneController::IsSwimming() const { return _bot->HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING); }
+
+// A swimming client's jump key swims up.
+bool AirborneController::CanJump() const { return CanLeaveGround() && !IsSwimming() && _botAI->CanMove(); }
 
 bool AirborneController::IsSlowFalling() const
 {
@@ -150,6 +156,10 @@ Trajectory AirborneController::SweepFrom(Point const& position, Point const& vel
     launch.collisionHeight = _bot->GetCollisionHeight();
     launch.landingOffset = _bot->GetHoverHeight();
     launch.minZ = minZ;
+    // The bounding radius is the model's collision radius the client uses.
+    launch.stepHeight = _bot->GetFloatValue(UNIT_FIELD_BOUNDINGRADIUS) * STEP_HEIGHT_PER_RADIUS;
+    // A launch stops a client swimming, so the aura alone decides.
+    launch.waterWalking = _bot->HasWaterWalkAura();
     MapProbe const probe(_bot->GetMap(), _bot->GetPhaseMask(), launch.collisionHeight);
     return maxWalk > 0.0f ? WalkOff(launch, probe, maxWalk) : Sweep(launch, probe);
 }
@@ -234,7 +244,7 @@ void AirborneController::Knockback(float vcos, float vsin, float speedXY, float 
     _bot->CastStop();
     if (!CanLeaveGround())
     {
-        // Vehicles, transports and water keep the core's knockback; the sweep works in world coordinates on land.
+        // Vehicles and transports keep the core's knockback; the sweep works in world coordinates.
         _bot->StopMoving();
         _bot->GetMotionMaster()->Clear();
         _bot->GetMotionMaster()->MoveKnockbackFrom(_bot->GetPositionX() - vcos, _bot->GetPositionY() - vsin, speedXY,
@@ -252,13 +262,17 @@ void AirborneController::Knockback(float vcos, float vsin, float speedXY, float 
         (!IsSafeLanding(trajectory) || trajectory.landing.z < start.z - DELIBERATE_DROP_CAP))
         trajectory = ProtectedKnockback(vcos, vsin, speedXY, speedZ);
 
-    if (!trajectory.Landed())
+    if (!trajectory.Ends())
     {
         if (wasAirborne)
             Settle();
 
         return;
     }
+
+    // A client stops swimming when launched, and swims on once it sinks to swim depth.
+    if (_bot->SetSwim(false))
+        _swimOnLanding = true;
 
     Begin(std::move(trajectory), wasAirborne ? std::nullopt : std::optional<float>(start.z));
 }
@@ -316,11 +330,13 @@ void AirborneController::StartFall()
         return;
     }
 
-    if (!CanLeaveGround())
+    // Player::IsInWater() is set from client movement only; the unit's liquid status is kept for bots too. In water a
+    // client swims rather than falls.
+    if (!CanLeaveGround() || IsSwimming() || _bot->Unit::IsInWater())
         return;
 
     Trajectory trajectory = SweepFrom(start, {}, start.z - NO_DROP_CAP);
-    if (trajectory.Landed())
+    if (trajectory.Ends())
         Begin(std::move(trajectory), start.z);
 }
 
@@ -368,7 +384,7 @@ void AirborneController::Update()
 
     // A client falls as soon as it stands over nothing, such as where a path to a target below runs off a ledge.
     bool const moving = !_bot->movespline->Finalized();
-    if (_wasMoving && !moving && !_airborne && !_bot->IsInWater() && CanLeaveGround())
+    if (_wasMoving && !moving && !_airborne && CanLeaveGround())
         StartFall();
 
     _wasMoving = moving;
@@ -381,6 +397,19 @@ void AirborneController::Update()
     {
         Clear();
         return;
+    }
+
+    // The server measures fall damage from the highest position a falling client reports, and it reports every
+    // 500 ms. The core's own rule takes each report.
+    uint32 const fallTime = getMSTimeDiff(_fallStartMs, getMSTime());
+    _bot->m_movementInfo.SetFallTime(fallTime);
+    if (fallTime >= _nextHeartbeatMs)
+    {
+        _nextHeartbeatMs = fallTime + HEARTBEAT_MS;
+        MovementInfo heartbeat = _bot->m_movementInfo;
+        Point const position = CurrentPosition();
+        heartbeat.pos.Relocate(position.x, position.y, position.z);
+        _bot->UpdateFallInformationIfNeed(heartbeat, MSG_MOVE_HEARTBEAT);
     }
 
     if (IsCoreControlled())
@@ -420,12 +449,19 @@ void AirborneController::Clear()
 void AirborneController::Begin(Trajectory&& trajectory, std::optional<float> takeoffZ)
 {
     _bot->GetMotionMaster()->Clear();
+    // A client moving stands up, as the movement handler sees it: food and drink end.
+    if (_bot->IsSitState())
+        _bot->SetStandState(UNIT_STAND_STATE_STAND);
+
+    // Mid-air the fall goes on: the server keeps the anchor until the next report shows a fall time that restarted.
+    _fallStartMs = getMSTime();
+    _nextHeartbeatMs = HEARTBEAT_MS;
+    _bot->m_movementInfo.SetFallTime(0);
     if (takeoffZ.has_value())
     {
         _airborne = true;
         _bot->AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
-        _bot->m_movementInfo.SetFallTime(0);
-        _bot->SetFallInformation(GameTime::GetGameTime().count(), *takeoffZ);
+        _bot->SetFallInformation(0, *takeoffZ);
     }
 
     Start(std::move(trajectory));
@@ -436,7 +472,7 @@ void AirborneController::Start(Trajectory&& trajectory)
     _segments = std::move(trajectory.segments);
     _segmentIndex = 0;
     _landing = trajectory.landing;
-    _landingInLiquid = trajectory.outcome == Outcome::Liquid;
+    _landingOutcome = trajectory.outcome;
     _slowFall = IsSlowFalling();
     if (_segments.empty())
         Land();
@@ -545,7 +581,7 @@ void AirborneController::Resweep()
     Interrupt(_bot->GetOrientation());
     _bot->GetMotionMaster()->Clear();
     Trajectory trajectory = SweepFrom(position, velocity, position.z - NO_DROP_CAP);
-    if (!trajectory.Landed())
+    if (!trajectory.Ends())
     {
         Settle();
         return;
@@ -556,10 +592,21 @@ void AirborneController::Resweep()
 
 void AirborneController::Land()
 {
+    if (_landingOutcome == Outcome::Void)
+    {
+        FallToVoid();
+        Settle();
+        return;
+    }
+
+    bool const inLiquid = _landingOutcome == Outcome::Liquid;
     MovementInfo landing = _bot->m_movementInfo;
     landing.pos.Relocate(_landing.x, _landing.y, _landing.z);
-    if (!_landingInLiquid && sPlayerbotAIConfig.FallDamage)
+    if (!inLiquid && sPlayerbotAIConfig.FallDamage)
         _bot->HandleFall(landing);
+
+    if (inLiquid && _swimOnLanding)
+        _bot->SetSwim(true);
 
     // Parachutes and the like end on landing, as the movement handler does for a client.
     _bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_LANDING);
@@ -569,9 +616,27 @@ void AirborneController::Land()
     _botAI->GetAiObjectContext()->GetValue<LastMovement&>("last movement")->Get().Set(nullptr);
 }
 
+void AirborneController::FallToVoid()
+{
+    // The movement handler's steps for a client that falls below the map.
+    Battleground* battleground = _bot->GetBattleground();
+    if ((battleground && battleground->HandlePlayerUnderMap(_bot)) || !_bot->IsAlive())
+        return;
+
+    // The Oculus handles its under-map case with an area trigger.
+    if (_bot->GetMapId() == MAP_THE_OCULUS)
+        return;
+
+    _bot->SetPlayerFlag(PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
+    _bot->EnvironmentalDamage(DAMAGE_FALL_TO_VOID, _bot->GetMaxHealth());
+    if (_bot->IsAlive())  // a GM survives the damage
+        _bot->KillPlayer();
+}
+
 void AirborneController::Settle()
 {
     _airborne = false;
+    _swimOnLanding = false;
     _segments.clear();
     _segmentIndex = 0;
     _splineId = 0;

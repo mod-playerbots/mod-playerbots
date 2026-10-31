@@ -33,8 +33,8 @@ public:
     // nearer the target.
     bool DropDownTo(Unit const* target);
     void Knockback(float vcos, float vsin, float speedXY, float speedZ);
-    // Falls from where the bot is on its next update, such as after a flying dismount. The core reports the dismount
-    // while the mount's flight-speed effect is still on, so the bot only knows it can fall once the aura is gone.
+    // Falls from where the bot is on its next update, such as after a flying dismount or when flight ends. The core
+    // reports both while the flight aura is still on, so the bot only knows it can fall once the aura is gone.
     void Fall() { _fallPending = true; }
     // Turns mid-air without changing the path. False when not airborne.
     bool Face(float orientation);
@@ -50,6 +50,7 @@ private:
     using Trajectory = JumpTrajectory::Trajectory;
 
     bool CanLeaveGround() const;
+    bool IsSwimming() const;
     bool IsSlowFalling() const;
     // No fall damage on landing: slow fall, or fall damage turned off.
     bool IsFallHarmless() const;
@@ -82,6 +83,8 @@ private:
     // The core's knockback, which stops at the edge of the walkable area.
     Trajectory ProtectedKnockback(float vcos, float vsin, float speedXY, float speedZ) const;
     void Land();
+    // What the movement handler does to a client that falls below the map: death, or the battleground's rescue.
+    void FallToVoid();
     void Settle();
 
     PlayerbotAI* _botAI;
@@ -96,8 +99,11 @@ private:
     size_t _segmentIndex = 0;
     uint32 _splineId = 0;
     uint32 _segmentStartMs = 0;
+    uint32 _fallStartMs = 0;
+    uint32 _nextHeartbeatMs = 0;  // fall time of the next position report
     Point _landing;
-    bool _landingInLiquid = false;
+    JumpTrajectory::Outcome _landingOutcome = JumpTrajectory::Outcome::Landed;
+    bool _swimOnLanding = false;  // the swim flag a knockback cleared, restored on landing in liquid
 };
 
 #endif

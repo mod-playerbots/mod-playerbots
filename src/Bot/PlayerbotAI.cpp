@@ -1415,6 +1415,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
             return;
         }
         case SMSG_DISMOUNT:
+        case SMSG_MOVE_UNSET_CAN_FLY:  // flight form or a flight aura ended
         {
             WorldPacket p(packet);
             p.rpos(0);
