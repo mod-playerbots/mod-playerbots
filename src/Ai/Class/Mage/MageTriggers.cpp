@@ -6,6 +6,7 @@
 
 #include "MageTriggers.h"
 #include "DynamicObject.h"
+#include "MageActions.h"
 #include "Player.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
@@ -14,6 +15,12 @@
 #include "SpellAuraEffects.h"
 #include "TargetValue.h"
 #include "Value.h"
+
+// Firestarter walks the mage to melee on this trigger; the spell that would end it is not cast here.
+bool BlastWaveOffCdTrigger::IsActive()
+{
+    return !CastKnockbackSpellAction::IsBlocked(bot, SPELL_GLYPH_OF_BLAST_WAVE) && SpellNoCooldownTrigger::IsActive();
+}
 
 bool NoManaGemTrigger::IsActive()
 {

@@ -301,6 +301,7 @@ class BlastWaveOffCdTrigger : public SpellNoCooldownTrigger
 {
 public:
     BlastWaveOffCdTrigger(PlayerbotAI* botAI) : SpellNoCooldownTrigger(botAI, "blast wave") {}
+    bool IsActive() override;
 };
 
 class BlastWaveOffCdTriggerAndMediumAoeTrigger : public TwoTriggers
