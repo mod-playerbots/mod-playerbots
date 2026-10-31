@@ -57,6 +57,31 @@ bool IsEncounterInProgress(Player* bot, uint32 mapId)
     return instance && instance->IsEncounterInProgress();
 }
 
+bool IsBossInProgress(Player* bot, uint32 mapId, uint32 bossId)
+{
+    if (bot->GetMapId() != mapId)
+        return false;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    return instance && instance->GetBossState(bossId) == IN_PROGRESS;
+}
+
+std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId)
+{
+    if (bot->GetMapId() != mapId)
+        return std::nullopt;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    if (!instance)
+        return std::nullopt;
+
+    for (uint32 bossId = 0; bossId < instance->GetEncounterCount(); ++bossId)
+        if (instance->GetBossState(bossId) == IN_PROGRESS)
+            return bossId;
+
+    return std::nullopt;
+}
+
 // Class Roles
 // A job given to one raid member of a class, such as a mage tank.
 
@@ -466,10 +491,7 @@ bool GetPathStepTowardPoint(
             if (fromDist <= stopDistance)
                 break;
 
-            float const a = segment * segment;
-            float const b = (from - targetPos).dot(to - from);
-            float const c = fromDist * fromDist - stopDistance * stopDistance;
-            ratio = (-b - std::sqrt(std::max(0.0f, b * b - a * c))) / a;
+            ratio = (fromDist - stopDistance) / (fromDist - toDist);
         }
 
         if (segment * ratio >= remaining)
@@ -814,6 +836,17 @@ float GetDpsHoldValue(Player* bot, Action* action)
     return castOnRaidSpell ? 1.0f : 0.0f;
 }
 
+Unit* GetActionTargetOrCurrentTarget(PlayerbotAI* botAI, Action* action)
+{
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+    {
+        return action->GetTarget();
+    }
+
+    return botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+}
+
 // Stopping Attacks and Spells
 
 namespace
@@ -897,8 +930,8 @@ bool StopAttackingAndChanneling(Player* bot)
     return isStopped;
 }
 
-// Unlike StopAttackingAndChanneling(), a queued swing ability is canceled only if the bot's swing is
-// on the target (by AttackStop()). Otherwise, it fires at the bot's actual victim, not the target.
+// Unlike StopAttackingAndChanneling(), CURRENT_MELEE_SPELL is not interrupted because a queued
+// swing ability fires on the next swing, at whatever the victim is then.
 bool StopAttackingTarget(Player* bot, Unit const& target)
 {
     bool isStopped = false;
@@ -925,22 +958,27 @@ bool StopAttackingTarget(Player* bot, Unit const& target)
 
 void StandDown(PlayerbotAI* botAI)
 {
-    StopAttackingAndChanneling(botAI->GetBot());
-    botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Set(nullptr);
+    Player* bot = botAI->GetBot();
+    // Not duplicative of StopAttackingTarget, which calls AttackStop only when the bot's victim is
+    // its current target. They can differ if the target is cleared or changed without Attack().
+    bot->AttackStop();
+
+    auto* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target");
+    if (Unit* target = currentTarget->Get())
+        StopAttackingTarget(bot, *target);
+
+    currentTarget->Set(nullptr);
 }
 
 bool SelectTarget(PlayerbotAI* botAI, Unit* target)
 {
-    if (!target)
+    Player* bot = botAI->GetBot();
+    if (!target || !AttackersValue::IsValidTarget(target, bot))
         return false;
 
     auto* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target");
     Unit* oldTarget = currentTarget->Get();
     if (oldTarget == target && botAI->GetState() == BOT_STATE_COMBAT)
-        return false;
-
-    Player* bot = botAI->GetBot();
-    if (!AttackersValue::IsValidTarget(target, bot))
         return false;
 
     if (oldTarget && oldTarget != target)

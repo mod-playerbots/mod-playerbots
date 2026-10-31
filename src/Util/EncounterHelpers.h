@@ -41,6 +41,13 @@ inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
 // banished, or else when the last Spellbinder dies, not when his Spellbinders are pulled). In any
 // case, the boss script must be consulted to determine viability.
 bool IsEncounterInProgress(Player* bot, uint32 mapId);
+// Encounters from the instance script. Boss ids follow DungeonEncounter.dbc's order, so they are
+// right only if the instance script numbers its bosses in that same order. Each returns false or
+// nullopt when the bot isn't on mapId.
+// One boss's state, unlike IsEncounterInProgress, which is true with any boss in progress on mapId.
+bool IsBossInProgress(Player* bot, uint32 mapId, uint32 bossId);
+// The lowest boss id that is IN_PROGRESS, if any.
+std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId);
 
 // Class Roles
 // A job given to one raid member of a class, such as a mage tank.
@@ -200,6 +207,10 @@ bool IsAoeThreatAction(Player* bot, Action* action);
 bool IsDpsHoldCandidate(Player* bot, Action* action);
 // Healing, buffs etc. go through a dps hold. Totems don't because some are offensive.
 float GetDpsHoldValue(Player* bot, Action* action);
+// For holding dps assist, tank assist, and/or secondary dots on attackers against a single unit.
+// Such actions have target values of their own that can differ from the current target. Thus, we
+// must check the unit that the hold covers against the unit that a held action would hit.
+Unit* GetActionTargetOrCurrentTarget(PlayerbotAI* botAI, Action* action);
 
 // Stopping Attacks and Spells
 
@@ -226,7 +237,7 @@ bool StopAttackingAndChanneling(Player* bot);
 // target enemy or on the ground at enemies, so channeled heals continue. Returns true if anything
 // is stopped.
 bool StopAttackingTarget(Player* bot, Unit const& target);
-// Calls StopAttackingAndChanneling and clears the current target.
+// Ends the bot's swing on any unit, then calls StopAttackingTarget and clears the current target.
 void StandDown(PlayerbotAI* botAI);
 // Activate the bot's combat engine and set its current target without attacking or sending a pet.
 // A multiplier is needed to keep the bot from attacking the target right after selection. Returns
