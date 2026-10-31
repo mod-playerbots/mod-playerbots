@@ -13,6 +13,7 @@
 #include "IVMapMgr.h"
 #include "MotionMaster.h"
 #include "MoveSpline.h"
+#include "NewRpgHelpers.h"
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
 #include "Object.h"
@@ -24,6 +25,7 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
+#include "Playerbots.h"
 #include "QuestDef.h"
 #include "Random.h"
 #include "SharedDefines.h"
@@ -407,8 +409,19 @@ bool NewRpgWanderNpcAction::Execute(Event /*event*/)
     auto& data = *dataPtr;
     if (!data.npcOrGo)
     {
-        // No npc can be found, switch to IDLE
-        ObjectGuid npcOrGo = ChooseNpcOrGameObjectToInteract();
+        // Prefer a giver with something to accept or reward, else any nearby npc; none -> IDLE
+        ObjectGuid npcOrGo = NewRpgHelpers::FindQuestGiver(botAI);
+        if (npcOrGo.IsEmpty())
+        {
+            GuidVector possibleTargets = AI_VALUE(GuidVector, "possible new rpg targets");
+            if (!possibleTargets.empty())
+            {
+                uint32 idx = urand(0, possibleTargets.size() - 1);
+                WorldObject* object = ObjectAccessor::GetWorldObject(*bot, possibleTargets[idx]);
+                if (object && object->IsInWorld())
+                    npcOrGo = object->GetGUID();
+            }
+        }
         if (npcOrGo.IsEmpty())
         {
             info.ChangeToIdle();
@@ -427,6 +440,25 @@ bool NewRpgWanderNpcAction::Execute(Event /*event*/)
             data.lastReach = getMSTime();
             if (bot->CanInteractWithQuestGiver(object))
                 InteractWithNpcOrGameObjectForQuest(data.npcOrGo);
+
+            if (Creature* creature = object->ToCreature())
+            {
+                constexpr uint32 MIN_VENDOR_BALANCE = 1000;  // 10 silver
+
+                if (creature->HasNpcFlag(UNIT_NPC_FLAG_VENDOR) && AI_VALUE(bool, "can sell"))
+                {
+                    botAI->DoSpecificAction("sell", Event("sell", "vendor"), true);
+
+                    // Buying sorts the vendor list through the weight calculator; skip it for
+                    // bots without money for cheap consumables.
+                    if (bot->GetMoney() >= MIN_VENDOR_BALANCE)
+                        botAI->DoSpecificAction("buy", Event("buy", "vendor"), true);
+                }
+
+                if (creature->HasNpcFlag(UNIT_NPC_FLAG_REPAIR) && AI_VALUE(bool, "can repair"))
+                    botAI->DoSpecificAction("repair", Event("repair"), true);
+            }
+
             return true;
         }
 

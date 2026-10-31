@@ -49,6 +49,8 @@ public:
 
     void CalculateRandomProperty(int32 randomPropertyId, uint32 itemId);
     void CalculateItemSetMod(Player* player, ItemTemplate const* proto);
+    void CollectItemSetBonus(Player* player, ItemTemplate const* proto, int32 slot,
+                             std::array<float, STATS_TYPE_MAX>& setBonusStats);
     void CalculateSocketBonus(Player* player, ItemTemplate const* proto);
 
     void CalculateItemTypePenalty(ItemTemplate const* proto);
@@ -67,6 +69,8 @@ private:
     uint8 cls;
     uint8 lvl;
     int tab;
+    bool healSpec_;
+    bool casterSpec_;
     bool enable_overflow_penalty_;
     bool enable_item_set_bonus_;
 

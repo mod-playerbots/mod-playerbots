@@ -133,7 +133,7 @@ bool PlayerbotAIConfig::Initialize()
     HighMana = sConfigMgr->GetOption<int32>("Playerbots.HighMana", 65);
     AutoSaveMana = sConfigMgr->GetOption<bool>("Playerbots.AutoSaveMana", true);
     SaveManaThreshold = sConfigMgr->GetOption<int32>("Playerbots.SaveManaThreshold", 60);
-    switch (sConfigMgr->GetOption<uint32>("Playerbots.AutoGreaterBlessings", 1))
+    switch (sConfigMgr->GetOption<uint32>("Playerbots.AutoGreaterBlessings", 2))
     {
         case 0:
             AutoGreaterBlessings = AutoPartyBuffMode::DISABLED;
@@ -146,6 +146,8 @@ bool PlayerbotAIConfig::Initialize()
             AutoGreaterBlessings = AutoPartyBuffMode::RAID_ONLY;
             break;
     }
+    BlessingRefreshThresholdSeconds =
+        sConfigMgr->GetOption<uint32>("Playerbots.BlessingRefreshThresholdSeconds", 60);
     switch (sConfigMgr->GetOption<uint32>("Playerbots.AutoPartyBuffs", 2))
     {
         case 0:
@@ -193,6 +195,8 @@ bool PlayerbotAIConfig::Initialize()
     RandomBotMapsAsString = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotMaps", "0,1,530,571");
     LoadList<std::vector<uint32>>(RandomBotMapsAsString, RandomBotMaps);
     ProbTeleToBankers = sConfigMgr->GetOption<float>("Playerbots.ProbTeleToBankers", 0.25f);
+    ProbTeleToQuestGivers = sConfigMgr->GetOption<float>("Playerbots.ProbTeleToQuestGivers", 0.0f);
+
     EnableWeightTeleToCityBankers = sConfigMgr->GetOption<bool>("Playerbots.EnableWeightTeleToCityBankers", false);
     WeightTeleToStormwind = sConfigMgr->GetOption<int>("Playerbots.TeleToStormwindWeight", 2);
     WeightTeleToIronforge = sConfigMgr->GetOption<int>("Playerbots.TeleToIronforgeWeight", 1);
@@ -228,9 +232,9 @@ bool PlayerbotAIConfig::Initialize()
 
     LoadSet<std::set<uint32>>(
         sConfigMgr->GetOption<std::string>("Playerbots.DisallowedGameObjects",
-                                           "176213,17155,2656,74448,19020,3719,3658,3705,3706,105579,75293,2857,"
-                                           "179490,141596,160836,160845,179516,176224,181085,176112,128308,128403,"
-                                           "165739,165738,175245,175970,176325,176327,123329,2560"),
+                                            "2560,2656,2857,3658,3705,3706,3719,17155,19020,74448,75293,105579,123329,"
+                                            "128308,128403,141596,160836,160845,165738,165739,175245,175970,176112,"
+                                            "176213,176224,176325,176327,179490,179516,180523,181085"),
         DisallowedGameObjects);
     LoadSet<std::set<uint32>>(
         sConfigMgr->GetOption<std::string>("Playerbots.AttunementQuests", "10279,10277,10282,10283,10284,10285,10296,"

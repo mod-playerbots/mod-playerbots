@@ -58,6 +58,11 @@ bool TempestKeepClearStaleFallingFlagAction::Execute(Event /*event*/)
     return true;
 }
 
+bool TempestKeepAssignClassRolesAction::Execute(Event /*event*/)
+{
+    return UpdateTkClassRoles(botAI);
+}
+
 bool TempestKeepTankPositionAction::MoveToTankPosition(
     Unit* target, Position const& position, float tolerance, bool shouldAttack)
 {
@@ -2202,4 +2207,9 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     return MoveTo(
         TK_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
         MovementPriority::MOVEMENT_FORCED, false, false);
+}
+
+bool KaelthasSunstriderAnnounceClassRolesAction::Execute(Event /*event*/)
+{
+    return IsMechanicTrackerBot(bot, TK_MAP_ID) && UpdateKaelthasClassRoleAnnouncement(botAI);
 }

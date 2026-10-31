@@ -22,13 +22,13 @@ so one change reaches impacts every bot on the server.
 
 - Every new action, trigger, strategy, and value name resolves to a registered creator, and no
   registration is left orphaned (grep per `ai-engine.md`).
-- New per-tick work is behind a gate or a cached value; a trigger that scans is a finding.
+- New per-tick work is behind a cheap check (`isUseful()`, a timer) or a cached value; a trigger
+  that scans is a finding.
 - No synchronous database query on a map-thread path.
 - New `GetBotTextOrDefault` keys ship with their translation SQL.
 - New config options are in `conf/playerbots.conf.dist` with a default and a comment.
-- The PR body's Feature Evaluation and Impact Assessment match the diff: per-tick work added, a
-  default strategy set or default config value changed, or a new decision branch is not ticked
-  "No".
+- The PR body's Impact Assessment matches the diff: per-tick work added is not ticked "None",
+  and a changed default strategy set or config default is not ticked "No".
 - Ported code carries its upstream notice and the PR's Code Provenance names the source; a
   missing credit is a finding.
 

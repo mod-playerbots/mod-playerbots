@@ -8,8 +8,11 @@
 #define PLAYERBOTS_TKHELPERS_H
 
 #include "Common.h"
+#include "EncounterHelpers.h"
 #include "ObjectGuid.h"
+#include "PlayerbotAI.h"
 #include "Position.h"
+#include "SharedDefines.h"
 #include <array>
 #include <optional>
 #include <type_traits>
@@ -19,7 +22,6 @@
 class Creature;
 class Item;
 class Player;
-class PlayerbotAI;
 class Unit;
 
 namespace TkHelpers
@@ -239,10 +241,28 @@ enum KTPhases
     PHASE_FINAL          = 5
 };
 
-// About the exact distance from Kael to the entrances to his room.
-inline constexpr float KAELTHAS_ROOM_SEARCH_DISTANCE = 125.0f;
 inline constexpr uint32 KAELTHAS_DB_GUID = 158218;
+// 125 yards is about the exact distance from Kael to the entrances to his room.
+inline constexpr float KAELTHAS_ROOM_SEARCH_DISTANCE = 125.0f;
+inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
 
+inline constexpr EncounterHelpers::ClassRole CAPERNIAN_TANK_ROLE = {
+    .playerClass = CLASS_WARLOCK,
+    .preferredSpec = WARLOCK_TAB_DEMONOLOGY,
+    .role = { "class_role_capernian_warlock_tank", "Capernian warlock tank" },
+    .candidate = { "class_role_class_warlock", "Warlock" },
+    .preferredCandidate = { "class_role_class_demonology_warlock", "Demonology Warlock" },
+};
+inline constexpr EncounterHelpers::ClassRole SANGUINAR_DEBUFF_HUNTER_ROLE = {
+    .playerClass = CLASS_HUNTER,
+    .role = { "class_role_sanguinar_debuff_hunter", "Sanguinar debuff hunter" },
+    .candidate = { "class_role_class_hunter", "Hunter" },
+};
+inline constexpr float KAELTHAS_CLASS_ROLE_ANNOUNCE_DISTANCE = KAELTHAS_ROOM_SEARCH_DISTANCE;
+// 200 yards extends to the tops of the ramps leading to Kael's room's entrances.
+inline constexpr float KAELTHAS_CLASS_ROLE_REARM_DISTANCE = 200.0f;
+
+inline Position const KAELTHAS_SPAWN_POSITION =    { 795.408f, -1.605f, 48.812f };
 // To the left of the advisors' starting position (when facing them), up against the wall.
 inline Position const SANGUINAR_TANK_POSITION    = { 775.478f,  39.888f, 46.780f };
 inline Position const SANGUINAR_WAITING_POSITION = { 761.850f,  27.459f, 46.779f };
@@ -255,12 +275,16 @@ inline Position const ADVISOR_HEAL_POSITION      = { 752.171f,  19.494f, 46.779f
 // Towards the front-center of the platform to ensure an open area for Gravity Lapse.
 inline Position const KAELTHAS_TANK_POSITION     = { 774.008f,  -0.631f, 48.729f };
 
-inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
-
 uint32 GetKaelthasTkPhase(Unit* kaelthas);
 bool IsAdvisorActive(Unit* advisor);
+
+bool UpdateTkClassRoles(PlayerbotAI* botAI);
+bool UpdateKaelthasClassRoleAnnouncement(PlayerbotAI* botAI);
+// Demonology spec is preferred for the Capernian Warlock tank.
 Player* GetCapernianTank(Player* bot);
 bool IsCapernianTank(Player* bot);
+// The Debuff Hunter attacks Sanguinar in phase 3 with melee (after Thaladred) to apply Armor
+// Disruption from the Netherstrand Longbow (as opposed to other ranged, who attack Capernian).
 bool IsSanguinarDebuffHunter(Player* bot);
 GuidVector FindLegendaryWeaponGuids(Player* bot);
 Unit* GetLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry);
@@ -280,9 +304,12 @@ struct TkInstanceState
     std::optional<bool> isAlarInPhase2;
     std::vector<ArcaneOrbData> voidReaverArcaneOrbs;
     std::optional<uint32> advisorDpsWaitTimer;
+    EncounterHelpers::ClassRoleAssignment capernianTank;
+    EncounterHelpers::ClassRoleAssignment sanguinarDebuffHunter;
 };
 
 TkInstanceState& TkState(uint32 instanceId);
+TkInstanceState* FindTkState(uint32 instanceId);
 bool TkResetInstance(uint32 instanceId);
 
 }

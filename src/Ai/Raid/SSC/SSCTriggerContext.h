@@ -19,6 +19,9 @@ public:
         creators["ssc no encounter in progress"] =
             &RaidSscTriggerContext::ssc_no_encounter_in_progress;
 
+        creators["ssc class roles should be assigned"] =
+            &RaidSscTriggerContext::ssc_class_roles_should_be_assigned;
+
         // Trash
         creators["underbog colossus in toxic pool"] =
             &RaidSscTriggerContext::underbog_colossus_in_toxic_pool;
@@ -227,6 +230,11 @@ private:
     static Trigger* ssc_no_encounter_in_progress(PlayerbotAI* botAI)
     {
         return new SscNoEncounterInProgressTrigger(botAI);
+    }
+
+    static Trigger* ssc_class_roles_should_be_assigned(PlayerbotAI* botAI)
+    {
+        return new SscClassRolesShouldBeAssignedTrigger(botAI);
     }
 
     // Trash

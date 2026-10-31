@@ -120,6 +120,7 @@ public:
     bool AutoSaveMana;
     uint32 SaveManaThreshold;
     AutoPartyBuffMode AutoGreaterBlessings;
+    uint32 BlessingRefreshThresholdSeconds;
     AutoPartyBuffMode AutoPartyBuffs;
     bool TellWhenMissingBuffReagents;
     uint32 MissingBuffReagentMessageCooldown;
@@ -138,6 +139,7 @@ public:
     bool BotAutologin;
     std::string RandomBotMapsAsString;
     float ProbTeleToBankers;
+    float ProbTeleToQuestGivers;
     bool EnableWeightTeleToCityBankers;
     int WeightTeleToStormwind;
     int WeightTeleToIronforge;

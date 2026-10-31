@@ -69,4 +69,42 @@ namespace BlackwingLairHelpers
             entry == static_cast<uint32>(BlackwingLairNPCs::NPC_CORRUPTED_BLUE_WHELP) ||
             entry == static_cast<uint32>(BlackwingLairNPCs::NPC_CORRUPTED_BRONZE_WHELP);
     }
+
+    bool IsCorruptedTotemEntry(uint32 entry)
+    {
+        return entry == static_cast<uint32>(BlackwingLairNPCs::NPC_CORRUPTED_FIRE_NOVA_TOTEM) ||
+            entry == static_cast<uint32>(BlackwingLairNPCs::NPC_CORRUPTED_STONESKIN_TOTEM) ||
+            entry == static_cast<uint32>(BlackwingLairNPCs::NPC_CORRUPTED_HEALING_TOTEM) ||
+            entry == static_cast<uint32>(BlackwingLairNPCs::NPC_CORRUPTED_WINDFURY_TOTEM);
+    }
+
+    bool IsCorruptedTotem(Unit const* unit)
+    {
+        return unit && IsCorruptedTotemEntry(unit->GetEntry());
+    }
+
+    Unit* FindCorruptedTotem(PlayerbotAI* botAI)
+    {
+        // Ranged take the nearest totem, melee only one they can already reach.
+        Player* bot = botAI->GetBot();
+        Unit* nearest = nullptr;
+        float nearestDistance = 0.0f;
+        for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet())
+        {
+            if (!IsCorruptedTotemEntry(guid.GetEntry()))
+                continue;
+
+            Unit* unit = botAI->GetUnit(guid);
+            if (!unit || !unit->IsAlive() || (!bot->IsWithinMeleeRange(unit) && !PlayerbotAI::IsRanged(bot)))
+                continue;
+
+            float const distance = bot->GetExactDist(unit);
+            if (!nearest || distance < nearestDistance)
+            {
+                nearest = unit;
+                nearestDistance = distance;
+            }
+        }
+        return nearest;
+    }
 }

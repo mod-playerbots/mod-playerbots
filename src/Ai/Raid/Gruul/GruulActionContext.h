@@ -19,6 +19,9 @@ public:
         creators["gruul's lair reset encounter states"] =
             &RaidGruulsLairActionContext::gruuls_lair_reset_encounter_states;
 
+        creators["gruul's lair assign class roles"] =
+            &RaidGruulsLairActionContext::gruuls_lair_assign_class_roles;
+
         // High King Maulgar <Lord of the Ogres>
         creators["high king maulgar melee tanks position bosses"] =
             &RaidGruulsLairActionContext::high_king_maulgar_melee_tanks_position_bosses;
@@ -44,6 +47,9 @@ public:
         creators["high king maulgar misdirect ogres to tanks"] =
             &RaidGruulsLairActionContext::high_king_maulgar_misdirect_ogres_to_tanks;
 
+        creators["high king maulgar announce class roles"] =
+            &RaidGruulsLairActionContext::high_king_maulgar_announce_class_roles;
+
         // Gruul the Dragonkiller
         creators["gruul the dragonkiller tanks position boss"] =
             &RaidGruulsLairActionContext::gruul_the_dragonkiller_tanks_position_boss;
@@ -63,6 +69,11 @@ private:
     static Action* gruuls_lair_reset_encounter_states(PlayerbotAI* botAI)
     {
         return new GruulsLairResetEncounterStatesAction(botAI);
+    }
+
+    static Action* gruuls_lair_assign_class_roles(PlayerbotAI* botAI)
+    {
+        return new GruulsLairAssignClassRolesAction(botAI);
     }
 
     // High King Maulgar
@@ -97,6 +108,11 @@ private:
     static Action* high_king_maulgar_misdirect_ogres_to_tanks(PlayerbotAI* botAI)
     {
         return new HighKingMaulgarMisdirectOgresToTanksAction(botAI);
+    }
+
+    static Action* high_king_maulgar_announce_class_roles(PlayerbotAI* botAI)
+    {
+        return new HighKingMaulgarAnnounceClassRolesAction(botAI);
     }
 
     // Gruul the Dragonkiller
