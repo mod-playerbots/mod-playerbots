@@ -19,6 +19,8 @@ public:
         creators["ssc reset encounter states"] =
             &RaidSscActionContext::ssc_reset_encounter_states;
 
+        creators["ssc assign class roles"] = &RaidSscActionContext::ssc_assign_class_roles;
+
         // Trash
         creators["underbog colossus escape toxic pool"] =
             &RaidSscActionContext::underbog_colossus_escape_toxic_pool;
@@ -100,6 +102,9 @@ public:
 
         creators["leotheras the blind manage dps wait timers"] =
             &RaidSscActionContext::leotheras_the_blind_manage_dps_wait_timers;
+
+        creators["leotheras the blind announce class roles"] =
+            &RaidSscActionContext::leotheras_the_blind_announce_class_roles;
 
         // Fathom-Lord Karathress
         creators["fathom-lord karathress tanks position targets"] =
@@ -226,6 +231,11 @@ private:
         return new SscResetEncounterStatesAction(botAI);
     }
 
+    static Action* ssc_assign_class_roles(PlayerbotAI* botAI)
+    {
+        return new SscAssignClassRolesAction(botAI);
+    }
+
     // Trash
     static Action* underbog_colossus_escape_toxic_pool(PlayerbotAI* botAI)
     {
@@ -343,6 +353,11 @@ private:
     static Action* leotheras_the_blind_manage_dps_wait_timers(PlayerbotAI* botAI)
     {
         return new LeotherasTheBlindManageDpsWaitTimersAction(botAI);
+    }
+
+    static Action* leotheras_the_blind_announce_class_roles(PlayerbotAI* botAI)
+    {
+        return new LeotherasTheBlindAnnounceClassRolesAction(botAI);
     }
 
     // Fathom-Lord Karathress

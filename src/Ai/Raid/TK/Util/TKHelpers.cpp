@@ -342,7 +342,7 @@ Creature* GetLegendaryWeaponByState(PlayerbotAI* botAI, uint32 weaponEntry, bool
     return nullptr;
 }
 
-} // end anonymous namespace
+} // end anonymous namespace (Kael'thas Sunstrider)
 
 uint32 GetKaelthasTkPhase(Unit* kaelthas)
 {
@@ -362,72 +362,48 @@ bool IsAdvisorActive(Unit* advisor)
         !advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
 }
 
-// (1) First priority is an assistant Warlock (real player or bot).
-// (2) If no assistant Warlock, then look for any Warlock bot.
+bool UpdateTkClassRoles(PlayerbotAI* botAI)
+{
+    TkInstanceState& state = TkState(botAI->GetBot()->GetInstanceId());
+    return UpdateClassRoleAssignments(botAI, TK_MAP_ID, {
+        { CAPERNIAN_TANK_ROLE, state.capernianTank },
+        { SANGUINAR_DEBUFF_HUNTER_ROLE, state.sanguinarDebuffHunter },
+    });
+}
+
+bool UpdateKaelthasClassRoleAnnouncement(PlayerbotAI* botAI)
+{
+    TkInstanceState& state = TkState(botAI->GetBot()->GetInstanceId());
+    return UpdateClassRoleAnnouncement(
+        botAI, Id(TkNpcs::NPC_KAELTHAS_SUNSTRIDER), KAELTHAS_SPAWN_POSITION,
+        KAELTHAS_CLASS_ROLE_ANNOUNCE_DISTANCE, KAELTHAS_CLASS_ROLE_REARM_DISTANCE, {
+            { CAPERNIAN_TANK_ROLE, state.capernianTank },
+            { SANGUINAR_DEBUFF_HUNTER_ROLE, state.sanguinarDebuffHunter },
+        });
+}
+
 Player* GetCapernianTank(Player* bot)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
-
-    Player* fallbackWarlock = nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member->getClass() != CLASS_WARLOCK || !member->IsAlive() ||
-            member->GetMapId() != TK_MAP_ID)
-        {
-            continue;
-        }
-
-        if (group->IsAssistant(member->GetGUID()))
-            return member;
-
-        if (!fallbackWarlock && GET_PLAYERBOT_AI(member))
-            fallbackWarlock = member;
-    }
-
-    return fallbackWarlock;
+    TkInstanceState const* state = FindTkState(bot->GetInstanceId());
+    return state ? GetClassRolePlayer(bot, state->capernianTank) : nullptr;
 }
 
 bool IsCapernianTank(Player* bot)
 {
-    return bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot;
+    if (bot->getClass() != CLASS_WARLOCK)
+        return false;
+
+    TkInstanceState const* state = FindTkState(bot->GetInstanceId());
+    return state && IsClassRolePlayer(bot, state->capernianTank);
 }
 
-// One Hunter will start on Sanguinar in phase 3 (with melee) to apply Armor Disruption from the
-// Netherstrand Longbow.
-// (1) First priority is an assistant Hunter (real player or bot).
-// (2) If no assistant Hunter, then look for any Hunter bot.
 bool IsSanguinarDebuffHunter(Player* bot)
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* fallbackHunter = nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member->getClass() != CLASS_HUNTER || !member->IsAlive() ||
-            member->GetMapId() != TK_MAP_ID)
-        {
-            continue;
-        }
-
-        if (group->IsAssistant(member->GetGUID()))
-            return member == bot;
-
-        if (!fallbackHunter && GET_PLAYERBOT_AI(member))
-            fallbackHunter = member;
-    }
-
-    return fallbackHunter == bot;
+    TkInstanceState const* state = FindTkState(bot->GetInstanceId());
+    return state && IsClassRolePlayer(bot, state->sanguinarDebuffHunter);
 }
 
 GuidVector FindLegendaryWeaponGuids(Player* bot)
@@ -548,6 +524,13 @@ TkInstanceState& TkState(uint32 instanceId)
     return tkStates[instanceId];
 }
 
+TkInstanceState* FindTkState(uint32 instanceId)
+{
+    std::lock_guard lock(tkStateMutex);
+    auto it = tkStates.find(instanceId);
+    return it != tkStates.end() ? &it->second : nullptr;
+}
+
 bool TkResetInstance(uint32 instanceId)
 {
     std::lock_guard lock(tkStateMutex);
@@ -555,11 +538,15 @@ bool TkResetInstance(uint32 instanceId)
     if (it == tkStates.end())
         return false;
 
-    TkInstanceState const& state = it->second;
+    TkInstanceState& state = it->second;
     bool const wasSet = state.lastRebirthState || state.isAlarInPhase2 ||
         !state.voidReaverArcaneOrbs.empty() || state.advisorDpsWaitTimer;
 
-    tkStates.erase(it);
+    // Not erased: the class roles outlive encounters, see ClassRoleAssignment.
+    TkInstanceState kept;
+    kept.capernianTank = state.capernianTank;
+    kept.sanguinarDebuffHunter = state.sanguinarDebuffHunter;
+    state = std::move(kept);
     return wasSet;
 }
 

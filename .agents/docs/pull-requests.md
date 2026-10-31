@@ -32,19 +32,23 @@ from CMaNGOS, MaNGOS, or another GPLv2 project:
 Fill in `PULL_REQUEST_TEMPLATE.md` completely; do not delete sections. Strip only the
 instructional `<!-- -->` comments.
 
-- **Description**: the concrete, observable failure before and after. "Adds support for X" or
-  "more realistic" is not a problem statement.
-- **Feature Evaluation**: the minimum logic needed, and the processing cost when it runs across
-  thousands of bots. Skippable only for trivial changes (typos, wrong IDs).
-- **How to Test**: steps, required setup (bot count, config), expected behaviour.
-- **Impact Assessment**: the three checkboxes, each explained when not "No". The standard
-  measurement is `playerbot pmon` before and after: set `BotActiveAlone = 100` and
+- **Description**: what the problem is today and what they do after the change. - **How to Test**: steps, required setup (bot count, config), expected behaviour.
+- **Impact Assessment**: two questions, performance cost and default behaviour. Any answer other
+  than "None" or "No" gets an explanation. Small fixes can tick "None" and skip it. Otherwise,
+  say what runs per bot and how often; a high impact also needs a reason the change is worth
+  it. Measure with `playerbot pmon` before and after. Set `BotActiveAlone = 100` and
   `botActiveAloneSmartScale = 0`, boot, run `playerbot pmon toggle` once the bots have logged
-  in, then `playerbot pmon stack` five minutes later and compare the last "Total" line.
-- **AI Assistance**: tick honestly; name the tool, what it produced, and that it was reviewed.
+  in, run `playerbot pmon stack` five minutes later, and compare the last "Total" line.
+- **AI Use and Self-Review**: answer the AI question honestly and say which parts the AI wrote.
+  If AI was used, tick the box confirming you read the
+  [AC guidelines for AI Agentic Engineering](https://www.azerothcore.org/wiki/agentic-engineering);
+  they recommend the RPAC workflow from the agent-toolkit. Every PR needs a self-review, with or
+  without AI. Tick its box, name the tool and model, and paste `<slug>.SELF-REVIEW.md` verbatim
+  as a PR comment. When a maintainer runs the review instead, they post it without checking it
+  first, so reply on the PR to any finding that is wrong.
 - **Code Provenance**: per the upstream credit section above.
-- **Final Checklist**: stability and performance tested, new bot lines translated, GPLv2 header on
-  new files, docs and `playerbots.conf.dist` comments updated, no new compiler warnings.
+- **Checklist**: new bot lines translated, GPLv2 header on new files, docs and
+  `playerbots.conf.dist` comments updated, no new compiler warnings.
 
 ## Scope
 
