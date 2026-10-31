@@ -201,10 +201,10 @@ TEST(JumpTrajectory, LiquidCatchesALongFall)
 {
     FakeWorld world;
     world.liquidZ = 5.0f;
-    for (float height = 60.0f; height <= 250.0f; height += 1.0f)
+    for (uint32 height = 60; height <= 250; ++height)
     {
         Launch launch;
-        launch.position = {0.0f, 0.0f, height};
+        launch.position = {0.0f, 0.0f, static_cast<float>(height)};
         Trajectory trajectory = Sweep(launch, world);
 
         ASSERT_EQ(trajectory.outcome, Outcome::Liquid) << "falling from " << height;
@@ -217,10 +217,10 @@ TEST(JumpTrajectory, ShallowWaterLandsOnTheBed)
 {
     FakeWorld world;
     world.liquidZ = 1.0f;
-    for (float height = 2.0f; height <= 200.0f; height += 1.0f)
+    for (uint32 height = 2; height <= 200; ++height)
     {
         Launch launch;
-        launch.position = {0.0f, 0.0f, height};
+        launch.position = {0.0f, 0.0f, static_cast<float>(height)};
         Trajectory trajectory = Sweep(launch, world);
 
         ASSERT_EQ(trajectory.outcome, Outcome::Landed) << "falling from " << height;

@@ -58,7 +58,9 @@ public:
         MapCollisionData const& collision = _map->GetMapCollisionData();
         Point nearest = to;
         bool found = false;
-        float x, y, z;
+        float x;
+        float y;
+        float z;
         if (collision.GetStaticTree().GetObjectHitPos(from.x, from.y, from.z, nearest.x, nearest.y, nearest.z, x, y, z,
                                                       -WALL_BACKOFF))
         {
@@ -418,7 +420,7 @@ void AirborneController::Clear()
 void AirborneController::Begin(Trajectory&& trajectory, std::optional<float> takeoffZ)
 {
     _bot->GetMotionMaster()->Clear();
-    if (takeoffZ)
+    if (takeoffZ.has_value())
     {
         _airborne = true;
         _bot->AddUnitMovementFlag(MOVEMENTFLAG_FALLING);

@@ -42,6 +42,19 @@ float HorizontalFraction(Point const& from, Point const& to, Point const& hit)
 
 float Seconds(uint32 ms) { return static_cast<float>(ms) / 1000.0f; }
 uint32 Milliseconds(float seconds) { return static_cast<uint32>(seconds * 1000.0f + 0.5f); }
+
+// The surface of water deep enough to swim in at `end`, NO_HEIGHT when there is none. Shallower water lands the bot on
+// its bed, as the core decides.
+float SwimmableLiquid(CollisionProbe const& probe, Point const& end, float queryZ, float collisionHeight)
+{
+    float const liquid = probe.LiquidZ(end.x, end.y, queryZ);
+    if (liquid <= NO_HEIGHT || end.z > liquid)
+        return NO_HEIGHT;
+
+    float const swimDepth = SWIM_DEPTH * collisionHeight;
+    float const bed = probe.FloorZ(end.x, end.y, liquid, swimDepth);
+    return bed <= NO_HEIGHT || liquid - bed > swimDepth ? liquid : NO_HEIGHT;
+}
 }  // namespace
 
 Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
@@ -171,7 +184,7 @@ Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
                 crossing = startClearance / (startClearance - endClearance);
 
             Point landing = Lerp(position, chordEnd, crossing);
-            landing.z = startSurface + (endSurface - startSurface) * crossing;
+            landing.z = std::lerp(startSurface, endSurface, crossing);
             position = landing;
             segmentTime += chordTime * crossing;
             closeSegment();
@@ -187,17 +200,13 @@ Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
         bool const reachesFloor = floor > NO_HEIGHT && chordEnd.z <= floorSurface;
 
         // A long chord can pass through water and end below its bed; the water catches the fall first. The core finds
-        // no water below the bed, so ask at the floor. Water too shallow to swim in lands the bot on the bed.
+        // no water below the bed, so ask at the floor.
         if (chordEndVz < 0.0f)
         {
-            float const liquid = probe.LiquidZ(chordEnd.x, chordEnd.y, reachesFloor ? floor : chordEnd.z);
-            if (liquid > NO_HEIGHT && chordEnd.z <= liquid)
-            {
-                float const swimDepth = SWIM_DEPTH * launch.collisionHeight;
-                float const bed = probe.FloorZ(chordEnd.x, chordEnd.y, liquid, swimDepth);
-                if (bed <= NO_HEIGHT || liquid - bed > swimDepth)
-                    return land(liquid, liquid, Outcome::Liquid);
-            }
+            float const liquid =
+                SwimmableLiquid(probe, chordEnd, reachesFloor ? floor : chordEnd.z, launch.collisionHeight);
+            if (liquid > NO_HEIGHT)
+                return land(liquid, liquid, Outcome::Liquid);
         }
 
         if (reachesFloor)
@@ -248,7 +257,8 @@ Trajectory WalkOff(Launch const& launch, CollisionProbe const& probe, float maxW
     float const stepX = launch.velocity.x / speed * WALK_STEP;
     float const stepY = launch.velocity.y / speed * WALK_STEP;
     Point position = launch.position;
-    for (float walked = WALK_STEP; walked <= maxWalk; walked += WALK_STEP)
+    uint32 const steps = static_cast<uint32>(maxWalk / WALK_STEP);
+    for (uint32 step = 1; step <= steps; ++step)
     {
         Point const next{position.x + stepX, position.y + stepY, position.z};
         Point hit;
@@ -268,6 +278,7 @@ Trajectory WalkOff(Launch const& launch, CollisionProbe const& probe, float maxW
         fall.position = next;
         fall.velocity.z = 0.0f;
         Trajectory trajectory = Sweep(fall, probe);
+        float const walked = static_cast<float>(step) * WALK_STEP;
         trajectory.segments.insert(trajectory.segments.begin(),
                                    {launch.position, next, Milliseconds(walked / speed), 0.0f, SegmentKind::Linear});
         return trajectory;
