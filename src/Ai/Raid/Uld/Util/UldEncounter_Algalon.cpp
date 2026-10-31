@@ -1646,10 +1646,10 @@ bool FarHoleSpot(Player* bot, Unit* boss, AlgalonEncounterState const& state, Po
 
     // With a star under, the window opens once the last hider is in.
     bool const under = !state.underStars.empty();
-    float const far = under ? ULDUAR_ALGALON_UNDER_HOLE_REACH : ULDUAR_ALGALON_FAR_HOLE_YARDS;
+    float const farYards = under ? ULDUAR_ALGALON_UNDER_HOLE_REACH : ULDUAR_ALGALON_FAR_HOLE_YARDS;
     float const standoff = under ? ULDUAR_ALGALON_UNDER_HOLE_REACH : ULDUAR_ALGALON_NEAR_HOLE_STANDOFF;
     AlgalonScanUnit const* nearest = NearestShelter(state, anchor);
-    if (!nearest || nearest->position.GetExactDist2d(anchor) <= far)
+    if (!nearest || nearest->position.GetExactDist2d(anchor) <= farYards)
         return false;
 
     if (SpotOffFrom(boss, nearest->position, anchor, standoff, spot))
@@ -4660,9 +4660,9 @@ bool GetAlgalonKiteSpot(Player* bot, Unit* constellation, Position& spot)
 
         if (!kite.hasSpot)
         {
-            bool const near = kite.stage == AlgalonKiteStage::Stage || kite.stage == AlgalonKiteStage::Wait;
-            kite.hasSpot = KiteSpotNear(*state, *hole, near ? toward : away,
-                                        near ? ULDUAR_ALGALON_KITE_STAGE_OFFSET : ULDUAR_ALGALON_BLACK_HOLE_KITE_OFFSET,
+            bool const staging = kite.stage == AlgalonKiteStage::Stage || kite.stage == AlgalonKiteStage::Wait;
+            kite.hasSpot = KiteSpotNear(*state, *hole, staging ? toward : away,
+                                        staging ? ULDUAR_ALGALON_KITE_STAGE_OFFSET : ULDUAR_ALGALON_BLACK_HOLE_KITE_OFFSET,
                                         kite.spot);
         }
 

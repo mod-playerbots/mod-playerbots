@@ -4080,9 +4080,9 @@ Player* YoggSaronBrainLinkTarget(PlayerbotAI* botAI)
     if (partner && (!partner->IsAlive() || partner->GetMapId() != bot->GetMapId()))
         partner = nullptr;
 
-    bool const far = partner && bot->GetExactDist2d(partner) > ULDUAR_YOGG_SARON_BRAIN_LINK_CLOSE;
+    bool const tooFar = partner && bot->GetExactDist2d(partner) > ULDUAR_YOGG_SARON_BRAIN_LINK_CLOSE;
 
-    return far ? partner : nullptr;
+    return tooFar ? partner : nullptr;
 }
 
 Player* YoggSaronSqueezeVictim(PlayerbotAI* botAI)
