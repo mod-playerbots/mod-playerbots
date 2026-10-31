@@ -79,9 +79,9 @@ void PlayerbotSpellRepository::Initialize()
 
         skillSpells[skillLine->Spell] = skillLine;
 
-        // Only professions have a profession link.
+        // Only linkable professions have a profession link.
         SkillLineEntry const* skill = sSkillLineStore.LookupEntry(skillLine->SkillLine);
-        if (skill && (skill->categoryId == SKILL_CATEGORY_PROFESSION || skill->categoryId == SKILL_CATEGORY_SECONDARY))
+        if (skill && skill->canLink)
             abilitiesBySkill[skillLine->SkillLine].push_back(skillLine);
     }
 
@@ -120,8 +120,7 @@ void PlayerbotSpellRepository::Initialize()
               skillSpells.size(), vendorItems.size());
 }
 
-// The client numbers a profession's link bits over all of its SkillLineAbility rows, sorted by
-// MinSkillLineRank and then by row ID; the link carries no list, so this order must match the client's DBC.
+// The client numbers link bits in DBC file order, which the stock file sorts by MinSkillLineRank and then row ID.
 void PlayerbotSpellRepository::InitTradeSkillLinks(
     std::unordered_map<uint32, std::vector<SkillLineAbilityEntry const*>>& abilitiesBySkill)
 {
@@ -157,7 +156,7 @@ void PlayerbotSpellRepository::InitTradeSkillLinks(
                 }
             }
 
-            data.entries.push_back({ability->Spell, bindOnPickup});
+            data.entries.push_back({ability->Spell, ability->RaceMask, ability->ClassMask, bindOnPickup});
         }
 
         if (data.tradeSpellId)

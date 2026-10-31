@@ -13,10 +13,18 @@
 
 #include <array>
 
-// Mining is here for its Smelting window.
-static constexpr std::array<uint32, 11> CRAFTING_SKILLS = {
-    SKILL_ALCHEMY,     SKILL_BLACKSMITHING, SKILL_COOKING,        SKILL_ENCHANTING, SKILL_ENGINEERING, SKILL_FIRST_AID,
-    SKILL_INSCRIPTION, SKILL_JEWELCRAFTING, SKILL_LEATHERWORKING, SKILL_MINING,     SKILL_TAILORING};
+static constexpr std::array<uint32, 10> CRAFTING_SKILLS = {
+    SKILL_ALCHEMY,
+    SKILL_BLACKSMITHING,
+    SKILL_COOKING,
+    SKILL_ENCHANTING,
+    SKILL_ENGINEERING,
+    SKILL_FIRST_AID,
+    SKILL_INSCRIPTION,
+    SKILL_JEWELCRAFTING,
+    SKILL_LEATHERWORKING,
+    SKILL_TAILORING,
+};
 
 std::map<uint32, SkillLineAbilityEntry const*> SetCraftAction::skillSpells;
 

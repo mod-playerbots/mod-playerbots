@@ -464,7 +464,11 @@ std::string const ChatHelper::FormatProfessionLink(Player* player, uint32 skill)
     std::vector<bool> known;
     known.reserve(linkData->entries.size());
     for (TradeSkillLinkEntry const& entry : linkData->entries)
-        known.push_back(!entry.bindOnPickup && player->HasSpell(entry.spellId));
+    {
+        bool const forPlayer = (!entry.raceMask || (entry.raceMask & player->getRaceMask())) &&
+                               (!entry.classMask || (entry.classMask & player->getClassMask()));
+        known.push_back(forPlayer && !entry.bindOnPickup && player->HasSpell(entry.spellId));
+    }
 
     return FormatTradeSkillLink(tradeSpell, player->GetSkillValue(skill), player->GetMaxSkillValue(skill),
                                 player->GetGUID(), CraftRules::EncodeRecipeBits(known));

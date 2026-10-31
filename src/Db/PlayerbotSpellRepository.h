@@ -21,6 +21,8 @@ class SpellInfo;
 struct TradeSkillLinkEntry
 {
     uint32_t spellId;
+    uint32_t raceMask;
+    uint32_t classMask;
     bool bindOnPickup;  // the recipe creates a bind-on-pickup item
 };
 
