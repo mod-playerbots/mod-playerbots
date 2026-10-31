@@ -407,6 +407,7 @@ public:
     bool AutoTeleportForLevel;
     bool RandomBotGroupNearby;
     int32 EnableRandomBotTrading;
+    uint32 CraftOrderTimeout;
     uint32 TweakValue;  // Debugging config
 
     uint32 RandomBotArenaTeamMaxRating;

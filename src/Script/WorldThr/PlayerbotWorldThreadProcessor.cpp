@@ -40,8 +40,16 @@ bool PlayerbotWorldThreadProcessor::QueueOperation(std::unique_ptr<PlayerbotOper
 
     std::lock_guard<std::mutex> lock(m_queueMutex);
 
+    // Nothing processes the queue after shutdown
+    if (m_shutDown)
+    {
+        std::lock_guard<std::mutex> statsLock(m_statsMutex);
+        m_stats.totalOperationsSkipped++;
+        return false;
+    }
+
     // Check if queue is full
-    if (m_operationQueue.size() >= m_maxQueueSize)
+    if (m_operationQueue.size() >= m_maxQueueSize && !operation->MustRun())
     {
         LOG_ERROR("playerbots",
                   "PlayerbotWorldThreadProcessor queue is full ({} operations). Dropping operation: {}",
@@ -63,6 +71,27 @@ bool PlayerbotWorldThreadProcessor::QueueOperation(std::unique_ptr<PlayerbotOper
     }
 
     return true;
+}
+
+void PlayerbotWorldThreadProcessor::Shutdown()
+{
+    std::queue<std::unique_ptr<PlayerbotOperation>> queue;
+    {
+        std::lock_guard<std::mutex> lock(m_queueMutex);
+        m_shutDown = true;
+        queue.swap(m_operationQueue);
+
+        std::lock_guard<std::mutex> statsLock(m_statsMutex);
+        m_stats.currentQueueSize = 0;
+    }
+
+    // Executed outside of lock: an operation may queue another, which is refused
+    for (; !queue.empty(); queue.pop())
+    {
+        PlayerbotOperation& operation = *queue.front();
+        if (operation.MustRun() && operation.IsValid())
+            operation.Execute();
+    }
 }
 
 void PlayerbotWorldThreadProcessor::ProcessBatch()

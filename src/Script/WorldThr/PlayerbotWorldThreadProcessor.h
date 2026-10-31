@@ -57,9 +57,18 @@ public:
      * The operation will be executed later during Update().
      *
      * @param operation Unique pointer to the operation (ownership is transferred)
-     * @return true if operation was queued, false if queue is full
+     * @return true if operation was queued, false if queue is full (unless it must run) or the processor has shut down
      */
     bool QueueOperation(std::unique_ptr<PlayerbotOperation> operation);
+
+    /**
+     * @brief Run the queued operations that must not be lost and stop accepting new ones
+     *
+     * Called from WorldScript::OnShutdown, once the world loop has ended and no map is updating.
+     * Every other queued operation is dropped, and Update() never runs again, so
+     * QueueOperation() refuses everything from here on.
+     */
+    void Shutdown();
 
     /**
      * @brief Get current queue size
@@ -107,6 +116,7 @@ public:
 private:
     PlayerbotWorldThreadProcessor()
     : m_enabled(true),
+    m_shutDown(false),
     m_maxQueueSize(10000),
     m_batchSize(100),
     m_queueWarningThreshold(80),
@@ -141,6 +151,7 @@ private:
 
     // Configuration
     bool m_enabled;
+    bool m_shutDown;                 // Set by Shutdown(), guarded by m_queueMutex
     uint32 m_maxQueueSize;           // Maximum operations in queue
     uint32 m_batchSize;              // Operations to process per Update()
     uint32 m_queueWarningThreshold;  // Warn when queue reaches this percentage
