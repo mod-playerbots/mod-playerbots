@@ -330,15 +330,16 @@ Playerbots.LootRollRecipe = 0
 # Default: 0 (disabled)
 Playerbots.LootRollDisenchant = 0
 
-# A list of GameObject GUIDs that bots will not interact with.
-# List of default GUIDs:
-# QuestItems:
-# Blood of Heroes = 176213, Defias Gunpowder = 17155, Waterlogged Envelope = 2656, Baelog's Chest = 123329, Half-Buried Bottle = 2560
-# Chests:
-# Large Solid Chest = 74448, Box of Assorted Parts = 19020, Food Crate = 3719, Water Barrel = 3658, Barrel of Milk = 3705, Barrel of sweet Nectar = 3706, Tattered Chest = 105579, Large bettered Chest = 75293, Solid Chest = 2857, Battered Foodlocker = 179490, Witch Doctor's Chest = 141596, Relic Coffer = 160836, Dark Coffer = 160845, Fengus's Chest = 179516, Supply Crate = 176224/181085, Malor's Strongbox = 176112
-# Other:
-# Shallow Grave (Zul'Farrak) = 128308/128403, Grim Guzzler Boar (Blackrock Depths) = 165739, Dark Iron Ale Mug (Blackrock Depths) = 165738, Father Flame (Blackrock Spire) = 175245, Unforged Runic Breastplate (Blackrock Spire) = 175970, Blacksmithing Plans (Stratholme) = 176325/176327
-Playerbots.DisallowedGameObjects = 176213,17155,2656,74448,19020,3719,3658,3705,3706,105579,75293,2857,179490,141596,160836,160845,179516,176224,181085,176112,128308,128403,165739,165738,175245,175970,176325,176327,123329,2560
+# A list of gameobject entries that bots will not interact with.
+# Default: Half-Buried Bottle 2560, Waterlogged Envelope 2656, Solid Chest 2857, Water Barrel 3658,
+#          Barrel of Milk 3705, Barrel of Sweet Nectar 3706, Food Crate 3719, Defias Gunpowder 17155,
+#          Box of Assorted Parts 19020, Large Solid Chest 74448, Large Battered Chest 75293, Tattered Chest 105579,
+#          Baelog's Chest 123329, Shallow Grave 128308, Shallow Grave 128403, Witch Doctor's Chest 141596,
+#          Relic Coffer 160836, Dark Coffer 160845, Dark Iron Ale Mug 165738, Grim Guzzler Boar 165739,
+#          Father Flame 175245, Unforged Runic Breastplate 175970, Malor's Strongbox 176112, Blood of Heroes 176213,
+#          Supply Crate 176224, Blacksmithing Plans 176325, Blacksmithing Plans 176327, Battered Foodlocker 179490,
+#          Fengus's Chest 179516, Apple Bob 180523, Supply Crate 181085
+Playerbots.DisallowedGameObjects = 2560,2656,2857,3658,3705,3706,3719,17155,19020,74448,75293,105579,123329,128308,128403,141596,160836,160845,165738,165739,175245,175970,176112,176213,176224,176325,176327,179490,179516,180523,181085
 
 #
 #
@@ -1431,7 +1432,7 @@ Playerbots.RestrictedHealerDPSMaps = "33,34,36,43,47,48,70,90,109,129,209,229,23
 # Default: 1 (enabled)
 Playerbots.EnableNewRpgStrategy = 1
 
-# Radius (yards) of the new RPG strategy's NPC and gameobject scans. Cost grows with the square of the radius. 
+# Radius (yards) of the new RPG strategy's NPC and gameobject scans. Cost grows with the square of the radius.
 # Default: 150.0
 Playerbots.RpgTargetSearchDistance = 150.0
 
