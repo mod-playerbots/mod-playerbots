@@ -10,7 +10,6 @@
 #include "ChannelMgr.h"
 #include "CharacterPackets.h"
 #include "ChatHelper.h"
-#include "CheckMountStateAction.h"
 #include "Common.h"
 #include "CreatureData.h"
 #include "DBCStores.h"
@@ -117,6 +116,7 @@ void PacketHandlingHelper::AddPacket(WorldPacket const& packet)
 
 PlayerbotAI::PlayerbotAI()
     : PlayerbotAIBase(true),
+      airborne(this, nullptr),
       bot(nullptr),
       master(nullptr),
       accountId(0),
@@ -140,6 +140,7 @@ PlayerbotAI::PlayerbotAI()
 PlayerbotAI::PlayerbotAI(Player* bot)
     : PlayerbotAIBase(true),
       forceRebuff(bot),
+      airborne(this, bot),
       bot(bot),
       master(nullptr),
       chatHelper(this),
@@ -261,9 +262,12 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         bot->GetSession()->IsLoggingOut() || bot->IsDuringRemoveFromWorld())
         return;
 
-    // Bots send no movement opcodes, so m_lastFallZ stays frozen and Player::IsFalling() (a Z test
-    // against it) blocks LFG teleports. Unit::IsFalling() is the flag test, so real falls keep theirs.
-    if (!bot->Unit::IsFalling())
+    // Every update, minimal or not: the landing is detected by polling the spline.
+    airborne.Update();
+
+    // Bots send no movement opcodes, so m_lastFallZ stays frozen and Player::IsFalling() (a Z test against it) blocks
+    // LFG teleports. Real falls keep their anchor: flagged ones, and airborne ones whose flag a root stripped.
+    if (!bot->Unit::IsFalling() && !airborne.IsAirborne())
         bot->SetFallInformation(0, bot->GetPositionZ());
 
     // Handle cheat options (set bot health and power if cheats are enabled)
@@ -860,6 +864,8 @@ void PlayerbotAI::HandleTeleportAck()
     if (IsSelfBot(bot))
         return;
 
+    airborne.Clear();
+
     /*
      * FAR TELEPORT (worldport / map change)
      * Player may NOT be in world or grid here.
@@ -1381,12 +1387,11 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
             // when rooted during lost client control (charm + root effects)
             // @see https://github.com/azerothcore/azerothcore-wotlk/pull/23147
             bool forceRoot = (packet.GetOpcode() == SMSG_FORCE_MOVE_ROOT);
+            if (airborne.DeferRoot(forceRoot))
+                return;
+
             if (forceRoot)
-            {
-                bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_MASK_MOVING_FLY);
-                bot->m_movementInfo.AddMovementFlag(MOVEMENTFLAG_ROOT);
-                bot->StopMoving();
-            }
+                ApplyForceRoot();
             else
                 bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ROOT);
 
@@ -1406,60 +1411,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                 horizontalSpeed = 0.11f;
             verticalSpeed = -verticalSpeed;
 
-            bot->CastStop();
-            bot->StopMoving();
-            bot->GetMotionMaster()->Clear();
-
-            // Unit* currentTarget = GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
-            // Bots are client-controlled players, so opt past the guard that protects real clients.
-            bot->GetMotionMaster()->MoveKnockbackFrom(bot->GetPositionX() - vcos, bot->GetPositionY() - vsin,
-                                                      horizontalSpeed, verticalSpeed, true);
-
-            // bot->AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
-            // bot->AddUnitMovementFlag(MOVEMENTFLAG_FORWARD);
-            // bot->m_movementInfo.AddMovementFlag(MOVEMENTFLAG_PENDING_STOP);
-            // if (bot->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
-            //     bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
-            // bot->GetMotionMaster()->MoveIdle();
-            // Position dest = bot->GetPosition();
-            // float moveTimeHalf = verticalSpeed / Movement::gravity;
-            // float dist = 2 * moveTimeHalf * horizontalSpeed;
-            // float max_height = -Movement::computeFallElevation(moveTimeHalf, false, -verticalSpeed);
-
-            // Use a mmap raycast to get a valid destination.
-            // bot->GetMotionMaster()->MoveKnockbackFrom(fx, fy, horizontalSpeed, verticalSpeed);
-
-            // // set delay based on actual distance
-            // float newdis = sqrt(ServerFacade::instance().GetDistance2d(bot, fx, fy));
-            // SetNextCheckDelay((uint32)((newdis / dis) * moveTimeHalf * 4 * IN_MILLISECONDS));
-
-            // // add moveflags
-
-            // // copy MovementInfo
-            // MovementInfo movementInfo = bot->m_movementInfo;
-
-            // // send ack
-            // WorldPacket ack(CMSG_MOVE_KNOCK_BACK_ACK);
-            // // movementInfo.jump.cosAngle = vcos;
-            // // movementInfo.jump.sinAngle = vsin;
-            // // movementInfo.jump.zspeed = -verticalSpeed;
-            // // movementInfo.jump.xyspeed = horizontalSpeed;
-            // ack << bot->GetGUID().WriteAsPacked();
-            // // bot->m_mover->BuildMovementPacket(&ack);
-            // ack << (uint32)0;
-            // bot->BuildMovementPacket(&ack);
-            // // ack << movementInfo.jump.sinAngle;
-            // // ack << movementInfo.jump.cosAngle;
-            // // ack << movementInfo.jump.xyspeed;
-            // // ack << movementInfo.jump.zspeed;
-            // bot->GetSession()->HandleMoveKnockBackAck(ack);
-
-            // // // set jump destination for MSG_LAND packet
-            // SetJumpDestination(Position(x, y, z, bot->GetOrientation()));
-
-            // bot->Heart();
-
-            // */
+            airborne.Knockback(vcos, vsin, horizontalSpeed, verticalSpeed);
             return;
         }
         case SMSG_DISMOUNT:
@@ -1470,7 +1422,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
             p >> guid.ReadAsPacked();
             if (guid != bot->GetGUID())
                 return;
-            CheckMountStateAction::CompleteDismount(bot);
+            airborne.Fall();
             return;
         }
         default:
@@ -6147,12 +6099,23 @@ int32 PlayerbotAI::GetNearGroupMemberCount(float dis)
     return count;
 }
 
+void PlayerbotAI::ApplyForceRoot()
+{
+    bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_MASK_MOVING_FLY);
+    bot->m_movementInfo.AddMovementFlag(MOVEMENTFLAG_ROOT);
+    bot->StopMoving();
+}
+
 bool PlayerbotAI::CanMove()
 {
     // Most common checks: confused, stunned, fleeing, jumping, charging. All these
     // states are set when handling certain aura effects. We don't check against
     // UNIT_STATE_ROOT here, because this state is used by vehicles.
     if (bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
+        return false;
+
+    // A move would replace the jump, knockback or fall arc mid-air.
+    if (airborne.IsAirborne())
         return false;
 
     // Death state (w/o spirit release) and Spirit of Redemption aura (priest)
