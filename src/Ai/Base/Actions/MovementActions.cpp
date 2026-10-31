@@ -54,6 +54,36 @@
 #include "WaypointMovementGenerator.h"
 #include "G3D/Vector3.h"
 
+namespace
+{
+// Farthest a dock's pier sits from its boat's mooring origin (the Northspear's is ~30y).
+constexpr float TRANSPORT_BOARD_DISTANCE = 35.0f;
+
+// Deck centre in the boat's local frame. The mooring origin is at water level: most decks ride ~5y
+// above it, the icebreakers' raised deck is ~9.5y up and ~6y forward, the turtles' ~13.7y up.
+struct TransportDeckOffset
+{
+    float x;
+    float y;
+    float z;
+};
+
+TransportDeckOffset GetTransportDeckOffset(uint32 entry)
+{
+    switch (entry)
+    {
+        case 181688:  // Ship, Icebreaker (Northspear)
+        case 190536:  // Ship, Icebreaker (Stormwind's Pride), same hull
+            return {6.1f, 0.28f, 9.53f};
+        case 187568:  // Turtle (Walker of Waves)
+        case 188511:  // Turtle (Green Island)
+            return {0.0f, 0.0f, 13.7f};
+        default:
+            return {0.0f, 0.0f, 5.0f};
+    }
+}
+}
+
 MovementAction::MovementAction(PlayerbotAI* botAI, std::string const name) : Action(botAI, name)
 {
     bot = botAI->GetBot();
@@ -849,18 +879,26 @@ bool MovementAction::FollowOnTransport(Unit* target)
 
     bot->CastStop();
 
-    // Disembark from our current transport (if any) before relocating.
-    if (Transport* myTransport = bot->GetTransport())
-        myTransport->RemovePassenger(bot);
+    // Fully off our transport first: NearTeleportTo keeps the transport pointer, and a bot listed
+    // on one transport while pointing at another is left dangling there when it logs out.
+    ClearTransportState(nullptr);
+
+    // Onto the target's transport: placed beside the target and attached at once, so the passenger
+    // offset is the target's spot, not where the bot was before the teleport landed.
+    if (Transport* hisTransport = target->GetTransport())
+    {
+        bot->UpdatePosition(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(),
+                            bot->GetOrientation());
+        hisTransport->AddPassenger(bot, true);
+        bot->GetMotionMaster()->Clear();
+        bot->SendMovementFlagUpdate();
+        return true;
+    }
 
     bot->NearTeleportTo(target->GetPositionX(),
                         target->GetPositionY(),
                         target->GetPositionZ(),
                         bot->GetOrientation());
-
-    // Board target's transport (if any).
-    if (Transport* hisTransport = target->GetTransport())
-        hisTransport->AddPassenger(bot);
 
     return true;
 }
@@ -3017,8 +3055,13 @@ bool MovementAction::BoardTransport(Transport* transport)
     if (!map)
         return false;
 
-    // Already on this transport
-    if (bot->GetTransport() == transport)
+    // Farther out the bot still has the walk to the dock ahead of it. Horizontal only: a zeppelin's
+    // origin hangs 40-60y over the dock at the foot of its tower.
+    if (bot->GetExactDist2d(transport) > TRANSPORT_BOARD_DISTANCE)
+        return false;
+
+    // Clean state first: AddPassenger deadlocks the map on a stale transport pointer.
+    if (!ClearTransportState(transport))
         return true;
 
     // Check if bot is already on the transport surface (walked into range).
@@ -3026,39 +3069,50 @@ bool MovementAction::BoardTransport(Transport* transport)
     Transport* surface = GetTransportForPosTolerant(map, bot, bot->GetPhaseMask(), bot->GetPositionX(),
         bot->GetPositionY(), probeZ);
 
-    if (surface == transport)
+    // Otherwise put the bot on the deck centre: there is no deck mmap to walk onto. The move is
+    // immediate, since a same-map teleport only lands on the client's ack and the passenger offset
+    // would be taken from the pier.
+    if (surface != transport)
     {
-        transport->AddPassenger(bot, true);
-        bot->StopMovingOnCurrentPos();
-        EmitDebugMove("Transport:board", "on-surface", transport->GetPositionX(),
-                      transport->GetPositionY(), transport->GetPositionZ());
-        return true;
+        TransportDeckOffset const deck = GetTransportDeckOffset(transport->GetEntry());
+        float x = deck.x;
+        float y = deck.y;
+        float z = deck.z;
+        transport->CalculatePassengerPosition(x, y, z);
+        bot->UpdatePosition(x, y, z, bot->GetOrientation());
     }
-
-    // Bot off transport: find a boarding edge and teleport-snap directly
-    // onto it, then AddPassenger. We can't walk on the deck (no transport-
-    // surface mmap), so the snap-board is the only universal approach.
-    float edgeX, edgeY, edgeZ;
-    if (!FindBoardingPointOnTransport(map, transport, transport,
-            transport->GetPositionX(), transport->GetPositionY(),
-            transport->GetPositionZ(),
-            bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-            edgeX, edgeY, edgeZ))
-    {
-        // No boarding edge found — wait a tick; the caller retries on a
-        // later brain tick.
-        EmitDebugMove("Transport:board", "no-edge",
-                      transport->GetPositionX(), transport->GetPositionY(),
-                      transport->GetPositionZ());
-        return false;
-    }
-
-    if (!bot->TeleportTo(map->GetId(), edgeX, edgeY, edgeZ, bot->GetOrientation()))
-        return false;
 
     transport->AddPassenger(bot, true);
-    bot->StopMovingOnCurrentPos();
-    EmitDebugMove("Transport:board", "snap", edgeX, edgeY, edgeZ);
+    // A spline still running would carry the bot off the deck.
+    bot->GetMotionMaster()->Clear();
+    bot->StopMoving();
+    bot->SendMovementFlagUpdate();
+    EmitDebugMove("Transport:board", surface == transport ? "on-surface" : "deck", bot->GetPositionX(),
+                  bot->GetPositionY(), bot->GetPositionZ());
+    return true;
+}
+
+// Leaves the bot without a transport unless it really is a passenger of exceptTransport (then false).
+// MotionTransport::AddPassenger deadlocks the map when the bot still points at that transport without
+// being in its passenger set, and RemovePassenger only clears the pointer for a listed passenger, so a
+// stale pointer is cleared by hand.
+bool MovementAction::ClearTransportState(Transport* exceptTransport)
+{
+    Transport* prior = bot->GetTransport();
+    if (!prior)
+        return true;
+
+    if (prior == exceptTransport && prior->GetPassengers().count(bot))
+        return false;
+
+    prior->RemovePassenger(bot, true);
+    if (bot->GetTransport())
+    {
+        bot->SetTransport(nullptr);
+        bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
+        bot->m_movementInfo.transport.guid.Clear();
+    }
+
     return true;
 }
 

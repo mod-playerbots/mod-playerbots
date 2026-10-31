@@ -260,6 +260,7 @@ protected:
         float botX, float botY, float botZ,
         float& outX, float& outY, float& outZ);
     bool BoardTransport(Transport* transport);
+    bool ClearTransportState(Transport* exceptTransport);
 
 protected:
     struct CheckAngle
