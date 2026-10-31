@@ -297,13 +297,13 @@ namespace ai::buff
         if (!HasEnoughSameMapMissingPlayersForGroupVariant(bot, botAI, baseName, groupName, groupSpellInfo))
             return baseName;
 
-        if (groupSpellId && HasRequiredReagents(bot, groupSpellId))
+        if (HasRequiredReagents(bot, groupSpellId))
         {
             ClearMissingBuffReagentNotice(botAI, groupName);
             return groupName;
         }
 
-        if (groupSpellId && outMissingReagentGroupName)
+        if (outMissingReagentGroupName)
             *outMissingReagentGroupName = groupName;
 
         return baseName;
