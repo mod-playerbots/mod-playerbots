@@ -30,6 +30,7 @@
 #include "LootObjectStack.h"
 #include "Map.h"
 #include "MotionMaster.h"
+#include "MoveSpline.h"
 #include "MoveSplineInitArgs.h"
 #include "MovementGenerator.h"
 #include "ObjectDefines.h"
@@ -797,7 +798,10 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
     {
         Unit* currentTarget = ServerFacade::instance().GetChaseTarget(bot);
         if (currentTarget && currentTarget->GetGUID() == target->GetGUID())
+        {
+            LogMoveSpline("follow", target);
             return false;
+        }
     }
 
     if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() != FOLLOW_MOTION_TYPE)
@@ -805,6 +809,16 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
 
     EmitDebugMove("Follow", "follow", target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
     bot->GetMotionMaster()->MoveFollow(target, distance, angle);
+
+    if (sPlayerbotAIConfig.hasLog("bot_movement.csv"))
+    {
+        std::ostringstream out;
+        out << sPlayerbotAIConfig.GetTimestampStr() << "," << bot->GetName() << "," << bot->GetMapId() << ","
+            << bot->GetPositionX() << "," << bot->GetPositionY() << "," << bot->GetPositionZ() << ","
+            << target->GetPositionX() << "," << target->GetPositionY() << "," << target->GetPositionZ() << ","
+            << bot->GetExactDist(target) << ",0,0,0,follow,dispatch target=" << target->GetName();
+        sPlayerbotAIConfig.log("bot_movement.csv", out.str().c_str());
+    }
     return true;
 }
 
@@ -1192,6 +1206,78 @@ PathResult MovementAction::GeneratePath(float x, float y, float z, uint32 accept
     result.reachable = !(pathType & (~acceptMask));
     result.points = gen.GetPath();
     return result;
+}
+
+// Writes the spline the engine launched for a follow move to bot_movement.csv, once per spline: the follow
+// generator's (kind "follow") or the point move a formation follow dispatches (kind "formation"). The label carries
+// the PathType a fresh query returns for the same destination (0x10 = straight shortcut, 0x08 = no path; the point
+// generator then launches a straight 2-point line), the longest straight segment and the steepest step.
+void MovementAction::LogMoveSpline(char const* kind, Unit* target)
+{
+    if (!sPlayerbotAIConfig.hasLog("bot_movement.csv") || !bot->movespline || bot->movespline->Finalized())
+        return;
+
+    uint32 const splineId = bot->movespline->GetId();
+    if (splineId == lastLoggedMoveSpline)
+        return;
+
+    lastLoggedMoveSpline = splineId;
+
+    // first()..last() skips the padding points some spline modes add around the path
+    auto const& spline = bot->movespline->_Spline();
+    if (spline.empty())
+        return;
+
+    float length = 0.0f;
+    float maxSegment = 0.0f;
+    float maxSlope = 0.0f;
+    for (int32 i = spline.first() + 1; i <= spline.last(); ++i)
+    {
+        G3D::Vector3 const& from = spline.getPoint(i - 1);
+        G3D::Vector3 const& to = spline.getPoint(i);
+        float const flat = std::hypot(to.x - from.x, to.y - from.y);
+        float const rise = std::fabs(to.z - from.z);
+        length += std::hypot(flat, rise);
+        maxSegment = std::max(maxSegment, flat);
+        if (flat > 1.0f)
+            maxSlope = std::max(maxSlope, std::atan2(rise, flat) * 180.0f / static_cast<float>(M_PI));
+    }
+
+    uint32 const pointCount = spline.last() - spline.first() + 1;
+    G3D::Vector3 const& dest = spline.getPoint(spline.last());
+    PathGenerator path(bot);
+    path.CalculatePath(dest.x, dest.y, dest.z);
+
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(1) << sPlayerbotAIConfig.GetTimestampStr() << "," << bot->GetName() << ","
+        << bot->GetMapId() << "," << bot->GetPositionX() << "," << bot->GetPositionY() << "," << bot->GetPositionZ()
+        << "," << dest.x << "," << dest.y << "," << dest.z << "," << length << ",0,0," << pointCount
+        << "," << kind << ",type=0x" << std::hex << static_cast<uint32>(path.GetPathType()) << std::dec
+        << " maxseg=" << maxSegment << " maxslope=" << maxSlope
+        << " target=" << (target ? target->GetName() : "none");
+    sPlayerbotAIConfig.log("bot_movement.csv", out.str().c_str());
+}
+
+// Whether the mesh has a path from the bot to (x, y, z). A point move without one falls back to a straight line
+// through terrain, so callers skip the move instead; the refusal is written to bot_movement.csv as "<kind>-nopath".
+bool MovementAction::HasGroundPath(char const* kind, float x, float y, float z)
+{
+    PathGenerator path(bot);
+    path.CalculatePath(x, y, z);
+    PathType const type = path.GetPathType();
+    if (!(type & PATHFIND_NOPATH))
+        return true;
+
+    if (sPlayerbotAIConfig.hasLog("bot_movement.csv"))
+    {
+        std::ostringstream out;
+        out << std::fixed << std::setprecision(1) << sPlayerbotAIConfig.GetTimestampStr() << "," << bot->GetName()
+            << "," << bot->GetMapId() << "," << bot->GetPositionX() << "," << bot->GetPositionY() << ","
+            << bot->GetPositionZ() << "," << x << "," << y << "," << z << "," << bot->GetExactDist(x, y, z)
+            << ",0,0,0," << kind << "-nopath,type=0x" << std::hex << static_cast<uint32>(type);
+        sPlayerbotAIConfig.log("bot_movement.csv", out.str().c_str());
+    }
+    return false;
 }
 
 // Dispatches a single engine MovePoint (or the backwards variant) for the mover.

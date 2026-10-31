@@ -268,8 +268,13 @@ protected:
         bool strict;
     };
 
+    void LogMoveSpline(char const* kind, Unit* target);
+    bool HasGroundPath(char const* kind, float x, float y, float z);
+
 private:
     bool wasMovementRestricted = false;
+    // Spline id of the last move written to bot_movement.csv by LogMoveSpline.
+    uint32 lastLoggedMoveSpline = 0;
     void DoMovePoint(Unit* unit, float x, float y, float z, bool generatePath, bool backwards);
 
 };

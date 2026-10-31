@@ -2696,7 +2696,11 @@ AiPlayerbot.BroadcastChanceGuildManagement = 30000
 
 # Custom config to allow logfiles to be created.
 # Movement telemetry: bot_movement.csv = one row per dispatched movement
-# (from/to, priority, spline|point|teleport); pathfind_result.csv = one row
+# (from/to, priority, spline|point|teleport|follow|formation). Follow and formation rows are
+# the splines a follow move launched, one per new spline, labelled with the PathType (0x10 =
+# straight shortcut, 0x08 = no path), the longest straight segment and the steepest step;
+# formation-nopath rows are follow hops skipped because the mesh had no path;
+# pathfind_result.csv = one row
 # per fresh route resolution (graph|probe|cache-kept|beeline). Both start
 # fresh each server run and cost nothing when not listed.
 # Example: AiPlayerbot.AllowedLogFiles = travelNodes.csv,travelPaths.csv,TravelNodeStore.h,bot_movement.csv,pathfind_result.csv

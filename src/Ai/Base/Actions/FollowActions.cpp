@@ -135,8 +135,24 @@ bool FollowAction::Execute(Event /*event*/)
             return false;
 
         MovementPriority priority = botAI->GetState() == BOT_STATE_COMBAT ? MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_NORMAL;
-        moved = MoveTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), false, false, false,
-                       true, priority, true);
+        float const x = loc.GetPositionX();
+        float const y = loc.GetPositionY();
+        float const z = loc.GetPositionZ();
+
+        // A formation spot is a short hop beside the master. When the master gets far in one go, route like any long
+        // move so the travel graph is used, and never send a walking bot on a short hop the mesh has no path for: the
+        // engine's fallback for that is a straight line through terrain.
+        bool const walking = loc.GetMapId() == bot->GetMapId() && !bot->IsFlying() && !bot->isSwimming() &&
+                             !bot->GetVehicle() && !bot->GetTransport();
+        if (walking && bot->GetExactDist(x, y, z) > sPlayerbotAIConfig.sightDistance)
+            moved = MoveTo(loc.GetMapId(), x, y, z, false, false, false, false, priority, true);
+        else if (walking && !HasGroundPath("formation", x, y, z))
+            moved = false;
+        else
+            moved = MoveTo(loc.GetMapId(), x, y, z, false, false, false, true, priority, true);
+
+        if (moved)
+            LogMoveSpline("formation", botAI->GetMaster());
     }
 
     // This section has been commented out because it was forcing the pet to
