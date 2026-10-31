@@ -16,89 +16,113 @@ public:
     RaidBlackTempleTriggerContext()
     {
         // Shared
-        creators["black temple bot is not in combat"] =
-            &RaidBlackTempleTriggerContext::black_temple_bot_is_not_in_combat;
+        creators["black temple no encounter in progress"] =
+            &RaidBlackTempleTriggerContext::black_temple_no_encounter_in_progress;
+
+        creators["black temple class roles should be assigned"] =
+            &RaidBlackTempleTriggerContext::black_temple_class_roles_should_be_assigned;
+
+        // Trash
+        creators["sister of pleasure should be focused"] =
+            &RaidBlackTempleTriggerContext::sister_of_pleasure_should_be_focused;
+
+        creators["shadowmoon reaver wand builds charges"] =
+            &RaidBlackTempleTriggerContext::shadowmoon_reaver_wand_builds_charges;
+
+        creators["shadowmoon reaver should control caster pet"] =
+            &RaidBlackTempleTriggerContext::shadowmoon_reaver_should_control_caster_pet;
 
         // High Warlord Naj'entus
-        creators["high warlord naj'entus pulling boss"] =
-            &RaidBlackTempleTriggerContext::high_warlord_najentus_pulling_boss;
+        creators["high warlord naj'entus hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::high_warlord_najentus_hunter_should_misdirect;
 
-        creators["high warlord naj'entus boss engaged by tanks"] =
-            &RaidBlackTempleTriggerContext::high_warlord_najentus_boss_engaged_by_tanks;
+        creators["high warlord naj'entus should be tanked"] =
+            &RaidBlackTempleTriggerContext::high_warlord_najentus_should_be_tanked;
 
-        creators["high warlord naj'entus casts needle spines"] =
-            &RaidBlackTempleTriggerContext::high_warlord_najentus_casts_needle_spines;
+        creators["high warlord naj'entus ranged should spread"] =
+            &RaidBlackTempleTriggerContext::high_warlord_najentus_ranged_should_spread;
 
-        creators["high warlord naj'entus player is impaled"] =
-            &RaidBlackTempleTriggerContext::high_warlord_najentus_player_is_impaled;
+        creators["high warlord naj'entus impaled player needs remover"] =
+            &RaidBlackTempleTriggerContext::high_warlord_najentus_impaled_player_needs_remover;
 
-        creators["high warlord naj'entus boss has tidal shield"] =
-            &RaidBlackTempleTriggerContext::high_warlord_najentus_boss_has_tidal_shield;
+        creators["high warlord naj'entus impaling spine on group member"] =
+            &RaidBlackTempleTriggerContext::high_warlord_najentus_impaling_spine_on_group_member;
+
+        creators["high warlord naj'entus needs spine thrower"] =
+            &RaidBlackTempleTriggerContext::high_warlord_najentus_needs_spine_thrower;
+
+        creators["high warlord naj'entus has tidal shield"] =
+            &RaidBlackTempleTriggerContext::high_warlord_najentus_has_tidal_shield;
 
         // Supremus
-        creators["supremus pulling boss or changing phase"] =
-            &RaidBlackTempleTriggerContext::supremus_pulling_boss_or_changing_phase;
+        creators["supremus hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::supremus_hunter_should_misdirect;
 
-        creators["supremus boss engaged by ranged"] =
-            &RaidBlackTempleTriggerContext::supremus_boss_engaged_by_ranged;
+        creators["supremus should be pulled back by tank"] =
+            &RaidBlackTempleTriggerContext::supremus_should_be_pulled_back_by_tank;
 
-        creators["supremus boss is fixated on bot"] =
-            &RaidBlackTempleTriggerContext::supremus_boss_is_fixated_on_bot;
+        creators["supremus ranged should spread"] =
+            &RaidBlackTempleTriggerContext::supremus_ranged_should_spread;
 
-        creators["supremus volcano is nearby"] =
-            &RaidBlackTempleTriggerContext::supremus_volcano_is_nearby;
+        creators["supremus fixated on bot"] =
+            &RaidBlackTempleTriggerContext::supremus_fixated_on_bot;
 
-        creators["supremus need to manage phase timer"] =
-            &RaidBlackTempleTriggerContext::supremus_need_to_manage_phase_timer;
+        creators["supremus near fire"] = &RaidBlackTempleTriggerContext::supremus_near_fire;
+
+        creators["supremus reach blocked by fire"] =
+            &RaidBlackTempleTriggerContext::supremus_reach_blocked_by_fire;
 
         // Shade of Akama
-        creators["shade of akama killing channelers starts phase 2"] =
-            &RaidBlackTempleTriggerContext::shade_of_akama_killing_channelers_starts_phase_2;
+        creators["shade of akama should attack channelers and sorcerers"] =
+            &RaidBlackTempleTriggerContext::shade_of_akama_should_attack_channelers_and_sorcerers;
 
         // Teron Gorefiend
-        creators["teron gorefiend pulling boss"] =
-            &RaidBlackTempleTriggerContext::teron_gorefiend_pulling_boss;
+        creators["teron gorefiend hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_hunter_should_misdirect;
 
-        creators["teron gorefiend boss engaged by tanks"] =
-            &RaidBlackTempleTriggerContext::teron_gorefiend_boss_engaged_by_tanks;
+        creators["teron gorefiend should be tanked"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_should_be_tanked;
 
-        creators["teron gorefiend boss engaged by ranged"] =
-            &RaidBlackTempleTriggerContext::teron_gorefiend_boss_engaged_by_ranged;
+        creators["teron gorefiend ranged should position on balcony"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_ranged_should_position_on_balcony;
 
-        creators["teron gorefiend boss is casting shadow of death"] =
-            &RaidBlackTempleTriggerContext::teron_gorefiend_boss_is_casting_shadow_of_death;
+        creators["teron gorefiend casts shadow of death"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_casts_shadow_of_death;
 
-        creators["teron gorefiend bot has shadow of death"] =
-            &RaidBlackTempleTriggerContext::teron_gorefiend_bot_has_shadow_of_death;
+        creators["teron gorefiend should position for vengeful spirit"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_should_position_for_vengeful_spirit;
 
-        creators["teron gorefiend bot transformed into vengeful spirit"] =
-            &RaidBlackTempleTriggerContext::teron_gorefiend_bot_transformed_into_vengeful_spirit;
+        creators["teron gorefiend transformed into vengeful spirit"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_transformed_into_vengeful_spirit;
 
         // Gurtogg Bloodboil
-        creators["gurtogg bloodboil pulling boss"] =
-            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_pulling_boss;
+        creators["gurtogg bloodboil hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_hunter_should_misdirect;
 
-        creators["gurtogg bloodboil boss engaged by tanks"] =
-            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_boss_engaged_by_tanks;
+        creators["gurtogg bloodboil should be tanked"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_should_be_tanked;
 
-        creators["gurtogg bloodboil boss casts bloodboil"] =
-            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_boss_casts_bloodboil;
+        creators["gurtogg bloodboil should position for bloodboil"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_should_position_for_bloodboil;
 
-        creators["gurtogg bloodboil bot has fel rage"] =
-            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_bot_has_fel_rage;
+        creators["gurtogg bloodboil melee should stay behind"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_melee_should_stay_behind;
 
-        creators["gurtogg bloodboil need to manage phase timer"] =
-            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_need_to_manage_phase_timer;
+        creators["gurtogg bloodboil ranged should avoid frontal cone"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_ranged_should_avoid_frontal_cone;
+
+        creators["gurtogg bloodboil fel rage on bot"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_fel_rage_on_bot;
 
         // Reliquary of Souls
-        creators["reliquary of souls aggro resets upon phase change"] =
-            &RaidBlackTempleTriggerContext::reliquary_of_souls_aggro_resets_upon_phase_change;
+        creators["reliquary of souls hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::reliquary_of_souls_hunter_should_misdirect;
 
-        creators["reliquary of souls essence of suffering fixates on closest target"] =
-            &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_suffering_fixates_on_closest_target;
+        creators["reliquary of souls should position for suffering"] =
+            &RaidBlackTempleTriggerContext::reliquary_of_souls_should_position_for_suffering;
 
-        creators["reliquary of souls essence of suffering disables healing"] =
-            &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_suffering_disables_healing;
+        creators["reliquary of souls healers should attack suffering"] =
+            &RaidBlackTempleTriggerContext::reliquary_of_souls_healers_should_attack_suffering;
 
         creators["reliquary of souls essence of desire has rune shield"] =
             &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_desire_has_rune_shield;
@@ -107,225 +131,293 @@ public:
             &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_desire_casting_deaden;
 
         // Mother Shahraz
-        creators["mother shahraz pulling boss"] =
-            &RaidBlackTempleTriggerContext::mother_shahraz_pulling_boss;
+        creators["mother shahraz hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::mother_shahraz_hunter_should_misdirect;
 
-        creators["mother shahraz boss engaged by tanks"] =
-            &RaidBlackTempleTriggerContext::mother_shahraz_boss_engaged_by_tanks;
+        creators["mother shahraz should be tanked"] =
+            &RaidBlackTempleTriggerContext::mother_shahraz_should_be_tanked;
 
-        creators["mother shahraz tanks are positioning boss"] =
-            &RaidBlackTempleTriggerContext::mother_shahraz_tanks_are_positioning_boss;
+        creators["mother shahraz being positioned"] =
+            &RaidBlackTempleTriggerContext::mother_shahraz_being_positioned;
 
-        creators["mother shahraz sinister beam knocks back players"] =
-            &RaidBlackTempleTriggerContext::mother_shahraz_sinister_beam_knocks_back_players;
+        creators["mother shahraz ranged should position under statue"] =
+            &RaidBlackTempleTriggerContext::mother_shahraz_ranged_should_position_under_statue;
 
-        creators["mother shahraz bots are linked by fatal attraction"] =
-            &RaidBlackTempleTriggerContext::mother_shahraz_bots_are_linked_by_fatal_attraction;
+        creators["mother shahraz fatal attraction"] =
+            &RaidBlackTempleTriggerContext::mother_shahraz_fatal_attraction;
 
         // Illidari Council
-        creators["illidari council pulling bosses"] =
-            &RaidBlackTempleTriggerContext::illidari_council_pulling_bosses;
+        creators["illidari council hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::illidari_council_hunter_should_misdirect;
 
-        creators["illidari council gathios engaged by main tank"] =
-            &RaidBlackTempleTriggerContext::illidari_council_gathios_engaged_by_main_tank;
+        creators["illidari council gathios should be tanked"] =
+            &RaidBlackTempleTriggerContext::illidari_council_gathios_should_be_tanked;
 
         creators["illidari council gathios casting judgement of command"] =
             &RaidBlackTempleTriggerContext::illidari_council_gathios_casting_judgement_of_command;
 
-        creators["illidari council malande engaged by first assist tank"] =
-            &RaidBlackTempleTriggerContext::illidari_council_malande_engaged_by_first_assist_tank;
+        creators["illidari council malande casting circle of healing"] =
+            &RaidBlackTempleTriggerContext::illidari_council_malande_casting_circle_of_healing;
 
-        creators["illidari council darkshadow engaged by second assist tank"] =
-            &RaidBlackTempleTriggerContext::illidari_council_darkshadow_engaged_by_second_assist_tank;
+        creators["illidari council malande should be tanked"] =
+            &RaidBlackTempleTriggerContext::illidari_council_malande_should_be_tanked;
 
-        creators["illidari council zerevor engaged by mage tank"] =
-            &RaidBlackTempleTriggerContext::illidari_council_zerevor_engaged_by_mage_tank;
+        creators["illidari council veras should be tanked"] =
+            &RaidBlackTempleTriggerContext::illidari_council_veras_should_be_tanked;
 
-        creators["illidari council mage tank needs dedicated healer"] =
-            &RaidBlackTempleTriggerContext::illidari_council_mage_tank_needs_dedicated_healer;
+        creators["illidari council zerevor should be tanked by mage"] =
+            &RaidBlackTempleTriggerContext::illidari_council_zerevor_should_be_tanked_by_mage;
 
-        creators["illidari council zerevor casts dangerous aoes"] =
-            &RaidBlackTempleTriggerContext::illidari_council_zerevor_casts_dangerous_aoes;
+        creators["illidari council mage tank healer should reposition"] =
+            &RaidBlackTempleTriggerContext::illidari_council_mage_tank_healer_should_reposition;
 
-        creators["illidari council pets screw up the pull"] =
-            &RaidBlackTempleTriggerContext::illidari_council_pets_screw_up_the_pull;
+        creators["illidari council ranged should spread"] =
+            &RaidBlackTempleTriggerContext::illidari_council_ranged_should_spread;
 
-        creators["illidari council determining dps assignments"] =
-            &RaidBlackTempleTriggerContext::illidari_council_determining_dps_assignments;
+        creators["illidari council pet should switch target"] =
+            &RaidBlackTempleTriggerContext::illidari_council_pet_should_switch_target;
 
-        creators["illidari council need to manage dps timer"] =
-            &RaidBlackTempleTriggerContext::illidari_council_need_to_manage_dps_timer;
+        creators["illidari council should assign dps priority"] =
+            &RaidBlackTempleTriggerContext::illidari_council_should_assign_dps_priority;
+
+        creators["illidari council should manage dps timer"] =
+            &RaidBlackTempleTriggerContext::illidari_council_should_manage_dps_timer;
 
         // Illidan Stormrage <The Betrayer>
-        creators["illidan stormrage tank needs aggro"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_tank_needs_aggro;
+        creators["illidan stormrage should position for pull"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_position_for_pull;
 
-        creators["illidan stormrage boss casts flame crash in front of main tank"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_casts_flame_crash_in_front_of_main_tank;
+        creators["illidan stormrage hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_hunter_should_misdirect;
 
-        creators["illidan stormrage bot has parasitic shadowfiend"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_bot_has_parasitic_shadowfiend;
+        creators["illidan stormrage should be tanked"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_be_tanked;
 
-        creators["illidan stormrage parasitic shadowfiends run wild"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_parasitic_shadowfiends_run_wild;
+        creators["illidan stormrage parasitic shadowfiend on group member"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_parasitic_shadowfiend_on_group_member;
 
-        creators["illidan stormrage boss summoned flames of azzinoth"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_summoned_flames_of_azzinoth;
+        creators["illidan stormrage should track infections"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_track_infections;
 
-        creators["illidan stormrage pets die to fire"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_pets_die_to_fire;
+        creators["illidan stormrage flames of azzinoth should be tanked"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_flames_of_azzinoth_should_be_tanked;
 
-        creators["illidan stormrage grate is safe from flames"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_grate_is_safe_from_flames;
+        creators["illidan stormrage pets die to hazards"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_pets_die_to_hazards;
 
-        creators["illidan stormrage bot struck by dark barrage"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_bot_struck_by_dark_barrage;
+        creators["illidan stormrage pet should attack shadowfiend"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_pet_should_attack_shadowfiend;
 
-        creators["illidan stormrage boss is preparing to land"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_is_preparing_to_land;
+        creators["illidan stormrage pet should attack shadow demon"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_pet_should_attack_shadow_demon;
 
-        creators["illidan stormrage boss deals splash damage"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_deals_splash_damage;
+        creators["illidan stormrage should position above grate"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_position_above_grate;
 
-        creators["illidan stormrage this expansion hates melee"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_this_expansion_hates_melee;
+        creators["illidan stormrage immunity can clear debuff"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_immunity_can_clear_debuff;
 
-        creators["illidan stormrage boss transforms into demon"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_transforms_into_demon;
+        creators["illidan stormrage immunity no longer needed"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_immunity_no_longer_needed;
 
-        creators["illidan stormrage boss spawns adds"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_spawns_adds;
+        creators["illidan stormrage shaman has totems before tanks have aggro"] =
+            &RaidBlackTempleTriggerContext::
+                illidan_stormrage_shaman_has_totems_before_tanks_have_aggro;
 
-        creators["illidan stormrage maiev placed shadow trap"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_maiev_placed_shadow_trap;
+        creators["illidan stormrage should position for landing"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_position_for_landing;
 
-        creators["illidan stormrage need to manage dps timer and rti"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_need_to_manage_dps_timer_and_rti;
+        creators["illidan stormrage melee should stop attacking"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_melee_should_stop_attacking;
 
-        creators["illidan stormrage need to clear hazards between phases"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_need_to_clear_hazards_between_phases;
+        creators["illidan stormrage should stop shooting"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_stop_shooting;
 
-        creators["illidan stormrage cheat"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_cheat;
+        creators["illidan stormrage ranged should spread"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_ranged_should_spread;
+
+        creators["illidan stormrage ranged should reach shadow demon"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_ranged_should_reach_shadow_demon;
+
+        creators["illidan stormrage melee should stay away from demon form"] =
+            &RaidBlackTempleTriggerContext::
+                illidan_stormrage_melee_should_stay_away_from_demon_form;
+
+        creators["illidan stormrage warlock should tank demon form"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_warlock_should_tank_demon_form;
+
+        creators["illidan stormrage warlock should seed shadow demons"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_warlock_should_seed_shadow_demons;
+
+        creators["illidan stormrage should assign target priority"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_assign_target_priority;
+
+        creators["illidan stormrage should manage dps timers"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_manage_dps_timers;
+
+        creators["illidan stormrage should clear hazards before landing"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_clear_hazards_before_landing;
     }
 
 private:
     // Shared
-    static Trigger* black_temple_bot_is_not_in_combat(PlayerbotAI* botAI)
+    static Trigger* black_temple_no_encounter_in_progress(PlayerbotAI* botAI)
     {
-        return new BlackTempleBotIsNotInCombatTrigger(botAI);
+        return new BlackTempleNoEncounterInProgressTrigger(botAI);
+    }
+
+    static Trigger* black_temple_class_roles_should_be_assigned(PlayerbotAI* botAI)
+    {
+        return new BlackTempleClassRolesShouldBeAssignedTrigger(botAI);
+    }
+
+    // Trash
+    static Trigger* sister_of_pleasure_should_be_focused(PlayerbotAI* botAI)
+    {
+        return new SisterOfPleasureShouldBeFocusedTrigger(botAI);
+    }
+    static Trigger* shadowmoon_reaver_wand_builds_charges(PlayerbotAI* botAI)
+    {
+        return new ShadowmoonReaverWandBuildsChargesTrigger(botAI);
+    }
+    static Trigger* shadowmoon_reaver_should_control_caster_pet(PlayerbotAI* botAI)
+    {
+        return new ShadowmoonReaverShouldControlCasterPetTrigger(botAI);
     }
 
     // High Warlord Naj'entus
-    static Trigger* high_warlord_najentus_pulling_boss(PlayerbotAI* botAI)
+    static Trigger* high_warlord_najentus_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new HighWarlordNajentusPullingBossTrigger(botAI);
+        return new BlackTempleHunterShouldMisdirectTrigger(
+            botAI, "high warlord naj'entus hunter should misdirect",
+            BtHelpers::BtBosses::DATA_HIGH_WARLORD_NAJENTUS);
     }
-    static Trigger* high_warlord_najentus_boss_engaged_by_tanks(PlayerbotAI* botAI)
+    static Trigger* high_warlord_najentus_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new HighWarlordNajentusBossEngagedByTanksTrigger(botAI);
+        return new HighWarlordNajentusShouldBeTankedTrigger(botAI);
     }
-    static Trigger* high_warlord_najentus_casts_needle_spines(PlayerbotAI* botAI)
+    static Trigger* high_warlord_najentus_ranged_should_spread(PlayerbotAI* botAI)
     {
-        return new HighWarlordNajentusCastsNeedleSpinesTrigger(botAI);
+        return new HighWarlordNajentusRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* high_warlord_najentus_player_is_impaled(PlayerbotAI* botAI)
+    static Trigger* high_warlord_najentus_impaled_player_needs_remover(PlayerbotAI* botAI)
     {
-        return new HighWarlordNajentusPlayerIsImpaledTrigger(botAI);
+        return new HighWarlordNajentusImpaledPlayerNeedsRemoverTrigger(botAI);
     }
-    static Trigger* high_warlord_najentus_boss_has_tidal_shield(PlayerbotAI* botAI)
+    static Trigger* high_warlord_najentus_impaling_spine_on_group_member(PlayerbotAI* botAI)
     {
-        return new HighWarlordNajentusBossHasTidalShieldTrigger(botAI);
+        return new HighWarlordNajentusImpalingSpineOnGroupMemberTrigger(botAI);
+    }
+    static Trigger* high_warlord_najentus_needs_spine_thrower(PlayerbotAI* botAI)
+    {
+        return new HighWarlordNajentusNeedsSpineThrowerTrigger(botAI);
+    }
+    static Trigger* high_warlord_najentus_has_tidal_shield(PlayerbotAI* botAI)
+    {
+        return new HighWarlordNajentusHasTidalShieldTrigger(botAI);
     }
 
     // Supremus
-    static Trigger* supremus_pulling_boss_or_changing_phase(PlayerbotAI* botAI)
+    static Trigger* supremus_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new SupremusPullingBossOrChangingPhaseTrigger(botAI);
+        return new BlackTempleHunterShouldMisdirectTrigger(
+            botAI, "supremus hunter should misdirect", BtHelpers::BtBosses::DATA_SUPREMUS);
     }
-    static Trigger* supremus_boss_engaged_by_ranged(PlayerbotAI* botAI)
+    static Trigger* supremus_should_be_pulled_back_by_tank(PlayerbotAI* botAI)
     {
-        return new SupremusBossEngagedByRangedTrigger(botAI);
+        return new SupremusShouldBePulledBackByTankTrigger(botAI);
     }
-    static Trigger* supremus_boss_is_fixated_on_bot(PlayerbotAI* botAI)
+    static Trigger* supremus_ranged_should_spread(PlayerbotAI* botAI)
     {
-        return new SupremusBossIsFixatedOnBotTrigger(botAI);
+        return new SupremusRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* supremus_volcano_is_nearby(PlayerbotAI* botAI)
+    static Trigger* supremus_fixated_on_bot(PlayerbotAI* botAI)
     {
-        return new SupremusVolcanoIsNearbyTrigger(botAI);
+        return new SupremusFixatedOnBotTrigger(botAI);
     }
-    static Trigger* supremus_need_to_manage_phase_timer(PlayerbotAI* botAI)
+    static Trigger* supremus_near_fire(PlayerbotAI* botAI)
     {
-        return new SupremusNeedToManagePhaseTimerTrigger(botAI);
+        return new SupremusNearFireTrigger(botAI);
+    }
+    static Trigger* supremus_reach_blocked_by_fire(PlayerbotAI* botAI)
+    {
+        return new SupremusReachBlockedByFireTrigger(botAI);
     }
 
     // Shade of Akama
-    static Trigger* shade_of_akama_killing_channelers_starts_phase_2(PlayerbotAI* botAI)
+    static Trigger* shade_of_akama_should_attack_channelers_and_sorcerers(PlayerbotAI* botAI)
     {
-        return new ShadeOfAkamaKillingChannelersStartsPhase2Trigger(botAI);
+        return new ShadeOfAkamaShouldAttackChannelersAndSorcerersTrigger(botAI);
     }
 
     // Teron Gorefiend
-    static Trigger* teron_gorefiend_pulling_boss(PlayerbotAI* botAI)
+    static Trigger* teron_gorefiend_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new TeronGorefiendPullingBossTrigger(botAI);
+        return new BlackTempleHunterShouldMisdirectTrigger(
+            botAI, "teron gorefiend hunter should misdirect",
+            BtHelpers::BtBosses::DATA_TERON_GOREFIEND);
     }
-    static Trigger* teron_gorefiend_boss_engaged_by_tanks(PlayerbotAI* botAI)
+    static Trigger* teron_gorefiend_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new TeronGorefiendBossEngagedByTanksTrigger(botAI);
+        return new TeronGorefiendShouldBeTankedTrigger(botAI);
     }
-    static Trigger* teron_gorefiend_boss_engaged_by_ranged(PlayerbotAI* botAI)
+    static Trigger* teron_gorefiend_ranged_should_position_on_balcony(PlayerbotAI* botAI)
     {
-        return new TeronGorefiendBossEngagedByRangedTrigger(botAI);
+        return new TeronGorefiendRangedShouldPositionOnBalconyTrigger(botAI);
     }
-    static Trigger* teron_gorefiend_boss_is_casting_shadow_of_death(PlayerbotAI* botAI)
+    static Trigger* teron_gorefiend_casts_shadow_of_death(PlayerbotAI* botAI)
     {
-        return new TeronGorefiendBossIsCastingShadowOfDeathTrigger(botAI);
+        return new TeronGorefiendCastsShadowOfDeathTrigger(botAI);
     }
-    static Trigger* teron_gorefiend_bot_has_shadow_of_death(PlayerbotAI* botAI)
+    static Trigger* teron_gorefiend_should_position_for_vengeful_spirit(PlayerbotAI* botAI)
     {
-        return new TeronGorefiendBotHasShadowOfDeathTrigger(botAI);
+        return new TeronGorefiendShouldPositionForVengefulSpiritTrigger(botAI);
     }
-    static Trigger* teron_gorefiend_bot_transformed_into_vengeful_spirit(PlayerbotAI* botAI)
+    static Trigger* teron_gorefiend_transformed_into_vengeful_spirit(PlayerbotAI* botAI)
     {
-        return new TeronGorefiendBotTransformedIntoVengefulSpiritTrigger(botAI);
+        return new TeronGorefiendTransformedIntoVengefulSpiritTrigger(botAI);
     }
 
     // Gurtogg Bloodboil
-    static Trigger* gurtogg_bloodboil_pulling_boss(PlayerbotAI* botAI)
+    static Trigger* gurtogg_bloodboil_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new GurtoggBloodboilPullingBossTrigger(botAI);
+        return new BlackTempleHunterShouldMisdirectTrigger(
+            botAI, "gurtogg bloodboil hunter should misdirect",
+            BtHelpers::BtBosses::DATA_GURTOGG_BLOODBOIL);
     }
-    static Trigger* gurtogg_bloodboil_boss_engaged_by_tanks(PlayerbotAI* botAI)
+    static Trigger* gurtogg_bloodboil_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new GurtoggBloodboilBossEngagedByTanksTrigger(botAI);
+        return new GurtoggBloodboilShouldBeTankedTrigger(botAI);
     }
-    static Trigger* gurtogg_bloodboil_boss_casts_bloodboil(PlayerbotAI* botAI)
+    static Trigger* gurtogg_bloodboil_should_position_for_bloodboil(PlayerbotAI* botAI)
     {
-        return new GurtoggBloodboilBossCastsBloodboilTrigger(botAI);
+        return new GurtoggBloodboilShouldPositionForBloodboilTrigger(botAI);
     }
-    static Trigger* gurtogg_bloodboil_bot_has_fel_rage(PlayerbotAI* botAI)
+    static Trigger* gurtogg_bloodboil_melee_should_stay_behind(PlayerbotAI* botAI)
     {
-        return new GurtoggBloodboilBotHasFelRageTrigger(botAI);
+        return new GurtoggBloodboilMeleeShouldStayBehindTrigger(botAI);
     }
-    static Trigger* gurtogg_bloodboil_need_to_manage_phase_timer(PlayerbotAI* botAI)
+    static Trigger* gurtogg_bloodboil_ranged_should_avoid_frontal_cone(PlayerbotAI* botAI)
     {
-        return new GurtoggBloodboilNeedToManagePhaseTimerTrigger(botAI);
+        return new GurtoggBloodboilRangedShouldAvoidFrontalConeTrigger(botAI);
+    }
+    static Trigger* gurtogg_bloodboil_fel_rage_on_bot(PlayerbotAI* botAI)
+    {
+        return new GurtoggBloodboilFelRageOnBotTrigger(botAI);
     }
 
     // Reliquary of Souls
-    static Trigger* reliquary_of_souls_aggro_resets_upon_phase_change(PlayerbotAI* botAI)
+    static Trigger* reliquary_of_souls_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger(botAI);
+        return new ReliquaryOfSoulsHunterShouldMisdirectTrigger(botAI);
     }
-    static Trigger* reliquary_of_souls_essence_of_suffering_fixates_on_closest_target(PlayerbotAI* botAI)
+    static Trigger* reliquary_of_souls_should_position_for_suffering(PlayerbotAI* botAI)
     {
-        return new ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger(botAI);
+        return new ReliquaryOfSoulsShouldPositionForSufferingTrigger(botAI);
     }
-    static Trigger* reliquary_of_souls_essence_of_suffering_disables_healing(PlayerbotAI* botAI)
+    static Trigger* reliquary_of_souls_healers_should_attack_suffering(PlayerbotAI* botAI)
     {
-        return new ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger(botAI);
+        return new ReliquaryOfSoulsHealersShouldAttackSufferingTrigger(botAI);
     }
     static Trigger* reliquary_of_souls_essence_of_desire_has_rune_shield(PlayerbotAI* botAI)
     {
@@ -337,141 +429,178 @@ private:
     }
 
     // Mother Shahraz
-    static Trigger* mother_shahraz_pulling_boss(PlayerbotAI* botAI)
+    static Trigger* mother_shahraz_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new MotherShahrazPullingBossTrigger(botAI);
+        return new BlackTempleHunterShouldMisdirectTrigger(
+            botAI, "mother shahraz hunter should misdirect",
+            BtHelpers::BtBosses::DATA_MOTHER_SHAHRAZ);
     }
-    static Trigger* mother_shahraz_boss_engaged_by_tanks(PlayerbotAI* botAI)
+    static Trigger* mother_shahraz_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new MotherShahrazBossEngagedByTanksTrigger(botAI);
+        return new MotherShahrazShouldBeTankedTrigger(botAI);
     }
-    static Trigger* mother_shahraz_tanks_are_positioning_boss(PlayerbotAI* botAI)
+    static Trigger* mother_shahraz_being_positioned(PlayerbotAI* botAI)
     {
-        return new MotherShahrazTanksArePositioningBossTrigger(botAI);
+        return new MotherShahrazBeingPositionedTrigger(botAI);
     }
-    static Trigger* mother_shahraz_sinister_beam_knocks_back_players(PlayerbotAI* botAI)
+    static Trigger* mother_shahraz_ranged_should_position_under_statue(PlayerbotAI* botAI)
     {
-        return new MotherShahrazSinisterBeamKnocksBackPlayersTrigger(botAI);
+        return new MotherShahrazRangedShouldPositionUnderStatueTrigger(botAI);
     }
-    static Trigger* mother_shahraz_bots_are_linked_by_fatal_attraction(PlayerbotAI* botAI)
+    static Trigger* mother_shahraz_fatal_attraction(PlayerbotAI* botAI)
     {
-        return new MotherShahrazBotsAreLinkedByFatalAttractionTrigger(botAI);
+        return new MotherShahrazFatalAttractionTrigger(botAI);
     }
 
     // Illidari Council
-    static Trigger* illidari_council_pulling_bosses(PlayerbotAI* botAI)
+    static Trigger* illidari_council_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilPullingBossesTrigger(botAI);
+        return new BlackTempleHunterShouldMisdirectTrigger(
+            botAI, "illidari council hunter should misdirect",
+            BtHelpers::BtBosses::DATA_ILLIDARI_COUNCIL,
+            BtHelpers::BtCreatureData::DATA_GATHIOS_THE_SHATTERER);
     }
-    static Trigger* illidari_council_gathios_engaged_by_main_tank(PlayerbotAI* botAI)
+    static Trigger* illidari_council_gathios_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilGathiosEngagedByMainTankTrigger(botAI);
+        return new IllidariCouncilGathiosShouldBeTankedTrigger(botAI);
     }
     static Trigger* illidari_council_gathios_casting_judgement_of_command(PlayerbotAI* botAI)
     {
         return new IllidariCouncilGathiosCastingJudgementOfCommandTrigger(botAI);
     }
-    static Trigger* illidari_council_malande_engaged_by_first_assist_tank(PlayerbotAI* botAI)
+    static Trigger* illidari_council_malande_casting_circle_of_healing(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilMalandeEngagedByFirstAssistTankTrigger(botAI);
+        return new IllidariCouncilMalandeCastingCircleOfHealingTrigger(botAI);
     }
-    static Trigger* illidari_council_darkshadow_engaged_by_second_assist_tank(PlayerbotAI* botAI)
+    static Trigger* illidari_council_malande_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger(botAI);
+        return new IllidariCouncilMalandeShouldBeTankedTrigger(botAI);
     }
-    static Trigger* illidari_council_zerevor_engaged_by_mage_tank(PlayerbotAI* botAI)
+    static Trigger* illidari_council_veras_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilZerevorEngagedByMageTankTrigger(botAI);
+        return new IllidariCouncilVerasShouldBeTankedTrigger(botAI);
     }
-    static Trigger* illidari_council_mage_tank_needs_dedicated_healer(PlayerbotAI* botAI)
+    static Trigger* illidari_council_zerevor_should_be_tanked_by_mage(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilMageTankNeedsDedicatedHealerTrigger(botAI);
+        return new IllidariCouncilZerevorShouldBeTankedByMageTrigger(botAI);
     }
-    static Trigger* illidari_council_zerevor_casts_dangerous_aoes(PlayerbotAI* botAI)
+    static Trigger* illidari_council_mage_tank_healer_should_reposition(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilZerevorCastsDangerousAoesTrigger(botAI);
+        return new IllidariCouncilMageTankHealerShouldRepositionTrigger(botAI);
     }
-    static Trigger* illidari_council_pets_screw_up_the_pull(PlayerbotAI* botAI)
+    static Trigger* illidari_council_ranged_should_spread(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilPetsScrewUpThePullTrigger(botAI);
+        return new IllidariCouncilRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* illidari_council_determining_dps_assignments(PlayerbotAI* botAI)
+    static Trigger* illidari_council_pet_should_switch_target(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilDeterminingDpsAssignmentsTrigger(botAI);
+        return new IllidariCouncilPetShouldSwitchTargetTrigger(botAI);
     }
-    static Trigger* illidari_council_need_to_manage_dps_timer(PlayerbotAI* botAI)
+    static Trigger* illidari_council_should_assign_dps_priority(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilNeedToManageDpsTimerTrigger(botAI);
+        return new IllidariCouncilShouldAssignDpsPriorityTrigger(botAI);
+    }
+    static Trigger* illidari_council_should_manage_dps_timer(PlayerbotAI* botAI)
+    {
+        return new IllidariCouncilShouldManageDpsTimerTrigger(botAI);
     }
 
     // Illidan Stormrage <The Betrayer>
-    static Trigger* illidan_stormrage_tank_needs_aggro(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_position_for_pull(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageTankNeedsAggroTrigger(botAI);
+        return new IllidanStormrageShouldPositionForPullTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_boss_casts_flame_crash_in_front_of_main_tank(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageBossCastsFlameCrashInFrontOfMainTankTrigger(botAI);
+        return new IllidanStormrageHunterShouldMisdirectTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_bot_has_parasitic_shadowfiend(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageBotHasParasiticShadowfiendTrigger(botAI);
+        return new IllidanStormrageShouldBeTankedTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_parasitic_shadowfiends_run_wild(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_parasitic_shadowfiend_on_group_member(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageParasiticShadowfiendsRunWildTrigger(botAI);
+        return new IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_boss_summoned_flames_of_azzinoth(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_track_infections(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageBossSummonedFlamesOfAzzinothTrigger(botAI);
+        return new IllidanStormrageShouldTrackInfectionsTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_pets_die_to_fire(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_flames_of_azzinoth_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new IllidanStormragePetsDieToFireTrigger(botAI);
+        return new IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_grate_is_safe_from_flames(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_pets_die_to_hazards(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageGrateIsSafeFromFlamesTrigger(botAI);
+        return new IllidanStormragePetsDieToHazardsTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_bot_struck_by_dark_barrage(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_pet_should_attack_shadowfiend(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageBotStruckByDarkBarrageTrigger(botAI);
+        return new IllidanStormragePetShouldAttackShadowfiendTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_boss_is_preparing_to_land(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_pet_should_attack_shadow_demon(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageBossIsPreparingToLandTrigger(botAI);
+        return new IllidanStormragePetShouldAttackShadowDemonTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_boss_deals_splash_damage(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_position_above_grate(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageBossDealsSplashDamageTrigger(botAI);
+        return new IllidanStormrageShouldPositionAboveGrateTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_this_expansion_hates_melee(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_immunity_can_clear_debuff(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageThisExpansionHatesMeleeTrigger(botAI);
+        return new IllidanStormrageImmunityCanClearDebuffTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_boss_transforms_into_demon(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_immunity_no_longer_needed(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageBossTransformsIntoDemonTrigger(botAI);
+        return new IllidanStormrageImmunityNoLongerNeededTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_boss_spawns_adds(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_shaman_has_totems_before_tanks_have_aggro(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageBossSpawnsAddsTrigger(botAI);
+        return new IllidanStormrageShamanHasTotemsBeforeTanksHaveAggroTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_maiev_placed_shadow_trap(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_position_for_landing(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageMaievPlacedShadowTrapTrigger(botAI);
+        return new IllidanStormrageShouldPositionForLandingTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_need_to_manage_dps_timer_and_rti(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_melee_should_stop_attacking(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageNeedToManageDpsTimerAndRtiTrigger(botAI);
+        return new IllidanStormrageMeleeShouldStopAttackingTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_need_to_clear_hazards_between_phases(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_stop_shooting(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageNeedToClearHazardsBetweenPhasesTrigger(botAI);
+        return new IllidanStormrageShouldStopShootingTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_cheat(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_ranged_should_spread(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageCheatTrigger(botAI);
+        return new IllidanStormrageRangedShouldSpreadTrigger(botAI);
+    }
+    static Trigger* illidan_stormrage_ranged_should_reach_shadow_demon(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageRangedShouldReachShadowDemonTrigger(botAI);
+    }
+    static Trigger* illidan_stormrage_melee_should_stay_away_from_demon_form(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageMeleeShouldStayAwayFromDemonFormTrigger(botAI);
+    }
+    static Trigger* illidan_stormrage_warlock_should_tank_demon_form(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageWarlockShouldTankDemonFormTrigger(botAI);
+    }
+    static Trigger* illidan_stormrage_warlock_should_seed_shadow_demons(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageWarlockShouldSeedShadowDemonsTrigger(botAI);
+    }
+    static Trigger* illidan_stormrage_should_assign_target_priority(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageShouldAssignTargetPriorityTrigger(botAI);
+    }
+    static Trigger* illidan_stormrage_should_manage_dps_timers(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageShouldManageDpsTimersTrigger(botAI);
+    }
+    static Trigger* illidan_stormrage_should_clear_hazards_before_landing(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageShouldClearHazardsBeforeLandingTrigger(botAI);
     }
 };
 
