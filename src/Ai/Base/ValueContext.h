@@ -81,6 +81,7 @@
 #include "RTSCValues.h"
 #include "RandomBotUpdateValue.h"
 #include "RangeValues.h"
+#include "RitualOfSoulsValues.h"
 #include "RpgValues.h"
 #include "RtiTargetValue.h"
 #include "RtiValue.h"
@@ -242,6 +243,8 @@ public:
         creators["random bot update"] = &ValueContext::random_bot_update_value;
         creators["nearest non bot players"] = &ValueContext::nearest_non_bot_players;
         creators["new player nearby"] = &ValueContext::new_player_nearby;
+        creators["ritual of souls portal"] = &ValueContext::ritual_of_souls_portal;
+        creators["ritual of souls soulwell"] = &ValueContext::ritual_of_souls_soulwell;
         creators["already seen players"] = &ValueContext::already_seen_players;
         creators["rpg target"] = &ValueContext::rpg_target;
         creators["ignore rpg target"] = &ValueContext::ignore_rpg_target;
@@ -362,6 +365,8 @@ private:
     static UntypedValue* collision(PlayerbotAI* botAI) { return new CollisionValue(botAI); }
     static UntypedValue* already_seen_players(PlayerbotAI* botAI) { return new AlreadySeenPlayersValue(botAI); }
     static UntypedValue* new_player_nearby(PlayerbotAI* botAI) { return new NewPlayerNearbyValue(botAI); }
+    static UntypedValue* ritual_of_souls_portal(PlayerbotAI* botAI) { return new RitualOfSoulsPortalValue(botAI); }
+    static UntypedValue* ritual_of_souls_soulwell(PlayerbotAI* botAI) { return new RitualOfSoulsSoulwellValue(botAI); }
     static UntypedValue* item_usage(PlayerbotAI* botAI) { return new ItemUsageValue(botAI); }
     static UntypedValue* item_upgrade(PlayerbotAI* botAI) { return new ItemUpgradeValue(botAI); }
     static UntypedValue* formation(PlayerbotAI* botAI) { return new FormationValue(botAI); }
