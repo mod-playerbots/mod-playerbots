@@ -352,6 +352,21 @@ TEST(JumpTrajectoryWalkOff, FollowsStepsDownToTheEdge)
     EXPECT_FLOAT_EQ(trajectory.landing.z, 0.0f);
 }
 
+// The fall counts from the edge, above where the walk began.
+TEST(JumpTrajectoryWalkOff, ClimbsToTheEdgeThenFalls)
+{
+    FakeWorld world;
+    world.platforms.push_back({-100.0f, 1.0f, 10.0f});
+    world.platforms.push_back({1.0f, 2.0f, 10.4f});
+    world.platforms.push_back({2.0f, 3.0f, 10.8f});
+    Trajectory trajectory = WalkOff(Walk({0.0f, 0.0f, 10.0f}), world, WALK_LIMIT);
+
+    ASSERT_EQ(trajectory.outcome, Outcome::Landed);
+    EXPECT_FLOAT_EQ(trajectory.takeoff.x, 3.5f);
+    EXPECT_FLOAT_EQ(trajectory.takeoff.z, 10.8f);
+    EXPECT_FLOAT_EQ(trajectory.landing.z, 0.0f);
+}
+
 TEST(JumpTrajectoryWalkOff, NoEdgeInReachRefuses)
 {
     FakeWorld world;

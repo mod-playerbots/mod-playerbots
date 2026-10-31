@@ -207,9 +207,12 @@ bool AirborneController::DropDownTo(Unit const* target)
     float const heading = _bot->GetAngle(target);
     float const speedXY = _bot->GetSpeed(MOVE_RUN);
     Point const velocity{std::cos(heading) * speedXY, std::sin(heading) * speedXY, 0.0f};
-    Trajectory trajectory = SweepFrom(start, velocity, start.z - SurvivableDrop(), DROP_DOWN_WALK);
+    float const maxDrop = SurvivableDrop();
+    Trajectory trajectory = SweepFrom(start, velocity, start.z - maxDrop, DROP_DOWN_WALK);
     Point const& landing = trajectory.landing;
+    // Fall damage counts from the edge, which the walk may climb to, and a sweep step can land past its depth limit.
     if (!IsSafeLanding(trajectory) ||
+        (trajectory.outcome != Outcome::Liquid && trajectory.takeoff.z - landing.z > maxDrop) ||
         target->GetExactDist(landing.x, landing.y, landing.z) >= target->GetExactDist(start.x, start.y, start.z))
         return false;
 

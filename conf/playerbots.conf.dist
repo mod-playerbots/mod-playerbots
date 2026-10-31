@@ -480,8 +480,7 @@ Playerbots.AutoAvoidAoe = 1
 # Only avoid aoe spells with a radius smaller than this value
 Playerbots.MaxAoeAvoidRadius = 15.0
 
-# Bots take fall damage on landing, the same as players: after knockbacks, flying dismounts, jumps and
-# drops down after the player they follow.
+# Bots take fall damage when they land from a fall, the same as players.
 # Disable to make bots' falls harmless. Bots then also jump and drop down from any height.
 # Default: 1 (enabled)
 Playerbots.FallDamage = 1
