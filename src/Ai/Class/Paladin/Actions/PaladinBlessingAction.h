@@ -38,7 +38,7 @@ namespace ai::blessing
         };
 
         void ProcessMember(
-            Player* m, BlessingConstraints& constraints,
+            Player* member, BlessingConstraints& constraints,
             std::unordered_map<uint8, ClassGroup>& classGroups, bool& renewedHopePresent,
             bool& recentLogin);
 
@@ -62,10 +62,10 @@ namespace ai::blessing
             std::vector<ai::blessing::BaseBlessingCategory> const& myCats);
 
         // A valid cast target: alive, assist-valid, in range, and castable now.
-        bool CanBlessNow(Unit* m, uint32 spellId) const;
+        bool CanBlessNow(Unit* member, uint32 spellId) const;
 
-        PlayerbotAI* botAI;
-        Player* bot;
+        PlayerbotAI* _botAI;
+        Player* _bot;
         std::unordered_map<ObjectGuid, std::vector<MemberBlessing>> _coverage;
         std::unordered_map<ObjectGuid, ai::blessing::BaseBlessingCategory> _intended;
         std::unordered_map<ObjectGuid, bool> _humanCaster;
@@ -83,7 +83,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    ai::blessing::PendingBlessing pending;
+    ai::blessing::PendingBlessing _pending;
 };
 
 #endif

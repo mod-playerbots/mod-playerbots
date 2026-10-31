@@ -63,90 +63,91 @@ bool IsEligibleGroupForAutoBlessings(Group const* group)
 }
 
 PaladinBlessingPlanner::PaladinBlessingPlanner(PlayerbotAI* botAI)
-    : botAI(botAI), bot(botAI->GetBot())
+    : _botAI(botAI), _bot(botAI->GetBot())
 {
 }
 
 PendingBlessing PaladinBlessingPlanner::Plan()
 {
-    if (!bot->IsAlive())
+    if (!_bot->IsAlive())
         return {};
 
-    BlessingConstraints c;
+    BlessingConstraints constraints;
     std::unordered_map<uint8, ClassGroup> classGroups;
     bool renewedHopePresent = false;   // a Disc priest's Renewed Hope suppresses Sanctuary
     bool recentLogin = false;          // any member still in post-login grace
     _coverage.clear();
     _humanCaster.clear();
 
-    if (Group* group = bot->GetGroup())
+    if (Group* group = _bot->GetGroup())
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            ProcessMember(ref->GetSource(), c, classGroups, renewedHopePresent, recentLogin);
+            ProcessMember(ref->GetSource(), constraints, classGroups, renewedHopePresent, recentLogin);
     }
     else
     {
-        ProcessMember(bot, c, classGroups, renewedHopePresent, recentLogin);
+        ProcessMember(_bot, constraints, classGroups, renewedHopePresent, recentLogin);
     }
 
     if (recentLogin)
         return {};
 
-    return SelectCast(c, classGroups, renewedHopePresent);
+    return SelectCast(constraints, classGroups, renewedHopePresent);
 }
 
 // Provider/role facts and per-class demand are gathered regardless of alive state, so the
 // deterministic assignment stays stable across deaths and reses; only alive, assist-valid members
 // (and their pets) are scanned into _coverage and become actual blessing targets.
 void PaladinBlessingPlanner::ProcessMember(
-    Player* m, BlessingConstraints& c,
+    Player* member, BlessingConstraints& constraints,
     std::unordered_map<uint8, ClassGroup>& classGroups, bool& renewedHopePresent, bool& recentLogin)
 {
-    if (!m || !m->IsInWorld() || m->GetMap() != bot->GetMap())
+    if (!member || !member->IsInWorld() || member->GetMap() != _bot->GetMap())
         return;
 
-    if (ai::buff::IsWithinPostLoginBuffGrace(m))
+    if (ai::buff::IsWithinPostLoginBuffGrace(member))
         recentLogin = true;
 
-    auto addDemand = [&](Unit* u)
+    auto addDemand = [&](Unit* unit)
     {
-        auto& cg = classGroups[u->getClass()];
-        cg.cls = u->getClass();
-        cg.members.push_back(u);
-        if (u->IsAlive() && bot->IsValidAssistTarget(u))
-            _coverage[u->GetGUID()] = ai::blessing::scanBlessingAuras(u, _humanCaster);
+        auto& classGroup = classGroups[unit->getClass()];
+        classGroup.cls = unit->getClass();
+        classGroup.members.push_back(unit);
+        if (unit->IsAlive() && _bot->IsValidAssistTarget(unit))
+            _coverage[unit->GetGUID()] = ai::blessing::scanBlessingAuras(unit, _humanCaster);
     };
 
-    if (m->getClass() == CLASS_PRIEST &&
-        (m->HasAura(SPELL_RENEWED_HOPE_R1) || m->HasAura(SPELL_RENEWED_HOPE_R2)))
+    if (member->getClass() == CLASS_PRIEST &&
+        (member->HasAura(SPELL_RENEWED_HOPE_R1) || member->HasAura(SPELL_RENEWED_HOPE_R2)))
         renewedHopePresent = true;
 
-    if (m->getClass() == CLASS_PALADIN)
+    if (member->getClass() == CLASS_PALADIN)
     {
-        PlayerbotAI* mAI = GET_PLAYERBOT_AI(m);
-        PaladinFlags f;
-        f.guid           = m->GetGUID();
-        f.isHuman        = (mAI == nullptr);
-        f.hasKings       = m->HasSpell(SPELL_BLESSING_OF_KINGS);
-        f.hasSanctuary   = m->HasSpell(SPELL_BLESSING_OF_SANCTUARY);
-        f.mightStrength  = ai::blessing::HighestKnownBlessingStrength(m, BASE_MIGHT);
-        f.wisdomStrength = ai::blessing::HighestKnownBlessingStrength(m, BASE_WISDOM);
-        c.paladins.push_back(f);
+        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+        PaladinFlags flags;
+        flags.guid           = member->GetGUID();
+        flags.isHuman        = (memberAI == nullptr);
+        flags.hasKings       = member->HasSpell(SPELL_BLESSING_OF_KINGS);
+        flags.hasSanctuary   = member->HasSpell(SPELL_BLESSING_OF_SANCTUARY);
+        flags.mightStrength  = ai::blessing::HighestKnownBlessingStrength(member, BASE_MIGHT);
+        flags.wisdomStrength = ai::blessing::HighestKnownBlessingStrength(member, BASE_WISDOM);
+        constraints.paladins.push_back(flags);
 
-        if (mAI)
+        if (memberAI)
         {
-            ObjectGuid const g = m->GetGUID();
-            if (mAI->HasStrategy("bmight",  BOT_STATE_NON_COMBAT)) c.forced.push_back({ g, BASE_MIGHT });
-            if (mAI->HasStrategy("bwisdom", BOT_STATE_NON_COMBAT)) c.forced.push_back({ g, BASE_WISDOM });
-            if (mAI->HasStrategy("bkings",  BOT_STATE_NON_COMBAT)) c.forced.push_back({ g, BASE_KINGS });
-            if (mAI->HasStrategy("bsanc",   BOT_STATE_NON_COMBAT)) c.forced.push_back({ g, BASE_SANCTUARY });
+            ObjectGuid const guid = member->GetGUID();
+            auto& forced = constraints.forced;
+            if (memberAI->HasStrategy("bmight",  BOT_STATE_NON_COMBAT)) forced.push_back({ guid, BASE_MIGHT });
+            if (memberAI->HasStrategy("bwisdom", BOT_STATE_NON_COMBAT)) forced.push_back({ guid, BASE_WISDOM });
+            if (memberAI->HasStrategy("bkings",  BOT_STATE_NON_COMBAT)) forced.push_back({ guid, BASE_KINGS });
+            if (memberAI->HasStrategy("bsanc",   BOT_STATE_NON_COMBAT)) forced.push_back({ guid, BASE_SANCTUARY });
         }
     }
 
-    addDemand(m);
+    addDemand(member);
 
-    if (Pet* pet = m->GetPet();
-        pet && pet->IsAlive() && pet->IsInWorld() && pet->GetMap() == bot->GetMap())
+    if (Pet* pet = member->GetPet();
+        pet && pet->IsAlive() && pet->IsInWorld() && pet->GetMap() == _bot->GetMap())
         addDemand(pet);
 }
 
@@ -159,14 +160,14 @@ PendingBlessing PaladinBlessingPlanner::SelectCast(
     // Bot paladins (the only actors), sorted by GUID; find my own index.
     std::vector<PaladinFlags> bots;
     bots.reserve(constraints.paladins.size());
-    for (auto const& p : constraints.paladins)
-        if (!p.isHuman)
-            bots.push_back(p);
+    for (auto const& paladin : constraints.paladins)
+        if (!paladin.isHuman)
+            bots.push_back(paladin);
     std::sort(bots.begin(), bots.end(),
-        [](PaladinFlags const& l, PaladinFlags const& r) { return l.guid < r.guid; });
+        [](PaladinFlags const& lhs, PaladinFlags const& rhs) { return lhs.guid < rhs.guid; });
     std::optional<std::size_t> selfIdx;
     for (std::size_t i = 0; i < bots.size(); ++i)
-        if (bots[i].guid == bot->GetGUID())
+        if (bots[i].guid == _bot->GetGUID())
         {
             selfIdx = i;
             break;
@@ -178,8 +179,8 @@ PendingBlessing PaladinBlessingPlanner::SelectCast(
     classMajority.reserve(classGroups.size());
     std::vector<BaseBlessingCategory> myCats;
     myCats.reserve(BLESSING_PRIORITY_SLOTS);
-    for (auto const& [cls, cg] : classGroups)
-        classMajority[cls] = PlanClass(cg, bots, *selfIdx, constraints, renewedHopePresent, myCats);
+    for (auto const& [cls, classGroup] : classGroups)
+        classMajority[cls] = PlanClass(classGroup, bots, *selfIdx, constraints, renewedHopePresent, myCats);
 
     // classGroups is unordered; sort so the order I try my owed categories is stable.
     std::sort(myCats.begin(), myCats.end());
@@ -199,37 +200,37 @@ BaseBlessingCategory PaladinBlessingPlanner::PlanClass(
     BlessingConstraints const& constraints, bool renewedHopePresent,
     std::vector<BaseBlessingCategory>& myCats)
 {
-    std::size_t const M = group.members.size();
-    std::size_t const N = bots.size();
+    std::size_t const memberCount = group.members.size();
+    std::size_t const paladinCount = bots.size();
 
     // A human GREATER blessing is class-wide → yield that category for the WHOLE class.  A
     // human SINGLE covers only one character → handled per-member (that member skips it below).
     std::array<bool, BLESSING_CATEGORY_SLOTS> humanGreaterCoversClass{};
-    for (Unit* m : group.members)
+    for (Unit* member : group.members)
     {
-        auto it = _coverage.find(m->GetGUID());
+        auto it = _coverage.find(member->GetGUID());
         if (it == _coverage.end())
             continue;
-        for (auto const& mb : it->second)
-            if (mb.isGreater && mb.isHumanPaladinCaster)
-                humanGreaterCoversClass[mb.category] = true;
+        for (auto const& blessing : it->second)
+            if (blessing.isGreater && blessing.isHumanPaladinCaster)
+                humanGreaterCoversClass[blessing.category] = true;
     }
 
     // Each member's top-N castable wants + priority-weighted class demand.
-    std::vector<RoleProfile> roles(M);
-    std::vector<std::array<bool, BLESSING_CATEGORY_SLOTS>> wantedSet(M);
+    std::vector<RoleProfile> roles(memberCount);
+    std::vector<std::array<bool, BLESSING_CATEGORY_SLOTS>> wantedSet(memberCount);
     std::array<int, BLESSING_CATEGORY_SLOTS> demand{};
     std::array<bool, BLESSING_CATEGORY_SLOTS> botCanCast{};
 
-    for (BaseBlessingCategory c : { BASE_MIGHT, BASE_WISDOM, BASE_KINGS, BASE_SANCTUARY })
-        botCanCast[c] = SomeBotCanCast(bots, c);
+    for (BaseBlessingCategory category : { BASE_MIGHT, BASE_WISDOM, BASE_KINGS, BASE_SANCTUARY })
+        botCanCast[category] = SomeBotCanCast(bots, category);
 
     // Greaters land class-wide, so a pet sharing its class with a player adds no demand (it would
     // flip the player's blessing) and takes its wants as exception singles; mage-class pets are casters.
     bool const petsFollow = std::any_of(group.members.begin(), group.members.end(),
-        [](Unit* u) { return u->IsPlayer(); });
+        [](Unit* unit) { return unit->IsPlayer(); });
 
-    for (std::size_t k = 0; k < M; ++k)
+    for (std::size_t k = 0; k < memberCount; ++k)
     {
         Unit* const member = group.members[k];
         RoleProfile const role = member->IsPlayer()
@@ -238,22 +239,22 @@ BaseBlessingCategory PaladinBlessingPlanner::PlanClass(
         roles[k] = role;
         bool const addsDemand = member->IsPlayer() || !petsFollow;
         std::size_t taken = 0;
-        for (BaseBlessingCategory c : BASE_BLESSING_PRIORITIES[role].priorities)
+        for (BaseBlessingCategory category : BASE_BLESSING_PRIORITIES[role].priorities)
         {
-            if (c == BASE_NONE)
+            if (category == BASE_NONE)
                 break;
-            if (renewedHopePresent && c == BASE_SANCTUARY && role != ROLE_PALADIN_TANK)
+            if (renewedHopePresent && category == BASE_SANCTUARY && role != ROLE_PALADIN_TANK)
                 continue;
-            if (humanGreaterCoversClass[c])
+            if (humanGreaterCoversClass[category])
                 continue;
-            if (HasHumanBlessing(group.members[k], c, _coverage))
+            if (HasHumanBlessing(member, category, _coverage))
                 continue;
-            if (!botCanCast[c])
+            if (!botCanCast[category])
                 continue;
-            wantedSet[k][c] = true;
+            wantedSet[k][category] = true;
             if (addsDemand)
-                demand[c] += RoleWeight(role, c);
-            if (++taken == N)
+                demand[category] += RoleWeight(role, category);
+            if (++taken == paladinCount)
                 break;
         }
     }
@@ -264,15 +265,15 @@ BaseBlessingCategory PaladinBlessingPlanner::PlanClass(
     BaseBlessingCategory const myGreater = greaters[selfIdx];
 
     std::array<bool, BLESSING_CATEGORY_SLOTS> coveredByGreaters{};
-    for (BaseBlessingCategory gc : greaters)
-        if (gc != BASE_NONE)
-            coveredByGreaters[gc] = true;
-    for (BaseBlessingCategory c : { BASE_MIGHT, BASE_WISDOM, BASE_KINGS, BASE_SANCTUARY })
-        if (humanGreaterCoversClass[c])
-            coveredByGreaters[c] = true;
+    for (BaseBlessingCategory greater : greaters)
+        if (greater != BASE_NONE)
+            coveredByGreaters[greater] = true;
+    for (BaseBlessingCategory category : { BASE_MIGHT, BASE_WISDOM, BASE_KINGS, BASE_SANCTUARY })
+        if (humanGreaterCoversClass[category])
+            coveredByGreaters[category] = true;
 
     // What this bot delivers to each member: my greater if it's wanted, else an exception single.
-    for (std::size_t k = 0; k < M; ++k)
+    for (std::size_t k = 0; k < memberCount; ++k)
     {
         BaseBlessingCategory const intended = (myGreater != BASE_NONE && wantedSet[k][myGreater])
             ? myGreater
@@ -289,15 +290,15 @@ BaseBlessingCategory PaladinBlessingPlanner::PlanClass(
     return myGreater;
 }
 
-bool PaladinBlessingPlanner::CanBlessNow(Unit* m, uint32 spellId) const
+bool PaladinBlessingPlanner::CanBlessNow(Unit* member, uint32 spellId) const
 {
-    if (!m || !m->IsAlive() || !bot->IsValidAssistTarget(m))
+    if (!member || !member->IsAlive() || !_bot->IsValidAssistTarget(member))
         return false;
     // Range gate before the costly CanCastSpell, which reports out-of-range as castable.
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if (!spellInfo || !bot->IsWithinDistInMap(m, spellInfo->GetMaxRange(true)))
+    if (!spellInfo || !_bot->IsWithinDistInMap(member, spellInfo->GetMaxRange(true)))
         return false;
-    return botAI->CanCastSpell(spellId, m);
+    return _botAI->CanCastSpell(spellId, member);
 }
 
 namespace
@@ -323,50 +324,50 @@ PendingBlessing PaladinBlessingPlanner::SelectGreater(
     std::unordered_map<uint8, BaseBlessingCategory> const& classMajority,
     std::vector<BaseBlessingCategory> const& myCats)
 {
-    ObjectGuid const botGuid = bot->GetGUID();
+    ObjectGuid const botGuid = _bot->GetGUID();
     for (BaseBlessingCategory const cat : myCats)
     {
         // No id = can't cast this greater (untrained or config-disabled); no reagent = nothing to
         // cast.  Either way SelectSingle handles the category.
         std::optional<uint32> greaterId;
-        if (ai::blessing::IsEligibleGroupForAutoBlessings(bot->GetGroup()))
-            greaterId = HighestKnownBlessingRank(bot, cat, true);
-        if (!greaterId || !ai::buff::HasRequiredReagents(bot, *greaterId))
+        if (ai::blessing::IsEligibleGroupForAutoBlessings(_bot->GetGroup()))
+            greaterId = HighestKnownBlessingRank(_bot, cat, true);
+        if (!greaterId || !ai::buff::HasRequiredReagents(_bot, *greaterId))
             continue;
         SpellInfo const* greaterInfo = sSpellMgr->GetSpellInfo(*greaterId);
         if (!greaterInfo)
             continue;
 
-        int32 const myStrength = GetBlessingCastStrength(bot, ToGreaterVariant(cat), *greaterId);
+        int32 const myStrength = GetBlessingCastStrength(_bot, ToGreaterVariant(cat), *greaterId);
 
-        for (auto const& [cls, cg] : groups)
+        for (auto const& [cls, classGroup] : groups)
         {
             // One greater per class: only its majority category (minority specs → SelectSingle).
-            auto mIt = classMajority.find(cls);
-            if (mIt == classMajority.end() || mIt->second != cat)
+            auto majorityIt = classMajority.find(cls);
+            if (majorityIt == classMajority.end() || majorityIt->second != cat)
                 continue;
 
             // First member who wants `cat` from me, lacks it (not covered by me, a human, or a
             // stronger blessing), and that I can cast on now.  A greater is class-wide, so any works.
             Unit* target = nullptr;
             bool classNeedsGreater = false;
-            for (Unit* m : cg.members)
+            for (Unit* member : classGroup.members)
             {
-                auto intIt = _intended.find(m->GetGUID());
-                if (intIt == _intended.end() || intIt->second != cat)
+                auto intendedIt = _intended.find(member->GetGUID());
+                if (intendedIt == _intended.end() || intendedIt->second != cat)
                     continue;
-                if (IsCoveredByMe(botGuid, m, cat, _coverage))
+                if (IsCoveredByMe(botGuid, member, cat, _coverage))
                     continue;
-                if (HasHumanBlessing(m, cat, _coverage))
+                if (HasHumanBlessing(member, cat, _coverage))
                     continue;
-                if (HasStrongerBlessing(m, cat, myStrength, _coverage))
+                if (HasStrongerBlessing(member, cat, myStrength, _coverage))
                     continue;
-                if (OutrankedByOtherBuff(bot, m, greaterInfo))
+                if (OutrankedByOtherBuff(_bot, member, greaterInfo))
                     continue;
                 classNeedsGreater = true;
-                if (CanBlessNow(m, *greaterId))
+                if (CanBlessNow(member, *greaterId))
                 {
-                    target = m;
+                    target = member;
                     break;
                 }
             }
@@ -385,48 +386,48 @@ PendingBlessing PaladinBlessingPlanner::SelectSingle(
     std::unordered_map<uint8, BaseBlessingCategory> const& classMajority,
     std::vector<BaseBlessingCategory> const& myCats)
 {
-    ObjectGuid const botGuid = bot->GetGUID();
+    ObjectGuid const botGuid = _bot->GetGUID();
     for (BaseBlessingCategory const cat : myCats)
     {
-        std::optional<uint32> const singleId = HighestKnownBlessingRank(bot, cat, false);
+        std::optional<uint32> const singleId = HighestKnownBlessingRank(_bot, cat, false);
         if (!singleId)
             continue;
 
         std::optional<uint32> greaterId;
-        if (ai::blessing::IsEligibleGroupForAutoBlessings(bot->GetGroup()))
-            greaterId = HighestKnownBlessingRank(bot, cat, true);
-        bool const hasReagent = greaterId && ai::buff::HasRequiredReagents(bot, *greaterId);
+        if (ai::blessing::IsEligibleGroupForAutoBlessings(_bot->GetGroup()))
+            greaterId = HighestKnownBlessingRank(_bot, cat, true);
+        bool const hasReagent = greaterId && ai::buff::HasRequiredReagents(_bot, *greaterId);
 
-        int32 const myStrength = GetBlessingCastStrength(bot, ToSingleVariant(cat), *singleId);
+        int32 const myStrength = GetBlessingCastStrength(_bot, ToSingleVariant(cat), *singleId);
 
-        for (auto const& [cls, cg] : groups)
+        for (auto const& [cls, classGroup] : groups)
         {
             // With a reagent, only minority-spec exceptions need a single (the majority gets a
             // greater); without one, every member.
-            auto mIt = classMajority.find(cls);
-            bool const isException = (mIt == classMajority.end() || cat != mIt->second);
+            auto majorityIt = classMajority.find(cls);
+            bool const isException = (majorityIt == classMajority.end() || cat != majorityIt->second);
             if (hasReagent && !isException)
                 continue;
 
-            for (Unit* m : cg.members)
+            for (Unit* member : classGroup.members)
             {
-                auto intIt = _intended.find(m->GetGUID());
-                if (intIt == _intended.end() || intIt->second != cat)
+                auto intendedIt = _intended.find(member->GetGUID());
+                if (intendedIt == _intended.end() || intendedIt->second != cat)
                     continue;
-                if (IsCoveredByMe(botGuid, m, cat, _coverage))
+                if (IsCoveredByMe(botGuid, member, cat, _coverage))
                     continue;
-                if (HasHumanBlessing(m, cat, _coverage))
+                if (HasHumanBlessing(member, cat, _coverage))
                     continue;
-                if (HasStrongerBlessing(m, cat, myStrength, _coverage))
+                if (HasStrongerBlessing(member, cat, myStrength, _coverage))
                     continue;
-                if (!CanBlessNow(m, *singleId))
+                if (!CanBlessNow(member, *singleId))
                     continue;
 
                 ReagentNoticeKind notice = ReagentNoticeKind::None;
                 if (greaterId)
                     notice = hasReagent ? ReagentNoticeKind::Clear : ReagentNoticeKind::Announce;
 
-                return { *singleId, m->GetGUID(), cat, notice };
+                return { *singleId, member->GetGUID(), cat, notice };
             }
         }
     }
@@ -437,34 +438,35 @@ PendingBlessing PaladinBlessingPlanner::SelectSingle(
 
 Unit* CastBlessingAction::GetTarget()
 {
-    return botAI->GetUnit(pending.target);
+    return botAI->GetUnit(_pending.target);
 }
 
 bool CastBlessingAction::isUseful()
 {
-    pending = PaladinBlessingPlanner(botAI).Plan();
-    return pending.spellId && GetTarget();
+    _pending = PaladinBlessingPlanner(botAI).Plan();
+    return _pending.spellId && GetTarget();
 }
 
 bool CastBlessingAction::isPossible() { return true; }
 
 bool CastBlessingAction::Execute(Event /*event*/)
 {
-    PendingBlessing const pb = pending;
-    if (!pb.spellId)
+    PendingBlessing const planned = _pending;
+    if (!planned.spellId)
         return false;
 
-    Unit* target = botAI->GetUnit(pb.target);
+    Unit* target = botAI->GetUnit(planned.target);
     if (!target)
         return false;
 
-    bool const cast = botAI->CastSpell(pb.spellId, target);
+    bool const cast = botAI->CastSpell(planned.spellId, target);
 
-    if (pb.notice == ReagentNoticeKind::Clear)
-        ai::buff::ClearMissingBuffReagentNotice(botAI, BlessingSpellName(ToGreaterVariant(pb.category)));
-    else if (pb.notice == ReagentNoticeKind::Announce)
+    if (planned.notice == ReagentNoticeKind::Clear)
+        ai::buff::ClearMissingBuffReagentNotice(botAI, BlessingSpellName(ToGreaterVariant(planned.category)));
+    else if (planned.notice == ReagentNoticeKind::Announce)
         ai::buff::TryAnnounceMissingBuffReagents(
-            botAI, BlessingSpellName(ToSingleVariant(pb.category)), BlessingSpellName(ToGreaterVariant(pb.category)));
+            botAI, BlessingSpellName(ToSingleVariant(planned.category)),
+            BlessingSpellName(ToGreaterVariant(planned.category)));
 
     return cast;
 }

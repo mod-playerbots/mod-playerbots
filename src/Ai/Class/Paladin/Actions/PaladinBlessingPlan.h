@@ -51,40 +51,40 @@ namespace ai::blessing
     // Priority weight of `cat` for `role`: rank 0 -> highest … last rank -> 1; 0 if not wanted.
     inline int RoleWeight(RoleProfile role, BaseBlessingCategory cat)
     {
-        auto const& prio = BASE_BLESSING_PRIORITIES[role].priorities;
-        int const n = static_cast<int>(BLESSING_PRIORITY_SLOTS);
-        for (int i = 0; i < n; ++i)
-            if (prio[i] == cat)
-                return n - i;
+        auto const& priorities = BASE_BLESSING_PRIORITIES[role].priorities;
+        int const slots = static_cast<int>(BLESSING_PRIORITY_SLOTS);
+        for (int i = 0; i < slots; ++i)
+            if (priorities[i] == cat)
+                return slots - i;
         return 0;
     }
 
-    inline bool PaladinCanCast(PaladinFlags const& p, BaseBlessingCategory cat)
+    inline bool PaladinCanCast(PaladinFlags const& paladin, BaseBlessingCategory cat)
     {
         switch (cat)
         {
-            case BASE_MIGHT:     return p.mightStrength > 0;
-            case BASE_WISDOM:    return p.wisdomStrength > 0;
-            case BASE_KINGS:     return p.hasKings;
-            case BASE_SANCTUARY: return p.hasSanctuary;
+            case BASE_MIGHT:     return paladin.mightStrength > 0;
+            case BASE_WISDOM:    return paladin.wisdomStrength > 0;
+            case BASE_KINGS:     return paladin.hasKings;
+            case BASE_SANCTUARY: return paladin.hasSanctuary;
             default:             return false;
         }
     }
 
     inline bool SomeBotCanCast(std::vector<PaladinFlags> const& bots, BaseBlessingCategory cat)
     {
-        for (auto const& b : bots)
-            if (PaladinCanCast(b, cat))
+        for (auto const& paladin : bots)
+            if (PaladinCanCast(paladin, cat))
                 return true;
         return false;
     }
 
-    inline int32 CategoryStrength(PaladinFlags const& p, BaseBlessingCategory cat)
+    inline int32 CategoryStrength(PaladinFlags const& paladin, BaseBlessingCategory cat)
     {
         switch (cat)
         {
-            case BASE_MIGHT:  return p.mightStrength;
-            case BASE_WISDOM: return p.wisdomStrength;
+            case BASE_MIGHT:  return paladin.mightStrength;
+            case BASE_WISDOM: return paladin.wisdomStrength;
             default:          return 0;
         }
     }
@@ -95,17 +95,17 @@ namespace ai::blessing
             return false;
         bool seen = false;
         int32 first = 0;
-        for (auto const& b : bots)
+        for (auto const& paladin : bots)
         {
-            int32 const s = CategoryStrength(b, cat);
-            if (s <= 0)
+            int32 const strength = CategoryStrength(paladin, cat);
+            if (strength <= 0)
                 continue;                       // can't cast -> not a provider
             if (!seen)
             {
                 seen  = true;
-                first = s;
+                first = strength;
             }
-            else if (s != first)
+            else if (strength != first)
                 return true;                    // two providers, differing strength
         }
         return false;
@@ -123,27 +123,28 @@ namespace ai::blessing
         std::vector<std::pair<ObjectGuid, BaseBlessingCategory>> const& forced,
         bool suppressSanctuary)
     {
-        std::vector<BaseBlessingCategory> g(bots.size(), BASE_NONE);
+        std::vector<BaseBlessingCategory> greaters(bots.size(), BASE_NONE);
         std::array<bool, BLESSING_CATEGORY_SLOTS> claimed{};
 
         // Honored human claims cover their category class-wide; bots don't greater it.
-        for (BaseBlessingCategory c : { BASE_MIGHT, BASE_WISDOM, BASE_KINGS, BASE_SANCTUARY })
-            if (honoredHuman[c])
-                claimed[c] = true;
+        for (BaseBlessingCategory category : { BASE_MIGHT, BASE_WISDOM, BASE_KINGS, BASE_SANCTUARY })
+            if (honoredHuman[category])
+                claimed[category] = true;
 
         // 1. Forced strategy casts: a forced bot greaters its forced category.  Two bots forced to
         //    one category would overwrite each other's greater; the first in group order keeps it.
-        for (auto const& f : forced)
+        for (auto const& [pinnedGuid, pinnedCategory] : forced)
         {
-            if (suppressSanctuary && f.second == BASE_SANCTUARY)
+            if (suppressSanctuary && pinnedCategory == BASE_SANCTUARY)
                 continue;
-            if (std::find(g.begin(), g.end(), f.second) != g.end())
+            if (std::find(greaters.begin(), greaters.end(), pinnedCategory) != greaters.end())
                 continue;
             for (size_t i = 0; i < bots.size(); ++i)
-                if (bots[i].guid == f.first && g[i] == BASE_NONE && PaladinCanCast(bots[i], f.second))
+                if (bots[i].guid == pinnedGuid && greaters[i] == BASE_NONE &&
+                    PaladinCanCast(bots[i], pinnedCategory))
                 {
-                    g[i] = f.second;
-                    claimed[f.second] = true;
+                    greaters[i] = pinnedCategory;
+                    claimed[pinnedCategory] = true;
                 }
         }
 
@@ -151,19 +152,19 @@ namespace ai::blessing
         //    castable, unclaimed categories, capped to the number of free bots.
         size_t freeCount = 0;
         for (size_t i = 0; i < bots.size(); ++i)
-            if (g[i] == BASE_NONE)
+            if (greaters[i] == BASE_NONE)
                 ++freeCount;
 
         std::vector<BaseBlessingCategory> ranked;
-        for (BaseBlessingCategory c : { BASE_MIGHT, BASE_WISDOM, BASE_KINGS, BASE_SANCTUARY })
-            if (demand[c] > 0 && !claimed[c] && SomeBotCanCast(bots, c))
-                ranked.push_back(c);
+        for (BaseBlessingCategory category : { BASE_MIGHT, BASE_WISDOM, BASE_KINGS, BASE_SANCTUARY })
+            if (demand[category] > 0 && !claimed[category] && SomeBotCanCast(bots, category))
+                ranked.push_back(category);
 
-        auto const byDemand = [&](BaseBlessingCategory a, BaseBlessingCategory b)
+        auto const byDemand = [&](BaseBlessingCategory lhs, BaseBlessingCategory rhs)
         {
-            if (demand[a] != demand[b])
-                return demand[a] > demand[b];
-            return static_cast<uint8>(a) < static_cast<uint8>(b);  // tie: lower id, deterministic
+            if (demand[lhs] != demand[rhs])
+                return demand[lhs] > demand[rhs];
+            return static_cast<uint8>(lhs) < static_cast<uint8>(rhs);  // tie: lower id, deterministic
         };
 
         if (ranked.size() > freeCount)
@@ -171,14 +172,14 @@ namespace ai::blessing
             // Undersupplied: not every wanted category can be greatered, so some drop to the
             // single-target exception path.
             std::array<bool, BLESSING_CATEGORY_SLOTS> strengthPreferred{};
-            for (BaseBlessingCategory c : ranked)
-                strengthPreferred[c] = HasStrengthGap(bots, c);
+            for (BaseBlessingCategory category : ranked)
+                strengthPreferred[category] = HasStrengthGap(bots, category);
             std::sort(ranked.begin(), ranked.end(),
-                [&](BaseBlessingCategory a, BaseBlessingCategory b)
+                [&](BaseBlessingCategory lhs, BaseBlessingCategory rhs)
                 {
-                    if (strengthPreferred[a] != strengthPreferred[b])
-                        return strengthPreferred[a];
-                    return byDemand(a, b);
+                    if (strengthPreferred[lhs] != strengthPreferred[rhs])
+                        return strengthPreferred[lhs];
+                    return byDemand(lhs, rhs);
                 });
             ranked.resize(freeCount);                  // top-N cap: as many categories as free paladins
         }
@@ -188,8 +189,8 @@ namespace ai::blessing
         }
 
         std::array<bool, BLESSING_CATEGORY_SLOTS> chosen{};
-        for (BaseBlessingCategory c : ranked)
-            chosen[c] = true;
+        for (BaseBlessingCategory category : ranked)
+            chosen[category] = true;
 
         // 3. Among the CHOSEN categories, pin specialists.  Sanctuary goes to a capable (talented)
         //    paladin; Might/Wisdom go to the STRONGEST free caster (highest rank × Improved talent),
@@ -197,9 +198,9 @@ namespace ai::blessing
         //    has it.  Ties resolve to the lowest GUID (bots is GUID-sorted), so all bots agree.
         if (chosen[BASE_SANCTUARY] && !claimed[BASE_SANCTUARY])
             for (size_t i = 0; i < bots.size(); ++i)
-                if (g[i] == BASE_NONE && bots[i].hasSanctuary)
+                if (greaters[i] == BASE_NONE && bots[i].hasSanctuary)
                 {
-                    g[i] = BASE_SANCTUARY;
+                    greaters[i] = BASE_SANCTUARY;
                     claimed[BASE_SANCTUARY] = true;
                     break;
                 }
@@ -211,35 +212,36 @@ namespace ai::blessing
             std::optional<std::size_t> best;
             int32 bestStrength = -1;
             for (std::size_t i = 0; i < bots.size(); ++i)
-                if (g[i] == BASE_NONE && PaladinCanCast(bots[i], cat) && strengthOf(bots[i]) > bestStrength)
+                if (greaters[i] == BASE_NONE && PaladinCanCast(bots[i], cat) &&
+                    strengthOf(bots[i]) > bestStrength)
                 {
                     bestStrength = strengthOf(bots[i]);
                     best = i;
                 }
             if (best)
             {
-                g[*best] = cat;
+                greaters[*best] = cat;
                 claimed[cat] = true;
             }
         };
-        claimStrongest(BASE_MIGHT,  [](PaladinFlags const& p) { return p.mightStrength; });
-        claimStrongest(BASE_WISDOM, [](PaladinFlags const& p) { return p.wisdomStrength; });
+        claimStrongest(BASE_MIGHT,  [](PaladinFlags const& paladin) { return paladin.mightStrength; });
+        claimStrongest(BASE_WISDOM, [](PaladinFlags const& paladin) { return paladin.wisdomStrength; });
 
         // 4. Remaining free bots take the remaining chosen categories (demand order, GUID order).
         for (size_t i = 0; i < bots.size(); ++i)
         {
-            if (g[i] != BASE_NONE)
+            if (greaters[i] != BASE_NONE)
                 continue;
-            for (BaseBlessingCategory c : ranked)
-                if (chosen[c] && !claimed[c] && PaladinCanCast(bots[i], c))
+            for (BaseBlessingCategory category : ranked)
+                if (chosen[category] && !claimed[category] && PaladinCanCast(bots[i], category))
                 {
-                    g[i] = c;
-                    claimed[c] = true;
+                    greaters[i] = category;
+                    claimed[category] = true;
                     break;
                 }
         }
 
-        return g;
+        return greaters;
     }
 
     // When my class greater is useless to a member, the single-target category I should give it
@@ -255,9 +257,9 @@ namespace ai::blessing
         std::size_t selfIdx)
     {
         std::vector<BaseBlessingCategory> uncovered;
-        for (BaseBlessingCategory c : BASE_BLESSING_PRIORITIES[role].priorities)
-            if (c != BASE_NONE && memberWanted[c] && !coveredByGreaters[c])
-                uncovered.push_back(c);
+        for (BaseBlessingCategory category : BASE_BLESSING_PRIORITIES[role].priorities)
+            if (category != BASE_NONE && memberWanted[category] && !coveredByGreaters[category])
+                uncovered.push_back(category);
 
         std::vector<std::size_t> uselessPals;
         for (std::size_t i = 0; i < bots.size(); ++i)

@@ -27,8 +27,8 @@ namespace ai::blessing
 
     inline bool IsHumanPaladin(ObjectGuid guid)
     {
-        Player* p = ObjectAccessor::FindPlayer(guid);
-        return p && p->getClass() == CLASS_PALADIN && GET_PLAYERBOT_AI(p) == nullptr;
+        Player* player = ObjectAccessor::FindPlayer(guid);
+        return player && player->getClass() == CLASS_PALADIN && GET_PLAYERBOT_AI(player) == nullptr;
     }
 
     // Maps a blessing category to the AuraType that carries its primary stat effect.
@@ -110,19 +110,19 @@ namespace ai::blessing
         return amount;
     }
 
-    // Strength of the strongest Blessing of Might / Wisdom `p` can currently cast (highest known
+    // Strength of the strongest Blessing of Might / Wisdom `paladin` can currently cast (highest known
     // rank × Improved talent).  Lets the assignment pick the strongest provider rather than just a
     // talented one — a higher-rank paladin without the talent can out-buff a lower-level one who
     // has it.  Returns 0 for Kings/Sanctuary (no rank/strength variance) or if untrained.
-    inline int32 HighestKnownBlessingStrength(Player* p, BaseBlessingCategory category)
+    inline int32 HighestKnownBlessingStrength(Player* paladin, BaseBlessingCategory category)
     {
         if (category != BASE_MIGHT && category != BASE_WISDOM)
             return 0;
-        std::optional<uint32> const id = HighestKnownBlessingRank(p, category, false);
+        std::optional<uint32> const id = HighestKnownBlessingRank(paladin, category, false);
         if (!id)
             return 0;
         BlessingType const type = category == BASE_MIGHT ? BLESSING_MIGHT_SINGLE : BLESSING_WISDOM_SINGLE;
-        return GetBlessingCastStrength(p, type, *id);
+        return GetBlessingCastStrength(paladin, type, *id);
     }
 
     // -------------------------------------------------------------------------
@@ -195,9 +195,9 @@ namespace ai::blessing
 
         int64 const refreshMs =
             static_cast<int64>(sPlayerbotAIConfig.BlessingRefreshThresholdSeconds) * IN_MILLISECONDS;
-        for (auto const& mb : it->second)
-            if (mb.category == cat && mb.caster == botGuid)
-                return mb.duration < 0 || mb.duration > refreshMs;
+        for (auto const& blessing : it->second)
+            if (blessing.category == cat && blessing.caster == botGuid)
+                return blessing.duration < 0 || blessing.duration > refreshMs;
 
         return false;
     }
@@ -209,8 +209,8 @@ namespace ai::blessing
         if (it == coverage.end())
             return false;
 
-        for (auto const& mb : it->second)
-            if (mb.category == cat && mb.isHumanPaladinCaster)
+        for (auto const& blessing : it->second)
+            if (blessing.category == cat && blessing.isHumanPaladinCaster)
                 return true;
 
         return false;
@@ -223,8 +223,8 @@ namespace ai::blessing
         if (it == coverage.end())
             return false;
 
-        for (auto const& mb : it->second)
-            if (mb.category == cat && mb.strength > myStrength)
+        for (auto const& blessing : it->second)
+            if (blessing.category == cat && blessing.strength > myStrength)
                 return true;
 
         return false;

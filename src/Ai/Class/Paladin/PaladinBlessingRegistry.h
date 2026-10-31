@@ -45,14 +45,14 @@ namespace ai::blessing
     {
         static BlessingRegistry const reg = []
         {
-            BlessingRegistry r;
+            BlessingRegistry registry;
             auto addChain = [&](uint32 firstRankId, BaseBlessingCategory cat, bool greater)
             {
                 for (SpellInfo const* info = firstRankId ? sSpellMgr->GetSpellInfo(firstRankId) : nullptr;
                      info; info = info->GetNextRankSpell())
                 {
-                    r.byId[info->Id] = { cat, greater };
-                    r.chains[BlessingChainIndex(cat, greater)].push_back(info->Id);  // GetNextRankSpell: ascending
+                    registry.byId[info->Id] = { cat, greater };
+                    registry.chains[BlessingChainIndex(cat, greater)].push_back(info->Id);  // ascending
                 }
             };
             addChain(SPELL_BLESSING_OF_MIGHT,             BASE_MIGHT,     false);
@@ -63,7 +63,7 @@ namespace ai::blessing
             addChain(SPELL_GREATER_BLESSING_OF_KINGS,     BASE_KINGS,     true);
             addChain(SPELL_BLESSING_OF_SANCTUARY,         BASE_SANCTUARY, false);
             addChain(SPELL_GREATER_BLESSING_OF_SANCTUARY, BASE_SANCTUARY, true);
-            return r;
+            return registry;
         }();
         return reg;
     }
@@ -71,17 +71,17 @@ namespace ai::blessing
     // Category of any blessing spell rank, or BASE_NONE for an unrecognised spell.
     inline BaseBlessingCategory CategoryOfSpell(uint32 spellId)
     {
-        auto const& m = Blessings().byId;
-        auto it = m.find(spellId);
-        return it == m.end() ? BASE_NONE : it->second.category;
+        auto const& byId = Blessings().byId;
+        auto it = byId.find(spellId);
+        return it == byId.end() ? BASE_NONE : it->second.category;
     }
 
     // True if the spell id is a GREATER (class-wide) blessing variant.
     inline bool IsGreaterBlessingSpell(uint32 spellId)
     {
-        auto const& m = Blessings().byId;
-        auto it = m.find(spellId);
-        return it != m.end() && it->second.isGreater;
+        auto const& byId = Blessings().byId;
+        auto it = byId.find(spellId);
+        return it != byId.end() && it->second.isGreater;
     }
 
     // The bot's HIGHEST known rank id of (category, greater?), or nullopt if it knows none.
