@@ -7,7 +7,6 @@
 #include "ChatHelper.h"
 #include "AiFactory.h"
 #include "Common.h"
-#include "CraftRules.h"
 #include "DBCStores.h"
 #include "ItemTemplate.h"
 #include "ObjectMgr.h"
@@ -433,6 +432,28 @@ std::string const ChatHelper::FormatSpell(SpellInfo const* spellInfo)
     return out.str();
 }
 
+// The recipe field of a |Htrade: link: one bit per skill line entry, six per character, least significant bit first,
+// in standard base64 without padding.
+std::string ChatHelper::EncodeRecipeBits(std::vector<bool> const& known)
+{
+    static constexpr char base64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    static constexpr size_t BITS_PER_CHAR = 6;
+
+    std::vector<uint8> values((known.size() + BITS_PER_CHAR - 1) / BITS_PER_CHAR, 0);
+    for (size_t i = 0; i < known.size(); ++i)
+    {
+        if (known[i])
+            values[i / BITS_PER_CHAR] |= uint8(1 << (i % BITS_PER_CHAR));
+    }
+
+    std::string out;
+    out.reserve(values.size());
+    for (uint8 value : values)
+        out += base64[value];
+
+    return out;
+}
+
 static std::string FormatTradeSkillLink(SpellInfo const* tradeSpell, uint16 skillValue, uint16 maxSkillValue,
                                         ObjectGuid owner, std::string const& recipes)
 {
@@ -471,7 +492,7 @@ std::string const ChatHelper::FormatProfessionLink(Player* player, uint32 skill)
     }
 
     return FormatTradeSkillLink(tradeSpell, player->GetSkillValue(skill), player->GetMaxSkillValue(skill),
-                                player->GetGUID(), CraftRules::EncodeRecipeBits(known));
+                                player->GetGUID(), EncodeRecipeBits(known));
 }
 
 std::string const ChatHelper::FormatItem(ItemTemplate const* proto, uint32 count, uint32 total)

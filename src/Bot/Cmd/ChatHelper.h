@@ -12,6 +12,7 @@
 #include "PlayerbotAIAware.h"
 #include "SharedDefines.h"
 #include <map>
+#include <vector>
 
 class GameObject;
 class Quest;
@@ -76,6 +77,8 @@ public:
     static std::set<uint32> ExtractAllItemIds(std::string const& text);
 
 private:
+    static std::string EncodeRecipeBits(std::vector<bool> const& known);
+
     static std::map<std::string, uint32> consumableSubClasses;
     static std::map<std::string, uint32> tradeSubClasses;
     static std::map<std::string, uint32> itemQualities;
