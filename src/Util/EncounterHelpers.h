@@ -17,6 +17,7 @@
 #include <vector>
 
 class Action;
+class Creature;
 class Player;
 class PlayerbotAI;
 class Unit;
@@ -24,42 +25,45 @@ class Unit;
 namespace EncounterHelpers
 {
 
+// Constants
+
 // Cheap, rough proxies for how far along an encounter is. 95% HP means the boss and raid are
 // positioned, the tank has threat, and the fight proper has started, so it's time to use cooldowns.
 // 10% means the boss is almost dead, so ignore adds and finish off the boss.
 inline constexpr float BOSS_ENGAGED_HEALTH_PCT = 95.0f;
 inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
 
-bool IsEncounterInProgress(Player* bot, uint32 mapId);
-bool CanTakeStepTowards(
-    Player* bot, float destinationX, float destinationY, float moveDist,
-    float& stepX, float& stepY, float& stepZ);
-bool GetStepToPosition(
-    Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
-    float& stepY, bool& backwards);
-bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
-bool MarkTargetWithSkull(Player* bot, Unit* target);
-bool MarkTargetWithSquare(Player* bot, Unit* target);
-bool MarkTargetWithStar(Player* bot, Unit* target);
-bool MarkTargetWithCircle(Player* bot, Unit* target);
-bool MarkTargetWithDiamond(Player* bot, Unit* target);
-bool MarkTargetWithTriangle(Player* bot, Unit* target);
-bool MarkTargetWithCross(Player* bot, Unit* target);
-bool MarkTargetWithMoon(Player* bot, Unit* target);
-bool ClearTargetIcon(Player* bot, uint8 iconId);
-bool ClearStrategyTargetIcon(Player* bot, uint8 iconId, std::initializer_list<uint32> entries);
-void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName);
-bool IsMechanicTrackerBot(Player* bot, uint32 mapId);
-Player* GetGroupMainTank(Player* bot);
-Player* GetGroupAssistTank(Player* bot, uint8 index);
-Player* GetNearestPlayerInRadius(Player* bot, float radius);
-std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId);
-uint32 GetSelfImmunitySpell(Player* bot);
-bool IsDpsCooldownAction(Player* bot, Action* action);
-bool IsTauntAction(Player* bot, Action* action);
-bool IsAoeThreatAction(Player* bot, Action* action);
+// Instance Script Callers
 
-// Class roles: a job given to one raid member of a class, such as a mage tank.
+// InstanceScript::IsEncounterInProgress is a cheap check to use as an initial gate for triggers and
+// multipliers that should run only during a boss fight. This requires the boss to be scripted to
+// report IN_PROGRESS (all TBC raid bosses do). It is possible for a boss script to set IN_PROGRESS
+// upon an event other than the pull (e.g., Leotheras goes IN_PROGRESS when first hit, even while
+// banished, or else when the last Spellbinder dies, not when his Spellbinders are pulled). In any
+// case, the boss script must be consulted to determine viability.
+bool IsEncounterInProgress(Player* bot, uint32 mapId);
+
+// Find bosses and their encounters from the instance script rather than the threat list or a grid
+// search. Boss ids follow DungeonEncounter.dbc's order, so they are right only if the instance
+// script numbers its bosses in that same order. A creature is found only if the instance script
+// registers it in its ObjectData under the id passed. The creature getters return a creature only
+// while it and the bot are alive and the bot is taking part in its encounter. Each returns false,
+// nullopt, or nullptr when the bot isn't on mapId.
+//
+// CreatureAI::DoZoneInCombat's default range. A bot this close is zoned into the fight.
+inline constexpr float ENCOUNTER_PARTICIPATION_DISTANCE = 250.0f;
+// One boss's state, unlike IsEncounterInProgress, which is true with any boss in progress on mapId.
+bool IsBossInProgress(Player* bot, uint32 mapId, uint32 bossId);
+// The lowest boss id that is IN_PROGRESS, if any.
+std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId);
+// Checks no boss state, so it also finds a creature before its fight starts (e.g. during a speech).
+Creature* GetInstanceCreature(Player* bot, uint32 mapId, uint32 dataId);
+// IsBossInProgress, then GetInstanceCreature with bossId as the creature key (each boss's
+// ObjectData key is its boss id).
+Creature* GetInstanceBoss(Player* bot, uint32 mapId, uint32 bossId);
+
+// Class Roles
+// A job given to one raid member of a class, such as a mage tank.
 
 // FindClassRoleChoice's general priority, declared lowest first: (1) an assistant (human or bot),
 // (2) a preferred-spec bot (if applicable), and (3) any other bot.
@@ -70,7 +74,6 @@ enum class ClassRoleChoiceReason : uint8
     PreferredSpecBot,
     Assistant,
 };
-
 struct ClassRoleChoice
 {
     ObjectGuid guid;
@@ -78,13 +81,11 @@ struct ClassRoleChoice
 
     bool operator==(ClassRoleChoice const&) const = default;
 };
-
 struct ClassRoleText
 {
     char const* name = nullptr;
     char const* defaultText = nullptr;
 };
-
 struct ClassRole
 {
     uint8 playerClass;
@@ -94,7 +95,6 @@ struct ClassRole
     ClassRoleText candidate;
     ClassRoleText preferredCandidate = {};
 };
-
 // Not cleared by the raids' instance resets, since clearing announcedChoice would make the
 // mechanic tracker repeat the announcement every second.
 struct ClassRoleAssignment
@@ -102,7 +102,6 @@ struct ClassRoleAssignment
     std::optional<ClassRoleChoice> choice;
     std::optional<ClassRoleChoice> announcedChoice;
 };
-
 struct ClassRoleSlot
 {
     ClassRole const& role;
@@ -129,6 +128,8 @@ Player* GetClassRolePlayer(Player* bot, ClassRoleAssignment const& assignment);
 ObjectGuid GetClassRolePlayerGuid(ClassRoleAssignment const& assignment);
 bool IsClassRolePlayer(Player* bot, ClassRoleAssignment const& assignment);
 
+// Locking Encounter States
+
 // Sets the field if it is empty. Returns true if it did.
 template <typename T, typename U>
 bool EmplaceIfUnset(std::optional<T>& field, U&& value)
@@ -139,7 +140,6 @@ bool EmplaceIfUnset(std::optional<T>& field, U&& value)
     field.emplace(std::forward<U>(value));
     return true;
 }
-
 // Clears the field. Returns true if it had a value.
 template <typename T>
 bool ResetIfSet(std::optional<T>& field)
@@ -148,6 +148,84 @@ bool ResetIfSet(std::optional<T>& field)
     field.reset();
     return wasSet;
 }
+
+// Raid Target Icons (RTI)
+
+// These marking functions do not allow the player to change the icon during the encounter.
+bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
+bool MarkTargetWithSkull(Player* bot, Unit* target);
+bool MarkTargetWithSquare(Player* bot, Unit* target);
+bool MarkTargetWithStar(Player* bot, Unit* target);
+bool MarkTargetWithCircle(Player* bot, Unit* target);
+bool MarkTargetWithDiamond(Player* bot, Unit* target);
+bool MarkTargetWithTriangle(Player* bot, Unit* target);
+bool MarkTargetWithCross(Player* bot, Unit* target);
+bool MarkTargetWithMoon(Player* bot, Unit* target);
+// For bots to set their RTI attack target to the specified icon.
+void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName);
+// For clearing marks outside of combat and/or encounters so bots don't Leeroy on sight.
+bool ClearTargetIcon(Player* bot, uint8 iconId);
+// Clears the icon only if it is on one of the given entries (i.e., one marked by the strategy).
+// This leaves icons players have manually put on other mobs or players.
+bool ClearStrategyTargetIcon(Player* bot, uint8 iconId, std::initializer_list<uint32> entries);
+
+// Movement
+
+// For validating ground and collision in connection with issuing incremental movement. The caller
+// gives a destination and how far to travel towards it per tick. The helper projects that step,
+// checks whether the bot can actually take it, and returns where it lands. The returned stepZ is
+// snapped to the ground, so a MoveTo() using this helper should pass stepZ rather than the bot's Z.
+bool CanTakeStepTowards(
+    Player* bot, float destinationX, float destinationY, float moveDist, float& stepX, float& stepY,
+    float& stepZ);
+// One step along the bot's path to a point, stopping short of it by stopDistance. The step follows
+// the path corner-by-corner, rather than aiming at the far end of it, so a bot can move around an
+// obstacle between it and the point.
+bool GetPathStepTowardPoint(
+    Player* bot, Position const& destination, float stopDistance, float stepDistance, float& stepX,
+    float& stepY);
+// The same as GetPathStepTowardPoint, but toward a unit's position.
+bool GetPathStepTowardUnit(
+    Player* bot, Unit* target, float stopDistance, float stepDistance, float& stepX, float& stepY);
+// Calculate incremental movement to a position. No ground or collision is validated, unlike
+// CanTakeStepTowards(). The Z position passed for the MoveTo() action using this helper should
+// use the bot's Z, not the position's. Returns false once the bot is within arrivalDist.
+bool GetStepToPosition(
+    Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
+    float& stepY, bool& backwards);
+
+// Player Getters
+
+// Requires the main tank to be alive.
+Player* GetGroupMainTank(Player* bot);
+// Returns the alive assist tank of the specified index (0 = first, 1 = second, etc.)
+Player* GetGroupAssistTank(Player* bot, uint8 index);
+// Return the nearest alive player (human or bot) within the specified radius. Distance is
+// measured by GetExactDist2d(), which does not take into account either player's CombatReach
+// (i.e., their hitboxes), which are 1.5y for all races (or 1.95y with Bloodlust/Heroism active).
+Player* GetNearestPlayerInRadius(Player* bot, float radius);
+
+// Action Class Checks for Multipliers
+
+// Primarily for when it is desirable for bots to save cooldowns for particular phases (or for the
+// pull, often until BOSS_ENGAGED_HEALTH_PCT).
+bool IsDpsCooldownAction(Player* bot, Action* action);
+// Includes both single-target and AoE taunts.
+bool IsTauntAction(Player* bot, Action* action);
+// These abilities (e.g., Avenger's Shield) can be problematic on the pull for a council-type boss.
+// Covers tanks only.
+bool IsAoeThreatAction(Player* bot, Action* action);
+
+// Miscellaneous
+
+// True if this bot is the first living bot in the group on mapId, for giving one bot a job such as
+// managing shared containers or marking targets.
+bool IsMechanicTrackerBot(Player* bot, uint32 mapId);
+// Grid search for dynamic objects for methods to avoid dynobj-based AoE hazards.
+std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId);
+// Ice Block, Divine Shield, and/or Cloak of Shadows can be used to nullify or ignore several
+// dangerous boss mechanics.
+uint32 GetSelfImmunitySpell(Player* bot);
 
 }
 

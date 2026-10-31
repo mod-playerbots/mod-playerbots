@@ -8,16 +8,20 @@
 #define PLAYERBOTS_BTSTRATEGY_H
 
 #include "Strategy.h"
+#include <string>
+#include <vector>
 
 class RaidBlackTempleStrategy : public Strategy
 {
 public:
     RaidBlackTempleStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
-
     std::string const getName() override { return "blacktemple"; }
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
+
+    bool HasTargetExclusions() const override { return true; }
+    void AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) override;
 };
 
 #endif
