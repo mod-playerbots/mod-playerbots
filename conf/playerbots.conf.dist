@@ -480,6 +480,13 @@ Playerbots.AutoAvoidAoe = 1
 # Only avoid aoe spells with a radius smaller than this value
 Playerbots.MaxAoeAvoidRadius = 15.0
 
+# Knockbacks move bots the way the client moves players, so a knockback near an edge can throw a bot
+# off a platform or into a pit, with fall damage on landing.
+# Enable to keep bots on the walkable area instead: a knockback that would carry a bot off it, or more
+# than a few yards down, stops at the edge.
+# Default: 0 (disabled)
+Playerbots.KnockbackEdgeProtection = 0
+
 # A whitelist of aoe spell IDs that should not be avoided
 Playerbots.AoeAvoidSpellWhitelist = 50759,57491,13810,29946
 

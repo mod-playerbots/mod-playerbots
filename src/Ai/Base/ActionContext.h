@@ -133,6 +133,7 @@ public:
         creators["follow"] = &ActionContext::follow;
         creators["move from group"] = &ActionContext::move_from_group;
         creators["runaway"] = &ActionContext::runaway;
+        creators["jump"] = &ActionContext::jump;
         creators["stay"] = &ActionContext::stay;
         creators["sit"] = &ActionContext::sit;
         creators["aggressive target"] = &ActionContext::aggressive_target;
@@ -352,6 +353,7 @@ private:
     static Action* stay(PlayerbotAI* botAI) { return new StayAction(botAI); }
     static Action* sit(PlayerbotAI* botAI) { return new SitAction(botAI); }
     static Action* runaway(PlayerbotAI* botAI) { return new RunAwayAction(botAI); }
+    static Action* jump(PlayerbotAI* botAI) { return new JumpAction(botAI); }
     static Action* follow(PlayerbotAI* botAI) { return new FollowAction(botAI); }
     static Action* move_from_group(PlayerbotAI* botAI) { return new MoveFromGroupAction(botAI); }
     static Action* add_gathering_loot(PlayerbotAI* botAI) { return new AddGatheringLootAction(botAI); }

@@ -476,6 +476,7 @@ bool PlayerbotAIConfig::Initialize()
     ReactStrategies = sConfigMgr->GetOption<std::string>("Playerbots.ReactStrategies", "");
     RandomBotReactStrategies = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotReactStrategies", "");
     ApplyInstanceStrategies = sConfigMgr->GetOption<bool>("Playerbots.ApplyInstanceStrategies", true);
+    KnockbackEdgeProtection = sConfigMgr->GetOption<bool>("Playerbots.KnockbackEdgeProtection", false);
 
     CommandPrefix = sConfigMgr->GetOption<std::string>("Playerbots.CommandPrefix", "");
     CommandSeparator = sConfigMgr->GetOption<std::string>("Playerbots.CommandSeparator", "\\\\");
