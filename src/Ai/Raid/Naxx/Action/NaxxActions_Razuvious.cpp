@@ -96,10 +96,10 @@ bool RazuviousUseObedienceCrystalAction::Execute(Event /*event*/)
                 if (!unit)
                     continue;
 
-                if (botAI->IsMainTank(bot) && unit->GetSpawnId() != 128352)
+                if (PlayerbotAI::IsMainTank(bot) && unit->GetSpawnId() != 128352)
                     continue;
 
-                if (!botAI->IsMainTank(bot) && unit->GetSpawnId() != 128353)
+                if (!PlayerbotAI::IsMainTank(bot) && unit->GetSpawnId() != 128353)
                     continue;
 
                 if (MoveTo(unit, 0.0f, MovementPriority::MOVEMENT_COMBAT))
@@ -130,9 +130,9 @@ bool RazuviousUseObedienceCrystalAction::Execute(Event /*event*/)
             }
             if (target)
             {
-                if (bot->GetDistance2d(target) > sPlayerbotAIConfig.spellDistance)
+                if (bot->GetDistance2d(target) > sPlayerbotAIConfig.SpellDistance)
                     return MoveNear(target->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(),
-                                    sPlayerbotAIConfig.spellDistance, MovementPriority::MOVEMENT_COMBAT);
+                                    sPlayerbotAIConfig.SpellDistance, MovementPriority::MOVEMENT_COMBAT);
                 else
                     return botAI->CastSpell("mind control", target);
             }
@@ -149,7 +149,7 @@ bool RazuviousTargetAction::Execute(Event /*event*/)
     Unit* razuvious = AI_VALUE2(Unit*, "find target", "instructor razuvious");
     Unit* understudy = AI_VALUE2(Unit*, "find target", "death knight understudy");
     Unit* target = nullptr;
-    if (botAI->IsTank(bot))
+    if (PlayerbotAI::IsTank(bot))
         target = understudy;
     else
         target = razuvious;

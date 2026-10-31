@@ -307,13 +307,13 @@ TravelNodePath* TravelNode::BuildPath(TravelNode* endNode, Unit* bot, bool postP
     {
         canPath = false;
 
-        if (sPlayerbotAIConfig.hasLog("cheat.csv"))
+        if (sPlayerbotAIConfig.HasLog("cheat.csv"))
         {
             std::ostringstream out;
             out << "buildgate," << getName() << "," << endNode->getName() << ","
                 << path.size() << ",";
             WorldPosition().printWKT({*getPosition(), *endNode->getPosition()}, out, 1);
-            sPlayerbotAIConfig.log("cheat.csv", out.str().c_str());
+            sPlayerbotAIConfig.Log("cheat.csv", out.str().c_str());
         }
     }
 
@@ -356,13 +356,13 @@ TravelNodePath* TravelNode::BuildPath(TravelNode* endNode, Unit* bot, bool postP
                 canPath = !TravelPath::IsPathCheating(
                     path, getPosition()->distance(endNode->getPosition()));
 
-                if (!canPath && sPlayerbotAIConfig.hasLog("cheat.csv"))
+                if (!canPath && sPlayerbotAIConfig.HasLog("cheat.csv"))
                 {
                     std::ostringstream out;
                     out << "stitch," << getName() << "," << endNode->getName() << ","
                         << path.size() << ",";
                     WorldPosition().printWKT({*getPosition(), *endNode->getPosition()}, out, 1);
-                    sPlayerbotAIConfig.log("cheat.csv", out.str().c_str());
+                    sPlayerbotAIConfig.Log("cheat.csv", out.str().c_str());
                 }
             }
         }
@@ -650,7 +650,7 @@ bool TravelNode::cropUselessLinks()
             this->removeLinkTo(farNode);
             hasRemoved = true;
 
-            if (sPlayerbotAIConfig.hasLog("crop.csv"))
+            if (sPlayerbotAIConfig.HasLog("crop.csv"))
             {
                 std::ostringstream out;
                 out << getName() << ",";
@@ -658,7 +658,7 @@ bool TravelNode::cropUselessLinks()
                 WorldPosition().printWKT({*getPosition(), *farNode->getPosition()}, out, 1);
                 out << std::fixed;
 
-                sPlayerbotAIConfig.log("crop.csv", out.str().c_str());
+                sPlayerbotAIConfig.Log("crop.csv", out.str().c_str());
             }
         }
 
@@ -667,7 +667,7 @@ bool TravelNode::cropUselessLinks()
             farNode->removeLinkTo(this);
             hasRemoved = true;
 
-            if (sPlayerbotAIConfig.hasLog("crop.csv"))
+            if (sPlayerbotAIConfig.HasLog("crop.csv"))
             {
                 std::ostringstream out;
                 out << farNode->getName() << ",";
@@ -675,7 +675,7 @@ bool TravelNode::cropUselessLinks()
                 WorldPosition().printWKT({*farNode->getPosition(), *getPosition()}, out, 1);
                 out << std::fixed;
 
-                sPlayerbotAIConfig.log("crop.csv", out.str().c_str());
+                sPlayerbotAIConfig.Log("crop.csv", out.str().c_str());
             }
         }
     }
@@ -699,7 +699,7 @@ void TravelNode::print([[maybe_unused]] bool printFailed)
     out << (isImportant() ? 1 : 0) << ",";
     out << mapSize;
 
-    sPlayerbotAIConfig.log("travelNodes.csv", out.str().c_str());
+    sPlayerbotAIConfig.Log("travelNodes.csv", out.str().c_str());
 
     std::vector<WorldPosition> ppath;
 
@@ -745,7 +745,7 @@ void TravelNode::print([[maybe_unused]] bool printFailed)
             out << std::to_string(path->getMaxLevelCreature()[1]) << ",";
             out << std::to_string(path->getMaxLevelCreature()[2]);
 
-            sPlayerbotAIConfig.log("travelPaths.csv", out.str().c_str());
+            sPlayerbotAIConfig.Log("travelPaths.csv", out.str().c_str());
         }
     }
 }
@@ -1114,7 +1114,7 @@ void TravelPath::ClipPath(PlayerbotAI* ai, Unit* mover, bool ignoreEnemyTargets)
 
     auto endP = fullPath.end();
     auto prevP = fullPath.begin();
-    float const reactSq = sPlayerbotAIConfig.reactDistance * sPlayerbotAIConfig.reactDistance;
+    float const reactSq = sPlayerbotAIConfig.ReactDistance * sPlayerbotAIConfig.ReactDistance;
 
     for (auto p = fullPath.begin(); p != fullPath.end(); ++p)
     {
@@ -1192,8 +1192,8 @@ bool TravelPath::makeShortCut(WorldPosition startPos, float maxDist, Unit* bot)
                 totalDist += p.point.sqDistance(std::prev(&p)->point);
 
             if (curDist <
-                sPlayerbotAIConfig.tooCloseDistance *
-                    sPlayerbotAIConfig.tooCloseDistance)  // We are on the path. This is a good starting point
+                sPlayerbotAIConfig.TooCloseDistance *
+                    sPlayerbotAIConfig.TooCloseDistance)  // We are on the path. This is a good starting point
             {
                 minDist = curDist;
                 totalDist = curDist;
@@ -1230,11 +1230,11 @@ bool TravelPath::makeShortCut(WorldPosition startPos, float maxDist, Unit* bot)
     // The old path seems to be the best — either the closest walkable
     // point IS the original front, or it's within tooCloseDistance.
     if (newPath.front() == fullPath.front() ||
-        beginPos.distance(firstNode) < sPlayerbotAIConfig.tooCloseDistance)
+        beginPos.distance(firstNode) < sPlayerbotAIConfig.TooCloseDistance)
         return false;
 
     // We are (nearly) on the new path. Just follow the rest.
-    if (beginPos.distance(startPos) < sPlayerbotAIConfig.tooCloseDistance)
+    if (beginPos.distance(startPos) < sPlayerbotAIConfig.TooCloseDistance)
     {
         fullPath = newPath;
         return true;
@@ -1713,13 +1713,13 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
     // with the direct probe kept only as a no-route fallback at the bottom. A failed
     // short probe leaves its waypoints in beginPath for reuse below.
     std::vector<WorldPosition> beginPath;
-    if (sPlayerbotAIConfig.travelNodeProbeSteps > 0 &&
+    if (sPlayerbotAIConfig.TravelNodeProbeSteps > 0 &&
         botPos.GetMapId() == destination.GetMapId() &&
-        botPos.distance(destination) <= sPlayerbotAIConfig.travelNodeDirectDistance)
+        botPos.distance(destination) <= sPlayerbotAIConfig.TravelNodeDirectDistance)
     {
         beginPath = destination.getPathFromPath({botPos}, bot,
-                                                sPlayerbotAIConfig.travelNodeProbeSteps);
-        if (destination.isPathTo(beginPath, sPlayerbotAIConfig.spellDistance))
+                                                sPlayerbotAIConfig.TravelNodeProbeSteps);
+        if (destination.isPathTo(beginPath, sPlayerbotAIConfig.SpellDistance))
             return TravelPath(beginPath);
     }
 
@@ -1794,7 +1794,7 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
             bot && bot->GetMapId() == destination.GetMapId())
         {
             endProbe = endNodePos.getPathTo(destination, bot);
-            endPathOk = destination.isPathTo(endProbe, sPlayerbotAIConfig.spellDistance, endMaxZ);
+            endPathOk = destination.isPathTo(endProbe, sPlayerbotAIConfig.SpellDistance, endMaxZ);
         }
         else
         {
@@ -1874,12 +1874,12 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
 
     // Fallback when the graph gave no usable route: try a direct chained mmap probe
     // on the bot's own map (step budget: AiPlayerbot.TravelNodeProbeSteps, 0 = off).
-    if (sPlayerbotAIConfig.travelNodeProbeSteps > 0 &&
+    if (sPlayerbotAIConfig.TravelNodeProbeSteps > 0 &&
         botPos.GetMapId() == destination.GetMapId())
     {
         std::vector<WorldPosition> direct =
-            destination.getPathFromPath({botPos}, bot, sPlayerbotAIConfig.travelNodeProbeSteps);
-        if (destination.isPathTo(direct, sPlayerbotAIConfig.spellDistance))
+            destination.getPathFromPath({botPos}, bot, sPlayerbotAIConfig.TravelNodeProbeSteps);
+        if (destination.isPathTo(direct, sPlayerbotAIConfig.SpellDistance))
             return TravelPath(direct);
 
         // A partial probe still helps: the path is re-planned as the bot advances,
@@ -2828,13 +2828,13 @@ uint32 TravelNodeMap::pruneCheatingWalkLinks(std::vector<TravelNode*> const& sca
                      sp->GetPositionX(), sp->GetPositionY(), sp->GetPositionZ(),
                      ep->GetPositionX(), ep->GetPositionY(), ep->GetPositionZ());
 
-            if (sPlayerbotAIConfig.hasLog("cheat.csv"))
+            if (sPlayerbotAIConfig.HasLog("cheat.csv"))
             {
                 std::ostringstream out;
                 out << "sweep," << startNode->getName() << "," << endNode->getName()
                     << "," << startNode->getPathTo(endNode)->GetPath().size() << ",";
                 WorldPosition().printWKT({*sp, *ep}, out, 1);
-                sPlayerbotAIConfig.log("cheat.csv", out.str().c_str());
+                sPlayerbotAIConfig.Log("cheat.csv", out.str().c_str());
             }
 
             // removePaths=true so the stored geometry is gone too, not just
@@ -2954,7 +2954,7 @@ void TravelNodeMap::Init()
 
     InitTaxiGraph();
 
-    if (!sPlayerbotAIConfig.enableTravelNodes)
+    if (!sPlayerbotAIConfig.EnableTravelNodes)
         return;
 
     LoadNodeStore();
@@ -2983,14 +2983,14 @@ void TravelNodeMap::Init()
 
 void TravelNodeMap::printMap()
 {
-    if (!sPlayerbotAIConfig.hasLog("travelNodes.csv") && !sPlayerbotAIConfig.hasLog("travelPaths.csv"))
+    if (!sPlayerbotAIConfig.HasLog("travelNodes.csv") && !sPlayerbotAIConfig.HasLog("travelPaths.csv"))
         return;
 
     printf("\r [Qgis] \r\x3D");
     fflush(stdout);
 
-    sPlayerbotAIConfig.openLog("travelNodes.csv", "w");
-    sPlayerbotAIConfig.openLog("travelPaths.csv", "w");
+    sPlayerbotAIConfig.OpenLog("travelNodes.csv", "w");
+    sPlayerbotAIConfig.OpenLog("travelPaths.csv", "w");
 
     std::vector<TravelNode*> anodes = getNodes();
 
@@ -3004,26 +3004,26 @@ void TravelNodeMap::printNodeStore()
 {
     std::string const nodeStore = "TravelNodeStore.h";
 
-    if (!sPlayerbotAIConfig.hasLog(nodeStore))
+    if (!sPlayerbotAIConfig.HasLog(nodeStore))
         return;
 
     printf("\r [Map] \r\x3D");
     fflush(stdout);
 
-    sPlayerbotAIConfig.openLog(nodeStore, "w");
+    sPlayerbotAIConfig.OpenLog(nodeStore, "w");
 
     std::unordered_map<TravelNode*, uint32> saveNodes;
 
     std::vector<TravelNode*> anodes = getNodes();
 
-    sPlayerbotAIConfig.log(nodeStore, "#pragma once");
-    sPlayerbotAIConfig.log(nodeStore, "#include \"TravelMgr.h\"");
-    sPlayerbotAIConfig.log(nodeStore, "class TravelNodeStore");
-    sPlayerbotAIConfig.log(nodeStore, "    {");
-    sPlayerbotAIConfig.log(nodeStore, "    public:");
-    sPlayerbotAIConfig.log(nodeStore, "    static void loadNodes()");
-    sPlayerbotAIConfig.log(nodeStore, "    {");
-    sPlayerbotAIConfig.log(nodeStore, "        TravelNode** nodes = new TravelNode*[%zu];", anodes.size());
+    sPlayerbotAIConfig.Log(nodeStore, "#pragma once");
+    sPlayerbotAIConfig.Log(nodeStore, "#include \"TravelMgr.h\"");
+    sPlayerbotAIConfig.Log(nodeStore, "class TravelNodeStore");
+    sPlayerbotAIConfig.Log(nodeStore, "    {");
+    sPlayerbotAIConfig.Log(nodeStore, "    public:");
+    sPlayerbotAIConfig.Log(nodeStore, "    static void loadNodes()");
+    sPlayerbotAIConfig.Log(nodeStore, "    {");
+    sPlayerbotAIConfig.Log(nodeStore, "        TravelNode** nodes = new TravelNode*[%zu];", anodes.size());
 
     for (uint32 i = 0; i < anodes.size(); i++)
     {
@@ -3044,7 +3044,7 @@ void TravelNodeMap::printNodeStore()
             out << "," << (node->isTransport() ? "true" : "false") << "," << node->getTransportId();
         out << "});";
 
-        sPlayerbotAIConfig.log(nodeStore, out.str().c_str());
+        sPlayerbotAIConfig.Log(nodeStore, out.str().c_str());
 
         saveNodes.insert(std::make_pair(node, i));
     }
@@ -3065,12 +3065,12 @@ void TravelNodeMap::printNodeStore()
                 << saveNodes.find(Link.first)->second << ",";
             out << Link.second->print() << "});";
 
-            sPlayerbotAIConfig.log(nodeStore, out.str().c_str());
+            sPlayerbotAIConfig.Log(nodeStore, out.str().c_str());
         }
     }
 
-    sPlayerbotAIConfig.log(nodeStore, "    }");
-    sPlayerbotAIConfig.log(nodeStore, "};");
+    sPlayerbotAIConfig.Log(nodeStore, "    }");
+    sPlayerbotAIConfig.Log(nodeStore, "};");
 
     printf("\r [Done] \r\x3D");
     fflush(stdout);

@@ -12,7 +12,7 @@
 #include "Trigger.h"
 #include <string>
 
-// General
+// Shared
 
 class GruulsLairEncounterTrigger : public Trigger
 {
@@ -33,10 +33,16 @@ protected:
 class GruulsLairNoEncounterInProgressTrigger : public Trigger
 {
 public:
-    // Throttled to once per second. This trigger is true for all trash and downtime and, being
-    // for between-encounter clean-up, has no real urgency to it.
     GruulsLairNoEncounterInProgressTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "gruul's lair no encounter in progress", 1000) {}
+    bool IsActive() override;
+};
+
+class GruulsLairClassRolesShouldBeAssignedTrigger : public Trigger
+{
+public:
+    GruulsLairClassRolesShouldBeAssignedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "gruul's lair class roles should be assigned", 1000) {}
     bool IsActive() override;
 };
 
@@ -72,11 +78,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HighKingMaulgarDeterminingKillOrderTrigger : public GruulsLairEncounterTrigger
+class HighKingMaulgarShouldAssignDpsPriorityTrigger : public GruulsLairEncounterTrigger
 {
 public:
-    HighKingMaulgarDeterminingKillOrderTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "high king maulgar determining kill order") {}
+    HighKingMaulgarShouldAssignDpsPriorityTrigger(PlayerbotAI* botAI)
+        : GruulsLairEncounterTrigger(botAI, "high king maulgar should assign dps priority") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -112,11 +118,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HighKingMaulgarPullingOgreCouncilTrigger : public GruulsLairEncounterTrigger
+class HighKingMaulgarHunterShouldMisdirectTrigger : public GruulsLairEncounterTrigger
 {
 public:
-    HighKingMaulgarPullingOgreCouncilTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "high king maulgar pulling ogre council") {}
+    HighKingMaulgarHunterShouldMisdirectTrigger(PlayerbotAI* botAI)
+        : GruulsLairEncounterTrigger(botAI, "high king maulgar hunter should misdirect") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -144,11 +150,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class GruulTheDragonkillerInCaveInTrigger : public GruulsLairEncounterTrigger
+class GruulTheDragonkillerBotInCaveInTrigger : public GruulsLairEncounterTrigger
 {
 public:
-    GruulTheDragonkillerInCaveInTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "gruul the dragonkiller in cave in") {}
+    GruulTheDragonkillerBotInCaveInTrigger(PlayerbotAI* botAI)
+        : GruulsLairEncounterTrigger(botAI, "gruul the dragonkiller bot in cave in") {}
 
 protected:
     bool IsActiveInEncounter() override;

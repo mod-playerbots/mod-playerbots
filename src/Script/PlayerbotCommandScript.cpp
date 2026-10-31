@@ -6,9 +6,11 @@
 
 #include "BattleGroundTactics.h"
 #include "Chat.h"
+#include "ChatCommandTags.h"
 #include "GuildTaskMgr.h"
 #include "MapMgr.h"
 #include "PerfMonitor.h"
+#include "PlayerbotAI.h"
 #include "PlayerbotMgr.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
@@ -43,6 +45,8 @@ public:
 
         static ChatCommandTable playerbotsCommandTable = {
             {"bot", HandlePlayerbotCommand, SEC_PLAYER, Console::No},
+            {"exec", HandleExecCommand, SEC_GAMEMASTER, Console::Yes},
+            {"inspect", HandleInspectCommand, SEC_GAMEMASTER, Console::Yes},
             {"gtask", HandleGuildTaskCommand, SEC_GAMEMASTER, Console::Yes},
             {"pmon", HandlePerfMonCommand, SEC_GAMEMASTER, Console::Yes},
             {"rndbot", HandleRandomPlayerbotCommand, SEC_GAMEMASTER, Console::Yes},
@@ -61,6 +65,55 @@ public:
     static bool HandlePlayerbotCommand(ChatHandler* handler, char const* args)
     {
         return PlayerbotMgr::HandlePlayerbotMgrCommand(handler, args);
+    }
+
+    // Sends its own error so the core does not append its generic help text.
+    static PlayerbotAI* GetOnlineBotAI(ChatHandler* handler, PlayerIdentifier const& target)
+    {
+        Player* player = target.GetConnectedPlayer();
+        PlayerbotAI* botAI = player ? PlayerbotsMgr::instance().GetPlayerbotAI(player) : nullptr;
+        if (!botAI)
+            handler->SendErrorMessage("{} is not an online bot", target.GetName());
+        return botAI;
+    }
+
+    // From the console or SOAP there is no player object to send the command, so the bot sends it to itself.
+    // The bot's security check always lets a bot command itself.
+    static bool HandleExecCommand(ChatHandler* handler, PlayerIdentifier target, Tail command)
+    {
+        PlayerbotAI* botAI = GetOnlineBotAI(handler, target);
+        if (!botAI)
+            return false;
+
+        if (command.empty())
+        {
+            handler->SendErrorMessage("Usage: .playerbots exec <bot> <command> (state-changing commands; "
+                                      "query replies go to the bot's master - use inspect)");
+            return false;
+        }
+
+        Player* from = handler->GetSession() ? handler->GetSession()->GetPlayer() : botAI->GetBot();
+        botAI->HandleCommand(CHAT_MSG_WHISPER, std::string(command), from);
+        handler->PSendSysMessage("{}: '{}' sent", target.GetName(), std::string(command));
+        return true;
+    }
+
+    static bool HandleInspectCommand(ChatHandler* handler, PlayerIdentifier target, Tail command)
+    {
+        PlayerbotAI* botAI = GetOnlineBotAI(handler, target);
+        if (!botAI)
+            return false;
+
+        if (command.empty())
+        {
+            handler->SendErrorMessage("Usage: .playerbots inspect <bot> <query> (state, position, tpos, "
+                                      "movement, target, hp, strategy, action, values, travel, budget)");
+            return false;
+        }
+
+        std::string const result = botAI->HandleRemoteCommand(std::string(command));
+        handler->PSendSysMessage("{}: {}", target.GetName(), result.empty() ? "<empty>" : result);
+        return true;
     }
 
     static bool HandleRandomPlayerbotCommand(ChatHandler* handler, char const* args)
@@ -97,8 +150,8 @@ public:
 
         if (!strcmp(args, "toggle"))
         {
-            sPlayerbotAIConfig.perfMonEnabled = !sPlayerbotAIConfig.perfMonEnabled;
-            if (sPlayerbotAIConfig.perfMonEnabled)
+            sPlayerbotAIConfig.PerfMonEnabled = !sPlayerbotAIConfig.PerfMonEnabled;
+            if (sPlayerbotAIConfig.PerfMonEnabled)
                 LOG_INFO("playerbots", "Performance monitor enabled");
             else
                 LOG_INFO("playerbots", "Performance monitor disabled");
@@ -112,7 +165,7 @@ public:
 
     static bool HandleGenerateTravelNodesCommand(ChatHandler* handler, char const* /*args*/)
     {
-        if (!sPlayerbotAIConfig.enableTravelNodes)
+        if (!sPlayerbotAIConfig.EnableTravelNodes)
         {
             handler->PSendSysMessage("Travel node generation refused: AiPlayerbot.EnableTravelNodes is disabled, so the node store was never loaded and generating now would overwrite it.");
             return true;

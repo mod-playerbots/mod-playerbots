@@ -7,10 +7,13 @@
 #include "ChatHelper.h"
 #include "AiFactory.h"
 #include "Common.h"
+#include "DBCStores.h"
 #include "ItemTemplate.h"
 #include "ObjectMgr.h"
+#include "PlayerbotSpellRepository.h"
 #include "Playerbots.h"
 #include "SpellInfo.h"
+#include "World.h"
 #include <regex>
 
 std::map<std::string, uint32> ChatHelper::consumableSubClasses;
@@ -151,7 +154,7 @@ ChatHelper::ChatHelper(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
     specs[CLASS_PRIEST][2] = "shadow";
 
     classes[CLASS_ROGUE] = "rogue";
-    specs[CLASS_ROGUE][0] = "assasination";
+    specs[CLASS_ROGUE][0] = "assassination";
     specs[CLASS_ROGUE][1] = "combat";
     specs[CLASS_ROGUE][2] = "subtlety";
 
@@ -429,6 +432,69 @@ std::string const ChatHelper::FormatSpell(SpellInfo const* spellInfo)
     return out.str();
 }
 
+// The recipe field of a |Htrade: link: one bit per skill line entry, six per character, least significant bit first,
+// in standard base64 without padding.
+std::string ChatHelper::EncodeRecipeBits(std::vector<bool> const& known)
+{
+    static constexpr char base64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    static constexpr size_t BITS_PER_CHAR = 6;
+
+    std::vector<uint8> values((known.size() + BITS_PER_CHAR - 1) / BITS_PER_CHAR, 0);
+    for (size_t i = 0; i < known.size(); ++i)
+    {
+        if (known[i])
+            values[i / BITS_PER_CHAR] |= uint8(1 << (i % BITS_PER_CHAR));
+    }
+
+    std::string out;
+    out.reserve(values.size());
+    for (uint8 value : values)
+        out += base64[value];
+
+    return out;
+}
+
+static std::string FormatTradeSkillLink(SpellInfo const* tradeSpell, uint16 skillValue, uint16 maxSkillValue,
+                                        ObjectGuid owner, std::string const& recipes)
+{
+    std::string spellName = tradeSpell->SpellName[sWorld->GetDefaultDbcLocale()]
+                                ? tradeSpell->SpellName[sWorld->GetDefaultDbcLocale()]
+                                : tradeSpell->SpellName[LOCALE_enUS];
+
+    std::ostringstream out;
+    out << "|cffffd000|Htrade:" << tradeSpell->Id << ":" << skillValue << ":" << maxSkillValue << ":" << std::hex
+        << std::uppercase << owner.GetRawValue() << std::nouppercase << std::dec << ":" << recipes << "|h[" << spellName
+        << "]|h|r";
+    return out.str();
+}
+
+// Bind-on-pickup recipes are shown as unknown: the player could not be given what they make.
+std::string const ChatHelper::FormatProfessionLink(Player* player, uint32 skill)
+{
+    if (!player->HasSkill(skill))
+        return "";
+
+    TradeSkillLinkData const* linkData = PlayerbotSpellRepository::Instance().GetTradeSkillLinkData(skill);
+    if (!linkData)
+        return "";
+
+    SpellInfo const* tradeSpell = sSpellMgr->GetSpellInfo(linkData->tradeSpellId);
+    if (!tradeSpell)
+        return "";
+
+    std::vector<bool> known;
+    known.reserve(linkData->entries.size());
+    for (TradeSkillLinkEntry const& entry : linkData->entries)
+    {
+        bool const forPlayer = (!entry.raceMask || (entry.raceMask & player->getRaceMask())) &&
+                               (!entry.classMask || (entry.classMask & player->getClassMask()));
+        known.push_back(forPlayer && !entry.bindOnPickup && player->HasSpell(entry.spellId));
+    }
+
+    return FormatTradeSkillLink(tradeSpell, player->GetSkillValue(skill), player->GetMaxSkillValue(skill),
+                                player->GetGUID(), EncodeRecipeBits(known));
+}
+
 std::string const ChatHelper::FormatItem(ItemTemplate const* proto, uint32 count, uint32 total)
 {
     char color[32];
@@ -444,7 +510,7 @@ std::string const ChatHelper::FormatItem(ItemTemplate const* proto, uint32 count
         itemName = proto->Name1;
 
     std::ostringstream out;
-    out << "|c" << color << "|Hitem:" << proto->ItemId << ":0:0:0:0:0:0:0"
+    out << "|c" << color << "|Hitem:" << proto->ItemId << ":0:0:0:0:0:0:0:0"
         << "|h[" << itemName << "]|h|r";
 
     if (count > 1)
@@ -462,7 +528,7 @@ std::string const ChatHelper::FormatQItem(uint32 itemId)
     snprintf(color, sizeof(color), "%x", ItemQualityColors[0]);
 
     std::ostringstream out;
-    out << "|c" << color << "|Hitem:" << itemId << ":0:0:0:0:0:0:0"
+    out << "|c" << color << "|Hitem:" << itemId << ":0:0:0:0:0:0:0:0"
         << "|h[item"
         << "]|h|r";
 
@@ -658,7 +724,24 @@ std::string const ChatHelper::FormatClass(Player* player, int8 spec)
 
 std::string const ChatHelper::FormatClass(uint8 cls) { return classes[cls]; }
 
-std::string const ChatHelper::FormatRace(uint8 race) { return races[race]; }
+std::string const ChatHelper::FormatRace(uint8 race)
+{
+    auto itr = races.find(race);
+    if (itr != races.end())
+        return itr->second;
+
+    if (ChrRacesEntry const* entry = sChrRacesStore.LookupEntry(race))
+    {
+        // English like the races map; DBCs from another locale leave enUS empty.
+        char const* name = entry->name[LOCALE_enUS];
+        if (!name || !*name)
+            name = entry->name[sWorld->GetDefaultDbcLocale()];
+        if (name && *name)
+            return name;
+    }
+
+    return "";
+}
 
 uint32 ChatHelper::parseSkill(std::string const text)
 {

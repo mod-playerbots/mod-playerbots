@@ -5,6 +5,7 @@
  */
 
 #include "EncounterHelpers.h"
+#include "AiFactory.h"
 #include "CellImpl.h"
 #include "DKActions.h"
 #include "DruidActions.h"
@@ -16,7 +17,9 @@
 #include "HunterActions.h"
 #include "InstanceScript.h"
 #include "MageActions.h"
+#include "ObjectAccessor.h"
 #include "PaladinActions.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "RogueActions.h"
 #include "RtiTargetValue.h"
@@ -26,19 +29,19 @@
 #include <algorithm>
 #include <cmath>
 #include <list>
+#include <map>
+#include <string>
+#include <tuple>
 
 namespace EncounterHelpers
 {
 
 // Calling InstanceScript::IsEncounterInProgress is a very cheap check to use as an initial gate
 // for triggers and multipliers that should run only during a boss fight. This will not work for
-// every single encounter, as some bosses are not scripted to report IN_PROGRESS (but at least in
-// TBC raids, that is rare: only Terestian Illhoof and Illidari Council do not). It's also possible
-// for a boss script to set IN_PROGRESS upon an event other than the pull; that's at least the case
-// with Kil'jaeden, who is set to IN_PROGRESS only after 1 of the 3 Hands of the Deceiver is killed
-// in phase 1. To avoid spamming this check across each trigger and multiplier, you can create a
-// derived class of Trigger or Multiplier to call this helper and then derive your triggers and
-// multipliers from the intermediate class.
+// every single encounter, as some bosses are not scripted to report IN_PROGRESS (though all TBC
+// raid bosses now do). It's also possible for a boss script to set IN_PROGRESS upon an event other
+// than the pull (e.g., Leotheras goes IN_PROGRESS when first hit, even while banished, or else
+// when the last Spellbinder dies, not when his Spellbinders are pulled).
 bool IsEncounterInProgress(Player* bot, uint32 mapId)
 {
     if (bot->GetMapId() != mapId)
@@ -74,14 +77,14 @@ bool CanTakeStepTowards(
     if (candidateZ <= INVALID_HEIGHT)
         candidateZ = botZ;
 
-    // The 9th parameter of CanReachPositionAndGetValidCoords(), failOnSlopes, returns false for a
+    // The ninth parameter of CanReachPositionAndGetValidCoords(), failOnSlopes, returns false for a
     // non-walkable slope, but in my experience, walking downhill is always possible, and thus the
     // check needlessly rejects descents. This variable gets around that problem.
     bool const failOnSlopes = candidateZ > botZ;
 
     // This helper will return false on collision rather than clamping to the contact point so that
     // the caller can try a different path. Clamping is useless for avoidance since the bot will die
-    // just the same if it is in the middle of a hazard vs. halfway out and returning true.
+    // just the same if it is in the middle of a hazard vs. halfway out and stuck returning true.
     float const requestedX = candidateX;
     float const requestedY = candidateY;
 
@@ -209,8 +212,7 @@ bool MarkTargetWithMoon(Player* bot, Unit* target)
     return MarkTargetWithIcon(bot, target, RtiTargetValue::moonIndex);
 }
 
-// For clearing marks outside of combat so bots don't Leeroy on sight. This is best used when gated
-// behind an out-of-combat check (such as with IsInCombatValue).
+// For clearing marks outside of combat and/or encounters so bots don't Leeroy on sight.
 bool ClearTargetIcon(Player* bot, uint8 iconId)
 {
     Group* group = bot->GetGroup();
@@ -225,6 +227,21 @@ bool ClearTargetIcon(Player* bot, uint8 iconId)
     }
 
     return false;
+}
+
+// Clears the icon only if it is on one of the given entries (i.e., one marked by the strategy).
+// This leaves icons players have put on other mobs (such as most trash) alone.
+bool ClearStrategyTargetIcon(Player* bot, uint8 iconId, std::initializer_list<uint32> entries)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    uint32 const entry = group->GetTargetIcon(iconId).GetEntry();
+    if (std::find(entries.begin(), entries.end(), entry) == entries.end())
+        return false;
+
+    return ClearTargetIcon(bot, iconId);
 }
 
 // For bots to set their raid target icon to the specified icon
@@ -320,21 +337,6 @@ Player* GetGroupAssistTank(Player* bot, uint8 index)
     uint8 nonAssistantIndex = index - assistantCount;
     if (nonAssistantIndex < nonAssistantTanks.size())
         return nonAssistantTanks[nonAssistantIndex];
-
-    return nullptr;
-}
-
-// DO NOT USE. TO BE REMOVED HERE ONCE ALL CALL SITES ARE MODIFIED.
-Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
-{
-    auto const& units =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-    for (auto const& unitGuid : units)
-    {
-        Unit* unit = botAI->GetUnit(unitGuid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == entry)
-            return unit;
-    }
 
     return nullptr;
 }
@@ -559,7 +561,9 @@ bool IsAoeThreatAction(Player* bot, Action* action)
                 dynamic_cast<CastBloodBoilAction*>(action);
 
         case CLASS_DRUID:
-            return dynamic_cast<CastSwipeBearAction*>(action);
+            return dynamic_cast<CastSwipeBearAction*>(action) ||
+                dynamic_cast<CastMaulAction*>(action) || // Hits multiple targets with the Glyph
+                dynamic_cast<CastDemoralizingRoarAction*>(action);
 
         case CLASS_PALADIN:
             return dynamic_cast<CastAvengersShieldAction*>(action) ||
@@ -568,11 +572,232 @@ bool IsAoeThreatAction(Player* bot, Action* action)
         case CLASS_WARRIOR:
             return dynamic_cast<CastThunderClapAction*>(action) ||
                 dynamic_cast<CastShockwaveAction*>(action) ||
-                dynamic_cast<CastCleaveAction*>(action);
+                dynamic_cast<CastCleaveAction*>(action) ||
+                dynamic_cast<CastDemoralizingShoutAction*>(action) ||
+                dynamic_cast<CastDemoralizingShoutWithoutLifeTimeCheckAction*>(action);
 
         default:
             return false;
     }
+}
+
+// Class roles
+
+namespace
+{
+
+constexpr ClassRoleText CLASS_ROLE_ASSISTANT_TEXT = {
+    "class_role_assistant",
+    "%name is the best-geared %class with the assistant flag and is the %role.",
+};
+constexpr ClassRoleText CLASS_ROLE_PREFERRED_SPEC_BOT_TEXT = {
+    "class_role_preferred_spec_bot",
+    "%name is the best-geared %specclass bot and is the %role. Give a %class the assistant flag "
+    "to choose someone else.",
+};
+constexpr ClassRoleText CLASS_ROLE_BOT_TEXT = {
+    "class_role_bot",
+    "%name is the best-geared %class bot and is the %role. Give a %class the assistant flag to "
+    "choose someone else.",
+};
+constexpr ClassRoleText CLASS_ROLE_NONE_TEXT = {
+    "class_role_none",
+    "No %class is present to be the %role.",
+};
+constexpr ClassRoleText CLASS_ROLE_HANDOVER_TEXT = {
+    "class_role_handover",
+    "%name takes over as the %role.",
+};
+
+std::string GetClassRoleText(
+    ClassRoleText const& text, std::map<std::string, std::string> const& placeholders = {})
+{
+    return PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        text.name, text.defaultText, placeholders);
+}
+
+ClassRoleText const& GetClassRoleChoiceText(ClassRoleChoiceReason reason)
+{
+    switch (reason)
+    {
+        case ClassRoleChoiceReason::Assistant:
+            return CLASS_ROLE_ASSISTANT_TEXT;
+        case ClassRoleChoiceReason::PreferredSpecBot:
+            return CLASS_ROLE_PREFERRED_SPEC_BOT_TEXT;
+        case ClassRoleChoiceReason::Bot:
+            return CLASS_ROLE_BOT_TEXT;
+        default:
+            return CLASS_ROLE_NONE_TEXT;
+    }
+}
+
+bool SayClassRoleChoice(
+    PlayerbotAI* botAI, ClassRole const& role, ClassRoleChoice const& choice, bool isHandover)
+{
+    std::map<std::string, std::string> placeholders = {
+        { "%role", GetClassRoleText(role.role) },
+        { "%class", GetClassRoleText(role.candidate) },
+    };
+
+    if (role.preferredSpec)
+        placeholders["%specclass"] = GetClassRoleText(role.preferredCandidate);
+
+    if (!choice.guid.IsEmpty())
+    {
+        Player* player = ObjectAccessor::GetPlayer(*botAI->GetBot(), choice.guid);
+        if (!player)
+            return false;
+
+        placeholders["%name"] = player->GetName();
+    }
+
+    ClassRoleText const& text =
+        isHandover ? CLASS_ROLE_HANDOVER_TEXT : GetClassRoleChoiceText(choice.reason);
+    return botAI->SayToRaid(GetClassRoleText(text, placeholders));
+}
+
+} // end anonymous namespace (Class roles)
+
+ClassRoleChoice FindClassRoleChoice(PlayerbotAI* botAI, uint32 mapId, ClassRole const& role)
+{
+    Group* group = botAI->GetBot()->GetGroup();
+    if (!group)
+        return {};
+
+    ClassRoleChoice best;
+    uint32 bestGearScore = 0;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member->GetMapId() != mapId || !member->IsAlive() ||
+            member->getClass() != role.playerClass)
+        {
+            continue;
+        }
+
+        ObjectGuid const guid = member->GetGUID();
+        bool const isAssistant = group->IsAssistant(guid);
+        if (!isAssistant && !GET_PLAYERBOT_AI(member))
+            continue;
+
+        std::optional<uint8> spec;
+        if (role.requiredSpec || role.preferredSpec)
+            spec = AiFactory::GetPlayerSpecTab(member);
+
+        if (role.requiredSpec && spec != role.requiredSpec)
+            continue;
+
+        ClassRoleChoiceReason reason = ClassRoleChoiceReason::Bot;
+        if (isAssistant)
+            reason = ClassRoleChoiceReason::Assistant;
+        else if (role.preferredSpec && spec == role.preferredSpec)
+            reason = ClassRoleChoiceReason::PreferredSpecBot;
+
+        auto const rank = std::tuple(reason, botAI->GetEquipGearScore(member));
+        auto const bestRank = std::tuple(best.reason, bestGearScore);
+        if (rank > bestRank || (rank == bestRank && guid < best.guid))
+        {
+            best = { guid, reason };
+            bestGearScore = std::get<1>(rank);
+        }
+    }
+
+    return best;
+}
+
+bool UpdateClassRoleAssignments(
+    PlayerbotAI* botAI, uint32 mapId, std::initializer_list<ClassRoleSlot> slots)
+{
+    Player* bot = botAI->GetBot();
+    bool const isInEncounter = IsEncounterInProgress(bot, mapId);
+    bool changed = false;
+    for (ClassRoleSlot const& slot : slots)
+    {
+        std::optional<ClassRoleChoice>& choice = slot.assignment.choice;
+        if (isInEncounter && GetClassRolePlayer(bot, slot.assignment))
+            continue;
+
+        ClassRoleChoice const next = FindClassRoleChoice(botAI, mapId, slot.role);
+        if (choice == next)
+            continue;
+
+        bool const isHandover = isInEncounter && choice && !next.guid.IsEmpty();
+        choice = next;
+        changed = true;
+
+        if (isHandover && SayClassRoleChoice(botAI, slot.role, next, true))
+            slot.assignment.announcedChoice = next;
+    }
+
+    return changed;
+}
+
+bool UpdateClassRoleAnnouncement(
+    PlayerbotAI* botAI, uint32 bossEntry, Position const& bossSpawn, float announceDistance,
+    float rearmDistance, std::initializer_list<ClassRoleSlot> slots,
+    std::optional<uint32> blockerEntry)
+{
+    Player* bot = botAI->GetBot();
+    float const distance = bot->GetExactDist2d(bossSpawn);
+    if (distance > rearmDistance)
+    {
+        bool reset = false;
+        for (ClassRoleSlot const& slot : slots)
+            reset |= ResetIfSet(slot.assignment.announcedChoice);
+
+        return reset;
+    }
+
+    if (distance > announceDistance)
+        return false;
+
+    auto const isUnannounced = [](ClassRoleSlot const& slot)
+    {
+        return slot.assignment.choice &&
+            slot.assignment.choice != slot.assignment.announcedChoice;
+    };
+
+    if (std::ranges::none_of(slots, isUnannounced))
+        return false;
+
+    // The checks above keep these grid searches to the rare tick with something to announce.
+    if (blockerEntry && bot->FindNearestCreature(*blockerEntry, rearmDistance))
+        return false;
+
+    if (!bot->FindNearestCreature(bossEntry, rearmDistance))
+        return false;
+
+    for (ClassRoleSlot const& slot : slots)
+    {
+        if (!isUnannounced(slot))
+            continue;
+
+        slot.assignment.announcedChoice = slot.assignment.choice;
+        SayClassRoleChoice(botAI, slot.role, *slot.assignment.choice, false);
+    }
+
+    return true;
+}
+
+Player* GetClassRolePlayer(Player* bot, ClassRoleAssignment const& assignment)
+{
+    ObjectGuid const guid = GetClassRolePlayerGuid(assignment);
+    if (guid.IsEmpty())
+        return nullptr;
+
+    Player* player = ObjectAccessor::GetPlayer(*bot, guid);
+    return player && player->IsAlive() ? player : nullptr;
+}
+
+ObjectGuid GetClassRolePlayerGuid(ClassRoleAssignment const& assignment)
+{
+    return assignment.choice ? assignment.choice->guid : ObjectGuid::Empty;
+}
+
+bool IsClassRolePlayer(Player* bot, ClassRoleAssignment const& assignment)
+{
+    ObjectGuid const guid = GetClassRolePlayerGuid(assignment);
+    return !guid.IsEmpty() && guid == bot->GetGUID();
 }
 
 }

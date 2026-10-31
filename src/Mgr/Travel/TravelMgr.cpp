@@ -5,11 +5,13 @@
  */
 
 #include "TravelMgr.h"
+#include "QuestLevelRules.h"
 #include "AreaDefines.h"
 #include "CellImpl.h"
 #include "ChatHelper.h"
 #include "Corpse.h"
 #include "Creature.h"
+#include "GameEventMgr.h"
 #include "Log.h"
 #include "Map.h"
 #include "MapCollisionData.h"
@@ -79,16 +81,16 @@ static int GetCityWeight(uint32 zoneId)
 {
     switch (zoneId)
     {
-        case AREA_STORMWIND_CITY:  return sPlayerbotAIConfig.weightTeleToStormwind;
-        case AREA_IRONFORGE:       return sPlayerbotAIConfig.weightTeleToIronforge;
-        case AREA_DARNASSUS:       return sPlayerbotAIConfig.weightTeleToDarnassus;
-        case AREA_THE_EXODAR:      return sPlayerbotAIConfig.weightTeleToExodar;
-        case AREA_ORGRIMMAR:       return sPlayerbotAIConfig.weightTeleToOrgrimmar;
-        case AREA_UNDERCITY:       return sPlayerbotAIConfig.weightTeleToUndercity;
-        case AREA_THUNDER_BLUFF:   return sPlayerbotAIConfig.weightTeleToThunderBluff;
-        case AREA_SILVERMOON_CITY: return sPlayerbotAIConfig.weightTeleToSilvermoonCity;
-        case AREA_SHATTRATH_CITY:  return sPlayerbotAIConfig.weightTeleToShattrathCity;
-        case AREA_DALARAN:         return sPlayerbotAIConfig.weightTeleToDalaran;
+        case AREA_STORMWIND_CITY:  return sPlayerbotAIConfig.WeightTeleToStormwind;
+        case AREA_IRONFORGE:       return sPlayerbotAIConfig.WeightTeleToIronforge;
+        case AREA_DARNASSUS:       return sPlayerbotAIConfig.WeightTeleToDarnassus;
+        case AREA_THE_EXODAR:      return sPlayerbotAIConfig.WeightTeleToExodar;
+        case AREA_ORGRIMMAR:       return sPlayerbotAIConfig.WeightTeleToOrgrimmar;
+        case AREA_UNDERCITY:       return sPlayerbotAIConfig.WeightTeleToUndercity;
+        case AREA_THUNDER_BLUFF:   return sPlayerbotAIConfig.WeightTeleToThunderBluff;
+        case AREA_SILVERMOON_CITY: return sPlayerbotAIConfig.WeightTeleToSilvermoonCity;
+        case AREA_SHATTRATH_CITY:  return sPlayerbotAIConfig.WeightTeleToShattrathCity;
+        case AREA_DALARAN:         return sPlayerbotAIConfig.WeightTeleToDalaran;
     }
     return 0;
 }
@@ -844,7 +846,7 @@ std::vector<WorldPosition> WorldPosition::getPathFromPath(std::vector<WorldPosit
 
         subPath = getPathStepFrom(currentPos, path);
 
-        if (subPath.empty() || currentPos.distance(&subPath.back()) < sPlayerbotAIConfig.targetPosRecalcDistance)
+        if (subPath.empty() || currentPos.distance(&subPath.back()) < sPlayerbotAIConfig.TargetPosRecalcDistance)
             break;
 
         fullPath.insert(fullPath.end(), std::next(subPath.begin(), 1), subPath.end());
@@ -1553,7 +1555,7 @@ void TravelTarget::setStatus(TravelStatus status)
             statusTime = 1;
             break;
         case TRAVEL_STATUS_TRAVEL:
-            statusTime = getMaxTravelTime() * 2 + sPlayerbotAIConfig.maxWaitForMove;
+            statusTime = getMaxTravelTime() * 2 + sPlayerbotAIConfig.MaxWaitForMove;
             break;
         case TRAVEL_STATUS_WORK:
             statusTime = tDestination->getExpireDelay();
@@ -1941,7 +1943,7 @@ void TravelMgr::LoadQuestTravelTable()
                     if (flag & (uint32)QuestRelationFlag::questGiver)
                     {
                         loc = new QuestRelationTravelDestination(
-                            questId, entry, 0, sPlayerbotAIConfig.tooCloseDistance, sPlayerbotAIConfig.sightDistance);
+                            questId, entry, 0, sPlayerbotAIConfig.TooCloseDistance, sPlayerbotAIConfig.SightDistance);
                         loc->setExpireDelay(5 * MINUTE * IN_MILLISECONDS);
                         loc->setMaxVisitors(15, 0);
                         container->questGivers.push_back(loc);
@@ -1950,7 +1952,7 @@ void TravelMgr::LoadQuestTravelTable()
                     if (flag & (uint32)QuestRelationFlag::questTaker)
                     {
                         loc = new QuestRelationTravelDestination(
-                            questId, entry, 1, sPlayerbotAIConfig.tooCloseDistance, sPlayerbotAIConfig.sightDistance);
+                            questId, entry, 1, sPlayerbotAIConfig.TooCloseDistance, sPlayerbotAIConfig.SightDistance);
                         loc->setExpireDelay(5 * MINUTE * IN_MILLISECONDS);
                         loc->setMaxVisitors(15, 0);
                         container->questTakers.push_back(loc);
@@ -1969,8 +1971,8 @@ void TravelMgr::LoadQuestTravelTable()
                             objective = 3;
 
                         loc = new QuestObjectiveTravelDestination(questId, entry, objective,
-                                                                  sPlayerbotAIConfig.tooCloseDistance,
-                                                                  sPlayerbotAIConfig.sightDistance);
+                                                                  sPlayerbotAIConfig.TooCloseDistance,
+                                                                  sPlayerbotAIConfig.SightDistance);
                         loc->setExpireDelay(MINUTE * IN_MILLISECONDS);
                         loc->setMaxVisitors(100, 1);
                         container->questObjectives.push_back(loc);
@@ -2038,8 +2040,8 @@ void TravelMgr::LoadQuestTravelTable()
         {
             if ((cInfo->npcflag & *i) != 0)
             {
-                rLoc = new RpgTravelDestination(u.entry, sPlayerbotAIConfig.tooCloseDistance,
-                                                sPlayerbotAIConfig.sightDistance);
+                rLoc = new RpgTravelDestination(u.entry, sPlayerbotAIConfig.TooCloseDistance,
+                                                sPlayerbotAIConfig.SightDistance);
                 rLoc->setExpireDelay(5 * MINUTE * IN_MILLISECONDS);
                 rLoc->setMaxVisitors(15, 0);
 
@@ -2051,8 +2053,8 @@ void TravelMgr::LoadQuestTravelTable()
 
         if (cInfo->mingold > 0)
         {
-            gLoc = new GrindTravelDestination(u.entry, sPlayerbotAIConfig.tooCloseDistance,
-                                              sPlayerbotAIConfig.sightDistance);
+            gLoc = new GrindTravelDestination(u.entry, sPlayerbotAIConfig.TooCloseDistance,
+                                              sPlayerbotAIConfig.SightDistance);
             gLoc->setExpireDelay(5 * MINUTE * IN_MILLISECONDS);
             gLoc->setMaxVisitors(100, 0);
 
@@ -2065,8 +2067,8 @@ void TravelMgr::LoadQuestTravelTable()
         {
             std::string const nodeName = cInfo->Name;
 
-            bLoc = new BossTravelDestination(u.entry, sPlayerbotAIConfig.tooCloseDistance,
-                                             sPlayerbotAIConfig.sightDistance);
+            bLoc = new BossTravelDestination(u.entry, sPlayerbotAIConfig.TooCloseDistance,
+                                             sPlayerbotAIConfig.SightDistance);
             bLoc->setExpireDelay(5 * MINUTE * IN_MILLISECONDS);
             bLoc->setMaxVisitors(0, 0);
 
@@ -2098,8 +2100,8 @@ void TravelMgr::LoadQuestTravelTable()
 
         if (iloc == exploreLocs.end())
         {
-            loc = new ExploreTravelDestination(area->ID, sPlayerbotAIConfig.tooCloseDistance,
-                                               sPlayerbotAIConfig.sightDistance);
+            loc = new ExploreTravelDestination(area->ID, sPlayerbotAIConfig.TooCloseDistance,
+                                               sPlayerbotAIConfig.SightDistance);
             loc->setMaxVisitors(1000, 0);
             loc->setCooldownDelay(1000);
             loc->setExpireDelay(1000);
@@ -2115,14 +2117,14 @@ void TravelMgr::LoadQuestTravelTable()
     }
 
     // Clear these logs files
-    sPlayerbotAIConfig.openLog("zones.csv", "w");
-    sPlayerbotAIConfig.openLog("creatures.csv", "w");
-    sPlayerbotAIConfig.openLog("gos.csv", "w");
-    sPlayerbotAIConfig.openLog("pathfind_result.csv", "w");
-    sPlayerbotAIConfig.openLog("strategy.csv", "w");
+    sPlayerbotAIConfig.OpenLog("zones.csv", "w");
+    sPlayerbotAIConfig.OpenLog("creatures.csv", "w");
+    sPlayerbotAIConfig.OpenLog("gos.csv", "w");
+    sPlayerbotAIConfig.OpenLog("pathfind_result.csv", "w");
+    sPlayerbotAIConfig.OpenLog("strategy.csv", "w");
 
-    sPlayerbotAIConfig.openLog("unload_grid.csv", "w");
-    sPlayerbotAIConfig.openLog("unload_obj.csv", "w");
+    sPlayerbotAIConfig.OpenLog("unload_grid.csv", "w");
+    sPlayerbotAIConfig.OpenLog("unload_obj.csv", "w");
 
     // Node loading/generation is handled by TravelNodeMap::Init() called from TravelMgr::Init().
 
@@ -2131,7 +2133,7 @@ void TravelMgr::LoadQuestTravelTable()
     TravelNodeMap::instance().saveNodeStore();
 
     // Creature/gos/zone export.
-    if (sPlayerbotAIConfig.hasLog("creatures.csv"))
+    if (sPlayerbotAIConfig.HasLog("creatures.csv"))
     {
         for (CreatureData const* cData : WorldPosition().getCreaturesNear())
         {
@@ -2156,11 +2158,11 @@ void TravelMgr::LoadQuestTravelTable()
             out << point.getAreaName() << ",";
             out << std::fixed;
 
-            sPlayerbotAIConfig.log("creatures.csv", out.str().c_str());
+            sPlayerbotAIConfig.Log("creatures.csv", out.str().c_str());
         }
     }
 
-    if (sPlayerbotAIConfig.hasLog("vmangoslines.csv"))
+    if (sPlayerbotAIConfig.HasLog("vmangoslines.csv"))
     {
         uint32 mapId = 0;
         std::vector<WorldPosition> pos;
@@ -2191,7 +2193,7 @@ void TravelMgr::LoadQuestTravelTable()
         WorldPosition().printWKT(pos, out, 1);
         out << std::fixed;
 
-        sPlayerbotAIConfig.log("vmangoslines.csv", out.str().c_str());
+        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
 
         static float const ironforgeAreaSouthLimit[] = {
             -7491.33f, 3093.740f, -7472.04f, -391.880f, -6366.68f, -730.100f, -6063.96f, -1411.76f,
@@ -2218,7 +2220,7 @@ void TravelMgr::LoadQuestTravelTable()
         WorldPosition().printWKT(pos, out, 1);
         out << std::fixed;
 
-        sPlayerbotAIConfig.log("vmangoslines.csv", out.str().c_str());
+        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
 
         static float const stormwindAreaNorthLimit[] = {
             -8004.250f, 3714.110f, -8075.000f, -179.000f, -8638.000f, 169.0000f, -9044.000f, 35.00000f,
@@ -2246,7 +2248,7 @@ void TravelMgr::LoadQuestTravelTable()
         WorldPosition().printWKT(pos, out, 1);
         out << std::fixed;
 
-        sPlayerbotAIConfig.log("vmangoslines.csv", out.str().c_str());
+        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
 
         static float const stormwindAreaSouthLimit[] = {
             -8725.3378910f, 3535.62402300f, -9525.6992190f, 910.13256800f, -9796.9531250f, 839.06958000f,
@@ -2277,7 +2279,7 @@ void TravelMgr::LoadQuestTravelTable()
         WorldPosition().printWKT(pos, out, 1);
         out << std::fixed;
 
-        sPlayerbotAIConfig.log("vmangoslines.csv", out.str().c_str());
+        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
 
         mapId = 1;
 
@@ -2311,7 +2313,7 @@ void TravelMgr::LoadQuestTravelTable()
         WorldPosition().printWKT(pos, out, 1);
         out << std::fixed;
 
-        sPlayerbotAIConfig.log("vmangoslines.csv", out.str().c_str());
+        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
 
         static float const durotarSouthLimit[] = {
             2755.0f, -3766.f, 2225.0f, -3596.f, 1762.0f, -3746.f, 1564.0f, -3943.f, 1184.0f, -3915.f, 737.00f,
@@ -2339,7 +2341,7 @@ void TravelMgr::LoadQuestTravelTable()
         WorldPosition().printWKT(pos, out, 1);
         out << std::fixed;
 
-        sPlayerbotAIConfig.log("vmangoslines.csv", out.str().c_str());
+        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
 
         static float const valleyoftrialsSouthLimit[] = {-324.f,  -3869.f, -774.f,  -3992.f, -965.f,  -4290.f, -932.f,
                                                          -4349.f, -828.f,  -4414.f, -661.f,  -4541.f, -521.f,  -4582.f};
@@ -2364,7 +2366,7 @@ void TravelMgr::LoadQuestTravelTable()
         WorldPosition().printWKT(pos, out, 1);
         out << std::fixed;
 
-        sPlayerbotAIConfig.log("vmangoslines.csv", out.str().c_str());
+        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
 
         static float const middleToSouthLimit[] = {
             -2402.010000f, 4255.7000000f, -2475.933105f, 3199.5683590f,  // Desolace
@@ -2396,7 +2398,7 @@ void TravelMgr::LoadQuestTravelTable()
         WorldPosition().printWKT(pos, out, 1);
         out << std::fixed;
 
-        sPlayerbotAIConfig.log("vmangoslines.csv", out.str().c_str());
+        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
 
         static float const orgrimmarSouthLimit[] = {
             2132.5076f, -3912.2478f, 1944.4298f, -3855.2583f, 1735.6906f, -3834.2417f, 1654.3671f, -3380.9902f,
@@ -2424,7 +2426,7 @@ void TravelMgr::LoadQuestTravelTable()
         WorldPosition().printWKT(pos, out, 1);
         out << std::fixed;
 
-        sPlayerbotAIConfig.log("vmangoslines.csv", out.str().c_str());
+        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
 
         static float const feralasThousandNeedlesSouthLimit[] = {
             -6495.4995f, -4711.9810f, -6674.9995f, -4515.0019f, -6769.5717f, -4122.4272f, -6838.2651f, -3874.2792f,
@@ -2454,10 +2456,10 @@ void TravelMgr::LoadQuestTravelTable()
         WorldPosition().printWKT(pos, out, 1);
         out << std::fixed;
 
-        sPlayerbotAIConfig.log("vmangoslines.csv", out.str().c_str());
+        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
     }
 
-    if (sPlayerbotAIConfig.hasLog("gos.csv"))
+    if (sPlayerbotAIConfig.HasLog("gos.csv"))
     {
         for (GameObjectData const* gData : WorldPosition().getGameObjectsNear())
         {
@@ -2479,11 +2481,11 @@ void TravelMgr::LoadQuestTravelTable()
             out << point.getAreaName() << ",";
             out << std::fixed;
 
-            sPlayerbotAIConfig.log("gos.csv", out.str().c_str());
+            sPlayerbotAIConfig.Log("gos.csv", out.str().c_str());
         }
     }
 
-    if (sPlayerbotAIConfig.hasLog("zones.csv"))
+    if (sPlayerbotAIConfig.HasLog("zones.csv"))
     {
         std::unordered_map<std::string, std::vector<WorldPosition>> zoneLocs;
 
@@ -2534,13 +2536,13 @@ void TravelMgr::LoadQuestTravelTable()
 
             point.printWKT(points, out, 0);
 
-            sPlayerbotAIConfig.log("zones.csv", out.str().c_str());
+            sPlayerbotAIConfig.Log("zones.csv", out.str().c_str());
         }
     }
 
     bool printStrategyMap = false;
 
-    if (printStrategyMap && sPlayerbotAIConfig.hasLog("strategy.csv"))
+    if (printStrategyMap && sPlayerbotAIConfig.HasLog("strategy.csv"))
     {
         static std::map<uint8, std::string> classes;
         static std::map<uint8, std::map<uint8, std::string>> specs;
@@ -2570,7 +2572,7 @@ void TravelMgr::LoadQuestTravelTable()
         specs[CLASS_PRIEST][2] = "shadow";
 
         classes[CLASS_ROGUE] = "rogue";
-        specs[CLASS_ROGUE][0] = "assasination";
+        specs[CLASS_ROGUE][0] = "assassination";
         specs[CLASS_ROGUE][1] = "combat";
         specs[CLASS_ROGUE][2] = "subtlety";
 
@@ -2596,7 +2598,7 @@ void TravelMgr::LoadQuestTravelTable()
 
         // Use randombot 0.
         std::ostringstream cout;
-        cout << sPlayerbotAIConfig.randomBotAccountPrefix << 0;
+        cout << sPlayerbotAIConfig.RandomBotAccountPrefix << 0;
         std::string const accountName = cout.str();
 
         LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_ID_BY_USERNAME);
@@ -2770,7 +2772,7 @@ void TravelMgr::LoadQuestTravelTable()
                           return false;
                       });
 
-            sPlayerbotAIConfig.log("strategy.csv", "relevance, action, trigger, strategy, classes");
+            sPlayerbotAIConfig.Log("strategy.csv", "relevance, action, trigger, strategy, classes");
 
             for (auto& actionkey : actionKeys)
             {
@@ -2876,7 +2878,7 @@ void TravelMgr::LoadQuestTravelTable()
                     out << actionkey << "\n";
             }
 
-            sPlayerbotAIConfig.log("strategy.csv", out.str().c_str());
+            sPlayerbotAIConfig.Log("strategy.csv", out.str().c_str());
         }
     }
 
@@ -3445,7 +3447,7 @@ void TravelMgr::printGrid(uint32 mapId, int x, int y, std::string const type)
 {
     std::string const fileName = "unload_grid.csv";
 
-    if (sPlayerbotAIConfig.hasLog(fileName))
+    if (sPlayerbotAIConfig.HasLog(fileName))
     {
         WorldPosition p = WorldPosition(mapId, 0, 0, 0, 0);
 
@@ -3453,7 +3455,7 @@ void TravelMgr::printGrid(uint32 mapId, int x, int y, std::string const type)
         out << sPlayerbotAIConfig.GetTimestampStr();
         out << "+00, " << 0 << 0 << x << "," << y << ", " << type << ",";
         p.printWKT(p.fromGridCoord(GridCoord(x, y)), out, 1, true);
-        sPlayerbotAIConfig.log(fileName, out.str().c_str());
+        sPlayerbotAIConfig.Log(fileName, out.str().c_str());
     }
 }
 
@@ -3461,7 +3463,7 @@ void TravelMgr::printObj(WorldObject* obj, std::string const type)
 {
     std::string fileName = "unload_grid.csv";
 
-    if (sPlayerbotAIConfig.hasLog(fileName))
+    if (sPlayerbotAIConfig.HasLog(fileName))
     {
         WorldPosition p = WorldPosition(obj);
 
@@ -3478,7 +3480,7 @@ void TravelMgr::printObj(WorldObject* obj, std::string const type)
                 << "," << cell.GridY() << ", " << type << ",";
 
             p.printWKT(vcell, out, 1, true);
-            sPlayerbotAIConfig.log(fileName, out.str().c_str());
+            sPlayerbotAIConfig.Log(fileName, out.str().c_str());
         }
 
         {
@@ -3488,13 +3490,13 @@ void TravelMgr::printObj(WorldObject* obj, std::string const type)
                 << "," << cell.GridY() << ", " << type << ",";
 
             p.printWKT(vgrid, out, 1, true);
-            sPlayerbotAIConfig.log(fileName, out.str().c_str());
+            sPlayerbotAIConfig.Log(fileName, out.str().c_str());
         }
     }
 
     fileName = "unload_obj.csv";
 
-    if (sPlayerbotAIConfig.hasLog(fileName))
+    if (sPlayerbotAIConfig.HasLog(fileName))
     {
         WorldPosition p = WorldPosition(obj);
 
@@ -3506,19 +3508,25 @@ void TravelMgr::printObj(WorldObject* obj, std::string const type)
                 << "," << cell.GridY() << ", " << type << ",";
 
             p.printWKT({p}, out, 0);
-            sPlayerbotAIConfig.log(fileName, out.str().c_str());
+            sPlayerbotAIConfig.Log(fileName, out.str().c_str());
         }
     }
 }
 
 void TravelMgr::Init()
 {
-    if (sPlayerbotAIConfig.enabled)
+    if (sPlayerbotAIConfig.Enabled)
     {
         if (!destinationCachesReady)
         {
             PrepareZone2LevelBracket();
             PrepareDestinationCache();
+
+            if (sPlayerbotAIConfig.ProbTeleToQuestGivers > 0.0f)
+                PrepareQuestGiverTeleportIndex();
+            else
+                questGiverTeleportIndex.clear();
+
             destinationCachesReady = true;
         }
     }
@@ -3590,7 +3598,7 @@ std::vector<std::vector<uint32>> TravelMgr::GetOptimalFlightDestinations(Player*
 
     std::vector<uint32> candidateZones;
     if (botLevel >= 10 && !botInCapital &&
-        urand(0, 100) < sPlayerbotAIConfig.probTeleToBankers * 100)
+        urand(0, 100) < sPlayerbotAIConfig.ProbTeleToBankers * 100)
     {
         TeamId botTeam = bot->GetTeamId();
         for (Capital const& capital : capitals)
@@ -3642,11 +3650,14 @@ std::vector<std::vector<uint32>> TravelMgr::GetOptimalFlightDestinations(Player*
 const std::vector<WorldLocation> TravelMgr::GetTeleportLocations(Player* bot)
 {
     uint32 level = bot->GetLevel();
-    uint8 isAlliance = bot->GetTeamId() == TEAM_ALLIANCE;
-    if (sPlayerbotAIConfig.enableNewRpgStrategy)
-        return isAlliance ? allianceHubsPerLevelCache[level] : hordeHubsPerLevelCache[level];
+    std::map<uint8, std::vector<WorldLocation>> const& cache =
+        !sPlayerbotAIConfig.EnableNewRpgStrategy ? locsPerLevelCache
+        : bot->GetTeamId() == TEAM_ALLIANCE      ? allianceHubsPerLevelCache
+                                                 : hordeHubsPerLevelCache;
 
-    return locsPerLevelCache[level];
+    // Called from map threads: find() must not insert.
+    auto itr = cache.find(static_cast<uint8>(level));
+    return itr != cache.end() ? itr->second : std::vector<WorldLocation>();
 }
 
 const std::vector<WorldLocation> TravelMgr::GetTravelHubs(Player* bot)
@@ -3665,7 +3676,7 @@ std::vector<WorldLocation> TravelMgr::GetCityLocations(Player* bot)
     for (auto& bLoc : bankerLocsPerLevelCache[level])
         fallbackLocations.push_back(bLoc.loc);
 
-    if (!sPlayerbotAIConfig.enableWeightTeleToCityBankers)
+    if (!sPlayerbotAIConfig.EnableWeightTeleToCityBankers)
         return fallbackLocations;
 
     TeamId botTeamId = bot->GetTeamId();
@@ -3715,6 +3726,62 @@ std::vector<WorldLocation> TravelMgr::GetCityLocations(Player* bot)
         return { locIt->second };
     // Fallback if something went wrong
     return fallbackLocations;
+}
+
+std::vector<WorldLocation> TravelMgr::GetValidQuestGiverLocations(Player* bot)
+{
+    std::vector<WorldLocation> out;
+
+    uint32 level = std::min<uint32>(bot->GetLevel(), sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
+    auto levelIt = questGiverTeleportIndex.find(level);
+    if (levelIt == questGiverTeleportIndex.end())
+        return out;
+
+    auto teamIt = levelIt->second.find(bot->GetTeamId());
+    if (teamIt == levelIt->second.end())
+        return out;
+
+    int32 botLevel = (int32)bot->GetLevel();
+    uint32 raceMask = bot->getRaceMask();
+    uint32 classMask = bot->getClassMask();
+    int32 lowLevelDiff = sWorld->getIntConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF);
+
+    for (auto const& cand : teamIt->second)
+    {
+        int32 effQuestLevel = (cand.questLevel > 0) ? cand.questLevel : (int32)botLevel;
+        if (botLevel + QUEST_MAX_LEVELS_ABOVE_BOT < effQuestLevel)
+            continue;
+        // A negative hide-diff disables the low-level filter (core convention).
+        if (lowLevelDiff >= 0 && botLevel > effQuestLevel + lowLevelDiff)
+            continue;
+        if (cand.allowableRaces && !(cand.allowableRaces & raceMask))
+            continue;
+        if (cand.requiredClasses && !(cand.requiredClasses & classMask))
+            continue;
+
+        auto const* quest = sObjectMgr->GetQuestTemplate(cand.questId);
+        if (!quest)
+            continue;
+        if (bot->GetQuestStatus(cand.questId) != QUEST_STATUS_NONE)
+            continue;
+        if (!bot->CanTakeQuest(quest, false) || !bot->CanAddQuest(quest, false))
+            continue;
+
+        // The team bucket only guarantees the right side: neutral and friendly spawns are both
+        // valid, hostile ones are skipped.
+        CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(cand.giverEntry);
+        if (creatureTemplate)
+        {
+            FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(creatureTemplate->faction);
+            if (factionEntry &&
+                Unit::GetFactionReactionTo(bot->GetFactionTemplateEntry(), factionEntry) <= REP_UNFRIENDLY)
+                continue;
+        }
+
+        out.push_back(cand.loc);
+    }
+
+    return out;
 }
 
 void TravelMgr::PrepareZone2LevelBracket()
@@ -3793,7 +3860,7 @@ void TravelMgr::PrepareZone2LevelBracket()
     zone2LevelBracket[AREA_WINTERGRASP]         = {79, 80};
 
     // Override with values from config
-    for (auto const& [zoneId, bracketPair] : sPlayerbotAIConfig.zoneBrackets)
+    for (auto const& [zoneId, bracketPair] : sPlayerbotAIConfig.ZoneBrackets)
         zone2LevelBracket[zoneId] = {bracketPair.first, bracketPair.second};
 }
 
@@ -3824,8 +3891,8 @@ void TravelMgr::PrepareDestinationCache()
             continue;
 
         uint16 mapId = creatureData.mapid;
-        if (std::find(sPlayerbotAIConfig.randomBotMaps.begin(), sPlayerbotAIConfig.randomBotMaps.end(), mapId)
-                      == sPlayerbotAIConfig.randomBotMaps.end())
+        if (std::find(sPlayerbotAIConfig.RandomBotMaps.begin(), sPlayerbotAIConfig.RandomBotMaps.end(), mapId)
+                      == sPlayerbotAIConfig.RandomBotMaps.end())
             continue;
 
         float x = creatureData.posX;
@@ -4002,8 +4069,8 @@ void TravelMgr::PrepareDestinationCache()
             float avgZ = totalZ / creatureDataList.size();
             uint32 mapId = std::get<0>(gridTuple);
 
-            for (int32 l = (int32)level - (int32)sPlayerbotAIConfig.randomBotTeleLowerLevel;
-                 l <= (int32)level + (int32)sPlayerbotAIConfig.randomBotTeleHigherLevel; l++)
+            for (int32 l = (int32)level - (int32)sPlayerbotAIConfig.RandomBotTeleLowerLevel;
+                 l <= (int32)level + (int32)sPlayerbotAIConfig.RandomBotTeleHigherLevel; l++)
             {
                 if (l < 1 || l > int32(maxLevel))
                     continue;
@@ -4054,5 +4121,109 @@ void TravelMgr::PrepareDestinationCache()
             break;
         }
     }
+
+    for (uint32 level = 1; level <= maxLevel; ++level)
+    {
+        uint8 const key = static_cast<uint8>(level);
+        locsPerLevelCache.try_emplace(key);
+        allianceHubsPerLevelCache.try_emplace(key);
+        hordeHubsPerLevelCache.try_emplace(key);
+        bankerLocsPerLevelCache.try_emplace(key);
+    }
+
     LOG_INFO("playerbots", ">> {} flight masters, {} innkeepers, {} bankers collected.", flightMastersCount, innkeepersCount, bankerCount);
+}
+
+void TravelMgr::PrepareQuestGiverTeleportIndex()
+{
+    questGiverTeleportIndex.clear();
+
+    uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    int32 const window = QUEST_MAX_LEVELS_ABOVE_BOT;
+    uint32 candidateCount = 0;
+
+    // Spawns tagged for a positive game event sit in the upper half of GameEventCreatureGuids and
+    // only exist while the event runs (e.g. the AQ War Effort givers). `creature_queststarter` and
+    // `CanTakeQuest` ignore event state, so without this they would be indexed all year.
+    std::unordered_set<ObjectGuid::LowType> eventSpawns;
+    auto const& eventCreatureGuids = sGameEventMgr->GameEventCreatureGuids;
+    for (size_t i = sGameEventMgr->GetEventMap().size(); i < eventCreatureGuids.size(); ++i)
+        eventSpawns.insert(eventCreatureGuids[i].begin(), eventCreatureGuids[i].end());
+
+    for (auto const& [guid, creData] : sObjectMgr->GetAllCreatureData())
+    {
+        if (eventSpawns.count(guid))
+            continue;
+
+        if (std::find(sPlayerbotAIConfig.RandomBotMaps.begin(), sPlayerbotAIConfig.RandomBotMaps.end(),
+                      creData.mapid) == sPlayerbotAIConfig.RandomBotMaps.end())
+            continue;
+
+        CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creData.id);
+        if (!creatureTemplate)
+            continue;
+
+        auto const& relations = sObjectMgr->GetCreatureQuestRelationBounds(creData.id);
+        if (relations.first == relations.second)
+            continue;
+
+        // Team filter from the giver's hostileMask (same idiom as PrepareDestinationCache).
+        FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(creatureTemplate->faction);
+        if (!factionEntry)
+            continue;  // invalid faction template - skip defensively
+        bool forAlliance = !(factionEntry->hostileMask & 2);
+        bool forHorde = !(factionEntry->hostileMask & 4);
+        if (!forAlliance && !forHorde)
+            continue;
+
+        for (auto it = relations.first; it != relations.second; ++it)
+        {
+            auto const* quest = sObjectMgr->GetQuestTemplate(it->second);
+            if (!quest)
+                continue;
+
+            // Static worth/capable parts are baked out; level and core checks run at call time.
+            if (quest->IsRepeatable() || quest->IsSeasonal())
+                continue;
+            if (quest->GetType() != 0 || quest->GetSuggestedPlayers() >= 2)
+                continue;
+
+            QuestGiverTeleportCandidate cand;
+            cand.questId = it->second;
+            cand.giverEntry = creData.id;
+
+            // ~5y in front of the spawn, facing it (same offset idiom as the other hubs).
+            float o = creData.orientation;
+            cand.loc = WorldLocation(creData.mapid,
+                                     creData.posX + cos(o) * 5.0f,
+                                     creData.posY + sin(o) * 5.0f,
+                                     creData.posZ + 0.5f,
+                                     o + M_PI);
+
+            int32 qLevel = quest->GetQuestLevel();
+            cand.questLevel = (qLevel > 0) ? (uint16)qLevel : 0;
+            cand.allowableRaces = quest->GetAllowableRaces();
+            cand.requiredClasses = quest->GetRequiredClasses();
+
+            // Unknown quest levels span to maxLevel and are pruned at call time by CanTakeQuest.
+            uint32 lo = quest->GetMinLevel() > 0 ? quest->GetMinLevel() : 1;
+            int32 hi = (qLevel > 0) ? (qLevel + window) : (int32)maxLevel;
+            for (uint32 level = lo; level <= maxLevel && (int32)level <= hi; ++level)
+            {
+                if (forAlliance)
+                {
+                    questGiverTeleportIndex[level][TEAM_ALLIANCE].push_back(cand);
+                    ++candidateCount;
+                }
+                if (forHorde)
+                {
+                    questGiverTeleportIndex[level][TEAM_HORDE].push_back(cand);
+                    ++candidateCount;
+                }
+            }
+        }
+    }
+
+    LOG_INFO("playerbots", ">> Prepared quest-giver teleport index: {} candidates across {} levels.",
+             candidateCount, questGiverTeleportIndex.size());
 }
