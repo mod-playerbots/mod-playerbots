@@ -679,12 +679,9 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
         }
     }
 
-    if (!hasInfectionPosition)
-        return false;
-
     for (ObjectGuid const& guid : infected)
     {
-        if (!infections || !infections->contains(guid))
+        if (hasInfectionPosition && (!infections || !infections->contains(guid)))
             return true;
     }
 
