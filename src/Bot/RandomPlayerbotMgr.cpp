@@ -12,7 +12,7 @@
 #include "Cell.h"
 #include "CellImpl.h"
 #include "ChannelMgr.h"
-#include "Common.h" // Included for TimeConstants. Using DAY to mark a long time, and YEAR to mark permanence.
+#include "Common.h"
 #include "DBCStores.h"
 #include "DBCStructure.h"
 #include "DatabaseEnv.h"
@@ -314,12 +314,16 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
         _nextScheduledCountUpdate = 0;
     }
 
+    // A live config reload can move Min/MaxRandomBots past the held count, which forces a re-roll.
+    bool countOutOfRange =
+        maxAllowedBotCount < sPlayerbotAIConfig.MinRandomBots || maxAllowedBotCount > sPlayerbotAIConfig.MaxRandomBots;
+
     switch (sPlayerbotAIConfig.RandomBotCountMode)
     {
         case 1:
             // Mode 1 (variable): roll a count at server start and re-roll it every RandomBotCountChangeMin/MaxInterval.
             // The start roll is forced, in case there's a stale count from another mode.
-            if (!_botCountRolled || !maxAllowedBotCount)
+            if (!_botCountRolled || !maxAllowedBotCount || countOutOfRange)
             {
                 maxAllowedBotCount = urand(sPlayerbotAIConfig.MinRandomBots, sPlayerbotAIConfig.MaxRandomBots);
                 SetEventValue(0, "bot_count", maxAllowedBotCount,
@@ -343,7 +347,7 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
         }
         default:
             // Mode 0 (static): roll a count once at server start and hold it for the whole run.
-            if (!_botCountRolled)
+            if (!_botCountRolled || countOutOfRange)
             {
                 maxAllowedBotCount = urand(sPlayerbotAIConfig.MinRandomBots, sPlayerbotAIConfig.MaxRandomBots);
                 SetEventValue(0, "bot_count", maxAllowedBotCount, YEAR);
@@ -847,7 +851,10 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
 // and simply get trimmed on a later tick, if they become free and there's still unfulfilled demand for logouts.
 bool RandomPlayerbotMgr::IsRemovableBot(Player* bot)
 {
-    if (!bot || !bot->IsInWorld() || !IsRandomBot(bot))
+    if (!bot || !bot->IsInWorld())
+        return false;
+
+    if (bot->IsInCombat())
         return false;
 
     // In-flight or mid-teleport.
@@ -859,7 +866,7 @@ bool RandomPlayerbotMgr::IsRemovableBot(Player* bot)
         return false;
 
     // In a dungeon or raid (IsDungeon() covers both).
-    if (bot->GetMap() && bot->GetMap()->IsDungeon())
+    if (bot->GetMap()->IsDungeon())
         return false;
 
     // Controlled by a real player. IsRandomBot is not enough if a real player is logged into a randombot.
@@ -940,6 +947,10 @@ uint32 RandomPlayerbotMgr::RemoveRandomBots()
         removeAlliance = std::min(removeAlliance, budgetAlliance);
         removeHorde = std::min(removeHorde, toRemove - budgetAlliance);
     }
+
+    // playerBots is ordered by GUID, so without a shuffle the lowest GUIDs would always be the ones logged out.
+    std::shuffle(allianceBots.begin(), allianceBots.end(), RandomEngine::Instance());
+    std::shuffle(hordeBots.begin(), hordeBots.end(), RandomEngine::Instance());
 
     std::vector<ObjectGuid> toLogout;
     toLogout.insert(toLogout.end(), allianceBots.begin(), allianceBots.begin() + removeAlliance);

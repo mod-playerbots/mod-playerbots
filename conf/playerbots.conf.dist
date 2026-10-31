@@ -124,6 +124,7 @@ Playerbots.DisabledWithoutRealPlayerLogoutDelay = 300
 #                   Re-rolled again at a time between RandomBotCountChangeMin/MaxInterval.
 #   2 = Scheduled:  Fluctuating time-cycled count, ranging from MinRandomBots at RandomBotCountMinTime,
 #                   to MaxRandomBots at RandomBotCountMaxTime.
+#                   When RandomBotCountMinTime = RandomBotCountMaxTime the count stays at MaxRandomBots.
 # When MinRandomBots = MaxRandomBots the count is constant and all modes behave identically.
 # Default: 0 (static)
 Playerbots.RandomBotCountMode = 0

@@ -255,6 +255,12 @@ bool PlayerbotAIConfig::Initialize()
         std::swap(MinRandomBots, MaxRandomBots);
     }
     RandomBotCountMode = sConfigMgr->GetOption<uint32>("Playerbots.RandomBotCountMode", 0);
+    if (RandomBotCountMode > 2)
+    {
+        LOG_ERROR("server.loading", "Playerbots.RandomBotCountMode ({}) is not 0, 1 or 2. Using 0 (static).",
+                  RandomBotCountMode);
+        RandomBotCountMode = 0;
+    }
     RandomBotUpdateInterval = sConfigMgr->GetOption<int32>("Playerbots.RandomBotUpdateInterval", 20);
     RandomBotCountChangeMinInterval =
         sConfigMgr->GetOption<int32>("Playerbots.RandomBotCountChangeMinInterval", 30 * MINUTE);
