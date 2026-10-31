@@ -59,9 +59,11 @@
 #include "NearestCorpsesValue.h"
 #include "NearestFriendlyPlayersValue.h"
 #include "NearestGameObjects.h"
+#include "NearestLootValue.h"
 #include "NearestNonBotPlayersValue.h"
 #include "NearestNpcsValue.h"
 #include "NewPlayerNearbyValue.h"
+#include "NewRpgQuestGiverValue.h"
 #include "OutfitListValue.h"
 #include "PartyMemberSnaredTargetValue.h"
 #include "PartyMemberToDispel.h"
@@ -95,6 +97,7 @@
 #include "TradeValues.h"
 #include "Value.h"
 #include "WaitForAttackTimeValue.h"
+#include "WsgRouteState.h"
 
 class PlayerbotAI;
 
@@ -127,6 +130,7 @@ public:
         creators["possible rpg targets"] = &ValueContext::possible_rpg_targets;
         creators["possible new rpg targets"] = &ValueContext::possible_new_rpg_targets;
         creators["possible new rpg game objects"] = &ValueContext::possible_new_rpg_game_objects;
+        creators["new rpg quest giver"] = &ValueContext::new_rpg_quest_giver;
         creators["nearest corpses"] = &ValueContext::nearest_corpses;
         creators["log level"] = &ValueContext::log_level;
         creators["party member without aura"] = &ValueContext::party_member_without_aura;
@@ -175,6 +179,7 @@ public:
         creators["loot target"] = &ValueContext::loot_target;
         creators["available loot"] = &ValueContext::available_loot;
         creators["has available loot"] = &ValueContext::has_available_loot;
+        creators["nearest loot"] = &ValueContext::nearest_loot;
         creators["always loot list"] = &ValueContext::always_loot_list;
         creators["loot strategy"] = &ValueContext::loot_strategy;
         creators["last movement"] = &ValueContext::last_movement;
@@ -258,6 +263,10 @@ public:
         creators["rpg bg type"] = &ValueContext::rpg_bg_type;
         creators["arena type"] = &ValueContext::arena_type;
         creators["bg role"] = &ValueContext::bg_role;
+        creators["wsg team assignment"] = &ValueContext::wsg_team_assignment;
+        creators["wsg support target"] = &ValueContext::wsg_support_target;
+        creators["wsg follow carrier"] = &ValueContext::wsg_follow_carrier;
+        creators["wsg route"] = &ValueContext::wsg_route;
         creators["bg master"] = &ValueContext::bg_master;
         creators["enemy flag carrier"] = &ValueContext::enemy_fc;
         creators["team flag carrier"] = &ValueContext::team_fc;
@@ -392,6 +401,7 @@ private:
     static UntypedValue* available_loot(PlayerbotAI* botAI) { return new AvailableLootValue(botAI); }
     static UntypedValue* loot_target(PlayerbotAI* botAI) { return new LootTargetValue(botAI); }
     static UntypedValue* has_available_loot(PlayerbotAI* botAI) { return new HasAvailableLootValue(botAI); }
+    static UntypedValue* nearest_loot(PlayerbotAI* botAI) { return new NearestLootValue(botAI); }
     static UntypedValue* always_loot_list(PlayerbotAI* botAI) { return new AlwaysLootListValue(botAI); }
     static UntypedValue* loot_strategy(PlayerbotAI* botAI) { return new LootStrategyValue(botAI); }
 
@@ -433,6 +443,7 @@ private:
     static UntypedValue* possible_rpg_targets(PlayerbotAI* botAI) { return new PossibleRpgTargetsValue(botAI); }
     static UntypedValue* possible_new_rpg_targets(PlayerbotAI* botAI) { return new PossibleNewRpgTargetsValue(botAI); }
     static UntypedValue* possible_new_rpg_game_objects(PlayerbotAI* botAI) { return new PossibleNewRpgGameObjectsValue(botAI); }
+    static UntypedValue* new_rpg_quest_giver(PlayerbotAI* botAI) { return new NewRpgQuestGiverValue(botAI); }
     static UntypedValue* possible_targets(PlayerbotAI* botAI) { return new PossibleTargetsValue(botAI); }
     static UntypedValue* possible_triggers(PlayerbotAI* botAI) { return new PossibleTriggersValue(botAI); }
     static UntypedValue* possible_targets_no_los(PlayerbotAI* botAI)
@@ -506,6 +517,13 @@ private:
 
     static UntypedValue* bg_master(PlayerbotAI* botAI) { return new BgMasterValue(botAI); }
     static UntypedValue* bg_role(PlayerbotAI* botAI) { return new BgRoleValue(botAI); }
+    static UntypedValue* wsg_route(PlayerbotAI* botAI) { return new WsgRouteStateValue(botAI); }
+    static UntypedValue* wsg_team_assignment(PlayerbotAI* botAI) { return new WsgTeamAssignmentValue(botAI); }
+    static UntypedValue* wsg_support_target(PlayerbotAI* botAI) { return new WsgSupportTargetValue(botAI); }
+    static UntypedValue* wsg_follow_carrier(PlayerbotAI* botAI)
+    {
+        return new ManualSetValue<ObjectGuid>(botAI, ObjectGuid::Empty, "wsg follow carrier");
+    }
     static UntypedValue* arena_type(PlayerbotAI* botAI) { return new ArenaTypeValue(botAI); }
     static UntypedValue* bg_type(PlayerbotAI* botAI) { return new BgTypeValue(botAI); }
     static UntypedValue* rpg_bg_type(PlayerbotAI* botAI) { return new RpgBgTypeValue(botAI); }

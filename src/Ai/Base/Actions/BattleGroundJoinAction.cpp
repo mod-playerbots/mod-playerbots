@@ -9,6 +9,7 @@
 #include "ArenaTeamMgr.h"
 #include "BattlegroundMgr.h"
 #include "Event.h"
+#include "GameTime.h"
 #include "GroupMgr.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotOperations.h"
@@ -16,6 +17,11 @@
 #include "Playerbots.h"
 #include "PositionValue.h"
 #include "RandomPlayerbotFactory.h"
+
+namespace
+{
+    constexpr uint32 BG_JOIN_LOGIN_DELAY_MS = 120 * IN_MILLISECONDS;
+}
 
 bool BGJoinAction::Execute(Event /*event*/)
 {
@@ -299,17 +305,17 @@ bool BGJoinAction::shouldJoinBg(BattlegroundQueueTypeId queueTypeId, Battlegroun
     uint32 bgAlliancePlayerCount = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].bgAlliancePlayerCount;
     uint32 bgHordeBotCount = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].bgHordeBotCount;
     uint32 bgHordePlayerCount = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].bgHordePlayerCount;
-    uint32 activeBgQueue = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].activeBgQueue;
-    uint32 bgInstanceCount = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].bgInstanceCount;
+    uint32 demandedSlots =
+        sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].DemandedBgSlotsPerTeam(TeamSize, teamId);
 
     if (teamId == TEAM_ALLIANCE)
     {
-        if ((bgAllianceBotCount + bgAlliancePlayerCount) < TeamSize * (activeBgQueue + bgInstanceCount))
+        if ((bgAllianceBotCount + bgAlliancePlayerCount) < demandedSlots)
             return true;
     }
     else
     {
-        if ((bgHordeBotCount + bgHordePlayerCount) < TeamSize * (activeBgQueue + bgInstanceCount))
+        if ((bgHordeBotCount + bgHordePlayerCount) < demandedSlots)
             return true;
     }
 
@@ -330,8 +336,8 @@ bool BGJoinAction::isUseful()
     if (bot->InBattlegroundQueue())
         return false;
 
-    // do not try right after login (currently not working)
-    if ((time(nullptr) - bot->GetInGameTime()) < 120)
+    // do not try right after login
+    if (getMSTimeDiff(bot->GetInGameTime(), GameTime::GetGameTimeMS().count()) < BG_JOIN_LOGIN_DELAY_MS)
         return false;
 
     // check level
@@ -630,17 +636,17 @@ bool FreeBGJoinAction::shouldJoinBg(BattlegroundQueueTypeId queueTypeId, Battleg
     uint32 bgAlliancePlayerCount = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].bgAlliancePlayerCount;
     uint32 bgHordeBotCount = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].bgHordeBotCount;
     uint32 bgHordePlayerCount = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].bgHordePlayerCount;
-    uint32 activeBgQueue = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].activeBgQueue;
-    uint32 bgInstanceCount = sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].bgInstanceCount;
+    uint32 demandedSlots =
+        sRandomPlayerbotMgr.BattlegroundData[queueTypeId][bracketId].DemandedBgSlotsPerTeam(TeamSize, teamId);
 
     if (teamId == TEAM_ALLIANCE)
     {
-        if ((bgAllianceBotCount + bgAlliancePlayerCount) < TeamSize * (activeBgQueue + bgInstanceCount))
+        if ((bgAllianceBotCount + bgAlliancePlayerCount) < demandedSlots)
             return true;
     }
     else
     {
-        if ((bgHordeBotCount + bgHordePlayerCount) < TeamSize * (activeBgQueue + bgInstanceCount))
+        if ((bgHordeBotCount + bgHordePlayerCount) < demandedSlots)
             return true;
     }
 

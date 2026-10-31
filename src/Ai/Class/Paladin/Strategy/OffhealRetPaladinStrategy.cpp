@@ -17,7 +17,6 @@ public:
         creators["seal of corruption"] = &seal_of_corruption;
         creators["seal of vengeance"] = &seal_of_vengeance;
         creators["seal of command"] = &seal_of_command;
-        creators["blessing of might"] = &blessing_of_might;
     }
 
 private:
@@ -57,16 +56,6 @@ private:
             "seal of command",
             /*P*/ {},
             /*A*/ { NextAction("seal of righteousness") },
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* blessing_of_might([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "blessing of might",
-            /*P*/ {},
-            /*A*/ { NextAction("blessing of kings") },
             /*C*/ {}
         );
     }
@@ -148,14 +137,6 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
             "retribution aura",
             {
                 NextAction("retribution aura", ACTION_NORMAL)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "blessing of might",
-            {
-                NextAction("blessing of might", ACTION_NORMAL + 1)
             }
         )
     );

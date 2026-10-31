@@ -7,6 +7,7 @@
 #include "StatsWeightCalculator.h"
 #include "AiFactory.h"
 #include "DBCStores.h"
+#include "Item.h"
 #include "ItemEnchantmentMgr.h"
 #include "ItemTemplate.h"
 #include "ObjectMgr.h"
@@ -33,6 +34,13 @@ constexpr uint32 SPELL_POLEAXE_SPECIALIZATION = 12785;
 constexpr uint32 SPELL_NERVES_OF_COLD_STEEL = 50138;
 constexpr uint32 SPELL_SHADOW_FOCUS = 15835;
 constexpr uint32 SPELL_ARCANE_FOCUS = 12840;
+
+// Threat reduction per percent and magic resistance per point, by role
+constexpr float HEALER_THREAT_REDUCTION_WEIGHT = 2.0f;
+constexpr float HEALER_RESISTANCE_WEIGHT = 1.0f;
+constexpr float CASTER_THREAT_REDUCTION_WEIGHT = 4.0f;
+constexpr float CASTER_RESISTANCE_WEIGHT = 0.5f;
+constexpr float TANK_THREAT_REDUCTION_WEIGHT = -4.0f;
 }
 
 template <size_t Size>
@@ -63,6 +71,9 @@ StatsWeightCalculator::StatsWeightCalculator(Player* player) : player_(player)
     lvl = player->GetLevel();
     tab = AiFactory::GetPlayerSpecTab(player);
     collector_ = std::make_unique<StatsCollector>(type_, cls, lvl);
+    // By talent spec, like the weights in GenerateBasicWeights(); type_ follows the strategies
+    healSpec_ = PlayerbotAI::IsHeal(player, true);
+    casterSpec_ = !healSpec_ && PlayerbotAI::IsCaster(player, true);
 
     if (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_UNHOLY)
         hitOverflowType_ = CollectorType::SPELL;
@@ -101,8 +112,25 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
     if (randomPropertyIds != 0)
         CalculateRandomProperty(randomPropertyIds, itemId);
 
+    bool const checkSetBonus = enable_item_set_bonus_;
+    std::array<float, STATS_TYPE_MAX> setBonusStats{};
+    std::array<float, STATS_TYPE_MAX> setBonusBaseline{};
+
+    // Clamp the item's own stats first so the tier below is valued only on what the player can
+    // still use (a tier's hit at the hit cap must not make the piece look valued).
     if (enable_overflow_penalty_)
         ApplyOverflowPenalty(player_);
+
+    if (checkSetBonus)
+    {
+        for (uint32 i = 0; i < STATS_TYPE_MAX; ++i)
+            setBonusBaseline[i] = collector_->stats[i];
+        CollectItemSetBonus(player_, proto, slot, setBonusStats);
+
+        // Clamp the combined stats: the tier's contribution is capped the same way.
+        if (enable_overflow_penalty_)
+            ApplyOverflowPenalty(player_);
+    }
 
     GenerateWeights(player_);
     for (uint32 i = 0; i < STATS_TYPE_MAX; i++)
@@ -112,7 +140,19 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
 
     CalculateItemTypePenalty(proto);
 
-    if (enable_item_set_bonus_)
+    // Value the tier on the stats that survive the clamp, on top of the item's own clamped
+    // stats. A tier whose weighted delta is ~zero (most raid tier procs only produce
+    // STATS_TYPE_BONUS, capped hit) falls back to the legacy completeness multiplier.
+    float setBonusValue = 0.0f;
+    if (checkSetBonus)
+    {
+        for (uint32 i = 0; i < STATS_TYPE_MAX; ++i)
+            if (i != STATS_TYPE_BONUS)
+                setBonusValue += stats_weights_[i] * (collector_->stats[i] - setBonusBaseline[i]);
+    }
+    bool const setBonusValued = setBonusValue > 0.0001f;
+
+    if (enable_item_set_bonus_ && !setBonusValued)
         CalculateItemSetMod(player_, proto);
 
     CalculateSocketBonus(player_, proto);
@@ -124,7 +164,7 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
     return weight_;
 }
 
-float StatsWeightCalculator::CalculateEnchant(uint32 enchantId)
+float StatsWeightCalculator::CalculateEnchant(uint32 enchantId, uint32 weaponDelay, bool isRanged)
 {
     SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(enchantId);
 
@@ -133,7 +173,7 @@ float StatsWeightCalculator::CalculateEnchant(uint32 enchantId)
 
     Reset();
 
-    collector_->CollectEnchantStats(enchant);
+    collector_->CollectEnchantStats(enchant, 0, weaponDelay, isRanged);
 
     if (enable_overflow_penalty_)
         ApplyOverflowPenalty(player_);
@@ -546,8 +586,77 @@ void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
             stats_weights_[STATS_TYPE_SPIRIT] -= 0.4f;
     }
 
+    // Healers would rather survive the hits (Greater Resistance), casters shed threat (Enchant Cloak - Subtlety),
+    // tanks want more threat (Enchant Gloves - Threat). Melee and hunters weigh neither.
+    if (healSpec_)
+    {
+        stats_weights_[STATS_TYPE_THREAT_REDUCTION] += HEALER_THREAT_REDUCTION_WEIGHT;
+        stats_weights_[STATS_TYPE_RESISTANCE] += HEALER_RESISTANCE_WEIGHT;
+    }
+    else if (casterSpec_)
+    {
+        stats_weights_[STATS_TYPE_THREAT_REDUCTION] += CASTER_THREAT_REDUCTION_WEIGHT;
+        stats_weights_[STATS_TYPE_RESISTANCE] += CASTER_RESISTANCE_WEIGHT;
+    }
+    else if (type_ == CollectorType::MELEE_TANK)
+        stats_weights_[STATS_TYPE_THREAT_REDUCTION] += TANK_THREAT_REDUCTION_WEIGHT;
+
     if (pvpSpec_ && !exclude_resilience_)
         stats_weights_[STATS_TYPE_RESILIENCE] += 7.0f;
+}
+
+void StatsWeightCalculator::CollectItemSetBonus(Player* player, ItemTemplate const* proto, int32 slot,
+                                                std::array<float, STATS_TYPE_MAX>& setBonusStats)
+{
+    uint32 itemSet = proto->ItemSet;
+    if (!itemSet)
+        return;
+
+    ItemSetEntry const* setEntry = sItemSetStore.LookupEntry(itemSet);
+    if (!setEntry)
+        return;
+
+    // Pieces worn while the candidate is evaluated: the item currently in the candidate's
+    // slot (if it is from the same set) is replaced, so it must not count. The candidate
+    // itself adds one piece, so only the tier at (worn + 1) is newly activated.
+    uint32 worn = 0;
+    for (ItemSetEffect* eff : player->ItemSetEff)
+    {
+        if (eff && eff->setid == itemSet)
+        {
+            worn = eff->item_count;
+            break;
+        }
+    }
+
+    if (worn && slot >= 0 && slot < EQUIPMENT_SLOT_END)
+    {
+        if (Item* oldItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, uint8(slot)))
+        {
+            if (oldItem->GetTemplate()->ItemSet == itemSet)
+                --worn;
+        }
+    }
+
+    // Value only the tier this item switches on. Tiers that are already active stay
+    // credited to the item providing them, so candidates are compared on their delta.
+    // Keep the stats the tier adds and let the caller weigh them after GenerateWeights.
+    for (uint32 j = 0; j < MAX_ITEM_SET_SPELLS; ++j)
+    {
+        uint32 threshold = setEntry->items_to_triggerspell[j];
+        uint32 spellId = setEntry->spells[j];
+        if (!threshold || !spellId || threshold != worn + 1)
+            continue;
+
+        std::array<float, STATS_TYPE_MAX> before{};
+        for (uint32 i = 0; i < STATS_TYPE_MAX; ++i)
+            before[i] = collector_->stats[i];
+
+        collector_->CollectSpellStats(spellId, 1.0f, Milliseconds(0));
+
+        for (uint32 i = 0; i < STATS_TYPE_MAX; ++i)
+            setBonusStats[i] += collector_->stats[i] - before[i];
+    }
 }
 
 void StatsWeightCalculator::CalculateItemSetMod(Player* player, ItemTemplate const* proto)
@@ -582,7 +691,7 @@ void StatsWeightCalculator::CalculateItemSetMod(Player* player, ItemTemplate con
             }
             else
             {
-                multiplier = 1.0f;  // All item set effect has been triggerred
+                multiplier = 1.0f;  // All item set effect has been triggered
             }
             break;
         }

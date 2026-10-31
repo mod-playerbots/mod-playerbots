@@ -19,6 +19,11 @@ bool GruulsLairNoEncounterInProgressTrigger::IsActive()
     return !IsEncounterInProgress(bot, GRUUL_MAP_ID);
 }
 
+bool GruulsLairClassRolesShouldBeAssignedTrigger::IsActive()
+{
+    return IsMechanicTrackerBot(bot, GRUUL_MAP_ID);
+}
+
 // High King Maulgar <Lord of the Ogres>
 
 bool HighKingMaulgarThreeOgresNeedMeleeTanksTrigger::IsActiveInEncounter()

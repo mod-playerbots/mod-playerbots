@@ -29,13 +29,8 @@ using namespace EncounterHelpers;
 
 bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
 {
-    uint32 const instanceId = bot->GetInstanceId();
     bool reset = false;
-
-    reset |= isAlarInPhase2.erase(instanceId) > 0;
-    reset |= lastRebirthState.erase(instanceId) > 0;
-    reset |= voidReaverArcaneOrbs.erase(instanceId) > 0;
-    reset |= advisorDpsWaitTimer.erase(instanceId) > 0;
+    reset |= TkResetInstance(bot->GetInstanceId());
     reset |= ClearStrategyTargetIcon(bot, RtiTargetValue::skullIndex, {
         Id(TkNpcs::NPC_THALADRED_THE_DARKENER),
         Id(TkNpcs::NPC_LORD_SANGUINAR),
@@ -61,6 +56,11 @@ bool TempestKeepClearStaleFallingFlagAction::Execute(Event /*event*/)
         bot->SendMovementFlagUpdate();
 
     return true;
+}
+
+bool TempestKeepAssignClassRolesAction::Execute(Event /*event*/)
+{
+    return UpdateTkClassRoles(botAI);
 }
 
 bool TempestKeepTankPositionAction::MoveToTankPosition(
@@ -600,16 +600,17 @@ bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
     if (!alar)
         return false;
 
-    uint32 const instanceId = alar->GetInstanceId();
+    TkInstanceState& state = TkState(alar->GetInstanceId());
     bool const rebirthActive = alar->FindCurrentSpellBySpellId(Id(TkSpells::SPELL_REBIRTH_PHASE2));
 
-    if (!IsAlarInPhase2(instanceId) && lastRebirthState[instanceId] && !rebirthActive)
+    if (!state.isAlarInPhase2.value_or(false) && state.lastRebirthState.value_or(false) &&
+        !rebirthActive)
     {
-        isAlarInPhase2[instanceId] = true;
+        state.isAlarInPhase2 = true;
         return true;
     }
 
-    lastRebirthState[instanceId] = rebirthActive;
+    state.lastRebirthState = rebirthActive;
 
     return false;
 }
@@ -1217,19 +1218,18 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
     if (!kaelthas)
         return false;
 
-    uint32 const instanceId = kaelthas->GetInstanceId();
+    std::optional<uint32>& waitStart = TkState(kaelthas->GetInstanceId()).advisorDpsWaitTimer;
 
     if (advisorAtFullHp)
     {
-        advisorDpsWaitTimer[instanceId] = ADVISOR_DPS_WAIT_NOT_STARTED;
+        waitStart = ADVISOR_DPS_WAIT_NOT_STARTED;
         return false;
     }
 
-    auto it = advisorDpsWaitTimer.find(instanceId);
-    if (it == advisorDpsWaitTimer.end() || it->second != ADVISOR_DPS_WAIT_NOT_STARTED)
+    if (!waitStart || *waitStart != ADVISOR_DPS_WAIT_NOT_STARTED)
         return false;
 
-    it->second = getMSTime();
+    waitStart = getMSTime();
     return true;
 }
 
@@ -2207,4 +2207,9 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     return MoveTo(
         TK_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
         MovementPriority::MOVEMENT_FORCED, false, false);
+}
+
+bool KaelthasSunstriderAnnounceClassRolesAction::Execute(Event /*event*/)
+{
+    return IsMechanicTrackerBot(bot, TK_MAP_ID) && UpdateKaelthasClassRoleAnnouncement(botAI);
 }

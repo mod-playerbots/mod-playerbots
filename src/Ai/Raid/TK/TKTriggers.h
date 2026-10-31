@@ -47,6 +47,14 @@ public:
     bool IsActive() override;
 };
 
+class TempestKeepClassRolesShouldBeAssignedTrigger : public Trigger
+{
+public:
+    TempestKeepClassRolesShouldBeAssignedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "tempest keep class roles should be assigned", 1000) {}
+    bool IsActive() override;
+};
+
 // Trash
 
 class CrimsonHandCenturionCastsArcaneFlurryTrigger : public Trigger
