@@ -869,12 +869,12 @@ bool RandomPlayerbotMgr::IsRemovableBot(Player* bot)
     if (bot->GetMap()->IsDungeon())
         return false;
 
-    // Controlled by a real player. IsRandomBot is not enough if a real player is logged into a randombot.
+    // Controlled by a real player (including a selfbot).
     if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
         if (botAI->HasGameClientMaster())
             return false;
 
-    // Grouped with a human (including a selfbot).
+    // Grouped with a real player (including a selfbot).
     if (Group* group = bot->GetGroup())
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
