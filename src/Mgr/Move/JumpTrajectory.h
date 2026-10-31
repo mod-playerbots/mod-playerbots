@@ -29,6 +29,7 @@ constexpr uint32 MAX_STEPS = 200;
 constexpr float FLOOR_SEARCH_MARGIN = 1.0f;
 constexpr float TAKEOFF_SNAP = 0.5f;  // a floor this far above the takeoff point is where the bot stands
 constexpr float WALK_STEP = 0.5f;     // floor probe spacing on a walk toward an edge
+constexpr float SWIM_DEPTH = 0.75f;   // share of collision height; shallower water is stood in, as the core decides
 
 struct Point
 {

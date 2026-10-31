@@ -66,9 +66,10 @@ struct FakeWorld : CollisionProbe
         return best;
     }
 
-    float LiquidZ(float x, float /*y*/, float z) const override
+    // Like the core, no water below the bed.
+    float LiquidZ(float x, float y, float z) const override
     {
-        return x >= liquidFromX && z <= liquidZ ? liquidZ : NO_HEIGHT;
+        return x >= liquidFromX && z <= liquidZ && z >= terrain(x, y) ? liquidZ : NO_HEIGHT;
     }
 };
 
@@ -193,6 +194,53 @@ TEST(JumpTrajectory, LiquidCatchesTheFall)
 
     ASSERT_EQ(trajectory.outcome, Outcome::Liquid);
     EXPECT_FLOAT_EQ(trajectory.landing.z, 0.0f);
+}
+
+// Long falls take steps of many yards; one that passes the surface and ends below the bed still lands in the water.
+TEST(JumpTrajectory, LiquidCatchesALongFall)
+{
+    FakeWorld world;
+    world.liquidZ = 5.0f;
+    for (float height = 60.0f; height <= 250.0f; height += 1.0f)
+    {
+        Launch launch;
+        launch.position = {0.0f, 0.0f, height};
+        Trajectory trajectory = Sweep(launch, world);
+
+        ASSERT_EQ(trajectory.outcome, Outcome::Liquid) << "falling from " << height;
+        EXPECT_FLOAT_EQ(trajectory.landing.z, 5.0f);
+    }
+}
+
+// Water too shallow to swim in does not catch a fall, short or long.
+TEST(JumpTrajectory, ShallowWaterLandsOnTheBed)
+{
+    FakeWorld world;
+    world.liquidZ = 1.0f;
+    for (float height = 2.0f; height <= 200.0f; height += 1.0f)
+    {
+        Launch launch;
+        launch.position = {0.0f, 0.0f, height};
+        Trajectory trajectory = Sweep(launch, world);
+
+        ASSERT_EQ(trajectory.outcome, Outcome::Landed) << "falling from " << height;
+        EXPECT_FLOAT_EQ(trajectory.landing.z, 0.0f);
+    }
+}
+
+// Water under a floor does not catch a fall that lands on the floor.
+TEST(JumpTrajectory, FloorAboveTheWaterCatchesTheFall)
+{
+    FakeWorld world;
+    world.terrain = [](float, float) { return -20.0f; };
+    world.platforms.push_back({-10.0f, 10.0f, 3.0f});
+    world.liquidZ = 0.0f;
+    Launch launch;
+    launch.position = {0.0f, 0.0f, 40.0f};
+    Trajectory trajectory = Sweep(launch, world);
+
+    ASSERT_EQ(trajectory.outcome, Outcome::Landed);
+    EXPECT_FLOAT_EQ(trajectory.landing.z, 3.0f);
 }
 
 TEST(JumpTrajectory, RefusesADropPastTheCap)

@@ -183,17 +183,27 @@ Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
         float const searchFrom = std::max(position.z, chordEnd.z) + halfHeight;
         float const floor =
             probe.FloorZ(chordEnd.x, chordEnd.y, searchFrom, searchFrom - chordEnd.z + FLOOR_SEARCH_MARGIN);
-        if (floor > NO_HEIGHT && chordEnd.z <= floor + launch.landingOffset)
-        {
-            float const startSurface = floorBelow > NO_HEIGHT ? floorBelow + launch.landingOffset : NO_HEIGHT;
-            return land(startSurface, floor + launch.landingOffset, Outcome::Landed);
-        }
+        float const floorSurface = floor + launch.landingOffset;
+        bool const reachesFloor = floor > NO_HEIGHT && chordEnd.z <= floorSurface;
 
+        // A long chord can pass through water and end below its bed; the water catches the fall first. The core finds
+        // no water below the bed, so ask at the floor. Water too shallow to swim in lands the bot on the bed.
         if (chordEndVz < 0.0f)
         {
-            float const liquid = probe.LiquidZ(chordEnd.x, chordEnd.y, chordEnd.z);
+            float const liquid = probe.LiquidZ(chordEnd.x, chordEnd.y, reachesFloor ? floor : chordEnd.z);
             if (liquid > NO_HEIGHT && chordEnd.z <= liquid)
-                return land(liquid, liquid, Outcome::Liquid);
+            {
+                float const swimDepth = SWIM_DEPTH * launch.collisionHeight;
+                float const bed = probe.FloorZ(chordEnd.x, chordEnd.y, liquid, swimDepth);
+                if (bed <= NO_HEIGHT || liquid - bed > swimDepth)
+                    return land(liquid, liquid, Outcome::Liquid);
+            }
+        }
+
+        if (reachesFloor)
+        {
+            float const startSurface = floorBelow > NO_HEIGHT ? floorBelow + launch.landingOffset : NO_HEIGHT;
+            return land(startSurface, floorSurface, Outcome::Landed);
         }
 
         if (chordEnd.z < launch.minZ)
