@@ -79,6 +79,7 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(new TriggerNode("disperse", { NextAction("disperse set", relevance) }));
     triggers.push_back(new TriggerNode("qi", { NextAction("query item usage", relevance) }));
     triggers.push_back(new TriggerNode("focus heal", { NextAction("focus heal targets", relevance) }));
+
 }
 
 void ChatCommandHandlerStrategy::InitReactionTriggers(std::vector<TriggerNode*>& triggers)
@@ -181,4 +182,5 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("pet");
     supported.push_back("pet attack");
     supported.push_back("wait for attack time");
+    supported.push_back("portal");
 }
