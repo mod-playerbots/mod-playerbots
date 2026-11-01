@@ -98,12 +98,18 @@ public:
 
 // Trash
 
-class BwlDeathTalonWyrmguardTankMoveAwayAction : public MovementAction
+class BwlDeathTalonWyrmguardTakeAction : public AttackAction
 {
 public:
-    BwlDeathTalonWyrmguardTankMoveAwayAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl death talon wyrmguard tank move away") {}
-    Unit* GetTarget() override;
-    bool isUseful() override;
+    BwlDeathTalonWyrmguardTakeAction(PlayerbotAI* botAI) : AttackAction(botAI, "bwl death talon wyrmguard take") {}
+    bool Execute(Event event) override;
+};
+
+class BwlDeathTalonWyrmguardTankPositionAction : public MovementAction
+{
+public:
+    BwlDeathTalonWyrmguardTankPositionAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "bwl death talon wyrmguard tank position") {}
     bool Execute(Event event) override;
 };
 
@@ -113,6 +119,9 @@ public:
     BwlDeathTalonWyrmguardRangedMoveAwayAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl death talon wyrmguard ranged move away") {}
     Unit* GetTarget() override;
     bool Execute(Event event) override;
+
+private:
+    bool MoveAwayFromWyrmguard(Unit* wyrmguard, float distance);
 };
 
 #endif
