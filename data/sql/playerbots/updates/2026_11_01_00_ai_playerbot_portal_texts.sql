@@ -39,7 +39,7 @@ VALUES
 INSERT INTO ai_playerbot_texts
 (id, name, text, say_type, reply_type, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8)
 VALUES
-    (1950, 'portal_cannot_cast', 'I cannot open %portal right now', 0, 0, '지금은 %portal 시전할 수 없습니다', 'Je ne peux pas ouvrir %portal pour le moment', 'Ich kann %portal gerade nicht öffnen', '我现在无法开启%portal', '我現在無法開啟%portal', 'No puedo abrir %portal ahora mismo', 'No puedo abrir %portal en este momento', 'Сейчас я не могу открыть %portal');
+    (1950, 'portal_cannot_cast', 'I cannot open %portal right now', 0, 0, '지금은 %portal을(를) 열 수 없습니다', 'Je ne peux pas ouvrir %portal pour le moment', 'Ich kann %portal gerade nicht öffnen', '我现在无法开启%portal', '我現在無法開啟%portal', 'No puedo abrir %portal ahora mismo', 'No puedo abrir %portal en este momento', 'Сейчас я не могу открыть %portal');
 
 INSERT INTO ai_playerbot_texts
 (id, name, text, say_type, reply_type, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8)

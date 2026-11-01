@@ -8,6 +8,12 @@
 #define PLAYERBOTS_PORTALACTION_H
 
 #include "Action.h"
+#include <map>
+#include <string>
+#include <vector>
+
+class PlayerbotAI;
+class SpellInfo;
 
 class PortalAction : public Action
 {

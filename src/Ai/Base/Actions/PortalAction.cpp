@@ -7,6 +7,7 @@
 #include "PortalAction.h"
 #include "ChatHelper.h"
 #include "Group.h"
+#include "Helpers.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
@@ -14,6 +15,7 @@
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 #include <algorithm>
+#include <cctype>
 #include <ctime>
 #include <mutex>
 #include <string>
@@ -22,43 +24,60 @@
 
 namespace
 {
-    struct PortalClaims
-    {
-        time_t expires = 0;
-        std::vector<uint32> spellIds;
-    };
-
+    using PortalClaims = std::unordered_map<uint32, time_t>;
     std::mutex portalClaimsMutex;
     std::unordered_map<uint64, PortalClaims> portalClaims;
     constexpr time_t PORTAL_CLAIM_SECONDS = 60;
-    constexpr float PORTAL_MAX_MASTER_DISTANCE = 30.0f;
+    constexpr float PORTAL_MAX_REQUESTER_DISTANCE = 30.0f;
 
+    // "Portal: Thunder Bluff" -> "thunder bluff"
+    std::string CityName(SpellInfo const* spellInfo)
+    {
+        std::string name = spellInfo->SpellName[LOCALE_enUS];
+        std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
+
+        std::string const prefix = "portal: ";
+        if (name.rfind(prefix, 0) == 0)
+            name.erase(0, prefix.size());
+
+        return name;
+    }
+
+    // Exact name first, then a city starting with the text, then one containing it
     SpellInfo const* FindPortal(std::vector<SpellInfo const*> const& portals, std::string const& destination)
     {
         for (SpellInfo const* spellInfo : portals)
-        {
-            std::string name = spellInfo->SpellName[LOCALE_enUS];
-            std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-            if (name.find(destination) != std::string::npos)
+            if (CityName(spellInfo) == destination)
                 return spellInfo;
-        }
+
+        for (SpellInfo const* spellInfo : portals)
+            if (CityName(spellInfo).rfind(destination, 0) == 0)
+                return spellInfo;
+
+        for (SpellInfo const* spellInfo : portals)
+            if (CityName(spellInfo).find(destination) != std::string::npos)
+                return spellInfo;
 
         return nullptr;
     }
 
-    bool IsClaimed(PortalClaims const& claims, uint32 spellId)
-    {
-        return std::find(claims.spellIds.begin(), claims.spellIds.end(), spellId) != claims.spellIds.end();
-    }
-
     void CleanupPortalClaims(time_t now)
     {
-        for (auto it = portalClaims.begin(); it != portalClaims.end();)
+        for (auto groupIt = portalClaims.begin(); groupIt != portalClaims.end();)
         {
-            if (it->second.expires <= now)
-                it = portalClaims.erase(it);
+            PortalClaims& claims = groupIt->second;
+            for (auto it = claims.begin(); it != claims.end();)
+            {
+                if (it->second <= now)
+                    it = claims.erase(it);
+                else
+                    ++it;
+            }
+
+            if (claims.empty())
+                groupIt = portalClaims.erase(groupIt);
             else
-                ++it;
+                ++groupIt;
         }
     }
 
@@ -72,11 +91,10 @@ namespace
 
         for (SpellInfo const* candidate : order)
         {
-            if (IsClaimed(claims, candidate->Id))
+            if (claims.count(candidate->Id))
                 continue;
 
-            claims.spellIds.push_back(candidate->Id);
-            claims.expires = now + PORTAL_CLAIM_SECONDS;
+            claims[candidate->Id] = now + PORTAL_CLAIM_SECONDS;
             return candidate;
         }
 
@@ -87,11 +105,8 @@ namespace
     {
         std::lock_guard<std::mutex> lock(portalClaimsMutex);
         auto it = portalClaims.find(key);
-        if (it == portalClaims.end())
-            return;
-
-        std::vector<uint32>& ids = it->second.spellIds;
-        ids.erase(std::remove(ids.begin(), ids.end(), spellId), ids.end());
+        if (it != portalClaims.end())
+            it->second.erase(spellId);
     }
 }
 
@@ -99,16 +114,20 @@ bool PortalAction::isUseful() { return bot->getClass() == CLASS_MAGE; }
 
 bool PortalAction::Execute(Event event)
 {
-    Player* master = GetMaster();
-    if (master && !bot->IsWithinDistInMap(master, PORTAL_MAX_MASTER_DISTANCE))
+    Player* requester = event.getOwner() ? event.getOwner() : GetMaster();
+    if (!requester || !bot->IsWithinDistInMap(requester, PORTAL_MAX_REQUESTER_DISTANCE))
         return false;
 
     std::string destination = event.getParam();
-    std::transform(destination.begin(), destination.end(), destination.begin(), ::tolower);
+    trim(destination);
+    std::transform(destination.begin(), destination.end(), destination.begin(), [](unsigned char c) { return std::tolower(c); });
 
     bool const allMode = destination == "all" || destination.rfind("all ", 0) == 0;
     if (allMode)
+    {
         destination = destination.size() > 4 ? destination.substr(4) : "";
+        trim(destination);
+    }
 
     std::vector<SpellInfo const*> portals = GetKnownPortals();
     std::sort(portals.begin(), portals.end(),
@@ -120,7 +139,7 @@ bool PortalAction::Execute(Event event)
         return false;
     }
 
-    // Plain "portal": list what we can open
+    // List portals that can be opened
     if (destination.empty() && !allMode)
     {
         std::string list;
@@ -132,7 +151,7 @@ bool PortalAction::Execute(Event event)
     }
 
     SpellInfo const* requested = destination.empty() ? nullptr : FindPortal(portals, destination);
-    if (!destination.empty() && !requested)
+    if (!allMode && !requested)
     {
         Tell("portal_unknown", "I don't know a portal to %destination", {{"%destination", destination}});
         return false;
@@ -155,7 +174,7 @@ bool PortalAction::Execute(Event event)
         order = portals;
     }
 
-    // Already claimed by another mage.
+    // Every portal available is already claimed.
     SpellInfo const* portal = ReservePortal(claimKey, order);
     if (!portal)
         return false;
@@ -171,13 +190,13 @@ bool PortalAction::Execute(Event event)
     if (bot->isMoving())
         bot->StopMoving();
 
-    // Turn away from the master to spread the portals out
-    if (master)
-    {
-        float const angle = master->GetAngle(bot);
-        bot->SetOrientation(angle);
-        bot->SendMovementFlagUpdate(true);
-    }
+    if (!bot->IsStandState())
+        bot->SetStandState(UNIT_STAND_STATE_STAND);
+
+    // Turn away from the requester to try to spread the portals out
+    float const angle = requester->GetAngle(bot);
+    bot->SetOrientation(angle);
+    bot->SendMovementFlagUpdate(true);
 
     if (!botAI->CastSpell(portal->Id, bot))
     {
@@ -222,5 +241,5 @@ bool PortalAction::HasReagents(SpellInfo const* spellInfo) const
 void PortalAction::Tell(std::string const& key, std::string const& defaultText,
                         std::map<std::string, std::string> const& placeholders)
 {
-    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(key, defaultText, placeholders));
+    botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(key, defaultText, placeholders));
 }
