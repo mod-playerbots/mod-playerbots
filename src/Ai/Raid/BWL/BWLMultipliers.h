@@ -49,4 +49,20 @@ public:
     float GetValue(Action* action) override;
 };
 
+// DPS on a Wyrmguard waits for the tanks to reach their spots, with a time limit: a tank that cannot get there must not
+// leave the raid idle.
+class DeathTalonWyrmguardDpsHoldMultiplier : public Multiplier
+{
+public:
+    DeathTalonWyrmguardDpsHoldMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "death talon wyrmguard dps hold") {}
+    float GetValue(Action* action) override;
+};
+
+class DeathTalonWyrmguardTankMultiplier : public Multiplier
+{
+public:
+    DeathTalonWyrmguardTankMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "death talon wyrmguard tank") {}
+    float GetValue(Action* action) override;
+};
+
 #endif

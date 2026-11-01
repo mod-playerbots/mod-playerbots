@@ -103,10 +103,23 @@ public:
 
 // Trash
 
-class BwlDeathTalonWyrmguardTankTrigger : public Trigger
+class BwlDeathTalonWyrmguardTakeTrigger : public Trigger
 {
 public:
-    BwlDeathTalonWyrmguardTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl death talon wyrmguard tank") {}
+    BwlDeathTalonWyrmguardTakeTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "bwl death talon wyrmguard take", 1 * IN_MILLISECONDS)
+    {
+    }
+    bool IsActive() override;
+};
+
+class BwlDeathTalonWyrmguardTankPositionTrigger : public Trigger
+{
+public:
+    BwlDeathTalonWyrmguardTankPositionTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "bwl death talon wyrmguard tank position", 1 * IN_MILLISECONDS)
+    {
+    }
     bool IsActive() override;
 };
 

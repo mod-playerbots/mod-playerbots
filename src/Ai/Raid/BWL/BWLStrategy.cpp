@@ -58,8 +58,10 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("bwl nefarian corrupted totem", {
         NextAction("bwl nefarian kill corrupted totem", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("bwl death talon wyrmguard tank", {
-        NextAction("bwl death talon wyrmguard tank move away", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("bwl death talon wyrmguard take", {
+        NextAction("bwl death talon wyrmguard take", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("bwl death talon wyrmguard tank position", {
+        NextAction("bwl death talon wyrmguard tank position", ACTION_RAID) }));
     triggers.push_back(new TriggerNode("bwl death talon wyrmguard ranged", {
         NextAction("bwl death talon wyrmguard ranged move away", ACTION_RAID) }));
 }
@@ -71,12 +73,49 @@ void RaidBwlStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new VaelastraszBurningAdrenalineMultiplier(botAI));
     multipliers.push_back(new NefarianCorruptedHealingMultiplier(botAI));
     multipliers.push_back(new NefarianCorruptedTotemMultiplier(botAI));
+    multipliers.push_back(new DeathTalonWyrmguardDpsHoldMultiplier(botAI));
+    multipliers.push_back(new DeathTalonWyrmguardTankMultiplier(botAI));
+}
+
+void RaidBwlStrategy::AppendWyrmguardTankExclusions(GuidSet& exclusions)
+{
+    std::vector<Unit*> const wyrmguards = BlackwingLairHelpers::GetWyrmguardAttackers(botAI);
+    if (wyrmguards.empty())
+        return;
+
+    // A tank with no Wyrmguard of its own helps on the one DPS are killing.
+    bool const hasOwn = BlackwingLairHelpers::GetAssignedWyrmguard(botAI);
+    Unit const* killTarget = hasOwn ? nullptr : BlackwingLairHelpers::GetWyrmguardKillTarget(wyrmguards);
+    for (Unit const* wyrmguard : wyrmguards)
+    {
+        if (wyrmguard != killTarget && BlackwingLairHelpers::IsAssignedToOtherTank(botAI->GetBot(), wyrmguard))
+            exclusions.insert(wyrmguard->GetGUID());
+    }
+}
+
+void RaidBwlStrategy::AppendWyrmguardDpsExclusions(GuidSet& exclusions)
+{
+    std::vector<Unit*> const wyrmguards = BlackwingLairHelpers::GetWyrmguardAttackers(botAI);
+    Unit const* killTarget = BlackwingLairHelpers::GetWyrmguardKillTarget(wyrmguards);
+    for (Unit const* wyrmguard : wyrmguards)
+    {
+        if (wyrmguard != killTarget)
+            exclusions.insert(wyrmguard->GetGUID());
+    }
 }
 
 void RaidBwlStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
 {
+    if (type == TargetValueExclusionType::DpsTarget)
+    {
+        AppendWyrmguardDpsExclusions(exclusions);
+        return;
+    }
+
     if (type != TargetValueExclusionType::TankTarget)
         return;
+
+    AppendWyrmguardTankExclusions(exclusions);
 
     AiObjectContext* context = botAI->GetAiObjectContext();
     if (Unit* broodlord = AI_VALUE2(Unit*, "find target", "broodlord lashlayer"))
