@@ -303,6 +303,8 @@ class CastThunderstormAction : public CastKnockbackSpellAction
 public:
     CastThunderstormAction(PlayerbotAI* botAI) :
         CastKnockbackSpellAction(botAI, "thunderstorm", SPELL_GLYPH_OF_THUNDERSTORM) {}
+    std::string const GetTargetName() override { return "self target"; }
+    bool isUseful() override;
 };
 
 class CastLavaBurstAction : public CastSpellAction

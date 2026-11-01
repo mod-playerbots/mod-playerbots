@@ -6,9 +6,14 @@
 
 #include "ShamanActions.h"
 #include "Action.h"
+#include "AttackersValue.h"
+#include "CellImpl.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "TotemsShamanStrategy.h"
+#include <list>
 
 bool CastTotemAction::isUseful()
 {
@@ -49,6 +54,32 @@ bool CastCleansingTotemAction::isUseful()
 bool CastStoneclawTotemAction::isUseful()
 {
     return !bot->GetGroup();
+}
+
+bool CastThunderstormAction::isUseful()
+{
+    if (!CastSpellAction::isUseful())
+        return false;
+
+    if (!IsBlocked(bot, SPELL_GLYPH_OF_THUNDERSTORM))
+        return true;
+
+    uint32 const spellId = AI_VALUE2(uint32, "spell id", spell);
+    if (!spellId || bot->HasSpellCooldown(spellId))
+        return false;
+
+    // With nothing in the 10 yard blast there is nothing to knock away, and the spell still gives its mana back.
+    constexpr float blastRadius = 10.0f;
+    std::list<Unit*> units;
+    Acore::AnyUnfriendlyUnitInObjectRangeCheck check(bot, bot, blastRadius);
+    Acore::UnitListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, units, check);
+    Cell::VisitObjects(bot, searcher, blastRadius);
+    for (Unit* unit : units)
+    {
+        if (AttackersValue::IsPossibleTarget(unit, bot, blastRadius))
+            return false;
+    }
+    return true;
 }
 
 // Will only cast Lava Burst if Flame Shock is on the target
