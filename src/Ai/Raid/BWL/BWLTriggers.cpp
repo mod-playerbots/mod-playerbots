@@ -10,6 +10,8 @@
 
 using namespace BlackwingLairHelpers;
 
+static constexpr float WYRMGUARD_SPOT_RADIUS = 3.0f;
+
 // General
 
 bool BwlSuppressionDeviceTrigger::IsActive()
@@ -120,12 +122,34 @@ bool BwlNefarianCorruptedTotemTrigger::IsActive()
 
 // Trash
 
-bool BwlDeathTalonWyrmguardTankTrigger::IsActive()
+bool BwlDeathTalonWyrmguardTakeTrigger::IsActive()
 {
-    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "death talon wyrmguard");
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit const* wyrmguard = GetAssignedWyrmguard(botAI);
+    if (!wyrmguard)
+        return false;
+
+    Unit const* target = AI_VALUE(Unit*, "current target");
+    return wyrmguard->GetVictim() != bot || !target ||
+           (IsDeathTalonWyrmguard(target) && IsAssignedToOtherTank(bot, target));
+}
+
+bool BwlDeathTalonWyrmguardTankPositionTrigger::IsActive()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit const* wyrmguard = GetAssignedWyrmguard(botAI);
+    if (!wyrmguard || wyrmguard->GetVictim() != bot)
+        return false;
+
+    Position const* spot = GetWyrmguardSpot(bot, wyrmguard);
+    return spot && bot->GetExactDist2d(spot) > WYRMGUARD_SPOT_RADIUS;
 }
 
 bool BwlDeathTalonWyrmguardRangedTrigger::IsActive()
 {
-    return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "death talon wyrmguard");
+    return PlayerbotAI::IsRanged(bot) && !GetWyrmguardAttackers(botAI).empty();
 }
