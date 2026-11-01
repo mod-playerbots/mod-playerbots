@@ -100,6 +100,9 @@ bool CastDragonsBreathAction::isUseful()
 
 bool CastBlastWaveAction::isUseful()
 {
+    if (!CastKnockbackSpellAction::isUseful())
+        return false;
+
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target)
         return false;

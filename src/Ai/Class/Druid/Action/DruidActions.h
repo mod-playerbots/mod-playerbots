@@ -166,10 +166,12 @@ public:
     ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
 };
 
-class CastTyphoonAction : public CastSpellAction
+inline constexpr uint32 SPELL_GLYPH_OF_TYPHOON = 62135;
+
+class CastTyphoonAction : public CastKnockbackSpellAction
 {
 public:
-    CastTyphoonAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "typhoon") {}
+    CastTyphoonAction(PlayerbotAI* botAI) : CastKnockbackSpellAction(botAI, "typhoon", SPELL_GLYPH_OF_TYPHOON) {}
     ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
     bool isUseful() override;
 };
