@@ -7,214 +7,473 @@
 #ifndef PLAYERBOTS_BTMULTIPLIERS_H
 #define PLAYERBOTS_BTMULTIPLIERS_H
 
+#include "BTHelpers.h"
+#include "EncounterHelpers.h"
 #include "Multiplier.h"
+#include <optional>
+#include <string>
 
-// High Warlord Naj'entus
+// Shared
 
-class BlackTempleDelayDpsCooldownsMultiplier : public Multiplier
+class BlackTempleEncounterMultiplier : public Multiplier
 {
 public:
-    BlackTempleDelayDpsCooldownsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "black temple delay dps cooldowns") {}
+    BlackTempleEncounterMultiplier(PlayerbotAI* botAI, std::string const name)
+        : Multiplier(botAI, name) {}
+    BlackTempleEncounterMultiplier(
+        PlayerbotAI* botAI, std::string const name, BtHelpers::BtBosses boss)
+        : Multiplier(botAI, name), _boss(boss) {}
+
+    float GetValue(Action* action) final
+    {
+        bool const inProgress = _boss ?
+            EncounterHelpers::IsBossInProgress(
+                bot, BtHelpers::BT_MAP_ID, BtHelpers::Id(*_boss)) :
+            EncounterHelpers::IsEncounterInProgress(bot, BtHelpers::BT_MAP_ID);
+        return inProgress ? GetValueInEncounter(action) : 1.0f;
+    }
+
+protected:
+    virtual float GetValueInEncounter(Action* action) = 0;
+
+    Creature* GetEncounterBoss()
+    {
+        return _boss ? BtHelpers::GetBtBoss(bot, *_boss) : nullptr;
+    }
+
+private:
+    std::optional<BtHelpers::BtBosses> const _boss;
+};
+
+class BlackTempleDelayDpsCooldownsMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    BlackTempleDelayDpsCooldownsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "black temple delay dps cooldowns") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class BlackTempleDisableKillingSpreeMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    BlackTempleDisableKillingSpreeMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "black temple disable killing spree") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class BlackTempleNoThreatRedirectsMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    BlackTempleNoThreatRedirectsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "black temple no threat redirects") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+// Trash
+
+class ShadowmoonReaverHoldChargeBuildingSpellsMultiplier : public Multiplier
+{
+public:
+    ShadowmoonReaverHoldChargeBuildingSpellsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "shadowmoon reaver hold charge building spells") {}
+
     float GetValue(Action* action) override;
 };
 
-class HighWarlordNajentusDisableCombatFormationMoveMultiplier : public Multiplier
+// High Warlord Naj'entus
+
+class HighWarlordNajentusDisableCombatFormationMoveMultiplier
+    : public BlackTempleEncounterMultiplier
 {
 public:
-    HighWarlordNajentusDisableCombatFormationMoveMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "high warlord naj'entus disable combat formation move") {}
-    float GetValue(Action* action) override;
+    HighWarlordNajentusDisableCombatFormationMoveMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "high warlord naj'entus disable combat formation move",
+            BtHelpers::BtBosses::DATA_HIGH_WARLORD_NAJENTUS) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class HighWarlordNajentusTidalShieldHoldPositionMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    HighWarlordNajentusTidalShieldHoldPositionMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "high warlord naj'entus tidal shield hold position",
+            BtHelpers::BtBosses::DATA_HIGH_WARLORD_NAJENTUS) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 // Supremus
 
-class SupremusFocusOnAvoidanceInPhase2Multiplier : public Multiplier
+class SupremusRunAwayWhenFixatedMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    SupremusFocusOnAvoidanceInPhase2Multiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "supremus focus on avoidance in phase 2") {}
-    float GetValue(Action* action) override;
+    SupremusRunAwayWhenFixatedMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "supremus run away when fixated", BtHelpers::BtBosses::DATA_SUPREMUS) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class SupremusHitboxIsBuggedMultiplier : public Multiplier
+class SupremusDoNotReachThroughFireMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    SupremusHitboxIsBuggedMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "supremus hitbox is bugged") {}
-    float GetValue(Action* action) override;
+    SupremusDoNotReachThroughFireMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "supremus do not reach through fire", BtHelpers::BtBosses::DATA_SUPREMUS) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class SupremusControlMovementMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    SupremusControlMovementMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "supremus control movement", BtHelpers::BtBosses::DATA_SUPREMUS) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+// Shade of Akama
+
+class ShadeOfAkamaDoNotDropOutOfSightTargetMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    ShadeOfAkamaDoNotDropOutOfSightTargetMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "shade of akama do not drop out of sight target",
+            BtHelpers::BtBosses::DATA_SHADE_OF_AKAMA) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 // Teron Gorefiend
 
-class TeronGorefiendControlMovementMultiplier : public Multiplier
+class TeronGorefiendControlMovementMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    TeronGorefiendControlMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "teron gorefiend control movement") {}
-    float GetValue(Action* action) override;
+    TeronGorefiendControlMovementMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "teron gorefiend control movement", BtHelpers::BtBosses::DATA_TERON_GOREFIEND) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class TeronGorefiendMarkedBotOnlyMoveToDieMultiplier : public Multiplier
+class TeronGorefiendMarkedBotOnlyMoveToDieMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    TeronGorefiendMarkedBotOnlyMoveToDieMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "teron gorefiend marked bot only move to die") {}
-    float GetValue(Action* action) override;
+    TeronGorefiendMarkedBotOnlyMoveToDieMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "teron gorefiend marked bot only move to die",
+            BtHelpers::BtBosses::DATA_TERON_GOREFIEND) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier : public Multiplier
+class TeronGorefiendSpiritsAttackShadowyConstructsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "teron gorefiend spirits attack only shadowy constructs") {}
-    float GetValue(Action* action) override;
-};
+    TeronGorefiendSpiritsAttackShadowyConstructsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "teron gorefiend spirits attack shadowy constructs",
+            BtHelpers::BtBosses::DATA_TERON_GOREFIEND) {}
 
-class TeronGorefiendDisableAttackingConstructsMultiplier : public Multiplier
-{
-public:
-    TeronGorefiendDisableAttackingConstructsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "teron gorefiend disable attacking constructs") {}
-    float GetValue(Action* action) override;
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 // Gurtogg Bloodboil
 
-class GurtoggBloodboilControlMovementMultiplier : public Multiplier
+class GurtoggBloodboilControlMovementMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    GurtoggBloodboilControlMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "gurtogg bloodboil control movement") {}
-    float GetValue(Action* action) override;
+    GurtoggBloodboilControlMovementMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "gurtogg bloodboil control movement",
+            BtHelpers::BtBosses::DATA_GURTOGG_BLOODBOIL) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class GurtoggBloodboilFelRageTargetHoldsAggroMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    GurtoggBloodboilFelRageTargetHoldsAggroMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "gurtogg bloodboil fel rage target holds aggro",
+            BtHelpers::BtBosses::DATA_GURTOGG_BLOODBOIL) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class GurtoggBloodboilHoldThreatMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    GurtoggBloodboilHoldThreatMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "gurtogg bloodboil hold threat", BtHelpers::BtBosses::DATA_GURTOGG_BLOODBOIL) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 // Reliquary of Souls
 
-class ReliquaryOfSoulsDontWasteHealingMultiplier : public Multiplier
+class ReliquaryOfSoulsDoNotWasteHealingMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    ReliquaryOfSoulsDontWasteHealingMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "reliquary of souls don't waste healing") {}
-    float GetValue(Action* action) override;
+    ReliquaryOfSoulsDoNotWasteHealingMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "reliquary of souls do not waste healing",
+            BtHelpers::BtBosses::DATA_RELIQUARY_OF_SOULS) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class ReliquaryOfSoulsControlMeleeMovementMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    ReliquaryOfSoulsControlMeleeMovementMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "reliquary of souls control melee movement",
+            BtHelpers::BtBosses::DATA_RELIQUARY_OF_SOULS) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "reliquary of souls let mages steal rune shield",
+            BtHelpers::BtBosses::DATA_RELIQUARY_OF_SOULS) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class ReliquaryOfSoulsSaveSpellReflectionForDeadenMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    ReliquaryOfSoulsSaveSpellReflectionForDeadenMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "reliquary of souls save spell reflection for deaden",
+            BtHelpers::BtBosses::DATA_RELIQUARY_OF_SOULS) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 // Mother Shahraz
 
-class MotherShahrazControlMovementMultiplier : public Multiplier
+class MotherShahrazControlMovementMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    MotherShahrazControlMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "mother shahraz control movement") {}
-    float GetValue(Action* action) override;
+    MotherShahrazControlMovementMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "mother shahraz control movement", BtHelpers::BtBosses::DATA_MOTHER_SHAHRAZ) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier : public Multiplier
+class MotherShahrazFatalAttractionRunAwayMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "mother shahraz bots with fatal attraction only run away") {}
-    float GetValue(Action* action) override;
+    MotherShahrazFatalAttractionRunAwayMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "mother shahraz fatal attraction run away",
+            BtHelpers::BtBosses::DATA_MOTHER_SHAHRAZ) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 // Illidari Council
 
-class IllidariCouncilDisableTankActionsMultiplier : public Multiplier
+class IllidariCouncilControlMovementAndTargetingMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidariCouncilDisableTankActionsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council disable tank actions") {}
-    float GetValue(Action* action) override;
+    IllidariCouncilControlMovementAndTargetingMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidari council control movement and targeting",
+            BtHelpers::BtBosses::DATA_ILLIDARI_COUNCIL) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+
+private:
+    float GetTankValue(Action* action);
+    float GetNonTankValue(Action* action);
+    float GetHealerValue(Action* action);
 };
 
-class IllidariCouncilControlMovementMultiplier : public Multiplier
+class IllidariCouncilDisableMageTankActionsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidariCouncilControlMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council control movement") {}
-    float GetValue(Action* action) override;
+    IllidariCouncilDisableMageTankActionsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidari council disable mage tank actions",
+            BtHelpers::BtBosses::DATA_ILLIDARI_COUNCIL) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class IllidariCouncilControlMisdirectionMultiplier : public Multiplier
+class IllidariCouncilHoldMisdirectionAndDispelsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidariCouncilControlMisdirectionMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council control misdirection") {}
-    float GetValue(Action* action) override;
+    IllidariCouncilHoldMisdirectionAndDispelsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidari council hold misdirection and dispels",
+            BtHelpers::BtBosses::DATA_ILLIDARI_COUNCIL) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class IllidariCouncilDisableTranquilizingShotOnZerevorMultiplier : public Multiplier
+class IllidariCouncilManageInterruptsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidariCouncilDisableTranquilizingShotOnZerevorMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council disable tranquilizing shot on zerevor") {}
-    float GetValue(Action* action) override;
+    IllidariCouncilManageInterruptsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidari council manage interrupts",
+            BtHelpers::BtBosses::DATA_ILLIDARI_COUNCIL) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class IllidariCouncilDisableIceBlockMultiplier : public Multiplier
+class IllidariCouncilWaitForDpsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidariCouncilDisableIceBlockMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council disable ice block") {}
-    float GetValue(Action* action) override;
-};
+    IllidariCouncilWaitForDpsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidari council wait for dps", BtHelpers::BtBosses::DATA_ILLIDARI_COUNCIL) {}
 
-class IllidariCouncilWaitForDpsMultiplier : public Multiplier
-{
-public:
-    IllidariCouncilWaitForDpsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council wait for dps") {}
-    float GetValue(Action* action) override;
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 // Illidan Stormrage <The Betrayer>
 
-class IllidanStormrageDelayDpsCooldownsMultiplier : public Multiplier
+class IllidanStormrageHoldPullPositionsMultiplier : public Multiplier
 {
 public:
-    IllidanStormrageDelayDpsCooldownsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage delay dps cooldowns") {}
+    IllidanStormrageHoldPullPositionsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "illidan stormrage hold pull positions") {}
+
     float GetValue(Action* action) override;
 };
 
-class IllidanStormrageControlTankActionsMultiplier : public Multiplier
+class IllidanStormrageControlMovementAndTargetingMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidanStormrageControlTankActionsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage control tank actions") {}
-    float GetValue(Action* action) override;
+    IllidanStormrageControlMovementAndTargetingMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidan stormrage control movement and targeting",
+            BtHelpers::BtBosses::DATA_ILLIDAN_STORMRAGE) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+
+private:
+    float GetTargetingValue(
+        BtHelpers::IllidanPhase phase, Action* action, bool isTankAssist, bool isDpsAssist);
+    float GetTankMovementValue(Unit* illidan, BtHelpers::IllidanPhase phase, Action* action);
+    float GetNonTankMovementValue(BtHelpers::IllidanPhase phase, Action* action);
 };
 
-class IllidanStormrageDisableDefaultTargetingMultiplier : public Multiplier
+class IllidanStormrageHoldNearNewShadowfiendMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidanStormrageDisableDefaultTargetingMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage disable default targeting") {}
-    float GetValue(Action* action) override;
+    IllidanStormrageHoldNearNewShadowfiendMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidan stormrage hold near new shadowfiend",
+            BtHelpers::BtBosses::DATA_ILLIDAN_STORMRAGE) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class IllidanStormrageControlNonTankMovementMultiplier : public Multiplier
+class IllidanStormrageHoldGuardianSummonsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidanStormrageControlNonTankMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage control non-tank movement") {}
-    float GetValue(Action* action) override;
+    IllidanStormrageHoldGuardianSummonsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidan stormrage hold guardian summons",
+            BtHelpers::BtBosses::DATA_ILLIDAN_STORMRAGE) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class IllidanStormrageUseEarthbindTotemMultiplier : public Multiplier
+class IllidanStormrageHoldTotemsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidanStormrageUseEarthbindTotemMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage use earthbind totem") {}
-    float GetValue(Action* action) override;
+    IllidanStormrageHoldTotemsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidan stormrage hold totems", BtHelpers::BtBosses::DATA_ILLIDAN_STORMRAGE) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class IllidanStormrageWaitForDpsMultiplier : public Multiplier
+class IllidanStormrageWaitForDpsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidanStormrageWaitForDpsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage wait for dps") {}
-    float GetValue(Action* action) override;
+    IllidanStormrageWaitForDpsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidan stormrage wait for dps", BtHelpers::BtBosses::DATA_ILLIDAN_STORMRAGE) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class IllidanStormrageDisableTankSoulshatterMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    IllidanStormrageDisableTankSoulshatterMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidan stormrage disable tank soulshatter",
+            BtHelpers::BtBosses::DATA_ILLIDAN_STORMRAGE) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class IllidanStormrageDisableAoeOnShadowDemonsMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    IllidanStormrageDisableAoeOnShadowDemonsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidan stormrage disable aoe on shadow demons",
+            BtHelpers::BtBosses::DATA_ILLIDAN_STORMRAGE) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 #endif
