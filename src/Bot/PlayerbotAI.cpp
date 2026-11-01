@@ -1408,6 +1408,11 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                 horizontalSpeed = 0.11f;
             verticalSpeed = -verticalSpeed;
 
+            // A client stops at the ceiling. This spline does not, and what stands on the floor above sees the bot.
+            constexpr float maxIndoorVerticalSpeed = 15.0f;
+            if (!bot->IsOutdoors())
+                verticalSpeed = std::min(verticalSpeed, maxIndoorVerticalSpeed);
+
             bot->CastStop();
             bot->StopMoving();
             bot->GetMotionMaster()->Clear();
