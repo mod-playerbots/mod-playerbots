@@ -107,4 +107,23 @@ namespace BlackwingLairHelpers
         }
         return nearest;
     }
+
+    bool IsBoneConstruct(Unit const* unit)
+    {
+        return unit && unit->GetEntry() == static_cast<uint32>(BlackwingLairNPCs::NPC_BONE_CONSTRUCT);
+    }
+
+    bool HasBoneConstructAttacker(PlayerbotAI* botAI)
+    {
+        for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet())
+        {
+            if (guid.GetEntry() != static_cast<uint32>(BlackwingLairNPCs::NPC_BONE_CONSTRUCT))
+                continue;
+
+            Unit* unit = botAI->GetUnit(guid);
+            if (unit && unit->IsAlive())
+                return true;
+        }
+        return false;
+    }
 }

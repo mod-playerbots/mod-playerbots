@@ -75,10 +75,23 @@ void RaidBwlStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
 void RaidBwlStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
 {
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    if (type == TargetValueExclusionType::DpsTarget || type == TargetValueExclusionType::DebuffTarget)
+    {
+        // Nefarian is not a target while Bone Constructs are up, so DPS clear them first. His tank stays on him.
+        Player* bot = botAI->GetBot();
+        if (!PlayerbotAI::IsTank(bot) && !PlayerbotAI::IsHeal(bot) &&
+            BlackwingLairHelpers::HasBoneConstructAttacker(botAI))
+        {
+            if (Unit* nefarian = AI_VALUE2(Unit*, "find target", "nefarian"))
+                exclusions.insert(nefarian->GetGUID());
+        }
+        return;
+    }
+
     if (type != TargetValueExclusionType::TankTarget)
         return;
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
     if (Unit* broodlord = AI_VALUE2(Unit*, "find target", "broodlord lashlayer"))
     {
         Unit* bossVictim = broodlord->GetVictim();
@@ -119,11 +132,15 @@ void RaidBwlStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExc
         Player* bot = botAI->GetBot();
         Unit* bossVictim = nefarian->GetVictim();
         Player* bossVictimPlayer = bossVictim ? bossVictim->ToPlayer() : nullptr;
-        bool const tankHoldsBoss = bossVictimPlayer && PlayerbotAI::IsTank(bossVictimPlayer);
-        Unit* mainTank = botAI->GetUnit(PlayerbotAI::GetMainTankGuid(bot->GetGroup()));
-        bool const isFallbackTank = mainTank && mainTank->IsAlive() ? PlayerbotAI::IsMainTank(bot)
-                                                                    : PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
-        if (bossVictim == bot || (!tankHoldsBoss && isFallbackTank))
+        bool holdsBoss = bossVictim == bot;
+        if (!holdsBoss && (!bossVictimPlayer || !PlayerbotAI::IsTank(bossVictimPlayer)))
+        {
+            Unit* mainTank = botAI->GetUnit(PlayerbotAI::GetMainTankGuid(bot->GetGroup()));
+            holdsBoss = mainTank && mainTank->IsAlive() ? PlayerbotAI::IsMainTank(bot)
+                                                        : PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+        }
+
+        if (holdsBoss)
         {
             for (ObjectGuid const guid : AI_VALUE(GuidVector, "attackers"))
             {
