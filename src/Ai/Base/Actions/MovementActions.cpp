@@ -13,6 +13,7 @@
 #include "LootObjectStack.h"
 #include "Map.h"
 #include "MotionMaster.h"
+#include "MoveSpline.h"
 #include "MoveSplineInitArgs.h"
 #include "MovementGenerator.h"
 #include "ObjectDefines.h"
@@ -921,8 +922,10 @@ bool MovementAction::Follow(Unit* target, float distance) { return Follow(target
 
 void MovementAction::UpdateMovementState()
 {
+    // Mid-air, liquid under the arc is not liquid the bot is in, and a flag update snaps it on observers' screens.
     const bool isCurrentlyRestricted =  // see if the bot is currently slowed, rooted, or otherwise unable to move
-        bot->HasUnitState(UNIT_STATE_LOST_CONTROL) || bot->IsRooted() || bot->isFrozen() || bot->IsPolymorphed();
+        bot->HasUnitState(UNIT_STATE_LOST_CONTROL) || bot->IsRooted() || bot->isFrozen() || bot->IsPolymorphed() ||
+        botAI->airborne.IsAirborne();
 
     // no update movement flags while movement is current restricted.
     if (!isCurrentlyRestricted && bot->IsAlive())
@@ -1230,6 +1233,9 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
         // botAI->TellError("No need to follow");
         return false;
     }
+
+    if (!IsMovingAllowed(target))
+        return false;
 
     bot->HandleEmoteCommand(0);
 
@@ -2591,6 +2597,20 @@ bool DisperseSetAction::Execute(Event event)
     }
     botAI->TellMasterNoFacing(out.str());
     return true;
+}
+
+bool JumpAction::Execute(Event /*event*/)
+{
+    float heading = bot->GetOrientation();
+    float speed = 0.0f;
+    if (bot->isMoving() && !bot->movespline->Finalized())
+    {
+        G3D::Vector3 const destination = bot->movespline->CurrentDestination();
+        heading = bot->GetAngle(destination.x, destination.y);
+        speed = bot->GetSpeed(bot->HasUnitMovementFlag(MOVEMENTFLAG_WALKING) ? MOVE_WALK : MOVE_RUN);
+    }
+
+    return botAI->airborne.Jump(heading, speed);
 }
 
 bool RunAwayAction::Execute(Event /*event*/) { return Flee(AI_VALUE(Unit*, "group leader")); }

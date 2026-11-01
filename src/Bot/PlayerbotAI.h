@@ -7,6 +7,7 @@
 #ifndef PLAYERBOTS_PLAYERBOTAI_H
 #define PLAYERBOTS_PLAYERBOTAI_H
 
+#include "AirborneController.h"
 #include "Chat.h"
 #include "ChatFilter.h"
 #include "ChatHelper.h"
@@ -596,11 +597,9 @@ public:
     static bool IsOpposing(uint8 race1, uint8 race2);
     PlayerbotSecurity* GetSecurity() { return &security; }
 
-    Position GetJumpDestination() { return jumpDestination; }
-    void SetJumpDestination(Position pos) { jumpDestination = pos; }
-    void ResetJumpDestination() { jumpDestination = Position(); }
-
     bool CanMove();
+    // What a client does on SMSG_FORCE_MOVE_ROOT.
+    void ApplyForceRoot();
     bool IsInRealGuild();
     static std::vector<std::string> dispel_whitelist;
     bool EqualLowercaseName(std::string s1, std::string s2);
@@ -640,6 +639,7 @@ public:
     std::unordered_set<uint32> lowPriorityQuest;
     time_t bgReleaseAttemptTime = 0;
     ForceRebuffState forceRebuff;
+    AirborneController airborne;
 
     // Schedules a callback to run once after <delayMs> milliseconds.
     void AddTimedEvent(std::function<void()> callback, uint32 delayMs);
@@ -685,7 +685,6 @@ protected:
     ReactionEngine* reactionEngine = nullptr;
     bool inCombat = false;
     BotCheatMask cheatMask = BotCheatMask::none;
-    Position jumpDestination = Position();
     uint32 nextTransportCheck = 0;
     bool spellInterruptRequested = false;
 };

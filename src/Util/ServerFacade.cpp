@@ -6,6 +6,8 @@
 
 #include "ServerFacade.h"
 #include "Player.h"
+#include "PlayerbotAI.h"
+#include "Playerbots.h"
 #include "TargetedMovementGenerator.h"
 
 float ServerFacade::GetDistance2d(Unit* unit, WorldObject* wo)
@@ -45,6 +47,12 @@ void ServerFacade::SetFacingTo(Player* bot, WorldObject* wo, bool /*force*/)
         return;
 
     float angle = bot->GetAngle(wo);
+
+    // Mid-air a heartbeat would snap the bot on observers' screens, and the arc's spline keeps its own facing.
+    if (bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING))
+        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+            if (botAI->airborne.Face(angle))
+                return;
 
     // if (!force && bot->isMoving())
     //     bot->SetFacingTo(bot->GetAngle(wo));
