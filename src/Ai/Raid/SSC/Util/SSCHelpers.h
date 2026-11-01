@@ -8,9 +8,12 @@
 #define PLAYERBOTS_SSCHELPERS_H
 
 #include "Common.h"
+#include "EncounterHelpers.h"
 #include "ObjectDefines.h"
 #include "ObjectGuid.h"
+#include "PlayerbotAI.h"
 #include "Position.h"
+#include "SharedDefines.h"
 #include <array>
 #include <limits>
 #include <optional>
@@ -19,7 +22,6 @@
 
 class Creature;
 class Player;
-class PlayerbotAI;
 class Unit;
 
 namespace SscHelpers
@@ -268,16 +270,31 @@ bool ShouldGoToLurkerWalkway(Player* bot, Unit* lurker, Unit* target);
 
 // Leotheras the Blind
 
+inline constexpr EncounterHelpers::ClassRole LEOTHERAS_WARLOCK_TANK_ROLE = {
+    .playerClass = CLASS_WARLOCK,
+    .preferredSpec = WARLOCK_TAB_DEMONOLOGY,
+    .role = { "class_role_leotheras_warlock_tank", "Leotheras warlock tank" },
+    .candidate = { "class_role_class_warlock", "Warlock" },
+    .preferredCandidate = { "class_role_class_demonology_warlock", "Demonology Warlock" },
+};
+// 100 yards takes the raid to just around the column near the entrance to Leo's chamber.
+inline constexpr float LEOTHERAS_CLASS_ROLE_ANNOUNCE_DISTANCE = 100.0f;
+// 150 yards is about the distance to the entrance to Leo's chamber. Beyond him, it extends past
+// Karathress's spawn point.
+inline constexpr float LEOTHERAS_CLASS_ROLE_REARM_DISTANCE = 150.0f;
+
 inline constexpr float LEOTHERAS_SEARCH_DISTANCE = 100.0f;
 inline constexpr uint32 LEOTHERAS_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 LEOTHERAS_HUMANOID_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
 inline constexpr uint32 LEOTHERAS_DEMON_DPS_WAIT_MS = 10 * IN_MILLISECONDS;
 inline constexpr uint32 LEOTHERAS_FINAL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
 inline constexpr uint32 LEOTHERAS_WHIRLWIND_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
-// Ranged stay 15y away during Humanoid phase until Whirlwind begins, at which point they move to
-// 25y away. Whirlwind has a 10y radius only, but Leo moves very fast when Whirlwinding.
-inline constexpr float LEOTHERAS_RANGED_SAFE_DISTANCE = 15.0f;
-inline constexpr float LEOTHERAS_WHIRLWIND_SAFE_DISTANCE = 25.0f;
+inline constexpr float LEOTHERAS_WHIRLWIND_HAZARD_RADIUS = 10.0f;
+// Ranged stay this distance from Leo during Humanoid phase until Whirlwind begins.
+inline constexpr float LEOTHERAS_RANGED_SAFE_DISTANCE = LEOTHERAS_WHIRLWIND_HAZARD_RADIUS + 5.0f;
+// While Whirlwind is channeling, all non-tanks move to this distance from Leo as he is very fast.
+inline constexpr float LEOTHERAS_WHIRLWIND_SAFE_DISTANCE =
+    LEOTHERAS_WHIRLWIND_HAZARD_RADIUS + 15.0f;
 inline constexpr float LEOTHERAS_RANGED_SPREAD_DISTANCE = 4.0f;
 inline constexpr float LEOTHERAS_CHAOS_BLAST_HAZARD_RADIUS = 8.0f;
 inline constexpr float LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE =
@@ -297,8 +314,9 @@ bool IsLeotherasDemonPhase(PlayerbotAI* botAI);
 Creature* GetShadowOfLeotheras(PlayerbotAI* botAI);
 bool IsLeotherasFinalPhase(PlayerbotAI* botAI);
 Creature* GetLeotherasDemonOrShadow(PlayerbotAI* botAI);
-// (1) First priority is an assistant Warlock (real player or bot).
-// (2) If there is no assistant Warlock, then look for any Warlock bot.
+bool UpdateSscClassRoles(PlayerbotAI* botAI);
+bool UpdateLeotherasClassRoleAnnouncement(PlayerbotAI* botAI);
+// Demonology spec is preferred for the Leotheras Warlock tank.
 Player* GetLeotherasWarlockTank(Player* bot);
 bool IsLeotherasWarlockTank(Player* bot);
 bool IsLeotherasChannelingWhirlwind(Unit* leotheras);
@@ -585,7 +603,7 @@ struct VashjTargetFacts
     Unit* vashj = nullptr;
     Unit* tainted = nullptr;
     int8 phase = -1;
-    // Measured from the bot, and in phase 2 also from the platform centre, so bots don't chase
+    // Measured from the bot, and in phase 2 also from the platform center, so bots don't chase
     // adds down the stairs.
     float maxPursueRange = 0.0f;
     float maxSearchRange = 0.0f;
@@ -835,9 +853,11 @@ struct SscInstanceState
     std::optional<VashjStationHolders> vashjStationHolders;
     std::optional<TaintedCoreLooter> vashjTaintedCoreLooter;
     std::optional<VashjCorePassingChain> vashjCorePassingChain;
+    EncounterHelpers::ClassRoleAssignment leotherasWarlockTank;
 };
 
 SscInstanceState& SscState(uint32 instanceId);
+SscInstanceState* FindSscState(uint32 instanceId);
 bool SscResetInstance(uint32 instanceId);
 
 }

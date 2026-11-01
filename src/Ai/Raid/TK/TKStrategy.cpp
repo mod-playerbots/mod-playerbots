@@ -11,10 +11,14 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Shared
     triggers.push_back(new TriggerNode("tempest keep no encounter in progress",
-        { NextAction("tempest keep reset encounter states", ACTION_EMERGENCY + 10) }));
+        { NextAction("tempest keep reset encounter states", ACTION_EMERGENCY + 10),
+          NextAction("kael'thas sunstrider announce class roles", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("tempest keep stuck falling",
         { NextAction("tempest keep clear stale falling flag", ACTION_EMERGENCY + 10) }));
+
+    triggers.push_back(new TriggerNode("tempest keep class roles should be assigned",
+        { NextAction("tempest keep assign class roles", ACTION_EMERGENCY + 9) }));
 
     // Trash
     triggers.push_back(new TriggerNode("crimson hand centurion casts arcane flurry",

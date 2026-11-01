@@ -34,10 +34,12 @@ public:
         creators["bwl flamegor fire resistance"] = &RaidBwlTriggerContext::bwl_flamegor_fire_resistance_trigger;
         creators["bwl flamegor not victim"] = &RaidBwlTriggerContext::bwl_flamegor_not_victim;
 
+        creators["bwl chromaggus fire resistance"] = &RaidBwlTriggerContext::bwl_chromaggus_fire_resistance_trigger;
         creators["bwl affliction bronze"] = &RaidBwlTriggerContext::bwl_affliction_bronze;
 
         creators["bwl nefarian positioning"] = &RaidBwlTriggerContext::bwl_nefarian_positioning;
         creators["bwl nefarian wild magic"] = &RaidBwlTriggerContext::bwl_nefarian_wild_magic;
+        creators["bwl nefarian corrupted totem"] = &RaidBwlTriggerContext::bwl_nefarian_corrupted_totem;
 
         creators["bwl death talon wyrmguard tank"] = &RaidBwlTriggerContext::bwl_death_talon_wyrmguard_tank;
         creators["bwl death talon wyrmguard ranged"] = &RaidBwlTriggerContext::bwl_death_talon_wyrmguard_ranged;
@@ -57,9 +59,11 @@ private:
     static Trigger* bwl_ebonroc_not_victim(PlayerbotAI* botAI) { return new BwlBlackDrakeNotVictimTrigger(botAI, "ebonroc"); }
     static Trigger* bwl_flamegor_fire_resistance_trigger(PlayerbotAI* botAI) { return new BossFireResistanceTrigger(botAI, "flamegor"); }
     static Trigger* bwl_flamegor_not_victim(PlayerbotAI* botAI) { return new BwlBlackDrakeNotVictimTrigger(botAI, "flamegor"); }
+    static Trigger* bwl_chromaggus_fire_resistance_trigger(PlayerbotAI* botAI) { return new BossFireResistanceTrigger(botAI, "chromaggus"); }
     static Trigger* bwl_affliction_bronze(PlayerbotAI* botAI) { return new BwlAfflictionBronzeTrigger(botAI); }
     static Trigger* bwl_nefarian_wild_magic(PlayerbotAI* botAI) { return new BwlNefarianWildMagicTrigger(botAI); }
     static Trigger* bwl_nefarian_positioning(PlayerbotAI* botAI) { return new BwlNefarianPositioningTrigger(botAI); }
+    static Trigger* bwl_nefarian_corrupted_totem(PlayerbotAI* botAI) { return new BwlNefarianCorruptedTotemTrigger(botAI); }
     static Trigger* bwl_death_talon_wyrmguard_tank(PlayerbotAI* botAI) { return new BwlDeathTalonWyrmguardTankTrigger(botAI); }
     static Trigger* bwl_death_talon_wyrmguard_ranged(PlayerbotAI* botAI) { return new BwlDeathTalonWyrmguardRangedTrigger(botAI); }
 };

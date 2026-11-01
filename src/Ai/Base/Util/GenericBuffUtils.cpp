@@ -18,19 +18,32 @@
 
 namespace ai::buff
 {
-    namespace
+    bool IsWithinPostLoginBuffGrace(Player* player)
     {
-        // Prevents bots from immediately casting already-present buffs upon logging in
+        if (!player)
+            return false;
+
         constexpr uint32 POST_LOGIN_BUFF_GRACE_MS = 5 * IN_MILLISECONDS;
+        return getMSTimeDiff(
+            player->GetInGameTime(), GameTime::GetGameTimeMS().count()) < POST_LOGIN_BUFF_GRACE_MS;
+    }
 
-        bool IsWithinPostLoginBuffGrace(Player* player)
+    bool IsGroupEligibleForBuffMode(Group const* group, AutoPartyBuffMode mode)
+    {
+        if (!group)
+            return false;
+
+        switch (mode)
         {
-            if (!player)
+            case AutoPartyBuffMode::RAID_ONLY:
+                return group->isRaidGroup();
+            case AutoPartyBuffMode::GROUP_OR_RAID:
+                return true;
+            case AutoPartyBuffMode::DISABLED:
                 return false;
-
-            return getMSTimeDiff(
-                player->GetInGameTime(), GameTime::GetGameTimeMS().count()) < POST_LOGIN_BUFF_GRACE_MS;
         }
+
+        return false;
     }
 
     bool BuffBelowRefreshTarget(PlayerbotAI* botAI, Aura* aura, uint32 baseBeforeDuration)
@@ -44,7 +57,7 @@ namespace ai::buff
 
     static bool HasEnoughSameMapMissingPlayersForGroupVariant(
         Player* bot, PlayerbotAI* botAI, std::string const& baseName,
-        std::string const& groupName, uint32 requiredCount = 3)
+        std::string const& groupName, SpellInfo const* groupSpellInfo, uint32 requiredCount = 3)
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -55,7 +68,7 @@ namespace ai::buff
         {
             Player* member = gref->GetSource();
             if (!member || !member->IsInWorld() || !member->IsAlive() ||
-                member->GetMap() != bot->GetMap())
+                member->GetMap() != bot->GetMap() || !groupSpellInfo->GetAuraRankForLevel(member->GetLevel()))
             {
                 continue;
             }
@@ -73,20 +86,7 @@ namespace ai::buff
 
     static bool IsEligibleGroupForPartyBuffs(Group const* group)
     {
-        if (!group)
-            return false;
-
-        switch (sPlayerbotAIConfig.AutoPartyBuffs)
-        {
-            case AutoPartyBuffMode::RAID_ONLY:
-                return group->isRaidGroup();
-            case AutoPartyBuffMode::GROUP_OR_RAID:
-                return true;
-            case AutoPartyBuffMode::DISABLED:
-                return false;
-        }
-
-        return false;
+        return IsGroupEligibleForBuffMode(group, sPlayerbotAIConfig.AutoPartyBuffs);
     }
 
     bool IsGroupVariantEnabled(Player* bot, std::string const& name)
@@ -169,28 +169,6 @@ namespace ai::buff
 
         Player* playerTarget = target ? target->ToPlayer() : nullptr;
         return IsWithinPostLoginBuffGrace(playerTarget);
-    }
-
-    bool ShouldDeferGreaterBlessingAssignmentForRecentLogin(Player* bot)
-    {
-        if (IsWithinPostLoginBuffGrace(bot))
-            return true;
-
-        Group* group = bot->GetGroup();
-        if (!group)
-            return false;
-
-        for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
-        {
-            Player* member = gref->GetSource();
-            if (!member || !member->IsInWorld())
-                continue;
-
-            if (IsWithinPostLoginBuffGrace(member))
-                return true;
-        }
-
-        return false;
     }
 
     bool HasRequiredReagents(Player* bot, uint32 spellId)
@@ -286,21 +264,24 @@ namespace ai::buff
         if (groupName.empty())
             return baseName;
 
-        // Prefer singles until at least three living, in-world group members on the bot's map
-        // are missing both the single-target buff and its group variant.
-        if (!HasEnoughSameMapMissingPlayersForGroupVariant(bot, botAI, baseName, groupName))
-            return baseName;
-
         uint32 const groupSpellId = botAI->GetAiObjectContext()
             ->GetValue<uint32>("spell id", groupName)->Get();
+        SpellInfo const* groupSpellInfo = sSpellMgr->GetSpellInfo(groupSpellId);
+        if (!groupSpellInfo)
+            return baseName;
 
-        if (groupSpellId && HasRequiredReagents(bot, groupSpellId))
+        // Prefer singles until at least three living, in-world group members on the bot's map
+        // can receive the group buff and are missing both variants.
+        if (!HasEnoughSameMapMissingPlayersForGroupVariant(bot, botAI, baseName, groupName, groupSpellInfo))
+            return baseName;
+
+        if (HasRequiredReagents(bot, groupSpellId))
         {
             ClearMissingBuffReagentNotice(botAI, groupName);
             return groupName;
         }
 
-        if (groupSpellId && outMissingReagentGroupName)
+        if (outMissingReagentGroupName)
             *outMissingReagentGroupName = groupName;
 
         return baseName;
