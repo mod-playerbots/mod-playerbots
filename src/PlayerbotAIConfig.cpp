@@ -91,7 +91,6 @@ bool PlayerbotAIConfig::Initialize()
     GlobalCoolDown = sConfigMgr->GetOption<int32>("Playerbots.GlobalCooldown", 500);
     MaxWaitForMove = sConfigMgr->GetOption<int32>("Playerbots.MaxWaitForMove", 5000);
     DisableMoveSplinePath = sConfigMgr->GetOption<int32>("Playerbots.DisableMoveSplinePath", 0);
-    MaxMovementSearchTime = sConfigMgr->GetOption<int32>("Playerbots.MaxMovementSearchTime", 3);
     ExpireActionTime = sConfigMgr->GetOption<int32>("Playerbots.ExpireActionTime", 5000);
     DispelAuraDuration = sConfigMgr->GetOption<int32>("Playerbots.DispelAuraDuration", 700);
     ReactDelay = sConfigMgr->GetOption<int32>("Playerbots.ReactDelay", 100);
@@ -582,6 +581,8 @@ bool PlayerbotAIConfig::Initialize()
 
     LoadListString<std::vector<std::string>>(sConfigMgr->GetOption<std::string>("Playerbots.AllowedLogFiles", ""),
                                              AllowedLogFiles);
+    OpenLog("bot_movement.csv", "w");
+    OpenLog("pathfind_result.csv", "w");
     EnableAutoTradeOnItemMention = sConfigMgr->GetOption<bool>("Playerbots.EnableAutoTradeOnItemMention", true);
     LoadListString<std::vector<std::string>>(sConfigMgr->GetOption<std::string>("Playerbots.TradeActionExcludedPrefixes", ""),
                                              TradeActionExcludedPrefixes);
@@ -755,6 +756,9 @@ bool PlayerbotAIConfig::Initialize()
     EnableNewRpgStrategy = sConfigMgr->GetOption<bool>("Playerbots.EnableNewRpgStrategy", true);
     RpgTargetSearchDistance = sConfigMgr->GetOption<float>("Playerbots.RpgTargetSearchDistance", 150.0f);
     CollectDetailedQuestStats = sConfigMgr->GetOption<bool>("Playerbots.CollectDetailedQuestStats", false);
+    EnableTravelNodes = sConfigMgr->GetOption<bool>("Playerbots.EnableTravelNodes", true);
+    TravelNodeProbeSteps = sConfigMgr->GetOption<uint32>("Playerbots.TravelNodeProbeSteps", 10);
+    TravelNodeDirectDistance = sConfigMgr->GetOption<float>("Playerbots.TravelNodeDirectDistance", 300.0f);
 
     RpgStatusProbWeight[RPG_WANDER_RANDOM] = sConfigMgr->GetOption<int32>("Playerbots.RpgStatusProbWeight.WanderRandom", 15);
     RpgStatusProbWeight[RPG_WANDER_NPC] = sConfigMgr->GetOption<int32>("Playerbots.RpgStatusProbWeight.WanderNpc", 20);
@@ -1047,12 +1051,12 @@ bool PlayerbotAIConfig::OpenLog(std::string const fileName, char const* mode)
     }
 
     file = fopen((m_logsDir + fileName).c_str(), mode);
-    fileOpen = true;
+    fileOpen = file != nullptr;
 
     logFileIt->second.first = file;
     logFileIt->second.second = fileOpen;
 
-    return true;
+    return fileOpen;
 }
 
 void PlayerbotAIConfig::Log(std::string const fileName, char const* str, ...)

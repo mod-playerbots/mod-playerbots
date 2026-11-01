@@ -109,7 +109,7 @@ public:
     bool EnableICCBuffs;
     bool AllowAccountBots, AllowGuildBots, AllowTrustedAccountBots;
     bool RandomBotGuildNearby, RandomBotInvitePlayer, InviteChat;
-    uint32 GlobalCoolDown, ReactDelay, MaxWaitForMove, DisableMoveSplinePath, MaxMovementSearchTime, ExpireActionTime,
+    uint32 GlobalCoolDown, ReactDelay, MaxWaitForMove, DisableMoveSplinePath, ExpireActionTime,
         DispelAuraDuration, PassiveDelay, RepeatDelay, ErrorDelay, RpgDelay, SitDelay, ReturnDelay, LootDelay;
     bool DynamicReactDelay;
     float SightDistance, SpellDistance, ReactDistance, GrindDistance, LootDistance, ShootDistance, FleeDistance,
@@ -400,6 +400,9 @@ public:
     bool EnableNewRpgStrategy;
     float RpgTargetSearchDistance;
     bool CollectDetailedQuestStats;
+    bool EnableTravelNodes;
+    uint32 TravelNodeProbeSteps;
+    float TravelNodeDirectDistance;
     std::unordered_map<NewRpgStatus, uint32> RpgStatusProbWeight;
     bool SyncLevelWithPlayers;
     bool RandomBotConcentrateInPlayerZone;
