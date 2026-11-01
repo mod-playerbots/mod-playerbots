@@ -155,6 +155,7 @@ public:
         creators["roll"] = &ChatTriggerContext::roll_action;
         creators["wait for attack time"] = &ChatTriggerContext::wait_for_attack_time;
         creators["focus heal"] = &ChatTriggerContext::focus_heal;
+        creators["portal"] = &ChatTriggerContext::cast_portal;
     }
 
 private:
@@ -288,6 +289,7 @@ private:
     static Trigger* roll_action(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "roll"); }
     static Trigger* wait_for_attack_time(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "wait for attack time"); }
     static Trigger* focus_heal(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "focus heal"); }
+    static Trigger* cast_portal(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "portal"); }
 };
 
 #endif
