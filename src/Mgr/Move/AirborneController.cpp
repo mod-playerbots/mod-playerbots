@@ -631,6 +631,10 @@ void AirborneController::FallToVoid()
     _bot->EnvironmentalDamage(DAMAGE_FALL_TO_VOID, _bot->GetMaxHealth());
     if (_bot->IsAlive())  // a GM survives the damage
         _bot->KillPlayer();
+
+    // A client that self-resurrects here falls below the map again and dies; skip that loop and release.
+    if (!_bot->IsAlive())
+        _bot->SetUInt32Value(PLAYER_SELF_RES_SPELL, 0);
 }
 
 void AirborneController::Settle()
