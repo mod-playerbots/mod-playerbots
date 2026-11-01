@@ -93,6 +93,10 @@ bool BwlAfflictionBronzeTrigger::IsActive()
 
 bool BwlNefarianPositioningTrigger::IsActive()
 {
+    // A DPS or tank on a Bone Construct has to reach it, wherever it stands around him.
+    if (!PlayerbotAI::IsHeal(bot) && IsBoneConstruct(AI_VALUE(Unit*, "current target")))
+        return false;
+
     // Prevent non-tanks from rotating the boss while the tanks gain threat.
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "nefarian"))
         return boss->GetVictim() != bot;
