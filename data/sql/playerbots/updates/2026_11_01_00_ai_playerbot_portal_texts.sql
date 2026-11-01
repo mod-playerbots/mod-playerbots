@@ -1,20 +1,20 @@
 DELETE FROM ai_playerbot_texts WHERE name IN (
-                                              'portal_none_known',
-                                              'portal_list',
-                                              'portal_unknown',
-                                              'portal_no_reagents',
-                                              'portal_cannot_cast',
-                                              'portal_casting'
-    );
+    'portal_none_known',
+    'portal_list',
+    'portal_unknown',
+    'portal_no_reagents',
+    'portal_cannot_cast',
+    'portal_casting'
+);
 
 DELETE FROM ai_playerbot_texts_chance WHERE name IN (
-                                                     'portal_none_known',
-                                                     'portal_list',
-                                                     'portal_unknown',
-                                                     'portal_no_reagents',
-                                                     'portal_cannot_cast',
-                                                     'portal_casting'
-    );
+     'portal_none_known',
+     'portal_list',
+     'portal_unknown',
+     'portal_no_reagents',
+     'portal_cannot_cast',
+     'portal_casting'
+);
 
 INSERT INTO ai_playerbot_texts
 (id, name, text, say_type, reply_type, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8)
