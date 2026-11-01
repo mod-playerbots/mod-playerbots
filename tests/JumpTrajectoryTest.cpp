@@ -430,6 +430,22 @@ TEST(JumpTrajectory, CeilingStopsAStandingJump)
     EXPECT_FLOAT_EQ(trajectory.landing.z, 0.0f);
 }
 
+// A knockup rises over a yard per chord, so the body's middle reaches the ceiling in the same chord as the head.
+TEST(JumpTrajectory, CeilingStopsAFastKnockup)
+{
+    FakeWorld world;
+    world.ceilingZ = 4.8f;
+    Launch launch;
+    launch.velocity = {0.11f, 0.0f, std::sqrt(2.0f * GRAVITY * 20.0f)};  // a knockup's minimum drift
+    Trajectory trajectory = Sweep(launch, world);
+
+    ASSERT_EQ(trajectory.outcome, Outcome::Landed);
+    ASSERT_EQ(trajectory.segments.size(), 2u);
+    EXPECT_LT(trajectory.segments[0].end.z + launch.collisionHeight, world.ceilingZ);
+    EXPECT_FLOAT_EQ(trajectory.segments[1].startVz, 0.0f);
+    EXPECT_FLOAT_EQ(trajectory.landing.z, 0.0f);
+}
+
 // At terminal velocity a chord is half a second long; the stop still comes at the cliff, not at the chord's start.
 TEST(JumpTrajectory, CliffStopsAFastFallWhereItRises)
 {

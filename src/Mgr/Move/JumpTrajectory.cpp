@@ -202,10 +202,15 @@ Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
 
         Point const head{position.x, position.y, position.z + launch.collisionHeight};
         Point const endHead{end.x, end.y, end.z + launch.collisionHeight};
-        if (contact == Contact::None && vz > 0.0f && probe.RayHit(head, endHead, hit))
+        // A fast rise can carry both rays into a ceiling in one chord; the head meets it first.
+        if (vz > 0.0f && probe.RayHit(head, endHead, hit))
         {
-            fraction = ChordFraction(head, endHead, hit);
-            contact = Contact::Ceiling;
+            float const ceiling = ChordFraction(head, endHead, hit);
+            if (contact == Contact::None || ceiling < fraction)
+            {
+                fraction = ceiling;
+                contact = Contact::Ceiling;
+            }
         }
 
         float chordTime = dt * fraction;
