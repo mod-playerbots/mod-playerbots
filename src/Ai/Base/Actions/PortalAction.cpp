@@ -1,17 +1,23 @@
-﻿/*
-* This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
 
+#include "PortalAction.h"
+#include "ChatHelper.h"
+#include "Group.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
-#include "PortalAction.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 #include <algorithm>
+#include <ctime>
+#include <mutex>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace
@@ -24,7 +30,7 @@ namespace
 
     std::mutex portalClaimsMutex;
     std::unordered_map<uint64, PortalClaims> portalClaims;
-    constexpr time_t PORTAL_CLAIM_SECONDS = 30;
+    constexpr time_t PORTAL_CLAIM_SECONDS = 60;
     constexpr float PORTAL_MAX_MASTER_DISTANCE = 30.0f;
 
     SpellInfo const* FindPortal(std::vector<SpellInfo const*> const& portals, std::string const& destination)
@@ -45,14 +51,24 @@ namespace
         return std::find(claims.spellIds.begin(), claims.spellIds.end(), spellId) != claims.spellIds.end();
     }
 
+    void CleanupPortalClaims(time_t now)
+    {
+        for (auto it = portalClaims.begin(); it != portalClaims.end();)
+        {
+            if (it->second.expires <= now)
+                it = portalClaims.erase(it);
+            else
+                ++it;
+        }
+    }
+
     SpellInfo const* ReservePortal(uint64 key, std::vector<SpellInfo const*> const& order)
     {
         std::lock_guard<std::mutex> lock(portalClaimsMutex);
         time_t const now = time(nullptr);
 
+        CleanupPortalClaims(now);
         PortalClaims& claims = portalClaims[key];
-        if (claims.expires < now)
-            claims = {};
 
         for (SpellInfo const* candidate : order)
         {
@@ -95,6 +111,9 @@ bool PortalAction::Execute(Event event)
         destination = destination.size() > 4 ? destination.substr(4) : "";
 
     std::vector<SpellInfo const*> portals = GetKnownPortals();
+    std::sort(portals.begin(), portals.end(),
+        [](SpellInfo const* lhs, SpellInfo const* rhs) { return lhs->Id < rhs->Id; });
+
     if (portals.empty())
     {
         Tell("portal_none_known", "I don't know any portals");
@@ -127,9 +146,6 @@ bool PortalAction::Execute(Event event)
         order.push_back(requested);
     else
     {
-        // Same order on every mage: requested city first, then by spell id
-        std::sort(portals.begin(), portals.end(),
-                  [](SpellInfo const* lhs, SpellInfo const* rhs) { return lhs->Id < rhs->Id; });
         if (requested)
         {
             portals.erase(std::find(portals.begin(), portals.end(), requested));
@@ -175,7 +191,6 @@ bool PortalAction::Execute(Event event)
     return true;
 }
 
-
 std::vector<SpellInfo const*> PortalAction::GetKnownPortals() const
 {
     std::vector<SpellInfo const*> portals;
@@ -209,5 +224,3 @@ void PortalAction::Tell(std::string const& key, std::string const& defaultText,
 {
     botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(key, defaultText, placeholders));
 }
-
-

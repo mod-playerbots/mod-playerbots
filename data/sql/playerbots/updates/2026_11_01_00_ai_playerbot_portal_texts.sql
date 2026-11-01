@@ -1,4 +1,4 @@
-﻿DELETE FROM ai_playerbot_texts WHERE name IN (
+DELETE FROM ai_playerbot_texts WHERE name IN (
                                               'portal_none_known',
                                               'portal_list',
                                               'portal_unknown',

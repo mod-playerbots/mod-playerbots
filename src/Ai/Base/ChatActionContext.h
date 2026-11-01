@@ -334,7 +334,6 @@ private:
     static Action* wait_for_attack_time(PlayerbotAI* botAI) { return new SetWaitForAttackTimeAction(botAI); }
     static Action* focus_heal_targets(PlayerbotAI* botAI) { return new SetFocusHealTargetsAction(botAI); }
     static Action* cast_portal(PlayerbotAI* botAI) { return new PortalAction(botAI); }
-
 };
 
 #endif
