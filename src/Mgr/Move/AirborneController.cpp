@@ -12,11 +12,13 @@
 #include "AiObjectContext.h"
 #include "Battleground.h"
 #include "DetourNavMeshQuery.h"
+#include "Group.h"
 #include "LastMovementValue.h"
 #include "Map.h"
 #include "MotionMaster.h"
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
+#include "ObjectMgr.h"
 #include "PathGenerator.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -43,6 +45,8 @@ constexpr float ARRIVAL_TOLERANCE = 0.5f;
 constexpr float GROUND_CONTACT = 1.0f;
 constexpr float MIN_SPLINE_VELOCITY = 0.01f;  // MoveSplineInitArgs::Validate refuses anything slower
 constexpr uint32 HEARTBEAT_MS = 500;          // how often a falling client reports its position
+// The box under The Oculus that sends a falling client out.
+constexpr uint32 AREATRIGGER_OCULUS_EXIT = 5001;
 
 float Normalized(float height) { return height > INVALID_HEIGHT ? height : NO_HEIGHT; }
 
@@ -157,7 +161,7 @@ Trajectory AirborneController::SweepFrom(Point const& position, Point const& vel
     launch.landingOffset = _bot->GetHoverHeight();
     launch.minZ = minZ;
     // The bounding radius is the model's collision radius the client uses.
-    launch.stepHeight = _bot->GetFloatValue(UNIT_FIELD_BOUNDINGRADIUS) * STEP_HEIGHT_PER_RADIUS;
+    launch.stepHeight = _bot->GetBoundaryRadius() * STEP_HEIGHT_PER_RADIUS;
     // A launch stops a client swimming, so the aura alone decides.
     launch.waterWalking = _bot->HasWaterWalkAura();
     MapProbe const probe(_bot->GetMap(), _bot->GetPhaseMask(), launch.collisionHeight);
@@ -623,9 +627,20 @@ void AirborneController::FallToVoid()
     if ((battleground && battleground->HandlePlayerUnderMap(_bot)) || !_bot->IsAlive())
         return;
 
-    // The Oculus handles its under-map case with an area trigger.
+    // The Oculus sends a client that falls below it out through an area trigger, which a bot never enters.
     if (_bot->GetMapId() == MAP_THE_OCULUS)
+    {
+        // As the trigger does, a Dungeon Finder group goes back to where it queued.
+        Group* group = _bot->GetGroup();
+        if (group && group->isLFGGroup() && _bot->GetMap()->IsDungeon() && _bot->TeleportToEntryPoint())
+            return;
+
+        if (AreaTriggerTeleport const* exit = sObjectMgr->GetAreaTriggerTeleport(AREATRIGGER_OCULUS_EXIT))
+            _bot->TeleportTo(exit->target_mapId, exit->target_X, exit->target_Y, exit->target_Z,
+                             exit->target_Orientation, TELE_TO_NOT_LEAVE_TRANSPORT);
+
         return;
+    }
 
     _bot->SetPlayerFlag(PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
     _bot->EnvironmentalDamage(DAMAGE_FALL_TO_VOID, _bot->GetMaxHealth());

@@ -34,6 +34,7 @@ struct FakeWorld : CollisionProbe
     float liquidZ = NO_HEIGHT;
     float liquidFromX = -1e9f;
     float voidZ = -1e9f;
+    float voidSlope = 0.0f;  // the map's lowest point rises this much per yard of x
     mutable uint32 rays = 0;
 
     bool RayHit(Point const& from, Point const& to, Point& hit) const override
@@ -73,7 +74,7 @@ struct FakeWorld : CollisionProbe
         return x >= liquidFromX && z <= liquidZ && z >= terrain(x, y) ? liquidZ : NO_HEIGHT;
     }
 
-    float MinZ(float, float) const override { return voidZ; }
+    float MinZ(float x, float) const override { return voidZ + voidSlope * x; }
 };
 
 Launch RunningJump(Point from)
@@ -313,7 +314,23 @@ TEST(JumpTrajectory, FallsIntoTheVoid)
     ASSERT_EQ(trajectory.outcome, Outcome::Void);
     EXPECT_FALSE(trajectory.Landed());
     EXPECT_TRUE(trajectory.Ends());
-    EXPECT_FLOAT_EQ(trajectory.landing.z, -500.0f);
+    EXPECT_LT(trajectory.landing.z, -500.0f - VOID_DEPTH);
+}
+
+// Outland's lowest point can rise over a yard per yard, so the fall ends below it where the bot ends, not where it
+// crossed.
+TEST(JumpTrajectory, VoidFallEndsBelowASlopingLowestPoint)
+{
+    FakeWorld world;
+    world.terrain = [](float, float) { return NO_HEIGHT; };
+    world.voidZ = -300.0f;
+    world.voidSlope = 1.33f;
+    Launch launch = RunningJump({0.0f, 0.0f, 10.0f});
+    launch.velocity.x = 20.0f;
+    Trajectory trajectory = Sweep(launch, world);
+
+    ASSERT_EQ(trajectory.outcome, Outcome::Void);
+    EXPECT_LT(trajectory.landing.z, world.MinZ(trajectory.landing.x, trajectory.landing.y) - VOID_DEPTH);
 }
 
 // A deliberate drop is refused at its cap before it reaches the void.

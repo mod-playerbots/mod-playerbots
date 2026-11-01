@@ -30,6 +30,9 @@ constexpr float FLOOR_SEARCH_MARGIN = 1.0f;
 constexpr float TAKEOFF_SNAP = 0.5f;  // a floor this far above the takeoff point is where the bot stands
 constexpr float WALK_STEP = 0.5f;     // floor probe spacing on a walk toward an edge
 constexpr float SWIM_DEPTH = 0.75f;   // share of collision height; shallower water is stood in, as the core decides
+// A void fall ends at least this far below the map's lowest point: the core counts only a body strictly below it as out
+// of bounds.
+constexpr float VOID_DEPTH = 1.0f;
 // The client's body starts this many collision radii above the feet: a ledge lower than that is landed on, a taller one
 // is a wall.
 constexpr float STEP_HEIGHT_PER_RADIUS = 1.849399f;

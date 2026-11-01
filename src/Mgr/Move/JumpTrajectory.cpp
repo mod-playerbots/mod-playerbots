@@ -290,9 +290,9 @@ Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
         }
         else
         {
-            float const voidZ = probe.MinZ(chordEnd.x, chordEnd.y);
-            if (chordEnd.z < voidZ)
-                return land(voidZ, Outcome::Void);
+            // Ends where the lowest point was sampled: it can slope steeply between there and the crossing.
+            if (chordEnd.z < probe.MinZ(chordEnd.x, chordEnd.y) - VOID_DEPTH)
+                return finish(chordEnd, chordTime, Outcome::Void);
         }
 
         position = chordEnd;
