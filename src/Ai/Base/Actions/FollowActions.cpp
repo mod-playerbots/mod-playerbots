@@ -237,7 +237,7 @@ bool FollowAction::Execute(Event /*event*/)
         if (bot->InBattleground() && IsMovingAllowed() && !IsDuplicateMove(x, y, z) &&
             !IsWaitingForLastMove(priority) && WouldMoveInStraightLine(bot, x, y, z))
         {
-            float const distance = bot->GetExactDist2d(x, y);
+            float const distance = bot->GetExactDist(x, y, z);
             if (distance > sPlayerbotAIConfig.SpellDistance)
             {
                 float const fraction = sPlayerbotAIConfig.SpellDistance / distance;
