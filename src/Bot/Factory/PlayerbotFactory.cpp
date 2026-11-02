@@ -1864,6 +1864,7 @@ void PlayerbotFactory::InitTalentsBySpecNo(Player* bot, int specNo, bool reset)
                     continue;
 
                 uint32 talentID = -1;
+                uint32 learnLevel = 0;
 
                 std::vector<TalentEntry const*>& spells = spells_row[row];
                 if (spells.size() <= 0)
@@ -1887,8 +1888,19 @@ void PlayerbotFactory::InitTalentsBySpecNo(Player* bot, int specNo, bool reset)
                                          std::min(talentInfo->DependsOnRank, bot->GetFreeTalentPoints() - 1));
                     }
                     talentID = talentInfo->TalentID;
+
+                    uint32 currentTalentRank = 0;
+                    for (uint8 rank = 0; rank < MAX_TALENT_RANK; ++rank)
+                    {
+                        if (talentInfo->RankID[rank] && bot->HasTalent(talentInfo->RankID[rank], bot->GetActiveSpec()))
+                        {
+                            currentTalentRank = rank + 1;
+                            break;
+                        }
+                    }
+                    learnLevel = std::min(lvl, bot->GetFreeTalentPoints() + currentTalentRank) - 1;
                 }
-                bot->LearnTalent(talentID, std::min(lvl, bot->GetFreeTalentPoints()) - 1);
+                bot->LearnTalent(talentID, learnLevel);
                 if (bot->GetFreeTalentPoints() == 0)
                 {
                     break;
