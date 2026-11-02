@@ -1105,7 +1105,7 @@ void TravelPath::ClipPath(PlayerbotAI* ai, Unit* mover, bool ignoreEnemyTargets)
             Creature* cre = unit->ToCreature();
             if (!cre)
                 continue;
-            if (!cre->CanCreatureAttack(mover, true) || !unit->IsWithinLOSInMap(mover))
+            if (!cre->IsHostileTo(mover) || !cre->CanCreatureAttack(mover, true) || !unit->IsWithinLOSInMap(mover))
                 continue;
             float const range = cre->GetAttackDistance(mover);
             threats.emplace_back(WorldPosition(unit), range * range);

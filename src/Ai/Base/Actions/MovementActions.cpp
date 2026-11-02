@@ -3367,7 +3367,8 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
     // hop / drifted past reactDistance / > 125 sqDist jump. Combat callers
     // pass ignoreEnemyTargets=true so the chase doesn't stop at an
     // intermediate enemy.
-    path.ClipPath(botAI, bot, ignoreEnemyTargets);
+    bool const localMove = totalDistance <= sPlayerbotAIConfig.ReactDistance;
+    path.ClipPath(botAI, bot, ignoreEnemyTargets || localMove);
 
     // If destination is on land, snap any underwater waypoints to the
     // water surface so the bot swims along the top instead of diving.
