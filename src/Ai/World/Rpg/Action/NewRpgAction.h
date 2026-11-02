@@ -27,6 +27,7 @@ class TellRpgStatusAction : public NewRpgBaseAction
 public:
     TellRpgStatusAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "rpg status") {}
 
+    bool isUseful() override { return true; }
     bool Execute(Event event) override;
 
 private:
@@ -58,6 +59,7 @@ public:
         // transitionMat[RPG_IDLE][RPG_WANDER_NPC] = 30;
         // transitionMat[RPG_IDLE][RPG_DO_QUEST] = 35;
     }
+    bool isUseful() override { return true; }
     bool Execute(Event event) override;
 
 protected:

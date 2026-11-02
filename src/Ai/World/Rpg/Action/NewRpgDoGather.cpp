@@ -219,8 +219,6 @@ bool NewRpgDoGatherAction::Execute(Event /*event*/)
     // tick; a node with no reachable path is retired by the timeout above.
     if (!lootObj.IsLootPossible(bot) || bot->GetDistance(go) > INTERACTION_DISTANCE - 2.0f)
     {
-        if (bot->isMoving())
-            return false;
         return MoveTo(bot->GetMapId(), data.nodePos.GetPositionX(), data.nodePos.GetPositionY(),
                       data.nodePos.GetPositionZ(), false, false, false, false);
     }

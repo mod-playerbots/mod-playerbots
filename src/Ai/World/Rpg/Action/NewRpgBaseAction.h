@@ -32,6 +32,8 @@ class NewRpgBaseAction : public MovementAction
 public:
     NewRpgBaseAction(PlayerbotAI* botAI, std::string name) : MovementAction(botAI, name) {}
 
+    bool isUseful() override;
+
 protected:
     /* MOVEMENT RELATED */
     bool MoveFarTo(WorldPosition dest);

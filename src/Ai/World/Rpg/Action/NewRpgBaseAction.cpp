@@ -40,6 +40,8 @@
 #include "TravelMgr.h"
 #include "G3D/Vector2.h"
 
+bool NewRpgBaseAction::isUseful() { return !bot->isMoving() || bot->IsInFlight(); }
+
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 {
     if (dest == WorldPosition())
@@ -51,6 +53,9 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         botAI->rpgInfo.stuckAttempts = 0;
         return true;
     }
+
+    if (!CanOverrideMovement(MovementPriority::MOVEMENT_NORMAL))
+        return false;
 
     if (dest != botAI->rpgInfo.moveFarPos)
     {
@@ -108,6 +113,9 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 
 bool NewRpgBaseAction::MoveWorldObjectTo(ObjectGuid guid, float distance)
 {
+    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL))
+        return false;
+
     WorldObject* object = botAI->GetWorldObject(guid);
     if (!object)
         return false;
@@ -138,6 +146,9 @@ bool NewRpgBaseAction::MoveWorldObjectTo(ObjectGuid guid, float distance)
 
 bool NewRpgBaseAction::MoveRandomNear(float moveStep, MovementPriority priority, WorldObject*)
 {
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Map* map = bot->GetMap();
     const float x = bot->GetPositionX();
     const float y = bot->GetPositionY();
