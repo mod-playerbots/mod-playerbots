@@ -457,8 +457,7 @@ private:
     {
         return new BlackTempleHunterShouldMisdirectTrigger(
             botAI, "illidari council hunter should misdirect",
-            BtHelpers::BtBosses::DATA_ILLIDARI_COUNCIL,
-            BtHelpers::BtCreatureData::DATA_GATHIOS_THE_SHATTERER);
+            BtHelpers::BtBosses::DATA_ILLIDARI_COUNCIL, "gathios the shatterer");
     }
     static Trigger* illidari_council_gathios_should_be_tanked(PlayerbotAI* botAI)
     {

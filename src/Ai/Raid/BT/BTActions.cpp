@@ -335,7 +335,7 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
     constexpr float useDistance = 3.0f;
     bool const atSpine = bot->GetExactDist2d(spineGo) <= useDistance;
 
-    // For realism, a reaction delay of 1 to 2s per spine, before clicking or walking to it.
+    // For realism, a reaction delay of 1 to 2s per spine, before clicking or moving to it.
     constexpr uint32 minReactionMs = 1000;
     constexpr uint32 maxReactionMs = 2000;
     if (spineGo->GetGUID() != _spineGuid)
@@ -1146,8 +1146,8 @@ bool GurtoggBloodboilRangedMoveOutOfFrontalConeAction::Execute(Event /*event*/)
 
 bool ReliquaryOfSoulsMisdirectToMainTankAction::Execute(Event /*event*/)
 {
-    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
-    Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger");
+    Unit* desire = GetReliquaryEssence(bot, "essence of desire");
+    Unit* anger = GetReliquaryEssence(bot, "essence of anger");
     if (!desire && !anger)
         return false;
 
@@ -1162,7 +1162,7 @@ bool ReliquaryOfSoulsMisdirectToMainTankAction::Execute(Event /*event*/)
 
 bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::Execute(Event /*event*/)
 {
-    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
+    Unit* suffering = GetReliquaryEssence(bot, "essence of suffering");
     if (!suffering)
         return false;
 
@@ -1205,7 +1205,7 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::RangedMoveAwayFromBoss(U
 
 bool ReliquaryOfSoulsHealersDpsSufferingAction::Execute(Event /*event*/)
 {
-    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
+    Unit* suffering = GetReliquaryEssence(bot, "essence of suffering");
     if (!suffering)
         return false;
 
@@ -1260,7 +1260,7 @@ bool ReliquaryOfSoulsHealersDpsSufferingAction::Execute(Event /*event*/)
 
 bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event /*event*/)
 {
-    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
+    Unit* desire = GetReliquaryEssence(bot, "essence of desire");
     if (!desire)
         return false;
 
@@ -1836,8 +1836,8 @@ bool IllidanStormragePositionOnGrateDuringSpeechAction::Execute(Event /*event*/)
     Position const& position = ILLIDAN_PULL_TANK_POSITION;
     if (bot->GetExactDist2d(position) <= ILLIDAN_POSITION_TOLERANCE)
     {
-        Creature* illidan =
-            GetInstanceCreature(bot, BT_MAP_ID, Id(BtBosses::DATA_ILLIDAN_STORMRAGE));
+        Creature* illidan = bot->FindNearestCreature(
+            Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS);
         FaceUnit(bot, illidan);
         return false;
     }
@@ -1996,11 +1996,11 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         return false;
     }
 
-    // In Demon Form, the walk to the wait position also steps to allow the main tank to move from
-    // a dead Shadow Demon to the next to attack without returning to its waiting position.
+    // In Demon Form, the move to its melee slot also steps to allow the main tank to move from a
+    // dead Shadow Demon to the next to attack without returning to the slot.
     bool const isStepped = canBackOff ||
         (phase == IllidanPhase::Demon &&
-         !IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_WALK_IN_MS));
+         !IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_MOVE_IN_MS));
     if (!isStepped)
     {
         return MoveTo(
@@ -2022,35 +2022,45 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
-// The main tank behaves the same as other melee during Demon Form until the walk-in to prepare for
+// The main tank behaves the same as other melee during Demon Form until the move-in to prepare for
 // the next humanoid phase, at which time the main tank drops its target.
 bool IllidanStormrageMainTankRepositionBossAction::FindDemonFormPosition(
     Unit const& illidan, Position& position)
 {
-    bool const isWalkIn = IsIllidanDemonFormEnding(illidan, ILLIDAN_MAIN_TANK_WALK_IN_MS);
+    bool const isMoveIn = IsIllidanDemonFormEnding(illidan, ILLIDAN_MAIN_TANK_MOVE_IN_MS);
     Unit* target = AI_VALUE(Unit*, "current target");
     uint32 const targetEntry = target && target->IsAlive() ? target->GetEntry() : 0;
     bool const isOnAdd = targetEntry == Id(BtNpcs::NPC_SHADOW_DEMON) ||
         targetEntry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND);
-    if (isWalkIn && (target || bot->GetVictim()))
+    if (isMoveIn && (target || bot->GetVictim()))
     {
         bot->AttackStop();
         context->GetValue<Unit*>("current target")->Set(nullptr);
         bot->SetSelection(ObjectGuid());
     }
-    else if (!isWalkIn && isOnAdd)
+    else if (!isMoveIn && isOnAdd)
     {
         return false;
     }
 
     DemonFormLayout const layout = GetDemonFormLayout(illidan);
     if (IsIllidanDemonFormEnding(illidan, ILLIDAN_MAIN_TANK_STEP_IN_MS))
+    {
         position = layout.mainTankStepInPosition;
-    else if (isWalkIn)
-        position = layout.mainTankPickupPosition;
-    else
-        position = layout.mainTankWaitPosition;
+        return true;
+    }
 
+    if (isMoveIn)
+    {
+        position = layout.mainTankPickupPosition;
+        return true;
+    }
+
+    int32 const slot = GetIllidanMeleeIndex(botAI, layout.meleeSlots.size());
+    if (slot < 0)
+        return false;
+
+    position = layout.meleeSlots[static_cast<size_t>(slot)];
     return true;
 }
 
@@ -2185,7 +2195,8 @@ bool IllidanStormrageIsolateBotWithInfectionAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
-    Position const position = GetIllidanRecordedInfectionPosition(botAI, *illidan);
+    Position const position =
+        GetIllidanRecordedInfectionPosition(botAI, *illidan, GetIllidanPhase(illidan));
     float moveX;
     float moveY;
     bool backwards;
@@ -2256,7 +2267,7 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 
             IllidanInfection infection;
             if (infections.empty())
-                infection.infectionPosition = GetIllidanInfectionPosition(*illidan);
+                infection.infectionPosition = GetIllidanInfectionPosition(*illidan, phase);
             else
                 infection.infectionPosition = infections.begin()->second.infectionPosition;
 
@@ -2722,11 +2733,11 @@ bool IllidanStormrageSpreadRangedAction::FindDemonFormSlot(
     }
 
     constexpr bool inDemonForm = true;
-    int32 const slot = GetIllidanRangedIndex(botAI, layout.rangedSlots.size(), inDemonForm);
+    int32 const slot = GetIllidanRangedIndex(botAI, layout.rangedDpsSlots.size(), inDemonForm);
     if (slot < 0)
         return false;
 
-    position = layout.rangedSlots[static_cast<size_t>(slot)];
+    position = layout.rangedDpsSlots[static_cast<size_t>(slot)];
     return true;
 }
 

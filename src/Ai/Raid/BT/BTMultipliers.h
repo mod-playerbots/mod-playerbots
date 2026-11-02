@@ -36,7 +36,7 @@ public:
 protected:
     virtual float GetValueInEncounter(Action* action) = 0;
 
-    Creature* GetEncounterBoss()
+    Unit* GetEncounterBoss()
     {
         return _boss ? BtHelpers::GetBtBoss(bot, *_boss) : nullptr;
     }
@@ -403,7 +403,7 @@ private:
     float GetTargetingValue(
         BtHelpers::IllidanPhase phase, Action* action, bool isTankAssist, bool isDpsAssist);
     float GetTankMovementValue(Unit* illidan, BtHelpers::IllidanPhase phase, Action* action);
-    float GetNonTankMovementValue(BtHelpers::IllidanPhase phase, Action* action);
+    float GetNonTankMovementValue(Unit* illidan, BtHelpers::IllidanPhase phase, Action* action);
 };
 
 class IllidanStormrageHoldNearNewShadowfiendMultiplier : public BlackTempleEncounterMultiplier

@@ -32,7 +32,7 @@ public:
 protected:
     virtual bool IsActiveInEncounter() = 0;
 
-    Creature* GetEncounterBoss() { return BtHelpers::GetBtBoss(bot, _boss); }
+    Unit* GetEncounterBoss() { return BtHelpers::GetBtBoss(bot, _boss); }
 
 private:
     BtHelpers::BtBosses const _boss;
@@ -59,14 +59,14 @@ class BlackTempleHunterShouldMisdirectTrigger : public BlackTempleEncounterTrigg
 public:
     BlackTempleHunterShouldMisdirectTrigger(
         PlayerbotAI* botAI, std::string const& name, BtHelpers::BtBosses boss,
-        std::optional<BtHelpers::BtCreatureData> target = std::nullopt)
+        std::optional<std::string_view> target = std::nullopt)
         : BlackTempleEncounterTrigger(botAI, name, boss), _target(target) {}
 
 protected:
     bool IsActiveInEncounter() override;
 
 private:
-    std::optional<BtHelpers::BtCreatureData> const _target;
+    std::optional<std::string_view> const _target;
 };
 
 // Trash

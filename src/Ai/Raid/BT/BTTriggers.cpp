@@ -10,6 +10,7 @@
 #include "Playerbots.h"
 #include "SharedDefines.h"
 #include "Spell.h"
+#include "ThreatHelpers.h"
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -36,7 +37,7 @@ bool BlackTempleHunterShouldMisdirectTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* boss = _target ? GetBtCreature(bot, *_target) : GetEncounterBoss();
+    Unit* boss = _target ? FindThreatTarget(bot, *_target) : GetEncounterBoss();
     return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
@@ -190,7 +191,7 @@ bool SupremusNearFireTrigger::IsActiveInEncounter()
     if (!GetEncounterBoss())
         return false;
 
-    if (bot->isMoving() && CanWalkThroughSupremusFire(bot))
+    if (bot->isMoving() && CanMoveThroughSupremusFire(bot))
         return false;
 
     return IsInSupremusHazard(
@@ -340,17 +341,17 @@ bool ReliquaryOfSoulsHunterShouldMisdirectTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
+    Unit* desire = GetReliquaryEssence(bot, "essence of desire");
     if (desire && desire->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return true;
 
-    Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger");
+    Unit* anger = GetReliquaryEssence(bot, "essence of anger");
     return anger && anger->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 bool ReliquaryOfSoulsShouldPositionForSufferingTrigger::IsActiveInEncounter()
 {
-    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
+    Unit* suffering = GetReliquaryEssence(bot, "essence of suffering");
     return suffering && !suffering->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
         IsOutOfSufferingPosition(bot, suffering);
 }
@@ -364,7 +365,7 @@ bool ReliquaryOfSoulsHealersShouldAttackSufferingTrigger::IsActiveInEncounter()
     if (bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("disc", BOT_STATE_COMBAT))
         return false;
 
-    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
+    Unit* suffering = GetReliquaryEssence(bot, "essence of suffering");
     return suffering && !suffering->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
 }
 
@@ -373,7 +374,7 @@ bool ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_MAGE)
         return false;
 
-    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
+    Unit* desire = GetReliquaryEssence(bot, "essence of desire");
     return desire && desire->HasAura(Id(BtSpells::SPELL_RUNE_SHIELD));
 }
 
@@ -382,7 +383,7 @@ bool ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_WARRIOR || !PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
+    Unit* desire = GetReliquaryEssence(bot, "essence of desire");
     if (!desire)
         return false;
 
@@ -1016,7 +1017,7 @@ bool IllidanStormrageShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
         return true;
 
     return phase == IllidanPhase::Demon &&
-        !IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_WALK_IN_MS);
+        !IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_MOVE_IN_MS);
 }
 
 bool IllidanStormrageShouldManageDpsTimersTrigger::IsActiveInEncounter()
