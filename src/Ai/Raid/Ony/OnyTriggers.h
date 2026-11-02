@@ -40,6 +40,13 @@ public:
     bool IsActive() override;
 };
 
+class OnyxiaPhaseThreeThreatHoldTrigger : public Trigger
+{
+public:
+    OnyxiaPhaseThreeThreatHoldTrigger(PlayerbotAI* botAI) : Trigger(botAI, "ony phase three threat hold") {}
+    bool IsActive() override;
+};
+
 class OnyxiaAvoidEggsTrigger : public Trigger
 {
 public:

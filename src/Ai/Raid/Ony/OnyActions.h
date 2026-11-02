@@ -104,6 +104,13 @@ public:
     bool Execute(Event event) override;
 };
 
+class OnyxiaStopAttackAction : public Action
+{
+public:
+    OnyxiaStopAttackAction(PlayerbotAI* botAI) : Action(botAI, "ony stop attack") {}
+    bool Execute(Event event) override;
+};
+
 class OnyxiaAvoidEggsAction : public MovementAction
 {
 public:

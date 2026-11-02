@@ -5,6 +5,7 @@
  */
 
 #include "OnyStrategy.h"
+#include "OnyMultipliers.h"
 
 void RaidOnyxiaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -28,9 +29,14 @@ void RaidOnyxiaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "ony whelps spawn", { NextAction("ony kill whelps", ACTION_RAID + 1) }));
+
+    // ----------- Phase 3 (40% - 0%) -----------
+
+    triggers.push_back(new TriggerNode(
+        "ony phase three threat hold", { NextAction("ony stop attack", ACTION_RAID + 2) }));
 }
 
-void RaidOnyxiaStrategy::InitMultipliers(std::vector<Multiplier*>& /*multipliers*/)
+void RaidOnyxiaStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    // Empty for now
+    multipliers.push_back(new OnyxiaPhaseThreeThreatMultiplier(botAI));
 }

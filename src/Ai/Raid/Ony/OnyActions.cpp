@@ -137,6 +137,12 @@ bool RaidOnyxiaKillWhelpsAction::Execute(Event /*event*/)
     return false;
 }
 
+bool OnyxiaStopAttackAction::Execute(Event /*event*/)
+{
+    bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+    return bot->AttackStop();
+}
+
 bool OnyxiaAvoidEggsAction::Execute(Event /*event*/)
 {
     Position botPos = Position(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
