@@ -867,13 +867,11 @@ bool HasInnerDemon(Player* bot)
 Creature* GetPersonalInnerDemon(PlayerbotAI* botAI)
 {
     ObjectGuid const botGuid = botAI->GetBot()->GetGUID();
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    auto const& targets = context->GetValue<GuidVector>("possible targets no los")->RefGet();
-
     Creature* innerDemon = nullptr;
-    for (ObjectGuid const& guid : targets)
+    for (ObjectGuid const& targetGuid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->RefGet())
     {
-        Creature* creature = botAI->GetCreature(guid);
+        Creature* creature = botAI->GetCreature(targetGuid);
         if (creature && creature->GetEntry() == Id(SscNpcs::NPC_INNER_DEMON) &&
             creature->GetSummonerGUID() == botGuid)
         {
