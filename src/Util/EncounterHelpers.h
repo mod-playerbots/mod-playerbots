@@ -43,24 +43,13 @@ inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
 // case, the boss script must be consulted to determine viability.
 bool IsEncounterInProgress(Player* bot, uint32 mapId);
 
-// Find bosses and their encounters from the instance script rather than the threat list or a grid
-// search. Boss ids follow DungeonEncounter.dbc's order, so they are right only if the instance
-// script numbers its bosses in that same order. A creature is found only if the instance script
-// registers it in its ObjectData under the id passed. The creature getters return a creature only
-// while it and the bot are alive and the bot is taking part in its encounter. Each returns false,
-// nullopt, or nullptr when the bot isn't on mapId.
-//
-// CreatureAI::DoZoneInCombat's default range. A bot this close is zoned into the fight.
-inline constexpr float ENCOUNTER_PARTICIPATION_DISTANCE = 250.0f;
+// Encounters from the instance script. Boss ids follow DungeonEncounter.dbc's order, so they are
+// right only if the instance script numbers its bosses in that same order. Each returns false or
+// nullopt when the bot isn't on mapId.
 // One boss's state, unlike IsEncounterInProgress, which is true with any boss in progress on mapId.
 bool IsBossInProgress(Player* bot, uint32 mapId, uint32 bossId);
 // The lowest boss id that is IN_PROGRESS, if any.
 std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId);
-// Checks no boss state, so it also finds a creature before its fight starts (e.g. during a speech).
-Creature* GetInstanceCreature(Player* bot, uint32 mapId, uint32 dataId);
-// IsBossInProgress, then GetInstanceCreature with bossId as the creature key (each boss's
-// ObjectData key is its boss id).
-Creature* GetInstanceBoss(Player* bot, uint32 mapId, uint32 bossId);
 
 // Class Roles
 // A job given to one raid member of a class, such as a mage tank.

@@ -72,28 +72,6 @@ std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId)
     return std::nullopt;
 }
 
-Creature* GetInstanceCreature(Player* bot, uint32 mapId, uint32 dataId)
-{
-    if (bot->GetMapId() != mapId || !bot->IsAlive())
-        return nullptr;
-
-    InstanceScript* instance = bot->GetInstanceScript();
-    if (!instance)
-        return nullptr;
-
-    Creature* creature = instance->GetCreature(dataId);
-    if (!creature || !creature->IsAlive() ||
-        bot->GetDistance(creature) > ENCOUNTER_PARTICIPATION_DISTANCE)
-        return nullptr;
-
-    return creature;
-}
-
-Creature* GetInstanceBoss(Player* bot, uint32 mapId, uint32 bossId)
-{
-    return IsBossInProgress(bot, mapId, bossId) ? GetInstanceCreature(bot, mapId, bossId) : nullptr;
-}
-
 namespace
 {
 
