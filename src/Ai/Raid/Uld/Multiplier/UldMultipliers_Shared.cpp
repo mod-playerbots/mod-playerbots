@@ -152,6 +152,11 @@ UlduarBurstWindowMultiplier::BurstWindow UlduarBurstWindowMultiplier::EvaluateWi
     if (!razorscale)
         razorscale = AI_VALUE2(Unit*, "find target", "razorscale");
 
+    // His gauntlet runs about 190 yd up the corridor, well past SightDistance, and no gated boss
+    // here falls through to a window that allows everything.
+    if (!thorim && NearThorimEncounter(bot))
+        thorim = GetThorim(botAI);
+
     // No damage taken while airborne, so every landing is a burn window, knockdowns included. Lust
     // waits for the permanent ground phase, a knockdown is too short for a 10 min cooldown
     if (razorscale)
