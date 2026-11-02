@@ -146,6 +146,8 @@ bool FollowAction::Execute(Event /*event*/)
                              !bot->GetVehicle() && !bot->GetTransport();
         if (walking && bot->GetExactDist(x, y, z) > sPlayerbotAIConfig.SightDistance)
             moved = MoveTo(loc.GetMapId(), x, y, z, false, false, false, false, priority, true);
+        else if (!CanOverrideMovement(priority) || IsDuplicateMove(x, y, z))
+            moved = false;
         else if (walking && !HasGroundPath("formation", x, y, z))
             moved = false;
         else
