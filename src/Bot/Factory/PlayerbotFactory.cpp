@@ -1784,7 +1784,7 @@ uint32 PlayerbotFactory::InitTalentsTree(bool increment /*false*/, bool use_temp
 }
 
 // LimitTalentsExpansion: up to level 60 rows 0-5 and the middle talent of row 6, up to 70 rows 0-7 and the
-// middle talent of row 8, as in InitTalentsByTemplate().
+// middle talent of row 8
 static bool IsAboveTalentExpansionLimit(Player* bot, uint32 row, uint32 col)
 {
     if (!sPlayerbotAIConfig.LimitTalentsExpansion)
@@ -1799,8 +1799,8 @@ static bool IsAboveTalentExpansionLimit(Player* bot, uint32 row, uint32 col)
     return false;
 }
 
-// The lowest template whose talents within the expansion limit can spend all of the bot's points,
-// or the highest template if none can; 0 when the spec has no template.
+// The lowest template that can spend all of the bot's points, or the highest template if none can;
+// 0 when the spec has no template.
 static uint32 SelectTemplateLevel(Player* bot, uint32 cls, uint32 specIndex)
 {
     std::map<uint8, uint32> spentTabs = AiFactory::GetPlayerSpecTabs(bot);

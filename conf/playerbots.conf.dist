@@ -1829,8 +1829,8 @@ Playerbots.MaxRandomBotTeleportInterval = 18000
 # INFORMATION
 #
 
-# A template is used from the first level where it can spend all of the bot's talent points,
-# so a .<level> link should spend exactly the points available at that level (61 at level 70).
+# Bots use the lowest template that can spend all of their talent points, so a .<level> link
+# should spend exactly the points available at that level (61 at level 70).
 # Playerbots.PremadeSpecName.<class>.<specno> = <name>         #Name of the talent specialisation
 # Playerbots.PremadeSpecLink.<class>.<specno>.<level> = <link> #Wowhead style link the bot should work towards at given level.
 # Playerbots.PremadeSpecGlyph.<class>.<specno> = <major 1>,<minor 1>,<major 2>,<minor 2>,<minor 3>,<major 3>   #ItemId of the glyphs
