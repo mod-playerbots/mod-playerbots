@@ -9,6 +9,7 @@
 
 #include "Player.h"
 #include "PlayerbotAI.h"
+#include <vector>
 
 namespace BlackwingLairHelpers
 {
@@ -30,6 +31,12 @@ namespace BlackwingLairHelpers
         // Nefarian
         SPELL_WILD_MAGIC = 23410,
         SPELL_CORRUPTED_HEALING = 23401,
+
+        // Death Talon Wyrmguard
+        SPELL_RED_BROOD_POWER = 22283,
+        SPELL_BLUE_BROOD_POWER = 22285,
+        SPELL_BRONZE_BROOD_POWER = 22286,
+        SPELL_GREEN_BROOD_POWER = 22288,
 
         // Priest talent and glyph
         SPELL_EMPOWERED_RENEW_R1 = 63534,
@@ -61,6 +68,12 @@ namespace BlackwingLairHelpers
         NPC_CORRUPTED_HEALING_TOTEM = 14664,
         NPC_CORRUPTED_WINDFURY_TOTEM = 14666,
 
+        // Black drakes and Chromaggus
+        NPC_FIREMAW = 11983,
+        NPC_FLAMEGOR = 11981,
+        NPC_EBONROC = 14601,
+        NPC_CHROMAGGUS = 14020,
+
         // Trash
         NPC_DEATH_TALON_WYRMGUARD = 12460
     };
@@ -72,6 +85,16 @@ namespace BlackwingLairHelpers
     bool IsRazorgoreOffTank(Player* bot);
     bool IsNonBABotNearPosition(Player const* bot, Position const& position, float distance);
     bool IsCorruptedWhelp(Unit const* unit);
+    bool IsDeathTalonWyrmguard(Unit const* unit);
+    std::vector<Unit*> GetWyrmguardAttackers(PlayerbotAI* botAI);
+    Unit* GetAssignedWyrmguard(PlayerbotAI* botAI);
+    Unit* GetWyrmguardKillTarget(std::vector<Unit*> const& wyrmguards);
+    bool IsAssignedToOtherTank(Player* bot, Unit const* wyrmguard);
+    Position const* GetWyrmguardSpot(Player* bot, Unit const* wyrmguard);
+    bool IsWyrmguardHoldRunning(Player* bot);
+    bool AreWyrmguardsInPosition(Player* bot, std::vector<Unit*> const& wyrmguards);
+    std::vector<Unit*> GetUnengagedDrakes(Player* bot);
+    bool IsStepTowardsDrake(Player const* bot, std::vector<Unit*> const& drakes, float x, float y);
     bool IsCorruptedTotemEntry(uint32 entry);
     bool IsCorruptedTotem(Unit const* unit);
     Unit* FindCorruptedTotem(PlayerbotAI* botAI);
