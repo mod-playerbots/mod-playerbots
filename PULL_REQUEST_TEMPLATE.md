@@ -9,7 +9,6 @@ DESIGN PHILOSOPHY: We prioritize STABILITY, PERFORMANCE, AND PREDICTABILITY over
 Every action and decision executes PER BOT AND PER TRIGGER. Small increases in logic complexity scale
 poorly across thousands of bots and negatively affect all. We prioritize a stable system over a smarter
 one. Bots don't need to behave perfectly; believable behavior is the goal, not human simulation.
-Default behavior must be cheap in processing; expensive behavior must be opt-in.
 
 Before submitting, make sure your changes aligns with these principles.
 -->
@@ -19,108 +18,81 @@ Before submitting, make sure your changes aligns with these principles.
 
 
 
-## Feature Evaluation
+## How to Test
 <!--
-If your PR is very minimal (comment typo, wrong ID reference, etc), and it is very obvious it will not have
-any impact on performance, you may skip these question. If necessary, a maintainer may ask you for them later.
--->
-
-<!-- Please answer the following: -->
-- Describe the **minimum logic** required to achieve the intended behavior.
-- Describe the **processing cost** when this logic executes across many bots.
-
-
-
-## How to Test the Changes
-<!--
-- Step-by-step instructions to test the change.
-- Any required setup (e.g. multiple players, number of bots, specific configuration).
-- Expected behavior and how to verify it.
+- Steps to see the old behavior and the new one.
+- Setup needed (number of bots, party or raid, config values).
+- What you should see when it works.
 -->
 
 
 
 ## Impact Assessment
+
+**1. Performance cost at scale**
 <!--
-As a generic test, pmon checks before and after your edits are helpful. To standardize the measurement, set the configs
-BotActiveAlone = 100 & botActiveAloneSmartScale = 0. After server boot, enable the monitor `playerbot pmon toggle`
-right after the bots finished logging-in, and run the stack command `playerbot pmon stack` 5 minutes after that.
-The last "Total" line is the main result to look for.
+Every line of code incurs processing costs that may cause unexpected results at scale. Small fixes can tick "None" and skip the explanation.
+It's important to know whether the feature incurs minimal costs vs very large ones.
+Use pmon to determine the performance hit by taking measurements before and after implementing the changes.
+For comparable numbers, set BotActiveAlone = 100 and botActiveAloneSmartScale = 0, run `playerbot pmon toggle`
+once the bots finish logging in, then `playerbot pmon stack` 5 minutes later, and post the last "Total" line
+from each run.
+In some cases direct code profiling of specific functions may be needed.
+If there is a high impact then there needs to be some justification for the change.
 -->
-- Does this change increase per-bot/per-tick processing or risk scaling poorly with thousands of bots?
-    - - [ ] No, not at all
-    - - [ ] Minimal impact (**explain below**)
-    - - [ ] Moderate impact (**explain below**)
+- [ ] None
+- [ ] Minimal (explain below)
+- [ ] Moderate or high (explain below)
 
+**2. Does this change what bots do by default?**
+<!-- Default means without the player turning on a new strategy or config option. -->
+- [ ] No
+- [ ] Yes (explain why the new default is better)
 
-
-- Does this change modify default bot behavior?
-    - - [ ] No
-    - - [ ] Yes (**explain why**)
-
-
-
-- Does this change add new decision branches or increase maintenance complexity?
-    - - [ ] No
-    - - [ ] Yes (**explain below**)
-
-
-
-## AI Assistance
+## AI Use and Self-Review
 <!--
-AI assistance is allowed, but all submitted code must be fully understood, reviewed, and owned by the contributor.
-We expect contributors to be honest about what they do and do not understand.
--->
-Was AI assistance used while working on this change?
-- - [ ] No
-- - [ ] Yes (**explain below**)
-<!--
-If yes, please specify:
-- Purpose of usage (e.g. brainstorming, refactoring, documentation, code generation).
-- Which parts of the change were influenced or generated, and whether it was thoroughly reviewed.
+AI help is allowed, but you must understand and stand behind every line you submit, and be able to
+explain it when a maintainer asks. AI-assisted work follows the AzerothCore guidelines linked below.
 -->
 
+**Did you use AI while writing this change?**
+- [ ] No
+- [ ] Yes (say what you used it for and which parts it wrote)
 
+- [ ] I have read and understood the [AC guidelines for AI Agentic Engineering](https://www.azerothcore.org/wiki/agentic-engineering) (required if you ticked Yes)
 
-## Code Provenance / Attribution
+**Review before submitting**
 <!--
-mod-playerbots is GPLv2 and is derived from the CMaNGOS playerbots (ike3). Code may be ported or
-adapted from other GPLv2 projects, but upstream attribution MUST be preserved (GPLv2 §1 and §2(a)).
-Never replace an upstream copyright notice with the project header.
+A self-review is used as a first pass to catch obvious problems before a maintainer spends time on them.
+Run /self-review with a capable model, as described in step 5 of the guidelines above, and paste the
+resulting SELF-REVIEW.md verbatim as a comment on this PR.
 -->
-Was any code in this PR copied or adapted from a sister / upstream project (e.g. CMaNGOS playerbots,
- MaNGOS, another module)?
-- - [ ] No, all code in this PR is original
-- - [ ] Yes (**name the project and the original author(s) below**)
+- [ ] I ran a self-review. Tool and model: ______
+
+## Code Provenance
 <!--
-If yes, please provide:
-- Source project + URL (and the specific file/commit if known).
-- Original author(s) — add a `Co-authored-by: Name <email>` trailer for each to your commit.
-- Attribution in code: an in-file "Ported/adapted from <project>" note on substantially-ported files,
-  or an inline "// Adapted from <project>" comment for small snippets.
+mod-playerbots is GPLv2 and derives from the CMaNGOS playerbots (ike3). Code ported or adapted from
+another GPLv2 project must keep its upstream attribution (GPLv2 §1 and §2(a)).
+
+If yes, give:
+- Source project and URL (file or commit if you know it).
+- Original author(s), each with a `Co-authored-by: Name <email>` trailer on your commit.
+- An in-file "Ported/adapted from <project>" note on substantially ported files, or an inline
+  "// Adapted from <project>" comment on small snippets.
 -->
+Was any code copied or adapted from another project (CMaNGOS playerbots, MaNGOS, another module)?
+- [ ] No, all code is original
+- [ ] Yes (name the project and original authors below)
 
-
-
+## Checklist
 <!--
-TRANSLATIONS:
-Anything new that the bots say in chat must be in a translatable format. This is done using GetBotTextOrDefault,
-which you can search for in the codebase to find examples. Your code needs to have English as the default fallback,
-while the full translations need to be in an SQL update file. The languages in the file are the nine language
-options supported by AzerothCore: English, Korean, French, German, Chinese, Taiwanese, Spanish, Spanish Mexico, and
-Russian. See data/sql/playerbots/updates/2025_12_27_ai_playerbot_fishing_text.sql as an example of a translation SQL
-update, whose content are called within the codebase at src/Ai/Base/Actions/FishingAction.cpp
+Translations: anything new that bots say in chat must go through GetBotTextOrDefault with English
+as the fallback, and the translations for all nine AzerothCore locales go in an SQL update. Example:
+data/sql/playerbots/updates/2025_12_27_ai_playerbot_fishing_text.sql, used in
+src/Ai/Base/Actions/FishingAction.cpp.
 -->
-
-## Final Checklist
-
-- - [ ] Changes are understood and tested for server stability and performance impact.
-- - [ ] Any new bot dialogue lines are translated.
-- - [ ] New source files use the GPLv2 header.
-- - [ ] Documentation updated if needed (Code comments, Conf comments, WiKi commands).
-- - [ ] New and modified files do not introduce new compiler warnings.
+- [ ] New bot chat lines are translated (see comment above), or there are none.
+- [ ] New source files use the GPLv2 header.
 
 ## Notes for Reviewers
-<!-- Anything else that's helpful to review or test your pull request. -->
-
-
+<!-- Anything else that helps someone review or test this. -->

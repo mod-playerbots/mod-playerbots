@@ -55,6 +55,11 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
+bool SscAssignClassRolesAction::Execute(Event /*event*/)
+{
+    return UpdateSscClassRoles(botAI);
+}
+
 bool SscMisdirectToMainTankAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
@@ -930,6 +935,11 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::TrackWhirlwindEnd(
     }
 
     return false;
+}
+
+bool LeotherasTheBlindAnnounceClassRolesAction::Execute(Event /*event*/)
+{
+    return IsMechanicTrackerBot(bot, SSC_MAP_ID) && UpdateLeotherasClassRoleAnnouncement(botAI);
 }
 
 // Fathom-Lord Karathress
