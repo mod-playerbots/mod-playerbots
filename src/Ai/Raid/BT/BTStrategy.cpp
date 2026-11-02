@@ -340,66 +340,69 @@ void AppendSisterOfPainExclusions(Player* bot, GuidSet& exclusions)
         exclusions.insert(pain->GetGUID());
 }
 
-void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
+void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
+    Player* bot = botAI->GetBot();
     if (!PlayerbotAI::IsCaster(bot) && !PlayerbotAI::IsHeal(bot))
         return;
 
-    auto const& reavers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("shadowmoon reavers")->RefGet();
-    for (ObjectGuid const& guid : reavers)
+    for (ObjectGuid const& reaverGuid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("shadowmoon reavers")->RefGet())
     {
-        if (IsShadowmoonReaverUnsafeForMagic(botAI->GetUnit(guid)))
-            exclusions.insert(guid);
+        if (IsShadowmoonReaverUnsafeForMagic(botAI->GetUnit(reaverGuid)))
+            exclusions.insert(reaverGuid);
     }
 }
 
-// Tanks and ranged other than shadow priests leave channelers and sorcerers to melee dps while
+// Tanks and ranged other than shadow priests leave channelers and sorcerers to melee DPS while
 // another add is up. The exclusion ensures the skull doesn't affect targeting.
-void AppendShadeOfAkamaChannelerExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
+void AppendShadeOfAkamaChannelerExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
+    Player* bot = botAI->GetBot();
     if (PlayerbotAI::IsDps(bot) && (bot->getClass() == CLASS_PRIEST || PlayerbotAI::IsMelee(bot)))
         return;
 
     AiObjectContext* context = botAI->GetAiObjectContext();
-    auto const& adds = context->GetValue<GuidVector>("shade of akama adds")->RefGet();
-    if (adds.empty())
+    auto const& addGuids = context->GetValue<GuidVector>("shade of akama adds")->RefGet();
+    if (addGuids.empty())
         return;
 
-    for (ObjectGuid const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
+    for (auto const& attackerGuids : context->GetValue<GuidVector>("attackers")->RefGet())
     {
-        if (std::find(adds.begin(), adds.end(), guid) == adds.end())
+        if (std::find(addGuids.begin(), addGuids.end(), attackerGuids) == addGuids.end())
         {
-            exclusions.insert(adds.begin(), adds.end());
+            exclusions.insert(addGuids.begin(), addGuids.end());
             return;
         }
     }
 }
 
-// Shadowy Constructs cannot be damaged by anyone other than the Spirit of Vengeance.
+// Shadowy Constructs can be damaged only by a Spirit of Vengeance.
 void AppendShadowyConstructExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     if (botAI->GetBot()->HasAura(Id(BtSpells::SPELL_SPIRITUAL_VENGEANCE)))
         return;
 
-    auto const& constructs = botAI->GetAiObjectContext()
+    auto const& constructGuids = botAI->GetAiObjectContext()
         ->GetValue<GuidVector>("teron gorefiend shadowy constructs")->RefGet();
-    exclusions.insert(constructs.begin(), constructs.end());
+    exclusions.insert(constructGuids.begin(), constructGuids.end());
 }
 
-void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
+void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
+    Player* bot = botAI->GetBot();
     if (!PlayerbotAI::IsMelee(bot))
         return;
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return;
 
-    auto const& shadowfiends =
-        context->GetValue<GuidVector>("illidan stormrage parasitic shadowfiends")->RefGet();
-    exclusions.insert(shadowfiends.begin(), shadowfiends.end());
+    // Skip Shadowfiends with standard targeting. IllidanStormrageAssignTargetPriorityAction directs
+    // melee to attack them if under 50% HP and in melee range.
+    auto const& shadowfiendGuids = botAI->GetAiObjectContext()
+        ->GetValue<GuidVector>("illidan stormrage parasitic shadowfiends")->RefGet();
+    exclusions.insert(shadowfiendGuids.begin(), shadowfiendGuids.end());
 
     if (GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return;
@@ -421,15 +424,15 @@ void RaidBlackTempleStrategy::AppendTargetExclusions(
     if (type != TargetValueExclusionType::TankTarget)
     {
         AppendSisterOfPainExclusions(bot, exclusions);
-        AppendShadowmoonReaverExclusions(botAI, bot, exclusions);
+        AppendShadowmoonReaverExclusions(botAI, exclusions);
     }
 
     if (!IsEncounterInProgress(bot, BT_MAP_ID))
         return;
 
     if (type == TargetValueExclusionType::TankTarget || type == TargetValueExclusionType::DpsTarget)
-        AppendShadeOfAkamaChannelerExclusions(botAI, bot, exclusions);
+        AppendShadeOfAkamaChannelerExclusions(botAI, exclusions);
 
     AppendShadowyConstructExclusions(botAI, exclusions);
-    AppendIllidanMeleeExclusions(botAI, bot, exclusions);
+    AppendIllidanMeleeExclusions(botAI, exclusions);
 }

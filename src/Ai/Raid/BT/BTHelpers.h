@@ -240,7 +240,7 @@ void FaceUnit(Player* bot, Unit* unit);
 inline constexpr float SISTER_OF_PLEASURE_SEARCH_RADIUS = 100.0f;
 inline constexpr uint32 SISTER_OF_PLEASURE_CACHE_INTERVAL_MS = 1000;
 
-GuidVector FindSisterOfPleasureGuids(PlayerbotAI* botAI);
+GuidVector FindSisterOfPleasureGuids(Player* bot);
 Unit* GetLinkedSisterOfPain(Unit* pleasure);
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
 Unit* GetSkulledSisterOfPain(Player* bot);
@@ -342,7 +342,7 @@ float GetSupremusFixateTimeRemaining(Unit* supremus);
 float GetSupremusCatchDistance(Player* bot, Unit* supremus);
 bool CanSupremusCatchStandingBot(Player* bot, Unit* supremus);
 bool IsSupremusVolcanoErupting(Unit* volcano);
-std::vector<SupremusHazard> FindSupremusHazards(PlayerbotAI* botAI);
+std::vector<SupremusHazard> FindSupremusHazards(Player* bot);
 std::vector<SupremusHazard> const& GetSupremusHazards(PlayerbotAI* botAI);
 bool IsInSupremusHazard(
     std::vector<SupremusHazard> const& hazards, float x, float y, SupremusHazardZone zone,
@@ -365,7 +365,7 @@ inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MAX_Y = 473.5f;
 inline constexpr float SHADE_OF_AKAMA_ADD_SEARCH_RADIUS = 150.0f;
 inline constexpr uint32 SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS = 1000;
 
-GuidVector FindShadeOfAkamaAddGuids(PlayerbotAI* botAI);
+GuidVector FindShadeOfAkamaAddGuids(Player* bot);
 Unit* GetShadeOfAkamaKillTarget(PlayerbotAI* botAI);
 
 // Teron Gorefiend
@@ -429,7 +429,7 @@ Player* GetGurtoggFelRageTarget(Unit* gurtogg);
 bool IsGurtoggFelRageTarget(Player* player);
 Position GetGurtoggFelRageMeleePosition(
     Player* bot, Unit const& gurtogg, Unit const& felRageTarget);
-float FindGurtoggSecondTankThreat(PlayerbotAI* botAI);
+float FindGurtoggSecondTankThreat(Player* bot);
 bool IsInGurtoggRectangle(
     Position const& point, Position const& center, Position const& facing, float halfWidth,
     float halfDepth);
@@ -534,10 +534,10 @@ struct IllidariCouncilMembers
     Unit* veras = nullptr;
 };
 
-IllidariCouncilMembers GetIllidariCouncilMembers(PlayerbotAI* botAI);
+IllidariCouncilMembers GetIllidariCouncilMembers(Player* bot);
 bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI);
-Player* GetZerevorMageTank(PlayerbotAI* botAI);
-bool IsZerevorMageTank(PlayerbotAI* botAI);
+Player* GetZerevorMageTank(Player* bot);
+bool IsZerevorMageTank(Player* player);
 bool HasDangerousCouncilAura(Player* bot);
 bool IsVerasVanished(Unit* veras);
 bool CanInterruptCircleOfHealing(Unit* malande);
@@ -545,7 +545,7 @@ bool IsInZerevorPatch(Unit* zerevor, Position const& point, float margin = 0.0f)
 bool IsInCouncilPatch(Position const& point, Unit* gathios, Unit* zerevor, float margin = 0.0f);
 bool IsMalandeInCouncilPatch(Unit* malande, Unit* gathios, Unit* zerevor);
 bool ShouldRangedInterruptCircleOfHealing(Unit* malande, Unit* gathios, Unit* zerevor);
-bool IsZerevorOnMageTank(PlayerbotAI* botAI, Unit* zerevor);
+bool IsZerevorOnMageTank(Player* bot, Unit* zerevor);
 bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit* zerevor);
 bool FindMageTankHealerPosition(
     Player* bot, Player* mageTank, Unit* zerevor, Position& destination);
@@ -613,16 +613,16 @@ struct DemonFormLayout
 // A Shadow Demon and the player it has paralyzed and is moving to.
 struct ShadowDemon
 {
-    ObjectGuid demon = ObjectGuid::Empty;
-    ObjectGuid target = ObjectGuid::Empty;
+    ObjectGuid demonGuid = ObjectGuid::Empty;
+    ObjectGuid targetGuid = ObjectGuid::Empty;
 };
 
 // One Shadowfiend infection, recorded by the mechanic tracker. Once the trap is assigned, hunter is
 // empty if a Frost Trap already covered the position, or once the hunter has laid its trap.
 struct IllidanInfection
 {
-    Position infectionPosition;
-    ObjectGuid hunter = ObjectGuid::Empty;
+    Position position;
+    ObjectGuid hunterGuid = ObjectGuid::Empty;
     bool isTrapAssigned = false;
 };
 
@@ -865,51 +865,50 @@ bool IsIllidanPhaseStartWithin(Unit const& illidan, IllidanPhase phase, uint32 d
 IllidanPhase GetIllidanPhaseBefore(Unit const& illidan, IllidanPhase phase);
 bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs);
 IllidanDpsHold GetIllidanHoldWindow(Unit* illidan);
-IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan);
+IllidanDpsHold GetIllidanDpsHold(Player* bot, Unit* illidan);
 bool IsFlameOfAzzinothDpsHeld(Unit const& illidan);
 bool IsOnlineOnIllidanThreatList(Unit const& illidan, Player* bot);
 bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase);
-bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase);
-bool IsIllidanPickupPending(PlayerbotAI* botAI, Unit* illidan);
+bool DoIllidanTanksHaveAggro(Player* bot, Unit const& illidan, IllidanPhase phase);
+bool IsIllidanPickupPending(Player* bot, Unit* illidan);
 bool IsIllidanPickupExemptTarget(Unit* target, bool isAoe);
-bool ShouldIllidanPetsBePassive(PlayerbotAI* botAI, Unit* illidan);
-bool IsIllidanPickupChannelHeld(PlayerbotAI* botAI, Unit* illidan, Spell const& channel);
+bool ShouldIllidanPetsBePassive(Player* bot, Unit* illidan);
+bool IsIllidanPickupChannelHeld(Player* bot, Unit* illidan, Spell const& channel);
 float GetGrateAngle(Position const& position);
 Position GetRingPoint(float angle, float radius);
 Position GetIllidanSettlePosition(Unit const& illidan);
 Position GetGrateSlot(size_t index);
 DemonFormLayout GetDemonFormLayout(Unit const& illidan);
 Position GetIllidanInfectionPosition(Unit const& illidan, IllidanPhase phase);
-Position GetIllidanRecordedInfectionPosition(
-    PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase);
+Position GetIllidanRecordedInfectionPosition(Player* bot, Unit const& illidan, IllidanPhase phase);
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
-bool IsWestFlameOfAzzinothTank(Player* bot);
-bool IsEastFlameOfAzzinothTank(Player* bot);
-bool IsFlameOfAzzinothTank(Player* bot);
+bool IsWestFlameOfAzzinothTank(Player* player);
+bool IsEastFlameOfAzzinothTank(Player* player);
+bool IsFlameOfAzzinothTank(Player* player);
 Unit* GetAssignedFlameOfAzzinoth(Player* bot);
 bool UpdateIllidanClassRoleAnnouncement(PlayerbotAI* botAI);
-ObjectGuid GetIllidanWarlockTankGuid(Player* bot);
-Player* GetIllidanWarlockTank(PlayerbotAI* botAI);
-bool IsIllidanWarlockTank(PlayerbotAI* botAI);
+ObjectGuid GetIllidanWarlockTankGuid(Player* player);
+Player* GetIllidanWarlockTank(Player* player);
+bool IsIllidanWarlockTank(Player* bot);
 bool CastIllidanLifeTapIfLow(PlayerbotAI* botAI);
 GuidVector FindIllidanTrapHunterGuids(Player* bot);
 bool IsIllidanTrapHunterReady(Player* hunter);
-bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI);
-bool IsExemptFromIllidanInfectionRun(PlayerbotAI* botAI, Unit* illidan, Player* player);
-bool IsIllidanInfectionPositionKeptInFlight(PlayerbotAI* botAI);
+bool IsIllidanTrapHunterOnDuty(Player* bot);
+bool IsExemptFromIllidanInfectionRun(Unit* illidan, Player* player);
+bool IsIllidanInfectionPositionKeptInFlight(Player* bot);
 bool IsFrostTrapAt(Player* bot, Position const& infectionPosition, int32 minDurationMs);
-int32 GetIllidanRangedIndex(PlayerbotAI* botAI, size_t slotCount, bool inDemonForm);
-int32 GetIllidanHealerIndex(PlayerbotAI* botAI, size_t slotCount);
-int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount);
-int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan);
-int32 GetIllidanGrateStackIndex(PlayerbotAI* botAI);
+int32 GetIllidanRangedIndex(Player* player, size_t slotCount, bool inDemonForm);
+int32 GetIllidanHealerIndex(Player* bot, size_t slotCount);
+int32 GetIllidanMeleeIndex(Player* bot, size_t slotCount);
+int32 GetIllidanGrateIndex(Player* bot, Unit const& illidan);
+int32 GetIllidanGrateStackIndex(Player* bot);
 Aura* GetParasiticShadowfiendAura(Player* player);
 bool HasParasiticShadowfiend(Player* player);
-GuidVector FindParasiticShadowfiendGuids(PlayerbotAI* botAI);
+GuidVector FindParasiticShadowfiendGuids(Player* bot);
 Unit* GetNearestParasiticShadowfiend(PlayerbotAI* botAI, Unit const& unit);
 bool IsNearNewParasiticShadowfiend(PlayerbotAI* botAI);
-GuidVector FindPlayersWithParasiticShadowfiendGuids(Player* bot);
-std::vector<ShadowDemon> FindShadowDemons(PlayerbotAI* botAI);
+GuidVector FindInfectedPlayerGuids(Player* bot);
+std::vector<ShadowDemon> FindShadowDemons(Player* bot);
 Unit* GetShadowDemonForRangedToAttack(PlayerbotAI* botAI, Unit const& from);
 Unit* GetShadowDemonMovingToWarlockTank(PlayerbotAI* botAI);
 Unit* GetShadowDemonForMeleeToAttack(PlayerbotAI* botAI, Unit const& from);

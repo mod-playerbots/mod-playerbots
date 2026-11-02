@@ -34,20 +34,14 @@ using namespace EncounterHelpers;
 namespace BtHelpers
 {
 
+// Shared
+
 namespace
 {
 
 std::mutex btStateMutex;
 std::unordered_map<uint32, BtInstanceState> btStates;
 
-} // end anonymous namespace (Shared)
-
-// Shared
-
-namespace
-{
-
-// The Illidari Council has no name to find: its controller is a trigger and never on a threat list.
 constexpr std::string_view BossName(BtBosses boss)
 {
     switch (boss)
@@ -66,6 +60,8 @@ constexpr std::string_view BossName(BtBosses boss)
             return "reliquary of the lost";
         case BtBosses::DATA_MOTHER_SHAHRAZ:
             return "mother shahraz";
+        // The Illidari Council's boss is its controller, a trigger that is never on a threat list.
+        // GetIllidariCouncilMembers finds the members instead.
         case BtBosses::DATA_ILLIDAN_STORMRAGE:
             return "illidan stormrage";
         default:
@@ -73,7 +69,7 @@ constexpr std::string_view BossName(BtBosses boss)
     }
 }
 
-} // end anonymous namespace
+} // end anonymous namespace (Shared)
 
 Unit* GetBtBoss(Player* bot, BtBosses boss)
 {
@@ -120,17 +116,16 @@ bool CommandPetAttack(Creature* pet, Unit* target)
 
 GuidVector FindAttackerGuidsWithEntry(PlayerbotAI* botAI, uint32 entry)
 {
-    GuidVector guids;
-    auto const& attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet();
-    for (ObjectGuid const& guid : attackers)
+    GuidVector matchingGuids;
+    for (ObjectGuid const& attackerGuid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet())
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == entry)
-            guids.push_back(guid);
+        Unit* attacker = botAI->GetUnit(attackerGuid);
+        if (attacker && attacker->IsAlive() && attacker->GetEntry() == entry)
+            matchingGuids.push_back(attackerGuid);
     }
 
-    return guids;
+    return matchingGuids;
 }
 
 uint32 GetAuraElapsedMs(Aura const* aura)
@@ -138,7 +133,7 @@ uint32 GetAuraElapsedMs(Aura const* aura)
     return aura ? static_cast<uint32>(aura->GetMaxDuration() - aura->GetDuration()) : 0;
 }
 
-// Turn the bot to the unit unless it is already in the bot's front 90 degrees
+// Turn the bot to the unit unless it is already in the bot's front 90 degrees.
 void FaceUnit(Player* bot, Unit* unit)
 {
     if (unit && !bot->HasInArc(static_cast<float>(M_PI) / 2.0f, unit))
@@ -246,17 +241,17 @@ bool CanBuildChaoticCharge(SpellInfo const* spellInfo, bool triggered, uint8 dep
 
 // Grid search instead of attackers, which has an LoS check. Sisters are often up stairs or around
 // corners, which could delay the skull's application through attackers.
-GuidVector FindSisterOfPleasureGuids(PlayerbotAI* botAI)
+GuidVector FindSisterOfPleasureGuids(Player* bot)
 {
     std::list<Creature*> sisters;
-    botAI->GetBot()->GetCreatureListWithEntryInGrid(
+    bot->GetCreatureListWithEntryInGrid(
         sisters, Id(BtNpcs::NPC_SISTER_OF_PLEASURE), SISTER_OF_PLEASURE_SEARCH_RADIUS);
 
-    GuidVector guids;
+    GuidVector sisterGuids;
     for (Creature* sister : sisters)
-        guids.push_back(sister->GetGUID());
+        sisterGuids.push_back(sister->GetGUID());
 
-    return guids;
+    return sisterGuids;
 }
 
 Unit* GetLinkedSisterOfPain(Unit* pleasure)
@@ -274,11 +269,11 @@ Unit* GetLinkedSisterOfPain(Unit* pleasure)
 
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
 {
-    auto const& sisters =
+    auto const& sisterGuids =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("sisters of pleasure")->RefGet();
-    for (ObjectGuid const& guid : sisters)
+    for (ObjectGuid const& sisterGuid : sisterGuids)
     {
-        Unit* sister = botAI->GetUnit(guid);
+        Unit* sister = botAI->GetUnit(sisterGuid);
         if (GetLinkedSisterOfPain(sister))
             return sister;
     }
@@ -296,19 +291,19 @@ Unit* GetSkulledSisterOfPain(Player* bot)
         ObjectAccessor::GetUnit(*bot, group->GetTargetIcon(RtiTargetValue::skullIndex)));
 }
 
-// While magic would risk giving a Reaver a Chaotic Charge: (1) during Spell Absorption, (2) before
+// True while magic would risk building a Chaotic Charge: (1) during Spell Absorption, (2) before
 // the first Spell Absorption is cast, and (3) in the margin before the earliest possible recast.
 bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
 {
     if (!unit || unit->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER) || !unit->IsAlive())
         return false;
 
-    ObjectGuid const guid = unit->GetGUID();
+    ObjectGuid const unitGuid = unit->GetGUID();
     uint32 const instanceId = unit->GetInstanceId();
     std::lock_guard lock(btStateMutex);
     if (Aura* absorption = unit->GetAura(Id(BtSpells::SPELL_SPELL_ABSORPTION)))
     {
-        reaverAbsorptionStarts[instanceId][guid] = getMSTime() - GetAuraElapsedMs(absorption);
+        reaverAbsorptionStarts[instanceId][unitGuid] = getMSTime() - GetAuraElapsedMs(absorption);
         return true;
     }
 
@@ -316,7 +311,7 @@ bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
     if (instanceIt == reaverAbsorptionStarts.end())
         return true;
 
-    auto const it = instanceIt->second.find(guid);
+    auto const it = instanceIt->second.find(unitGuid);
     if (it == instanceIt->second.end())
         return true;
 
@@ -329,9 +324,9 @@ bool IsAnyShadowmoonReaverUnsafeForMagic(PlayerbotAI* botAI)
 {
     auto const& reavers =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("shadowmoon reavers")->RefGet();
-    for (ObjectGuid const& guid : reavers)
+    for (ObjectGuid const& reaverGuid : reavers)
     {
-        if (IsShadowmoonReaverUnsafeForMagic(botAI->GetUnit(guid)))
+        if (IsShadowmoonReaverUnsafeForMagic(botAI->GetUnit(reaverGuid)))
             return true;
     }
 
@@ -402,10 +397,9 @@ Unit* FindPetTargetOtherThanReaver(PlayerbotAI* botAI)
     if (isAllowed(currentTarget))
         return currentTarget;
 
-    auto const& attackers = context->GetValue<GuidVector>("attackers")->RefGet();
-    for (ObjectGuid const& guid : attackers)
+    for (auto const& attackers : context->GetValue<GuidVector>("attackers")->RefGet())
     {
-        Unit* unit = botAI->GetUnit(guid);
+        Unit* unit = botAI->GetUnit(attackers);
         if (isAllowed(unit))
             return unit;
     }
@@ -415,7 +409,7 @@ Unit* FindPetTargetOtherThanReaver(PlayerbotAI* botAI)
 
 // High Warlord Naj'entus
 
-namespace // High Warlord Naj'entus
+namespace
 {
 
 bool IsValidSpineRemover(Player* bot, ObjectGuid remover)
@@ -425,10 +419,10 @@ bool IsValidSpineRemover(Player* bot, ObjectGuid remover)
         !IsNajentusImpaled(player);
 }
 
-bool CanThrowNajentusSpine(Player* bot)
+bool CanThrowNajentusSpine(Player* player)
 {
-    return bot && bot->IsAlive() && bot->GetMapId() == BT_MAP_ID && !IsNajentusImpaled(bot) &&
-        bot->HasItemCount(Id(BtItems::ITEM_NAJENTUS_SPINE));
+    return player && player->IsAlive() && player->GetMapId() == BT_MAP_ID &&
+        !IsNajentusImpaled(player) && player->HasItemCount(Id(BtItems::ITEM_NAJENTUS_SPINE));
 }
 
 std::vector<NajentusSpineAssignment> const* FindNajentusSpineAssignments(uint32 instanceId)
@@ -599,10 +593,10 @@ bool IsSupremusKitePhase(Unit* supremus)
     return supremus && supremus->HasAura(Id(BtSpells::SPELL_SNARE_SELF));
 }
 
-// Seconds left before Supremus fixates again, counted from the start of the kite phase. Nothing
-// records the fixate itself, so the 10s schedule is measured from the phase switch that Snare Self
-// marks. Its apply time is epoch seconds, so it is compared with GameTime::GetGameTime(), not
-// getMSTime (counts from server start) or GetAuraElapsedMs (needs a duration, and Snare Self is
+// Get the seconds left before Supremus fixates again, counted from the start of the kite phase.
+// Nothing records the fixate itself, so the 10s schedule is measured from the phase change marked
+// by Snare Self. Its apply time is epoch seconds, so it is compared with GameTime::GetGameTime(),
+// not getMSTime (counts from server start) or GetAuraElapsedMs (needs a duration, and Snare Self is
 // permanent). The extra second covers the whole-second reading and errs toward caution.
 float GetSupremusFixateTimeRemaining(Unit* supremus)
 {
@@ -646,9 +640,8 @@ bool IsSupremusVolcanoErupting(Unit* volcano)
 }
 
 // Hazards include Molten Flame only in the kite phase; in the tank phase, avoid aoe handles them.
-std::vector<SupremusHazard> FindSupremusHazards(PlayerbotAI* botAI)
+std::vector<SupremusHazard> FindSupremusHazards(Player* bot)
 {
-    Player* bot = botAI->GetBot();
     std::vector<SupremusHazard> hazards;
 
     std::list<Creature*> volcanoes;
@@ -794,16 +787,15 @@ Unit* GetSupremusFireBlockedReachTarget(PlayerbotAI* botAI)
 // Shade of Akama
 
 // Only the adds that must be prioritized to complete the encounter (Channelers and Sorcerers).
-GuidVector FindShadeOfAkamaAddGuids(PlayerbotAI* botAI)
+GuidVector FindShadeOfAkamaAddGuids(Player* bot)
 {
-    Player* bot = botAI->GetBot();
-    GuidVector adds;
+    GuidVector addGuids;
     if (bot->GetPositionX() < SHADE_OF_AKAMA_BOUNDARY_MIN_X ||
         bot->GetPositionX() > SHADE_OF_AKAMA_BOUNDARY_MAX_X ||
         bot->GetPositionY() < SHADE_OF_AKAMA_BOUNDARY_MIN_Y ||
         bot->GetPositionY() > SHADE_OF_AKAMA_BOUNDARY_MAX_Y)
     {
-        return adds;
+        return addGuids;
     }
 
     for (BtNpcs const entry : { BtNpcs::NPC_ASHTONGUE_CHANNELER, BtNpcs::NPC_ASHTONGUE_SORCERER })
@@ -822,10 +814,10 @@ GuidVector FindShadeOfAkamaAddGuids(PlayerbotAI* botAI)
             { return first->GetGUID() < second->GetGUID(); });
 
         for (Creature* creature : living)
-            adds.push_back(creature->GetGUID());
+            addGuids.push_back(creature->GetGUID());
     }
 
-    return adds;
+    return addGuids;
 }
 
 Unit* GetShadeOfAkamaKillTarget(PlayerbotAI* botAI)
@@ -942,14 +934,14 @@ GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot)
         }
     }
 
-    GuidVector guids;
+    GuidVector soakerGuids;
     if (soakers)
     {
         for (Player* member : *soakers)
-            guids.push_back(member->GetGUID());
+            soakerGuids.push_back(member->GetGUID());
     }
 
-    return guids;
+    return soakerGuids;
 }
 
 } // end anonymous namespace (Gurtogg Bloodboil)
@@ -973,7 +965,7 @@ Player* GetGurtoggFelRageTarget(Unit* gurtogg)
 
 bool IsGurtoggFelRageTarget(Player* player)
 {
-    return player->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE));
+    return player && player->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE));
 }
 
 Position GetGurtoggFelRageMeleePosition(
@@ -997,9 +989,9 @@ Position GetGurtoggFelRageMeleePosition(
         bot->GetPositionZ());
 }
 
-float FindGurtoggSecondTankThreat(PlayerbotAI* botAI)
+float FindGurtoggSecondTankThreat(Player* bot)
 {
-    Unit* gurtogg = GetBtBoss(botAI->GetBot(), BtBosses::DATA_GURTOGG_BLOODBOIL);
+    Unit* gurtogg = GetBtBoss(bot, BtBosses::DATA_GURTOGG_BLOODBOIL);
     if (!gurtogg)
         return 0.0f;
 
@@ -1115,14 +1107,70 @@ bool IsShahrazBeingPositioned(Unit* shahraz)
 
 // Illidari Council
 
-IllidariCouncilMembers GetIllidariCouncilMembers(PlayerbotAI* botAI)
+namespace
 {
-    Player* bot = botAI->GetBot();
+
+// The Council members add the raid to their threat lists only at the pull, not every 5s like most
+// bosses. So a resurrected bot can't find a member through its own threat list until it attacks or
+// is attacked by that member, or casts on an ally in the fight. Being blind to some members can
+// cause undesired behaviors (e.g., a bot attacks the wrong member because it doesn't see its
+// assigned one). To solve this, on a miss for any member, we check groupmates' threat lists for it.
+//
+// This approach is cheap here only because the members share a health pool and die together. So if
+// one is on a bot's threat list, all four are present, and the first living groupmate is likely to
+// have all members on its list. In other council fights, where members die separately, misses are
+// normal, and this approach would result in frequent inefficient full-raid scans.
+Unit* FindCouncilMember(Player* bot, std::string_view name)
+{
+    if (Unit* member = FindThreatTarget(bot, name))
+        return member;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* player = ref->GetSource();
+        if (!player || player == bot || !player->IsAlive() || player->GetMapId() != BT_MAP_ID)
+            continue;
+
+        if (Unit* member = FindThreatTarget(player, name))
+            return member;
+    }
+
+    return nullptr;
+}
+
+// A blocked ray stops at the obstacle and still counts as success, so a point that returns short
+// means the move is blocked. Both callers compute the spot rather than using a fixed position (mage
+// tank healer, Malande tank) and need it clear of the council patches, so a candidate that clamps
+// short is rejected instead of handed to MoveTo, which would stop the bot inside a patch.
+bool CanMoveStraightTo(Player* bot, Position const& point)
+{
+    constexpr float clampTolerance = 0.5f;
+    float x = point.GetPositionX();
+    float y = point.GetPositionY();
+    float z = point.GetPositionZ();
+
+    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), x, y, z))
+    {
+        return false;
+    }
+
+    return point.GetExactDist2d(x, y) <= clampTolerance;
+}
+
+} // end anonymous namespace (Illidari Council)
+
+IllidariCouncilMembers GetIllidariCouncilMembers(Player* bot)
+{
     return {
-        FindThreatTarget(bot, "gathios the shatterer"),
-        FindThreatTarget(bot, "lady malande"),
-        FindThreatTarget(bot, "high nethermancer zerevor"),
-        FindThreatTarget(bot, "veras darkshadow"),
+        FindCouncilMember(bot, "gathios the shatterer"),
+        FindCouncilMember(bot, "lady malande"),
+        FindCouncilMember(bot, "high nethermancer zerevor"),
+        FindCouncilMember(bot, "veras darkshadow"),
     };
 }
 
@@ -1136,21 +1184,19 @@ bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI)
         });
 }
 
-Player* GetZerevorMageTank(PlayerbotAI* botAI)
+Player* GetZerevorMageTank(Player* bot)
 {
-    Player* bot = botAI->GetBot();
     BtInstanceState const* state = FindBtState(bot->GetInstanceId());
     return state ? GetClassRolePlayer(bot, state->zerevorMageTank) : nullptr;
 }
 
-bool IsZerevorMageTank(PlayerbotAI* botAI)
+bool IsZerevorMageTank(Player* player)
 {
-    Player* bot = botAI->GetBot();
-    if (bot->getClass() != CLASS_MAGE)
+    if (!player || player->getClass() != CLASS_MAGE)
         return false;
 
-    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
-    return state && IsClassRolePlayer(bot, state->zerevorMageTank);
+    BtInstanceState const* state = FindBtState(player->GetInstanceId());
+    return state && IsClassRolePlayer(player, state->zerevorMageTank);
 }
 
 bool HasDangerousCouncilAura(Player* bot)
@@ -1235,12 +1281,12 @@ bool ShouldRangedInterruptCircleOfHealing(Unit* malande, Unit* gathios, Unit* ze
         IsMalandeInCouncilPatch(malande, gathios, zerevor);
 }
 
-bool IsZerevorOnMageTank(PlayerbotAI* botAI, Unit* zerevor)
+bool IsZerevorOnMageTank(Player* bot, Unit* zerevor)
 {
     if (!zerevor)
         return false;
 
-    Player* mageTank = GetZerevorMageTank(botAI);
+    Player* mageTank = GetZerevorMageTank(bot);
     return mageTank && zerevor->GetVictim() == mageTank;
 }
 
@@ -1257,26 +1303,6 @@ bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit*
     return zerevor->GetExactDist2d(point) >= ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE &&
         !IsInZerevorPatch(zerevor, point, COUNCIL_PATCH_MARGIN);
 }
-
-namespace
-{
-
-// A blocked ray stops at the obstacle and still counts as success, so a point that returns short
-// means the move is blocked. Both callers compute the spot rather than using a fixed position (mage
-// tank healer, Malande tank) and need it clear of the council patches, so a candidate that clamps
-// short is rejected instead of handed to MoveTo, which would stop the bot inside a patch.
-bool CanMoveStraightTo(Player* bot, Position const& point)
-{
-    constexpr float clampTolerance = 0.5f;
-    float x = point.GetPositionX();
-    float y = point.GetPositionY();
-    float z = point.GetPositionZ();
-    return bot->GetMap()->CheckCollisionAndGetValidCoords(
-               bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), x, y, z) &&
-        point.GetExactDist2d(x, y) <= clampTolerance;
-}
-
-} // end anonymous namespace (Illidari Council)
 
 bool FindMageTankHealerPosition(
     Player* bot, Player* mageTank, Unit* zerevor, Position& destination)
@@ -1374,7 +1400,7 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
     Player* bot = botAI->GetBot();
     AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* ownTarget = AI_VALUE(Unit*, "current target");
-    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);
     for (Unit* member : { members.gathios, members.malande, members.zerevor, members.veras })
     {
         if (member && member != ownTarget && bot->GetDistance(member) < range)
@@ -1391,7 +1417,7 @@ Unit* GetCouncilPetTarget(PlayerbotAI* botAI, Creature* pet)
     if (!pet)
         return nullptr;
 
-    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI->GetBot());
     if (!members.gathios)
         return nullptr;
 
@@ -1428,7 +1454,7 @@ uint32 GetReadySpellLock(Creature* pet, Unit* target)
 
 // Illidan Stormrage <The Betrayer>
 
-namespace // Illidan Stormrage
+namespace
 {
 
 // A point `distance` yd from Illidan and `angle` off the line from him through the grate center,
@@ -1662,16 +1688,15 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
         IllidanDpsHold::AfterReset : IllidanDpsHold::None;
 }
 
-IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan)
+IllidanDpsHold GetIllidanDpsHold(Player* bot, Unit* illidan)
 {
     if (!illidan)
         return IllidanDpsHold::None;
 
     IllidanDpsHold const window = GetIllidanHoldWindow(illidan);
-    Player* bot = botAI->GetBot();
     if (window == IllidanDpsHold::DemonFormStart || window == IllidanDpsHold::DemonFormNoPush)
     {
-        return IsIllidanWarlockTank(botAI) ? IllidanDpsHold::None : window;
+        return IsIllidanWarlockTank(bot) ? IllidanDpsHold::None : window;
     }
     else if (window == IllidanDpsHold::AfterReset)
     {
@@ -1718,9 +1743,9 @@ bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase)
 }
 
 // Each tank that should hold a creature must be its victim with ILLIDAN_TANK_AGGRO_THREAT.
-// Illidan: the main tank, or the warlock tank in Demon Form. While he flies, each living Flame: its
-// own tank, or the other Flame tank while its own is dead. A dead tank counts as holding it.
-bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase)
+// Illidan: the main tank, or the warlock tank in Demon Form.
+// Flame of Azzinoth: its assigned assist tank, or the other Flame's tank if its assigned is dead.
+bool DoIllidanTanksHaveAggro(Player* bot, Unit const& illidan, IllidanPhase phase)
 {
     auto const hasAggro = [](Unit const& creature, Player* tank)
     {
@@ -1729,7 +1754,6 @@ bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPha
             threatManager.GetThreat(tank) >= ILLIDAN_TANK_AGGRO_THREAT;
     };
 
-    Player* bot = botAI->GetBot();
     switch (phase)
     {
         case IllidanPhase::Flying:
@@ -1764,7 +1788,7 @@ bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPha
         }
         case IllidanPhase::Demon:
         {
-            Player* warlockTank = GetIllidanWarlockTank(botAI);
+            Player* warlockTank = GetIllidanWarlockTank(bot);
             return !warlockTank || hasAggro(illidan, warlockTank);
         }
         default:
@@ -1772,7 +1796,7 @@ bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPha
     }
 }
 
-bool IsIllidanPickupPending(PlayerbotAI* botAI, Unit* illidan)
+bool IsIllidanPickupPending(Player* bot, Unit* illidan)
 {
     if (!illidan)
         return false;
@@ -1797,7 +1821,7 @@ bool IsIllidanPickupPending(PlayerbotAI* botAI, Unit* illidan)
         return false;
     }
 
-    return !DoIllidanTanksHaveAggro(botAI, *illidan, phase);
+    return !DoIllidanTanksHaveAggro(bot, *illidan, phase);
 }
 
 // Single-target damage on a Shadowfiend or a Shadow Demon is permitted at all times.
@@ -1810,23 +1834,22 @@ bool IsIllidanPickupExemptTarget(Unit* target, bool isAoe)
     return entry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND) || entry == Id(BtNpcs::NPC_SHADOW_DEMON);
 }
 
-bool ShouldIllidanPetsBePassive(PlayerbotAI* botAI, Unit* illidan)
+bool ShouldIllidanPetsBePassive(Player* bot, Unit* illidan)
 {
     IllidanPhase const phase = GetIllidanPhase(illidan);
     return phase == IllidanPhase::Flying || phase == IllidanPhase::Demon ||
-        IsIllidanPickupPending(botAI, illidan);
+        IsIllidanPickupPending(bot, illidan);
 }
 
 // After a threat reset, a channel cast before the hold continues to build threat. This often
 // results in Illidan immediately killing the channeler before the main tank can pick him up. The
 // main culprit is Evocation. So everybody other than the main tank should cancel a channel (other
 // than single-target damage on an add).
-bool IsIllidanPickupChannelHeld(PlayerbotAI* botAI, Unit* illidan, Spell const& channel)
+bool IsIllidanPickupChannelHeld(Player* bot, Unit* illidan, Spell const& channel)
 {
-    if (!IsIllidanPickupPending(botAI, illidan))
+    if (!IsIllidanPickupPending(bot, illidan))
         return false;
 
-    Player* bot = botAI->GetBot();
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
 
@@ -1856,11 +1879,11 @@ Position GetIllidanSettlePosition(Unit const& illidan)
 
 Position GetGrateSlot(size_t index)
 {
-    constexpr float fullCircle = 2.0f * static_cast<float>(M_PI);
-
     size_t const slot = index % ILLIDAN_RANGED_SLOT_COUNT;
     if (slot == 0)
         return ILLIDAN_GRATE_CENTER;
+
+    constexpr float fullCircle = 2.0f * static_cast<float>(M_PI);
 
     if (slot <= ILLIDAN_GRATE_INNER_SLOT_COUNT)
     {
@@ -1872,6 +1895,7 @@ Position GetGrateSlot(size_t index)
     float const angle = fullCircle *
         (static_cast<float>(slot - 1 - ILLIDAN_GRATE_INNER_SLOT_COUNT) + 0.5f) /
         ILLIDAN_GRATE_OUTER_SLOT_COUNT;
+
     return GetRingPoint(angle, ILLIDAN_GRATE_OUTER_RADIUS);
 }
 
@@ -1953,12 +1977,11 @@ Position GetIllidanInfectionPosition(Unit const& illidan, IllidanPhase phase)
 // Every recorded infection shares one position, fixed when the first was recorded, so an infection
 // remaining as of a phase change keeps its position into the new phase. If none are recorded, this
 // returns the position an infection would be recorded at now.
-Position GetIllidanRecordedInfectionPosition(
-    PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase)
+Position GetIllidanRecordedInfectionPosition(Player* bot, Unit const& illidan, IllidanPhase phase)
 {
-    auto const* infections = FindIllidanInfections(botAI->GetBot()->GetInstanceId());
+    auto const* infections = FindIllidanInfections(bot->GetInstanceId());
     if (infections && !infections->empty())
-        return infections->begin()->second.infectionPosition;
+        return infections->begin()->second.position;
 
     return GetIllidanInfectionPosition(illidan, phase);
 }
@@ -1978,19 +2001,19 @@ std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot)
     return { findLivingFlame(state->eastFlameGuid), findLivingFlame(state->westFlameGuid) };
 }
 
-bool IsWestFlameOfAzzinothTank(Player* bot)
+bool IsWestFlameOfAzzinothTank(Player* player)
 {
-    return PlayerbotAI::IsAssistTankOfIndex(bot, ILLIDAN_WEST_FLAME_TANK_INDEX);
+    return player && PlayerbotAI::IsAssistTankOfIndex(player, ILLIDAN_WEST_FLAME_TANK_INDEX);
 }
 
-bool IsEastFlameOfAzzinothTank(Player* bot)
+bool IsEastFlameOfAzzinothTank(Player* player)
 {
-    return PlayerbotAI::IsAssistTankOfIndex(bot, ILLIDAN_EAST_FLAME_TANK_INDEX);
+    return player && PlayerbotAI::IsAssistTankOfIndex(player, ILLIDAN_EAST_FLAME_TANK_INDEX);
 }
 
-bool IsFlameOfAzzinothTank(Player* bot)
+bool IsFlameOfAzzinothTank(Player* player)
 {
-    return IsEastFlameOfAzzinothTank(bot) || IsWestFlameOfAzzinothTank(bot);
+    return IsEastFlameOfAzzinothTank(player) || IsWestFlameOfAzzinothTank(player);
 }
 
 Unit* GetAssignedFlameOfAzzinoth(Player* bot)
@@ -2015,11 +2038,11 @@ Unit* GetAssignedFlameOfAzzinoth(Player* bot)
     return !otherTank || !otherTank->IsAlive() ? otherFlame : nullptr;
 }
 
+// Illidan spawns right above the Illidari Council, so no announcement is made while Zerevor is
+// still alive (it could be any council member used for the check).
 bool UpdateIllidanClassRoleAnnouncement(PlayerbotAI* botAI)
 {
     BtInstanceState& state = BtState(botAI->GetBot()->GetInstanceId());
-    // Illidan spawns right above the Illidari Council, so no announcement is made while Zerevor is
-    // still alive (could be any council member used for the check).
     return UpdateClassRoleAnnouncement(
         botAI, Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_POSITION,
         ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE, ILLIDAN_CLASS_ROLE_REARM_DISTANCE, {
@@ -2027,22 +2050,26 @@ bool UpdateIllidanClassRoleAnnouncement(PlayerbotAI* botAI)
         }, Id(BtNpcs::NPC_HIGH_NETHERMANCER_ZEREVOR));
 }
 
-ObjectGuid GetIllidanWarlockTankGuid(Player* bot)
+ObjectGuid GetIllidanWarlockTankGuid(Player* player)
 {
-    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    if (!player)
+        return ObjectGuid::Empty;
+
+    BtInstanceState const* state = FindBtState(player->GetInstanceId());
     return state ? GetClassRolePlayerGuid(state->illidanWarlockTank) : ObjectGuid::Empty;
 }
 
-Player* GetIllidanWarlockTank(PlayerbotAI* botAI)
+Player* GetIllidanWarlockTank(Player* player)
 {
-    Player* bot = botAI->GetBot();
-    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
-    return state ? GetClassRolePlayer(bot, state->illidanWarlockTank) : nullptr;
+    if (!player)
+        return nullptr;
+
+    BtInstanceState const* state = FindBtState(player->GetInstanceId());
+    return state ? GetClassRolePlayer(player, state->illidanWarlockTank) : nullptr;
 }
 
-bool IsIllidanWarlockTank(PlayerbotAI* botAI)
+bool IsIllidanWarlockTank(Player* bot)
 {
-    Player* bot = botAI->GetBot();
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
@@ -2090,9 +2117,8 @@ bool IsIllidanTrapHunterReady(Player* hunter)
         !HasParasiticShadowfiend(hunter);
 }
 
-bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI)
+bool IsIllidanTrapHunterOnDuty(Player* bot)
 {
-    Player* bot = botAI->GetBot();
     if (bot->getClass() != CLASS_HUNTER || bot->HasSpellCooldown(Id(BtSpells::SPELL_FROST_TRAP)) ||
         HasParasiticShadowfiend(bot))
     {
@@ -2105,7 +2131,7 @@ bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI)
 
     for (auto const& [infected, infection] : *infections)
     {
-        if (infection.hunter == bot->GetGUID())
+        if (infection.hunterGuid == bot->GetGUID())
             return true;
     }
 
@@ -2114,7 +2140,7 @@ bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI)
 
 // The bots that never run to the infection position (so Shadowfiends spawn where they stand):
 // Illidan's victim, the main tank, and the warlock tank in Demon Form.
-bool IsExemptFromIllidanInfectionRun(PlayerbotAI* botAI, Unit* illidan, Player* player)
+bool IsExemptFromIllidanInfectionRun(Unit* illidan, Player* player)
 {
     if (!illidan || !player)
         return false;
@@ -2126,16 +2152,15 @@ bool IsExemptFromIllidanInfectionRun(PlayerbotAI* botAI, Unit* illidan, Player* 
     }
 
     return GetIllidanPhase(illidan) == IllidanPhase::Demon &&
-        GetIllidanWarlockTank(botAI) == player;
+        GetIllidanWarlockTank(player) == player;
 }
 
 // A bot infected in phase 1 that still has the debuff when phase 2 starts will stay at the
 // infection position until its Shadowfiends spawn, and the trap hunter will still drop the trap.
 // Exception: The main tank will wait out the spawn at its position at takeoff since it never
 // would have gone to the infection position in the first place.
-bool IsIllidanInfectionPositionKeptInFlight(PlayerbotAI* botAI)
+bool IsIllidanInfectionPositionKeptInFlight(Player* bot)
 {
-    Player* bot = botAI->GetBot();
     auto const* infections = FindIllidanInfections(bot->GetInstanceId());
     if (!infections)
         return false;
@@ -2143,7 +2168,7 @@ bool IsIllidanInfectionPositionKeptInFlight(PlayerbotAI* botAI)
     if (HasParasiticShadowfiend(bot) && infections->contains(bot->GetGUID()))
         return true;
 
-    return IsIllidanTrapHunterOnDuty(botAI);
+    return IsIllidanTrapHunterOnDuty(bot);
 }
 
 bool IsFrostTrapAt(Player* bot, Position const& infectionPosition, int32 minDurationMs)
@@ -2182,15 +2207,17 @@ bool IsFrostTrapAt(Player* bot, Position const& infectionPosition, int32 minDura
 
 // The index wraps round slotCount, so in the unlikely event that there are more bots than available
 // slots, they start stacking up.
-int32 GetIllidanRangedIndex(PlayerbotAI* botAI, size_t slotCount, bool inDemonForm)
+int32 GetIllidanRangedIndex(Player* player, size_t slotCount, bool inDemonForm)
 {
-    Player* bot = botAI->GetBot();
-    Group* group = bot->GetGroup();
+    if (!player)
+        return -1;
+
+    Group* group = player->GetGroup();
     if (!group || slotCount == 0)
         return -1;
 
     ObjectGuid const warlockTankGuid =
-        inDemonForm ? GetIllidanWarlockTankGuid(bot) : ObjectGuid::Empty;
+        inDemonForm ? GetIllidanWarlockTankGuid(player) : ObjectGuid::Empty;
 
     std::vector<ObjectGuid> healers;
     std::vector<ObjectGuid> rangedDps;
@@ -2215,12 +2242,11 @@ int32 GetIllidanRangedIndex(PlayerbotAI* botAI, size_t slotCount, bool inDemonFo
         }
     }
 
-    return GetIllidanRosterIndex(healers, rangedDps, bot->GetGUID(), slotCount);
+    return GetIllidanRosterIndex(healers, rangedDps, player->GetGUID(), slotCount);
 }
 
-int32 GetIllidanHealerIndex(PlayerbotAI* botAI, size_t slotCount)
+int32 GetIllidanHealerIndex(Player* bot, size_t slotCount)
 {
-    Player* bot = botAI->GetBot();
     Group* group = bot->GetGroup();
     if (!group || slotCount == 0)
         return -1;
@@ -2239,10 +2265,9 @@ int32 GetIllidanHealerIndex(PlayerbotAI* botAI, size_t slotCount)
     return GetIllidanRosterIndex(healers, {}, bot->GetGUID(), slotCount);
 }
 
-// Phase 4 melee slots: melee DPS first, then tanks (the main tank included), each in GUID order.
-int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount)
+// Phase 4 melee slots: melee DPS first, then tanks, each in GUID order.
+int32 GetIllidanMeleeIndex(Player* bot, size_t slotCount)
 {
-    Player* bot = botAI->GetBot();
     Group* group = bot->GetGroup();
     if (!group || slotCount == 0)
         return -1;
@@ -2268,16 +2293,15 @@ int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount)
 // Phases 3 and 5: the grate slot by roster, except the bot indexed to the slot that is closest to
 // the warlock tank's Demon Form position (measured as of the start of the phase) swaps slots with
 // the warlock tank to facilitate a shorter move by the warlock tank to its phase 4 position.
-int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan)
+int32 GetIllidanGrateIndex(Player* bot, Unit const& illidan)
 {
     constexpr bool inDemonForm = false;
-    int32 const index = GetIllidanRangedIndex(botAI, ILLIDAN_RANGED_SLOT_COUNT, inDemonForm);
+    int32 const index = GetIllidanRangedIndex(bot, ILLIDAN_RANGED_SLOT_COUNT, inDemonForm);
     if (index < 0)
         return index;
 
-    Player* warlockTank = GetIllidanWarlockTank(botAI);
-    PlayerbotAI* warlockTankAI = warlockTank ? GET_PLAYERBOT_AI(warlockTank) : nullptr;
-    if (!warlockTankAI)
+    Player* warlockTank = GetIllidanWarlockTank(bot);
+    if (!warlockTank)
         return index;
 
     Position const warlockTankPosition = GetDemonFormPoint(
@@ -2294,20 +2318,19 @@ int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan)
         }
     }
 
-    if (warlockTank == botAI->GetBot())
+    if (warlockTank == bot)
         return warlockSlot;
 
     if (index != warlockSlot)
         return index;
 
     int32 const warlockIndex =
-        GetIllidanRangedIndex(warlockTankAI, ILLIDAN_RANGED_SLOT_COUNT, inDemonForm);
+        GetIllidanRangedIndex(warlockTank, ILLIDAN_RANGED_SLOT_COUNT, inDemonForm);
     return warlockIndex < 0 ? index : warlockIndex;
 }
 
-int32 GetIllidanGrateStackIndex(PlayerbotAI* botAI)
+int32 GetIllidanGrateStackIndex(Player* bot)
 {
-    Player* bot = botAI->GetBot();
     Group* group = bot->GetGroup();
     if (!group)
         return -1;
@@ -2342,22 +2365,22 @@ bool HasParasiticShadowfiend(Player* player)
     return GetParasiticShadowfiendAura(player);
 }
 
-// Shadowfiends spawn defensive and turn aggressive and join zone combat 2.4s later. Until then,
-// they attack only a unit that attacks them.
-GuidVector FindParasiticShadowfiendGuids(PlayerbotAI* botAI)
+// Shadowfiends spawn defensive and turn aggressive 2.4s later. Until then, they attack only a unit
+// that attacks them.
+GuidVector FindParasiticShadowfiendGuids(Player* bot)
 {
     std::list<Creature*> creatures;
-    botAI->GetBot()->GetCreatureListWithEntryInGrid(
+    bot->GetCreatureListWithEntryInGrid(
         creatures, Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND), ILLIDAN_ADD_SEARCH_RADIUS);
 
-    GuidVector shadowfiends;
+    GuidVector shadowfiendGuids;
     for (Creature* creature : creatures)
     {
         if (creature->IsAlive())
-            shadowfiends.push_back(creature->GetGUID());
+            shadowfiendGuids.push_back(creature->GetGUID());
     }
 
-    return shadowfiends;
+    return shadowfiendGuids;
 }
 
 // A Shadowfiend has a 1 yd combat reach.
@@ -2408,8 +2431,8 @@ bool IsNearNewParasiticShadowfiend(PlayerbotAI* botAI)
 }
 
 // Living group members with either Shadowfiend debuff, humans included. Thus, trap hunters will
-// trap for humans also--make sure to follow the hunter to the active infection position!
-GuidVector FindPlayersWithParasiticShadowfiendGuids(Player* bot)
+// trap for humans also. Make sure to follow the hunter to the active infection position!
+GuidVector FindInfectedPlayerGuids(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -2429,10 +2452,9 @@ GuidVector FindPlayersWithParasiticShadowfiendGuids(Player* bot)
     return infected;
 }
 
-// Each Shadow Demon's only target is the player it has paralyzed.
-std::vector<ShadowDemon> FindShadowDemons(PlayerbotAI* botAI)
+// A Shadow Demon's only target is the player it has paralyzed.
+std::vector<ShadowDemon> FindShadowDemons(Player* bot)
 {
-    Player* bot = botAI->GetBot();
     std::list<Creature*> creatures;
     bot->GetCreatureListWithEntryInGrid(
         creatures, Id(BtNpcs::NPC_SHADOW_DEMON), ILLIDAN_ADD_SEARCH_RADIUS);
@@ -2460,8 +2482,8 @@ std::vector<ShadowDemon> FindShadowDemons(PlayerbotAI* botAI)
 
         for (ShadowDemon& shadowDemon : shadowDemons)
         {
-            if (shadowDemon.demon == paralyze->GetCasterGUID())
-                shadowDemon.target = member->GetGUID();
+            if (shadowDemon.demonGuid == paralyze->GetCasterGUID())
+                shadowDemon.targetGuid = member->GetGUID();
         }
     }
 
@@ -2486,17 +2508,17 @@ Unit* GetShadowDemonForRangedToAttack(PlayerbotAI* botAI, Unit const& from)
     std::tuple<uint32, uint32, float> bestKey = { std::numeric_limits<uint32>::max(), 0, 0.0f };
     for (ShadowDemon const& shadowDemon : shadowDemons)
     {
-        Unit* demon = botAI->GetUnit(shadowDemon.demon);
+        Unit* demon = botAI->GetUnit(shadowDemon.demonGuid);
         if (!demon || !demon->IsAlive())
             continue;
 
         Unit* target =
-            shadowDemon.target.IsEmpty() ? nullptr : botAI->GetUnit(shadowDemon.target);
+            shadowDemon.targetGuid.IsEmpty() ? nullptr : botAI->GetUnit(shadowDemon.targetGuid);
         uint32 rank = idle;
         uint32 step = 0;
         if (target && target->IsAlive())
         {
-            rank = shadowDemon.target == warlockTank ? fixatedOnWarlock : moving;
+            rank = shadowDemon.targetGuid == warlockTank ? fixatedOnWarlock : moving;
             step = static_cast<uint32>(demon->GetExactDist2d(target) / targetDistanceStep);
         }
 
@@ -2521,11 +2543,11 @@ Unit* GetShadowDemonMovingToWarlockTank(PlayerbotAI* botAI)
         ->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
     for (ShadowDemon const& shadowDemon : shadowDemons)
     {
-        if (shadowDemon.target != warlockTank)
+        if (shadowDemon.targetGuid != warlockTank)
             continue;
 
-        Unit* demon = botAI->GetUnit(shadowDemon.demon);
-        Unit* target = botAI->GetUnit(shadowDemon.target);
+        Unit* demon = botAI->GetUnit(shadowDemon.demonGuid);
+        Unit* target = botAI->GetUnit(shadowDemon.targetGuid);
         if (demon && demon->IsAlive() && target && target->IsAlive())
             return demon;
     }
@@ -2537,9 +2559,6 @@ Unit* GetShadowDemonMovingToWarlockTank(PlayerbotAI* botAI)
 // warlock tank (it is impossible for melee to attack it without being in Shadow Blast's radius).
 Unit* GetShadowDemonForMeleeToAttack(PlayerbotAI* botAI, Unit const& from)
 {
-    // Demons spawn 5 yd from Illidan, but the melee safe positions are far away enough from Illidan
-    // that melee will reach a Demon outside Aura of Dread's 15 yd range even if they move in to
-    // attack as soon as the Demons spawn.
     ObjectGuid const warlockTank = GetIllidanWarlockTankGuid(botAI->GetBot());
     Unit* nearest = nullptr;
     std::pair<bool, float> nearestKey = { true, std::numeric_limits<float>::max() };
@@ -2547,15 +2566,15 @@ Unit* GetShadowDemonForMeleeToAttack(PlayerbotAI* botAI, Unit const& from)
         ->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
     for (ShadowDemon const& shadowDemon : shadowDemons)
     {
-        Unit* demon = botAI->GetUnit(shadowDemon.demon);
+        Unit* demon = botAI->GetUnit(shadowDemon.demonGuid);
         if (!demon || !demon->IsAlive() ||
-            (!warlockTank.IsEmpty() && shadowDemon.target == warlockTank))
+            (!warlockTank.IsEmpty() && shadowDemon.targetGuid == warlockTank))
         {
             continue;
         }
 
         Unit* target =
-            shadowDemon.target.IsEmpty() ? nullptr : botAI->GetUnit(shadowDemon.target);
+            shadowDemon.targetGuid.IsEmpty() ? nullptr : botAI->GetUnit(shadowDemon.targetGuid);
         bool const isIdle = !target || !target->IsAlive();
         std::pair<bool, float> const key = { isIdle, from.GetExactDist2d(demon) };
         if (key < nearestKey)
@@ -2597,11 +2616,10 @@ Position GetClosestPointOnSegment(
 
     float const along = std::clamp(
         ((point.GetPositionX() - start.GetPositionX()) * dx +
-         (point.GetPositionY() - start.GetPositionY()) * dy) / lengthSq,
-        0.0f, 1.0f);
+         (point.GetPositionY() - start.GetPositionY()) * dy) / lengthSq, 0.0f, 1.0f);
+
     return Position(
-        start.GetPositionX() + along * dx, start.GetPositionY() + along * dy,
-        start.GetPositionZ());
+        start.GetPositionX() + along * dx, start.GetPositionY() + along * dy, start.GetPositionZ());
 }
 
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)
@@ -2625,7 +2643,9 @@ EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)
 
     Position const startPos = eyeBlastTrigger->GetPosition();
 
-    float destX, destY, destZ;
+    float destX;
+    float destY;
+    float destZ;
     if (!eyeBlastTrigger->GetMotionMaster()->GetDestination(destX, destY, destZ))
         return {};
 
@@ -2659,6 +2679,7 @@ bool IsPathInEyeBlastDangerArea(
             from.GetPositionX() + (to.GetPositionX() - from.GetPositionX()) * fraction,
             from.GetPositionY() + (to.GetPositionY() - from.GetPositionY()) * fraction,
             from.GetPositionZ());
+
         if (IsPositionInEyeBlastDangerArea(point, area))
             return true;
     }
@@ -2704,7 +2725,7 @@ bool BtResetInstance(uint32 instanceId)
         state.illidanFlamePhaseStartTime || state.eastFlameGuid || state.westFlameGuid ||
         state.illidanTankAggroPhase || state.illidanInfections;
 
-    // Not erased: the class roles outlive encounters, see ClassRoleAssignment.
+    // Not erased because the class roles outlive encounters. See ClassRoleAssignment.
     BtInstanceState kept;
     kept.zerevorMageTank = state.zerevorMageTank;
     kept.illidanWarlockTank = state.illidanWarlockTank;

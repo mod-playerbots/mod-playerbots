@@ -609,7 +609,7 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetValueInEncounter(
 {
     bool const inCombat = botAI->GetState() == BOT_STATE_COMBAT;
     if (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action))
-        return inCombat && GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
+        return inCombat && GetIllidariCouncilMembers(bot).gathios ? 0.0f : 1.0f;
 
     if (PlayerbotAI::IsTank(bot))
         return inCombat ? GetTankValue(action) : 1.0f;
@@ -623,14 +623,14 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
     {
         // Save Spell Reflection for Judgement of Command via BlackTempleCastSpellReflectionAction.
         if (dynamic_cast<CastSpellReflectionAction*>(action))
-            return GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
+            return GetIllidariCouncilMembers(bot).gathios ? 0.0f : 1.0f;
 
         if (dynamic_cast<CastVigilanceAction*>(action))
         {
-            if (!GetIllidariCouncilMembers(botAI).gathios)
+            if (!GetIllidariCouncilMembers(bot).gathios)
                 return 1.0f;
             // Do not siphon aggro from the mage tank.
-            Player* mageTank = GetZerevorMageTank(botAI);
+            Player* mageTank = GetZerevorMageTank(bot);
             return mageTank && action->GetTarget() == mageTank ? 0.0f : 1.0f;
         }
     }
@@ -644,7 +644,7 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
         return 1.0f;
     }
 
-    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);
     Unit* gathios = members.gathios;
     Unit* zerevor = members.zerevor;
     Unit* malande = members.malande;
@@ -712,7 +712,7 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetNonTankValue(Acti
         return PlayerbotAI::IsHeal(bot) ? GetHealerValue(action) : 1.0f;
     }
 
-    return GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
+    return GetIllidariCouncilMembers(bot).gathios ? 0.0f : 1.0f;
 }
 
 // The mage tank's healer moves only by its own positioning action when Zerevor is on the mage tank,
@@ -726,7 +726,7 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetHealerValue(Actio
     if (!isHealReach && !isHealerMove)
         return 1.0f;
 
-    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);
     if (!members.zerevor)
         return 1.0f;
 
@@ -734,13 +734,13 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetHealerValue(Actio
 
     if (isHealReach && !isMageTankHealer)
     {
-        Player* mageTank = GetZerevorMageTank(botAI);
+        Player* mageTank = GetZerevorMageTank(bot);
         if (mageTank && AI_VALUE(Unit*, "party member to heal") == mageTank)
             return 0.0f;
     }
 
     if (isHealerMove)
-        return isMageTankHealer && IsZerevorOnMageTank(botAI, members.zerevor) ? 0.0f : 1.0f;
+        return isMageTankHealer && IsZerevorOnMageTank(bot, members.zerevor) ? 0.0f : 1.0f;
 
     return 1.0f;
 }
@@ -757,10 +757,10 @@ float IllidariCouncilDisableMageTankActionsMultiplier::GetValueInEncounter(Actio
         return 1.0f;
     }
 
-    if (!IsZerevorMageTank(botAI))
+    if (!IsZerevorMageTank(bot))
         return 1.0f;
 
-    return GetIllidariCouncilMembers(botAI).zerevor ? 0.0f : 1.0f;
+    return GetIllidariCouncilMembers(bot).zerevor ? 0.0f : 1.0f;
 }
 
 // Dampen Magic is the only buff on the council that can be dispelled, and the mage tank steals it.
@@ -790,7 +790,7 @@ float IllidariCouncilHoldMisdirectionAndDispelsMultiplier::GetValueInEncounter(A
             return 1.0f;
     }
 
-    return GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
+    return GetIllidariCouncilMembers(bot).gathios ? 0.0f : 1.0f;
 }
 
 // Ranged interrupts are saved for Circle of Healing. Melee ones are gated by a range check
@@ -833,14 +833,14 @@ float IllidariCouncilManageInterruptsMultiplier::GetValueInEncounter(Action* act
             if (!dynamic_cast<CastSpellOnEnemyHealerAction*>(action))
                 return 1.0f;
 
-            Unit* malande = GetIllidariCouncilMembers(botAI).malande;
+            Unit* malande = GetIllidariCouncilMembers(bot).malande;
             return malande && !bot->IsWithinMeleeRange(malande) ? 0.0f : 1.0f;
         }
         default:
             return 1.0f;
     }
 
-    return GetIllidariCouncilMembers(botAI).malande ? 0.0f : 1.0f;
+    return GetIllidariCouncilMembers(bot).malande ? 0.0f : 1.0f;
 }
 
 float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
@@ -858,7 +858,7 @@ float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if ((PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) ||
-        IsZerevorMageTank(botAI))
+        IsZerevorMageTank(bot))
     {
         return 1.0f;
     }
@@ -909,7 +909,7 @@ bool IsHeldIllidanReach(
     return illidan.GetExactDist2d(target) < releaseDistance;
 }
 
-bool IsHeldIllidanHeal(PlayerbotAI* botAI, Unit* illidan, Action* action)
+bool IsHeldIllidanHeal(Player* bot, Unit* illidan, Action* action)
 {
     if (!dynamic_cast<CastHealingSpellAction*>(action))
         return false;
@@ -918,13 +918,13 @@ bool IsHeldIllidanHeal(PlayerbotAI* botAI, Unit* illidan, Action* action)
     if (phase == IllidanPhase::None)
         return true;
 
-    if (phase == IllidanPhase::Flying || GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None)
+    if (phase == IllidanPhase::Flying || GetIllidanDpsHold(bot, illidan) == IllidanDpsHold::None)
         return false;
 
     if (illidan->HasUnitState(UNIT_STATE_CONTROLLED))
         return false;
 
-    return !DoIllidanTanksHaveAggro(botAI, *illidan, phase);
+    return !DoIllidanTanksHaveAggro(bot, *illidan, phase);
 }
 
 bool IsIllidanAoeAction(Player* bot, Action* action)
@@ -999,7 +999,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
 
     if (bot->getClass() == CLASS_WARRIOR && dynamic_cast<CastVigilanceAction*>(action))
     {
-        Player* warlockTank = GetIllidanWarlockTank(botAI);
+        Player* warlockTank = GetIllidanWarlockTank(bot);
         return warlockTank && action->GetTarget() == warlockTank ? 0.0f : 1.0f;
     }
 
@@ -1239,7 +1239,7 @@ float IllidanStormrageHoldNearNewShadowfiendMultiplier::GetValueInEncounter(Acti
 
 // Guardians cannot be set passive like pets, so they are summoned only in Phases 3 and 5 (to keep
 // them from dying in Phase 4 and to save the cooldown through Phases 1 and 2), and not during any
-// dps hold, which otherwise lets Mirror Image and Army of the Dead through as buffs.
+// DPS hold, which otherwise lets Mirror Image and Army of the Dead through as buffs.
 float IllidanStormrageHoldGuardianSummonsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsGuardianSummon(bot, action))
@@ -1253,7 +1253,7 @@ float IllidanStormrageHoldGuardianSummonsMultiplier::GetValueInEncounter(Action*
     if (phase != IllidanPhase::Grounded && phase != IllidanPhase::Maiev)
         return 0.0f;
 
-    return GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None ? 1.0f : 0.0f;
+    return GetIllidanDpsHold(bot, illidan) == IllidanDpsHold::None ? 1.0f : 0.0f;
 }
 
 // Shamans do not set totems during phase changes until the tanks have aggro, so the ones they
@@ -1300,7 +1300,7 @@ float IllidanStormrageHoldTotemsMultiplier::GetValueInEncounter(Action* action)
         return HasParasiticShadowfiend(bot) ? 0.0f : 1.0f;
 
     Position const infectionPosition =
-        GetIllidanRecordedInfectionPosition(botAI, *illidan, phase);
+        GetIllidanRecordedInfectionPosition(bot, *illidan, phase);
     return bot->GetExactDist2d(infectionPosition) < nearestTotem ? 0.0f : 1.0f;
 }
 
@@ -1319,7 +1319,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (!illidan)
         return 1.0f;
 
-    if (IsIllidanPickupPending(botAI, illidan))
+    if (IsIllidanPickupPending(bot, illidan))
     {
         if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
             return 1.0f;
@@ -1347,7 +1347,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     }
 
     if (isHeal)
-        return IsHeldIllidanHeal(botAI, illidan, action) ? 0.0f : 1.0f;
+        return IsHeldIllidanHeal(bot, illidan, action) ? 0.0f : 1.0f;
 
     if (GetIllidanPhase(illidan) == IllidanPhase::Flying)
     {
@@ -1361,7 +1361,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
         return isOnFlame ? GetDpsHoldValue(bot, action) : 1.0f;
     }
 
-    if (GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None)
+    if (GetIllidanDpsHold(bot, illidan) == IllidanDpsHold::None)
         return 1.0f;
 
     bool const isOnIllidan = AI_VALUE(Unit*, "current target") == illidan ||
@@ -1386,7 +1386,7 @@ float IllidanStormrageDisableTankSoulshatterMultiplier::GetValueInEncounter(Acti
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return 1.0f;
 
-    return IsIllidanWarlockTank(botAI) ? 0.0f : 1.0f;
+    return IsIllidanWarlockTank(bot) ? 0.0f : 1.0f;
 }
 
 // While Shadow Demons are up, the only AoE allowed is Seed of Corruption, which has its own action.

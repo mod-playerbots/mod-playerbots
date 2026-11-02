@@ -633,7 +633,7 @@ private:
     bool FindTrapHunter(
         Player& infected, Position const& infectionPosition,
         std::unordered_map<ObjectGuid, BtHelpers::IllidanInfection> const& infections,
-        ObjectGuid& hunter);
+        ObjectGuid& hunterGuid);
 };
 
 class IllidanStormrageAssistTanksHandleFlamesAction : public AttackAction
