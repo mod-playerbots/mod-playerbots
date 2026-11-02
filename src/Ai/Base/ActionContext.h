@@ -57,6 +57,7 @@
 #include "RemoveAuraAction.h"
 #include "ResetInstancesAction.h"
 #include "RevealGatheringItemAction.h"
+#include "RitualOfSoulsActions.h"
 #include "RpgAction.h"
 #include "RpgSubActions.h"
 #include "RtiAction.h"
@@ -286,6 +287,8 @@ public:
         creators["new rpg outdoor pvp"] = &ActionContext::new_rpg_outdoor_pvp;
         creators["new rpg do gather"] = &ActionContext::new_rpg_do_gather;
         creators["wait for attack keep safe distance"] = &ActionContext::wait_for_attack_keep_safe_distance;
+        creators["join ritual of souls"] = &ActionContext::join_ritual_of_souls;
+        creators["use soulwell"] = &ActionContext::use_soulwell;
     }
 
 private:
@@ -498,6 +501,8 @@ private:
     static Action* new_rpg_outdoor_pvp(PlayerbotAI* botAI) { return new NewRpgOutdoorPvpAction(botAI); }
     static Action* new_rpg_do_gather(PlayerbotAI* botAI) { return new NewRpgDoGatherAction(botAI); }
     static Action* wait_for_attack_keep_safe_distance(PlayerbotAI* botAI) { return new WaitForAttackKeepSafeDistanceAction(botAI); }
+    static Action* join_ritual_of_souls(PlayerbotAI* botAI) { return new JoinRitualOfSoulsAction(botAI); }
+    static Action* use_soulwell(PlayerbotAI* botAI) { return new UseSoulwellAction(botAI); }
 };
 
 #endif

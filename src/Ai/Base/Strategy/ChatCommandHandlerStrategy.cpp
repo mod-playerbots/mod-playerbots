@@ -180,5 +180,6 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("glyph equip");
     supported.push_back("pet");
     supported.push_back("pet attack");
+    supported.push_back("ritual of souls");
     supported.push_back("wait for attack time");
 }
