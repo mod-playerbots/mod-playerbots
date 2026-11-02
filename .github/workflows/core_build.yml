@@ -5,6 +5,7 @@ on:
     branches: [ "master", "test-staging" ]
   pull_request:
     branches: [ "master", "test-staging" ]
+    types: [opened, reopened, synchronize, ready_for_review]
 
 concurrency:
   group: "core-build-${{ github.event.pull_request.number }}"
@@ -12,6 +13,7 @@ concurrency:
 
 jobs:
   build:
+    if: '!github.event.pull_request.draft'
     strategy:
       # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
       fail-fast: false
