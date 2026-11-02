@@ -291,6 +291,61 @@ TEST(JumpTrajectory, RefusesADropPastTheCap)
     EXPECT_EQ(Sweep(launch, world).outcome, Outcome::DropCap);
 }
 
+// The step that crosses the cap also reaches the floor: the floor is still too deep.
+TEST(JumpTrajectory, RefusesALandingJustPastTheCap)
+{
+    FakeWorld world;
+    Launch launch;
+    launch.position = {0.0f, 0.0f, 10.0f};
+    launch.minZ = 4.0f;
+
+    world.terrain = [](float, float) { return 3.9f; };
+    EXPECT_EQ(Sweep(launch, world).outcome, Outcome::DropCap);
+
+    world.terrain = [](float, float) { return 4.0f; };
+    Trajectory const trajectory = Sweep(launch, world);
+    ASSERT_EQ(trajectory.outcome, Outcome::Landed);
+    EXPECT_FLOAT_EQ(trajectory.landing.z, 4.0f);
+}
+
+// Water takes no fall damage, so it catches a fall from far past the cap.
+TEST(JumpTrajectory, DeepWaterPastTheCapCatchesTheFall)
+{
+    FakeWorld world;
+    world.liquidZ = 40.0f;
+    Launch launch = RunningJump({0.0f, 0.0f, 400.0f});
+    launch.minZ = 390.0f;
+    Trajectory const trajectory = Sweep(launch, world);
+
+    ASSERT_EQ(trajectory.outcome, Outcome::Liquid);
+    EXPECT_FLOAT_EQ(trajectory.landing.z, 40.0f - SWIM_DEPTH * launch.collisionHeight);
+}
+
+TEST(JumpTrajectory, NoSwimmingPastTheCapRefuses)
+{
+    Launch launch;
+    launch.position = {0.0f, 0.0f, 400.0f};
+    launch.minZ = 390.0f;
+
+    // Too shallow to swim in.
+    FakeWorld shallow;
+    shallow.terrain = [](float, float) { return 39.5f; };
+    shallow.liquidZ = 40.0f;
+    EXPECT_EQ(Sweep(launch, shallow).outcome, Outcome::DropCap);
+
+    // A ledge over the water comes first.
+    FakeWorld ledge;
+    ledge.liquidZ = 40.0f;
+    ledge.platforms.push_back({-10.0f, 10.0f, 100.0f});
+    EXPECT_EQ(Sweep(launch, ledge).outcome, Outcome::DropCap);
+
+    // A water walker lands on the surface, as on a floor, and takes fall damage.
+    FakeWorld deep;
+    deep.liquidZ = 40.0f;
+    launch.waterWalking = true;
+    EXPECT_EQ(Sweep(launch, deep).outcome, Outcome::DropCap);
+}
+
 TEST(JumpTrajectory, RefusesWhenThereIsNoFloor)
 {
     FakeWorld world;

@@ -73,6 +73,13 @@ float SwimHeight(CollisionProbe const& probe, Point const& end, float liquid, fl
     float const bed = probe.FloorZ(end.x, end.y, liquid, swimDepth);
     return bed <= NO_HEIGHT || liquid - bed > swimDepth ? liquid - swimDepth : NO_HEIGHT;
 }
+
+// Liquid on the floor under the point, searched down to the map's lowest point.
+bool LiquidBelow(CollisionProbe const& probe, Point const& at)
+{
+    float const bed = probe.FloorZ(at.x, at.y, at.z, std::max(0.0f, at.z - probe.MinZ(at.x, at.y)));
+    return bed > NO_HEIGHT && probe.LiquidZ(at.x, at.y, bed) > NO_HEIGHT;
+}
 }  // namespace
 
 Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
@@ -130,6 +137,9 @@ Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
             trajectory.segments.push_back({segmentStart, position, durationMs, segmentStartVz, segmentKind});
     };
     openSegment();
+
+    // Swimming takes no fall damage, so the fall goes on past minZ over liquid, and only a swim may end there.
+    bool overLiquid = false;
 
     // The floor under a point of the chord, searched from the body's middle at the chord's higher end.
     auto floorAt = [&](Point const& point)
@@ -221,7 +231,9 @@ Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
             position = landing;
             segmentTime += time;
             closeSegment();
-            trajectory.outcome = outcome;
+            // A chord can cross minZ and reach the floor in the same step, so the landing itself is checked too.
+            bool const tooDeep = outcome == Outcome::Landed && landing.z < launch.minZ;
+            trajectory.outcome = tooDeep ? Outcome::DropCap : outcome;
             trajectory.landing = landing;
             return trajectory;
         };
@@ -283,13 +295,18 @@ Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
             chordEnd = arcAt(chordTime);
             contact = Contact::Wall;
         }
-        else if (chordEnd.z < launch.minZ)
-        {
-            trajectory.outcome = Outcome::DropCap;
-            return trajectory;
-        }
         else
         {
+            if (chordEnd.z < launch.minZ && !overLiquid)
+            {
+                overLiquid = LiquidBelow(probe, chordEnd);
+                if (!overLiquid)
+                {
+                    trajectory.outcome = Outcome::DropCap;
+                    return trajectory;
+                }
+            }
+
             // Ends where the lowest point was sampled: it can slope steeply between there and the crossing.
             if (chordEnd.z < probe.MinZ(chordEnd.x, chordEnd.y) - VOID_DEPTH)
                 return finish(chordEnd, chordTime, Outcome::Void);

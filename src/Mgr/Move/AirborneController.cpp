@@ -30,7 +30,7 @@ using namespace JumpTrajectory;
 
 namespace
 {
-constexpr float DELIBERATE_DROP_CAP = 6.0f;  // well under the fall damage threshold
+constexpr float KNOCKBACK_DROP_CAP = 6.0f;   // deeper knockbacks get the edge protection
 constexpr float NO_DROP_CAP = 100000.0f;     // falls with no depth limit; the sweep's step cap bounds how far it looks
 constexpr uint32 DROP_DOWN_RETRY_MS = 2000;  // while the bot waits at an edge its target dropped from
 constexpr float DROP_DOWN_WALK = 10.0f;      // how far the bot walks looking for the edge
@@ -193,9 +193,8 @@ bool AirborneController::Jump(float heading, float speedXY)
         return false;
 
     Point const takeoff = BotPoint();
-    float const minZ = takeoff.z - (IsFallHarmless() ? NO_DROP_CAP : DELIBERATE_DROP_CAP);
     Point const velocity{std::cos(heading) * speedXY, std::sin(heading) * speedXY, JUMP_VELOCITY};
-    Trajectory trajectory = SweepFrom(takeoff, velocity, minZ);
+    Trajectory trajectory = SweepFrom(takeoff, velocity, takeoff.z - SurvivableDrop());
     if (!IsSafeLanding(trajectory))
         return false;
 
@@ -226,7 +225,7 @@ bool AirborneController::DropDownTo(Unit const* target)
     float const maxDrop = SurvivableDrop();
     Trajectory trajectory = SweepFrom(start, velocity, start.z - maxDrop, DROP_DOWN_WALK);
     Point const& landing = trajectory.landing;
-    // Fall damage counts from the edge, which the walk may climb to, and a sweep step can land past its depth limit.
+    // The depth limit counts from the start, but fall damage from the edge, which the walk may climb to.
     if (!IsSafeLanding(trajectory) ||
         (trajectory.outcome != Outcome::Liquid && trajectory.takeoff.z - landing.z > maxDrop) ||
         target->GetExactDist(landing.x, landing.y, landing.z) >= target->GetExactDist(start.x, start.y, start.z))
@@ -263,7 +262,7 @@ void AirborneController::Knockback(float vcos, float vsin, float speedXY, float 
     Point const start = BotPoint();
     Trajectory trajectory = SweepFrom(start, {vcos * speedXY, vsin * speedXY, speedZ}, start.z - NO_DROP_CAP);
     if (sPlayerbotAIConfig.KnockbackEdgeProtection &&
-        (!IsSafeLanding(trajectory) || trajectory.landing.z < start.z - DELIBERATE_DROP_CAP))
+        (!IsSafeLanding(trajectory) || trajectory.landing.z < start.z - KNOCKBACK_DROP_CAP))
         trajectory = ProtectedKnockback(vcos, vsin, speedXY, speedZ);
 
     if (!trajectory.Ends())
