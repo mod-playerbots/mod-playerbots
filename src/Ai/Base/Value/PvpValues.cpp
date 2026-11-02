@@ -158,6 +158,10 @@ WsgTeamAssignment WsgTeamAssignmentValue::Calculate()
             continue;
         if (!player->GetSession() || !player->GetSession()->IsHeadless())
             continue;
+        // A bot told to follow its player does not play a role, and does not take a slot from the team.
+        PlayerbotAI* playerAI = GET_PLAYERBOT_AI(player);
+        if (playerAI && BGTactics::IsFollowingMaster(playerAI))
+            continue;
         allBots.push_back(guid);
         if (guid == bot->GetGUID())
             foundSelf = true;

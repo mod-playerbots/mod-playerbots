@@ -107,6 +107,8 @@ public:
     static void ClearBotStrategies(uint32 instanceId);
     static uint8 GetWsgDefenderCount(Battleground* bg, TeamId teamId);
     static bool ShouldYieldWsgTactics(PlayerbotAI* botAI);
+    static bool IsFollowingMaster(PlayerbotAI* botAI);
+    static bool IsAtBgFlag(PlayerbotAI* botAI);
 
     BGTactics(PlayerbotAI* botAI, std::string const name = "bg tactics")
         : MovementAction(botAI, name),
