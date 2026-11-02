@@ -54,4 +54,3 @@ Every action, trigger, and value runs per bot, per tick, across thousands of bot
   search just to return `false`.
 - Loop nesting follows the question being asked; iterating the wrong dimension outermost is the
   usual cause of O(n³) scans. Three levels deep is a restructure signal.
-- Expensive or behaviour-changing features are opt-in via `playerbots.conf.dist`, off by default.

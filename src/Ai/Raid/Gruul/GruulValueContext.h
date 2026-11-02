@@ -28,31 +28,6 @@ protected:
     GuidVector Calculate() override { return GruulHelpers::FindNearbyWildFelStalkerGuids(bot); }
 };
 
-// Both ogre caster tanks are chosen by iterating the raid.
-class HighKingMaulgarKroshMageTankValue : public ObjectGuidCalculatedValue
-{
-public:
-    HighKingMaulgarKroshMageTankValue(PlayerbotAI* botAI)
-        : ObjectGuidCalculatedValue(
-              botAI, "high king maulgar krosh mage tank",
-              GruulHelpers::CASTER_TANK_CACHE_INTERVAL_MS) {}
-
-protected:
-    ObjectGuid Calculate() override { return GruulHelpers::FindKroshMageTankGuid(bot); }
-};
-
-class HighKingMaulgarKigglerMoonkinTankValue : public ObjectGuidCalculatedValue
-{
-public:
-    HighKingMaulgarKigglerMoonkinTankValue(PlayerbotAI* botAI)
-        : ObjectGuidCalculatedValue(
-              botAI, "high king maulgar kiggler moonkin tank",
-              GruulHelpers::CASTER_TANK_CACHE_INTERVAL_MS) {}
-
-protected:
-    ObjectGuid Calculate() override { return GruulHelpers::FindKigglerMoonkinTankGuid(bot); }
-};
-
 class GruulTheDragonkillerCaveInValue : public CalculatedValue<std::vector<Position>>
 {
 public:
@@ -77,10 +52,6 @@ public:
     {
         creators["high king maulgar wild fel stalkers"] =
             &RaidGruulsLairValueContext::high_king_maulgar_wild_fel_stalkers;
-        creators["high king maulgar krosh mage tank"] =
-            &RaidGruulsLairValueContext::high_king_maulgar_krosh_mage_tank;
-        creators["high king maulgar kiggler moonkin tank"] =
-            &RaidGruulsLairValueContext::high_king_maulgar_kiggler_moonkin_tank;
         creators["gruul the dragonkiller cave in"] =
             &RaidGruulsLairValueContext::gruul_the_dragonkiller_cave_in;
     }
@@ -89,16 +60,6 @@ private:
     static UntypedValue* high_king_maulgar_wild_fel_stalkers(PlayerbotAI* botAI)
     {
         return new HighKingMaulgarWildFelStalkersValue(botAI);
-    }
-
-    static UntypedValue* high_king_maulgar_krosh_mage_tank(PlayerbotAI* botAI)
-    {
-        return new HighKingMaulgarKroshMageTankValue(botAI);
-    }
-
-    static UntypedValue* high_king_maulgar_kiggler_moonkin_tank(PlayerbotAI* botAI)
-    {
-        return new HighKingMaulgarKigglerMoonkinTankValue(botAI);
     }
 
     static UntypedValue* gruul_the_dragonkiller_cave_in(PlayerbotAI* botAI)
