@@ -164,6 +164,12 @@ bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
     return MarkTargetWithSkull(bot, channeler);
 }
 
+bool MagtheridonSelectTargetForHoldAction::Execute(Event /*event*/)
+{
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    return SelectTarget(botAI, magtheridon);
+}
+
 // Establish a Banish rotation for Burning Abyssals and a Fear rotation with respect to any Burning
 // Abyssals that exceed the number of Warlocks in the raid.
 bool MagtheridonWarlockCcBurningAbyssalAction::Execute(Event /*event*/)
@@ -550,7 +556,7 @@ bool MagtheridonUpdateTimersAndAssignmentsAction::AssignCubeClickers(
     // Prune dead or absent players from the existing assignment.
     for (auto it = assignment.begin(); it != assignment.end(); )
     {
-        Player* player = ObjectAccessor::FindPlayer(it->first);
+        Player* player = ObjectAccessor::GetPlayer(*bot, it->first);
         if (!player || !player->IsAlive() || player->GetMapId() != MAG_MAP_ID)
             it = assignment.erase(it);
         else
@@ -630,7 +636,7 @@ bool MagtheridonUpdateTimersAndAssignmentsAction::NeedsCubeReassignment(uint32 i
 
     for (auto const& pair : assignment)
     {
-        Player* assigned = ObjectAccessor::FindPlayer(pair.first);
+        Player* assigned = ObjectAccessor::GetPlayer(*bot, pair.first);
         if (!assigned || !assigned->IsAlive() || assigned->GetMapId() != MAG_MAP_ID)
             return true;
     }

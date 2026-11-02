@@ -162,11 +162,6 @@ bool CastTankTaunt(PlayerbotAI* botAI, Unit* target);
 bool FindHazardEscapeStep(
     Player* bot, Position const& hazard, float moveDist, float& stepX, float& stepY, float& stepZ);
 bool IsDryGround(Player* bot, float x, float y);
-bool GetPathStepTowardPoint(
-    Player* bot, Position const& destination, float stopDistance, float stepDistance,
-    float& stepX, float& stepY);
-bool GetPathStepTowardUnit(
-    Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY);
 bool GetRangedArcAngle(Player* bot, float arcCenter, float arcSpan, float& angle);
 std::vector<Unit*> GetOtherLivingGroupMembers(Player* bot);
 
@@ -301,6 +296,9 @@ inline constexpr float LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE =
     LEOTHERAS_CHAOS_BLAST_HAZARD_RADIUS + 2.0f;
 inline constexpr float LEOTHERAS_SHADOW_SEPARATION_DISTANCE = 20.0f;
 
+inline constexpr float LEOTHERAS_LIFE_TAP_MANA_PCT = 20.0f;
+inline constexpr float LEOTHERAS_LIFE_TAP_HEALTH_PCT = 90.0f;
+
 inline Position const LEOTHERAS_SPAWN_POSITION = { 376.543f, -438.631f, 29.608f };
 
 ObjectGuid FindLeotherasGuid(Player* bot);
@@ -382,6 +380,11 @@ bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem);
 // Sharkkis's tank picks up his pets too.
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI);
 Unit* GetSharkkisPet(Player* bot);
+// Non-healer melee other than the main tank, from Karathress's KARATHRESS_BLESSING_HOLD_HEALTH_PCT
+// until Caribdis dies.
+bool IsKarathressBlessingHoldActive(Player* bot);
+// Non-tanks for the first KARATHRESS_DPS_WAIT_MS of the fight, and before the timer is stamped.
+bool IsKarathressStartDpsHoldActive(Player* bot);
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget);
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
 

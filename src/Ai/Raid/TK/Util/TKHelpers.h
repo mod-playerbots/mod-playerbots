@@ -245,6 +245,9 @@ inline constexpr uint32 KAELTHAS_DB_GUID = 158218;
 // 125 yards is about the exact distance from Kael to the entrances to his room.
 inline constexpr float KAELTHAS_ROOM_SEARCH_DISTANCE = 125.0f;
 inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
+inline constexpr uint32 ADVISOR_DPS_WAIT_MS = 10 * IN_MILLISECONDS;
+inline constexpr float CAPERNIAN_LIFE_TAP_MANA_PCT = 20.0f;
+inline constexpr float CAPERNIAN_LIFE_TAP_HEALTH_PCT = 75.0f;
 
 inline constexpr EncounterHelpers::ClassRole CAPERNIAN_TANK_ROLE = {
     .playerClass = CLASS_WARLOCK,
@@ -277,7 +280,7 @@ inline Position const KAELTHAS_TANK_POSITION     = { 774.008f,  -0.631f, 48.729f
 
 uint32 GetKaelthasTkPhase(Unit* kaelthas);
 bool IsAdvisorActive(Unit* advisor);
-
+bool IsKaelthasAdvisorDpsHoldActive(PlayerbotAI* botAI, Unit* kaelthas);
 bool UpdateTkClassRoles(PlayerbotAI* botAI);
 bool UpdateKaelthasClassRoleAnnouncement(PlayerbotAI* botAI);
 // Demonology spec is preferred for the Capernian Warlock tank.

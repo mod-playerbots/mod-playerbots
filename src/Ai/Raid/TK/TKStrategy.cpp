@@ -148,7 +148,7 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new HighAstromancerSolarianWrathStayAwayMultiplier(botAI));
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
-    multipliers.push_back(new KaelthasSunstriderWaitForDpsMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderHoldDpsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderKiteThaladredMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderKeepDistanceFromCapernianMultiplier(botAI));
@@ -156,6 +156,7 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderManageWeaponTankingMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderSuppressEquipUpgradeMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderManageAutomaticTargetingMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderKeepMeleeInCombatMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDisableDisperseMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderPrepareForPhase3Multiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDelayDpsCooldownsMultiplier(botAI));

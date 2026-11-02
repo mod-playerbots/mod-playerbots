@@ -362,6 +362,38 @@ bool IsAdvisorActive(Unit* advisor)
         !advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
 }
 
+bool IsKaelthasAdvisorDpsHoldActive(PlayerbotAI* botAI, Unit* kaelthas)
+{
+    if (GetKaelthasTkPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
+        return false;
+
+    std::optional<uint32> const& waitStart = TkState(kaelthas->GetInstanceId()).advisorDpsWaitTimer;
+    if (waitStart && *waitStart != ADVISOR_DPS_WAIT_NOT_STARTED &&
+        getMSTimeDiff(*waitStart, getMSTime()) >= ADVISOR_DPS_WAIT_MS)
+    {
+        return false;
+    }
+
+    Player* bot = botAI->GetBot();
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    if (IsAdvisorActive(context->GetValue<Unit*>("find target", "lord sanguinar")->Get()))
+        return !PlayerbotAI::IsMainTank(bot);
+
+    if (IsAdvisorActive(
+        context->GetValue<Unit*>("find target", "grand astromancer capernian")->Get()))
+    {
+        return !IsCapernianTank(bot);
+    }
+
+    if (IsAdvisorActive(
+        context->GetValue<Unit*>("find target", "master engineer telonicus")->Get()))
+    {
+        return !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+    }
+
+    return false;
+}
+
 bool UpdateTkClassRoles(PlayerbotAI* botAI)
 {
     TkInstanceState& state = TkState(botAI->GetBot()->GetInstanceId());
