@@ -851,7 +851,7 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
 // and simply get trimmed on a later tick, if they become free and there's still unfulfilled demand for logouts.
 bool RandomPlayerbotMgr::IsRemovableBot(Player* bot)
 {
-    if (!bot || !bot->IsInWorld())
+    if (!bot || !bot->IsInWorld() || !IsRandomBot(bot))
         return false;
 
     if (bot->IsInCombat())
@@ -869,10 +869,12 @@ bool RandomPlayerbotMgr::IsRemovableBot(Player* bot)
     if (bot->GetMap()->IsDungeon())
         return false;
 
-    // Controlled by a real player (including a selfbot).
+    // Controlled by a real player. IsRandomBot is not enough if a real player is logged into a randombot.
     if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+    {
         if (botAI->HasGameClientMaster())
             return false;
+    }
 
     // Grouped with a real player (including a selfbot).
     if (Group* group = bot->GetGroup())
