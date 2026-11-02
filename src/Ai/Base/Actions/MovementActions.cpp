@@ -3494,8 +3494,6 @@ bool MovementAction::DispatchMovement(TravelPath path, [[maybe_unused]] WorldPos
     if (!bot->IsStandState())
         bot->SetStandState(UNIT_STAND_STATE_STAND);
 
-    bot->CastStop();
-
     // mm.Clear → exactly one generator
     MotionMaster* mm = bot->GetMotionMaster();
     mm->Clear();
