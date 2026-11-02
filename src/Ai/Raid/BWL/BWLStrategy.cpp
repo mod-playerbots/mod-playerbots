@@ -78,7 +78,7 @@ void RaidBwlStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExc
     AiObjectContext* context = botAI->GetAiObjectContext();
     if (type == TargetValueExclusionType::DpsTarget || type == TargetValueExclusionType::DebuffTarget)
     {
-        // Nefarian is not a target while Bone Constructs are up, so DPS clear them first. His tank stays on him.
+        // Nefarian is not a target while Bone Constructs are in combat, so DPS clear them first. His tank stays on him.
         Player* bot = botAI->GetBot();
         if (!PlayerbotAI::IsTank(bot) && !PlayerbotAI::IsHeal(bot) &&
             BlackwingLairHelpers::HasBoneConstructAttacker(botAI))
@@ -148,5 +148,9 @@ void RaidBwlStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExc
                     exclusions.insert(guid);
             }
         }
+        // While a tank holds him, the other tanks stay on the constructs. Loose on the raid, any tank may take him.
+        else if (bossVictimPlayer && PlayerbotAI::IsTank(bossVictimPlayer) &&
+                 BlackwingLairHelpers::HasBoneConstructAttacker(botAI))
+            exclusions.insert(nefarian->GetGUID());
     }
 }

@@ -121,7 +121,7 @@ namespace BlackwingLairHelpers
                 continue;
 
             Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive())
+            if (unit && unit->IsAlive() && unit->IsInCombat())
                 return true;
         }
         return false;
