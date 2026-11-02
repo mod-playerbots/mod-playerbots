@@ -94,7 +94,7 @@ bool McCoreHoundMarkTrigger::IsActive()
 
 bool McMajordomoDamageShieldTrigger::IsActive()
 {
-    if (PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMelee(bot))
+    if (PlayerbotAI::IsTank(bot) || !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING))
         return false;
 
     Unit* victim = bot->GetVictim();

@@ -344,6 +344,6 @@ bool McCoreHoundMarkAction::Execute(Event /*event*/)
 
 bool McMajordomoStopAttackAction::Execute(Event /*event*/)
 {
-    // Auto-attack keeps swinging into the Damage Shield; the multiplier keeps the bot from re-engaging.
+    // Auto-attack keeps swinging into the Damage Shield; the multiplier keeps a melee bot from re-engaging.
     return bot->AttackStop();
 }
