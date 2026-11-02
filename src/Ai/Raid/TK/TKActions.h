@@ -33,6 +33,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class TempestKeepAssignClassRolesAction : public Action
+{
+public:
+    TempestKeepAssignClassRolesAction(PlayerbotAI* botAI)
+        : Action(botAI, "tempest keep assign class roles") {}
+    bool Execute(Event event) override;
+};
+
 // For Void Reaver, Sanguinar, Telonicus, and Kael'thas.
 class TempestKeepTankPositionAction : public AttackAction
 {
@@ -406,6 +414,14 @@ public:
 private:
     bool DropToGround();
     bool HoverAndSpread();
+};
+
+class KaelthasSunstriderAnnounceClassRolesAction : public Action
+{
+public:
+    KaelthasSunstriderAnnounceClassRolesAction(PlayerbotAI* botAI)
+        : Action(botAI, "kael'thas sunstrider announce class roles") {}
+    bool Execute(Event event) override;
 };
 
 #endif

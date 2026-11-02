@@ -38,6 +38,14 @@ public:
     bool IsActive() override;
 };
 
+class GruulsLairClassRolesShouldBeAssignedTrigger : public Trigger
+{
+public:
+    GruulsLairClassRolesShouldBeAssignedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "gruul's lair class roles should be assigned", 1000) {}
+    bool IsActive() override;
+};
+
 // High King Maulgar <Lord of the Ogres>
 
 class HighKingMaulgarThreeOgresNeedMeleeTanksTrigger : public GruulsLairEncounterTrigger
