@@ -22,6 +22,9 @@ public:
         creators["tempest keep clear stale falling flag"] =
             &RaidTempestKeepActionContext::tempest_keep_clear_stale_falling_flag;
 
+        creators["tempest keep assign class roles"] =
+            &RaidTempestKeepActionContext::tempest_keep_assign_class_roles;
+
         // Trash
         creators["crimson hand centurion cast polymorph"] =
             &RaidTempestKeepActionContext::crimson_hand_centurion_cast_polymorph;
@@ -137,6 +140,9 @@ public:
 
         creators["kael'thas sunstrider spread out in midair"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_spread_out_in_midair;
+
+        creators["kael'thas sunstrider announce class roles"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_announce_class_roles;
     }
 
 private:
@@ -148,6 +154,11 @@ private:
     static Action* tempest_keep_clear_stale_falling_flag(PlayerbotAI* botAI)
     {
         return new TempestKeepClearStaleFallingFlagAction(botAI);
+    }
+
+    static Action* tempest_keep_assign_class_roles(PlayerbotAI* botAI)
+    {
+        return new TempestKeepAssignClassRolesAction(botAI);
     }
 
     // Trash
@@ -306,6 +317,10 @@ private:
     static Action* kaelthas_sunstrider_spread_out_in_midair(PlayerbotAI* botAI)
     {
         return new KaelthasSunstriderSpreadOutInMidairAction(botAI);
+    }
+    static Action* kaelthas_sunstrider_announce_class_roles(PlayerbotAI* botAI)
+    {
+        return new KaelthasSunstriderAnnounceClassRolesAction(botAI);
     }
 };
 

@@ -29,6 +29,13 @@ public:
     bool Execute(Event event) override;
 };
 
+class SscAssignClassRolesAction : public Action
+{
+public:
+    SscAssignClassRolesAction(PlayerbotAI* botAI) : Action(botAI, "ssc assign class roles") {}
+    bool Execute(Event event) override;
+};
+
 // Used for Morogrim Tidewalker and Lady Vashj.
 class SscMisdirectToMainTankAction : public Action
 {
@@ -265,6 +272,14 @@ public:
 
 private:
     bool TrackWhirlwindEnd(Unit* leotheras, std::optional<uint32>& whirlwindEnd, uint32 now);
+};
+
+class LeotherasTheBlindAnnounceClassRolesAction : public Action
+{
+public:
+    LeotherasTheBlindAnnounceClassRolesAction(PlayerbotAI* botAI)
+        : Action(botAI, "leotheras the blind announce class roles") {}
+    bool Execute(Event event) override;
 };
 
 // Fathom-Lord Karathress
