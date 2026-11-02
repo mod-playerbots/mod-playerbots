@@ -12,6 +12,7 @@
 #include "RtiTargetValue.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 #include <algorithm>
 #include <cmath>
 #include <list>
@@ -933,14 +934,13 @@ Player* GetCouncilTank(Player* bot, int8 assistTankIndex)
 Unit* GetAssignedCouncilMember(PlayerbotAI* botAI)
 {
     Player* tank = botAI->GetBot();
-    AiObjectContext* context = botAI->GetAiObjectContext();
     for (KarathressCouncilAssignment const& assignment : KARATHRESS_COUNCIL)
     {
         bool const assigned = assignment.assistTankIndex < 0 ?
             PlayerbotAI::IsMainTank(tank) :
             PlayerbotAI::IsAssistTankOfIndex(tank, assignment.assistTankIndex, false);
         if (assigned)
-            return AI_VALUE2(Unit*, "find target", assignment.name);
+            return FindThreatTarget(tank, assignment.name);
     }
 
     return nullptr;
@@ -951,10 +951,9 @@ Unit* GetAssignedCouncilMember(PlayerbotAI* botAI)
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget)
 {
     Player* bot = botAI->GetBot();
-    AiObjectContext* context = botAI->GetAiObjectContext();
     for (KarathressCouncilAssignment const& assignment : KARATHRESS_COUNCIL)
     {
-        Unit* member = AI_VALUE2(Unit*, "find target", assignment.name);
+        Unit* member = FindThreatTarget(bot, assignment.name);
         if (!member || member == ownTarget || member->GetVictim() != bot)
             continue;
 
@@ -969,11 +968,10 @@ bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget)
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
 {
     Player* bot = botAI->GetBot();
-    AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* ownMember = GetAssignedCouncilMember(botAI);
     for (KarathressCouncilAssignment const& assignment : KARATHRESS_COUNCIL)
     {
-        Unit* member = AI_VALUE2(Unit*, "find target", assignment.name);
+        Unit* member = FindThreatTarget(bot, assignment.name);
         if (member && member != ownMember && bot->GetDistance(member) < range)
             return true;
     }
@@ -984,8 +982,7 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* sharkkis = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
+    Unit* sharkkis = FindThreatTarget(bot, "fathom-guard sharkkis");
     if (sharkkis && sharkkis->GetVictim() != bot)
         return sharkkis;
 
