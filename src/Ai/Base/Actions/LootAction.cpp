@@ -93,18 +93,40 @@ bool OpenLootAction::Execute(Event /*event*/)
         return false;
 
     LootObject lootObject = AI_VALUE(LootObject, "loot target");
-    if (!availableLoot->CanAttemptLoot(lootObject.guid))
+    if (lootObject.IsEmpty() || !lootObject.IsLootPossible(bot) ||
+        !availableLoot->CanAttemptLoot(lootObject.guid))
         return false;
 
-    // DoLoot stops the bot first, which means "try again", not a failure; deferring after that
-    // stop would make the bot walk away and come back. Only a dry failure at rest defers.
-    bool const wasMoving = bot->isMoving();
-    bool const wasMounted = bot->IsMounted();
+    // Consume the tick when stopping or dismounting is the only thing between the bot and the
+    // loot. Returning false here lets mount/grind/move actions run in the same tick and undo the
+    // approach. Only do it when the target is already in interaction range; otherwise the move
+    // to loot action still owns the approach.
+    if (bot->isMoving() || bot->IsMounted())
+    {
+        Creature* creature = botAI->GetCreature(lootObject.guid);
+        GameObject* go = botAI->GetGameObject(lootObject.guid);
+        bool const inRange = creature
+                                 ? bot->IsWithinDistInMap(creature, INTERACTION_DISTANCE)
+                                 : (go && go->IsAtInteractDistance(bot));
+        if (inRange)
+        {
+            bool const wasMoving = bot->isMoving();
+            bool const wasMounted = bot->IsMounted();
+            uint32 const delay = wasMoving ? sPlayerbotAIConfig.LootDelay
+                                           : sPlayerbotAIConfig.ReactDelay;
+            if (wasMoving)
+                bot->StopMoving();
+            if (wasMounted)
+                bot->RemoveAurasByType(SPELL_AURA_MOUNTED);
+            botAI->SetNextCheckDelay(delay);
+            return true;
+        }
+    }
 
     bool const result = DoLoot(lootObject);
     if (result)
         availableLoot->BeginLoot(lootObject.guid);
-    else if (!lootObject.IsEmpty() && !wasMoving && !wasMounted)
+    else
     {
         availableLoot->DeferLoot(lootObject.guid);
         if (AI_VALUE(LootObject, "loot target").guid == lootObject.guid)

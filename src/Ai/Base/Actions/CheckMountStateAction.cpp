@@ -12,6 +12,7 @@
 #include "BattlegroundWS.h"
 #include "DBCStores.h"
 #include "Event.h"
+#include "LootObjectStack.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotSpellRepository.h"
@@ -65,6 +66,21 @@ MountData CollectMountData(Player const* bot)
         data.allSpells[index][speed].push_back(spellId);
     }
     return data;
+}
+
+bool CheckMountStateAction::IsLootTargetInRange()
+{
+    LootObject lootTarget = AI_VALUE(LootObject, "loot target");
+    if (lootTarget.IsEmpty() || !lootTarget.IsLootPossible(bot))
+        return false;
+
+    if (Creature* creature = botAI->GetCreature(lootTarget.guid))
+        return bot->IsWithinDistInMap(creature, INTERACTION_DISTANCE);
+
+    if (GameObject* go = botAI->GetGameObject(lootTarget.guid))
+        return go->IsAtInteractDistance(bot);
+
+    return false;
 }
 
 bool CheckMountStateAction::Execute(Event /*event*/)
@@ -122,11 +138,13 @@ bool CheckMountStateAction::Execute(Event /*event*/)
 
     bool inBattleground = bot->InBattleground();
     bool const noRealMaster = (!master || master == bot);
+    // OpenLootAction dismounts for in-range loot; do not remount before it can open.
+    bool const lootTargetInRange = IsLootTargetInRange();
 
     // If there is a master and bot not in BG, follow master's mount state regardless of group leader
     if (!noRealMaster && !inBattleground)
     {
-        if (ShouldFollowMasterMountState(master, noAttackers, shouldMount))
+        if (ShouldFollowMasterMountState(master, noAttackers, shouldMount) && !lootTargetInRange)
             return Mount();
 
         else if (ShouldDismountForMaster(master) && bot->IsMounted())
@@ -140,7 +158,7 @@ bool CheckMountStateAction::Execute(Event /*event*/)
 
     // No real master (random bot or SelfBot) OR bot in BG
     if ((noRealMaster || inBattleground) && !bot->IsMounted() &&
-        noAttackers && shouldMount && !bot->IsInCombat())
+        noAttackers && shouldMount && !bot->IsInCombat() && !lootTargetInRange)
         return Mount();
 
     if (!bot->IsFlying() && shouldDismount && bot->IsMounted() &&

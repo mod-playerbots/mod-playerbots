@@ -46,6 +46,7 @@ public:
     static void LoadPreferredMounts();
 
 private:
+    bool IsLootTargetInRange();
     Player* master;
     ShapeshiftForm masterInShapeshiftForm;
     ShapeshiftForm botInShapeshiftForm;
