@@ -430,10 +430,22 @@ bool StatsCollector::SpecialSpellFilter(uint32 spellId)
             if (type_ & (CollectorType::SPELL))
                 return true;
             break;
-        // NOTE: Insightful Earthstorm/Earthsiege (27521/55381), Darkmoon Card: Wrath (39442) and
-        // Berserking (59620) have their trigger/value in the DBC and are handled by the generic
-        // trigger-chase / combat-enchant path - no special case needed.
-        case 67702:  // Death's Verdict (normal): spell_item_death_choice casts +450 STR or AGI (67708/67703), max(str, agi)
+        case 27521:  // Insightful Earthstorm Diamond: 5% mana proc, below the collector's low-chance gate
+            stats[STATS_TYPE_MANA_REGENERATION] += 20;
+            return true;
+        case 55381:  // Insightful Earthsiege Diamond: 5% mana proc, below the collector's low-chance gate
+            stats[STATS_TYPE_MANA_REGENERATION] += 40;
+            return true;
+        case 39442:  // Darkmoon Card: Wrath
+            if (!(type_ & CollectorType::SPELL_HEAL))
+                stats[STATS_TYPE_CRIT] += 50;
+            return true;
+        case 59620:  // Berserking weapon enchant
+            if (type_ & CollectorType::MELEE)
+                stats[STATS_TYPE_ATTACK_POWER] += 120;
+            return true;
+        case 67702:  // Death's Verdict (normal): spell_item_death_choice casts +450 STR or AGI
+                     // (67708/67703), max(str, agi)
             CollectScriptedProcBuff(67702, UsesStrengthProcBuff(cls_) ? 67708 : 67703);
             return true;
         case 67771:  // Death's Verdict (heroic): +510 STR or AGI (67773/67772)
@@ -452,13 +464,15 @@ bool StatsCollector::SpecialSpellFilter(uint32 spellId)
             else
                 stats[STATS_TYPE_ATTACK_POWER] += 600;
             return true;
-        case 67712:  // Reign of the Dead (normal): spell_item_trinket_stack - mote 67713 (3 stacks) -> Pillar of Flame 67714
+        case 67712:  // Reign of the Dead (normal): spell_item_trinket_stack - mote 67713 (3 stacks)
+                     // -> Pillar of Flame 67714
             CollectStackTriggerProc(67712, 67714);
             return true;
         case 67758:  // Reign of the Dead (heroic): mote 67759 -> Pillar of Flame 67760
             CollectStackTriggerProc(67758, 67760);
             return true;
-        case 57345:  // Darkmoon Card: Greatness - script casts the caster's highest stat (60229 STR/60233 AGI/60234 INT/60235 SPI)
+        case 57345:  // Darkmoon Card: Greatness - script casts the caster's highest stat
+                     // (60229 STR/60233 AGI/60234 INT/60235 SPI)
         {
             uint32 buff = UsesStrengthProcBuff(cls_) ? 60229 : 60233;
             if (type_ & CollectorType::SPELL)
@@ -510,7 +524,8 @@ bool StatsCollector::SpecialSpellFilter(uint32 spellId)
             if (type_ & CollectorType::SPELL_HEAL)
                 return true;
             break;
-        case 71903:  // Shadowmourne: soul fragment 71905 (+30 STR x10, resets at 10) -> chaos bane 73422 (+270 STR 10 sec)
+        case 71903:  // Shadowmourne: soul fragment 71905 (+30 STR x10, resets at 10) -> chaos
+                     // bane 73422 (+270 STR 10 sec)
             CollectScriptedProcBuff(71903, 71905);        // fragments: +30 STR x stack heuristic
             CollectScriptedProcBuff(71903, 73422, 0.4f);  // chaos bane: ~40% uptime (10 sec per ~25 sec cycle)
             return true;
