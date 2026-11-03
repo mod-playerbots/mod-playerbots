@@ -12,7 +12,6 @@
 #include "BattlegroundWS.h"
 #include "DBCStores.h"
 #include "Event.h"
-#include "LootObjectStack.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotSpellRepository.h"
@@ -70,17 +69,9 @@ MountData CollectMountData(Player const* bot)
 
 bool CheckMountStateAction::IsLootTargetInRange()
 {
-    LootObject lootTarget = AI_VALUE(LootObject, "loot target");
-    if (lootTarget.IsEmpty() || !lootTarget.IsLootPossible(bot))
-        return false;
-
-    if (Creature* creature = botAI->GetCreature(lootTarget.guid))
-        return bot->IsWithinDistInMap(creature, INTERACTION_DISTANCE);
-
-    if (GameObject* go = botAI->GetGameObject(lootTarget.guid))
-        return go->IsAtInteractDistance(bot);
-
-    return false;
+    // "can loot" is the cached value that answers "is an in-range, lootable target pending",
+    // and reusing it keeps this per-tick check O(1) instead of re-running IsLootPossible here.
+    return AI_VALUE(bool, "can loot");
 }
 
 bool CheckMountStateAction::Execute(Event /*event*/)

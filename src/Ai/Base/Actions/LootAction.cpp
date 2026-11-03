@@ -93,8 +93,7 @@ bool OpenLootAction::Execute(Event /*event*/)
         return false;
 
     LootObject lootObject = AI_VALUE(LootObject, "loot target");
-    if (lootObject.IsEmpty() || !lootObject.IsLootPossible(bot) ||
-        !availableLoot->CanAttemptLoot(lootObject.guid))
+    if (lootObject.IsEmpty() || !availableLoot->CanAttemptLoot(lootObject.guid))
         return false;
 
     // Consume the tick when stopping or dismounting is the only thing between the bot and the
