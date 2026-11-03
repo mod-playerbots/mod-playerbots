@@ -284,13 +284,8 @@ bool MoveStraightTo(PlayerbotAI* botAI, float x, float y, float z, MovementPrior
     motionMaster->Clear();
     motionMaster->MoveSplinePath(&path);
 
-    float const delay = std::clamp(
-        IN_MILLISECONDS * distance / bot->GetSpeed(MOVE_RUN) -
-            static_cast<float>(botAI->GetReactDelay()),
-        0.0f, static_cast<float>(sPlayerbotAIConfig.MaxWaitForMove));
-
     botAI->GetAiObjectContext()->GetValue<LastMovement&>("last movement")->Get().Set(
-        SSC_MAP_ID, x, y, z, bot->GetOrientation(), delay, priority);
+        SSC_MAP_ID, x, y, z, bot->GetOrientation(), priority);
     return true;
 }
 

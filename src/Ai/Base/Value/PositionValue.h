@@ -33,7 +33,7 @@ public:
 
     void Reset() { valueSet = false; }
 
-    bool isSet() { return valueSet; }
+    bool isSet() const { return valueSet; }
 
     float x;
     float y;

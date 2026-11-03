@@ -14,19 +14,23 @@
 #include "GameEventMgr.h"
 #include "Log.h"
 #include "Map.h"
-#include "MapCollisionData.h"
 #include "MapMgr.h"
+#include "ModelIgnoreFlags.h"
 #include "ObjectAccessor.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
 #include "RaceMgr.h"
-#include "Talentspec.h"
 #include "TransportMgr.h"
 #include "TravelNode.h"
-#include "VMapFactory.h"
-#include "VMapMgr2.h"
+
 #include <iomanip>
 #include <numeric>
+#include <unordered_set>
+
+namespace
+{
+    constexpr uint32 PATHING_CREATURE_ENTRY = 1;
+}
 
 // Navigation data
 
@@ -195,11 +199,6 @@ WorldPosition::WorldPosition(uint32 mapid, CellCoord cell)
 {
 }
 
-WorldPosition::WorldPosition(uint32 mapid, mGridCoord grid)
-    : WorldLocation(mapid, (32 - grid.first) * SIZE_OF_GRIDS, (32 - grid.second) * SIZE_OF_GRIDS, 0, 0)
-{
-}
-
 void WorldPosition::set(WorldLocation const& pos) { WorldRelocate(pos); }
 
 void WorldPosition::set(WorldPosition const& pos)
@@ -273,6 +272,41 @@ bool WorldPosition::isUnderWater()
                                              DEFAULT_COLLISION_HEIGHT)
                     : false;
 };
+
+bool WorldPosition::isDarkWater()
+{
+    Map* map = getMap();
+    if (!map)
+        return false;
+
+    LiquidData const& liquidData = map->GetLiquidData(PHASEMASK_NORMAL, GetPositionX(), GetPositionY(),
+                                                      GetPositionZ(), DEFAULT_COLLISION_HEIGHT,
+                                                      MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN);
+
+    return (liquidData.Status & MAP_LIQUID_STATUS_SWIMMING) != 0 &&
+           (liquidData.Flags & MAP_LIQUID_TYPE_DARK_WATER) != 0;
+};
+
+bool WorldPosition::setAtWaterSurface()
+{
+    if (!isInWater() && !isUnderWater())
+        return false;
+    Map* map = getMap();
+    if (!map)
+        return false;
+    // Returns the water level when liquid is present; falls back to
+    // ground level otherwise. Our isInWater/isUnderWater preconditions
+    // ensure liquid exists, so the +0.5y nudge lands the point on top
+    // of the surface (matches the reference's surface snap).
+    float const level = map->GetWaterOrGroundLevel(PHASEMASK_NORMAL,
+                                                   GetPositionX(),
+                                                   GetPositionY(),
+                                                   GetPositionZ());
+    if (level <= INVALID_HEIGHT)
+        return false;
+    setZ(level + 0.5f);
+    return true;
+}
 
 bool WorldPosition::IsValid()
 {
@@ -636,139 +670,6 @@ std::vector<WorldPosition> WorldPosition::gridFromCellCoord(CellCoord cellCoord)
     return fromGridCoord(GridCoord(c.GridX(), c.GridY()));
 }
 
-std::vector<std::pair<int32, int32>> WorldPosition::getmGridCoords(WorldPosition secondPos)
-{
-    std::vector<mGridCoord> retVec;
-
-    int lx = std::min(getmGridCoord().first, secondPos.getmGridCoord().first);
-    int ly = std::min(getmGridCoord().second, secondPos.getmGridCoord().second);
-    int ux = std::max(getmGridCoord().first, secondPos.getmGridCoord().first);
-    int uy = std::max(getmGridCoord().second, secondPos.getmGridCoord().second);
-    int border = 1;
-
-    // lx = std::min(std::max(border, lx), MAX_NUMBER_OF_GRIDS - border);
-    // ly = std::min(std::max(border, ly), MAX_NUMBER_OF_GRIDS - border);
-    // ux = std::min(std::max(border, ux), MAX_NUMBER_OF_GRIDS - border);
-    // uy = std::min(std::max(border, uy), MAX_NUMBER_OF_GRIDS - border);
-
-    for (int x = lx - border; x <= ux + border; x++)
-    {
-        for (int y = ly - border; y <= uy + border; y++)
-        {
-            retVec.push_back(std::make_pair(x, y));
-        }
-    }
-
-    return retVec;
-}
-
-std::vector<WorldPosition> WorldPosition::frommGridCoord(mGridCoord GridCoord)
-{
-    std::vector<WorldPosition> retVec;
-    mGridCoord g;
-
-    for (uint32 d = 0; d < 4; d++)
-    {
-        g = GridCoord;
-
-        if (d == 1 || d == 2)
-            g.second++;
-        if (d == 2 || d == 3)
-            g.first++;
-
-        retVec.push_back(WorldPosition(GetMapId(), g));
-    }
-
-    return retVec;
-}
-
-// TODO: Cleanup — make this actually work.
-void WorldPosition::loadMapAndVMap(uint32 mapId, uint8 x, uint8 y)
-{
-    std::string const fileName = "load_map_grid.csv";
-/*
-    if (isOverworld() && false || false)
-    {
-        if (!MMAP::MMapFactory::createOrGetMMapMgr()->loadMap(mapId, x, y))
-            if (sPlayerbotAIConfig.HasLog(fileName))
-            {
-                std::ostringstream out;
-                out << sPlayerbotAIConfig.GetTimestampStr();
-                out << "+00,\"mmap\", " << x << "," << y << "," << (TravelMgr::instance().isBadMmap(mapId, x, y) ? "0" : "1")
-                    << ",";
-                printWKT(fromGridCoord(GridCoord(x, y)), out, 1, true);
-                sPlayerbotAIConfig.Log(fileName, out.str().c_str());
-            }
-    }
-    else
-    {
-        // This needs to be disabled or maps will not load.
-        // Needs more testing to check for impact on movement.
-        if (false)
-            if (!TravelMgr::instance().isBadVmap(mapId, x, y))
-            {
-                // load VMAPs for current map/grid...
-                const MapEntry* i_mapEntry = sMapStore.LookupEntry(mapId);
-                //const char* mapName = i_mapEntry ? i_mapEntry->name[sWorld->GetDefaultDbcLocale()] : "UNNAMEDMAP\x0"; //not used, (usage are commented out below), line marked for removal.
-
-                int vmapLoadResult = VMAP::VMapFactory::createOrGetVMapMgr()->loadMap(
-                    (sWorld->GetDataPath() + "vmaps").c_str(), mapId, x, y);
-                switch (vmapLoadResult)
-                {
-                    case VMAP::VMAP_LOAD_RESULT_OK:
-                        // LOG_ERROR("playerbots", "VMAP loaded name:{}, id:{}, x:{}, y:{} (vmap rep.: x:{}, y:{})",
-                        // mapName, mapId, x, y, x, y);
-                        break;
-                    case VMAP::VMAP_LOAD_RESULT_ERROR:
-                        // LOG_ERROR("playerbots", "Could not load VMAP name:{}, id:{}, x:{}, y:{} (vmap rep.: x:{},
-                        // y:{})", mapName, mapId, x, y, x, y);
-                        TravelMgr::instance().addBadVmap(mapId, x, y);
-                        break;
-                    case VMAP::VMAP_LOAD_RESULT_IGNORED:
-                        TravelMgr::instance().addBadVmap(mapId, x, y);
-                        // LOG_INFO("playerbots", "Ignored VMAP name:{}, id:{}, x:{}, y:{} (vmap rep.: x:{}, y:{})",
-                        // mapName, mapId, x, y, x, y);
-                        break;
-                }
-
-                if (sPlayerbotAIConfig.HasLog(fileName))
-                {
-                    std::ostringstream out;
-                    out << sPlayerbotAIConfig.GetTimestampStr();
-                    out << "+00,\"vmap\", " << x << "," << y << ", " << (TravelMgr::instance().isBadVmap(mapId, x, y) ? "0" : "1")
-                        << ",";
-                    printWKT(frommGridCoord(mGridCoord(x, y)), out, 1, true);
-                    sPlayerbotAIConfig.Log(fileName, out.str().c_str());
-                }
-            }
-*/
-    if (!TravelMgr::instance().isBadMmap(mapId, x, y))
-    {
-        // load navmesh
-        Map* map = getMap();
-        if (map && map->GetMapCollisionData().LoadMMapTile(x, y) == MMAP::MMAP_LOAD_RESULT_ERROR)
-            TravelMgr::instance().addBadMmap(mapId, x, y);
-
-        if (sPlayerbotAIConfig.HasLog(fileName))
-        {
-            std::ostringstream out;
-            out << sPlayerbotAIConfig.GetTimestampStr();
-            out << "+00,\"mmap\", " << x << "," << y << "," << (TravelMgr::instance().isBadMmap(mapId, x, y) ? "0" : "1")
-                << ",";
-            printWKT(fromGridCoord(GridCoord(x, y)), out, 1, true);
-            sPlayerbotAIConfig.Log(fileName, out.str().c_str());
-        }
-    }
-}
-
-void WorldPosition::loadMapAndVMaps(WorldPosition secondPos)
-{
-    for (auto& grid : getmGridCoords(secondPos))
-    {
-        loadMapAndVMap(GetMapId(), grid.first, grid.second);
-    }
-}
-
 std::vector<WorldPosition> WorldPosition::fromPointsArray(std::vector<G3D::Vector3> path)
 {
     std::vector<WorldPosition> retVec;
@@ -778,42 +679,108 @@ std::vector<WorldPosition> WorldPosition::fromPointsArray(std::vector<G3D::Vecto
     return retVec;
 }
 
-// A single pathfinding attempt from one position to another. Returns pathfinding status and path.
-std::vector<WorldPosition> WorldPosition::getPathStepFrom(WorldPosition startPos, Unit* bot)
+Unit* TravelMgr::GetPathingCreature(uint32 mapId)
 {
-    if (!bot)
+    auto it = pathingCreatures.find(mapId);
+    if (it != pathingCreatures.end())
+        return it->second;
+
+    Map* map = sMapMgr->CreateBaseMap(mapId);
+    if (!map)
+        return nullptr;
+
+    for (uint32 x = 0; x < MAX_NUMBER_OF_GRIDS; ++x)
+        for (uint32 y = 0; y < MAX_NUMBER_OF_GRIDS; ++y)
+            map->EnsureGridCreated(GridCoord(x, y));
+
+    Creature* creature = new Creature();
+    if (!creature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map, PHASEMASK_NORMAL,
+                        PATHING_CREATURE_ENTRY, 0, 0.0f, 0.0f, 0.0f, 0.0f))
+    {
+        delete creature;
+        return nullptr;
+    }
+
+    pathingCreatures[mapId] = creature;
+    return creature;
+}
+
+void TravelMgr::ReleasePathingCreatures()
+{
+    for (auto& entry : pathingCreatures)
+        delete entry.second;
+
+    pathingCreatures.clear();
+}
+
+// A single pathfinding attempt from one position to another. Returns pathfinding status and path.
+std::vector<WorldPosition> WorldPosition::getPathStepFrom(WorldPosition startPos, PathGenerator& path)
+{
+    // Explicit-start overload. Without this, the chain begins from the
+    // unit's current position every step and never advances.
+    if (!path.CalculatePath(startPos.GetPositionX(), startPos.GetPositionY(), startPos.GetPositionZ(),
+                            GetPositionX(), GetPositionY(), GetPositionZ(), false))
         return {};
-
-    // Load mmaps and vmaps between the two points.
-    loadMapAndVMaps(startPos);
-
-    PathGenerator path(bot);
-    path.CalculatePath(startPos.GetPositionX(), startPos.GetPositionY(), startPos.GetPositionZ());
 
     Movement::PointsArray points = path.GetPath();
     PathType type = path.GetPathType();
 
-    if (sPlayerbotAIConfig.HasLog("pathfind_attempt_point.csv"))
+    // PathType is a bitmask. AC's PathGenerator returns
+    // NORMAL | NOT_USING_PATH when start/end poly is INVALID_POLYREF
+    // (BuildShortcut produces a 2-point straight line through whatever's
+    // in the way). Reject those to avoid silently dispatching a
+    // geometry-ignoring shortcut.
+    //
+    // AC also ORs NOPATH/SHORT onto the still-set NORMAL bit after
+    // replacing the geometry with a 2-point BuildShortcut straight line
+    // (PathGenerator.cpp point-cap overrun -> NORMAL|NOPATH, point-limit
+    // hit -> NORMAL|SHORT). Reject those composite results too, otherwise
+    // we accept a poisoned shortcut that ignores geometry.
+    if (!(type & (PATHFIND_NORMAL | PATHFIND_INCOMPLETE)) ||
+        (type & (PATHFIND_NOT_USING_PATH | PATHFIND_NOPATH | PATHFIND_SHORT)))
+        return {};
+
+    std::vector<WorldPosition> retvec = fromPointsArray(points);
+    if (retvec.empty())
+        return {};
+
+    // Underwater path-extension. When PATHFIND_INCOMPLETE ends within
+    // 50y of dest and both endpoints are underwater with LOS, extend
+    // by one 5y step (or straight to dest if <5y). Lets bots traverse
+    // navmesh-poor water volumes.
+    if (type & PATHFIND_INCOMPLETE)
     {
-        std::ostringstream out;
-        out << std::fixed << std::setprecision(1);
-        printWKT({startPos, *this}, out);
-        sPlayerbotAIConfig.Log("pathfind_attempt_point.csv", out.str().c_str());
+        WorldPosition end = *this;
+        WorldPosition lastPoint = retvec.back();
+        float dist = lastPoint.distance(&end);
+
+        if (dist < 50.0f && lastPoint.isUnderWater() && end.isUnderWater())
+        {
+            Map* m = end.getMap();
+            bool inLos = m && m->isInLineOfSight(
+                lastPoint.GetPositionX(), lastPoint.GetPositionY(), lastPoint.GetPositionZ() + 1.0f,
+                end.GetPositionX(), end.GetPositionY(), end.GetPositionZ() + 1.0f,
+                PHASEMASK_NORMAL, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing);
+            if (inLos)
+            {
+                if (dist < 5.0f)
+                    retvec.push_back(end);
+                else
+                {
+                    float dx = end.GetPositionX() - lastPoint.GetPositionX();
+                    float dy = end.GetPositionY() - lastPoint.GetPositionY();
+                    float dz = end.GetPositionZ() - lastPoint.GetPositionZ();
+                    float scale = 5.0f / dist;
+                    retvec.emplace_back(end.GetMapId(),
+                                        lastPoint.GetPositionX() + dx * scale,
+                                        lastPoint.GetPositionY() + dy * scale,
+                                        lastPoint.GetPositionZ() + dz * scale);
+                }
+            }
+        }
     }
 
-    if (sPlayerbotAIConfig.HasLog("pathfind_attempt.csv") && (type == PATHFIND_INCOMPLETE || type == PATHFIND_NORMAL))
-    {
-        std::ostringstream out;
-        out << sPlayerbotAIConfig.GetTimestampStr() << "+00,";
-        out << std::fixed << std::setprecision(1) << type << ",";
-        printWKT(fromPointsArray(points), out, 1);
-        sPlayerbotAIConfig.Log("pathfind_attempt.csv", out.str().c_str());
-    }
-
-    if (type == PATHFIND_INCOMPLETE || type == PATHFIND_NORMAL)
-        return fromPointsArray(points);
-
-    return {};
+    return retvec;
 }
 
 bool WorldPosition::cropPathTo(std::vector<WorldPosition>& path, float maxDistance)
@@ -849,24 +816,39 @@ std::vector<WorldPosition> WorldPosition::getPathFromPath(std::vector<WorldPosit
 
     std::vector<WorldPosition> subPath, fullPath = startPath;
 
+    Unit* pathUnit = bot ? bot : TravelMgr::instance().GetPathingCreature(GetMapId());
+    if (!pathUnit)
+        return fullPath;
+
+    PathGenerator path(pathUnit);
+    // A bot gets its runtime filter from CreateFilter. The temp creature that
+    // builds travel node links would walk lava and steep ground, and stored
+    // paths are splined raw, so it gets the bot filter with steep excluded.
+    if (!bot)
+    {
+        path.SetExcludeFlags(NAV_MAGMA | NAV_SLIME | NAV_GROUND_STEEP);
+        path.SetNavTerrainCost(NAV_WATER, 5.0f);
+    }
+
     // Limit the pathfinding attempts
     for (uint32 i = 0; i < maxAttempt; i++)
     {
-        // Try to pathfind to this position.
-        subPath = getPathStepFrom(currentPos, bot);
+        // Reset cached poly state from the previous step so each call
+        // is a fresh A* (otherwise the prefix-recycling at
+        // PathGenerator.cpp BuildPolyPath snaps the start to the
+        // cached corridor, bending the chain).
+        path.Clear();
 
-        // If we could not find a path return what we have now.
+        subPath = getPathStepFrom(currentPos, path);
+
         if (subPath.empty() || currentPos.distance(&subPath.back()) < sPlayerbotAIConfig.TargetPosRecalcDistance)
             break;
 
-        // Append the path excluding the start (this should be the same as the end of the startPath)
         fullPath.insert(fullPath.end(), std::next(subPath.begin(), 1), subPath.end());
 
-        // Are we there yet?
         if (isPathTo(subPath))
             break;
 
-        // Continue pathfinding.
         currentPos = subPath.back();
     }
 
@@ -1072,6 +1054,14 @@ GuidPosition::GuidPosition(GameObjectData const& goData)
       WorldPosition(goData.mapid, goData.posX, goData.posY, goData.posZ, goData.orientation)
 {
     loadedFromDB = true;
+}
+
+TravelDestination::~TravelDestination()
+{
+    for (WorldPosition* point : points)
+        delete point;
+
+    points.clear();
 }
 
 std::vector<WorldPosition*> TravelDestination::getPoints(bool ignoreFull)
@@ -1752,1985 +1742,6 @@ void TravelMgr::Clear()
     quests.clear();
 }
 
-void TravelMgr::logQuestError(uint32 errorNr, Quest* quest, uint32 objective, uint32 unitId, uint32 itemId)
-{
-    bool logQuestErrors = false;  // For debugging.
-
-    if (!logQuestErrors)
-        return;
-
-    std::string unitName = "<unknown>";
-    CreatureTemplate const* cInfo = nullptr;
-    GameObjectTemplate const* gInfo = nullptr;
-
-    if (unitId > 0)
-        cInfo = sObjectMgr->GetCreatureTemplate(unitId);
-    else
-        gInfo = sObjectMgr->GetGameObjectTemplate(unitId * -1);
-
-    if (cInfo)
-        unitName = cInfo->Name;
-    else if (gInfo)
-        unitName = gInfo->name;
-
-    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
-
-    if (errorNr == 1)
-    {
-        LOG_ERROR("playerbots", "Quest {} [{}] has {} {} [{}] but none is found in the world.",
-                  quest->GetTitle().c_str(), quest->GetQuestId(), objective == 0 ? "quest giver" : "quest taker",
-                  unitName.c_str(), unitId);
-    }
-    else if (errorNr == 2)
-    {
-        LOG_ERROR("playerbots", "Quest {} [{}] needs {} [{}] for objective {} but none is found in the world.",
-                  quest->GetTitle().c_str(), quest->GetQuestId(), unitName.c_str(), unitId, objective);
-    }
-    else if (errorNr == 3)
-    {
-        LOG_ERROR("playerbots", "Quest {} [{}] needs itemId {} but no such item exists.", quest->GetTitle().c_str(),
-                  quest->GetQuestId(), itemId);
-    }
-    else if (errorNr == 4)
-    {
-        LOG_ERROR(
-            "playerbots",
-            "Quest {} [{}] needs {} [{}] for loot of item {} [{}] for objective {} but none is found in the world.",
-            quest->GetTitle().c_str(), quest->GetQuestId(), unitName.c_str(), unitId, proto->Name1.c_str(), itemId,
-            objective);
-    }
-    else if (errorNr == 5)
-    {
-        LOG_ERROR("playerbots", "Quest {} [{}] needs item {} [{}] for objective {} but none is found in the world.",
-                  quest->GetTitle().c_str(), quest->GetQuestId(), proto->Name1.c_str(), itemId, objective);
-    }
-    else if (errorNr == 6)
-    {
-        LOG_ERROR("playerbots", "Quest {} [{}] has no quest giver.", quest->GetTitle().c_str(), quest->GetQuestId());
-    }
-    else if (errorNr == 7)
-    {
-        LOG_ERROR("playerbots", "Quest {} [{}] has no quest taker.", quest->GetTitle().c_str(), quest->GetQuestId());
-    }
-    else if (errorNr == 8)
-    {
-        LOG_ERROR("playerbots", "Quest {} [{}] has no quest viable quest objective.", quest->GetTitle().c_str(),
-                  quest->GetQuestId());
-    }
-}
-
-void TravelMgr::LoadQuestTravelTable()
-{
-    if (!TravelMgr::instance().quests.empty())
-        return;
-
-    // Clearing store (for reloading case)
-    Clear();
-
-    /* remove this
-    questGuidMap cQuestMap = GAI_VALUE(questGuidMap,"quest objects");
-
-    for (auto cQuest : cQuestMap)
-    {
-        LOG_INFO("playerbots", "[Quest id: {}]", cQuest.first);
-
-        for (auto cObj : cQuest.second)
-        {
-            LOG_INFO("playerbots", " [Objective type: {}]", cObj.first);
-
-            for (auto cCre : cObj.second)
-            {
-                LOG_INFO("playerbots", " {} {}", cCre.GetTypeName().c_str(), cCre.GetEntry());
-            }
-        }
-    }
-    */
-
-    struct unit
-    {
-        uint32 type;
-        uint32 entry;
-        uint32 map;
-        float x;
-        float y;
-        float z;
-        float o;
-        uint32 c;
-    } t_unit;
-    std::vector<unit> units;
-
-    /*struct relation
-    {
-        uint32 type;
-        uint32 role;
-        uint32 entry;
-        uint32 questId;
-    } t_rel;
-    std::vector<relation> relations;
-
-    struct loot
-    {
-        uint32 type;
-        uint32 entry;
-        uint32 item;
-    } t_loot;
-    std::vector<loot> loots;*/
-
-    ObjectMgr::QuestMap const& questMap = sObjectMgr->GetQuestTemplates();
-    std::vector<uint32> questIds;
-    std::unordered_map<uint32, uint32> entryCount;
-
-    for (auto& quest : questMap)
-        questIds.push_back(quest.first);
-
-    sort(questIds.begin(), questIds.end());
-
-    LOG_INFO("playerbots", "Loading units locations.");
-    for (auto& creatureData : WorldPosition().getCreaturesNear())
-    {
-        t_unit.type = 0;
-        t_unit.entry = creatureData->id;
-        t_unit.map = creatureData->mapid;
-        t_unit.x = creatureData->posX;
-        t_unit.y = creatureData->posY;
-        t_unit.z = creatureData->posZ;
-        t_unit.o = creatureData->orientation;
-
-        entryCount[creatureData->id]++;
-
-        units.push_back(t_unit);
-    }
-
-    for (auto& unit : units)
-    {
-        unit.c = entryCount[unit.entry];
-    }
-
-    LOG_INFO("playerbots", "Loading game object locations.");
-    for (auto& gameobjectData : WorldPosition().getGameObjectsNear())
-    {
-        t_unit.type = 1;
-        t_unit.entry = gameobjectData->id;
-        t_unit.map = gameobjectData->mapid;
-        t_unit.x = gameobjectData->posX;
-        t_unit.y = gameobjectData->posY;
-        t_unit.z = gameobjectData->posZ;
-        t_unit.o = gameobjectData->orientation;
-        t_unit.c = 1;
-
-        units.push_back(t_unit);
-    }
-
-    /*
-    //                          0    1  2   3          4          5          6           7     8
-    std::string const query = "SELECT 0,guid,id,map,position_x,position_y,position_z,orientation, (SELECT COUNT(*) FROM
-    creature k WHERE c.id = k.id) FROM creature c UNION ALL SELECT
-    1,guid,id,map,position_x,position_y,position_z,orientation, (SELECT COUNT(*) FROM gameobject h WHERE h.id = g.id)
-    FROM gameobject g";
-
-    QueryResult result = WorldDatabase.Query(query.c_str());
-    if (result)
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-
-            t_unit.type = fields[0].Get<uint32>();
-            t_unit.guid = fields[1].Get<uint32>();
-            t_unit.entry = fields[2].Get<uint32>();
-            t_unit.map = fields[3].Get<uint32>();
-            t_unit.x = fields[4].Get<float>();
-            t_unit.y = fields[5].Get<float>();
-            t_unit.z = fields[6].Get<float>();
-            t_unit.o = fields[7].Get<float>();
-            t_unit.c = uint32(fields[8].Get<uint64>());
-
-            units.push_back(t_unit);
-
-        } while (result->NextRow());
-
-        LOG_INFO("playerbots", ">> Loaded {} units locations.", units.size());
-    }
-    else
-    {
-        LOG_ERROR("playerbots", ">> Error loading units locations.");
-    }
-
-    query = "SELECT 0, 0, id, quest FROM creature_queststarter UNION ALL SELECT 0, 1, id, quest FROM creature_questender
-    UNION ALL SELECT 1, 0, id, quest FROM gameobject_queststarter UNION ALL SELECT 1, 1, id, quest FROM
-    gameobject_questender"; result = WorldDatabase.Query(query.c_str());
-
-    if (result)
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-
-            t_rel.type = fields[0].Get<uint32>();
-            t_rel.role = fields[1].Get<uint32>();
-            t_rel.entry = fields[2].Get<uint32>();
-            t_rel.questId = fields[3].Get<uint32>();
-
-            relations.push_back(t_rel);
-
-        } while (result->NextRow());
-
-        LOG_INFO("playerbots", ">> Loaded {} relations.", relations.size());
-    }
-    else
-    {
-        LOG_ERROR("playerbots", ">> Error loading relations.");
-    }
-
-    query = "SELECT 0, ct.entry, item FROM creature_template ct JOIN creature_loot_template clt ON (ct.lootid =
-    clt.entry) UNION ALL SELECT 0, entry, item FROM npc_vendor UNION ALL SELECT 1, gt.entry, item FROM
-    gameobject_template gt JOIN gameobject_loot_template glt ON (gt.TYPE = 3 AND gt.DATA1 = glt.entry)"; result =
-    WorldDatabase.Query(query.c_str());
-
-    if (result)
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-
-            t_loot.type = fields[0].Get<uint32>();
-            t_loot.entry = fields[1].Get<uint32>();
-            t_loot.item = fields[2].Get<uint32>();
-
-            loots.push_back(t_loot);
-
-        } while (result->NextRow());
-
-        LOG_INFO("playerbots", ">> Loaded {} loot lists.", loots.size());
-    }
-    else
-    {
-        LOG_ERROR("playerbots", ">> Error loading loot lists.");
-    }
-    */
-
-    LOG_INFO("playerbots", "Loading quest data.");
-
-    bool loadQuestData = true;
-    if (loadQuestData)
-    {
-        questGuidpMap questMap = SharedValueContext::instance().getGlobalValue<questGuidpMap>("quest guidp map")->Get();
-
-        for (auto& q : questMap)
-        {
-            uint32 questId = q.first;
-
-            QuestContainer* container = new QuestContainer;
-
-            for (auto& r : q.second)
-            {
-                uint32 flag = r.first;
-
-                for (auto& e : r.second)
-                {
-                    int32 entry = e.first;
-
-                    QuestTravelDestination* loc;
-                    std::vector<QuestTravelDestination*> locs;
-
-                    if (flag & (uint32)QuestRelationFlag::questGiver)
-                    {
-                        loc = new QuestRelationTravelDestination(
-                            questId, entry, 0, sPlayerbotAIConfig.TooCloseDistance, sPlayerbotAIConfig.SightDistance);
-                        loc->setExpireDelay(5 * MINUTE * IN_MILLISECONDS);
-                        loc->setMaxVisitors(15, 0);
-                        container->questGivers.push_back(loc);
-                        locs.push_back(loc);
-                    }
-                    if (flag & (uint32)QuestRelationFlag::questTaker)
-                    {
-                        loc = new QuestRelationTravelDestination(
-                            questId, entry, 1, sPlayerbotAIConfig.TooCloseDistance, sPlayerbotAIConfig.SightDistance);
-                        loc->setExpireDelay(5 * MINUTE * IN_MILLISECONDS);
-                        loc->setMaxVisitors(15, 0);
-                        container->questTakers.push_back(loc);
-                        locs.push_back(loc);
-                    }
-                    else
-                    {
-                        uint32 objective = 0;
-                        if (flag & (uint32)QuestRelationFlag::objective1)
-                            objective = 0;
-                        else if (flag & (uint32)QuestRelationFlag::objective2)
-                            objective = 1;
-                        else if (flag & (uint32)QuestRelationFlag::objective3)
-                            objective = 2;
-                        else if (flag & (uint32)QuestRelationFlag::objective4)
-                            objective = 3;
-
-                        loc = new QuestObjectiveTravelDestination(questId, entry, objective,
-                                                                  sPlayerbotAIConfig.TooCloseDistance,
-                                                                  sPlayerbotAIConfig.SightDistance);
-                        loc->setExpireDelay(MINUTE * IN_MILLISECONDS);
-                        loc->setMaxVisitors(100, 1);
-                        container->questObjectives.push_back(loc);
-                        locs.push_back(loc);
-                    }
-
-                    for (auto& guidP : e.second)
-                    {
-                        WorldPosition point = guidP;
-                        for (auto tLoc : locs)
-                        {
-                            tLoc->addPoint(&point);
-                        }
-                    }
-                }
-            }
-
-            if (!container->questTakers.empty())
-            {
-                quests.insert(std::make_pair(questId, container));
-
-                for (auto loc : container->questGivers)
-                    questGivers.push_back(loc);
-            }
-        }
-    }
-
-    /*
-    if (loadQuestData && false)
-    {
-        for (auto& questId : questIds)
-        {
-            Quest* quest = questMap.find(questId)->second;
-
-            QuestContainer* container = new QuestContainer;
-            QuestTravelDestination* loc = nullptr;
-            WorldPosition point;
-
-            bool hasError = false;
-
-            //Relations
-            for (auto& r : relations)
-            {
-                if (questId != r.questId)
-                    continue;
-
-                int32 entry = r.type == 0 ? r.entry : r.entry * -1;
-
-                loc = new QuestRelationTravelDestination(r.questId, entry, r.role, sPlayerbotAIConfig.TooCloseDistance,
-    sPlayerbotAIConfig.SightDistance); loc->setExpireDelay(5 * 60 * IN_MILLISECONDS); loc->setMaxVisitors(15, 0);
-
-                for (auto& u : units)
-                {
-                    if (r.type != u.type || r.entry != u.entry)
-                        continue;
-
-                    int32 guid = u.type == 0 ? u.guid : u.guid * -1;
-
-                    point = WorldPosition(u.map, u.x, u.y, u.z, u.o);
-                    loc->addPoint(&point);
-                }
-
-                if (loc->getPoints(0).empty())
-                {
-                    logQuestError(1, quest, r.role, entry);
-                    delete loc;
-                    continue;
-                }
-
-                if (r.role == 0)
-                {
-                    container->questGivers.push_back(loc);
-                }
-                else
-                    container->questTakers.push_back(loc);
-
-            }
-
-            //Mobs
-            for (uint32 i = 0; i < 4; i++)
-            {
-                if (quest->RequiredNpcOrGoCount[i] == 0)
-                    continue;
-
-                uint32 reqEntry = quest->RequiredNpcOrGo[i];
-
-                loc = new QuestObjectiveTravelDestination(questId, reqEntry, i, sPlayerbotAIConfig.TooCloseDistance,
-    sPlayerbotAIConfig.SightDistance); loc->setExpireDelay(1 * 60 * IN_MILLISECONDS); loc->setMaxVisitors(100, 1);
-
-                for (auto& u : units)
-                {
-                    int32 entry = u.type == 0 ? u.entry : u.entry * -1;
-
-                    if (entry != reqEntry)
-                        continue;
-
-                    int32 guid = u.type == 0 ? u.guid : u.guid * -1;
-
-                    point = WorldPosition(u.map, u.x, u.y, u.z, u.o);
-                    loc->addPoint(&point);
-                }
-
-                if (loc->getPoints(0).empty())
-                {
-                    logQuestError(2, quest, i, reqEntry);
-
-                    delete loc;
-                    hasError = true;
-                    continue;
-                }
-
-                container->questObjectives.push_back(loc);
-            }
-
-            //Loot
-            for (uint32 i = 0; i < 4; i++)
-            {
-                if (quest->RequiredItemCount[i] == 0)
-                    continue;
-
-                ItemTemplate const* proto = sObjectMgr->GetItemTemplate(quest->RequiredItemId[i]);
-                if (!proto)
-                {
-                    logQuestError(3, quest, i, 0, quest->RequiredItemId[i]);
-                    hasError = true;
-                    continue;
-                }
-
-                uint32 foundLoot = 0;
-
-                for (auto& l : loots)
-                {
-                    if (l.item != quest->RequiredItemId[i])
-                        continue;
-
-                    int32 entry = l.type == 0 ? l.entry : l.entry * -1;
-
-                    loc = new QuestObjectiveTravelDestination(
-                        questId, entry, i, sPlayerbotAIConfig.TooCloseDistance,
-                        sPlayerbotAIConfig.SightDistance, l.item);
-                    loc->setExpireDelay(1 * 60 * IN_MILLISECONDS);
-                    loc->setMaxVisitors(100, 1);
-
-                    for (auto& u : units)
-                    {
-                        if (l.type != u.type || l.entry != u.entry)
-                            continue;
-
-                        int32 guid = u.type == 0 ? u.guid : u.guid * -1;
-
-                        point = WorldPosition(u.map, u.x, u.y, u.z, u.o);
-                        loc->addPoint(&point);
-                    }
-
-                    if (loc->getPoints(0).empty())
-                    {
-                        logQuestError(4, quest, i, entry, quest->RequiredItemId[i]);
-                        delete loc;
-                        continue;
-                    }
-
-                    container->questObjectives.push_back(loc);
-
-                    foundLoot++;
-                }
-
-                if (foundLoot == 0)
-                {
-                    hasError = true;
-                    logQuestError(5, quest, i, 0, quest->RequiredItemId[i]);
-                }
-            }
-
-            if (container->questTakers.empty())
-                logQuestError(7, quest);
-
-            if (!container->questGivers.empty() || !container->questTakers.empty() || hasError)
-            {
-                quests.insert(std::make_pair(questId, container));
-
-                for (auto loc : container->questGivers)
-                    questGivers.push_back(loc);
-            }
-        }
-
-        LOG_INFO("playerbots", ">> Loaded {} quest details.", questIds.size());
-    }
-    */
-
-    WorldPosition point;
-
-    LOG_INFO("playerbots", "Loading Rpg, Grind and Boss locations.");
-
-    // Rpg locations
-    for (auto& u : units)
-    {
-        RpgTravelDestination* rLoc;
-        GrindTravelDestination* gLoc;
-        BossTravelDestination* bLoc;
-
-        if (u.type != 0)
-            continue;
-
-        CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(u.entry);
-        if (!cInfo)
-            continue;
-
-        std::vector<uint32> allowedNpcFlags;
-
-        allowedNpcFlags.push_back(UNIT_NPC_FLAG_INNKEEPER);
-        allowedNpcFlags.push_back(UNIT_NPC_FLAG_GOSSIP);
-        allowedNpcFlags.push_back(UNIT_NPC_FLAG_QUESTGIVER);
-        allowedNpcFlags.push_back(UNIT_NPC_FLAG_FLIGHTMASTER);
-        allowedNpcFlags.push_back(UNIT_NPC_FLAG_BANKER);
-        allowedNpcFlags.push_back(UNIT_NPC_FLAG_AUCTIONEER);
-        allowedNpcFlags.push_back(UNIT_NPC_FLAG_STABLEMASTER);
-        allowedNpcFlags.push_back(UNIT_NPC_FLAG_PETITIONER);
-        allowedNpcFlags.push_back(UNIT_NPC_FLAG_TABARDDESIGNER);
-
-        allowedNpcFlags.push_back(UNIT_NPC_FLAG_TRAINER);
-        allowedNpcFlags.push_back(UNIT_NPC_FLAG_VENDOR);
-        allowedNpcFlags.push_back(UNIT_NPC_FLAG_REPAIR);
-
-        point = WorldPosition(u.map, u.x, u.y, u.z, u.o);
-
-        for (std::vector<uint32>::iterator i = allowedNpcFlags.begin(); i != allowedNpcFlags.end(); ++i)
-        {
-            if ((cInfo->npcflag & *i) != 0)
-            {
-                rLoc = new RpgTravelDestination(u.entry, sPlayerbotAIConfig.TooCloseDistance,
-                                                sPlayerbotAIConfig.SightDistance);
-                rLoc->setExpireDelay(5 * MINUTE * IN_MILLISECONDS);
-                rLoc->setMaxVisitors(15, 0);
-
-                rLoc->addPoint(&point);
-                rpgNpcs.push_back(rLoc);
-                break;
-            }
-        }
-
-        if (cInfo->mingold > 0)
-        {
-            gLoc = new GrindTravelDestination(u.entry, sPlayerbotAIConfig.TooCloseDistance,
-                                              sPlayerbotAIConfig.SightDistance);
-            gLoc->setExpireDelay(5 * MINUTE * IN_MILLISECONDS);
-            gLoc->setMaxVisitors(100, 0);
-
-            point = WorldPosition(u.map, u.x, u.y, u.z, u.o);
-            gLoc->addPoint(&point);
-            grindMobs.push_back(gLoc);
-        }
-
-        if (cInfo->rank == 3 || (cInfo->rank == 1 && !point.isOverworld() && u.c == 1))
-        {
-            std::string const nodeName = cInfo->Name;
-
-            bLoc = new BossTravelDestination(u.entry, sPlayerbotAIConfig.TooCloseDistance,
-                                             sPlayerbotAIConfig.SightDistance);
-            bLoc->setExpireDelay(5 * MINUTE * IN_MILLISECONDS);
-            bLoc->setMaxVisitors(0, 0);
-
-            bLoc->addPoint(&point);
-            bossMobs.push_back(bLoc);
-        }
-    }
-
-    LOG_INFO("playerbots", "Loading Explore locations.");
-
-    // Explore points
-    for (auto& u : units)
-    {
-        ExploreTravelDestination* loc;
-
-        WorldPosition point = WorldPosition(u.map, u.x, u.y, u.z, u.o);
-        AreaTableEntry const* area = point.getArea();
-
-        if (!area)
-            continue;
-
-        if (!area->exploreFlag)
-            continue;
-
-        if (u.type == 1)
-            continue;
-
-        auto iloc = exploreLocs.find(area->ID);
-
-        if (iloc == exploreLocs.end())
-        {
-            loc = new ExploreTravelDestination(area->ID, sPlayerbotAIConfig.TooCloseDistance,
-                                               sPlayerbotAIConfig.SightDistance);
-            loc->setMaxVisitors(1000, 0);
-            loc->setCooldownDelay(1000);
-            loc->setExpireDelay(1000);
-            loc->setTitle(area->area_name[0]);
-            exploreLocs.insert_or_assign(area->ID, loc);
-        }
-        else
-        {
-            loc = iloc->second;
-        }
-
-        loc->addPoint(&point);
-    }
-
-    // Clear these logs files
-    sPlayerbotAIConfig.OpenLog("zones.csv", "w");
-    sPlayerbotAIConfig.OpenLog("creatures.csv", "w");
-    sPlayerbotAIConfig.OpenLog("gos.csv", "w");
-    sPlayerbotAIConfig.OpenLog("bot_movement.csv", "w");
-    sPlayerbotAIConfig.OpenLog("bot_pathfinding.csv", "w");
-    sPlayerbotAIConfig.OpenLog("pathfind_attempt.csv", "w");
-    sPlayerbotAIConfig.OpenLog("pathfind_attempt_point.csv", "w");
-    sPlayerbotAIConfig.OpenLog("pathfind_result.csv", "w");
-    sPlayerbotAIConfig.OpenLog("load_map_grid.csv", "w");
-    sPlayerbotAIConfig.OpenLog("strategy.csv", "w");
-
-    sPlayerbotAIConfig.OpenLog("unload_grid.csv", "w");
-    sPlayerbotAIConfig.OpenLog("unload_obj.csv", "w");
-
-    TravelNodeMap::instance().loadNodeStore();
-
-    TravelNodeMap::instance().generateAll();
-
-    /*
-    bool fullNavPointReload = false;
-    bool storeNavPointReload = true;
-
-   if (!fullNavPointReload && true)
-        TravelNodeStore::loadNodes();
-
-    //TravelNodeMap::instance().loadNodeStore();
-
-    for (auto node : TravelNodeMap::instance().getNodes())
-    {
-        node->setLinked(true);
-    }
-
-    bool reloadNavigationPoints = false || fullNavPointReload || storeNavPointReload;
-
-    if (reloadNavigationPoints)
-    {
-        LOG_INFO("playerbots", "Loading navigation points");
-
-        //Npc nodes
-
-        WorldPosition pos;
-
-        for (auto& u : units)
-        {
-            if (u.type != 0)
-                continue;
-
-            CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(u.entry);
-            if (!cInfo)
-                continue;
-
-            std::vector<uint32> allowedNpcFlags;
-
-            allowedNpcFlags.push_back(UNIT_NPC_FLAG_INNKEEPER);
-            allowedNpcFlags.push_back(UNIT_NPC_FLAG_FLIGHTMASTER);
-            //allowedNpcFlags.push_back(UNIT_NPC_FLAG_QUESTGIVER);
-
-            for (std::vector<uint32>::iterator i = allowedNpcFlags.begin(); i != allowedNpcFlags.end(); ++i)
-            {
-                if ((cInfo->npcflag & *i) != 0)
-                {
-                    pos = WorldPosition(u.map, u.x, u.y, u.z, u.o);
-
-                    std::string const nodeName = pos.getAreaName(false);
-                    if ((cInfo->npcflag & UNIT_NPC_FLAG_INNKEEPER) != 0)
-                        nodeName += " innkeeper";
-                    else
-                        nodeName += " flightMaster";
-
-                    TravelNodeMap::instance().addNode(&pos, nodeName, true, true);
-
-                    break;
-                }
-            }
-        }
-
-        //Build flight paths
-        for (uint32 i = 0; i < sTaxiPathStore.GetNumRows(); ++i)
-        {
-            TaxiPathEntry const* taxiPath = sTaxiPathStore.LookupEntry(i);
-
-            if (!taxiPath)
-                continue;
-
-            TaxiNodesEntry const* startTaxiNode = sTaxiNodesStore.LookupEntry(taxiPath->from);
-            if (!startTaxiNode)
-                continue;
-
-            TaxiNodesEntry const* endTaxiNode = sTaxiNodesStore.LookupEntry(taxiPath->to);
-            if (!endTaxiNode)
-                continue;
-
-            TaxiPathNodeList const& nodes = sTaxiPathNodesByPath[taxiPath->ID];
-            if (nodes.empty())
-                continue;
-
-            WorldPosition startPos(startTaxiNode->map_id, startTaxiNode->x, startTaxiNode->y, startTaxiNode->z);
-            WorldPosition endPos(endTaxiNode->map_id, endTaxiNode->x, endTaxiNode->y, endTaxiNode->z);
-
-            TravelNode* startNode = TravelNodeMap::instance().getNode(&startPos, nullptr, 15.0f);
-            TravelNode* endNode = TravelNodeMap::instance().getNode(&endPos, nullptr, 15.0f);
-
-            if (!startNode || !endNode)
-                continue;
-
-            std::vector<WorldPosition> ppath;
-
-            for (auto& n : nodes)
-                ppath.push_back(WorldPosition(n->mapid, n->x, n->y, n->z, 0.0));
-
-            float totalTime = startPos.getPathLength(ppath) / (450 * 8.0f);
-
-            TravelNodePath travelPath(0.1f, totalTime, (uint8) TravelNodePathType::flightPath, i, true);
-            travelPath.setPath(ppath);
-
-            startNode->setPathTo(endNode, travelPath);
-        }
-
-        //Unique bosses
-        for (auto& u : units)
-        {
-            if (u.type != 0)
-                continue;
-
-            CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(u.entry);
-            if (!cInfo)
-                continue;
-
-            pos = WorldPosition(u.map, u.x, u.y, u.z, u.o);
-
-            if (cInfo->rank == 3 || (cInfo->rank == 1 && !pos.isOverworld() && u.c == 1))
-            {
-                std::string const nodeName = cInfo->Name;
-                TravelNodeMap::instance().addNode(&pos, nodeName, true, true);
-            }
-        }
-
-        std::map<uint8, std::string> startNames;
-        startNames[RACE_HUMAN] = "Human";
-        startNames[RACE_ORC] = "Orc and Troll";
-        startNames[RACE_DWARF] = "Dwarf and Gnome";
-        startNames[RACE_NIGHTELF] = "Night Elf";
-        startNames[RACE_UNDEAD_PLAYER] = "Undead";
-        startNames[RACE_TAUREN] = "Tauren";
-        startNames[RACE_GNOME] = "Dwarf and Gnome";
-        startNames[RACE_TROLL] = "Orc and Troll";
-        startNames[RACE_DRAENEI] = "Draenei";
-        startNames[RACE_BLOODELF] = "Blood Elf";
-
-        for (uint32 i = 0; i < MAX_RACES; i++)
-        {
-            for (uint32 j = 0; j < MAX_CLASSES; j++)
-            {
-                PlayerInfo const* info = sObjectMgr->GetPlayerInfo(i, j);
-                if (!info)
-                    continue;
-
-                pos = WorldPosition(info->mapId, info->positionX, info->positionY, info->positionZ, info->orientation);
-
-                std::string const nodeName = startNames[i] + " start";
-                TravelNodeMap::instance().addNode(&pos, nodeName, true, true);
-            }
-        }
-
-        //Transports
-        GameObjectTemplateContainer const* goTemplates = sObjectMgr->GetGameObjectTemplates();
-        for (auto const& iter : *goTemplates)
-        {
-            GameObjectTemplate const* data = &iter.second;
-            if (data && (data->type == GAMEOBJECT_TYPE_TRANSPORT || data->type == GAMEOBJECT_TYPE_MO_TRANSPORT))
-            {
-                TransportAnimation const* animation = sTransportMgr->GetTransportAnimInfo(iter.first);
-
-                uint32 pathId = data->moTransport.taxiPathId;
-                float moveSpeed = data->moTransport.moveSpeed;
-                if (pathId >= sTaxiPathNodesByPath.size())
-                    continue;
-
-                TaxiPathNodeList const& path = sTaxiPathNodesByPath[pathId];
-
-                std::vector<WorldPosition> ppath;
-                TravelNode* prevNode = nullptr;
-
-                //Elevators/Trams
-                if (path.empty())
-                {
-                    if (animation)
-                    {
-                        TransportPathContainer aPath = animation->Path;
-                        float timeStart;
-
-                        for (auto& u : units)
-                        {
-                            if (u.type != 1)
-                                continue;
-
-                            if (u.entry != iter.first)
-                                continue;
-
-                            prevNode = nullptr;
-                            WorldPosition lPos = WorldPosition(u.map, 0, 0, 0, 0);
-
-                            for (auto& p : aPath)
-                            {
-                                float dx = cos(u.o) * p.second->X - sin(u.o) * p.second->Y;
-                                float dy = sin(u.o) * p.second->X + cos(u.o) * p.second->Y;
-                                WorldPosition pos = WorldPosition(u.map, u.x + dx, u.y + dy, u.z + p.second->Z, u.o);
-
-                                if (prevNode)
-                                {
-                                    ppath.push_back(pos);
-                                }
-
-                                if (pos.distance(&lPos) == 0)
-                                {
-                                    TravelNode* node = TravelNodeMap::instance().addNode(&pos, data->name, true, true, true,
-   iter.first);
-
-                                    if (!prevNode)
-                                    {
-                                        ppath.push_back(pos);
-                                        timeStart = p.second->TimeSeg;
-                                    }
-                                    else
-                                    {
-                                        float totalTime = (p.second->TimeSeg - timeStart) / 1000.0f;
-                                        TravelNodePath travelPath(0.1f, totalTime, (uint8)
-   TravelNodePathType::transport, entry, true); node->setPathTo(prevNode, travelPath); ppath.clear();
-                                        ppath.push_back(pos);
-                                        timeStart = p.second->TimeSeg;
-                                    }
-
-                                    prevNode = node;
-                                }
-
-                                lPos = pos;
-                            }
-
-                            if (prevNode)
-                            {
-                                for (auto& p : aPath)
-                                {
-                                    float dx = cos(u.o) * p.second->X - sin(u.o) * p.second->Y;
-                                    float dy = sin(u.o) * p.second->X + cos(u.o) * p.second->Y;
-                                    WorldPosition pos = WorldPosition(u.map, u.x + dx, u.y + dy, u.z + p.second->Z,
-   u.o);
-
-                                    ppath.push_back(pos);
-
-                                    if (pos.distance(&lPos) == 0)
-                                    {
-                                        TravelNode* node = TravelNodeMap::instance().addNode(&pos, data->name, true, true, true,
-   iter.first); if (node != prevNode)
-                                        {
-                                            float totalTime = (p.second->TimeSeg - timeStart) / 1000.0f;
-                                            TravelNodePath travelPath(0.1f, totalTime, (uint8)
-   TravelNodePathType::transport, entry, true); travelPath.setPath(ppath); node->setPathTo(prevNode, travelPath);
-                                            ppath.clear();
-                                            ppath.push_back(pos);
-                                            timeStart = p.second->TimeSeg;
-                                        }
-                                    }
-
-                                    lPos = pos;
-                                }
-                            }
-
-                            ppath.clear();
-                        }
-                    }
-                }
-                else //Boats/Zepelins
-                {
-                    //Loop over the path and connect stop locations.
-                    for (auto& p : path)
-                    {
-                        WorldPosition pos = WorldPosition(p->mapid, p->x, p->y, p->z, 0);
-
-                        //if (data->displayId == 3015)
-                        //    pos.setZ(pos.getZ() + 6.0f);
-                        //else if (data->displayId == 3031)
-                       //     pos.setZ(pos.getZ() - 17.0f);
-
-                        if (prevNode)
-                        {
-                            ppath.push_back(pos);
-                        }
-
-                        if (p->delay > 0)
-                        {
-                            TravelNode* node = TravelNodeMap::instance().addNode(&pos, data->name, true, true, true, iter.first);
-
-                            if (!prevNode)
-                            {
-                                ppath.push_back(pos);
-                            }
-                            else
-                            {
-                                TravelNodePath travelPath(0.1f, 0.0, (uint8) TravelNodePathType::transport, entry,
-   true); travelPath.setPathAndCost(ppath, moveSpeed); node->setPathTo(prevNode, travelPath); ppath.clear();
-                                ppath.push_back(pos);
-                            }
-
-                            prevNode = node;
-                        }
-                    }
-
-                    if (prevNode)
-                    {
-                        //Continue from start until first stop and connect to end.
-                        for (auto& p : path)
-                        {
-                            WorldPosition pos = WorldPosition(p->mapid, p->x, p->y, p->z, 0);
-
-                            //if (data->displayId == 3015)
-                            //    pos.setZ(pos.getZ() + 6.0f);
-                            //else if (data->displayId == 3031)
-                            //    pos.setZ(pos.getZ() - 17.0f);
-
-                            ppath.push_back(pos);
-
-                            if (p->delay > 0)
-                            {
-                                TravelNode* node = TravelNodeMap::instance().getNode(&pos, nullptr, 5.0f);
-                                if (node != prevNode)
-                                {
-                                    TravelNodePath travelPath(0.1f, 0.0, (uint8) TravelNodePathType::transport, entry,
-   true); travelPath.setPathAndCost(ppath, moveSpeed); node->setPathTo(prevNode, travelPath);
-                                }
-                            }
-                        }
-                    }
-
-                    ppath.clear();
-                }
-            }
-        }
-
-        //Zone means
-        for (auto& loc : exploreLocs)
-        {
-            std::vector<WorldPosition*> points;
-
-            for (auto p : loc.second->getPoints(true))
-                if (!p->isUnderWater())
-                    points.push_back(p);
-
-            if (points.empty())
-                points = loc.second->getPoints(true);
-
-            WorldPosition  pos = WorldPosition(points, WP_MEAN_CENTROID);
-
-            TravelNode* node = TravelNodeMap::instance().addNode(&pos, pos.getAreaName(), true, true, false);
-        }
-
-        LOG_INFO("playerbots", ">> Loaded {} navigation points.", TravelNodeMap::instance().getNodes().size());
-    }
-
-    TravelNodeMap::instance().calcMapOffset();
-    loadMapTransfers();
-    */
-
-    /*
-    bool preloadNodePaths = false || fullNavPointReload || storeNavPointReload;             //Calculate paths using
-    PathGenerator. bool preloadReLinkFullyLinked = false || fullNavPointReload || storeNavPointReload;      //Retry
-    nodes that are fully linked. bool preloadUnlinkedPaths = false || fullNavPointReload;        //Try to connect points
-    currently unlinked. bool preloadWorldPaths = true;            //Try to load paths in overworld. bool
-    preloadInstancePaths = true;         //Try to load paths in instances. bool preloadSubPrint = false; //Print output
-    every 2%.
-
-    if (preloadNodePaths)
-    {
-        std::unordered_map<uint32, Map*> instances;
-
-        //PathGenerator
-        std::vector<WorldPosition> ppath;
-
-        uint32 cur = 0, max = TravelNodeMap::instance().getNodes().size();
-
-        for (auto& startNode : TravelNodeMap::instance().getNodes())
-        {
-            if (!preloadReLinkFullyLinked && startNode->isLinked())
-                continue;
-
-            for (auto& endNode : TravelNodeMap::instance().getNodes())
-            {
-                if (startNode == endNode)
-                    continue;
-
-                if (startNode->getPosition()->isOverworld() && !preloadWorldPaths)
-                    continue;
-
-                if (!startNode->getPosition()->isOverworld() && !preloadInstancePaths)
-                    continue;
-
-                if (startNode->hasCompletePathTo(endNode))
-                    continue;
-
-                if (!preloadUnlinkedPaths && !startNode->hasLinkTo(endNode))
-                    continue;
-
-                if (startNode->getMapId() != endNode->getMapId())
-                    continue;
-
-                //if (preloadUnlinkedPaths && !startNode->hasLinkTo(endNode) && startNode->isUselessLink(endNode))
-                //    continue;
-
-                startNode->buildPath(endNode, nullptr, false);
-
-                //if (startNode->hasLinkTo(endNode) && !startNode->getPathTo(endNode)->getComplete())
-                    //startNode->removeLinkTo(endNode);
-            }
-
-            startNode->setLinked(true);
-
-            cur++;
-
-            if (preloadSubPrint && (cur * 50) / max > ((cur - 1) * 50) / max)
-            {
-                TravelNodeMap::instance().printMap();
-                TravelNodeMap::instance().printNodeStore();
-            }
-        }
-
-        if (!preloadSubPrint)
-        {
-            TravelNodeMap::instance().printNodeStore();
-            TravelNodeMap::instance().printMap();
-        }
-
-        LOG_INFO("playerbots", ">> Loaded paths for {} nodes.", TravelNodeMap::instance().getNodes().size());
-    }
-
-    bool removeLowLinkNodes = false || fullNavPointReload || storeNavPointReload;
-
-    if (removeLowLinkNodes)
-    {
-        std::vector<TravelNode*> goodNodes;
-        std::vector<TravelNode*> remNodes;
-        for (auto& node : TravelNodeMap::instance().getNodes())
-        {
-            if (!node->getPosition()->isOverworld())
-                continue;
-
-            if (std::find(goodNodes.begin(), goodNodes.end(), node) != goodNodes.end())
-                continue;
-
-            if (std::find(remNodes.begin(), remNodes.end(), node) != remNodes.end())
-                continue;
-
-            std::vector<TravelNode*> nodes = node->getNodeMap(true);
-
-            if (nodes.size() < 5)
-                remNodes.insert(remNodes.end(), nodes.begin(), nodes.end());
-            else
-                goodNodes.insert(goodNodes.end(), nodes.begin(), nodes.end());
-        }
-
-        for (auto& node : remNodes)
-            TravelNodeMap::instance().removeNode(node);
-
-        LOG_INFO("playerbots", ">> Checked {} nodes.", TravelNodeMap::instance().getNodes().size());
-    }
-
-    bool cleanUpNodeLinks = false || fullNavPointReload || storeNavPointReload;
-    bool cleanUpSubPrint = false;             //Print output every 2%.
-
-    if (cleanUpNodeLinks)
-    {
-        //Routes
-        uint32 cur = 0;
-        uint32 max = TravelNodeMap::instance().getNodes().size();
-
-        //Clean up node links
-        for (auto& startNode : TravelNodeMap::instance().getNodes())
-        {
-             startNode->cropUselessLinks();
-
-             cur++;
-             if (cleanUpSubPrint && (cur * 10) / max > ((cur - 1) * 10) / max)
-             {
-                 TravelNodeMap::instance().printMap();
-                 TravelNodeMap::instance().printNodeStore();
-             }
-        }
-
-        LOG_INFO("playerbots", ">> Cleaned paths for {} nodes.", TravelNodeMap::instance().getNodes().size());
-    }
-
-    bool reCalculateCost = false || fullNavPointReload || storeNavPointReload;
-    bool forceReCalculate = false;
-
-    if (reCalculateCost)
-    {
-        for (auto& startNode : TravelNodeMap::instance().getNodes())
-        {
-            for (auto& path : *startNode->getLinks())
-            {
-                TravelNodePath* nodePath = path.second;
-
-                if (path.second->getPathType() != TravelNodePathType::walk)
-                    continue;
-
-                if (nodePath->getCalculated() && !forceReCalculate)
-                    continue;
-
-                nodePath->calculateCost();
-            }
-        }
-
-        LOG_INFO("playerbots", ">> Calculated pathcost for {} nodes.", TravelNodeMap::instance().getNodes().size());
-    }
-
-    bool mirrorMissingPaths = true || fullNavPointReload || storeNavPointReload;
-
-    if (mirrorMissingPaths)
-    {
-        for (auto& startNode : TravelNodeMap::instance().getNodes())
-        {
-            for (auto& path : *startNode->getLinks())
-            {
-                TravelNode* endNode = path.first;
-
-                if (endNode->hasLinkTo(startNode))
-                    continue;
-
-                if (path.second->getPathType() != TravelNodePathType::walk)
-                    continue;
-
-                TravelNodePath nodePath = *path.second;
-
-                std::vector<WorldPosition> pPath = nodePath.getPath();
-                std::reverse(pPath.begin(), pPath.end());
-
-                nodePath.setPath(pPath);
-
-                endNode->setPathTo(startNode, nodePath, true);
-            }
-        }
-
-        LOG_INFO("playerbots", ">> Reversed missing paths for {} nodes.", TravelNodeMap::instance().getNodes().size());
-    }
-    */
-
-    TravelNodeMap::instance().printMap();
-    TravelNodeMap::instance().printNodeStore();
-    TravelNodeMap::instance().saveNodeStore();
-
-    // Creature/gos/zone export.
-    if (sPlayerbotAIConfig.HasLog("creatures.csv"))
-    {
-        for (CreatureData const* cData : WorldPosition().getCreaturesNear())
-        {
-            CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(cData->id);
-            if (!cInfo)
-                continue;
-
-            WorldPosition point =
-                WorldPosition(cData->mapid, cData->posX, cData->posY, cData->posZ, cData->orientation);
-
-            std::string name = cInfo->Name;
-            name.erase(remove(name.begin(), name.end(), ','), name.end());
-            name.erase(remove(name.begin(), name.end(), '\"'), name.end());
-
-            std::ostringstream out;
-            out << name << ",";
-            point.printWKT(out);
-            out << cInfo->maxlevel << ",";
-            out << cInfo->rank << ",";
-            out << cInfo->faction << ",";
-            out << cInfo->npcflag << ",";
-            out << point.getAreaName() << ",";
-            out << std::fixed;
-
-            sPlayerbotAIConfig.Log("creatures.csv", out.str().c_str());
-        }
-    }
-
-    if (sPlayerbotAIConfig.HasLog("vmangoslines.csv"))
-    {
-        uint32 mapId = 0;
-        std::vector<WorldPosition> pos;
-
-        static float const topNorthSouthLimit[] = {
-            2032.048340f,  -6927.750000f, 1634.863403f,  -6157.505371f, 1109.519775f,  -5181.036133f, 1315.204712f,
-            -4096.020508f, 1073.089233f,  -3372.571533f, 825.8331910f,  -3125.778809f, 657.3439940f,  -2314.813232f,
-            424.7361450f,  -1888.283691f, 744.3958130f,  -1647.935425f, 1424.160645f,  -654.9481810f, 1447.065308f,
-            -169.7513580f, 1208.715454f,  189.74870300f, 1596.240356f,  998.61669900f, 1577.923706f,  1293.4199220f,
-            1458.520264f,  1727.3732910f, 1591.916138f,  3728.1394040f};
-
-        pos.clear();
-
-#define my_sizeof(type) ((char*)(&type + 1) - (char*)(&type))
-
-        uint32 size = my_sizeof(topNorthSouthLimit) / my_sizeof(topNorthSouthLimit[0]);
-        for (uint32 i = 0; i < size - 1; i = i + 2)
-        {
-            if (topNorthSouthLimit[i] == 0)
-                break;
-
-            pos.push_back(WorldPosition(mapId, topNorthSouthLimit[i], topNorthSouthLimit[i + 1], 0));
-        }
-
-        std::ostringstream out;
-        out << "topNorthSouthLimit"
-            << ",";
-        WorldPosition().printWKT(pos, out, 1);
-        out << std::fixed;
-
-        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
-
-        static float const ironforgeAreaSouthLimit[] = {
-            -7491.33f, 3093.740f, -7472.04f, -391.880f, -6366.68f, -730.100f, -6063.96f, -1411.76f,
-            -6087.62f, -2190.21f, -6349.54f, -2533.66f, -6308.63f, -3049.32f, -6107.82f, -3345.30f,
-            -6008.49f, -3590.52f, -5989.37f, -4312.29f, -5806.26f, -5864.11f};
-
-        pos.clear();
-
-        size = my_sizeof(ironforgeAreaSouthLimit) / my_sizeof(ironforgeAreaSouthLimit[0]);
-
-        for (uint32 i = 0; i < size - 1; i = i + 2)
-        {
-            if (ironforgeAreaSouthLimit[i] == 0)
-                break;
-
-            pos.push_back(WorldPosition(mapId, ironforgeAreaSouthLimit[i], ironforgeAreaSouthLimit[i + 1], 0));
-        }
-
-        out.str("");
-        out.clear();
-
-        out << "ironforgeAreaSouthLimit"
-            << ",";
-        WorldPosition().printWKT(pos, out, 1);
-        out << std::fixed;
-
-        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
-
-        static float const stormwindAreaNorthLimit[] = {
-            -8004.250f, 3714.110f, -8075.000f, -179.000f, -8638.000f, 169.0000f, -9044.000f, 35.00000f,
-            -9068.000f, -125.000f, -9094.000f, -147.000f, -9206.000f, -290.000f, -9097.000f, -510.000f,
-            -8739.000f, -501.000f, -8725.500f, -1618.45f, -9810.400f, -1698.41f, -10049.60f, -1740.40f,
-            -10670.61f, -1692.51f, -10908.48f, -1563.87f, -13006.40f, -1622.80f, -12863.23f, -4798.42f};
-
-        pos.clear();
-
-        size = my_sizeof(stormwindAreaNorthLimit) / my_sizeof(stormwindAreaNorthLimit[0]);
-
-        for (uint32 i = 0; i < size - 1; i = i + 2)
-        {
-            if (stormwindAreaNorthLimit[i] == 0)
-                break;
-
-            pos.push_back(WorldPosition(mapId, stormwindAreaNorthLimit[i], stormwindAreaNorthLimit[i + 1], 0));
-        }
-
-        out.str("");
-        out.clear();
-
-        out << "stormwindAreaNorthLimit"
-            << ",";
-        WorldPosition().printWKT(pos, out, 1);
-        out << std::fixed;
-
-        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
-
-        static float const stormwindAreaSouthLimit[] = {
-            -8725.3378910f, 3535.62402300f, -9525.6992190f, 910.13256800f, -9796.9531250f, 839.06958000f,
-            -9946.3417970f, 743.10284400f,  -10287.361328f, 760.07647700f, -10083.828125f, 380.38989300f,
-            -10148.072266f, 80.056450000f,  -10014.583984f, -161.6385190f, -9978.1464840f, -361.6380310f,
-            -9877.4892580f, -563.3048710f,  -9980.9677730f, -1128.510498f, -9991.7177730f, -1428.793213f,
-            -9887.5791020f, -1618.514038f,  -10169.600586f, -1801.582031f, -9966.2744140f, -2227.197754f,
-            -9861.3095700f, -2989.841064f,  -9944.0263670f, -3205.886963f, -9610.2099610f, -3648.369385f,
-            -7949.3295900f, -4081.389404f,  -7910.8593750f, -5855.578125f};
-
-        pos.clear();
-
-        size = my_sizeof(stormwindAreaSouthLimit) / my_sizeof(stormwindAreaSouthLimit[0]);
-
-        for (uint32 i = 0; i < size - 1; i = i + 2)
-        {
-            if (stormwindAreaSouthLimit[i] == 0)
-                break;
-
-            pos.push_back(WorldPosition(mapId, stormwindAreaSouthLimit[i], stormwindAreaSouthLimit[i + 1], 0));
-        }
-
-        out.str("");
-        out.clear();
-
-        out << "stormwindAreaSouthLimit"
-            << ",";
-        WorldPosition().printWKT(pos, out, 1);
-        out << std::fixed;
-
-        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
-
-        mapId = 1;
-
-        static float const northMiddleLimit[] = {
-            -2280.00f, 4054.000f, -2401.00f, 2365.000f, -2432.00f, 1338.000f, -2286.00f, 769.0000f, -2137.00f,
-            662.0000f, -2044.54f, 489.8600f, -1808.52f, 436.3900f, -1754.85f, 504.5500f, -1094.55f, 651.7500f,
-            -747.460f, 647.7300f, -685.550f, 408.4300f, -311.380f, 114.4300f, -358.400f, -587.420f, -377.920f,
-            -748.700f, -512.570f, -919.490f, -280.650f, -1008.87f, -81.2900f, -930.890f, 284.3100f, -1105.39f,
-            568.8600f, -892.280f, 1211.090f, -1135.55f, 879.6000f, -2110.18f, 788.9600f, -2276.02f, 899.6800f,
-            -2625.56f, 1281.540f, -2689.42f, 1521.820f, -3047.85f, 1424.220f, -3365.69f, 1694.110f, -3615.20f,
-            2373.780f, -4019.96f, 2388.130f, -5124.35f, 2193.790f, -5484.38f, 1703.570f, -5510.53f, 1497.590f,
-            -6376.56f, 1368.000f, -8530.00f};
-
-        pos.clear();
-
-        size = my_sizeof(northMiddleLimit) / my_sizeof(northMiddleLimit[0]);
-
-        for (uint32 i = 0; i < size - 1; i = i + 2)
-        {
-            if (northMiddleLimit[i] == 0)
-                break;
-
-            pos.push_back(WorldPosition(mapId, northMiddleLimit[i], northMiddleLimit[i + 1], 0));
-        }
-
-        out.str("");
-        out.clear();
-
-        out << "northMiddleLimit"
-            << ",";
-        WorldPosition().printWKT(pos, out, 1);
-        out << std::fixed;
-
-        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
-
-        static float const durotarSouthLimit[] = {
-            2755.0f, -3766.f, 2225.0f, -3596.f, 1762.0f, -3746.f, 1564.0f, -3943.f, 1184.0f, -3915.f, 737.00f,
-            -3782.f, -75.00f, -3742.f, -263.0f, -3836.f, -173.0f, -4064.f, -81.00f, -4091.f, -49.00f, -4089.f,
-            -16.00f, -4187.f, -5.000f, -4192.f, -14.00f, -4551.f, -397.0f, -4601.f, -522.0f, -4583.f, -668.0f,
-            -4539.f, -790.0f, -4502.f, -1176.f, -4213.f, -1387.f, -4674.f, -2243.f, -6046.f};
-
-        pos.clear();
-
-        size = my_sizeof(durotarSouthLimit) / my_sizeof(durotarSouthLimit[0]);
-
-        for (uint32 i = 0; i < size - 1; i = i + 2)
-        {
-            if (durotarSouthLimit[i] == 0)
-                break;
-
-            pos.push_back(WorldPosition(mapId, durotarSouthLimit[i], durotarSouthLimit[i + 1], 0));
-        }
-
-        out.str("");
-        out.clear();
-
-        out << "durotarSouthLimit"
-            << ",";
-        WorldPosition().printWKT(pos, out, 1);
-        out << std::fixed;
-
-        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
-
-        static float const valleyoftrialsSouthLimit[] = {-324.f,  -3869.f, -774.f,  -3992.f, -965.f,  -4290.f, -932.f,
-                                                         -4349.f, -828.f,  -4414.f, -661.f,  -4541.f, -521.f,  -4582.f};
-
-        pos.clear();
-
-        size = my_sizeof(valleyoftrialsSouthLimit) / my_sizeof(valleyoftrialsSouthLimit[0]);
-
-        for (uint32 i = 0; i < size - 1; i = i + 2)
-        {
-            if (valleyoftrialsSouthLimit[i] == 0)
-                break;
-
-            pos.push_back(WorldPosition(mapId, valleyoftrialsSouthLimit[i], valleyoftrialsSouthLimit[i + 1], 0));
-        }
-
-        out.str("");
-        out.clear();
-
-        out << "valleyoftrialsSouthLimit"
-            << ",";
-        WorldPosition().printWKT(pos, out, 1);
-        out << std::fixed;
-
-        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
-
-        static float const middleToSouthLimit[] = {
-            -2402.010000f, 4255.7000000f, -2475.933105f, 3199.5683590f,  // Desolace
-            -2344.124023f, 1756.1643070f, -2826.438965f, 403.82473800f,  // Mulgore
-            -3472.819580f, 182.52247600f,                                // Feralas
-            -4365.006836f, -1602.575439f,                                // the Barrens
-            -4515.219727f, -1681.356079f, -4543.093750f, -1882.869385f,  // Thousand Needles
-            -4824.160000f, -2310.110000f, -5102.913574f, -2647.062744f, -5248.286621f,
-            -3034.536377f, -5246.920898f, -3339.139893f, -5459.449707f, -4920.155273f,  // Tanaris
-            -5437.000000f, -5863.000000f};
-
-        pos.clear();
-
-        size = my_sizeof(middleToSouthLimit) / my_sizeof(middleToSouthLimit[0]);
-
-        for (uint32 i = 0; i < size - 1; i = i + 2)
-        {
-            if (middleToSouthLimit[i] == 0)
-                break;
-
-            pos.push_back(WorldPosition(mapId, middleToSouthLimit[i], middleToSouthLimit[i + 1], 0));
-        }
-
-        out.str("");
-        out.clear();
-
-        out << "middleToSouthLimit"
-            << ",";
-        WorldPosition().printWKT(pos, out, 1);
-        out << std::fixed;
-
-        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
-
-        static float const orgrimmarSouthLimit[] = {
-            2132.5076f, -3912.2478f, 1944.4298f, -3855.2583f, 1735.6906f, -3834.2417f, 1654.3671f, -3380.9902f,
-            1593.9861f, -3975.5413f, 1439.2548f, -4249.6923f, 1436.3106f, -4007.8950f, 1393.3199f, -4196.0625f,
-            1445.2428f, -4373.9052f, 1407.2349f, -4429.4145f, 1464.7142f, -4545.2875f, 1584.1331f, -4596.8764f,
-            1716.8065f, -4601.1323f, 1875.8312f, -4788.7187f, 1979.7647f, -4883.4585f, 2219.1562f, -4854.3330f};
-
-        pos.clear();
-
-        size = my_sizeof(orgrimmarSouthLimit) / my_sizeof(orgrimmarSouthLimit[0]);
-
-        for (uint32 i = 0; i < size - 1; i = i + 2)
-        {
-            if (orgrimmarSouthLimit[i] == 0)
-                break;
-
-            pos.push_back(WorldPosition(mapId, orgrimmarSouthLimit[i], orgrimmarSouthLimit[i + 1], 0));
-        }
-
-        out.str("");
-        out.clear();
-
-        out << "orgrimmarSouthLimit"
-            << ",";
-        WorldPosition().printWKT(pos, out, 1);
-        out << std::fixed;
-
-        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
-
-        static float const feralasThousandNeedlesSouthLimit[] = {
-            -6495.4995f, -4711.9810f, -6674.9995f, -4515.0019f, -6769.5717f, -4122.4272f, -6838.2651f, -3874.2792f,
-            -6851.1314f, -3659.1179f, -6624.6845f, -3063.3843f, -6416.9067f, -2570.1301f, -5959.8466f, -2287.2634f,
-            -5947.9135f, -1866.5028f, -5947.9135f, -820.48810f, -5876.7114f, -3.5138000f, -5876.7114f, 917.640700f,
-            -6099.3603f, 1153.28840f, -6021.8989f, 1638.18090f, -6091.6176f, 2335.88920f, -6744.9946f, 2393.48550f,
-            -6973.8608f, 3077.02810f, -7068.7241f, 4376.23040f, -7142.1211f, 4808.43310f};
-
-        pos.clear();
-
-        size = my_sizeof(feralasThousandNeedlesSouthLimit) / my_sizeof(feralasThousandNeedlesSouthLimit[0]);
-
-        for (uint32 i = 0; i < size - 1; i = i + 2)
-        {
-            if (feralasThousandNeedlesSouthLimit[i] == 0)
-                break;
-
-            pos.push_back(
-                WorldPosition(mapId, feralasThousandNeedlesSouthLimit[i], feralasThousandNeedlesSouthLimit[i + 1], 0));
-        }
-
-        out.str("");
-        out.clear();
-
-        out << "feralasThousandNeedlesSouthLimit"
-            << ",";
-        WorldPosition().printWKT(pos, out, 1);
-        out << std::fixed;
-
-        sPlayerbotAIConfig.Log("vmangoslines.csv", out.str().c_str());
-    }
-
-    if (sPlayerbotAIConfig.HasLog("gos.csv"))
-    {
-        for (GameObjectData const* gData : WorldPosition().getGameObjectsNear())
-        {
-            GameObjectTemplate const* data = sObjectMgr->GetGameObjectTemplate(gData->id);
-            if (!data)
-                continue;
-
-            WorldPosition point =
-                WorldPosition(gData->mapid, gData->posX, gData->posY, gData->posZ, gData->orientation);
-
-            std::string name = data->name;
-            name.erase(remove(name.begin(), name.end(), ','), name.end());
-            name.erase(remove(name.begin(), name.end(), '\"'), name.end());
-
-            std::ostringstream out;
-            out << name << ",";
-            point.printWKT(out);
-            out << data->type << ",";
-            out << point.getAreaName() << ",";
-            out << std::fixed;
-
-            sPlayerbotAIConfig.Log("gos.csv", out.str().c_str());
-        }
-    }
-
-    if (sPlayerbotAIConfig.HasLog("zones.csv"))
-    {
-        std::unordered_map<std::string, std::vector<WorldPosition>> zoneLocs;
-
-        std::vector<WorldPosition> Locs;
-
-        for (auto& u : units)
-        {
-            WorldPosition point = WorldPosition(u.map, u.x, u.y, u.z, u.o);
-            std::string const name = std::to_string(u.map) + point.getAreaName();
-
-            if (zoneLocs.find(name) == zoneLocs.end())
-                zoneLocs.insert_or_assign(name, Locs);
-
-            zoneLocs.find(name)->second.push_back(point);
-        }
-
-        for (auto& loc : zoneLocs)
-        {
-            if (loc.second.empty())
-                continue;
-
-            if (!TravelNodeMap::instance().getMapOffset(loc.second.front().GetMapId()) &&
-                loc.second.front().GetMapId() != 0)
-                continue;
-
-            std::vector<WorldPosition> points = loc.second;
-            ;
-
-            std::ostringstream out;
-
-            WorldPosition pos = WorldPosition(points, WP_MEAN_CENTROID);
-
-            out << "\"center\""
-                << ",";
-            out << points.begin()->GetMapId() << ",";
-            out << points.begin()->getAreaName() << ",";
-            out << points.begin()->getAreaName(true, true) << ",";
-
-            pos.printWKT(out);
-
-            out << "\n";
-
-            out << "\"area\""
-                << ",";
-            out << points.begin()->GetMapId() << ",";
-            out << points.begin()->getAreaName() << ",";
-            out << points.begin()->getAreaName(true, true) << ",";
-
-            point.printWKT(points, out, 0);
-
-            sPlayerbotAIConfig.Log("zones.csv", out.str().c_str());
-        }
-    }
-
-    bool printStrategyMap = false;
-
-    if (printStrategyMap && sPlayerbotAIConfig.HasLog("strategy.csv"))
-    {
-        static std::map<uint8, std::string> classes;
-        static std::map<uint8, std::map<uint8, std::string>> specs;
-        classes[CLASS_DRUID] = "druid";
-        specs[CLASS_DRUID][0] = "balance";
-        specs[CLASS_DRUID][1] = "feral combat";
-        specs[CLASS_DRUID][2] = "restoration";
-
-        classes[CLASS_HUNTER] = "hunter";
-        specs[CLASS_HUNTER][0] = "beast mastery";
-        specs[CLASS_HUNTER][1] = "marksmanship";
-        specs[CLASS_HUNTER][2] = "survival";
-
-        classes[CLASS_MAGE] = "mage";
-        specs[CLASS_MAGE][0] = "arcane";
-        specs[CLASS_MAGE][1] = "fire";
-        specs[CLASS_MAGE][2] = "frost";
-
-        classes[CLASS_PALADIN] = "paladin";
-        specs[CLASS_PALADIN][0] = "holy";
-        specs[CLASS_PALADIN][1] = "protection";
-        specs[CLASS_PALADIN][2] = "retribution";
-
-        classes[CLASS_PRIEST] = "priest";
-        specs[CLASS_PRIEST][0] = "discipline";
-        specs[CLASS_PRIEST][1] = "holy";
-        specs[CLASS_PRIEST][2] = "shadow";
-
-        classes[CLASS_ROGUE] = "rogue";
-        specs[CLASS_ROGUE][0] = "assassination";
-        specs[CLASS_ROGUE][1] = "combat";
-        specs[CLASS_ROGUE][2] = "subtlety";
-
-        classes[CLASS_SHAMAN] = "shaman";
-        specs[CLASS_SHAMAN][0] = "elemental";
-        specs[CLASS_SHAMAN][1] = "enhancement";
-        specs[CLASS_SHAMAN][2] = "restoration";
-
-        classes[CLASS_WARLOCK] = "warlock";
-        specs[CLASS_WARLOCK][0] = "affliction";
-        specs[CLASS_WARLOCK][1] = "demonology";
-        specs[CLASS_WARLOCK][2] = "destruction";
-
-        classes[CLASS_WARRIOR] = "warrior";
-        specs[CLASS_WARRIOR][0] = "arms";
-        specs[CLASS_WARRIOR][1] = "fury";
-        specs[CLASS_WARRIOR][2] = "protection";
-
-        classes[CLASS_DEATH_KNIGHT] = "dk";
-        specs[CLASS_DEATH_KNIGHT][0] = "blood";
-        specs[CLASS_DEATH_KNIGHT][1] = "frost";
-        specs[CLASS_DEATH_KNIGHT][2] = "unholy";
-
-        // Use randombot 0.
-        std::ostringstream cout;
-        cout << sPlayerbotAIConfig.RandomBotAccountPrefix << 0;
-        std::string const accountName = cout.str();
-
-        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_ID_BY_USERNAME);
-        stmt->SetData(0, accountName);
-        PreparedQueryResult result = LoginDatabase.Query(stmt);
-        if (result)
-        {
-            Field* fields = result->Fetch();
-            uint32 accountId = fields[0].Get<uint32>();
-
-            WorldSession* session =
-                new WorldSession(accountId, "", 0x0, nullptr, SEC_PLAYER, EXPANSION_WRATH_OF_THE_LICH_KING, time_t(0),
-                                 LOCALE_enUS, 0, false, false, 0);
-
-            std::vector<std::pair<std::pair<uint32, uint32>, uint32>> classSpecLevel;
-
-            std::unordered_map<std::string, std::vector<std::pair<std::pair<uint32, uint32>, uint32>>> actions;
-
-            std::ostringstream out;
-
-            for (uint8 race = RACE_HUMAN; race < sRaceMgr->GetMaxRaces(); race++)
-            {
-                for (uint8 cls = CLASS_WARRIOR; cls < MAX_CLASSES; ++cls)
-                {
-                    if (cls != 10)
-                    {
-                        std::unique_ptr<CharacterCreateInfo> characterInfo =
-                            std::make_unique<CharacterCreateInfo>("dummy", race, cls, 1, 1, 1, 1, 1, 1);
-                        Player* player = new Player(session);
-                        if (player->Create(sObjectMgr->GetGenerator<HighGuid::Player>().Generate(),
-                                           characterInfo.get()))
-                        {
-                            for (uint8 tab = 0; tab < 3; tab++)
-                            {
-                                TalentSpec newSpec;
-                                if (tab == 0)
-                                    newSpec = TalentSpec(player, "1-0-0");
-                                else if (tab == 1)
-                                    newSpec = TalentSpec(player, "0-1-0");
-                                else
-                                    newSpec = TalentSpec(player, "0-0-1");
-
-                                for (uint32 lvl = 1; lvl < MAX_LEVEL; lvl++)
-                                {
-                                    player->SetLevel(lvl);
-
-                                    std::ostringstream tout;
-                                    newSpec.ApplyTalents(player, &tout);
-
-                                    PlayerbotAI* botAI = new PlayerbotAI(player);
-
-                                    botAI->ResetStrategies(false);
-
-                                    AiObjectContext* con = botAI->GetAiObjectContext();
-
-                                    std::vector<std::string> tstrats;
-                                    std::set<std::string> strategies;
-                                    std::set<std::string> sstrats;
-
-                                    tstrats = botAI->GetStrategies(BOT_STATE_COMBAT);
-                                    sstrats = con->GetSupportedStrategies();
-                                    if (!sstrats.empty())
-                                        strategies.insert(tstrats.begin(), tstrats.end());
-
-                                    tstrats = botAI->GetStrategies(BOT_STATE_NON_COMBAT);
-                                    if (!tstrats.empty())
-                                        strategies.insert(tstrats.begin(), tstrats.end());
-
-                                    tstrats = botAI->GetStrategies(BOT_STATE_DEAD);
-                                    if (!tstrats.empty())
-                                        strategies.insert(tstrats.begin(), tstrats.end());
-
-                                    sstrats = con->GetSupportedStrategies();
-                                    if (!sstrats.empty())
-                                        strategies.insert(sstrats.begin(), sstrats.end());
-
-                                    for (auto& stratName : strategies)
-                                    {
-                                        Strategy* strat = con->GetStrategy(stratName);
-
-                                        const std::vector<NextAction> defaultActions  = strat->getDefaultActions();
-
-                                        if (defaultActions.size() > 0)
-                                        {
-                                            for (NextAction nextAction : defaultActions)
-                                            {
-                                                std::ostringstream aout;
-                                                aout << nextAction.getRelevance() << "," << nextAction.getName()
-                                                     << ",,S:" << stratName;
-
-                                                if (actions.find(aout.str().c_str()) != actions.end())
-                                                    classSpecLevel = actions.find(aout.str().c_str())->second;
-                                                else
-                                                    classSpecLevel.clear();
-
-                                                classSpecLevel.push_back(std::make_pair(std::make_pair(cls, tab), lvl));
-
-                                                actions.insert_or_assign(aout.str().c_str(), classSpecLevel);
-                                            }
-                                        }
-
-                                        std::vector<TriggerNode*> triggers;
-                                        strat->InitTriggers(triggers);
-
-                                        for (TriggerNode*& triggerNode : triggers)
-                                        {
-                                            if (Trigger* trigger = con->GetTrigger(triggerNode->getName()))
-                                            {
-                                                triggerNode->setTrigger(trigger);
-
-                                                std::vector<NextAction> nextActions = triggerNode->getHandlers();
-
-                                                // for (uint32_t i = 0; i < nextActions.size(); ++i)
-                                                for (NextAction nextAction : nextActions)
-                                                {
-                                                    std::ostringstream aout;
-                                                    aout << nextAction.getRelevance() << "," << nextAction.getName()
-                                                         << "," << triggerNode->getName() << "," << stratName;
-
-                                                    if (actions.find(aout.str().c_str()) != actions.end())
-                                                        classSpecLevel = actions.find(aout.str().c_str())->second;
-                                                    else
-                                                        classSpecLevel.clear();
-
-                                                    classSpecLevel.push_back(
-                                                        std::make_pair(std::make_pair(cls, tab), lvl));
-
-                                                    actions.insert_or_assign(aout.str().c_str(), classSpecLevel);
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    delete botAI;
-                                }
-                            }
-                        }
-
-                        delete player;
-                    }
-                }
-            }
-
-            std::vector<std::string> actionKeys;
-
-            for (auto& action : actions)
-                actionKeys.push_back(action.first);
-
-            std::sort(actionKeys.begin(), actionKeys.end(),
-                      [](std::string const i, std::string const j)
-                      {
-                          std::stringstream is(i);
-                          std::stringstream js(j);
-                          float iref, jref;
-                          std::string iact, jact, itrig, jtrig, istrat, jstrat;
-                          is >> iref >> iact >> itrig >> istrat;
-                          js >> jref >> jact >> jtrig >> jstrat;
-
-                          if (iref > jref)
-                              return true;
-
-                          if (iref == jref && istrat < jstrat)
-                              return true;
-
-                          if (iref == jref && !(istrat > jstrat) && iact < jact)
-                              return true;
-
-                          if (iref == jref && !(istrat > jstrat) && !(iact > jact) && itrig < jtrig)
-                              return true;
-
-                          return false;
-                      });
-
-            sPlayerbotAIConfig.Log("strategy.csv", "relevance, action, trigger, strategy, classes");
-
-            for (auto& actionkey : actionKeys)
-            {
-                if (actions.find(actionkey)->second.size() != (MAX_LEVEL - 1) * (MAX_CLASSES - 1))
-                {
-                    classSpecLevel = actions.find(actionkey)->second;
-
-                    std::vector<std::pair<std::pair<uint32, uint32>, std::pair<uint32, uint32>>> classs;
-
-                    for (auto cl : classSpecLevel)
-                    {
-                        uint32 minLevel = MAX_LEVEL;
-                        uint32 maxLevel = 0;
-
-                        uint32 cls = cl.first.first;
-                        uint32 tb = cl.first.second;
-
-                        if (std::find_if(classs.begin(), classs.end(),
-                                         [cls, tb](std::pair<std::pair<uint32, uint32>, std::pair<uint32, uint32>> i)
-                                         { return i.first.first == cls && i.first.second == tb; }) == classs.end())
-                        {
-                            for (auto cll : classSpecLevel)
-                            {
-                                if (cll.first.first == cl.first.first && cll.first.second == cl.first.second)
-                                {
-                                    minLevel = std::min(minLevel, cll.second);
-                                    maxLevel = std::max(maxLevel, cll.second);
-                                }
-                            }
-
-                            classs.push_back(std::make_pair(cl.first, std::make_pair(minLevel, maxLevel)));
-                        }
-                    }
-
-                    out << actionkey;
-
-                    if (classs.size() != 9 * 3)
-                    {
-                        out << ",";
-
-                        for (uint8 cls = CLASS_WARRIOR; cls < MAX_CLASSES; ++cls)
-                        {
-                            bool a[3] = {false, false, false};
-                            uint32 min[3] = {0, 0, 0};
-                            uint32 max[3] = {0, 0, 0};
-
-                            if (std::find_if(classs.begin(), classs.end(),
-                                             [cls](std::pair<std::pair<uint32, uint32>, std::pair<uint32, uint32>> i)
-                                             { return i.first.first == cls; }) == classs.end())
-                                continue;
-
-                            for (uint32 tb = 0; tb < 3; tb++)
-                            {
-                                auto tcl = std::find_if(
-                                    classs.begin(), classs.end(),
-                                    [cls, tb](std::pair<std::pair<uint32, uint32>, std::pair<uint32, uint32>> i)
-                                    { return i.first.first == cls && i.first.second == tb; });
-
-                                if (tcl == classs.end())
-                                    continue;
-
-                                a[tb] = true;
-                                min[tb] = tcl->second.first;
-                                max[tb] = tcl->second.second;
-                            }
-
-                            if (a[0] && a[1] && a[2] && min[0] == min[1] && min[1] == min[2] && max[0] == max[1] &&
-                                max[1] == max[2])
-                            {
-                                if (min[0] != 1 || max[0] != MAX_LEVEL - 1)
-                                    out << classes[cls] << "(" << min[0] << "-" << max[0] << ")";
-                                else
-                                    out << classes[cls];
-
-                                if (cls != classs.back().first.first)
-                                    out << ";";
-                            }
-                            else
-                            {
-                                for (uint32 tb = 0; tb < 3; tb++)
-                                {
-                                    if (!a[tb])
-                                        continue;
-
-                                    if (min[tb] != 1 || max[tb] != MAX_LEVEL - 1)
-                                        out << specs[cls][tb] << " " << classes[cls] << "(" << min[tb] << "-" << max[tb]
-                                            << ")";
-                                    else
-                                        out << specs[cls][tb] << " " << classes[cls];
-
-                                    if (cls != classs.back().first.first || tb != classs.back().first.second)
-                                        out << ";";
-                                }
-                            }
-                        }
-                    }
-                    else
-                        out << "all";
-
-                    out << "\n";
-                }
-                else
-                    out << actionkey << "\n";
-            }
-
-            sPlayerbotAIConfig.Log("strategy.csv", out.str().c_str());
-        }
-    }
-
-    /*
-
-    sPlayerbotAIConfig.OpenLog(7, "w");
-
-    //Zone area map REMOVE!
-    uint32 k = 0;
-    for (auto& node : TravelNodeMap::instance().getNodes())
-    {
-        WorldPosition* pos = node->getPosition();
-        //map area
-        for (uint32 x = 0; x < 2000; x++)
-        {
-            for (uint32 y = 0; y < 2000; y++)
-            {
-                if (!pos->getMap())
-                    continue;
-
-                float nx = pos->GetPositionX() + (x * 5) - 5000.0f;
-                float ny = pos->GetPositionY() + (y * 5) - 5000.0f;
-                float nz = pos->GetPositionZ() + 100.0f;
-
-                //pos->getMap()->GetHitPosition(nx, ny, nz + 200.0f, nx, ny, nz, -0.5f);
-
-                if (!pos->getMap()->GetHeightInRange(nx, ny, nz, 5000.0f)) // GetHeight can fail
-                    continue;
-
-                WorldPosition npos = WorldPosition(pos->GetMapId(), nx, ny, nz, 0.0);
-                uint32 area = path.getArea(npos.GetMapId(), npos.GetPositionX(), npos.GetPositionY(),
-                                           npos.GetPositionZ());
-
-                std::ostringstream out;
-                out << std::fixed << area << "," << npos.getDisplayX() << "," << npos.getDisplayY();
-                sPlayerbotAIConfig.Log(7, out.str().c_str());
-            }
-        }
-        k++;
-
-        if (k > 0)
-            break;
-    }
-
-    //Explore map output (REMOVE!)
-
-    sPlayerbotAIConfig.OpenLog(5, "w");
-    for (auto i : exploreLocs)
-    {
-        for (auto j : i.second->getPoints())
-        {
-            std::ostringstream out;
-            std::string const name = i.second->getTitle();
-            name.erase(remove(name.begin(), name.end(), '\"'), name.end());
-            out << std::fixed << std::setprecision(2) << name.c_str() << "," << i.first << "," << j->getDisplayX() <<
-    "," << j->getDisplayY() << "," << j->GetPositionX() << "," << j->GetPositionY() << "," << j->GetPositionZ();
-    sPlayerbotAIConfig.Log(5,
-    out.str().c_str());
-        }
-    }
-
-    */
-}
-
 uint32 TravelMgr::getDialogStatus(Player* pPlayer, int32 questgiver, Quest const* pQuest)
 {
     uint32 dialogStatus = DIALOG_STATUS_NONE;
@@ -4364,16 +2375,20 @@ void TravelMgr::Init()
 {
     if (sPlayerbotAIConfig.Enabled)
     {
-        PrepareZone2LevelBracket();
-        PrepareDestinationCache();
+        if (!destinationCachesReady)
+        {
+            PrepareZone2LevelBracket();
+            PrepareDestinationCache();
 
-        if (sPlayerbotAIConfig.ProbTeleToQuestGivers > 0.0f)
-            PrepareQuestGiverTeleportIndex();
-        else
-            questGiverTeleportIndex.clear();
+            if (sPlayerbotAIConfig.ProbTeleToQuestGivers > 0.0f)
+                PrepareQuestGiverTeleportIndex();
+            else
+                questGiverTeleportIndex.clear();
+
+            destinationCachesReady = true;
+        }
     }
-    sTravelNodeMap.InitTaxiGraph();
-    LOG_INFO("playerbots", "Playerbots Taxi graph and destination cache built.");
+    sTravelNodeMap.Init();
 }
 
 TravelMgr::FlightMasterInfo const* TravelMgr::GetNearestFlightMasterInfo(Player* bot) const
@@ -4420,7 +2435,7 @@ std::vector<std::vector<uint32>> TravelMgr::GetOptimalFlightDestinations(Player*
     std::vector<std::vector<uint32>> validDestinations;
 
     FlightMasterInfo const* nearestFlightMaster = GetNearestFlightMasterInfo(bot);
-    if (!nearestFlightMaster || bot->GetDistance(nearestFlightMaster->pos) > 500.0f)
+    if (!nearestFlightMaster)
         return validDestinations;
 
     uint32 fromNode = nearestFlightMaster->taxiNodeId;
@@ -4439,9 +2454,9 @@ std::vector<std::vector<uint32>> TravelMgr::GetOptimalFlightDestinations(Player*
     if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(bot->GetZoneId()))
         botInCapital = (area->flags & AREA_FLAG_CAPITAL) != 0;
 
-    //Simplify destination delection. Its either target cities (Based on config value) or target world.
     std::vector<uint32> candidateZones;
-    if (botLevel >= 10 && !botInCapital && urand(0, 100) < sPlayerbotAIConfig.ProbTeleToBankers * 100)
+    if (botLevel >= 10 && !botInCapital &&
+        urand(0, 100) < sPlayerbotAIConfig.ProbTeleToBankers * 100)
     {
         TeamId botTeam = bot->GetTeamId();
         for (Capital const& capital : capitals)
@@ -4709,6 +2724,15 @@ void TravelMgr::PrepareZone2LevelBracket()
 
 void TravelMgr::PrepareDestinationCache()
 {
+    allianceFlightMasterCache.clear();
+    hordeFlightMasterCache.clear();
+    allianceHubsPerLevelCache.clear();
+    hordeHubsPerLevelCache.clear();
+    bankerLocsPerLevelCache.clear();
+    bankerEntryToLocation.clear();
+    locsPerLevelCache.clear();
+    creatureSpawnsByTemplate.clear();
+
     uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
     uint32 flightMastersCount = 0;
     uint32 innkeepersCount = 0;
@@ -4766,11 +2790,11 @@ void TravelMgr::PrepareDestinationCache()
             tempCreatureCache[templateEntry][areaId].push_back(WorldLocation(mapId, x, y, z));
         }
         // FLIGHT MASTERS
-        // Entry 29480 is Grimwing (Storm Peaks)
-        // Entry 3838 is Vesprystus in Rut'Theran. Need Travel Node system to resolve this one.
+        // Entry 29480 is Grimwing (Storm Peaks) — has FLIGHTMASTER flag but
+        // isn't a real usable flight master; skip it.
         else if ((creatureTemplate->npcflag & UNIT_NPC_FLAG_FLIGHTMASTER ||
                   creatureTemplate->npcflag & UNIT_NPC_FLAG_INNKEEPER) &&
-                creatureTemplate->Entry != 3838 && creatureTemplate->Entry != 29480)
+                creatureTemplate->Entry != 29480)
         {
             FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(creatureTemplate->faction);
             bool forHorde = !(factionEntry->hostileMask & 4);
@@ -4855,7 +2879,7 @@ void TravelMgr::PrepareDestinationCache()
                  creatureTemplate->Entry != 30606 && creatureTemplate->Entry != 30608 &&
                  creatureTemplate->Entry != 29282)
         {
-            BankerLocation bLoc;
+            NpcLocation bLoc;
             bLoc.loc = WorldLocation(mapId, x + cos(orient) * 6.0f, y + sin(orient) * 6.0f, z + 2.0f, orient + M_PI);
             bLoc.entry = templateEntry;
             uint32 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
@@ -4887,16 +2911,29 @@ void TravelMgr::PrepareDestinationCache()
         {
             CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureDataList[0].id);
             uint32 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
+
+            float totalX = 0.0f;
+            float totalY = 0.0f;
+            float totalZ = 0.0f;
+            for (CreatureData const& creatureData : creatureDataList)
+            {
+                totalX += creatureData.posX;
+                totalY += creatureData.posY;
+                totalZ += creatureData.posZ;
+            }
+
+            float avgX = totalX / creatureDataList.size();
+            float avgY = totalY / creatureDataList.size();
+            float avgZ = totalZ / creatureDataList.size();
+            uint32 mapId = std::get<0>(gridTuple);
+
             for (int32 l = (int32)level - (int32)sPlayerbotAIConfig.RandomBotTeleLowerLevel;
                  l <= (int32)level + (int32)sPlayerbotAIConfig.RandomBotTeleHigherLevel; l++)
             {
                 if (l < 1 || l > int32(maxLevel))
                     continue;
 
-                locsPerLevelCache[(uint8)l].push_back(WorldLocation(std::get<0>(gridTuple),
-                    static_cast<float>(std::get<1>(gridTuple)) * 50.0f,
-                    static_cast<float>(std::get<2>(gridTuple)) * 50.0f,
-                    static_cast<float>(std::get<3>(gridTuple)) * 50.0f));
+                locsPerLevelCache[(uint8)l].push_back(WorldLocation(mapId, avgX, avgY, avgZ, 0.0f));
             }
         }
     }
@@ -4952,7 +2989,8 @@ void TravelMgr::PrepareDestinationCache()
         bankerLocsPerLevelCache.try_emplace(key);
     }
 
-    LOG_INFO("playerbots", ">> {} flight masters and {} innkeepers and {} banker locations for level collected.", flightMastersCount, innkeepersCount, bankerCount);
+    LOG_INFO("playerbots", ">> {} flight masters, {} innkeepers, {} bankers collected.", flightMastersCount,
+             innkeepersCount, bankerCount);
 }
 
 void TravelMgr::PrepareQuestGiverTeleportIndex()
