@@ -25,8 +25,11 @@
 #include "TravelNode.h"
 #include "VMapFactory.h"
 #include "VMapMgr2.h"
+#include <algorithm>
 #include <iomanip>
+#include <limits>
 #include <numeric>
+#include <unordered_set>
 
 // Navigation data
 
@@ -4398,6 +4401,69 @@ TravelMgr::FlightMasterInfo const* TravelMgr::GetNearestFlightMasterInfo(Player*
     }
 
     return nearest;
+}
+
+std::vector<TravelMgr::FlightMasterInfo const*> TravelMgr::GetFlightMastersWithin(Player* bot, float maxDistance,
+                                                                                  uint32 maxCandidates,
+                                                                                  uint32 includeZoneId) const
+{
+    auto const& flightMasterCache =
+        (bot->GetTeamId() == TEAM_ALLIANCE) ? allianceFlightMasterCache : hordeFlightMasterCache;
+
+    std::vector<std::pair<float, FlightMasterInfo const*>> candidates;
+    float const maxDistanceSq = maxDistance * maxDistance;
+    for (auto const& [dbGuid, info] : flightMasterCache)
+    {
+        if (info.pos.GetMapId() != bot->GetMapId() || !info.taxiNodeId)
+            continue;
+
+        float const distanceSq = bot->GetExactDist2dSq(info.pos);
+        // Include the whole current zone, plus nearby flight masters across a border.
+        if (distanceSq <= maxDistanceSq || (includeZoneId && info.zoneId == includeZoneId))
+            candidates.emplace_back(distanceSq, &info);
+    }
+
+    std::sort(candidates.begin(), candidates.end(),
+              [](auto const& left, auto const& right) { return left.first < right.first; });
+
+    std::vector<FlightMasterInfo const*> result;
+    result.reserve(std::min<size_t>(maxCandidates, candidates.size()));
+    for (auto const& [distanceSq, info] : candidates)
+    {
+        result.push_back(info);
+        if (result.size() >= maxCandidates)
+            break;
+    }
+
+    return result;
+}
+
+std::vector<std::vector<uint32>> TravelMgr::GetReachableFlightPaths(Player* bot,
+                                                                    FlightMasterInfo const* origin) const
+{
+    std::vector<std::vector<uint32>> paths;
+    if (!origin || !origin->taxiNodeId || origin->pos.GetMapId() != bot->GetMapId())
+        return paths;
+
+    auto const& flightMasterCache =
+        (bot->GetTeamId() == TEAM_ALLIANCE) ? allianceFlightMasterCache : hordeFlightMasterCache;
+
+    std::unordered_set<uint32> seenNodes;
+    for (auto const& [dbGuid, info] : flightMasterCache)
+    {
+        if (!info.taxiNodeId || info.taxiNodeId == origin->taxiNodeId ||
+            info.pos.GetMapId() != bot->GetMapId())
+            continue;
+
+        if (!seenNodes.insert(info.taxiNodeId).second)
+            continue;
+
+        std::vector<uint32> path = sTravelNodeMap.FindTaxiPath(origin->taxiNodeId, info.taxiNodeId);
+        if (!path.empty())
+            paths.push_back(std::move(path));
+    }
+
+    return paths;
 }
 
 std::vector<uint32> TravelMgr::GetFlightNodesInZone(uint32 zoneId, TeamId team, uint32 excludeNode) const

@@ -8,6 +8,7 @@
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "Creature.h"
+#include "DBCStores.h"
 #include "GameObject.h"
 #include "GatherNodeMgr.h"
 #include "GossipDef.h"
@@ -39,6 +40,142 @@
 #include "Timer.h"
 #include "TravelMgr.h"
 #include "G3D/Vector2.h"
+#include <algorithm>
+#include <cmath>
+#include <limits>
+
+namespace
+{
+    constexpr float FlightMasterSearchDistance = 1500.0f;
+    constexpr uint32 MaxFlightMasterCandidates = 5;
+    constexpr uint32 ScoredRouteChoices = 3;
+    constexpr uint32 RouteWeights[ScoredRouteChoices] = {3, 2, 1};
+
+    struct QuestPoint
+    {
+        float x;
+        float y;
+    };
+
+    struct ReachableFlightMaster
+    {
+        TravelMgr::FlightMasterInfo const* info;
+        float walkLength = 0.0f;
+    };
+
+    struct ScoredFlightRoute
+    {
+        TravelMgr::FlightMasterInfo const* origin = nullptr;
+        std::vector<uint32> path;
+        float score = 0.0f;
+        float walkLength = 0.0f;
+        float flightLength = 0.0f;
+        float remainingLength = 0.0f;
+    };
+
+    std::vector<QuestPoint> CollectQuestPoints(Player* bot)
+    {
+        std::vector<QuestPoint> points;
+        for (uint16 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
+        {
+            uint32 const questId = bot->GetQuestSlotQuestId(slot);
+            if (!questId)
+                continue;
+
+            QuestStatus const status = bot->GetQuestStatus(questId);
+            if (status != QUEST_STATUS_INCOMPLETE && status != QUEST_STATUS_COMPLETE)
+                continue;
+
+            QuestPOIVector const* pois = sObjectMgr->GetQuestPOIVector(questId);
+            if (!pois)
+                continue;
+
+            bool const complete = status == QUEST_STATUS_COMPLETE;
+            for (QuestPOI const& poi : *pois)
+            {
+                if (poi.MapId != bot->GetMapId() || poi.points.empty())
+                    continue;
+
+                // Incomplete quests target their objective POIs; completed ones the turn-in.
+                if (poi.ObjectiveIndex == -1 ? !complete : complete)
+                    continue;
+
+                float x = 0.0f;
+                float y = 0.0f;
+                for (QuestPOIPoint const& point : poi.points)
+                {
+                    x += point.x;
+                    y += point.y;
+                }
+
+                points.push_back({x / float(poi.points.size()), y / float(poi.points.size())});
+            }
+        }
+
+        return points;
+    }
+
+    float DistanceToQuestPoints(TaxiNodesEntry const* node, std::vector<QuestPoint> const& points)
+    {
+        float distance = std::numeric_limits<float>::max();
+        for (QuestPoint const& point : points)
+        {
+            float const dx = node->x - point.x;
+            float const dy = node->y - point.y;
+            distance = std::min(distance, std::sqrt(dx * dx + dy * dy));
+        }
+
+        return distance;
+    }
+
+    float TaxiRouteLength(std::vector<uint32> const& path)
+    {
+        if (path.size() < 2)
+            return 0.0f;
+
+        float length = 0.0f;
+        TaxiNodesEntry const* previous = nullptr;
+        for (uint32 nodeId : path)
+        {
+            TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(nodeId);
+            if (!node)
+                return 0.0f;
+
+            if (previous)
+            {
+                if (node->map_id != previous->map_id)
+                    return 0.0f;
+
+                float const dx = node->x - previous->x;
+                float const dy = node->y - previous->y;
+                float const dz = node->z - previous->z;
+                length += std::sqrt(dx * dx + dy * dy + dz * dz);
+            }
+
+            previous = node;
+        }
+
+        return length;
+    }
+
+    void GetWalkPathLength(Player* bot, WorldPosition const& destination, float& length)
+    {
+        WorldPosition start(bot);
+        WorldPosition end = destination;
+        std::vector<WorldPosition> path = start.getPathTo(end, bot);
+
+        // Long walks can exceed the chained mmap budget. Keep the candidate and use the direct
+        // distance as a scoring approximation; the movement layer resolves the real path.
+        length = start.GetExactDist(destination);
+        if (path.size() >= 2 && end.isPathTo(path, INTERACTION_DISTANCE * 2.0f))
+        {
+            length = 0.0f;
+            for (size_t i = 1; i < path.size(); ++i)
+                length += path[i - 1].GetExactDist(path[i].GetPositionX(), path[i].GetPositionY(),
+                                                   path[i].GetPositionZ());
+        }
+    }
+}
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 {
@@ -888,11 +1025,100 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
     return dest;
 }
 
-bool NewRpgBaseAction::SelectRandomFlightTaxiNode(uint32& flightMasterEntry, WorldPosition& flightMasterPos, std::vector<uint32>& path)
+bool NewRpgBaseAction::SelectRandomFlightTaxiNode(uint32& flightMasterEntry, WorldPosition& flightMasterPos,
+                                                  std::vector<uint32>& path, bool questAware)
 {
     TravelMgr::FlightMasterInfo const* info = sTravelMgr.GetNearestFlightMasterInfo(bot);
     if (!info)
         return false;
+
+    std::vector<ScoredFlightRoute> scoredRoutes;
+    if (questAware && sPlayerbotAIConfig.QuestAwareTaxi)
+    {
+        std::vector<QuestPoint> const questPoints = CollectQuestPoints(bot);
+        if (!questPoints.empty())
+        {
+            // Origins are same-map and distance-filtered, not zone-filtered: the closest
+            // flight master across a zone border is a valid origin.
+            std::vector<ReachableFlightMaster> origins;
+            for (TravelMgr::FlightMasterInfo const* candidate :
+                 sTravelMgr.GetFlightMastersWithin(bot, FlightMasterSearchDistance,
+                                                   MaxFlightMasterCandidates, bot->GetZoneId()))
+            {
+                float walkLength = 0.0f;
+                GetWalkPathLength(bot, candidate->pos, walkLength);
+                origins.push_back({candidate, walkLength});
+            }
+
+            float const runSpeed = std::max(bot->GetSpeed(MOVE_RUN), 1.0f);
+            float const flightSpeed = std::max({bot->GetSpeed(MOVE_FLIGHT), runSpeed, 1.0f});
+            for (ReachableFlightMaster const& origin : origins)
+            {
+                for (std::vector<uint32>& flightPath : sTravelMgr.GetReachableFlightPaths(bot, origin.info))
+                {
+                    TaxiNodesEntry const* destination = sTaxiNodesStore.LookupEntry(flightPath.back());
+                    if (!destination || destination->map_id != bot->GetMapId())
+                        continue;
+
+                    float const flightLength = TaxiRouteLength(flightPath);
+                    if (flightLength <= 0.0f)
+                        continue;
+
+                    float const remainingLength = DistanceToQuestPoints(destination, questPoints);
+                    if (remainingLength == std::numeric_limits<float>::max())
+                        continue;
+
+                    ScoredFlightRoute route;
+                    route.origin = origin.info;
+                    route.path = flightPath;
+                    route.walkLength = origin.walkLength;
+                    route.flightLength = flightLength;
+                    route.remainingLength = remainingLength;
+                    route.score = route.walkLength / runSpeed + route.flightLength / flightSpeed +
+                                  route.remainingLength / runSpeed;
+                    scoredRoutes.push_back(std::move(route));
+                }
+            }
+
+            if (!scoredRoutes.empty())
+            {
+                std::sort(scoredRoutes.begin(), scoredRoutes.end(),
+                          [](ScoredFlightRoute const& left, ScoredFlightRoute const& right)
+                          { return left.score < right.score; });
+
+                size_t const choices = std::min<size_t>(ScoredRouteChoices, scoredRoutes.size());
+                uint32 totalWeight = 0;
+                for (size_t i = 0; i < choices; ++i)
+                    totalWeight += RouteWeights[i];
+
+                uint32 const roll = urand(1, totalWeight);
+                uint32 accumulated = 0;
+                size_t pick = 0;
+                for (size_t i = 0; i < choices; ++i)
+                {
+                    accumulated += RouteWeights[i];
+                    if (roll <= accumulated)
+                    {
+                        pick = i;
+                        break;
+                    }
+                }
+
+                ScoredFlightRoute const& route = scoredRoutes[pick];
+                flightMasterEntry = route.origin->templateEntry;
+                flightMasterPos = route.origin->pos;
+                path = route.path;
+                LOG_DEBUG("playerbots",
+                          "[New RPG] Bot {} select quest-aware flight from:{} (node {}) to:{} "
+                          "(score {:.0f}s, walk {:.0f}y, flight {:.0f}y, remaining {:.0f}y, "
+                          "{} origins, {} routes)",
+                          bot->GetName(), flightMasterEntry, path.front(), path.back(), route.score,
+                          route.walkLength, route.flightLength, route.remainingLength, origins.size(),
+                          scoredRoutes.size());
+                return true;
+            }
+        }
+    }
 
     std::vector<std::vector<uint32>> availablePaths = sTravelMgr.GetOptimalFlightDestinations(bot);
     if (availablePaths.empty())
@@ -1005,7 +1231,7 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             uint32 flightMasterEntry = 0;
             WorldPosition flightMasterPos;
             std::vector<uint32> path;
-            if (SelectRandomFlightTaxiNode(flightMasterEntry, flightMasterPos, path))
+            if (SelectRandomFlightTaxiNode(flightMasterEntry, flightMasterPos, path, true))
             {
                 botAI->rpgInfo.ChangeToTravelFlight(flightMasterEntry, flightMasterPos, path);
                 return true;
