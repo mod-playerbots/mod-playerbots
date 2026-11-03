@@ -2839,7 +2839,8 @@ uint32 TravelNodeMap::pruneCheatingWalkLinks(std::vector<TravelNode*> const& sca
             // removePaths=true so the stored geometry is gone too, not just
             // the link flag (a lingering path would re-link on a later pass).
             startNode->removeLinkTo(endNode, true);
-            endNode->removeLinkTo(startNode, true);
+            if (!endNode->hasPathTo(startNode) || endNode->getPathTo(startNode)->getBuiltDuringRun())
+                endNode->removeLinkTo(startNode, true);
             ++removed;
         }
     }
