@@ -14,7 +14,9 @@
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 #include "Util.h"
-#include <unordered_map>
+#include <map>
+#include <mutex>
+#include <utility>
 
 namespace
 {
@@ -27,16 +29,24 @@ namespace
         uint32 requiredLevel = 0;
     };
 
-    // Cache of relic spell id -> every ability its flat modifier targets (resolved by family + class mask).
-    // A class mask bit is often shared across the ranks of a spell, so all ranks are cached and the
-    // highest one available to the bot is picked at lookup time.
-    std::unordered_map<uint32, std::vector<RelicModAbility>> RelicAbilityCache;
+    // Cache of (relic spell id, family mask) -> every ability the flat modifier targets. The mask is
+    // part of the key: one spell can carry several flat modifiers with different masks, and the proc
+    // path resolves against a spell_proc mask. A class mask bit is often shared across the ranks of a
+    // spell, so all ranks are cached and the highest one available to the bot is picked at lookup time.
+    // Guarded by a mutex because the collector runs on several map threads in parallel (and the world
+    // thread) and the cache is lazily written.
+    std::mutex RelicAbilityCacheMutex;
+    std::map<std::pair<uint32, flag96>, std::vector<RelicModAbility>> RelicAbilityCache;
 
-    std::vector<RelicModAbility> const& ResolveRelicAbilities(SpellInfo const* relicSpell, flag96 mask)
+    std::vector<RelicModAbility> ResolveRelicAbilities(SpellInfo const* relicSpell, flag96 mask)
     {
-        auto it = RelicAbilityCache.find(relicSpell->Id);
-        if (it != RelicAbilityCache.end())
-            return it->second;
+        auto const key = std::make_pair(relicSpell->Id, mask);
+        {
+            std::lock_guard<std::mutex> lock(RelicAbilityCacheMutex);
+            auto it = RelicAbilityCache.find(key);
+            if (it != RelicAbilityCache.end())
+                return it->second;
+        }
 
         std::vector<RelicModAbility> abilities;
         for (uint32 id = 1; id < sSpellMgr->GetSpellInfoStoreSize(); ++id)
@@ -59,7 +69,9 @@ namespace
             }
         }
 
-        return RelicAbilityCache.emplace(relicSpell->Id, std::move(abilities)).first->second;
+        std::lock_guard<std::mutex> lock(RelicAbilityCacheMutex);
+        auto result = RelicAbilityCache.emplace(key, std::move(abilities));
+        return result.first->second;
     }
 
     // Highest-rank ability matching the relic's modifier that the bot can cast (<= its level).
@@ -809,7 +821,7 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInf
             if (!cycle)
                 cycle = 1500;
 
-            float perSecond = (op == SPELLMOD_COST ? -val : val) * 1000.0f / cycle;
+            float perSecond = (op == SPELLMOD_COST ? -val : val) * 1000.0f / cycle * multiplier;
 
             if (op == SPELLMOD_COST)
                 stats[STATS_TYPE_MANA_REGENERATION] += perSecond;
@@ -1032,7 +1044,7 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInf
                         cycle = std::max(cycle, uint32(procEntry->Cooldown.count()));
                     if (!cycle)
                         cycle = 1500;
-                    float perSecond = val * 1000.0f / cycle;
+                    float perSecond = val * 1000.0f / cycle * multiplier;
                     if (type_ & CollectorType::SPELL_HEAL)
                         stats[STATS_TYPE_HEAL_POWER] += perSecond;
                     else if (type_ & CollectorType::SPELL_DMG)
