@@ -901,7 +901,6 @@ public:
     }
 
     void Clear();
-    void LoadQuestTravelTable();
 
     // Navigation
     void Init();
@@ -970,8 +969,6 @@ public:
 
     void printGrid(uint32 mapId, int x, int y, std::string const type);
     void printObj(WorldObject* obj, std::string const type);
-
-    void logQuestError(uint32 errorNr, Quest* quest, uint32 objective = 0, uint32 unitId = 0, uint32 itemId = 0);
 
     std::vector<uint32> avoidLoaded;
 
