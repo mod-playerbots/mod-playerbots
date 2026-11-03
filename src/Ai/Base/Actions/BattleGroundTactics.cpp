@@ -93,6 +93,8 @@ Position const AV_MINE_SOUTH_3 = {-920.228f, -134.594f, 61.478f, 0.0f};
 Position const AV_MINE_NORTH_1 = {822.477f, -456.782f, 48.569f, 0.0f};
 Position const AV_MINE_NORTH_2 = {966.362f, -446.570f, 56.641f, 0.0f};
 Position const AV_MINE_NORTH_3 = {952.081f, -335.073f, 63.579f, 0.0f};
+Position const AV_MINE_RALLY_NORTH = {792.851f, -487.656f, 99.622f, 0.0f};   // outside Irondeep Mine
+Position const AV_MINE_RALLY_SOUTH = {-955.916f, -280.473f, 63.588f, 0.0f};  // outside Coldtooth Mine
 Position const EY_WAITING_POS_HORDE = {1809.102f, 1540.854f, 1267.142f, 0.0f};
 Position const EY_WAITING_POS_ALLIANCE = {2523.827f, 1596.915f, 1270.204f, 0.0f};
 Position const EY_FLAG_RETURN_POS_RETREAT_HORDE = {1885.529f, 1532.157f, 1200.635f, 0.0f};
@@ -115,6 +117,14 @@ Position const IC_CANNON_POS_ALLIANCE2 = {425.525f, -779.538f, 87.717f, 5.88f};
 
 Position const IC_GATE_ATTACK_POS_HORDE = {478.3f, -830.2f, 40.0f, 0.0f};  // z from the map at runtime
 Position const IC_GATE_ATTACK_POS_ALLIANCE = {1091.273f, -763.619f, 42.352f, 0.0f};
+
+constexpr uint32 AV_AREA_IRONDEEP_MINE = 2957;
+constexpr uint32 AV_AREA_COLDTOOTH_MINE = 2963;
+constexpr uint32 AV_MINE_SQUAD_TEAM_SHARE = 8;  // one mine squad member per this many players on the team
+constexpr uint32 AV_MINE_SQUAD_MIN = 3;
+constexpr uint32 AV_MINE_SQUAD_MAX = 5;
+constexpr uint32 AV_MINE_SQUAD_READY = 3;       // teammates at the mine before the squad goes in
+constexpr float AV_MINE_RALLY_RADIUS = 35.0f;
 
 constexpr uint8 WSG_DEFENDER_ROLES_VS_DEFENSIVE = 2;
 constexpr float WSG_CLIFF_HEIGHT_TOLERANCE = 10.0f;
@@ -2285,10 +2295,12 @@ bool BGTactics::selectObjective(bool reset)
             uint32 bossGatherCount = std::clamp<uint32>(bg->GetPlayersCountByTeam(team) / 2, 5, 20);
 
             // --- Mine Capture ---
-            // The two bots of the team with the lowest roll take our side's mine, and go back whenever it is lost
+            // A squad of our lowest-roll bots gathers outside our side's mine and goes in once enough of them are there
             BG_AV_OTHER_VALUES mineType = (team == TEAM_HORDE) ? AV_SOUTH_MINE : AV_NORTH_MINE;
             if (!BgObjective && av->GetMineOwner(mineType) != team)
             {
+                uint32 squadSize = std::clamp<uint32>(bg->GetPlayersCountByTeam(team) / AV_MINE_SQUAD_TEAM_SHARE,
+                                                      AV_MINE_SQUAD_MIN, AV_MINE_SQUAD_MAX);
                 uint32 ownCounter = bot->GetGUID().GetCounter();
                 uint32 ownHash = stableHash(ownCounter, 8);
                 uint32 lowerBots = 0;
@@ -2302,12 +2314,38 @@ bool BGTactics::selectObjective(bool reset)
                         ++lowerBots;
                 }
 
-                if (lowerBots < 2)
+                if (lowerBots < squadSize)
                 {
                     uint32 bossEntry = (team == TEAM_HORDE) ? AV_CPLACE_MINE_S_3 : AV_CPLACE_MINE_N_3;
                     Creature* mineBoss = bg->GetBGCreature(bossEntry);
                     if (mineBoss && mineBoss->IsAlive())
-                        BgObjective = mineBoss;
+                    {
+                        uint32 mineArea = (team == TEAM_HORDE) ? AV_AREA_COLDTOOTH_MINE : AV_AREA_IRONDEEP_MINE;
+                        Position const& rally = (team == TEAM_HORDE) ? AV_MINE_RALLY_SOUTH : AV_MINE_RALLY_NORTH;
+
+                        // Teammates at the rally point or anywhere in the mine area, including any already inside
+                        uint32 atMine = 0;
+                        for (auto const& ref : bg->GetBgMap()->GetPlayers())
+                        {
+                            Player* player = ref.GetSource();
+                            if (player && player->IsAlive() && player->GetTeamId() == team &&
+                                (player->GetAreaId() == mineArea || player->GetExactDist2d(rally) < AV_MINE_RALLY_RADIUS))
+                                ++atMine;
+                        }
+
+                        // Inside the cave, keep fighting; outside, go in once the squad is there (one straggler allowed)
+                        bool insideMine = bot->GetAreaId() == mineArea && !bot->IsOutdoors();
+                        if (insideMine || atMine >= std::min(AV_MINE_SQUAD_READY, squadSize - 1))
+                            BgObjective = mineBoss;
+                        else
+                        {
+                            float rx, ry, rz;
+                            bot->GetRandomPoint(rally, 5.0f, rx, ry, rz);
+                            pos.Set(rx, ry, rz, bot->GetMapId());
+                            posMap["bg objective"] = pos;
+                            return true;
+                        }
+                    }
                     else
                     {
                         Position const* minePositions[] = {(team == TEAM_HORDE) ? &AV_MINE_SOUTH_1 : &AV_MINE_NORTH_1,
