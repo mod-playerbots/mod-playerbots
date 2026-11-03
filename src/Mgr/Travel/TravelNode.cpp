@@ -1559,12 +1559,11 @@ TravelNodeRoute TravelNodeMap::GetNodeRoute(TravelNode* start, TravelNode* goal,
         currentNode->closed = true;
         expansions++;
 
-        // For a cross-map goal, stop at the first walkable node on another map:
-        // the route is re-planned after every map crossing anyway. Callers detect
+        // For a cross-map goal, stop at the first walkable node on the goal's map:
+        // the route is re-planned after the map crossing anyway. Callers detect
         // the truncation as back() != goal.
         if (currentNode->dataNode == goal ||
-            (crossMap && currentNode->dataNode->GetMapId() != start->GetMapId() &&
-             currentNode->dataNode->isWalking()))
+            (crossMap && currentNode->dataNode->GetMapId() == goal->GetMapId() && currentNode->dataNode->isWalking()))
         {
             TravelNodeStub* parent = currentNode->parent;
 

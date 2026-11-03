@@ -698,8 +698,8 @@ public:
 
     // Finds the best nodePath between two nodes (A* over the node graph).
     // For a cross-map goal the route may end at the first walkable node
-    // past a map crossing instead of at goal (caller detects this as
-    // back() != goal); the executor re-plans after each crossing anyway.
+    // on the goal's map instead of at goal (caller detects this as
+    // back() != goal); the executor re-plans after the crossing anyway.
     // searchBudget caps expansions; exhaustion returns an empty route,
     // same as no route.
     TravelNodeRoute GetNodeRoute(TravelNode* start, TravelNode* goal, Player* bot,
