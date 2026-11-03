@@ -67,6 +67,13 @@ MountData CollectMountData(Player const* bot)
     return data;
 }
 
+bool CheckMountStateAction::IsLootTargetInRange()
+{
+    // "can loot" is the cached value that answers "is an in-range, lootable target pending",
+    // and reusing it keeps this per-tick check O(1) instead of re-running IsLootPossible here.
+    return AI_VALUE(bool, "can loot");
+}
+
 bool CheckMountStateAction::Execute(Event /*event*/)
 {
     // Forced flight dismount:
@@ -122,11 +129,13 @@ bool CheckMountStateAction::Execute(Event /*event*/)
 
     bool inBattleground = bot->InBattleground();
     bool const noRealMaster = (!master || master == bot);
+    // OpenLootAction dismounts for in-range loot; do not remount before it can open.
+    bool const lootTargetInRange = IsLootTargetInRange();
 
     // If there is a master and bot not in BG, follow master's mount state regardless of group leader
     if (!noRealMaster && !inBattleground)
     {
-        if (ShouldFollowMasterMountState(master, noAttackers, shouldMount))
+        if (ShouldFollowMasterMountState(master, noAttackers, shouldMount) && !lootTargetInRange)
             return Mount();
 
         else if (ShouldDismountForMaster(master) && bot->IsMounted())
@@ -140,7 +149,7 @@ bool CheckMountStateAction::Execute(Event /*event*/)
 
     // No real master (random bot or SelfBot) OR bot in BG
     if ((noRealMaster || inBattleground) && !bot->IsMounted() &&
-        noAttackers && shouldMount && !bot->IsInCombat())
+        noAttackers && shouldMount && !bot->IsInCombat() && !lootTargetInRange)
         return Mount();
 
     if (!bot->IsFlying() && shouldDismount && bot->IsMounted() &&
