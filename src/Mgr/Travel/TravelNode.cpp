@@ -3174,7 +3174,7 @@ void TravelNodeMap::saveNodeStore()
     }
 
     // Phase 4: path points, committed every ~10000 rows. A single mega-transaction
-    // (~1.5M rows) used to exceed MySQL limits and partial-commit, corrupting the store.
+    // (~1.5M rows) exceeds MySQL limits and partially commits, corrupting the store.
     constexpr uint32 BATCH_SIZE = 500;
     constexpr uint32 BATCHES_PER_COMMIT = 20;  // 20 * 500 = 10000 rows per tx
     uint32 points = 0;

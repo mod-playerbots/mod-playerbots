@@ -43,8 +43,7 @@ void LastMovement::clear()
 
 void LastMovement::Set([[maybe_unused]] Unit* follow)
 {
-    // Legacy signature — `follow` is ignored (lastFollow field removed).
-    // The function still serves callers that want a soft-reset:
+    // `follow` is ignored; kept for callers that want a soft reset:
     // clears short + path + hold, resets msTime/priority via the chain below.
     Set(0, 0.0f, 0.0f, 0.0f, 0.0f);
     SetHold(0);

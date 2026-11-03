@@ -2857,8 +2857,7 @@ bool MovementAction::HandleSpecialMovement(TravelPath& path)
                 lm.lastTransportEntry = 0;
             }
             // Throttle re-evaluation after disembark so the post-teleport
-            // state settles. Milliseconds — the old WaitForReach(1000.0f)
-            // treated 1000 as yards and stalled 5s (maxWaitForMove clamp).
+            // state settles.
             botAI->SetNextCheckDelay(1000);
             return teleported;
         }
@@ -2888,9 +2887,7 @@ bool MovementAction::HandleSpecialMovement(TravelPath& path)
             // Probe at the bot's z, not the stored route-point z: ship
             // route points sit at water level (z~0) while the deck is
             // several yards higher, so a probe at the stored z misses
-            // the hull even with the docked ship right there (observed:
-            // BoardTransport never fired; the legacy auto-sync raycast
-            // boarded the bot by accident instead).
+            // the hull even with the docked ship right there.
             Transport* transport = GetTransportForPosTolerant(
                 map, bot, bot->GetPhaseMask(),
                 next.point.GetPositionX(),
@@ -2910,9 +2907,6 @@ bool MovementAction::HandleSpecialMovement(TravelPath& path)
                 bot->StopMoving();
             }
 
-            // 1s throttle in MILLISECONDS. The old WaitForReach(1000.0f)
-            // fed 1000 *yards* into a distance→time conversion, which
-            // clamped to maxWaitForMove (5s) instead of the intended 1s.
             botAI->SetNextCheckDelay(1000);
             return true;
         }
@@ -2981,8 +2975,7 @@ bool MovementAction::HandleSpecialMovement(TravelPath& path)
             // activation doesn't fail on an undiscovered node.
             bot->GetSession()->SendLearnNewTaxiNode(flightMaster);
 
-            // Legacy cheat-gold behaviour (restored — pre-nav_polish):
-            // cover the fare with the "gold" cheat so activation doesn't
+            // Cover the fare with the "gold" cheat so activation doesn't
             // fail on an empty purse, then put the bot's real money back
             // regardless of outcome. Bots without the cheat pay normally.
             uint32 const botMoney = bot->GetMoney();

@@ -52,11 +52,11 @@ struct AreaTrigger;
 //    teleportSpell(5) — Spell-based teleport (e.g. mage portals)
 //    staticPortal(6)  — Manually defined teleport link (DB only, not pruned by generation)
 //
-//  On server start saved nodes and links are loaded via TravelNodeMap::Init(). Init() precomputes undirected connected components for O(1) reachability checks
-//  (see PrecomputeReachability), and builds a taxi BFS graph. Paths and routes are calculated once during generation
-//  and saved for future use — runtime path-building was removed (H3) because it mutated the shared graph from bot
-//  map threads under only a shared_lock. Nodes are only added at startup or via the console `.generate` command —
-//  runtime mutation was removed because taking a unique_lock caused 100-250ms contention spikes against bot threads.
+//  On server start saved nodes and links are loaded via TravelNodeMap::Init(). Init() precomputes undirected connected
+//  components for O(1) reachability checks (see PrecomputeReachability), and builds a taxi BFS graph. Paths and routes
+//  are calculated once during generation and saved for future use. Bots never build paths or add nodes at runtime: the
+//  graph is shared across map threads, and editing it would need a unique_lock that stalls them (100-250ms spikes).
+//  Nodes are only added at startup or by the `.playerbots travel generatenode` console command.
 //
 //  Initially the current nodes have been made:
 //  Flightmasters and Inns (Bots can use these to fast-travel so eventually they will be included in the route
@@ -83,15 +83,14 @@ struct AreaTrigger;
 //  If setup cannot resolve (no node, no route, no flight), the bot teleports directly to the destination
 //  as a fallback.
 //
-//  The use of hearthstones and mage teleporting was removed — it caused route mutations requiring locking that no longer made sense. Mage portals may be future item.
+//  Hearthstones and mage teleports are not used for routing; they would need per-bot route edits under a lock.
+//  Mage portals may be added later.
 //
 //  Thread Safety:
 //
 //  The graph is built once at startup on the world thread (LoadNodeStore + generation in Init()) and is never
-//  mutated by bot AI afterward: H3 removed the last runtime mutation path, where TravelNodeRoute::BuildPath's
-//  canBuildHere branch called TravelNode::BuildPath (a Detour query that also calls setPathTo/setComplete) from
-//  bot map threads. A missing/incomplete same-map segment now falls straight through to the existing node-point
-//  hop instead (see TravelNodeRoute::BuildPath).
+//  changed by bot AI afterward. A missing or incomplete same-map segment falls through to the node-point hop
+//  (see TravelNodeRoute::BuildPath) instead of being built from a bot map thread.
 //
 //  GetFullPath takes m_nMapMtx with try_lock_shared before reading the graph and returns an empty path when an
 //  edit holds the lock, so bots fail a resolve instead of blocking their map thread. saveNodeStore() takes NO
@@ -445,7 +444,7 @@ protected:
     std::unordered_map<TravelNode*, TravelNodePath*> links;
 
     // Undirected connected-component ids assigned by
-    // TravelNodeMap::PrecomputeReachability() (H2). 0 = unassigned. See
+    // TravelNodeMap::PrecomputeReachability(). 0 = unassigned. See
     // hasRouteTo for how these are used and why the grouping is safe to
     // over-approximate.
     uint32 componentId = 0;
