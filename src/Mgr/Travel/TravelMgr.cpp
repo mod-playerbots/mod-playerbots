@@ -1230,7 +1230,10 @@ bool QuestObjectiveTravelDestination::isActive(Player* bot)
     if (getEntry() > 0)
     {
         CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(getEntry());
-        if (cInfo && (int)cInfo->maxlevel - (int)bot->GetLevel() > 4)
+        if (!cInfo)
+            return false;
+
+        if ((int)cInfo->maxlevel - (int)bot->GetLevel() > 4)
             return false;
 
         // Do not try to hand-in dungeon/elite quests in instances without a group.
