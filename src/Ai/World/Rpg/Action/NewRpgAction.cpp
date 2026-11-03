@@ -316,7 +316,10 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             auto& data = std::get<NewRpgInfo::TravelFlight>(info.data);
             if (data.inFlight && !bot->IsInFlight())
             {
-                // flight arrival
+                // Handle a nearby giver before returning to idle.
+                if (SearchQuestGiverAndAcceptOrReward())
+                    return true;
+
                 info.ChangeToIdle();
                 return true;
             }
@@ -698,6 +701,9 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         return false;
 
     auto& data = *dataPtr;
+    if (!bot->IsInFlight() && SearchQuestGiverAndAcceptOrReward())
+        return true;
+
     if (bot->IsInFlight())
     {
         data.inFlight = true;
