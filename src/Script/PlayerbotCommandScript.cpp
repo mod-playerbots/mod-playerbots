@@ -167,7 +167,9 @@ public:
     {
         if (!sPlayerbotAIConfig.EnableTravelNodes)
         {
-            handler->PSendSysMessage("Travel node generation refused: AiPlayerbot.EnableTravelNodes is disabled, so the node store was never loaded and generating now would overwrite it.");
+            handler->PSendSysMessage(
+                "Travel node generation refused: Playerbots.EnableTravelNodes is disabled, so the "
+                "node store was never loaded and generating now would overwrite it.");
             return true;
         }
 

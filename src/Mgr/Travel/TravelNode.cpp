@@ -1872,7 +1872,7 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
     }
 
     // Fallback when the graph gave no usable route: try a direct chained mmap probe
-    // on the bot's own map (step budget: AiPlayerbot.TravelNodeProbeSteps, 0 = off).
+    // on the bot's own map (step budget: Playerbots.TravelNodeProbeSteps, 0 = off).
     if (sPlayerbotAIConfig.TravelNodeProbeSteps > 0 &&
         botPos.GetMapId() == destination.GetMapId())
     {

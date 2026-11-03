@@ -1438,7 +1438,8 @@ Playerbots.RpgTargetSearchDistance = 150.0
 # Default: 0 (disabled)
 Playerbots.CollectDetailedQuestStats = 0
 
-# Use pre-computed travel node paths for long-distance movement (>300 yards).
+# Use pre-computed travel node paths for long-distance movement (beyond
+# Playerbots.SightDistance, or to another map).
 # When enabled, bots use the travel node graph (A*, flight paths, transports)
 # instead of repeated mmap hops. Experimental.
 # Default: 1 (enabled)

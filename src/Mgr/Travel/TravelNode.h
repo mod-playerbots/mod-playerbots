@@ -66,10 +66,10 @@ struct AreaTrigger;
 //  (Again used to travel in and in maps) (sub)Zone means (These are the center most point for each sub-zone which is
 //  good for global coverage).
 //
-//  To increase coverage/linking extra nodes must be manually created via the "playerbot travel generatenode"
+//  To increase coverage/linking extra nodes must be manually created via the ".playerbots travel generatenode"
 //  console command after importing the specified node. Current implementation places nodes on paths (including
 //  complete) at sub-zone transitions or randomly. After calculating possible links the node is removed if it
-//  does not create local coverage (.fullgenerate only).
+//  does not create local coverage.
 //
 //  Travel Flow:
 //
