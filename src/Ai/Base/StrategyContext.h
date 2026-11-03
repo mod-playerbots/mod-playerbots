@@ -94,8 +94,6 @@ public:
         creators["new rpg"] = &StrategyContext::new_rpg;
         creators["travel"] = &StrategyContext::travel;
         creators["explore"] = &StrategyContext::explore;
-        creators["map"] = &StrategyContext::map;
-        creators["map full"] = &StrategyContext::map_full;
         creators["sit"] = &StrategyContext::sit;
         creators["mark rti"] = &StrategyContext::mark_rti;
         creators["adds"] = &StrategyContext::possible_adds;
@@ -173,8 +171,6 @@ private:
     static Strategy* new_rpg(PlayerbotAI* botAI) { return new NewRpgStrategy(botAI); }
     static Strategy* travel(PlayerbotAI* botAI) { return new TravelStrategy(botAI); }
     static Strategy* explore(PlayerbotAI* botAI) { return new ExploreStrategy(botAI); }
-    static Strategy* map(PlayerbotAI* botAI) { return new MapStrategy(botAI); }
-    static Strategy* map_full(PlayerbotAI* botAI) { return new MapFullStrategy(botAI); }
     static Strategy* sit(PlayerbotAI* botAI) { return new SitStrategy(botAI); }
     static Strategy* possible_adds(PlayerbotAI* botAI) { return new PossibleAddsStrategy(botAI); }
     static Strategy* pull_back(PlayerbotAI* botAI) { return new PullBackStrategy(botAI); }
