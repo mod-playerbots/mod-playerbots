@@ -1044,7 +1044,7 @@ bool NewRpgBaseAction::SelectRandomFlightTaxiNode(uint32& flightMasterEntry, Wor
             std::vector<ReachableFlightMaster> origins;
             for (TravelMgr::FlightMasterInfo const* candidate :
                  sTravelMgr.GetFlightMastersWithin(bot, FlightMasterSearchDistance,
-                                                   MaxFlightMasterCandidates))
+                                                   MaxFlightMasterCandidates, bot->GetZoneId()))
             {
                 float walkLength = 0.0f;
                 GetWalkPathLength(bot, candidate->pos, walkLength);
