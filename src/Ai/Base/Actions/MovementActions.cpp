@@ -382,10 +382,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     }
 
     // 3. Check if movement action is allowed.
-    if (!CanOverrideMovement(priority))
-        return false;
-
-    if (IsDuplicateMove(x, y, z))
+    if (!IsMoveAccepted(x, y, z, priority))
         return false;
 
     bool generatePath = !bot->IsFlying() && !bot->isSwimming();
@@ -567,6 +564,11 @@ bool MovementAction::CanOverrideMovement(MovementPriority priority)
         return false;
 
     return !lastMove.IsHoldActive() || priority > lastMove.priority;
+}
+
+bool MovementAction::IsMoveAccepted(float x, float y, float z, MovementPriority priority)
+{
+    return CanOverrideMovement(priority) && !IsDuplicateMove(x, y, z);
 }
 
 bool MovementAction::IsWaitingForLastMove(MovementPriority priority)

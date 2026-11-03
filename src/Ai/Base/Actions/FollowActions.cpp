@@ -90,9 +90,9 @@ bool FollowAction::Execute(Event /*event*/)
                     : MovementPriority::MOVEMENT_NORMAL;
 
                 bool const movingAllowed = IsMovingAllowed();
-                bool const dupMove = IsDuplicateMove(destX, destY, destZ);
+                bool const accepted = IsMoveAccepted(destX, destY, destZ, priority);
 
-                if (movingAllowed && !dupMove)
+                if (movingAllowed && accepted)
                 {
                     if (bot->IsSitState())
                         bot->SetStandState(UNIT_STAND_STATE_STAND);
@@ -146,7 +146,7 @@ bool FollowAction::Execute(Event /*event*/)
                              !bot->GetVehicle() && !bot->GetTransport();
         if (walking && bot->GetExactDist(x, y, z) > sPlayerbotAIConfig.SightDistance)
             moved = MoveTo(loc.GetMapId(), x, y, z, false, false, false, false, priority, true);
-        else if (!CanOverrideMovement(priority) || IsDuplicateMove(x, y, z))
+        else if (!IsMoveAccepted(x, y, z, priority))
             moved = false;
         else if (walking && !HasGroundPath("formation", x, y, z))
             moved = false;
