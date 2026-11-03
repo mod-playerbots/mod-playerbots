@@ -2666,10 +2666,11 @@ bool BGTactics::selectObjective(bool reset)
                     constexpr float defenseHalfArc = static_cast<float>(M_PI) / 2.5f;
                     constexpr float defenseMaxBelow = 0.5f;
                     Position point;
-                    if (!GetRandomPointInCone(home, home.GetAngle(&front), defenseHalfArc, defenseMinSpread,
-                                              defenseMaxSpread, point, defenseMaxBelow))
-                        point.Relocate(home);
-                    defense.Set(point.GetPositionX(), point.GetPositionY(), point.GetPositionZ(), bot->GetMapId());
+                    if (GetRandomPointInCone(home, home.GetAngle(&front), defenseHalfArc, defenseMinSpread,
+                                             defenseMaxSpread, point, defenseMaxBelow))
+                        defense.Set(point.GetPositionX(), point.GetPositionY(), point.GetPositionZ(), bot->GetMapId());
+                    else
+                        defense.Reset();
                 }
                 if (defense.isSet())
                     target.Relocate(defense.x, defense.y, defense.z);

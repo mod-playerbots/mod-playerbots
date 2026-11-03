@@ -1626,6 +1626,8 @@ bool MovementAction::GetRandomPointInCone(Position const& origin, float orientat
     float const originX = origin.GetPositionX();
     float const originY = origin.GetPositionY();
     float const originZ = origin.GetPositionZ();
+    float originGroundZ = originZ;
+    bot->UpdateGroundPositionZ(originX, originY, originGroundZ);
 
     for (uint8 i = 0; i < attempts; ++i)
     {
@@ -1636,7 +1638,7 @@ bool MovementAction::GetRandomPointInCone(Position const& origin, float orientat
         float z = originZ;
         bot->UpdateGroundPositionZ(x, y, z);
 
-        float const dz = z - originZ;
+        float const dz = z - originGroundZ;
         if (dz < -maxBelow || dz > maxAbove)
             continue;
 
