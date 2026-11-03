@@ -4404,8 +4404,7 @@ TravelMgr::FlightMasterInfo const* TravelMgr::GetNearestFlightMasterInfo(Player*
 }
 
 std::vector<TravelMgr::FlightMasterInfo const*> TravelMgr::GetFlightMastersWithin(Player* bot, float maxDistance,
-                                                                                  uint32 maxCandidates,
-                                                                                  uint32 includeZoneId) const
+                                                                                  uint32 maxCandidates) const
 {
     auto const& flightMasterCache =
         (bot->GetTeamId() == TEAM_ALLIANCE) ? allianceFlightMasterCache : hordeFlightMasterCache;
@@ -4418,8 +4417,8 @@ std::vector<TravelMgr::FlightMasterInfo const*> TravelMgr::GetFlightMastersWithi
             continue;
 
         float const distanceSq = bot->GetExactDist2dSq(info.pos);
-        // Include the whole current zone, plus nearby flight masters across a border.
-        if (distanceSq <= maxDistanceSq || (includeZoneId && info.zoneId == includeZoneId))
+        // Distance-filtered only: a flight master across a zone border is a valid origin.
+        if (distanceSq <= maxDistanceSq)
             candidates.emplace_back(distanceSq, &info);
     }
 

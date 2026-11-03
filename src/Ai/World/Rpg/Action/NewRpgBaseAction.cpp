@@ -39,6 +39,7 @@
 #include "StatsWeightCalculator.h"
 #include "Timer.h"
 #include "TravelMgr.h"
+#include "World.h"
 #include "G3D/Vector2.h"
 #include <algorithm>
 #include <cmath>
@@ -1043,7 +1044,7 @@ bool NewRpgBaseAction::SelectRandomFlightTaxiNode(uint32& flightMasterEntry, Wor
             std::vector<ReachableFlightMaster> origins;
             for (TravelMgr::FlightMasterInfo const* candidate :
                  sTravelMgr.GetFlightMastersWithin(bot, FlightMasterSearchDistance,
-                                                   MaxFlightMasterCandidates, bot->GetZoneId()))
+                                                   MaxFlightMasterCandidates))
             {
                 float walkLength = 0.0f;
                 GetWalkPathLength(bot, candidate->pos, walkLength);
@@ -1051,7 +1052,7 @@ bool NewRpgBaseAction::SelectRandomFlightTaxiNode(uint32& flightMasterEntry, Wor
             }
 
             float const runSpeed = std::max(bot->GetSpeed(MOVE_RUN), 1.0f);
-            float const flightSpeed = std::max({bot->GetSpeed(MOVE_FLIGHT), runSpeed, 1.0f});
+            float const flightSpeed = std::max(sWorld->getFloatConfig(CONFIG_TAXI_FLIGHT_SPEED), runSpeed);
             for (ReachableFlightMaster const& origin : origins)
             {
                 for (std::vector<uint32>& flightPath : sTravelMgr.GetReachableFlightPaths(bot, origin.info))

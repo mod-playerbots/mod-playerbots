@@ -876,8 +876,7 @@ public:
 
     FlightMasterInfo const* GetNearestFlightMasterInfo(Player* bot) const;
     std::vector<FlightMasterInfo const*> GetFlightMastersWithin(Player* bot, float maxDistance,
-                                                                uint32 maxCandidates,
-                                                                uint32 includeZoneId = 0) const;
+                                                                uint32 maxCandidates) const;
     std::vector<std::vector<uint32>> GetReachableFlightPaths(Player* bot,
                                                              FlightMasterInfo const* origin) const;
     std::vector<std::vector<uint32>> GetOptimalFlightDestinations(Player* bot);
