@@ -23,6 +23,11 @@ bool SscNoEncounterInProgressTrigger::IsActive()
     return !IsEncounterInProgress(bot, SSC_MAP_ID);
 }
 
+bool SscClassRolesShouldBeAssignedTrigger::IsActive()
+{
+    return IsMechanicTrackerBot(bot, SSC_MAP_ID);
+}
+
 bool SscHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
@@ -357,8 +362,8 @@ bool LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger::IsActiveInEncounter
     if (HasInnerDemon(bot))
         return false;
 
-    if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)) &&
-        bot->HasSpellCooldown(Id(SscSpells::SPELL_MISDIRECTION_CAST)))
+    if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION_AURA)) &&
+        bot->HasSpellCooldown(Id(SscSpells::SPELL_MISDIRECTION)))
     {
         return false;
     }

@@ -8,20 +8,20 @@
 #define PLAYERBOTS_SSCHELPERS_H
 
 #include "Common.h"
+#include "EncounterHelpers.h"
 #include "ObjectDefines.h"
 #include "ObjectGuid.h"
+#include "PlayerbotAI.h"
 #include "Position.h"
+#include "SharedDefines.h"
 #include <array>
-#include <initializer_list>
 #include <limits>
 #include <optional>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 class Creature;
 class Player;
-class PlayerbotAI;
 class Unit;
 
 namespace SscHelpers
@@ -81,8 +81,8 @@ enum class SscSpells : uint32
     SPELL_DRUID_BERSERK          = 50334,
 
     // Hunter
-    SPELL_MISDIRECTION_CAST      = 34477,
-    SPELL_MISDIRECTION           = 35079, // the aura on the hunter
+    SPELL_MISDIRECTION           = 34477,
+    SPELL_MISDIRECTION_AURA      = 35079, // the aura on the hunter
 
     // Paladin
     SPELL_DIVINE_SHIELD          =   642,
@@ -106,6 +106,9 @@ enum class SscNpcs : uint32
     // Trash
     NPC_WATER_ELEMENTAL_TOTEM    = 22236,
 
+    // Hydross the Unstable <Duke of Currents>
+    NPC_HYDROSS_THE_UNSTABLE     = 21216,
+
     // The Lurker Below
     NPC_THE_LURKER_BELOW         = 21217,
     NPC_COILFANG_GUARDIAN        = 21873,
@@ -116,6 +119,7 @@ enum class SscNpcs : uint32
     NPC_SHADOW_OF_LEOTHERAS      = 21875,
 
     // Morogrim Tidewalker
+    NPC_MOROGRIM_TIDEWALKER      = 21213,
     NPC_TIDEWALKER_LURKER        = 21920,
 
     // Fathom-Lord Karathress
@@ -128,6 +132,7 @@ enum class SscNpcs : uint32
     NPC_FATHOM_SPOREBAT          = 22120,
 
     // Lady Vashj <Coilfang Matron>
+    NPC_LADY_VASHJ               = 21212,
     NPC_ENCHANTED_ELEMENTAL      = 21958,
     NPC_COILFANG_ELITE           = 22055,
     NPC_COILFANG_STRIDER         = 22056,
@@ -145,14 +150,13 @@ enum class SscItems : uint32
     ITEM_TAINTED_CORE            = 31088,
 };
 
-// General
+// Shared
 
 inline constexpr uint32 SSC_MAP_ID = 548;
 inline constexpr uint32 HAZARD_CACHE_INTERVAL_MS = 200;
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
 
-bool ClearSscTargetIcon(Player* bot, uint8 iconId, std::initializer_list<uint32> entries);
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
 bool CastTankTaunt(PlayerbotAI* botAI, Unit* target);
 bool FindHazardEscapeStep(
@@ -200,8 +204,8 @@ inline constexpr float HYDROSS_CLEANSING_FIELD_RADIUS = 28.0f;
 // The incoming phase's tank waits this far short of the field's edge, on its own side.
 inline constexpr float HYDROSS_HANDOFF_SHORT_DISTANCE = 8.0f;
 
-inline Position const HYDROSS_FROST_TANK_POSITION =  { -235.653f, -354.823f, -0.828f };
-inline Position const HYDROSS_NATURE_TANK_POSITION = { -224.721f, -324.755f, -3.682f };
+inline Position const HYDROSS_FROST_TANK_POSITION =    { -235.653f, -354.823f, -0.828f };
+inline Position const HYDROSS_NATURE_TANK_POSITION =   { -224.721f, -324.755f, -3.682f };
 inline Position const HYDROSS_CLEANSING_FIELD_CENTER = { -239.715f, -366.440f, -0.745f };
 
 // The main tank holds Hydross in frost phase, the first assist tank in nature phase. Every other
@@ -266,19 +270,35 @@ bool ShouldGoToLurkerWalkway(Player* bot, Unit* lurker, Unit* target);
 
 // Leotheras the Blind
 
+inline constexpr EncounterHelpers::ClassRole LEOTHERAS_WARLOCK_TANK_ROLE = {
+    .playerClass = CLASS_WARLOCK,
+    .preferredSpec = WARLOCK_TAB_DEMONOLOGY,
+    .role = { "class_role_leotheras_warlock_tank", "Leotheras warlock tank" },
+    .candidate = { "class_role_class_warlock", "Warlock" },
+    .preferredCandidate = { "class_role_class_demonology_warlock", "Demonology Warlock" },
+};
+// 100 yards takes the raid to just around the column near the entrance to Leo's chamber.
+inline constexpr float LEOTHERAS_CLASS_ROLE_ANNOUNCE_DISTANCE = 100.0f;
+// 150 yards is about the distance to the entrance to Leo's chamber. Beyond him, it extends past
+// Karathress's spawn point.
+inline constexpr float LEOTHERAS_CLASS_ROLE_REARM_DISTANCE = 150.0f;
+
 inline constexpr float LEOTHERAS_SEARCH_DISTANCE = 100.0f;
 inline constexpr uint32 LEOTHERAS_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 LEOTHERAS_HUMANOID_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
 inline constexpr uint32 LEOTHERAS_DEMON_DPS_WAIT_MS = 10 * IN_MILLISECONDS;
 inline constexpr uint32 LEOTHERAS_FINAL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
 inline constexpr uint32 LEOTHERAS_WHIRLWIND_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
-// Ranged stay 15y away during Humanoid phase until Whirlwind begins, at which point they move to
-// 25y away. Whirlwind has a 10y radius only, but Leo moves very fast when Whirlwinding.
-inline constexpr float LEOTHERAS_RANGED_SAFE_DISTANCE = 15.0f;
-inline constexpr float LEOTHERAS_WHIRLWIND_SAFE_DISTANCE = 25.0f;
+inline constexpr float LEOTHERAS_WHIRLWIND_HAZARD_RADIUS = 10.0f;
+// Ranged stay this distance from Leo during Humanoid phase until Whirlwind begins.
+inline constexpr float LEOTHERAS_RANGED_SAFE_DISTANCE = LEOTHERAS_WHIRLWIND_HAZARD_RADIUS + 5.0f;
+// While Whirlwind is channeling, all non-tanks move to this distance from Leo as he is very fast.
+inline constexpr float LEOTHERAS_WHIRLWIND_SAFE_DISTANCE =
+    LEOTHERAS_WHIRLWIND_HAZARD_RADIUS + 15.0f;
 inline constexpr float LEOTHERAS_RANGED_SPREAD_DISTANCE = 4.0f;
-// Chaos Blast deals splash damage within 8y of the target.
-inline constexpr float LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE = 10.0f;
+inline constexpr float LEOTHERAS_CHAOS_BLAST_HAZARD_RADIUS = 8.0f;
+inline constexpr float LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE =
+    LEOTHERAS_CHAOS_BLAST_HAZARD_RADIUS + 2.0f;
 inline constexpr float LEOTHERAS_SHADOW_SEPARATION_DISTANCE = 20.0f;
 
 inline Position const LEOTHERAS_SPAWN_POSITION = { 376.543f, -438.631f, 29.608f };
@@ -294,8 +314,9 @@ bool IsLeotherasDemonPhase(PlayerbotAI* botAI);
 Creature* GetShadowOfLeotheras(PlayerbotAI* botAI);
 bool IsLeotherasFinalPhase(PlayerbotAI* botAI);
 Creature* GetLeotherasDemonOrShadow(PlayerbotAI* botAI);
-// (1) First priority is an assistant Warlock (real player or bot).
-// (2) If there is no assistant Warlock, then look for any Warlock bot.
+bool UpdateSscClassRoles(PlayerbotAI* botAI);
+bool UpdateLeotherasClassRoleAnnouncement(PlayerbotAI* botAI);
+// Demonology spec is preferred for the Leotheras Warlock tank.
 Player* GetLeotherasWarlockTank(Player* bot);
 bool IsLeotherasWarlockTank(Player* bot);
 bool IsLeotherasChannelingWhirlwind(Unit* leotheras);
@@ -338,8 +359,9 @@ inline constexpr uint32 SPITFIRE_TOTEM_CACHE_INTERVAL_MS = 200;
 
 inline constexpr float CARIBDIS_HEALER_DISTANCE = 32.0f;
 inline constexpr float CARIBDIS_HEALER_MAX_DISTANCE = 35.0f;
-// Tidal Surge's range is 10 yards.
-inline constexpr float CARIBDIS_TIDAL_SURGE_SAFE_DISTANCE = 12.0f;
+inline constexpr float CARIBDIS_TIDAL_SURGE_HAZARD_RADIUS = 10.0f;
+inline constexpr float CARIBDIS_TIDAL_SURGE_SAFE_DISTANCE =
+    CARIBDIS_TIDAL_SURGE_HAZARD_RADIUS + 2.0f;
 // Bots walk to Caribdis until she's in sight and then stop at no closer than this distance away.
 inline constexpr float CARIBDIS_APPROACH_STOP_DISTANCE = 5.0f;
 // A Cyclone spawns on a random player within 45y of Caribdis and picks up all players within 4y.
@@ -417,8 +439,8 @@ bool IsOnVashjDais(float x, float y, float margin, float rockClearance);
 
 // Vashj: Static Charge, Entangle and Shock Blast
 
-// Static Charge's range is 10y from the target's center.
-inline constexpr float VASHJ_STATIC_CHARGE_SAFE_DISTANCE = 11.0f;
+inline constexpr float VASHJ_STATIC_CHARGE_HAZARD_RADIUS = 10.0f;
+inline constexpr float VASHJ_STATIC_CHARGE_SAFE_DISTANCE = VASHJ_STATIC_CHARGE_HAZARD_RADIUS + 1.0f;
 // Vashj's Entangle has a 15y range, so ranged bots stay at least this far back from her.
 inline constexpr float VASHJ_PHASE_3_RANGED_DISTANCE = 15.0f;
 inline constexpr float VASHJ_PHASE_3_RANGED_SPREAD_DISTANCE = 4.0f;
@@ -435,9 +457,8 @@ Player* FindVashjGroundingShaman(Player* bot);
 
 // Vashj: Toxic Spores
 
-// Toxic Spore pools have a range of 5y + the target's combat reach.
-inline constexpr float TOXIC_SPORES_HIT_RADIUS = 6.5f;
-inline constexpr float TOXIC_SPORES_AVOID_RADIUS = 7.5f;
+inline constexpr float TOXIC_SPORES_HAZARD_RADIUS = 6.5f; // 5y + the target's combat reach
+inline constexpr float TOXIC_SPORES_AVOID_RADIUS = TOXIC_SPORES_HAZARD_RADIUS + 1.0f;
 // Vashj's tank has a greater avoidance radius to keep melee dps on the far side of Vashj clear
 // as well. She is ~3.5y from the tank and melee ~3.75y past her (7.25y total + 0.25y slack).
 inline constexpr float TOXIC_SPORES_TANK_AVOID_RADIUS = TOXIC_SPORES_AVOID_RADIUS + 7.5f;
@@ -582,7 +603,7 @@ struct VashjTargetFacts
     Unit* vashj = nullptr;
     Unit* tainted = nullptr;
     int8 phase = -1;
-    // Measured from the bot, and in phase 2 also from the platform centre, so bots don't chase
+    // Measured from the bot, and in phase 2 also from the platform center, so bots don't chase
     // adds down the stairs.
     float maxPursueRange = 0.0f;
     float maxSearchRange = 0.0f;
@@ -832,28 +853,12 @@ struct SscInstanceState
     std::optional<VashjStationHolders> vashjStationHolders;
     std::optional<TaintedCoreLooter> vashjTaintedCoreLooter;
     std::optional<VashjCorePassingChain> vashjCorePassingChain;
+    EncounterHelpers::ClassRoleAssignment leotherasWarlockTank;
 };
 
 SscInstanceState& SscState(uint32 instanceId);
+SscInstanceState* FindSscState(uint32 instanceId);
 bool SscResetInstance(uint32 instanceId);
-
-template <typename T, typename U>
-bool EmplaceIfUnset(std::optional<T>& field, U&& value)
-{
-    if (field)
-        return false;
-
-    field.emplace(std::forward<U>(value));
-    return true;
-}
-
-template <typename T>
-bool ResetIfSet(std::optional<T>& field)
-{
-    bool const wasSet = field.has_value();
-    field.reset();
-    return wasSet;
-}
 
 }
 

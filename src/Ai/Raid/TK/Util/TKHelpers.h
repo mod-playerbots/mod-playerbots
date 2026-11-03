@@ -8,18 +8,20 @@
 #define PLAYERBOTS_TKHELPERS_H
 
 #include "Common.h"
+#include "EncounterHelpers.h"
 #include "ObjectGuid.h"
+#include "PlayerbotAI.h"
 #include "Position.h"
+#include "SharedDefines.h"
 #include <array>
+#include <optional>
 #include <type_traits>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
 class Creature;
 class Item;
 class Player;
-class PlayerbotAI;
 class Unit;
 
 namespace TkHelpers
@@ -51,14 +53,16 @@ enum class TkSpells : uint32
 
     // Kael'thas Sunstrider
     SPELL_PERMANENT_FEIGN_DEATH     = 29266,
-    SPELL_GRAVITY_LAPSE_AURA        = 39432, // AC uses this name (SPELL_GRAVITY_LAPSE is 35941)
+    SPELL_EMBER_BLAST               = 34341, // For Phoenixes. Al'ar has this same aura.
     SPELL_MENTAL_PROTECTION_FIELD   = 36480, // Staff of Disintegration
     SPELL_ARCANE_BARRIER            = 36481, // Phaseshift Bulwark
     SPELL_KAELTHAS_MIND_CONTROL     = 36797,
     SPELL_SHOCK_BARRIER             = 36815,
+    SPELL_GRAVITY_LAPSE_AURA        = 39432, // AC uses this name (SPELL_GRAVITY_LAPSE is 35941)
 
     // Hunter
-    SPELL_MISDIRECTION              = 35079,
+    SPELL_MISDIRECTION              = 34477,
+    SPELL_MISDIRECTION_AURA         = 35079, // the aura on the hunter
 };
 
 enum class TkNpcs : uint32
@@ -75,6 +79,10 @@ enum class TkNpcs : uint32
 
     // Kael'thas Sunstrider
     NPC_KAELTHAS_SUNSTRIDER         = 19622,
+    NPC_LORD_SANGUINAR              = 20060,
+    NPC_GRAND_ASTROMANCER_CAPERNIAN = 20062,
+    NPC_MASTER_ENGINEER_TELONICUS   = 20063,
+    NPC_THALADRED_THE_DARKENER      = 20064,
     NPC_NETHERSTRAND_LONGBOW        = 21268,
     NPC_DEVASTATION                 = 21269,
     NPC_COSMIC_INFUSER              = 21270,
@@ -102,9 +110,10 @@ enum class TkItems : uint32
     ITEM_NETHER_SPIKES              = 30319,
 };
 
-// General
+// Shared
 
 inline constexpr uint32 TK_MAP_ID = 550;
+inline constexpr uint32 TK_CACHE_INTERVAL_MS = 200;
 
 std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry);
 Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
@@ -181,9 +190,6 @@ inline Position const ALAR_ROOM_S_CENTER       = { 281.064f,   0.000f, -2.389f }
 
 inline constexpr float ALAR_FLAME_PATCH_SEARCH_DISTANCE = 40.0f;
 
-extern std::unordered_map<uint32, bool> lastRebirthState;
-extern std::unordered_map<uint32, bool> isAlarInPhase2;
-
 bool IsAlarInPhase2(uint32 instanceId);
 int8 GetAlarDestinationLocationIndex(Unit* alar);
 int8 GetAlarCurrentLocationIndex(Unit* alar);
@@ -206,14 +212,12 @@ struct ArcaneOrbData
 };
 
 inline constexpr uint32 ARCANE_ORB_DURATION_MS = 7000;
-// Actual hazard range is 20 yards; the rest is buffer for the escape & multiplier.
-inline constexpr float ARCANE_ORB_SAFE_DISTANCE = 22.0f;
-inline constexpr float ARCANE_ORB_BUFFER_DISTANCE = 30.0f;
+inline constexpr float ARCANE_ORB_HAZARD_RADIUS = 20.0f;
+inline constexpr float ARCANE_ORB_SAFE_DISTANCE = ARCANE_ORB_HAZARD_RADIUS + 2.0f;
+inline constexpr float ARCANE_ORB_BUFFER_DISTANCE = ARCANE_ORB_HAZARD_RADIUS + 10.0f;
 
 // Center of the room
 inline Position const VOID_REAVER_TANK_POSITION = { 423.845f, 371.733f, 14.897f };
-
-extern std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
 
 std::vector<Position> GetActiveArcaneOrbs(uint32 instanceId);
 bool IsNearArcaneOrb(Player* bot, std::vector<Position> const& orbs, float radius);
@@ -237,14 +241,32 @@ enum KTPhases
     PHASE_FINAL          = 5
 };
 
-// About the exact distance from Kael to the entrances to his room.
-inline constexpr float KAELTHAS_ROOM_SEARCH_DISTANCE = 125.0f;
 inline constexpr uint32 KAELTHAS_DB_GUID = 158218;
+// 125 yards is about the exact distance from Kael to the entrances to his room.
+inline constexpr float KAELTHAS_ROOM_SEARCH_DISTANCE = 125.0f;
+inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
 
+inline constexpr EncounterHelpers::ClassRole CAPERNIAN_TANK_ROLE = {
+    .playerClass = CLASS_WARLOCK,
+    .preferredSpec = WARLOCK_TAB_DEMONOLOGY,
+    .role = { "class_role_capernian_warlock_tank", "Capernian warlock tank" },
+    .candidate = { "class_role_class_warlock", "Warlock" },
+    .preferredCandidate = { "class_role_class_demonology_warlock", "Demonology Warlock" },
+};
+inline constexpr EncounterHelpers::ClassRole SANGUINAR_DEBUFF_HUNTER_ROLE = {
+    .playerClass = CLASS_HUNTER,
+    .role = { "class_role_sanguinar_debuff_hunter", "Sanguinar debuff hunter" },
+    .candidate = { "class_role_class_hunter", "Hunter" },
+};
+inline constexpr float KAELTHAS_CLASS_ROLE_ANNOUNCE_DISTANCE = KAELTHAS_ROOM_SEARCH_DISTANCE;
+// 200 yards extends to the tops of the ramps leading to Kael's room's entrances.
+inline constexpr float KAELTHAS_CLASS_ROLE_REARM_DISTANCE = 200.0f;
+
+inline Position const KAELTHAS_SPAWN_POSITION =    { 795.408f, -1.605f, 48.812f };
 // To the left of the advisors' starting position (when facing them), up against the wall.
 inline Position const SANGUINAR_TANK_POSITION    = { 775.478f,  39.888f, 46.780f };
 inline Position const SANGUINAR_WAITING_POSITION = { 761.850f,  27.459f, 46.779f };
-// Next to Sanguinar
+// Next to Sanguinar.
 inline Position const TELONICUS_TANK_POSITION    = { 773.717f,  44.091f, 46.780f };
 inline Position const TELONICUS_WAITING_POSITION = { 754.347f,  31.739f, 46.796f };
 inline Position const CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f };
@@ -253,13 +275,16 @@ inline Position const ADVISOR_HEAL_POSITION      = { 752.171f,  19.494f, 46.779f
 // Towards the front-center of the platform to ensure an open area for Gravity Lapse.
 inline Position const KAELTHAS_TANK_POSITION     = { 774.008f,  -0.631f, 48.729f };
 
-inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
-extern std::unordered_map<uint32, uint32> advisorDpsWaitTimer;
-
 uint32 GetKaelthasTkPhase(Unit* kaelthas);
 bool IsAdvisorActive(Unit* advisor);
+
+bool UpdateTkClassRoles(PlayerbotAI* botAI);
+bool UpdateKaelthasClassRoleAnnouncement(PlayerbotAI* botAI);
+// Demonology spec is preferred for the Capernian Warlock tank.
 Player* GetCapernianTank(Player* bot);
 bool IsCapernianTank(Player* bot);
+// The Debuff Hunter attacks Sanguinar in phase 3 with melee (after Thaladred) to apply Armor
+// Disruption from the Netherstrand Longbow (as opposed to other ranged, who attack Capernian).
 bool IsSanguinarDebuffHunter(Player* bot);
 GuidVector FindLegendaryWeaponGuids(Player* bot);
 Unit* GetLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry);
@@ -270,6 +295,22 @@ bool HasEquippableItemForSlot(Player* bot, uint8 slot);
 Item* GetEquippedItemInSlot(Player* bot, uint8 slot, uint32 itemId);
 Creature* GetNearestFlameStrikeInRadius(Player* bot, float radius);
 Creature* GetPhoenixEgg(Player* bot);
+
+// Shared encounter state
+
+struct TkInstanceState
+{
+    std::optional<bool> lastRebirthState;
+    std::optional<bool> isAlarInPhase2;
+    std::vector<ArcaneOrbData> voidReaverArcaneOrbs;
+    std::optional<uint32> advisorDpsWaitTimer;
+    EncounterHelpers::ClassRoleAssignment capernianTank;
+    EncounterHelpers::ClassRoleAssignment sanguinarDebuffHunter;
+};
+
+TkInstanceState& TkState(uint32 instanceId);
+TkInstanceState* FindTkState(uint32 instanceId);
+bool TkResetInstance(uint32 instanceId);
 
 }
 

@@ -5,15 +5,25 @@
  */
 
 #include "GruulHelpers.h"
-#include "AiFactory.h"
-#include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include <algorithm>
 #include <limits>
 #include <list>
+#include <mutex>
+#include <unordered_map>
+
+using namespace EncounterHelpers;
 
 namespace GruulHelpers
 {
+
+namespace
+{
+
+std::mutex gruulStateMutex;
+std::unordered_map<uint32, GruulInstanceState> gruulStates;
+
+} // end anonymous namespace (Shared)
 
 // High King Maulgar
 
@@ -37,107 +47,58 @@ bool IsBlindeyeTank(Player* bot)
     return PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
 }
 
-ObjectGuid FindKroshMageTankGuid(Player* bot)
+bool UpdateGruulClassRoles(PlayerbotAI* botAI)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return ObjectGuid::Empty;
+    GruulInstanceState& state = GruulState(botAI->GetBot()->GetInstanceId());
+    return UpdateClassRoleAssignments(botAI, GRUUL_MAP_ID, {
+        { KROSH_MAGE_TANK_ROLE, state.kroshMageTank },
+        { KIGGLER_MOONKIN_TANK_ROLE, state.kigglerMoonkinTank },
+    });
+}
 
-    // If an assistant Mage (player or bot) is found, return immediately.
-    // Otherwise, return the bot Mage with the highest HP as fallback.
-    Player* highestHpBotMage = nullptr;
-    uint32 highestHp = 0;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != GRUUL_MAP_ID ||
-            member->getClass() != CLASS_MAGE)
-        {
-            continue;
-        }
-
-        if (group->IsAssistant(member->GetGUID()))
-            return member->GetGUID();
-
-        if (!GET_PLAYERBOT_AI(member))
-            continue;
-
-        uint32 const hp = member->GetMaxHealth();
-        if (!highestHpBotMage || hp > highestHp)
-        {
-            highestHpBotMage = member;
-            highestHp = hp;
-        }
-    }
-
-    return highestHpBotMage ? highestHpBotMage->GetGUID() : ObjectGuid::Empty;
+bool UpdateMaulgarClassRoleAnnouncement(PlayerbotAI* botAI)
+{
+    GruulInstanceState& state = GruulState(botAI->GetBot()->GetInstanceId());
+    return UpdateClassRoleAnnouncement(
+        botAI, Id(GruulNpcs::NPC_HIGH_KING_MAULGAR), MAULGAR_SPAWN_POSITION,
+        MAULGAR_CLASS_ROLE_ANNOUNCE_DISTANCE, MAULGAR_CLASS_ROLE_REARM_DISTANCE, {
+            { KROSH_MAGE_TANK_ROLE, state.kroshMageTank },
+            { KIGGLER_MOONKIN_TANK_ROLE, state.kigglerMoonkinTank },
+        });
 }
 
 Player* GetKroshMageTank(PlayerbotAI* botAI)
 {
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    ObjectGuid const guid = AI_VALUE(ObjectGuid, "high king maulgar krosh mage tank");
-
-    return guid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(guid);
+    Player* bot = botAI->GetBot();
+    GruulInstanceState const* state = FindGruulState(bot->GetInstanceId());
+    return state ? GetClassRolePlayer(bot, state->kroshMageTank) : nullptr;
 }
 
 bool IsKroshMageTank(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    return bot->getClass() == CLASS_MAGE && GetKroshMageTank(botAI) == bot;
-}
+    if (bot->getClass() != CLASS_MAGE)
+        return false;
 
-ObjectGuid FindKigglerMoonkinTankGuid(Player* bot)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return ObjectGuid::Empty;
-
-    // If an assistant Balance Druid (player or bot) is found, return immediately.
-    // Otherwise, return the bot Balance Druid with the highest HP as fallback.
-    Player* highestHpBotMoonkin = nullptr;
-    uint32 highestHp = 0;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != GRUUL_MAP_ID ||
-            member->getClass() != CLASS_DRUID ||
-            AiFactory::GetPlayerSpecTab(member) != DRUID_TAB_BALANCE)
-        {
-            continue;
-        }
-
-        if (group->IsAssistant(member->GetGUID()))
-            return member->GetGUID();
-
-        if (!GET_PLAYERBOT_AI(member))
-            continue;
-
-        uint32 const hp = member->GetMaxHealth();
-        if (!highestHpBotMoonkin || hp > highestHp)
-        {
-            highestHpBotMoonkin = member;
-            highestHp = hp;
-        }
-    }
-
-    return highestHpBotMoonkin ? highestHpBotMoonkin->GetGUID() : ObjectGuid::Empty;
+    GruulInstanceState const* state = FindGruulState(bot->GetInstanceId());
+    return state && IsClassRolePlayer(bot, state->kroshMageTank);
 }
 
 Player* GetKigglerMoonkinTank(PlayerbotAI* botAI)
 {
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    ObjectGuid const guid = AI_VALUE(ObjectGuid, "high king maulgar kiggler moonkin tank");
-
-    return guid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(guid);
+    Player* bot = botAI->GetBot();
+    GruulInstanceState const* state = FindGruulState(bot->GetInstanceId());
+    return state ? GetClassRolePlayer(bot, state->kigglerMoonkinTank) : nullptr;
 }
 
 bool IsKigglerMoonkinTank(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    return bot->getClass() == CLASS_DRUID && GetKigglerMoonkinTank(botAI) == bot;
+    if (bot->getClass() != CLASS_DRUID)
+        return false;
+
+    GruulInstanceState const* state = FindGruulState(bot->GetInstanceId());
+    return state && IsClassRolePlayer(bot, state->kigglerMoonkinTank);
 }
 
 GuidVector FindNearbyWildFelStalkerGuids(Player* bot)
@@ -233,6 +194,21 @@ bool HasGroundSlam(Player* bot)
 {
     return bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM_1)) ||
         bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM_2));
+}
+
+// Shared encounter state
+
+GruulInstanceState& GruulState(uint32 instanceId)
+{
+    std::lock_guard lock(gruulStateMutex);
+    return gruulStates[instanceId];
+}
+
+GruulInstanceState* FindGruulState(uint32 instanceId)
+{
+    std::lock_guard lock(gruulStateMutex);
+    auto it = gruulStates.find(instanceId);
+    return it != gruulStates.end() ? &it->second : nullptr;
 }
 
 }

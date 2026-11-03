@@ -46,9 +46,6 @@ typedef std::unordered_map<uint32, questEntryGuidps> questRelationGuidps;
 //                      questId
 typedef std::unordered_map<uint32, questRelationGuidps> questGuidpMap;
 
-//                      questId
-typedef std::unordered_map<uint32, std::vector<GuidPosition>> questGiverMap;
-
 // Returns the quest relation Flags for all entries and quests
 class EntryQuestRelationMapValue : public SingleCalculatedValue<entryQuestRelationMap>
 {
@@ -85,15 +82,6 @@ public:
     QuestGuidpMapValue(PlayerbotAI* botAI) : SingleCalculatedValue(botAI, "quest guidp map") {}
 
     questGuidpMap Calculate() override;
-};
-
-// All questgivers and their quests that are Useful for a specific level
-class QuestGiversValue : public SingleCalculatedValue<questGiverMap>, public Qualified
-{
-public:
-    QuestGiversValue(PlayerbotAI* botAI) : SingleCalculatedValue(botAI, "quest givers") {}
-
-    questGiverMap Calculate() override;
 };
 
 // Built once at startup and read-only afterwards, so map threads can share it.
@@ -134,15 +122,6 @@ uint32 GetQuestCraftItem(uint32 questId, uint32 itemObjectiveIdx);
 std::vector<QuestCraftReagent> const& GetQuestItemReagents(uint32 questId);
 
 bool IsQuestExtraItemWanted(Player* bot, Quest const* quest, uint32 itemId);
-
-// All questgivers that have a quest for the bot.
-class ActiveQuestGiversValue : public CalculatedValue<std::vector<GuidPosition>>
-{
-public:
-    ActiveQuestGiversValue(PlayerbotAI* botAI) : CalculatedValue(botAI, "active quest givers", 5) {}
-
-    std::vector<GuidPosition> Calculate() override;
-};
 
 // All quest takers that the bot has a quest for.
 class ActiveQuestTakersValue : public CalculatedValue<std::vector<GuidPosition>>

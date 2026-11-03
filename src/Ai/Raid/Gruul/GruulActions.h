@@ -12,13 +12,21 @@
 #include "MovementActions.h"
 #include "Position.h"
 
-// General
+// Shared
 
 class GruulsLairResetEncounterStatesAction : public Action
 {
 public:
     GruulsLairResetEncounterStatesAction(PlayerbotAI* botAI)
         : Action(botAI, "gruul's lair reset encounter states") {}
+    bool Execute(Event event) override;
+};
+
+class GruulsLairAssignClassRolesAction : public Action
+{
+public:
+    GruulsLairAssignClassRolesAction(PlayerbotAI* botAI)
+        : Action(botAI, "gruul's lair assign class roles") {}
     bool Execute(Event event) override;
 };
 
@@ -89,6 +97,14 @@ class HighKingMaulgarMisdirectOgresToTanksAction : public Action
 public:
     HighKingMaulgarMisdirectOgresToTanksAction(PlayerbotAI* botAI)
         : Action(botAI, "high king maulgar misdirect ogres to tanks") {}
+    bool Execute(Event event) override;
+};
+
+class HighKingMaulgarAnnounceClassRolesAction : public Action
+{
+public:
+    HighKingMaulgarAnnounceClassRolesAction(PlayerbotAI* botAI)
+        : Action(botAI, "high king maulgar announce class roles") {}
     bool Execute(Event event) override;
 };
 

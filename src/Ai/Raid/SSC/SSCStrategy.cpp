@@ -17,7 +17,11 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Shared
     triggers.push_back(new TriggerNode("ssc no encounter in progress",
-        { NextAction("ssc reset encounter states", ACTION_EMERGENCY + 10) }));
+        { NextAction("ssc reset encounter states", ACTION_EMERGENCY + 10),
+          NextAction("leotheras the blind announce class roles", ACTION_EMERGENCY + 8) }));
+
+    triggers.push_back(new TriggerNode("ssc class roles should be assigned",
+        { NextAction("ssc assign class roles", ACTION_EMERGENCY + 9) }));
 
     // Trash
     triggers.push_back(new TriggerNode("underbog colossus in toxic pool",

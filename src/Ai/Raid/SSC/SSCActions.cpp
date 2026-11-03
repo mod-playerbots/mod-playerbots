@@ -44,24 +44,20 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
         return reset;
 
     reset |= SscResetInstance(bot->GetInstanceId());
-
-    if (!AI_VALUE2(bool, "combat", "self target"))
-    {
-        reset |= ClearSscTargetIcon(bot, RtiTargetValue::skullIndex, {
-            Id(SscNpcs::NPC_WATER_ELEMENTAL_TOTEM),
-            Id(SscNpcs::NPC_SPITFIRE_TOTEM),
-            Id(SscNpcs::NPC_FATHOM_GUARD_TIDALVESS),
-            Id(SscNpcs::NPC_FATHOM_GUARD_SHARKKIS),
-            Id(SscNpcs::NPC_FATHOM_LURKER),
-            Id(SscNpcs::NPC_FATHOM_SPOREBAT),
-            Id(SscNpcs::NPC_FATHOM_LORD_KARATHRESS),
-        });
-
-        reset |= ClearSscTargetIcon(
-            bot, RtiTargetValue::crossIndex, { Id(SscNpcs::NPC_FATHOM_GUARD_CARIBDIS) });
-    }
+    reset |= ClearStrategyTargetIcon(bot, RtiTargetValue::skullIndex, {
+        Id(SscNpcs::NPC_FATHOM_GUARD_TIDALVESS),
+        Id(SscNpcs::NPC_FATHOM_GUARD_SHARKKIS),
+        Id(SscNpcs::NPC_FATHOM_LORD_KARATHRESS),
+    });
+    reset |= ClearStrategyTargetIcon(
+        bot, RtiTargetValue::crossIndex, { Id(SscNpcs::NPC_FATHOM_GUARD_CARIBDIS) });
 
     return reset;
+}
+
+bool SscAssignClassRolesAction::Execute(Event /*event*/)
+{
+    return UpdateSscClassRoles(botAI);
 }
 
 bool SscMisdirectToMainTankAction::Execute(Event /*event*/)
@@ -202,8 +198,8 @@ bool HydrossTheUnstableMisdirectToTankAction::Execute(Event /*event*/)
     if (!hydross)
         return false;
 
-    Player* tank =
-        IsHydrossInFrostPhase(hydross) ? GetGroupMainTank(bot) : GetGroupAssistTank(bot, 0);
+    Player* tank = IsHydrossInFrostPhase(hydross) ?
+        GetGroupMainTank(bot) : GetGroupAssistTank(bot, 0);
     if (!tank || !tank->IsAlive())
         return false;
 
@@ -706,7 +702,7 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
         return true;
     }
 
-    bool const isBelowEnrageRageThreshold = bot->GetPower(POWER_RAGE) < 70;
+    bool const isBelowEnrageRageThreshold = bot->GetPower(POWER_RAGE) < 700; // 70 rage
     if (isBelowEnrageRageThreshold &&
         botAI->CanCastSpell("enrage", bot) && botAI->CastSpell("enrage", bot))
     {
@@ -734,7 +730,7 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
     if (!whisper)
         return false;
 
-    bool const isAboveMaulRageThreshold = bot->GetPower(POWER_RAGE) > 40;
+    bool const isAboveMaulRageThreshold = bot->GetPower(POWER_RAGE) > 400; // 40 rage
     constexpr int32 maulFreeUseMs = 4 * IN_MILLISECONDS;
     return (isAboveMaulRageThreshold || whisper->GetDuration() < maulFreeUseMs) &&
         botAI->CanCastSpell("maul", innerDemon) && botAI->CastSpell("maul", innerDemon);
@@ -939,6 +935,11 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::TrackWhirlwindEnd(
     }
 
     return false;
+}
+
+bool LeotherasTheBlindAnnounceClassRolesAction::Execute(Event /*event*/)
+{
+    return IsMechanicTrackerBot(bot, SSC_MAP_ID) && UpdateLeotherasClassRoleAnnouncement(botAI);
 }
 
 // Fathom-Lord Karathress
@@ -2236,7 +2237,9 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
     {
         constexpr uint32 blockedMs = 3 * IN_MILLISECONDS;
         if (!chain.blockedStart)
+        {
             chain.blockedStart = now;
+        }
         else if (getMSTimeDiff(chain.blockedStart, now) > blockedMs)
         {
             ReplanVashjCorePassingChain(bot, chain, ObjectGuid::Empty);
@@ -2493,7 +2496,7 @@ bool LadyVashjMeleeMoveAroundToxicSporesAction::Execute(Event event)
     if (LadyVashjAvoidToxicSporesAction::Execute(event))
         return true;
 
-    if (!IsNearToxicSpores(botAI, TOXIC_SPORES_HIT_RADIUS) || !GetStepOutOfNearestSpore(
+    if (!IsNearToxicSpores(botAI, TOXIC_SPORES_HAZARD_RADIUS) || !GetStepOutOfNearestSpore(
             bot, spores, TOXIC_SPORES_AVOID_RADIUS, stepX, stepY, stepZ))
     {
         return false;

@@ -45,30 +45,17 @@ std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, char c
 
 } // end anonymous namespace
 
-// General
-
-bool ClearSscTargetIcon(Player* bot, uint8 iconId, std::initializer_list<uint32> entries)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    uint32 const entry = group->GetTargetIcon(iconId).GetEntry();
-    if (std::find(entries.begin(), entries.end(), entry) == entries.end())
-        return false;
-
-    return ClearTargetIcon(bot, iconId);
-}
+// Shared
 
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
 {
     if (!target || !tank)
         return false;
 
-    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank))
-        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank);
+    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION), tank))
+        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION), tank);
 
-    if (!botAI->GetBot()->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
+    if (!botAI->GetBot()->HasAura(Id(SscSpells::SPELL_MISDIRECTION_AURA)))
         return false;
 
     return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
@@ -691,30 +678,28 @@ Creature* GetLeotherasDemonOrShadow(PlayerbotAI* botAI)
     return nullptr;
 }
 
+bool UpdateSscClassRoles(PlayerbotAI* botAI)
+{
+    SscInstanceState& state = SscState(botAI->GetBot()->GetInstanceId());
+    return UpdateClassRoleAssignments(botAI, SSC_MAP_ID, {
+        { LEOTHERAS_WARLOCK_TANK_ROLE, state.leotherasWarlockTank },
+    });
+}
+
+bool UpdateLeotherasClassRoleAnnouncement(PlayerbotAI* botAI)
+{
+    SscInstanceState& state = SscState(botAI->GetBot()->GetInstanceId());
+    return UpdateClassRoleAnnouncement(
+        botAI, Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), LEOTHERAS_SPAWN_POSITION,
+        LEOTHERAS_CLASS_ROLE_ANNOUNCE_DISTANCE, LEOTHERAS_CLASS_ROLE_REARM_DISTANCE, {
+            { LEOTHERAS_WARLOCK_TANK_ROLE, state.leotherasWarlockTank },
+        });
+}
+
 Player* GetLeotherasWarlockTank(Player* bot)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
-
-    Player* fallbackWarlock = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK ||
-            member->GetMapId() != SSC_MAP_ID)
-        {
-            continue;
-        }
-
-        if (group->IsAssistant(member->GetGUID()))
-            return member;
-
-        if (!fallbackWarlock && GET_PLAYERBOT_AI(member))
-            fallbackWarlock = member;
-    }
-
-    return fallbackWarlock;
+    SscInstanceState const* state = FindSscState(bot->GetInstanceId());
+    return state ? GetClassRolePlayer(bot, state->leotherasWarlockTank) : nullptr;
 }
 
 bool IsLeotherasWarlockTank(Player* bot)
@@ -722,7 +707,8 @@ bool IsLeotherasWarlockTank(Player* bot)
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    return GetLeotherasWarlockTank(bot) == bot;
+    SscInstanceState const* state = FindSscState(bot->GetInstanceId());
+    return state && IsClassRolePlayer(bot, state->leotherasWarlockTank);
 }
 
 bool IsLeotherasChannelingWhirlwind(Unit* leotheras)
@@ -1248,7 +1234,7 @@ std::vector<GameObject*> GetUsableVashjGenerators(Map* map)
 
 float GetVashjGroundZ(Map* map, uint32 phaseMask, float x, float y)
 {
-    constexpr float centreZ = 43.0f;
+    constexpr float centerZ = 43.0f;
     constexpr float rimZ = 41.1f;
     constexpr float stairRun = 33.15f;
     constexpr float stairDrop = 18.9f;
@@ -1258,7 +1244,7 @@ float GetVashjGroundZ(Map* map, uint32 phaseMask, float x, float y)
         return INVALID_HEIGHT;
 
     float const slopeZ = distance <= VASHJ_DAIS_APOTHEM ?
-        centreZ - (centreZ - rimZ) * distance / VASHJ_DAIS_APOTHEM :
+        centerZ - (centerZ - rimZ) * distance / VASHJ_DAIS_APOTHEM :
         rimZ - (distance - VASHJ_DAIS_APOTHEM) / stairRun * stairDrop;
 
     constexpr float searchAbove = 2.0f;
@@ -1706,7 +1692,7 @@ Player* GetVashjHandOfFreedomTarget(PlayerbotAI* botAI, Unit* vashj)
         bool const nearSpore = std::any_of(spores.begin(), spores.end(),
             [member](Position const& spore)
             {
-                return member->GetExactDist2d(spore) < TOXIC_SPORES_HIT_RADIUS;
+                return member->GetExactDist2d(spore) < TOXIC_SPORES_HAZARD_RADIUS;
             });
 
         if (nearSpore && (!inSpores || isMainTank(member)))
@@ -1879,7 +1865,10 @@ bool FindVashjTankBreakoutSpot(
 
             float inPools = 0.0f;
             for (Position const& spore : spores)
-                inPools += SegmentLengthInCircle(from, candidate, spore, TOXIC_SPORES_HIT_RADIUS);
+            {
+                inPools += SegmentLengthInCircle(
+                    from, candidate, spore, TOXIC_SPORES_HAZARD_RADIUS);
+            }
 
             float const cost = radius + poolYardCost * inPools;
             if (cost < bestCost)
@@ -2744,6 +2733,13 @@ SscInstanceState& SscState(uint32 instanceId)
     return sscStates[instanceId];
 }
 
+SscInstanceState* FindSscState(uint32 instanceId)
+{
+    std::lock_guard lock(sscStateMutex);
+    auto it = sscStates.find(instanceId);
+    return it != sscStates.end() ? &it->second : nullptr;
+}
+
 bool SscResetInstance(uint32 instanceId)
 {
     std::lock_guard lock(sscStateMutex);
@@ -2751,7 +2747,7 @@ bool SscResetInstance(uint32 instanceId)
     if (it == sscStates.end())
         return false;
 
-    SscInstanceState const& state = it->second;
+    SscInstanceState& state = it->second;
     bool const wasSet =
         state.hydrossFrostPhaseStartTime || state.hydrossNaturePhaseStartTime ||
         state.hydrossFrostMarkMaxedTime || state.hydrossNatureMarkMaxedTime ||
@@ -2761,7 +2757,10 @@ bool SscResetInstance(uint32 instanceId)
         state.vashjGroundingShaman || state.vashjStationHolders || state.vashjTaintedCoreLooter ||
         state.vashjCorePassingChain;
 
-    sscStates.erase(it);
+    // Not erased: the class roles outlive encounters, see ClassRoleAssignment.
+    SscInstanceState kept;
+    kept.leotherasWarlockTank = state.leotherasWarlockTank;
+    state = std::move(kept);
     return wasSet;
 }
 

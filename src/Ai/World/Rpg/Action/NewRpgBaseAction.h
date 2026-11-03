@@ -41,14 +41,9 @@ protected:
     bool ForceToWait(uint32 duration, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
 
     /* QUEST RELATED CHECK */
-    ObjectGuid ChooseNpcOrGameObjectToInteract(bool questgiverOnly = false, float distanceLimit = 0.0f);
-    bool HasQuestToAcceptOrReward(WorldObject* object);
     bool InteractWithNpcOrGameObjectForQuest(ObjectGuid guid);
-    bool CanInteractWithQuestGiver(Object* questGiver);
     bool IsWithinInteractionDist(Object* object);
     uint32 BestRewardIndex(Quest const* quest);
-    bool IsQuestWorthDoing(Quest const* quest);
-    bool IsQuestCapableDoing(Quest const* quest);
 
     /* QUEST RELATED ACTION */
     bool SearchQuestGiverAndAcceptOrReward();
@@ -75,6 +70,12 @@ protected:
     // the teleport fires, but long enough that a genuine long
     // walk that is slowly making progress never triggers it.
     const uint32 stuckTime = 90 * IN_MILLISECONDS;
+
+    /* FOR QUEST GIVER */
+    // Time on one giver, walking and interacting, after which it is skipped until the next IDLE.
+    const uint32 questGiverGiveUpTime = 60 * IN_MILLISECONDS;
+    // A longer pause (combat, eating) starts the timer over.
+    const uint32 questGiverRetryGap = 5 * IN_MILLISECONDS;
 };
 
 #endif
