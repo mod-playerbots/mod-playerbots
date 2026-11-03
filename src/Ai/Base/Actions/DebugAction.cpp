@@ -85,7 +85,8 @@ bool DebugAction::Execute(Event event)
             }
 
             std::vector<WorldPosition> beginPath, endPath;
-            TravelNodeRoute route = TravelNodeMap::instance().FindRouteNearestNodes(botPos, *points.front(), beginPath, bot);
+            TravelNodeRoute route =
+                TravelNodeMap::instance().FindRouteNearestNodes(botPos, *points.front(), beginPath, bot);
 
             std::ostringstream out;
             out << "Traveling to " << dest->getTitle() << ": ";
@@ -216,7 +217,8 @@ bool DebugAction::Execute(Event event)
                 endNode->setLinked(false);
         }
 
-        botAI->TellMasterNoFacing("Node " + name + " created. Use console command '.playerbots travel generatenode' to connect nodes.");
+        botAI->TellMasterNoFacing("Node " + name +
+                                  " created. Use console command '.playerbots travel generatenode' to connect nodes.");
 
         return true;
     }
@@ -240,7 +242,8 @@ bool DebugAction::Execute(Event event)
             TravelNodeMap::instance().removeNode(startNode);
         }
 
-        botAI->TellMasterNoFacing("Node removed. Use console command '.playerbots travel generatenode' to finalize nodes.");
+        botAI->TellMasterNoFacing(
+            "Node removed. Use console command '.playerbots travel generatenode' to finalize nodes.");
 
         return true;
     }

@@ -52,7 +52,8 @@ public:
     void Set(Unit* follow);
     void Set(uint32 mapId, float x, float y, float z, float ori,
              MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
-    //Setting the hold is seperated from Set so that bots can be told to hold position without losing their last movement information.
+    // Setting the hold is seperated from Set so that bots can be told to hold position without losing their last
+    // movement information.
     void SetHold(uint32 durationMs, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
     bool IsHoldActive() const;
 

@@ -2757,7 +2757,8 @@ Playerbots.BroadcastChanceGuildManagement = 30000
 # pathfind_result.csv = one row
 # per fresh route resolution (graph|probe|cache-kept|beeline). Both start
 # fresh each server run and cost nothing when not listed.
-# Example: Playerbots.AllowedLogFiles = travelNodes.csv,travelPaths.csv,TravelNodeStore.h,bot_movement.csv,pathfind_result.csv
+# Example: Playerbots.AllowedLogFiles = travelNodes.csv,travelPaths.csv,TravelNodeStore.h,
+#          bot_movement.csv,pathfind_result.csv
 Playerbots.AllowedLogFiles = ""
 
 #

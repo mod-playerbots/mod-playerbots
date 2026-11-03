@@ -1200,7 +1200,8 @@ bool TravelPath::makeShortCut(WorldPosition startPos, float maxDist, Unit* bot)
                 newPath.clear();
             }
 
-            if (p.type != PathNodeType::NODE_PREPATH)  // Only look at the part after the first node and in the same map.
+            // Only look at the part after the first node and in the same map.
+            if (p.type != PathNodeType::NODE_PREPATH)
             {
                 if (!firstNode)
                     firstNode = p.point;
@@ -1309,12 +1310,14 @@ TravelPath TravelNodeRoute::BuildPath(std::vector<WorldPosition> pathToStart, st
 
             if (nodePath->getPathType() == TravelNodePathType::areaTrigger)
             {
-                travelPath.addPoint(*prevNode->getPosition(), PathNodeType::NODE_AREA_TRIGGER, nodePath->getPathObject());
+                travelPath.addPoint(*prevNode->getPosition(), PathNodeType::NODE_AREA_TRIGGER,
+                                    nodePath->getPathObject());
                 travelPath.addPoint(*node->getPosition(), PathNodeType::NODE_AREA_TRIGGER, nodePath->getPathObject());
             }
             else if (nodePath->getPathType() == TravelNodePathType::staticPortal)
             {
-                travelPath.addPoint(*prevNode->getPosition(), PathNodeType::NODE_STATIC_PORTAL, nodePath->getPathObject());
+                travelPath.addPoint(*prevNode->getPosition(), PathNodeType::NODE_STATIC_PORTAL,
+                                    nodePath->getPathObject());
                 travelPath.addPoint(*node->getPosition(), PathNodeType::NODE_STATIC_PORTAL, nodePath->getPathObject());
             }
             else if (nodePath->getPathType() == TravelNodePathType::transport)
@@ -1675,7 +1678,8 @@ TravelNodeRoute TravelNodeMap::FindRouteNearestNodes(WorldPosition startPos, Wor
             if (startNodePosition.GetMapId() == bot->GetMapId())
             {
                 PathGenerator path(bot);
-                path.CalculatePath(startNodePosition.GetPositionX(), startNodePosition.GetPositionY(), startNodePosition.GetPositionZ());
+                path.CalculatePath(startNodePosition.GetPositionX(), startNodePosition.GetPositionY(),
+                                   startNodePosition.GetPositionZ());
                 PathType type = path.GetPathType();
                 bool reachable = !(type & ~(PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY));
 
@@ -3108,7 +3112,8 @@ void TravelNodeMap::saveNodeStore()
             std::string name = node->getName();
             name.erase(remove(name.begin(), name.end(), '\''), name.end());
 
-            PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_INS_TRAVELNODE);
+            PlayerbotsDatabasePreparedStatement* stmt =
+                PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_INS_TRAVELNODE);
             stmt->SetData(0, i);
             stmt->SetData(1, name);
             stmt->SetData(2, node->GetMapId());
@@ -3222,7 +3227,8 @@ void TravelNodeMap::saveNodeStore()
                 WorldPosition& point = ppath[j];
 
                 if (batchCount == 0)
-                    ss << "INSERT INTO `playerbots_travelnode_path` (`node_id`,`to_node_id`,`nr`,`map_id`,`x`,`y`,`z`) VALUES ";
+                    ss << "INSERT INTO `playerbots_travelnode_path` (`node_id`,`to_node_id`,`nr`,`map_id`,`x`,`y`,`z`) "
+                          "VALUES ";
 
                 ss << std::fixed << std::setprecision(4)
                    << "(" << i << "," << toId << "," << j << ","

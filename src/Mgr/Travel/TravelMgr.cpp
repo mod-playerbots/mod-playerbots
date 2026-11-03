@@ -2989,7 +2989,8 @@ void TravelMgr::PrepareDestinationCache()
         bankerLocsPerLevelCache.try_emplace(key);
     }
 
-    LOG_INFO("playerbots", ">> {} flight masters, {} innkeepers, {} bankers collected.", flightMastersCount, innkeepersCount, bankerCount);
+    LOG_INFO("playerbots", ">> {} flight masters, {} innkeepers, {} bankers collected.", flightMastersCount,
+             innkeepersCount, bankerCount);
 }
 
 void TravelMgr::PrepareQuestGiverTeleportIndex()

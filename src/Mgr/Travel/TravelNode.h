@@ -606,7 +606,8 @@ public:
 
     std::vector<TravelNode*> const& getNodes() { return nodes; }
 
-    TravelPath BuildPath(std::vector<WorldPosition> pathToStart = {}, std::vector<WorldPosition> pathToEnd = {}, Unit* bot = nullptr);
+    TravelPath BuildPath(std::vector<WorldPosition> pathToStart = {}, std::vector<WorldPosition> pathToEnd = {},
+                         Unit* bot = nullptr);
 
     std::ostringstream const print();
 
@@ -708,8 +709,8 @@ public:
     // Picks the nearest start/end nodes for two world positions and runs A*
     // between them. Debug command only; a cross-map route may end at a map
     // seam rather than at the end node.
-    TravelNodeRoute FindRouteNearestNodes(WorldPosition startPos, WorldPosition endPos, std::vector<WorldPosition>& startPath,
-                                          Player* bot = nullptr);
+    TravelNodeRoute FindRouteNearestNodes(WorldPosition startPos, WorldPosition endPos,
+                                          std::vector<WorldPosition>& startPath, Player* bot = nullptr);
 
     void setHasToGen() { hasToGen = true; }
 

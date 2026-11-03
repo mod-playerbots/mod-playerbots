@@ -91,7 +91,8 @@ MovementAction::MovementAction(PlayerbotAI* botAI, std::string const name) : Act
 
 // Whispers a "[M] / method / generator / status / distance / target" trace line to the
 // master when the "debug move" strategy is active.
-void MovementAction::EmitDebugMove(char const* method, char const* generator, float x, float y, float z, char const* extra)
+void MovementAction::EmitDebugMove(char const* method, char const* generator, float x, float y, float z,
+                                   char const* extra)
 {
     if (!botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT))
         return;
@@ -728,8 +729,9 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
     if (FollowOnTransport(target))
         return true;
 
-    if (!bot->InBattleground() && ServerFacade::instance().IsDistanceLessOrEqualThan(ServerFacade::instance().GetDistance2d(bot, target),
-                                                                           sPlayerbotAIConfig.FollowDistance))
+    if (!bot->InBattleground() &&
+        ServerFacade::instance().IsDistanceLessOrEqualThan(ServerFacade::instance().GetDistance2d(bot, target),
+                                                           sPlayerbotAIConfig.FollowDistance))
     {
         return false;
     }
@@ -2548,7 +2550,8 @@ TravelPath MovementAction::ResolveMovePath(WorldPosition startPos, WorldPosition
         lastMove.lastPath.getBack().distance(endPos) < maxDistChange)
         return lastMove.lastPath;
 
-    // Check if we must use travel node system to arrive to destination. Long path = cross-map or beyond sight; otherwise pure mmap probe.
+    // Check if we must use travel node system to arrive to destination.
+    // Long path = cross-map or beyond sight; otherwise pure mmap probe.
     bool const needsLongPath =
         crossMap || //between maps
         totalDistance > sPlayerbotAIConfig.SightDistance || //distance beyond pathfinding distance
@@ -3006,7 +3009,8 @@ bool MovementAction::HandleSpecialMovement(TravelPath& path)
 
 // GetTransportForPos with a small vertical tolerance — deck height varies and an
 // exact-z probe often misses the hull.
-Transport* MovementAction::GetTransportForPosTolerant(Map* map, WorldObject* ref, uint32 phaseMask, float x, float y, float z)
+Transport* MovementAction::GetTransportForPosTolerant(Map* map, WorldObject* ref, uint32 phaseMask, float x, float y,
+                                                      float z)
 {
     if (!map || !ref)
         return nullptr;
@@ -3248,7 +3252,8 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
             return true;
     }
 
-    // 11. TRANSPORT LOGISTICS.  Approaching a dock: ship present → board; absent → wait.  Mid-ride: disembark when the cached path says the stop has been reached.
+    // 11. TRANSPORT LOGISTICS.  Approaching a dock: ship present → board; absent → wait.
+    // Mid-ride: disembark when the cached path says the stop has been reached.
     if (onTransport)
     {
         Transport* trans = bot->GetTransport();
