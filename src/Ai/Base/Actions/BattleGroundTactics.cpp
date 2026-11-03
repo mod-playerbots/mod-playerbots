@@ -62,6 +62,8 @@ Position const WS_ROAM_POS = {1227.446f, 1476.235f, 307.484f, 1.50f};
 std::vector<Position> const WS_FLAG_HIDE_HORDE = {WS_FLAG_HIDE_HORDE_1, WS_FLAG_HIDE_HORDE_2, WS_FLAG_HIDE_HORDE_3};
 std::vector<Position> const WS_FLAG_HIDE_ALLIANCE = {WS_FLAG_HIDE_ALLIANCE_1, WS_FLAG_HIDE_ALLIANCE_2,
                                                      WS_FLAG_HIDE_ALLIANCE_3};
+Position const WS_FLAG_FRONT_HORDE = WS_WAITING_POS_HORDE_3;
+Position const WS_FLAG_FRONT_ALLIANCE = {1531.44f, 1481.79f, 351.959f, 0.0f};
 
 Position const AB_WAITING_POS_HORDE = {702.884f, 703.045f, -16.115f, 0.77f};
 Position const AB_WAITING_POS_ALLIANCE = {1286.054f, 1282.500f, -15.697f, 3.95f};
@@ -2653,15 +2655,21 @@ bool BGTactics::selectObjective(bool reset)
             else if ((assignment.Valid ? assignment.Defender : role < defendersCount) && !assignment.CommittedAttack)
             {
                 Position const& home = team == TEAM_ALLIANCE ? WS_FLAG_POS_ALLIANCE : WS_FLAG_POS_HORDE;
+                Position const& front = team == TEAM_ALLIANCE ? WS_FLAG_FRONT_ALLIANCE : WS_FLAG_FRONT_HORDE;
                 PositionInfo& defense = posMap["wsg home defense"];
-                constexpr float defenseSpread = 15.0f;
                 constexpr float defenseAreaRadius = 25.0f;
                 if (!defense.isSet() || defense.mapId != bot->GetMapId() ||
                     home.GetExactDist(defense.x, defense.y, defense.z) > defenseAreaRadius)
                 {
-                    Position point = bot->GetRandomPoint(home, defenseSpread);
-                    if (point.IsPositionValid())
-                        defense.Set(point.GetPositionX(), point.GetPositionY(), point.GetPositionZ(), bot->GetMapId());
+                    constexpr float defenseMinSpread = 4.0f;
+                    constexpr float defenseMaxSpread = 15.0f;
+                    constexpr float defenseHalfArc = static_cast<float>(M_PI) / 2.5f;
+                    constexpr float defenseMaxBelow = 0.5f;
+                    Position point;
+                    if (!GetRandomPointInCone(home, home.GetAngle(&front), defenseHalfArc, defenseMinSpread,
+                                              defenseMaxSpread, point, defenseMaxBelow))
+                        point.Relocate(home);
+                    defense.Set(point.GetPositionX(), point.GetPositionY(), point.GetPositionZ(), bot->GetMapId());
                 }
                 if (defense.isSet())
                     target.Relocate(defense.x, defense.y, defense.z);
