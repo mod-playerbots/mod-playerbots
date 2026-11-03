@@ -3328,6 +3328,8 @@ void TravelNodeMap::LoadNodeStore()
         if (PreparedQueryResult result =
                 PlayerbotsDatabase.Query(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_TRAVELNODE_PATH)))
         {
+            TravelNodePath* current = nullptr;
+            std::vector<WorldPosition> points;
             do
             {
                 Field* fields = result->Fetch();
@@ -3345,17 +3347,24 @@ void TravelNodeMap::LoadNodeStore()
                     continue;
 
                 TravelNodePath* path = startNode->getPathTo(endNode);
+                if (path != current)
+                {
+                    if (current)
+                        current->setPath(std::move(points));
+                    current = path;
+                    points = current->GetPath();
+                }
 
-                std::vector<WorldPosition> ppath = path->GetPath();
-                ppath.push_back(WorldPosition(fields[3].Get<uint32>(), fields[4].Get<float>(), fields[5].Get<float>(),
-                                              fields[6].Get<float>()));
-
-                path->setPath(ppath);
+                points.push_back(WorldPosition(fields[3].Get<uint32>(), fields[4].Get<float>(), fields[5].Get<float>(),
+                                               fields[6].Get<float>()));
 
                 if (path->getCalculated())
                     path->setComplete(true);
 
             } while (result->NextRow());
+
+            if (current)
+                current->setPath(std::move(points));
 
             LOG_INFO("playerbots", ">> Loaded {} travelNode paths points.", result->GetRowCount());
         }

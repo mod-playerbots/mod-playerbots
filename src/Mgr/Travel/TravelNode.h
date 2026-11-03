@@ -176,7 +176,7 @@ public:
     // Setters
     void setComplete(bool complete1) { complete = complete1; }
 
-    void setPath(std::vector<WorldPosition> path1) { path = path1; }
+    void setPath(std::vector<WorldPosition> path1) { path = std::move(path1); }
 
     void setPathAndCost(std::vector<WorldPosition> path1, float speed)
     {
