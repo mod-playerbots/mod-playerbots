@@ -122,7 +122,8 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         botAI->rpgInfo.stuckTs = getMSTime();
         botAI->rpgInfo.stuckAttempts = 0;
     }
-    else if (!inCombat && ++botAI->rpgInfo.stuckAttempts >= 5 && GetMSTimeDiffToNow(botAI->rpgInfo.stuckTs) >= stuckTime)
+    else if (!inCombat && ++botAI->rpgInfo.stuckAttempts >= 5 &&
+             GetMSTimeDiffToNow(botAI->rpgInfo.stuckTs) >= stuckTime)
     {
         // No meaningful progress toward dest for `stuckTime`: fall
         // back to teleporting directly so the bot can get on with
