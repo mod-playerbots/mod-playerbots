@@ -11,6 +11,8 @@
 #include "QueryResult.h"
 #include "Log.h"
 #include <algorithm>
+#include <cfloat>
+#include <cstdio>
 
 QuestPoiZStore& QuestPoiZStore::Instance()
 {
@@ -34,6 +36,8 @@ void QuestPoiZStore::Load()
     }
 
     uint32 rows = 0;
+    uint32 triggerRows = 0;
+    uint32 walkableRows = 0;
     do
     {
         Field* fields = result->Fetch();
@@ -45,16 +49,56 @@ void QuestPoiZStore::Load()
         candidate.confidence = fields[5].Get<uint8>();
         candidate.navmeshOk = fields[6].Get<uint8>() != 0;
         candidate.mapId = fields[7].Get<uint32>();
+        candidate.evidence = fields[8].Get<std::string>();
+
+        if (!fields[9].IsNull())
+        {
+            std::string const& walkable = fields[9].Get<std::string>();
+            size_t start = 0;
+            while (start < walkable.size())
+            {
+                size_t const end = walkable.find(';', start);
+                std::string const token =
+                    walkable.substr(start, end == std::string::npos ? std::string::npos : end - start);
+
+                float x = 0.0f, y = 0.0f, z = 0.0f;
+                if (sscanf(token.c_str(), "%f,%f,%f", &x, &y, &z) == 3)
+                    candidate.walkablePoints.push_back({x, y, z});
+
+                if (end == std::string::npos)
+                    break;
+                start = end + 1;
+            }
+        }
+
+        if (candidate.evidence.find("trigger") != std::string::npos)
+            ++triggerRows;
+        if (!candidate.walkablePoints.empty())
+            ++walkableRows;
 
         _candidates[Key(fields[0].Get<uint32>(), fields[1].Get<uint32>())].push_back(candidate);
         ++rows;
     } while (result->NextRow());
 
+    // Rank first; for equal rank prefer the baker's confidence, then trigger evidence. This keeps a
+    // surface candidate from beating the underground/trigger floor for multi-level POIs.
     for (auto& [key, list] : _candidates)
-        std::sort(list.begin(), list.end(),
-                  [](QuestPoiZCandidate const& a, QuestPoiZCandidate const& b) { return a.rank < b.rank; });
+        std::stable_sort(list.begin(), list.end(), [](QuestPoiZCandidate const& a, QuestPoiZCandidate const& b)
+        {
+            if (a.rank != b.rank)
+                return a.rank < b.rank;
+            if (a.confidence != b.confidence)
+                return a.confidence > b.confidence;
 
-    LOG_INFO("playerbots", "Quest POI Z store: loaded {} candidate rows for {} quest POIs.", rows, _candidates.size());
+            bool const aTrigger = a.evidence.find("trigger") != std::string::npos;
+            bool const bTrigger = b.evidence.find("trigger") != std::string::npos;
+            return aTrigger && !bTrigger;
+        });
+
+    LOG_INFO("playerbots",
+             "Quest POI Z store: loaded {} candidate rows for {} quest POIs ({} trigger evidence, "
+             "{} with walkable points).",
+             rows, _candidates.size(), triggerRows, walkableRows);
 }
 
 QuestPoiZCandidate const* QuestPoiZStore::Lookup(uint32 questId, uint32 poiId, uint32 mapId) const
@@ -63,11 +107,59 @@ QuestPoiZCandidate const* QuestPoiZStore::Lookup(uint32 questId, uint32 poiId, u
     if (itr == _candidates.end() || itr->second.empty())
         return nullptr;
 
-    // Rows are rank-ordered; return the best one the baker marked navmesh-reachable on this map.
-    // If every candidate is non-navmesh or belongs to another map the caller keeps the fallback.
+    // Rows are rank/confidence ordered; return the best one the baker marked navmesh-reachable on
+    // this map. If every candidate is non-navmesh or belongs to another map the caller keeps the
+    // fallback.
     for (QuestPoiZCandidate const& candidate : itr->second)
         if (candidate.navmeshOk && candidate.mapId == mapId)
             return &candidate;
 
     return nullptr;
+}
+
+bool QuestPoiZStore::FindNearestWalkablePoint(uint32 questId, uint32 poiId, uint32 mapId, float x, float y,
+                                              float& outX, float& outY, float& outZ) const
+{
+    QuestPoiZCandidate const* best = Lookup(questId, poiId, mapId);
+    if (!best)
+        return false;
+
+    auto itr = _candidates.find(Key(questId, poiId));
+    if (itr == _candidates.end())
+        return false;
+
+    // Only consider candidates as trustworthy as the selected floor: same-or-higher confidence,
+    // and trigger-backed candidates when the best one is trigger-backed. This keeps a surface
+    // sample from winning the 2D nearest-point test for an underground trigger.
+    uint8 const bestConfidence = best->confidence;
+    bool const preferTrigger = best->evidence.find("trigger") != std::string::npos;
+
+    bool found = false;
+    float bestDistance = FLT_MAX;
+    for (QuestPoiZCandidate const& candidate : itr->second)
+    {
+        if (candidate.mapId != mapId || !candidate.navmeshOk)
+            continue;
+        if (candidate.confidence < bestConfidence)
+            continue;
+        if (preferTrigger && candidate.evidence.find("trigger") == std::string::npos)
+            continue;
+
+        for (std::array<float, 3> const& point : candidate.walkablePoints)
+        {
+            float const dx = point[0] - x;
+            float const dy = point[1] - y;
+            float const dist = dx * dx + dy * dy;
+            if (dist < bestDistance)
+            {
+                bestDistance = dist;
+                outX = point[0];
+                outY = point[1];
+                outZ = point[2];
+                found = true;
+            }
+        }
+    }
+
+    return found;
 }

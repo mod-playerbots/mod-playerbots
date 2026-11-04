@@ -126,8 +126,9 @@ void PlayerbotsDatabaseConnection::DoPrepareStatements()
 
     PrepareStatement(PLAYERBOTS_SEL_TEXT_CHANCE, "SELECT name, probability FROM ai_playerbot_texts_chance", CONNECTION_SYNCH);
     PrepareStatement(PLAYERBOTS_SEL_QUEST_POI_Z,
-                     "SELECT `QuestId`, `PoiIdx`, `PointIdx`, `Rank`, `Z`, `Confidence`, `NavmeshOk`, `MapId` "
-                     "FROM `playerbots_quest_poi_z` ORDER BY `QuestId`, `PoiIdx`, `Rank`",
+                     "SELECT `QuestId`, `PoiIdx`, `PointIdx`, `Rank`, `Z`, `Confidence`, `NavmeshOk`, `MapId`, "
+                     "`Evidence`, `WalkablePoints` FROM `playerbots_quest_poi_z` "
+                     "ORDER BY `QuestId`, `PoiIdx`, `Rank`",
                      CONNECTION_SYNCH);
 }
 PlayerbotsDatabaseConnection::PlayerbotsDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)
