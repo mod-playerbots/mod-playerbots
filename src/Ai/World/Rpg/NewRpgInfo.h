@@ -110,8 +110,6 @@ struct NewRpgInfo
 
     uint32 startT{0};  // start timestamp of the current status
 
-    bool grindSuppressed{false};
-
     // MOVE_FAR
     float nearestMoveFarDis{FLT_MAX};
     uint32 stuckTs{0};

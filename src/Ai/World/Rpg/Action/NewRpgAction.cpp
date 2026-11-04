@@ -231,22 +231,6 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
     NewRpgInfo& info = botAI->rpgInfo;
     NewRpgStatus status = info.GetStatus();
 
-    // Grind drags the bot onto random XP mobs; only the POI fallback relies on it.
-    auto const* doQuest = std::get_if<NewRpgInfo::DoQuest>(&info.data);
-    if (doQuest && !doQuest->poiFallback)
-    {
-        if (botAI->HasStrategy("grind", BOT_STATE_NON_COMBAT))
-        {
-            botAI->ChangeStrategy("-grind", BOT_STATE_NON_COMBAT);
-            info.grindSuppressed = true;
-        }
-    }
-    else if (info.grindSuppressed)
-    {
-        botAI->ChangeStrategy("+grind", BOT_STATE_NON_COMBAT);
-        info.grindSuppressed = false;
-    }
-
     switch (status)
     {
         case RPG_IDLE:
