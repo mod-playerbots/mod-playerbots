@@ -23,7 +23,7 @@ void QuestPoiZStore::Load()
     _candidates.clear();
 
     // The table is created by the module's SQL update; an empty table keeps the fallback path.
-    QueryResult result = PlayerbotsDatabase.Query(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_QUEST_POI_Z));
+    PreparedQueryResult result = PlayerbotsDatabase.Query(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_QUEST_POI_Z));
 
     if (!result)
     {
