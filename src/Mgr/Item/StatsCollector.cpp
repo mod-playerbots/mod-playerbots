@@ -7,6 +7,7 @@
 #include "StatsCollector.h"
 #include "DBCStores.h"
 #include "ItemTemplate.h"
+#include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIAware.h"
 #include "SharedDefines.h"
@@ -19,9 +20,11 @@ namespace
 {
 // The magic schools resistance is counted for: fire, nature, frost, shadow and arcane
 constexpr uint32 MAGIC_RESISTANCE_SCHOOLS = MAX_SPELL_SCHOOL - SPELL_SCHOOL_FIRE;
+constexpr uint32 DEFAULT_STACK_TRIGGER_CYCLE_MS = 1000;
 }
 
-StatsCollector::StatsCollector(CollectorType type, int32 cls, int32 lvl) : type_(type), cls_(cls), lvl_(lvl)
+StatsCollector::StatsCollector(CollectorType type, int32 cls, int32 lvl, Player* player)
+    : type_(type), cls_(cls), lvl_(lvl), player_(player)
 {
     Reset();
 }
@@ -398,7 +401,12 @@ void StatsCollector::CollectScriptedProcBuff(uint32 procSpellId, uint32 buffSpel
 {
     Milliseconds icd = 0ms;
     if (SpellProcEntry const* entry = sSpellMgr->GetSpellProcEntry(procSpellId))
-        icd = entry->Cooldown;
+    {
+        if (entry->Cooldown.count())
+            icd = entry->Cooldown;
+        else if (entry->ProcsPerMinute > 0.0f)
+            icd = Milliseconds(static_cast<uint32>(60000.0f / entry->ProcsPerMinute));
+    }
     CollectSpellStats(buffSpellId, multiplier, icd);
 }
 
@@ -416,7 +424,7 @@ void StatsCollector::CollectStackTriggerProc(uint32 procSpellId, uint32 triggerS
     uint32 stacks = uint32(std::max(AverageValue(procInfo->Effects[0], procInfo), 1.0f));
     Milliseconds cycle = icd * stacks;
     if (cycle <= 0ms)
-        cycle = Milliseconds(1000);
+        cycle = Milliseconds(DEFAULT_STACK_TRIGGER_CYCLE_MS);
 
     CollectSpellStats(triggerSpellId, 1.0f, cycle);
 }
@@ -474,9 +482,30 @@ bool StatsCollector::SpecialSpellFilter(uint32 spellId)
         case 57345:  // Darkmoon Card: Greatness - script casts the caster's highest stat
                      // (60229 STR/60233 AGI/60234 INT/60235 SPI)
         {
-            uint32 buff = UsesStrengthProcBuff(cls_) ? 60229 : 60233;
-            if (type_ & CollectorType::SPELL)
-                buff = 60234;  // intellect for casters
+            uint32 buff = 60234;
+            if (player_)
+            {
+                float best = player_->GetStat(STAT_STRENGTH);
+                buff = 60229;
+                if (player_->GetStat(STAT_AGILITY) > best)
+                {
+                    best = player_->GetStat(STAT_AGILITY);
+                    buff = 60233;
+                }
+                if (player_->GetStat(STAT_INTELLECT) > best)
+                {
+                    best = player_->GetStat(STAT_INTELLECT);
+                    buff = 60234;
+                }
+                if (player_->GetStat(STAT_SPIRIT) > best)
+                    buff = 60235;
+            }
+            else
+            {
+                buff = UsesStrengthProcBuff(cls_) ? 60229 : 60233;
+                if (type_ & CollectorType::SPELL)
+                    buff = 60234;
+            }
             CollectScriptedProcBuff(57345, buff);
             return true;
         }
@@ -511,7 +540,9 @@ bool StatsCollector::SpecialSpellFilter(uint32 spellId)
                     addPool(agi, speed, power);
                     break;
                 case CLASS_DRUID:
-                    addPool(str, agi, speed);
+                    // The druid pool is melee stats; a balance/resto collector cannot use it.
+                    if (type_ & CollectorType::MELEE)
+                        addPool(str, agi, speed);
                     break;
                 default:
                     break;  // priest/mage/warlock: script does not proc
@@ -993,7 +1024,10 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInf
             break;
         case SPELL_AURA_MOD_POWER_COST_SCHOOL:
             // Flat mana-cost reduction (e.g. Spark of Hope); stored negative in the DBC,
-            // so negate to add as mana saved per cast.
+            // so negate to add as mana saved per cast. Only credit reductions that cover
+            // every magic school; school-specific masks need spec-aware weights.
+            if ((effectInfo.MiscValue & SPELL_SCHOOL_MASK_MAGIC) != SPELL_SCHOOL_MASK_MAGIC)
+                break;
             stats[STATS_TYPE_MANA_REGENERATION] += -val * multiplier;
             break;
         case SPELL_AURA_PROC_TRIGGER_SPELL:

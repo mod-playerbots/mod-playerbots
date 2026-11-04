@@ -10,6 +10,8 @@
 #include "ItemTemplate.h"
 #include "SpellInfo.h"
 
+class Player;
+
 struct ScalingStatDistributionEntry;
 struct ScalingStatValuesEntry;
 
@@ -68,7 +70,7 @@ enum CollectorType : uint8
 class StatsCollector
 {
 public:
-    StatsCollector(CollectorType type, int32 cls = -1, int32 lvl = -1);
+    StatsCollector(CollectorType type, int32 cls = -1, int32 lvl = -1, Player* player = nullptr);
     StatsCollector(StatsCollector& stats) = default;
     void Reset();
     void CollectItemStats(ItemTemplate const* proto);
@@ -105,6 +107,7 @@ private:
     CollectorType type_;
     uint32 cls_;
     int32 lvl_;
+    Player* player_ = nullptr;
 };
 
 #endif

@@ -70,7 +70,7 @@ StatsWeightCalculator::StatsWeightCalculator(Player* player) : player_(player)
     cls = player->getClass();
     lvl = player->GetLevel();
     tab = AiFactory::GetPlayerSpecTab(player);
-    collector_ = std::make_unique<StatsCollector>(type_, cls, lvl);
+    collector_ = std::make_unique<StatsCollector>(type_, cls, lvl, player);
     // By talent spec, like the weights in GenerateBasicWeights(); type_ follows the strategies
     healSpec_ = PlayerbotAI::IsHeal(player, true);
     casterSpec_ = !healSpec_ && PlayerbotAI::IsCaster(player, true);
