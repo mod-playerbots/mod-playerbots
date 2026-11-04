@@ -8,10 +8,11 @@
 #include "DatabaseEnv.h"
 #include "Log.h"
 #include "QueryResult.h"
+#include "SharedDefines.h"
 #include <functional>
 #include <unordered_set>
 
-LootSourceMgr& LootSourceMgr::instance()
+LootSourceMgr& LootSourceMgr::Instance()
 {
     static LootSourceMgr instance;
     return instance;
@@ -25,13 +26,12 @@ void LootSourceMgr::Init()
     BuildReferenceIndex();
     BuildSourceMaps();
 
-    IndexLootTable("creature_loot_template", _creatureLootIds, false);
-    IndexLootTable("skinning_loot_template", _skinLootIds, false);
-    IndexLootTable("pickpocketing_loot_template", _pickLootIds, false);
-    IndexLootTable("gameobject_loot_template", _goLootIds, true);
+    IndexLootTable("creature_loot_template", _creatureLootIds, LootTableKind::Creature);
+    IndexLootTable("skinning_loot_template", _skinLootIds, LootTableKind::Skinning);
+    IndexLootTable("gameobject_loot_template", _goLootIds, LootTableKind::GameObject);
 
-    LOG_INFO("playerbots", "LootSourceMgr: indexed {} creature and {} gameobject item sources",
-             _itemToCreatures.size(), _itemToGameObjects.size());
+    LOG_INFO("playerbots", "LootSourceMgr: indexed {} creature, {} skinning and {} gameobject item sources",
+             _itemToCreatures.size(), _itemToSkinning.size(), _itemToGameObjects.size());
 }
 
 void LootSourceMgr::BuildReferenceIndex()
@@ -82,14 +82,11 @@ void LootSourceMgr::BuildSourceMaps()
 {
     _creatureLootIds.clear();
     _skinLootIds.clear();
-    _pickLootIds.clear();
     _goLootIds.clear();
 
     // Creature loot ids: a creature with lootid 0 has no corpse loot (the core
-    // only fills loot when lootid is non-zero); skinning and pickpocketing use
-    // their own columns.
-    if (QueryResult result =
-            WorldDatabase.Query("SELECT entry, lootid, skinloot, pickpocketloot FROM creature_template"))
+    // only fills loot when lootid is non-zero); skinning uses its own column.
+    if (QueryResult result = WorldDatabase.Query("SELECT entry, lootid, skinloot FROM creature_template"))
     {
         do
         {
@@ -97,20 +94,18 @@ void LootSourceMgr::BuildSourceMaps()
             uint32 entry = fields[0].Get<uint32>();
             uint32 lootid = fields[1].Get<uint32>();
             uint32 skinloot = fields[2].Get<uint32>();
-            uint32 pickpocketloot = fields[3].Get<uint32>();
 
             if (lootid)
                 _creatureLootIds.emplace(lootid, entry);
             if (skinloot)
                 _skinLootIds.emplace(skinloot, entry);
-            if (pickpocketloot)
-                _pickLootIds.emplace(pickpocketloot, entry);
         } while (result->NextRow());
     }
 
-    // Gameobject loot ids: chest (3) and fishing hole (25) store the loot id in Data1.
+    // Gameobject loot ids: chests and fishing holes store the loot id in Data1.
     if (QueryResult result = WorldDatabase.Query(
-            "SELECT entry, Data1 FROM gameobject_template WHERE type IN (3, 25) AND Data1 <> 0"))
+            "SELECT entry, Data1 FROM gameobject_template WHERE type IN ({}, {}) AND Data1 <> 0",
+            static_cast<uint32>(GAMEOBJECT_TYPE_CHEST), static_cast<uint32>(GAMEOBJECT_TYPE_FISHINGHOLE)))
     {
         do
         {
@@ -124,13 +119,18 @@ void LootSourceMgr::BuildSourceMaps()
 
 void LootSourceMgr::IndexLootTable(char const* table,
                                    std::unordered_multimap<uint32, uint32> const& lootIdToSources,
-                                   bool gameObject)
+                                   LootTableKind kind)
 {
     QueryResult result = WorldDatabase.Query("SELECT Entry, Item, Reference FROM {}", table);
     if (!result)
+    {
+        LOG_INFO("playerbots", "LootSourceMgr: no rows returned from {}; no item sources indexed from it", table);
         return;
+    }
 
-    auto& target = gameObject ? _itemToGameObjects : _itemToCreatures;
+    auto& target = kind == LootTableKind::GameObject ? _itemToGameObjects
+                   : kind == LootTableKind::Skinning ? _itemToSkinning
+                                                     : _itemToCreatures;
 
     do
     {
@@ -169,6 +169,15 @@ std::vector<uint32> LootSourceMgr::GetCreatureSources(uint32 itemId) const
 {
     std::vector<uint32> out;
     auto range = _itemToCreatures.equal_range(itemId);
+    for (auto it = range.first; it != range.second; ++it)
+        out.push_back(it->second);
+    return out;
+}
+
+std::vector<uint32> LootSourceMgr::GetSkinningSources(uint32 itemId) const
+{
+    std::vector<uint32> out;
+    auto range = _itemToSkinning.equal_range(itemId);
     for (auto it = range.first; it != range.second; ++it)
         out.push_back(it->second);
     return out;

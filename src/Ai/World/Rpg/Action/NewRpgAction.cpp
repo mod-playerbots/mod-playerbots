@@ -35,6 +35,7 @@
 #include "G3D/Vector2.h"
 #include <cmath>
 #include <cstdlib>
+#include <limits>
 
 void TellRpgStatusAction::WhisperStatusChange(Player* owner, std::string const& statusName)
 {
@@ -539,6 +540,59 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
     }
     if (data.pos == WorldPosition())
     {
+        // Prefer an exact spawn for any incomplete objective before the POI
+        // gate; a missing POI must not hide a known spawn.
+        Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+        auto statusItr = bot->getQuestStatusMap().find(questId);
+        if (quest && statusItr != bot->getQuestStatusMap().end())
+        {
+            QuestStatusData const& status = statusItr->second;
+            int32 bestObjective = 0;
+            WorldPosition bestPosition;
+            float bestDistance = std::numeric_limits<float>::max();
+            bool foundSpawn = false;
+
+            auto considerObjective = [&](int32 objectiveIdx)
+            {
+                WorldPosition candidate;
+                if (!GetQuestObjectiveSpawnPosition(questId, objectiveIdx, candidate))
+                    return;
+
+                float const distance = bot->GetDistance(candidate.GetPositionX(), candidate.GetPositionY(),
+                                                        candidate.GetPositionZ());
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    bestPosition = candidate;
+                    bestObjective = objectiveIdx;
+                    foundSpawn = true;
+                }
+            };
+
+            for (uint8 slot = 0; slot < QUEST_OBJECTIVES_COUNT; ++slot)
+            {
+                if (!quest->RequiredNpcOrGo[slot] ||
+                    status.CreatureOrGOCount[slot] >= quest->RequiredNpcOrGoCount[slot])
+                    continue;
+                considerObjective(int32(slot));
+            }
+            for (uint8 slot = 0; slot < QUEST_ITEM_OBJECTIVES_COUNT; ++slot)
+            {
+                if (!quest->RequiredItemId[slot] ||
+                    status.ItemCount[slot] >= quest->RequiredItemCount[slot])
+                    continue;
+                considerObjective(int32(QUEST_OBJECTIVES_COUNT + slot));
+            }
+
+            if (foundSpawn)
+            {
+                data.lastReachPOI = 0;
+                data.pos = bestPosition;
+                data.objectiveIdx = bestObjective;
+                return true;
+            }
+        }
+
         std::vector<POIInfo> poiInfo;
         if (!GetQuestPOIPosAndObjectiveIdx(questId, poiInfo))
         {

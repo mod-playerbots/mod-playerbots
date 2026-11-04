@@ -14,25 +14,36 @@
 
 // Reverse loot index: given an item id, which creature/gameobject entries can
 // drop (or otherwise source) it. Built once at module load from the loot
-// tables, covering direct drops, grouped drops, and shared reference_loot_template
-// indirection, so quest objectives can resolve an item to its actual spawns.
+// tables, covering direct corpse drops, grouped drops, shared
+// reference_loot_template indirection, skinning, and gameobject loot, so quest
+// objectives can resolve an item to its actual spawns. Pickpocketing is
+// intentionally not indexed: the quest engine does not pickpocket.
 class LootSourceMgr
 {
 public:
-    static LootSourceMgr& instance();
+    static LootSourceMgr& Instance();
 
     void Init();
 
-    // Creature entries that can drop/loot `itemId`.
+    // Creature entries whose corpse loot can contain `itemId`.
     [[nodiscard]] std::vector<uint32> GetCreatureSources(uint32 itemId) const;
+    // Creature entries whose skinning loot can contain `itemId`.
+    [[nodiscard]] std::vector<uint32> GetSkinningSources(uint32 itemId) const;
     // Gameobject entries whose loot can contain `itemId`.
     [[nodiscard]] std::vector<uint32> GetGameObjectSources(uint32 itemId) const;
 
 private:
+    enum class LootTableKind : uint8
+    {
+        Creature,
+        Skinning,
+        GameObject
+    };
+
     void BuildReferenceIndex();
     void BuildSourceMaps();
     void IndexLootTable(char const* table, std::unordered_multimap<uint32, uint32> const& lootIdToSources,
-                        bool gameObject);
+                        LootTableKind kind);
 
     std::atomic<bool> _initialized{false};
 
@@ -42,14 +53,14 @@ private:
     // loot id -> source template entry
     std::unordered_multimap<uint32, uint32> _creatureLootIds;   // creature_loot_template.Entry -> creature entry
     std::unordered_multimap<uint32, uint32> _skinLootIds;       // skinning_loot_template.Entry -> creature entry
-    std::unordered_multimap<uint32, uint32> _pickLootIds;       // pickpocketing_loot_template.Entry -> creature entry
     std::unordered_multimap<uint32, uint32> _goLootIds;         // gameobject_loot_template.Entry -> GO entry
 
     // reverse: item id -> source template entry
     std::unordered_multimap<uint32, uint32> _itemToCreatures;
+    std::unordered_multimap<uint32, uint32> _itemToSkinning;
     std::unordered_multimap<uint32, uint32> _itemToGameObjects;
 };
 
-#define sLootSourceMgr LootSourceMgr::instance()
+#define sLootSourceMgr LootSourceMgr::Instance()
 
 #endif

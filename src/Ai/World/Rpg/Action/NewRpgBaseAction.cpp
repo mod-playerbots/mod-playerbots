@@ -41,7 +41,16 @@
 #include "TravelMgr.h"
 #include "G3D/Vector2.h"
 #include <cfloat>
+#include <mutex>
+#include <set>
+#include <tuple>
 #include <unordered_set>
+
+namespace
+{
+std::mutex failedSpawnMutex;
+std::set<std::tuple<uint32, int32, uint32, uint32>> failedSpawnLookups;
+}
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 {
@@ -818,6 +827,9 @@ bool NewRpgBaseAction::GetQuestObjectiveSpawnPosition(uint32 questId, int32 obje
             return false;
         for (uint32 creatureEntry : sLootSourceMgr.GetCreatureSources(itemId))
             creatureEntries.insert(creatureEntry);
+        if (botAI->HasSkill(SKILL_SKINNING))
+            for (uint32 creatureEntry : sLootSourceMgr.GetSkinningSources(itemId))
+                creatureEntries.insert(creatureEntry);
         for (uint32 goEntry : sLootSourceMgr.GetGameObjectSources(itemId))
             goEntries.insert(goEntry);
     }
@@ -828,6 +840,15 @@ bool NewRpgBaseAction::GetQuestObjectiveSpawnPosition(uint32 questId, int32 obje
 
     if (creatureEntries.empty() && goEntries.empty())
         return false;
+
+    // A missing spawn is stable for this objective and map; remember the failed
+    // lookup so a later pass does not rescan the full spawn stores.
+    auto const failedKey = std::make_tuple(questId, objectiveIdx, bot->GetMapId(), bot->GetPhaseMask());
+    {
+        std::lock_guard<std::mutex> lock(failedSpawnMutex);
+        if (failedSpawnLookups.count(failedKey))
+            return false;
+    }
 
     // Single pass over the spawn stores tracking the nearest spawn (same map).
     // A creature spawn point can roll between its base entry and the
@@ -840,13 +861,13 @@ bool NewRpgBaseAction::GetQuestObjectiveSpawnPosition(uint32 questId, int32 obje
 
     for (auto const& [spawnId, data] : sObjectMgr->GetAllCreatureData())
     {
-        if (data.mapid != mapId)
+        if (data.mapid != mapId || (data.phaseMask && !(data.phaseMask & bot->GetPhaseMask())))
             continue;
         for (uint32 entry : {data.id, data.id2, data.id3})
         {
             if (!entry || !creatureEntries.count(entry))
                 continue;
-            float dist = bot->GetDistance2d(data.posX, data.posY);
+            float dist = bot->GetDistance(data.posX, data.posY, data.posZ);
             if (dist < bestDist)
             {
                 bestDist = dist;
@@ -857,15 +878,22 @@ bool NewRpgBaseAction::GetQuestObjectiveSpawnPosition(uint32 questId, int32 obje
     }
     for (auto const& [spawnId, data] : sObjectMgr->GetAllGOData())
     {
-        if (data.mapid != mapId || !goEntries.count(data.id))
+        if (data.mapid != mapId || (data.phaseMask && !(data.phaseMask & bot->GetPhaseMask())) ||
+            !goEntries.count(data.id))
             continue;
-        float dist = bot->GetDistance2d(data.posX, data.posY);
+        float dist = bot->GetDistance(data.posX, data.posY, data.posZ);
         if (dist < bestDist)
         {
             bestDist = dist;
             out = WorldPosition(data.mapid, data.posX, data.posY, data.posZ);
             found = true;
         }
+    }
+
+    if (!found)
+    {
+        std::lock_guard<std::mutex> lock(failedSpawnMutex);
+        failedSpawnLookups.insert(failedKey);
     }
 
     return found;
