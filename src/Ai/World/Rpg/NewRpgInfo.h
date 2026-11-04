@@ -57,6 +57,11 @@ struct NewRpgInfo
         int32 objectiveIdx{0};
         WorldPosition pos{};
         uint32 lastReachPOI{0};
+        bool completionAnnounced{false};
+        // Spawn-backed turn-in destination: the loaded object is re-checked on arrival.
+        ObjectGuid::LowType enderSpawnId{0};
+        bool enderIsGameObject{false};
+        std::unordered_set<ObjectGuid::LowType> failedEnderSpawns;
     };
     // RPG_TRAVEL_FLIGHT
     struct TravelFlight
