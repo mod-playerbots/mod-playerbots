@@ -556,11 +556,12 @@ bool IsSpawnVisibleTo(Player* bot, QuestSpawn const& spawn)
     if (spawn.pos.GetMapId() != bot->GetMapId())
         return false;
 
-    // A zero mask is treated as always visible; the core normalizes a zero creature phaseMask to 1.
-    if (spawn.phaseMask && !(spawn.phaseMask & bot->GetPhaseMask()))
+    // A zero spawn mask never loads for any difficulty, so the bitwise test filters it out. A zero
+    // phase mask is normalized to 1 by the core on load (creatures and gameobjects alike).
+    if (!(spawn.phaseMask & bot->GetPhaseMask()))
         return false;
 
-    return spawn.spawnMask == 0 || (spawn.spawnMask & (1u << bot->GetMap()->GetSpawnMode()));
+    return spawn.spawnMask & (1u << bot->GetMap()->GetSpawnMode());
 }
 
 bool IsSpawnDestinationAllowed(Player* bot, QuestSpawn const& spawn)
