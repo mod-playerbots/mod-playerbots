@@ -118,6 +118,9 @@ void EquipAction::EquipItem(Item* item)
         }
 
         uint8 dstSlot = botAI->FindEquipSlot(itemProto, NULL_SLOT, true);
+        if (itemProto->Class == ITEM_CLASS_QUIVER)
+            if (Bag* quiver = ItemUsageValue::GetEquippedQuiver(bot))
+                dstSlot = quiver->GetSlot();  // only one quiver can be equipped
 
         // Check if the item is a weapon and whether the bot can dual wield or use Titan Grip
         bool isWeapon = (itemProto->Class == ITEM_CLASS_WEAPON);
