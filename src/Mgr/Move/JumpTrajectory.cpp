@@ -147,11 +147,16 @@ Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
         float const searchFrom = std::max(position.z, point.z) + halfHeight;
         return probe.FloorZ(point.x, point.y, searchFrom, searchFrom - point.z + FLOOR_SEARCH_MARGIN);
     };
-    auto onFloor = [&](Point const& point)
+    // At or under the floor. The search finds terrain only from above it, so a crest within one chord can hide the
+    // hill the chord ends inside; under the heightmap is under the floor too.
+    auto sunkAt = [&](Point const& point, float floor)
     {
-        float const floor = floorAt(point);
-        return floor > NO_HEIGHT && point.z <= floor + launch.landingOffset;
+        if (floor > NO_HEIGHT && point.z <= floor + launch.landingOffset)
+            return true;
+
+        return !underTerrain && probe.TerrainZ(point.x, point.y) > point.z;
     };
+    auto onFloor = [&](Point const& point) { return sunkAt(point, floorAt(point)); };
 
     for (uint32 step = 0; step < MAX_STEPS; ++step)
     {
@@ -252,7 +257,7 @@ Trajectory Sweep(Launch const& launch, CollisionProbe const& probe)
         };
 
         float const floor = floorAt(chordEnd);
-        bool const reachesFloor = floor > NO_HEIGHT && chordEnd.z <= floor + launch.landingOffset;
+        bool const reachesFloor = sunkAt(chordEnd, floor);
 
         // A long chord can pass through liquid and end below its bed, so ask at the floor: the core finds no liquid
         // below the bed.

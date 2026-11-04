@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <functional>
+#include <random>
 
 #include "JumpTrajectory.h"
 #include "gtest/gtest.h"
@@ -344,6 +345,44 @@ TEST(JumpTrajectory, NoSwimmingPastTheCapRefuses)
     deep.liquidZ = 40.0f;
     launch.waterWalking = true;
     EXPECT_EQ(Sweep(launch, deep).outcome, Outcome::DropCap);
+}
+
+// The floor search finds terrain only from above it, so a step that ends under a hill's crest must not fall on through
+// the hill into the void.
+TEST(JumpTrajectory, RandomHillsAlwaysLandOnTheGround)
+{
+    std::mt19937 random(1);
+    std::uniform_real_distribution<float> unit(0.0f, 1.0f);
+    for (uint32 i = 0; i < 2000; ++i)
+    {
+        float const heightX = unit(random) * 6.0f;
+        float const frequencyX = 0.2f + unit(random) * 1.5f;
+        float const phaseX = unit(random) * 6.0f;
+        float const heightY = unit(random) * 6.0f;
+        float const frequencyY = 0.2f + unit(random) * 1.5f;
+        float const phaseY = unit(random) * 6.0f;
+        float const ridge = unit(random) * 3.0f;
+        float const ridgeFrequency = 0.3f + unit(random) * 0.7f;
+        FakeWorld world;
+        world.voidZ = -500.0f;
+        world.terrain = [=](float x, float y)
+        {
+            return heightX * std::sin(frequencyX * x + phaseX) + heightY * std::sin(frequencyY * y + phaseY) +
+                   ridge * std::abs(std::sin(ridgeFrequency * (x + y)));
+        };
+
+        Launch launch;
+        launch.position = {unit(random) * 10.0f, unit(random) * 10.0f, 0.0f};
+        launch.position.z = world.terrain(launch.position.x, launch.position.y) + unit(random) * 40.0f;
+        float const heading = unit(random) * 6.2831853f;
+        float const speed = unit(random) < 0.3f ? 0.0f : unit(random) * 25.0f;
+        launch.velocity = {speed * std::cos(heading), speed * std::sin(heading), unit(random) * 20.0f - 5.0f};
+        Trajectory const trajectory = Sweep(launch, world);
+
+        ASSERT_EQ(trajectory.outcome, Outcome::Landed) << "launch " << i;
+        ASSERT_NEAR(trajectory.landing.z, world.terrain(trajectory.landing.x, trajectory.landing.y), 0.05f)
+            << "launch " << i;
+    }
 }
 
 TEST(JumpTrajectory, RefusesWhenThereIsNoFloor)
