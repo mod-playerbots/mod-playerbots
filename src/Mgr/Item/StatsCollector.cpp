@@ -401,12 +401,7 @@ void StatsCollector::CollectScriptedProcBuff(uint32 procSpellId, uint32 buffSpel
 {
     Milliseconds icd = 0ms;
     if (SpellProcEntry const* entry = sSpellMgr->GetSpellProcEntry(procSpellId))
-    {
-        if (entry->Cooldown.count())
-            icd = entry->Cooldown;
-        else if (entry->ProcsPerMinute > 0.0f)
-            icd = Milliseconds(static_cast<uint32>(60000.0f / entry->ProcsPerMinute));
-    }
+        icd = entry->Cooldown;
     CollectSpellStats(buffSpellId, multiplier, icd);
 }
 
