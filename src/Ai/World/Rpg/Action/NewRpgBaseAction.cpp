@@ -19,7 +19,6 @@
 #include "NewRpgInfo.h"
 #include "QuestLevelRules.h"
 #include "QuestPoiZStore.h"
-#include "QuestValues.h"
 #include "NewRpgStrategy.h"
 #include "Object.h"
 #include "ObjectAccessor.h"
@@ -866,7 +865,8 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
             baked && baked->pointIdx < qPoi.points.size())
         {
             // Pair the baked floor with the exact point it was baked from instead of the
-            // weighted-average x/y, which can sit on a different floor.
+            // weighted-average x/y, which can sit on a different floor. Idx2 is dense from 0
+            // for all but one POI in the world DB; an out-of-range index falls back below.
             info.pos = {float(qPoi.points[baked->pointIdx].x), float(qPoi.points[baked->pointIdx].y)};
             info.hasBakedZ = true;
             info.z = baked->z;
