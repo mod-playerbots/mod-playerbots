@@ -26,8 +26,45 @@ namespace
         uint32 castTime = 0;
         uint32 cooldown = 0;
         uint32 duration = 0;
+        uint32 tickInterval = 0;
+        uint32 powerType = 0;
         uint32 requiredLevel = 0;
     };
+
+    // Flat modifiers that target SPELLMOD_EFFECT1/2/3 can modify resources, shields or other
+    // non-damage effects. Only value the ones that land on a damage or heal effect.
+    bool IsDamageOrHealEffect(SpellEffectInfo const& effect)
+    {
+        switch (effect.Effect)
+        {
+            case SPELL_EFFECT_SCHOOL_DAMAGE:
+            case SPELL_EFFECT_HEAL:
+            case SPELL_EFFECT_HEAL_MAX_HEALTH:
+            case SPELL_EFFECT_WEAPON_DAMAGE:
+            case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
+                return true;
+            case SPELL_EFFECT_APPLY_AURA:
+                return effect.ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE ||
+                       effect.ApplyAuraName == SPELL_AURA_PERIODIC_HEAL;
+            default:
+                return false;
+        }
+    }
+
+    uint32 RelicModEffectIndex(uint32 op)
+    {
+        switch (op)
+        {
+            case SPELLMOD_EFFECT1:
+                return 0;
+            case SPELLMOD_EFFECT2:
+                return 1;
+            case SPELLMOD_EFFECT3:
+                return 2;
+            default:
+                return MAX_SPELL_EFFECTS;
+        }
+    }
 
     // Cache of (relic spell id, family mask) -> every ability the flat modifier targets. The mask is
     // part of the key: one spell can carry several flat modifiers with different masks, and the proc
@@ -64,7 +101,21 @@ namespace
                 ability.castTime = si->CalcCastTime(nullptr);
                 ability.cooldown = std::max(si->RecoveryTime, si->CategoryRecoveryTime);
                 ability.duration = si->GetDuration() > 0 ? uint32(si->GetDuration()) : 0;
-                ability.requiredLevel = si->BaseLevel ? si->BaseLevel : si->SpellLevel;
+                ability.powerType = si->PowerType;
+                // BaseLevel drives scaling; SpellLevel is the rank's learn level. Use the higher
+                // one so a rank cannot be selected before the bot can learn it.
+                ability.requiredLevel = std::max(si->BaseLevel, si->SpellLevel);
+                for (uint8 e = 0; e < MAX_SPELL_EFFECTS; ++e)
+                {
+                    SpellEffectInfo const& effect = si->Effects[e];
+                    if (effect.Effect == SPELL_EFFECT_APPLY_AURA &&
+                        (effect.ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE ||
+                         effect.ApplyAuraName == SPELL_AURA_PERIODIC_HEAL))
+                    {
+                        ability.tickInterval = effect.Amplitude;
+                        break;
+                    }
+                }
                 abilities.push_back(ability);
             }
         }
@@ -282,7 +333,8 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
         procChance = spellInfo->ProcChance;
     bool lowChance = procChance <= 5;
 
-    if (lowChance || (procFlags && !CanBeTriggeredByType(spellInfo, procFlags)))
+    bool const procFlagsMatch = !procFlags || CanBeTriggeredByType(spellInfo, procFlags);
+    if (lowChance || !procFlagsMatch)
         canNextTrigger = false;
 
     if (spellInfo->StackAmount)
@@ -332,7 +384,7 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
                         std::min(1.0f, (float)spellInfo->GetDuration() / (spellInfo->GetDuration() + spellCooldown.count()));
 
                 multiplier *= coverage;
-                HandleApplyAura(effectInfo, spellInfo, multiplier, canNextTrigger, triggerCooldown,
+                HandleApplyAura(effectInfo, spellInfo, multiplier, canNextTrigger, procFlagsMatch, triggerCooldown,
                                 spellCooldown.count() <= 0);
                 break;
             }
@@ -782,7 +834,8 @@ void StatsCollector::CollectMagicResistance(uint32 schoolMask, float val)
 }
 
 void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInfo const* spellInfo, float multiplier,
-                                     bool canNextTrigger, Milliseconds triggerCooldown, bool permanent)
+                                     bool canNextTrigger, bool procFlagsMatch, Milliseconds triggerCooldown,
+                                     bool permanent)
 {
     if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA)
         return;
@@ -816,12 +869,27 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInf
             if (!ability.spellId)
                 break;
 
+            uint32 const effectIndex = RelicModEffectIndex(op);
+            if (effectIndex < MAX_SPELL_EFFECTS)
+            {
+                SpellInfo const* abilityInfo = sSpellMgr->GetSpellInfo(ability.spellId);
+                if (!abilityInfo || !IsDamageOrHealEffect(abilityInfo->Effects[effectIndex]))
+                    break;
+            }
+
+            if (op == SPELLMOD_COST && ability.powerType != POWER_MANA)
+                break;
+
             // Cycle = how often the ability is used (cooldown, duration for DoTs/HoTs, or cast time + GCD)
             uint32 cycle = std::max(std::max(ability.cooldown, ability.duration), ability.castTime + 1500);
             if (!cycle)
                 cycle = 1500;
 
             float perSecond = (op == SPELLMOD_COST ? -val : val) * 1000.0f / cycle * multiplier;
+
+            // SPELLMOD_DOT adds the flat value to every tick, not once per application.
+            if (op == SPELLMOD_DOT && ability.tickInterval && ability.duration)
+                perSecond *= float(ability.duration) / float(ability.tickInterval);
 
             if (op == SPELLMOD_COST)
                 stats[STATS_TYPE_MANA_REGENERATION] += perSecond;
@@ -1023,7 +1091,7 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInf
                 if (canNextTrigger)
                     CollectSpellStats(effectInfo.TriggerSpell, multiplier, triggerCooldown);
             }
-            else if (val > 0)
+            else if (val > 0 && procFlagsMatch)
             {
                 // Flat-damage proc (e.g. feral "your ability deals X additional damage" relics):
                 // the bonus lives in the aura's base points with no trigger spell. The abilities are
