@@ -57,6 +57,7 @@
 #include "Vehicle.h"
 #include "WsgRouteState.h"
 #include <algorithm>
+#include <cfloat>
 #include <cmath>
 #include <map>
 #include <mutex>
@@ -311,6 +312,12 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     {
         if (inCombat && !isCasting)
             ResetActionDuration();
+
+        // Start the next travel attempt from the current distance, not the pre-combat minimum.
+        // Otherwise the old baseline can make the post-combat progress check fail for 90 s and
+        // trigger the teleport recovery.
+        if (inCombat)
+            rpgInfo.nearestMoveFarDis = FLT_MAX;
 
         inCombat = false;
     }
