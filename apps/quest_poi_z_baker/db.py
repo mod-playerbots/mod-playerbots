@@ -66,6 +66,10 @@ def sql(query: str, params: Sequence[Any] = ()) -> List[Dict[str, Any]]:
     global _connection
     if _connection is None:
         _connection = _connect()
+    else:
+        # A full bake can idle between per-map queries. Reconnect if the server
+        # dropped the cached connection instead of losing a multi-hour run.
+        _connection.ping(reconnect=True)
     with _connection.cursor() as cursor:
         cursor.execute(query, params)
         return list(cursor.fetchall())
