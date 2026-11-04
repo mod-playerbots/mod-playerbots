@@ -100,6 +100,7 @@ public:
         creators["rti"] = &ChatTriggerContext::rti;
         creators["revive"] = &ChatTriggerContext::revive;
         creators["runaway"] = &ChatTriggerContext::runaway;
+        creators["jump"] = &ChatTriggerContext::jump;
         creators["warning"] = &ChatTriggerContext::warning;
         creators["position"] = &ChatTriggerContext::position;
         creators["summon"] = &ChatTriggerContext::summon;
@@ -192,6 +193,7 @@ private:
     static Trigger* summon(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "summon"); }
     static Trigger* position(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "position"); }
     static Trigger* runaway(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "runaway"); }
+    static Trigger* jump(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "jump"); }
     static Trigger* warning(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "warning"); }
     static Trigger* revive(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "revive"); }
     static Trigger* rti(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "rti"); }

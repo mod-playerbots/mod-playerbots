@@ -197,6 +197,15 @@ public:
     float DEFAULT_DISPERSE_DISTANCE_MELEE = 2.0f;
 };
 
+// Jumps the way a player does: along the way the bot is moving, or straight up when it stands still.
+class JumpAction : public MovementAction
+{
+public:
+    JumpAction(PlayerbotAI* botAI) : MovementAction(botAI, "jump") {}
+
+    bool Execute(Event event) override;
+};
+
 class RunAwayAction : public MovementAction
 {
 public:

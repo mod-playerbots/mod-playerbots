@@ -111,6 +111,10 @@ bool AutoReleaseSpiritAction::isUseful()
     if (!bot->isDead() || bot->InArena())
         return false;
 
+    // The corpse is left where the bot releases; wait for the body to land.
+    if (botAI->airborne.IsAirborne())
+        return false;
+
     if (bot->InBattleground())
         return ShouldDelayBattlegroundRelease();
 

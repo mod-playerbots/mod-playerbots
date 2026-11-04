@@ -42,7 +42,6 @@ public:
     bool isPossible() override { return true; }
     bool Mount();
 
-    static void CompleteDismount(Player* bot);
     static void LoadPreferredMounts();
 
 private:
