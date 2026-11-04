@@ -42,6 +42,8 @@ namespace
             case SPELL_EFFECT_HEAL_MAX_HEALTH:
             case SPELL_EFFECT_WEAPON_DAMAGE:
             case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
+            case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
+            case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
                 return true;
             case SPELL_EFFECT_APPLY_AURA:
                 return effect.ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE ||
