@@ -35,6 +35,7 @@
 #include "G3D/Vector2.h"
 #include <cmath>
 #include <cstdlib>
+#include <limits>
 
 void TellRpgStatusAction::WhisperStatusChange(Player* owner, std::string const& statusName)
 {
@@ -539,6 +540,59 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
     }
     if (data.pos == WorldPosition())
     {
+        // Prefer an exact spawn for any incomplete objective before the POI
+        // gate; a missing POI must not hide a known spawn.
+        Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+        auto statusItr = bot->getQuestStatusMap().find(questId);
+        if (quest && statusItr != bot->getQuestStatusMap().end())
+        {
+            QuestStatusData const& status = statusItr->second;
+            int32 bestObjective = 0;
+            WorldPosition bestPosition;
+            float bestDistance = std::numeric_limits<float>::max();
+            bool foundSpawn = false;
+
+            auto considerObjective = [&](int32 objectiveIdx)
+            {
+                WorldPosition candidate;
+                if (!GetQuestObjectiveSpawnPosition(questId, objectiveIdx, candidate))
+                    return;
+
+                float const distance = bot->GetDistance(candidate.GetPositionX(), candidate.GetPositionY(),
+                                                        candidate.GetPositionZ());
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    bestPosition = candidate;
+                    bestObjective = objectiveIdx;
+                    foundSpawn = true;
+                }
+            };
+
+            for (uint8 slot = 0; slot < QUEST_OBJECTIVES_COUNT; ++slot)
+            {
+                if (!quest->RequiredNpcOrGo[slot] ||
+                    status.CreatureOrGOCount[slot] >= quest->RequiredNpcOrGoCount[slot])
+                    continue;
+                considerObjective(int32(slot));
+            }
+            for (uint8 slot = 0; slot < QUEST_ITEM_OBJECTIVES_COUNT; ++slot)
+            {
+                if (!quest->RequiredItemId[slot] ||
+                    status.ItemCount[slot] >= quest->RequiredItemCount[slot])
+                    continue;
+                considerObjective(int32(QUEST_OBJECTIVES_COUNT + slot));
+            }
+
+            if (foundSpawn)
+            {
+                data.lastReachPOI = 0;
+                data.pos = bestPosition;
+                data.objectiveIdx = bestObjective;
+                return true;
+            }
+        }
+
         std::vector<POIInfo> poiInfo;
         if (!GetQuestPOIPosAndObjectiveIdx(questId, poiInfo))
         {
@@ -550,16 +604,23 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         G3D::Vector2 nearestPoi = poiInfo[rndIdx].pos;
         int32 objectiveIdx = poiInfo[rndIdx].objectiveIdx;
 
-        float dx = nearestPoi.x, dy = nearestPoi.y;
+        WorldPosition pos;
+        if (!GetQuestObjectiveSpawnPosition(questId, objectiveIdx, pos))
+        {
+            // Fallback: the quest POI only carries x/y; estimate z from the
+            // terrain surface. This is wrong for cave/mine interiors (it lands
+            // on the surface above), so the spawn lookup above is the primary
+            // path and this only handles objectives with no known spawn.
+            float dx = nearestPoi.x, dy = nearestPoi.y;
+            float dz = std::max(bot->GetMap()->GetHeight(dx, dy, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(dx, dy));
 
-        // z = MAX_HEIGHT as we do not know accurate z
-        float dz = std::max(bot->GetMap()->GetHeight(dx, dy, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(dx, dy));
+            // double check for GetQuestPOIPosAndObjectiveIdx
+            if (dz == INVALID_HEIGHT || dz == VMAP_INVALID_HEIGHT_VALUE)
+                return false;
 
-        // double check for GetQuestPOIPosAndObjectiveIdx
-        if (dz == INVALID_HEIGHT || dz == VMAP_INVALID_HEIGHT_VALUE)
-            return false;
+            pos = WorldPosition(bot->GetMapId(), dx, dy, dz);
+        }
 
-        WorldPosition pos(bot->GetMapId(), dx, dy, dz);
         data.lastReachPOI = 0;
         data.pos = pos;
         data.objectiveIdx = objectiveIdx;
