@@ -25,6 +25,7 @@
 #include "RtiTriggers.h"
 #include "StuckTriggers.h"
 #include "TravelTriggers.h"
+#include "VendorTriggers.h"
 #include "WaitForAttackTriggers.h"
 
 class PlayerbotAI;
@@ -228,6 +229,7 @@ public:
         creators["rpg end quest"] = &TriggerContext::rpg_end_quest;
         creators["rpg buy"] = &TriggerContext::rpg_buy;
         creators["rpg sell"] = &TriggerContext::rpg_sell;
+        creators["can sell at vendor"] = &TriggerContext::can_sell_at_vendor;
         creators["rpg repair"] = &TriggerContext::rpg_repair;
         creators["rpg train"] = &TriggerContext::rpg_train;
         creators["rpg heal"] = &TriggerContext::rpg_heal;
@@ -444,6 +446,7 @@ private:
     static Trigger* rpg_end_quest(PlayerbotAI* botAI) { return new RpgEndQuestTrigger(botAI); }
     static Trigger* rpg_buy(PlayerbotAI* botAI) { return new RpgBuyTrigger(botAI); }
     static Trigger* rpg_sell(PlayerbotAI* botAI) { return new RpgSellTrigger(botAI); }
+    static Trigger* can_sell_at_vendor(PlayerbotAI* botAI) { return new CanSellAtVendorTrigger(botAI); }
     static Trigger* rpg_repair(PlayerbotAI* botAI) { return new RpgRepairTrigger(botAI); }
     static Trigger* rpg_train(PlayerbotAI* botAI) { return new RpgTrainTrigger(botAI); }
     static Trigger* rpg_heal(PlayerbotAI* botAI) { return new RpgHealTrigger(botAI); }

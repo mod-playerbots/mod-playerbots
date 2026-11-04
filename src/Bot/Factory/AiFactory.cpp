@@ -579,7 +579,7 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
     if (!player->InBattleground())
     {
         nonCombatEngine->addStrategiesNoInit("nc", "food", "chat", "follow", "default", "force rebuff", "quest", "loot",
-                                            "gather", "duel", "pvp", "buff", "mount", "emote", nullptr);
+                                            "gather", "duel", "pvp", "buff", "mount", "emote", "sell junk", nullptr);
     }
 
     if (sPlayerbotAIConfig.AutoSaveMana && PlayerbotAI::IsHeal(player, true))
@@ -609,7 +609,10 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
             nonCombatEngine->addStrategy("grind", false);
 
             if (sPlayerbotAIConfig.EnableNewRpgStrategy)
+            {
                 nonCombatEngine->addStrategy("new rpg", false);
+                nonCombatEngine->removeStrategy("sell junk", false);  // new rpg sells at the vendors it visits
+            }
             else if (sPlayerbotAIConfig.AutoDoQuests)
             {
                 // nonCombatEngine->addStrategy("travel");
