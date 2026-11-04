@@ -7,6 +7,7 @@
 #include "StatsCollector.h"
 #include "DBCStores.h"
 #include "ItemTemplate.h"
+#include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIAware.h"
 #include "SharedDefines.h"
@@ -19,9 +20,11 @@ namespace
 {
 // The magic schools resistance is counted for: fire, nature, frost, shadow and arcane
 constexpr uint32 MAGIC_RESISTANCE_SCHOOLS = MAX_SPELL_SCHOOL - SPELL_SCHOOL_FIRE;
+constexpr uint32 DEFAULT_STACK_TRIGGER_CYCLE_MS = 1000;
 }
 
-StatsCollector::StatsCollector(CollectorType type, int32 cls, int32 lvl) : type_(type), cls_(cls), lvl_(lvl)
+StatsCollector::StatsCollector(CollectorType type, int32 cls, int32 lvl, Player* player)
+    : type_(type), cls_(cls), lvl_(lvl), player_(player)
 {
     Reset();
 }
@@ -255,8 +258,10 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
                     coverage =
                         std::min(1.0f, (float)spellInfo->GetDuration() / (spellInfo->GetDuration() + spellCooldown.count()));
 
-                multiplier *= coverage;
-                HandleApplyAura(effectInfo, spellInfo, multiplier, canNextTrigger, triggerCooldown,
+                // Do not mutate `multiplier`: a spell with several APPLY_AURA effects would otherwise
+                // get its coverage applied once per effect (e.g. Deathbringer's Will buffs carry a
+                // TRANSFORM visual + the stat aura).
+                HandleApplyAura(effectInfo, spellInfo, multiplier * coverage, canNextTrigger, triggerCooldown,
                                 spellCooldown.count() <= 0);
                 break;
             }
@@ -383,61 +388,172 @@ void StatsCollector::CollectEnchantStats(SpellItemEnchantmentEntry const* enchan
 }
 
 /// @todo Special case for some spell that hard to calculate, like trinket, relic, etc.
+
+// Classes whose Death's Choice / Deathbringer's Will proc buff is Strength.
+// The core script (spell_item_death_choice / spell_item_deathbringers_will_*) picks the buff
+// from max(str, agi) or a per-class pool; Strength users get the STR variant.
+static bool UsesStrengthProcBuff(uint32 cls)
+{
+    return cls == CLASS_WARRIOR || cls == CLASS_PALADIN || cls == CLASS_DEATH_KNIGHT;
+}
+
+void StatsCollector::CollectScriptedProcBuff(uint32 procSpellId, uint32 buffSpellId, float multiplier)
+{
+    Milliseconds icd = 0ms;
+    if (SpellProcEntry const* entry = sSpellMgr->GetSpellProcEntry(procSpellId))
+        icd = entry->Cooldown;
+    CollectSpellStats(buffSpellId, multiplier, icd);
+}
+
+void StatsCollector::CollectStackTriggerProc(uint32 procSpellId, uint32 triggerSpellId)
+{
+    SpellInfo const* procInfo = sSpellMgr->GetSpellInfo(procSpellId);
+    if (!procInfo)
+        return;
+
+    Milliseconds icd = 0ms;
+    if (SpellProcEntry const* entry = sSpellMgr->GetSpellProcEntry(procSpellId))
+        icd = entry->Cooldown;
+
+    // Stacks required to fire the trigger = the proc aura's amount (base points + die side).
+    uint32 stacks = uint32(std::max(AverageValue(procInfo->Effects[0], procInfo), 1.0f));
+    Milliseconds cycle = icd * stacks;
+    if (cycle <= 0ms)
+        cycle = Milliseconds(DEFAULT_STACK_TRIGGER_CYCLE_MS);
+
+    CollectSpellStats(triggerSpellId, 1.0f, cycle);
+}
+
 bool StatsCollector::SpecialSpellFilter(uint32 spellId)
 {
     // trinket
     switch (spellId)
     {
-        case 60764:  // Totem of Splintering
+        case 60764:  // Totem of Splintering: enhancement-shaman relic (dummy aura), worthless for casters
             if (type_ & (CollectorType::SPELL))
                 return true;
             break;
-        case 27521:  // Insightful Earthstorm Diamond
+        case 27521:  // Insightful Earthstorm Diamond: 5% mana proc, below the collector's low-chance gate
             stats[STATS_TYPE_MANA_REGENERATION] += 20;
             return true;
-        case 55381:  // Insightful Earthsiege Diamond
+        case 55381:  // Insightful Earthsiege Diamond: 5% mana proc, below the collector's low-chance gate
             stats[STATS_TYPE_MANA_REGENERATION] += 40;
             return true;
         case 39442:  // Darkmoon Card: Wrath
             if (!(type_ & CollectorType::SPELL_HEAL))
                 stats[STATS_TYPE_CRIT] += 50;
             return true;
-        case 59620:  // Berserk
+        case 59620:  // Berserking weapon enchant
             if (type_ & CollectorType::MELEE)
                 stats[STATS_TYPE_ATTACK_POWER] += 120;
             return true;
-        case 67702:  // Death's Verdict
-            stats[STATS_TYPE_ATTACK_POWER] += 225;
+        case 67702:  // Death's Verdict (normal): spell_item_death_choice casts +450 STR or AGI
+                     // (67708/67703), max(str, agi)
+            CollectScriptedProcBuff(67702, UsesStrengthProcBuff(cls_) ? 67708 : 67703);
             return true;
-        case 67771:  // Death's Verdict (heroic)
-            stats[STATS_TYPE_ATTACK_POWER] += 260;
+        case 67771:  // Death's Verdict (heroic): +510 STR or AGI (67773/67772)
+            CollectScriptedProcBuff(67771, UsesStrengthProcBuff(cls_) ? 67773 : 67772);
             return true;
-        case 71406:  // Tiny Abomination in a Jar
+        case 71406:  // Tiny Abomination in a Jar: 8 motes (50% on hit) -> Manifest Anger (71433/71434), a normalized
+                     // weapon-damage attack with no fixed DBC value; approximated as AP (paladins gain more from it)
             if (cls_ == CLASS_PALADIN)
-                stats[STATS_TYPE_ATTACK_POWER] += 600;
+                stats[STATS_TYPE_ATTACK_POWER] += 700;
             else
-                stats[STATS_TYPE_ATTACK_POWER] += 150;
+                stats[STATS_TYPE_ATTACK_POWER] += 500;
             return true;
-        case 71545:  // Tiny Abomination in a Jar (heroic)
+        case 71545:  // Tiny Abomination in a Jar (heroic): 7 motes to trigger
             if (cls_ == CLASS_PALADIN)
                 stats[STATS_TYPE_ATTACK_POWER] += 800;
             else
-                stats[STATS_TYPE_ATTACK_POWER] += 200;
+                stats[STATS_TYPE_ATTACK_POWER] += 600;
             return true;
-        case 71519:  // Deathbringer's Will
-            stats[STATS_TYPE_ATTACK_POWER] += 350;
+        case 67712:  // Reign of the Dead (normal): spell_item_trinket_stack - mote 67713 (3 stacks)
+                     // -> Pillar of Flame 67714
+            CollectStackTriggerProc(67712, 67714);
             return true;
+        case 67758:  // Reign of the Dead (heroic): mote 67759 -> Pillar of Flame 67760
+            CollectStackTriggerProc(67758, 67760);
+            return true;
+        case 57345:  // Darkmoon Card: Greatness - script casts the caster's highest stat
+                     // (60229 STR/60233 AGI/60234 INT/60235 SPI)
+        {
+            uint32 buff = 60234;
+            if (player_)
+            {
+                float best = player_->GetStat(STAT_STRENGTH);
+                buff = 60229;
+                if (player_->GetStat(STAT_AGILITY) > best)
+                {
+                    best = player_->GetStat(STAT_AGILITY);
+                    buff = 60233;
+                }
+                if (player_->GetStat(STAT_INTELLECT) > best)
+                {
+                    best = player_->GetStat(STAT_INTELLECT);
+                    buff = 60234;
+                }
+                if (player_->GetStat(STAT_SPIRIT) > best)
+                    buff = 60235;
+            }
+            else
+            {
+                buff = UsesStrengthProcBuff(cls_) ? 60229 : 60233;
+                if (type_ & CollectorType::SPELL)
+                    buff = 60234;
+            }
+            CollectScriptedProcBuff(57345, buff);
+            return true;
+        }
+        case 71519:  // Deathbringer's Will (normal): per-class pool of 3 random buffs -> value = average of the pool
         case 71562:  // Deathbringer's Will (heroic)
-            stats[STATS_TYPE_ATTACK_POWER] += 400;
+        {
+            bool heroic = spellId == 71562;
+            uint32 str   = heroic ? 71561 : 71484;  // Strength of the Taunka
+            uint32 agi   = heroic ? 71556 : 71485;  // Agility of the Vrykul
+            uint32 power = heroic ? 71558 : 71486;  // Power of the Taunka (AP)
+            uint32 aim   = heroic ? 71559 : 71491;  // Aim of the Iron Dwarves (crit)
+            uint32 speed = heroic ? 71560 : 71492;  // Speed of the Vrykul (haste)
+
+            auto addPool = [&](uint32 a, uint32 b, uint32 c)
+            {
+                CollectScriptedProcBuff(spellId, a, 1.0f / 3.0f);
+                CollectScriptedProcBuff(spellId, b, 1.0f / 3.0f);
+                CollectScriptedProcBuff(spellId, c, 1.0f / 3.0f);
+            };
+            switch (cls_)
+            {
+                case CLASS_WARRIOR:
+                case CLASS_PALADIN:
+                case CLASS_DEATH_KNIGHT:
+                    addPool(str, aim, speed);
+                    break;
+                case CLASS_HUNTER:
+                    addPool(agi, aim, power);
+                    break;
+                case CLASS_ROGUE:
+                case CLASS_SHAMAN:
+                    addPool(agi, speed, power);
+                    break;
+                case CLASS_DRUID:
+                    // The druid pool is melee stats; a balance/resto collector cannot use it.
+                    if (type_ & CollectorType::MELEE)
+                        addPool(str, agi, speed);
+                    break;
+                default:
+                    break;  // priest/mage/warlock: script does not proc
+            }
             return true;
+        }
         case 71602:  // Dislodged Foreign Object
             /// @todo The item can be triggered by heal spell, which mismatch with it's description
             /// Noticing that heroic item can not be triggered, probably a bug to report to AC
             if (type_ & CollectorType::SPELL_HEAL)
                 return true;
             break;
-        case 71903:  // Shadowmourne
-            stats[STATS_TYPE_STRENGTH] += 200;
+        case 71903:  // Shadowmourne: soul fragment 71905 (+30 STR x10, resets at 10) -> chaos
+                     // bane 73422 (+270 STR 10 sec)
+            CollectScriptedProcBuff(71903, 71905);        // fragments: +30 STR x stack heuristic
+            CollectScriptedProcBuff(71903, 73422, 0.4f);  // chaos bane: ~40% uptime (10 sec per ~25 sec cycle)
             return true;
         default:
             break;
@@ -900,6 +1016,14 @@ void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInf
         case SPELL_AURA_MOD_INCREASE_HEALTH_2:
             // Same as SPELL_AURA_MOD_INCREASE_HEALTH: flat max health -> stamina (15 hp per stamina)
             stats[STATS_TYPE_STAMINA] += val * multiplier / 15;
+            break;
+        case SPELL_AURA_MOD_POWER_COST_SCHOOL:
+            // Flat mana-cost reduction (e.g. Spark of Hope); stored negative in the DBC,
+            // so negate to add as mana saved per cast. Only credit reductions that cover
+            // every magic school; school-specific masks need spec-aware weights.
+            if ((effectInfo.MiscValue & SPELL_SCHOOL_MASK_MAGIC) != SPELL_SCHOOL_MASK_MAGIC)
+                break;
+            stats[STATS_TYPE_MANA_REGENERATION] += -val * multiplier;
             break;
         case SPELL_AURA_PROC_TRIGGER_SPELL:
         {
