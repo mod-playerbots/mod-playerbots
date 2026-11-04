@@ -71,7 +71,9 @@ enum NewRpgStatus : int
     // Taking a break
     RPG_REST = 7,
     RPG_OUTDOOR_PVP = 8,
-    RPG_STATUS_END = 9
+    // Roam the current zone harvesting herb/ore nodes
+    RPG_DO_GATHER = 9,
+    RPG_STATUS_END = 10
 };
 
 #define MAX_SPECNO 20
@@ -118,6 +120,7 @@ public:
     bool AutoSaveMana;
     uint32 SaveManaThreshold;
     AutoPartyBuffMode AutoGreaterBlessings;
+    uint32 BlessingRefreshThresholdSeconds;
     AutoPartyBuffMode AutoPartyBuffs;
     bool TellWhenMissingBuffReagents;
     uint32 MissingBuffReagentMessageCooldown;
@@ -136,6 +139,7 @@ public:
     bool BotAutologin;
     std::string RandomBotMapsAsString;
     float ProbTeleToBankers;
+    float ProbTeleToQuestGivers;
     bool EnableWeightTeleToCityBankers;
     int WeightTeleToStormwind;
     int WeightTeleToIronforge;
@@ -161,19 +165,20 @@ public:
     float RandomBotMinLevelChance, RandomBotMaxLevelChance;
     float RandomBotRpgChance;
     uint32 MinRandomBots, MaxRandomBots;
+    uint32 RandomBotCountMode;
     uint32 RandomBotUpdateInterval, RandomBotCountChangeMinInterval, RandomBotCountChangeMaxInterval;
-    uint32 MinRandomBotInWorldTime, MaxRandomBotInWorldTime;
+    uint32 RandomBotCountMinTime, RandomBotCountMaxTime;
     uint32 MinRandomBotRandomizeTime, MaxRandomBotRandomizeTime;
     uint32 MinRandomBotChangeStrategyTime, MaxRandomBotChangeStrategyTime;
     uint32 MinRandomBotReviveTime, MaxRandomBotReviveTime;
     uint32 MinRandomBotTeleportInterval, MaxRandomBotTeleportInterval;
-    uint32 PermanentlyInWorldTime;
     uint32 MinRandomBotPvpTime, MaxRandomBotPvpTime;
     uint32 RandomBotsPerInterval;
     uint32 RandomBotPrintStatsInterval;
     uint32 MinRandomBotsPriceChangeInterval, MaxRandomBotsPriceChangeInterval;
     uint32 DisabledWithoutRealPlayerLoginDelay, DisabledWithoutRealPlayerLogoutDelay;
     bool RandomBotJoinLfg;
+    bool RandomBotJoinLfgOutleveledExpansion;
 
     // Professions
     bool EnableFishingWithMaster;
@@ -310,8 +315,6 @@ public:
     uint32 LimitEnchantExpansion;
     uint32 LimitGearExpansion;
     uint32 RandomBotStartingLevel;
-    bool EnablePeriodicOnlineOffline;
-    float PeriodicOnlineOfflineRatio;
     bool GearScoreCheck;
     bool RandomBotPreQuests;
     bool BotSendMailEnabled;
@@ -385,6 +388,7 @@ public:
     bool DropObsoleteQuests;
     bool AllowLearnTrainerSpells;
     bool AutoPickTalents;
+    bool AutoPickTalentsForPlayerControlledBots;
     bool AutoUpgradeEquip;
     int32 HunterWolfPet;
     int32 DefaultPetStance;
@@ -392,6 +396,8 @@ public:
     bool AutoLearnTrainerSpells;
     bool AutoDoQuests;
     bool EnableNewRpgStrategy;
+    float RpgTargetSearchDistance;
+    bool CollectDetailedQuestStats;
     std::unordered_map<NewRpgStatus, uint32> RpgStatusProbWeight;
     bool SyncLevelWithPlayers;
     bool RandomBotConcentrateInPlayerZone;
@@ -413,6 +419,7 @@ public:
     bool EquipAndSpecPersistence;
     int32 EquipAndSpecPersistenceLevel;
     int32 GroupInvitationPermission;
+    bool AllowBattlegroundCommands;
     bool KeepAltsInGroup = false;
     bool AllowSummonInCombat;
     bool AllowSummonWhenMasterIsDead;

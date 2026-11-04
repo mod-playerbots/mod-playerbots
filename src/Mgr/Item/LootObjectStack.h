@@ -48,6 +48,9 @@ public:
 
     bool IsEmpty() { return !guid; }
     bool IsLootPossible(Player* bot);
+    // True when the bot is within the server's interaction range for this target: the core
+    // creature range for corpses, or the gameobject's own type/display/spell based range.
+    bool IsAtInteractDistance(Player* bot);
     void Refresh(Player* bot, ObjectGuid guid);
     WorldObject* GetWorldObject(Player* bot);
     static std::vector<Player*> GetQuestLootReceivers(Player* bot);
@@ -104,7 +107,6 @@ public:
     bool Add(ObjectGuid guid);
     void Remove(ObjectGuid guid);
     void Clear();
-    bool CanLoot(float maxDistance);
     LootObject GetLoot(float maxDistance = 0);
 
     bool IsLootPending();

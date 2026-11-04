@@ -12,11 +12,16 @@
 using namespace GruulHelpers;
 using namespace EncounterHelpers;
 
-// General
+// Shared
 
 bool GruulsLairNoEncounterInProgressTrigger::IsActive()
 {
     return !IsEncounterInProgress(bot, GRUUL_MAP_ID);
+}
+
+bool GruulsLairClassRolesShouldBeAssignedTrigger::IsActive()
+{
+    return IsMechanicTrackerBot(bot, GRUUL_MAP_ID);
 }
 
 // High King Maulgar <Lord of the Ogres>
@@ -42,7 +47,7 @@ bool HighKingMaulgarKigglerNeedsMoonkinTankTrigger::IsActiveInEncounter()
     return IsKigglerMoonkinTank(botAI) && AI_VALUE2(Unit*, "find target", "kiggler the crazed");
 }
 
-bool HighKingMaulgarDeterminingKillOrderTrigger::IsActiveInEncounter()
+bool HighKingMaulgarShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
     if (!AI_VALUE2(Unit*, "find target", "high king maulgar"))
         return false;
@@ -87,7 +92,7 @@ bool HighKingMaulgarWildFelStalkerSpawnedTrigger::IsActiveInEncounter()
     return bot->getClass() == CLASS_WARLOCK && !GetNearbyWildFelStalkers(botAI).empty();
 }
 
-bool HighKingMaulgarPullingOgreCouncilTrigger::IsActiveInEncounter()
+bool HighKingMaulgarHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -108,7 +113,7 @@ bool GruulTheDragonkillerRangedShouldSpreadTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 }
 
-bool GruulTheDragonkillerInCaveInTrigger::IsActiveInEncounter()
+bool GruulTheDragonkillerBotInCaveInTrigger::IsActiveInEncounter()
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
     if (!gruul)
