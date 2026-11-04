@@ -10,6 +10,7 @@
 #include "NamedObjectContext.h"
 #include "Value.h"
 
+class Bag;
 class Item;
 class Player;
 class PlayerbotAI;
@@ -50,6 +51,7 @@ public:
 protected:
     ItemUsage QueryItemUsageForEquip(ItemTemplate const* proto, int32 randomPropertyId = 0);
     ItemUsage QueryItemUsageForAmmo(ItemTemplate const* proto);
+    ItemUsage QueryItemUsageForQuiver(ItemTemplate const* proto);
     ParsedItemUsage GetItemIdFromQualifier();
 
 private:
@@ -71,6 +73,7 @@ public:
     /** True if this poison is the highest item level of its family (use-spell SpellFamilyFlags). */
     bool IsBestPoison(ItemTemplate const* proto);
 
+    static Bag* GetEquippedQuiver(Player* bot);
     static std::vector<uint32> SpellsUsingItem(uint32 itemId, Player* bot);
     static bool SpellGivesSkillUp(uint32 spellId, Player* bot);
 
