@@ -1122,7 +1122,7 @@ void StatsWeightCalculator::ApplyRacialWeaponBonus(ItemTemplate const* proto)
     if (proto->Class != ITEM_CLASS_WEAPON)
         return;
 
-    uint32 const sub = proto->SubClass;
+    uint32 const subClass = proto->SubClass;
     float expertiseSkill = 0.0f;
     float critPct = 0.0f;
 
@@ -1130,24 +1130,24 @@ void StatsWeightCalculator::ApplyRacialWeaponBonus(ItemTemplate const* proto)
     // Troll Throwing Specialization is left out: RANGED is hunters only, and they value thrown weapons at 0.1
     switch (player_->getRace(true))
     {
-        case RACE_ORC: // Orc Axe Specialization
-            if (sub == ITEM_SUBCLASS_WEAPON_AXE || sub == ITEM_SUBCLASS_WEAPON_AXE2 ||
-                sub == ITEM_SUBCLASS_WEAPON_FIST)
+        case RACE_ORC:  // Orc Axe Specialization
+            if (subClass == ITEM_SUBCLASS_WEAPON_AXE || subClass == ITEM_SUBCLASS_WEAPON_AXE2 ||
+                subClass == ITEM_SUBCLASS_WEAPON_FIST)
                 expertiseSkill = RACIAL_EXPERTISE_ORC_AXE_FIST;
             break;
-        case RACE_HUMAN: // Human Sword & Mace Specialization
-            if (sub == ITEM_SUBCLASS_WEAPON_SWORD || sub == ITEM_SUBCLASS_WEAPON_SWORD2 ||
-                sub == ITEM_SUBCLASS_WEAPON_MACE || sub == ITEM_SUBCLASS_WEAPON_MACE2)
+        case RACE_HUMAN:  // Human Sword & Mace Specialization
+            if (subClass == ITEM_SUBCLASS_WEAPON_SWORD || subClass == ITEM_SUBCLASS_WEAPON_SWORD2 ||
+                subClass == ITEM_SUBCLASS_WEAPON_MACE || subClass == ITEM_SUBCLASS_WEAPON_MACE2)
                 expertiseSkill = RACIAL_EXPERTISE_HUMAN_SWORD_MACE;
             break;
-        case RACE_DWARF: // Dwarf Mace Specialization + Gun Specialization
-            if (sub == ITEM_SUBCLASS_WEAPON_MACE || sub == ITEM_SUBCLASS_WEAPON_MACE2)
+        case RACE_DWARF:  // Dwarf Mace Specialization + Gun Specialization
+            if (subClass == ITEM_SUBCLASS_WEAPON_MACE || subClass == ITEM_SUBCLASS_WEAPON_MACE2)
                 expertiseSkill = RACIAL_EXPERTISE_DWARF_MACE;
-            else if (sub == ITEM_SUBCLASS_WEAPON_GUN)
+            else if (subClass == ITEM_SUBCLASS_WEAPON_GUN)
                 critPct = RACIAL_CRIT_PCT_DWARF_GUN;
             break;
-        case RACE_TROLL: // Troll Bow Specialization
-            if (sub == ITEM_SUBCLASS_WEAPON_BOW)
+        case RACE_TROLL:  // Troll Bow Specialization
+            if (subClass == ITEM_SUBCLASS_WEAPON_BOW)
                 critPct = RACIAL_CRIT_PCT_TROLL_BOW;
             break;
         default:
