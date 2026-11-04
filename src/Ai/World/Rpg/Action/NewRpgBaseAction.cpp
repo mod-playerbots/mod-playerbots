@@ -903,20 +903,31 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
             trigger->map == bot->GetMapId())
         {
             // The POI outline is usually wider than the area trigger. Use the walkable sample
-            // nearest the trigger center, not the outline point far from the trigger volume.
+            // nearest the trigger center only when it lies inside the trigger volume; a sample from
+            // a second outline POI (e.g. quest 76's POI 2, ~110 yd out) would strand the bot outside
+            // the trigger, so fall back to the trigger center.
             float wx = 0.0f, wy = 0.0f, wz = 0.0f;
+            bool insideTrigger = false;
             if (QuestPoiZStore::Instance().FindNearestWalkablePoint(questId, qPoi.Id, bot->GetMapId(),
                                                                     trigger->x, trigger->y, wx, wy, wz))
             {
+                float const sx = wx - trigger->x;
+                float const sy = wy - trigger->y;
+                insideTrigger = sx * sx + sy * sy <= trigger->radius * trigger->radius;
+            }
+
+            if (insideTrigger)
+            {
                 info.pos = {wx, wy};
                 info.z = wz;
+                info.hasBakedZ = true;
             }
             else
             {
                 info.pos = {trigger->x, trigger->y};
                 info.z = trigger->z;
+                info.hasBakedZ = false;
             }
-            info.hasBakedZ = true;
         }
         else if (QuestPoiZCandidate const* baked = QuestPoiZStore::Instance().Lookup(questId, qPoi.Id, bot->GetMapId());
                  baked && baked->pointIdx < qPoi.points.size())

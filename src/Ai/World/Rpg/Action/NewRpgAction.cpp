@@ -521,8 +521,9 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         bool completed = true;
         if (currentObjective == QUEST_OBJECTIVE_EXPLORE)
         {
-            // Exploration completes through the area trigger, which changes the quest status.
-            completed = false;
+            // Exploration completes through the area trigger, which sets Explored. Keep the
+            // destination until then; a mixed explore+kill/collect quest then moves on to the rest.
+            completed = q_status.Explored;
         }
         else if (currentObjective < QUEST_OBJECTIVES_COUNT)
         {
