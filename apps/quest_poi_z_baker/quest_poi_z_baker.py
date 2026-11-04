@@ -154,13 +154,15 @@ def load_dropper_entries(items: set[int]) -> dict[int, set[int]]:
     marks = _placeholders(item_list)
     query = (
         "WITH RECURSIVE loot (creature_entry, item, ref, depth) AS ("
-        "  SELECT ct.entry, clt.Item, clt.Reference, 0 "
+        "  SELECT ct.entry, CASE WHEN clt.Reference = 0 THEN clt.Item ELSE NULL END, "
+        "clt.Reference, 0 "
         "  FROM creature_loot_template clt "
         "  JOIN creature_template ct ON ct.lootid = clt.Entry "
         "  UNION ALL "
-        "  SELECT l.creature_entry, rlt.Item, rlt.Reference, l.depth + 1 "
+        "  SELECT l.creature_entry, CASE WHEN rlt.Reference = 0 THEN rlt.Item ELSE NULL END, "
+        "rlt.Reference, l.depth + 1 "
         "  FROM loot l "
-        "  JOIN reference_loot_template rlt ON rlt.Entry = l.ref "
+        "  JOIN reference_loot_template rlt ON rlt.Entry = ABS(l.ref) "
         "  WHERE l.ref <> 0 AND l.depth < 10"
         ") "
         f"SELECT DISTINCT creature_entry, item FROM loot WHERE item IN ({marks}) "
