@@ -27,6 +27,10 @@ struct POIInfo
     float z{0.0f};          // walkable floor, baked or terrain-estimated
 };
 
+// quest_poi.ObjectiveIndex used by scout/explore objectives. It is outside the four NPC/GO and
+// six item slots, so the normal incomplete-objective loop never matches it.
+constexpr int32 QUEST_OBJECTIVE_EXPLORE = 16;
+
 // A resolved 3D objective/turn-in position from spawn data (quest guidp map).
 struct QuestObjectivePosition
 {

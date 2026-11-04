@@ -9,6 +9,7 @@
 #include "ChatHelper.h"
 #include "Creature.h"
 #include "CreatureData.h"
+#include "DatabaseEnv.h"
 #include "GameObject.h"
 #include "GameObjectData.h"
 #include "GatherNodeMgr.h"
@@ -35,6 +36,7 @@
 #include "Position.h"
 #include "QuestDef.h"
 #include "QuestPackets.h"
+#include "QueryResult.h"
 #include "Random.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
@@ -42,6 +44,7 @@
 #include "Timer.h"
 #include "TravelMgr.h"
 #include "G3D/Vector2.h"
+#include <algorithm>
 #include <optional>
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
@@ -573,6 +576,31 @@ bool IsSpawnDestinationAllowed(Player* bot, QuestSpawn const& spawn)
     return bot->GetZoneId() == bot->GetMap()->GetZoneId(bot->GetPhaseMask(), spawn.pos.GetPositionX(),
                                                         spawn.pos.GetPositionY(), spawn.pos.GetPositionZ());
 }
+
+// Quest -> area trigger. ObjectMgr indexes trigger -> quest only, so keep the reverse mapping
+// built once at startup; DoExploreObjective-style callers use the trigger position from ObjectMgr.
+std::unordered_map<uint32, uint32> const& GetQuestAreaTriggerMap()
+{
+    static auto const map = []()
+    {
+        std::unordered_map<uint32, uint32> result;
+        if (QueryResult rows = WorldDatabase.Query("SELECT id, quest FROM areatrigger_involvedrelation"))
+            do
+            {
+                result[(*rows)[1].Get<uint32>()] = (*rows)[0].Get<uint32>();
+            } while (rows->NextRow());
+        return result;
+    }();
+
+    return map;
+}
+
+uint32 GetQuestAreaTriggerId(uint32 questId)
+{
+    auto const& map = GetQuestAreaTriggerMap();
+    auto const itr = map.find(questId);
+    return itr == map.end() ? 0 : itr->second;
+}
 } // namespace
 
 bool NewRpgBaseAction::GetQuestObjectivePositions(Player* bot, uint32 questId,
@@ -658,9 +686,10 @@ WorldObject* NewRpgBaseAction::FindLoadedSpawn(Player* bot, QuestObjectivePositi
 
 void NewRpgBaseAction::WarmUpQuestObjectiveSpawnIndex()
 {
-    // Force the one-time build on the world thread during startup instead of on a map thread when
-    // the first questing bot resolves a destination.
+    // Force the one-time builds on the world thread during startup instead of on a map thread
+    // when the first questing bot resolves a destination.
     (void)GetQuestSpawnMap();
+    (void)GetQuestAreaTriggerMap();
 }
 
 bool NewRpgBaseAction::OrganizeQuestLog()
@@ -842,6 +871,14 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
 
     QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
 
+    uint32 const triggerId = GetQuestAreaTriggerId(questId);
+    AreaTrigger const* trigger = triggerId ? sObjectMgr->GetAreaTrigger(triggerId) : nullptr;
+    bool const hasExplorePoi = std::any_of(poiVector->begin(), poiVector->end(),
+                                           [](QuestPOI const& poi) {
+                                               return poi.ObjectiveIndex == QUEST_OBJECTIVE_EXPLORE;
+                                           });
+    bool const isExplore = trigger || !quest->GetAreaDescription().empty() || hasExplorePoi;
+
     // Resolve one POI to its final destination: the baked floor paired with its own POI point
     // when available, otherwise the weighted-average x/y with the terrain height.
     auto resolvePoi = [&](QuestPOI const& qPoi) -> std::optional<POIInfo>
@@ -862,8 +899,27 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
         info.objectiveIdx = qPoi.ObjectiveIndex;
         info.poiId = qPoi.Id;
 
-        if (QuestPoiZCandidate const* baked = QuestPoiZStore::Instance().Lookup(questId, qPoi.Id, bot->GetMapId());
-            baked && baked->pointIdx < qPoi.points.size())
+        if (isExplore && qPoi.ObjectiveIndex == QUEST_OBJECTIVE_EXPLORE && trigger &&
+            trigger->map == bot->GetMapId())
+        {
+            // The POI outline is usually wider than the area trigger. Use the walkable sample
+            // nearest the trigger center, not the outline point far from the trigger volume.
+            float wx = 0.0f, wy = 0.0f, wz = 0.0f;
+            if (QuestPoiZStore::Instance().FindNearestWalkablePoint(questId, qPoi.Id, bot->GetMapId(),
+                                                                    trigger->x, trigger->y, wx, wy, wz))
+            {
+                info.pos = {wx, wy};
+                info.z = wz;
+            }
+            else
+            {
+                info.pos = {trigger->x, trigger->y};
+                info.z = trigger->z;
+            }
+            info.hasBakedZ = true;
+        }
+        else if (QuestPoiZCandidate const* baked = QuestPoiZStore::Instance().Lookup(questId, qPoi.Id, bot->GetMapId());
+                 baked && baked->pointIdx < qPoi.points.size())
         {
             // Pair the baked floor with the exact point it was baked from instead of the
             // weighted-average x/y, which can sit on a different floor. Idx2 is dense from 0
@@ -929,11 +985,27 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
             incompleteObjectiveIdx.push_back(QUEST_OBJECTIVES_COUNT + i);
     }
 
+    bool const explorePending = isExplore && !q_status.Explored;
+    bool explorePoiResolved = false;
+
     // Get POIs to go
     for (QuestPOI const& qPoi : *poiVector)
     {
         if (qPoi.MapId != bot->GetMapId())
             continue;
+
+        if (qPoi.ObjectiveIndex == QUEST_OBJECTIVE_EXPLORE)
+        {
+            if (!explorePending)
+                continue;
+
+            if (std::optional<POIInfo> info = resolvePoi(qPoi))
+            {
+                poiInfo.push_back(*info);
+                explorePoiResolved = true;
+            }
+            continue;
+        }
 
         bool inComplete = false;
         for (uint32 objective : incompleteObjectiveIdx)
@@ -949,6 +1021,21 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
 
         if (std::optional<POIInfo> info = resolvePoi(qPoi))
             poiInfo.push_back(*info);
+    }
+
+    // Trigger-only exploration quests have no ObjectiveIndex 16 POI, but the trigger position is
+    // still a valid destination. The trigger volume is small; its center is on the walkable floor.
+    if (explorePending && trigger && !explorePoiResolved && trigger->map == bot->GetMapId())
+    {
+        POIInfo info;
+        info.objectiveIdx = QUEST_OBJECTIVE_EXPLORE;
+        info.pos = {trigger->x, trigger->y};
+        info.z = trigger->z;
+        info.hasBakedZ = true;
+
+        if (bot->GetDistance2d(info.pos.x, info.pos.y) < 1500.0f &&
+            bot->GetZoneId() == bot->GetMap()->GetZoneId(bot->GetPhaseMask(), info.pos.x, info.pos.y, info.z))
+            poiInfo.push_back(info);
     }
 
     if (poiInfo.size() == 0)

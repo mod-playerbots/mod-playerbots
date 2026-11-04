@@ -519,7 +519,12 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
         QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
         bool completed = true;
-        if (currentObjective < QUEST_OBJECTIVES_COUNT)
+        if (currentObjective == QUEST_OBJECTIVE_EXPLORE)
+        {
+            // Exploration completes through the area trigger, which changes the quest status.
+            completed = false;
+        }
+        else if (currentObjective < QUEST_OBJECTIVES_COUNT)
         {
             if (q_status.CreatureOrGOCount[currentObjective] < quest->RequiredNpcOrGoCount[currentObjective])
                 completed = false;
@@ -624,7 +629,12 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         // check if the objective has progression
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
         QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
-        if (currentObjective < QUEST_OBJECTIVES_COUNT)
+        if (currentObjective == QUEST_OBJECTIVE_EXPLORE)
+        {
+            // The area trigger changes the quest status; there is no kill/item count to inspect.
+            hasProgression = true;
+        }
+        else if (currentObjective < QUEST_OBJECTIVES_COUNT)
         {
             if (q_status.CreatureOrGOCount[currentObjective] != 0 && quest->RequiredNpcOrGoCount[currentObjective])
                 hasProgression = true;
