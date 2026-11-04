@@ -20,12 +20,12 @@ QuestPoiZStore& QuestPoiZStore::Instance()
 
 void QuestPoiZStore::Load()
 {
-    candidates.clear();
+    _candidates.clear();
 
     // Raw query on purpose: installations without the baked data would fail a prepared-statement
     // prepare at startup; a missing table here just logs and leaves the fallback path active.
     QueryResult result = PlayerbotsDatabase.Query(
-        "SELECT `QuestId`, `PoiIdx`, `Rank`, `Z`, `Confidence`, `Evidence`, `NavmeshOk` "
+        "SELECT `QuestId`, `PoiIdx`, `Rank`, `Z`, `Confidence`, `NavmeshOk` "
         "FROM `playerbots_quest_poi_z` ORDER BY `QuestId`, `PoiIdx`, `Rank`");
 
     if (!result)
@@ -44,35 +44,31 @@ void QuestPoiZStore::Load()
         candidate.rank = fields[2].Get<uint8>();
         candidate.z = fields[3].Get<float>();
         candidate.confidence = fields[4].Get<uint8>();
-        candidate.evidence = fields[5].Get<std::string>();
-        candidate.navmeshOk = fields[6].Get<uint8>() != 0;
+        candidate.navmeshOk = fields[5].Get<uint8>() != 0;
 
-        candidates[Key(fields[0].Get<uint32>(), fields[1].Get<uint32>())].push_back(candidate);
+        _candidates[Key(fields[0].Get<uint32>(), fields[1].Get<uint32>())].push_back(candidate);
         ++rows;
     } while (result->NextRow());
 
-    for (auto& [key, list] : candidates)
+    for (auto& [key, list] : _candidates)
         std::sort(list.begin(), list.end(),
                   [](QuestPoiZCandidate const& a, QuestPoiZCandidate const& b) { return a.rank < b.rank; });
 
     LOG_INFO("playerbots", "Quest POI Z store: loaded {} candidate rows for {} quest POIs.",
-             rows, candidates.size());
+             rows, _candidates.size());
 }
 
 QuestPoiZCandidate const* QuestPoiZStore::Lookup(uint32 questId, uint32 poiId) const
 {
-    auto itr = candidates.find(Key(questId, poiId));
-    if (itr == candidates.end() || itr->second.empty())
+    auto itr = _candidates.find(Key(questId, poiId));
+    if (itr == _candidates.end() || itr->second.empty())
         return nullptr;
 
-    return &itr->second.front();
-}
+    // Rows are rank-ordered; return the best one the baker marked navmesh-reachable. If every
+    // candidate is non-navmesh the caller keeps the terrain-height fallback.
+    for (QuestPoiZCandidate const& candidate : itr->second)
+        if (candidate.navmeshOk)
+            return &candidate;
 
-std::vector<QuestPoiZCandidate> const* QuestPoiZStore::LookupAll(uint32 questId, uint32 poiId) const
-{
-    auto itr = candidates.find(Key(questId, poiId));
-    if (itr == candidates.end() || itr->second.empty())
-        return nullptr;
-
-    return &itr->second;
+    return nullptr;
 }

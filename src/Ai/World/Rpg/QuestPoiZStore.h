@@ -8,17 +8,16 @@
 #define PLAYERBOTS_QUESTPOIZSTORE_H
 
 #include "Define.h"
-#include <string>
 #include <unordered_map>
 #include <vector>
 
-// One baked walkable Z candidate for a quest POI point (see the destination-Z plan).
+// One baked walkable Z candidate for a quest POI (see the destination-Z plan). The store collapses
+// the baker's per-point rows to the single best-ranked navmesh-reachable candidate per POI.
 struct QuestPoiZCandidate
 {
     float z{0.0f};
     uint8 rank{1};
     uint8 confidence{0};
-    std::string evidence;
     bool navmeshOk{true};
 };
 
@@ -32,16 +31,14 @@ public:
 
     void Load();
 
-    // Best (lowest rank) baked candidate for a quest_poi row, or nullptr when unmapped.
+    // Best (lowest rank, navmesh-reachable) baked candidate for a quest_poi row, or nullptr when
+    // unmapped or every candidate is flagged non-navmesh.
     QuestPoiZCandidate const* Lookup(uint32 questId, uint32 poiId) const;
-
-    // All ranked candidates (rank order) - reserved for the attempt-variation runtime.
-    std::vector<QuestPoiZCandidate> const* LookupAll(uint32 questId, uint32 poiId) const;
 
 private:
     static uint64_t Key(uint32 questId, uint32 poiId) { return (uint64_t(questId) << 32) | uint64_t(poiId); }
 
-    std::unordered_map<uint64_t, std::vector<QuestPoiZCandidate>> candidates;
+    std::unordered_map<uint64_t, std::vector<QuestPoiZCandidate>> _candidates;
 };
 
 #endif

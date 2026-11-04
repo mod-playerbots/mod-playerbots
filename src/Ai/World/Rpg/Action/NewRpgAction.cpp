@@ -594,7 +594,8 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             if (QuestPoiZCandidate const* baked = QuestPoiZStore::Instance().Lookup(questId, poiInfo[rndIdx].poiId))
             {
                 dz = baked->z;
-                LOG_DEBUG("playerbots", "[New RPG] {} quest {} destination source=baked conf={} ({:.1f}, {:.1f}, {:.1f})",
+                LOG_DEBUG("playerbots",
+                          "[New RPG] {} quest {} destination source=baked conf={} ({:.1f}, {:.1f}, {:.1f})",
                           bot->GetName(), questId, baked->confidence, dx, dy, dz);
             }
             else

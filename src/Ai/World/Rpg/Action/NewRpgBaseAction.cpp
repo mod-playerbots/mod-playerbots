@@ -596,24 +596,27 @@ bool NewRpgBaseAction::GetQuestObjectivePositions(Player* bot, uint32 questId,
         if (flagPos.first == uint32(QuestRelationFlag::questTaker) || flagPos.second.GetMapId() != bot->GetMapId())
             continue;
 
-        // One flag bit per slot, shared between kill/collect and item objectives: pick the
-        // combined objective index of whichever kind is still incomplete (item first).
+        // One flag bit per slot. The flag only exists because RequiredNpcOrGo[slot] is non-zero;
+        // item (collect) objectives have no spawn relation in this index and resolve through the
+        // baked POI floors in the caller's fallback path.
         uint32 const slot = std::countr_zero(flagPos.first);
         if (slot >= QUEST_OBJECTIVES_COUNT)
             continue;
 
-        bool const itemIncomplete = quest->RequiredItemId[slot] &&
-            status.ItemCount[slot] < quest->RequiredItemCount[slot];
-        bool const npcIncomplete = quest->RequiredNpcOrGo[slot] &&
-            status.CreatureOrGOCount[slot] < quest->RequiredNpcOrGoCount[slot];
-        if (!itemIncomplete && !npcIncomplete)
+        if (status.CreatureOrGOCount[slot] >= quest->RequiredNpcOrGoCount[slot])
             continue;
 
-        int32 const combinedIdx = itemIncomplete ? int32(QUEST_OBJECTIVES_COUNT + slot) : int32(slot);
-        outPositions.push_back({combinedIdx, flagPos.second});
+        outPositions.push_back({int32(slot), flagPos.second});
     }
 
     return !outPositions.empty();
+}
+
+void NewRpgBaseAction::WarmUpQuestObjectiveSpawnIndex()
+{
+    // Force the one-time build on the world thread during startup instead of on a map thread when
+    // the first questing bot resolves a destination.
+    (void)GetQuestObjectiveSpawnIndex();
 }
 
 bool NewRpgBaseAction::OrganizeQuestLog()

@@ -28,7 +28,7 @@ struct POIInfo
 // A resolved 3D objective/turn-in position from spawn data (quest guidp map).
 struct QuestObjectivePosition
 {
-    int32 objectiveIdx; // 0..3 NpcOrGo, QUEST_OBJECTIVES_COUNT+ for item slots, -1 turn-in
+    int32 objectiveIdx; // 0..3 NpcOrGo kill/GO objective slot, -1 turn-in
     WorldPosition pos;
 };
 
@@ -63,6 +63,9 @@ protected:
     // has no entry - callers fall back to POI + baked/terrain height.
     static bool GetQuestObjectivePositions(Player* bot, uint32 questId,
                                            std::vector<QuestObjectivePosition>& outPositions, bool toComplete);
+    // Builds the spawn index once on the world thread at startup, so the first questing bot does
+    // not pay a full spawn scan on a map thread.
+    static void WarmUpQuestObjectiveSpawnIndex();
 protected:
     bool GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector<POIInfo>& poiInfo, bool toComplete = false);
     static WorldPosition SelectRandomGrindPos(Player* bot);

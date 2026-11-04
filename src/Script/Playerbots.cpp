@@ -17,6 +17,7 @@
 #include <mysqld_error.h>
 #include "AllMapScript.h"
 #include "GatherNodeMgr.h"
+#include "NewRpgBaseAction.h"
 #include "QuestPoiZStore.h"
 #include "GlobalScript.h"
 #include "GuildTaskMgr.h"
@@ -542,6 +543,9 @@ public:
 
         LOG_INFO("server.loading", "Loading quest POI Z candidates...");
         QuestPoiZStore::Instance().Load();
+
+        LOG_INFO("server.loading", "Building quest objective spawn index...");
+        NewRpgBaseAction::WarmUpQuestObjectiveSpawnIndex();
 
         LOG_INFO("server.loading", "Playerbots World Thread Processor initialized");
     }
