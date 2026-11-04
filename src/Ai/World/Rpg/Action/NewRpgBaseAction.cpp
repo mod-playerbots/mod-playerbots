@@ -59,6 +59,17 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         botAI->rpgInfo.SetMoveFarTo(dest);
     }
 
+    // Combat is not travel progress. Non-quest mobs count too: clearing a
+    // tunnel or a room can take longer than the stuck timeout, and the bot
+    // is busy fighting rather than stuck on the path. Reset the timer so
+    // combat time never contributes to the teleport recovery.
+    bool const inCombat = bot->IsInCombat();
+    if (inCombat)
+    {
+        botAI->rpgInfo.stuckTs = getMSTime();
+        botAI->rpgInfo.stuckAttempts = 0;
+    }
+
     // performance optimization
     if (!newDest && IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL))
     {
@@ -111,7 +122,7 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         botAI->rpgInfo.stuckTs = getMSTime();
         botAI->rpgInfo.stuckAttempts = 0;
     }
-    else if (++botAI->rpgInfo.stuckAttempts >= 5 && GetMSTimeDiffToNow(botAI->rpgInfo.stuckTs) >= stuckTime)
+    else if (!inCombat && ++botAI->rpgInfo.stuckAttempts >= 5 && GetMSTimeDiffToNow(botAI->rpgInfo.stuckTs) >= stuckTime)
     {
         // No meaningful progress toward dest for `stuckTime`: fall
         // back to teleporting directly so the bot can get on with
