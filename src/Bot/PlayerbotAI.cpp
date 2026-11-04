@@ -288,6 +288,14 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     bool isCasting = bot->IsNonMeleeSpellCast(true);
     if (bot->IsInCombat())
     {
+        // Combat is not travel progress. Non-quest mobs count too: clearing a
+        // tunnel or a room can take longer than the travel stuck timeout, and the
+        // non-combat RPG action may not run at all while the combat engine is
+        // active. Keep the timer fresh here so combat time never contributes to
+        // the teleport recovery.
+        rpgInfo.stuckTs = getMSTime();
+        rpgInfo.stuckAttempts = 0;
+
         if (!inCombat)
         {
             // "attackers" is cached for 1 s; refresh it so the assist actions see the new attacker
