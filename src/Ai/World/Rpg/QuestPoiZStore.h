@@ -16,6 +16,8 @@
 struct QuestPoiZCandidate
 {
     float z{0.0f};
+    uint16 pointIdx{0};  // quest_poi_points.Idx2, the POI point the Z was baked from
+    uint32 mapId{0};
     uint8 rank{1};
     uint8 confidence{0};
     bool navmeshOk{true};
@@ -31,9 +33,9 @@ public:
 
     void Load();
 
-    // Best (lowest rank, navmesh-reachable) baked candidate for a quest_poi row, or nullptr when
-    // unmapped or every candidate is flagged non-navmesh.
-    QuestPoiZCandidate const* Lookup(uint32 questId, uint32 poiId) const;
+    // Best (lowest rank, navmesh-reachable) baked candidate for a quest_poi row on this map, or
+    // nullptr when unmapped, baked for another map, or every candidate is non-navmesh.
+    QuestPoiZCandidate const* Lookup(uint32 questId, uint32 poiId, uint32 mapId) const;
 
 private:
     static uint64_t Key(uint32 questId, uint32 poiId) { return (uint64_t(questId) << 32) | uint64_t(poiId); }

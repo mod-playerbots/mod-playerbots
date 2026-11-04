@@ -22,16 +22,14 @@ void QuestPoiZStore::Load()
 {
     _candidates.clear();
 
-    // Raw query on purpose: installations without the baked data would fail a prepared-statement
-    // prepare at startup; a missing table here just logs and leaves the fallback path active.
-    QueryResult result = PlayerbotsDatabase.Query(
-        "SELECT `QuestId`, `PoiIdx`, `Rank`, `Z`, `Confidence`, `NavmeshOk` "
-        "FROM `playerbots_quest_poi_z` ORDER BY `QuestId`, `PoiIdx`, `Rank`");
+    // The table is created by the module's SQL update; an empty table keeps the fallback path.
+    QueryResult result = PlayerbotsDatabase.Query(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_QUEST_POI_Z));
 
     if (!result)
     {
-        LOG_INFO("playerbots", "Quest POI Z store: no baked data (playerbots_quest_poi_z absent or empty); "
-                               "quest destinations use the terrain-height fallback.");
+        LOG_INFO("playerbots",
+                 "Quest POI Z store: no baked data (playerbots_quest_poi_z empty); "
+                 "quest destinations use the terrain-height fallback.");
         return;
     }
 
@@ -41,10 +39,12 @@ void QuestPoiZStore::Load()
         Field* fields = result->Fetch();
 
         QuestPoiZCandidate candidate;
-        candidate.rank = fields[2].Get<uint8>();
-        candidate.z = fields[3].Get<float>();
-        candidate.confidence = fields[4].Get<uint8>();
-        candidate.navmeshOk = fields[5].Get<uint8>() != 0;
+        candidate.pointIdx = fields[2].Get<uint16>();
+        candidate.rank = fields[3].Get<uint8>();
+        candidate.z = fields[4].Get<float>();
+        candidate.confidence = fields[5].Get<uint8>();
+        candidate.navmeshOk = fields[6].Get<uint8>() != 0;
+        candidate.mapId = fields[7].Get<uint32>();
 
         _candidates[Key(fields[0].Get<uint32>(), fields[1].Get<uint32>())].push_back(candidate);
         ++rows;
@@ -54,20 +54,19 @@ void QuestPoiZStore::Load()
         std::sort(list.begin(), list.end(),
                   [](QuestPoiZCandidate const& a, QuestPoiZCandidate const& b) { return a.rank < b.rank; });
 
-    LOG_INFO("playerbots", "Quest POI Z store: loaded {} candidate rows for {} quest POIs.",
-             rows, _candidates.size());
+    LOG_INFO("playerbots", "Quest POI Z store: loaded {} candidate rows for {} quest POIs.", rows, _candidates.size());
 }
 
-QuestPoiZCandidate const* QuestPoiZStore::Lookup(uint32 questId, uint32 poiId) const
+QuestPoiZCandidate const* QuestPoiZStore::Lookup(uint32 questId, uint32 poiId, uint32 mapId) const
 {
     auto itr = _candidates.find(Key(questId, poiId));
     if (itr == _candidates.end() || itr->second.empty())
         return nullptr;
 
-    // Rows are rank-ordered; return the best one the baker marked navmesh-reachable. If every
-    // candidate is non-navmesh the caller keeps the terrain-height fallback.
+    // Rows are rank-ordered; return the best one the baker marked navmesh-reachable on this map.
+    // If every candidate is non-navmesh or belongs to another map the caller keeps the fallback.
     for (QuestPoiZCandidate const& candidate : itr->second)
-        if (candidate.navmeshOk)
+        if (candidate.navmeshOk && candidate.mapId == mapId)
             return &candidate;
 
     return nullptr;

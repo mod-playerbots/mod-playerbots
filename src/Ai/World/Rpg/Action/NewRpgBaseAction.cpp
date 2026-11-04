@@ -18,6 +18,7 @@
 #include "NewRpgHelpers.h"
 #include "NewRpgInfo.h"
 #include "QuestLevelRules.h"
+#include "QuestPoiZStore.h"
 #include "QuestValues.h"
 #include "NewRpgStrategy.h"
 #include "Object.h"
@@ -42,7 +43,7 @@
 #include "Timer.h"
 #include "TravelMgr.h"
 #include "G3D/Vector2.h"
-#include <bit>
+#include <optional>
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 {
@@ -496,50 +497,28 @@ uint32 NewRpgBaseAction::BestRewardIndex(Quest const* quest)
 
 namespace
 {
-// Compact quest-objective spawn index, built once on first use from the core stores (spawn data
-// is read-only by then): kill objectives, GO objectives and quest enders. Item-dropper relations
-// are not part of it yet; collect objectives resolve through the baked POI floors instead.
-struct QuestObjectiveSpawnIndex
+// Spawn positions for one creature/gameobject entry, built once from the core spawn stores.
+// Quest objectives and quest-ender relations are read live from ObjectMgr on every lookup, so
+// .reload quest_template / creature_questender / gameobject_questender take effect without
+// rebuilding this index; only the spawn stores themselves are snapshotted.
+struct QuestSpawn
 {
-    std::unordered_map<uint32, std::vector<std::pair<uint32, WorldPosition>>> byQuest;
+    WorldPosition pos;
+    uint32 phaseMask;
+    uint8 spawnMask;
+    ObjectGuid::LowType spawnId;
+    bool gameObject;
 };
 
-QuestObjectiveSpawnIndex const& GetQuestObjectiveSpawnIndex()
+using QuestSpawnMap = std::unordered_map<int32, std::vector<QuestSpawn>>;
+
+QuestSpawnMap const& GetQuestSpawnMap()
 {
-    static QuestObjectiveSpawnIndex const index = []()
+    static QuestSpawnMap const spawns = []()
     {
-        QuestObjectiveSpawnIndex result;
+        QuestSpawnMap result;
 
         // key: creature entry, or negative gameobject entry (QuestValues convention)
-        std::unordered_map<int32, std::vector<std::pair<uint32, uint32>>> relations;
-
-        for (auto const& questPair : sObjectMgr->GetQuestTemplates())
-        {
-            Quest const* quest = questPair.second;
-            for (uint32 objective = 0; objective < QUEST_OBJECTIVES_COUNT; ++objective)
-            {
-                int32 const entry = quest->RequiredNpcOrGo[objective];
-                if (entry)
-                    relations[entry].push_back({questPair.first, 1u << objective});
-            }
-        }
-
-        for (auto const& relation : *sObjectMgr->GetCreatureQuestInvolvedRelationMap())
-            relations[int32(relation.first)].push_back({relation.second, uint32(QuestRelationFlag::questTaker)});
-
-        for (auto const& relation : *sObjectMgr->GetGOQuestInvolvedRelationMap())
-            relations[-int32(relation.first)].push_back({relation.second, uint32(QuestRelationFlag::questTaker)});
-
-        auto addSpawn = [&result, &relations](int32 key, uint32 mapId, float x, float y, float z)
-        {
-            auto itr = relations.find(key);
-            if (itr == relations.end())
-                return;
-
-            for (auto const& questFlag : itr->second)
-                result.byQuest[questFlag.first].push_back({questFlag.second, WorldPosition(mapId, x, y, z)});
-        };
-
         for (auto const& spawnPair : sObjectMgr->GetAllCreatureData())
         {
             CreatureData const& creatureData = spawnPair.second;
@@ -548,20 +527,51 @@ QuestObjectiveSpawnIndex const& GetQuestObjectiveSpawnIndex()
                 if (!entry)
                     continue;
 
-                addSpawn(int32(entry), creatureData.mapid, creatureData.posX, creatureData.posY, creatureData.posZ);
+                result[int32(entry)].push_back(
+                    {{creatureData.mapid, creatureData.posX, creatureData.posY, creatureData.posZ},
+                     creatureData.phaseMask,
+                     creatureData.spawnMask,
+                     creatureData.spawnId,
+                     false});
             }
         }
 
         for (auto const& spawnPair : sObjectMgr->GetAllGOData())
         {
             GameObjectData const& goData = spawnPair.second;
-            addSpawn(-int32(goData.id), goData.mapid, goData.posX, goData.posY, goData.posZ);
+            result[-int32(goData.id)].push_back({{goData.mapid, goData.posX, goData.posY, goData.posZ},
+                                                 goData.phaseMask,
+                                                 goData.spawnMask,
+                                                 goData.spawnId,
+                                                 true});
         }
 
         return result;
     }();
 
-    return index;
+    return spawns;
+}
+
+bool IsSpawnVisibleTo(Player* bot, QuestSpawn const& spawn)
+{
+    if (spawn.pos.GetMapId() != bot->GetMapId())
+        return false;
+
+    // A zero mask is treated as always visible; the core normalizes a zero creature phaseMask to 1.
+    if (spawn.phaseMask && !(spawn.phaseMask & bot->GetPhaseMask()))
+        return false;
+
+    return spawn.spawnMask == 0 || (spawn.spawnMask & (1u << bot->GetMap()->GetSpawnMode()));
+}
+
+bool IsSpawnDestinationAllowed(Player* bot, QuestSpawn const& spawn)
+{
+    // Match the POI path's reachability gates so a remote spawn cannot override a nearby POI.
+    if (bot->GetDistance2d(spawn.pos.GetPositionX(), spawn.pos.GetPositionY()) >= 1500.0f)
+        return false;
+
+    return bot->GetZoneId() == bot->GetMap()->GetZoneId(bot->GetPhaseMask(), spawn.pos.GetPositionX(),
+                                                        spawn.pos.GetPositionY(), spawn.pos.GetPositionZ());
 }
 } // namespace
 
@@ -570,16 +580,35 @@ bool NewRpgBaseAction::GetQuestObjectivePositions(Player* bot, uint32 questId,
 {
     outPositions.clear();
 
-    QuestObjectiveSpawnIndex const& index = GetQuestObjectiveSpawnIndex();
-    auto questItr = index.byQuest.find(questId);
-    if (questItr == index.byQuest.end())
-        return false;
+    QuestSpawnMap const& spawns = GetQuestSpawnMap();
+
+    auto addEntry = [&](int32 entry, int32 objectiveIdx, bool gateDestination)
+    {
+        auto itr = spawns.find(entry);
+        if (itr == spawns.end())
+            return;
+
+        for (QuestSpawn const& spawn : itr->second)
+        {
+            if (!IsSpawnVisibleTo(bot, spawn) || (gateDestination && !IsSpawnDestinationAllowed(bot, spawn)))
+                continue;
+
+            outPositions.push_back({objectiveIdx, spawn.pos, spawn.spawnId, spawn.gameObject});
+        }
+    };
 
     if (toComplete)
     {
-        for (auto const& flagPos : questItr->second)
-            if (flagPos.first == uint32(QuestRelationFlag::questTaker) && flagPos.second.GetMapId() == bot->GetMapId())
-                outPositions.push_back({-1, flagPos.second});
+        // Quest-ender relations are read live, so relation reloads apply immediately. Turn-ins
+        // pick the nearest valid ender on the map; the objective path applies the POI distance
+        // and zone gates below so a remote spawn cannot hide a nearby collect POI.
+        for (auto const& relation : *sObjectMgr->GetCreatureQuestInvolvedRelationMap())
+            if (relation.second == questId)
+                addEntry(int32(relation.first), -1, false);
+
+        for (auto const& relation : *sObjectMgr->GetGOQuestInvolvedRelationMap())
+            if (relation.second == questId)
+                addEntry(-int32(relation.first), -1, false);
 
         return !outPositions.empty();
     }
@@ -591,32 +620,47 @@ bool NewRpgBaseAction::GetQuestObjectivePositions(Player* bot, uint32 questId,
 
     QuestStatusData const& status = statusItr->second;
 
-    for (auto const& flagPos : questItr->second)
+    for (uint8 slot = 0; slot < QUEST_OBJECTIVES_COUNT; ++slot)
     {
-        if (flagPos.first == uint32(QuestRelationFlag::questTaker) || flagPos.second.GetMapId() != bot->GetMapId())
+        int32 const entry = quest->RequiredNpcOrGo[slot];
+        if (!entry || status.CreatureOrGOCount[slot] >= quest->RequiredNpcOrGoCount[slot])
             continue;
 
-        // One flag bit per slot. The flag only exists because RequiredNpcOrGo[slot] is non-zero;
-        // item (collect) objectives have no spawn relation in this index and resolve through the
-        // baked POI floors in the caller's fallback path.
-        uint32 const slot = std::countr_zero(flagPos.first);
-        if (slot >= QUEST_OBJECTIVES_COUNT)
-            continue;
-
-        if (status.CreatureOrGOCount[slot] >= quest->RequiredNpcOrGoCount[slot])
-            continue;
-
-        outPositions.push_back({int32(slot), flagPos.second});
+        addEntry(entry, int32(slot), true);
     }
 
     return !outPositions.empty();
+}
+
+WorldObject* NewRpgBaseAction::FindLoadedSpawn(Player* bot, QuestObjectivePosition const& candidate)
+{
+    Map* map = bot->GetMap();
+    if (!map)
+        return nullptr;
+
+    if (candidate.gameObject)
+    {
+        auto bounds = map->GetGameObjectBySpawnIdStore().equal_range(candidate.spawnId);
+        for (auto itr = bounds.first; itr != bounds.second; ++itr)
+            if (itr->second && itr->second->IsInWorld() && (itr->second->GetPhaseMask() & bot->GetPhaseMask()))
+                return itr->second;
+
+        return nullptr;
+    }
+
+    auto bounds = map->GetCreatureBySpawnIdStore().equal_range(candidate.spawnId);
+    for (auto itr = bounds.first; itr != bounds.second; ++itr)
+        if (itr->second && itr->second->IsInWorld() && (itr->second->GetPhaseMask() & bot->GetPhaseMask()))
+            return itr->second;
+
+    return nullptr;
 }
 
 void NewRpgBaseAction::WarmUpQuestObjectiveSpawnIndex()
 {
     // Force the one-time build on the world thread during startup instead of on a map thread when
     // the first questing bot resolves a destination.
-    (void)GetQuestObjectiveSpawnIndex();
+    (void)GetQuestSpawnMap();
 }
 
 bool NewRpgBaseAction::OrganizeQuestLog()
@@ -798,47 +842,66 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
 
     QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
 
+    // Resolve one POI to its final destination: the baked floor paired with its own POI point
+    // when available, otherwise the weighted-average x/y with the terrain height.
+    auto resolvePoi = [&](QuestPOI const& qPoi) -> std::optional<POIInfo>
+    {
+        if (qPoi.points.empty())
+            return std::nullopt;
+
+        float dx = 0, dy = 0;
+        std::vector<float> weights = GenerateRandomWeights(qPoi.points.size());
+        for (size_t i = 0; i < qPoi.points.size(); i++)
+        {
+            QuestPOIPoint const& point = qPoi.points[i];
+            dx += point.x * weights[i];
+            dy += point.y * weights[i];
+        }
+
+        POIInfo info;
+        info.objectiveIdx = qPoi.ObjectiveIndex;
+        info.poiId = qPoi.Id;
+
+        if (QuestPoiZCandidate const* baked = QuestPoiZStore::Instance().Lookup(questId, qPoi.Id, bot->GetMapId());
+            baked && baked->pointIdx < qPoi.points.size())
+        {
+            // Pair the baked floor with the exact point it was baked from instead of the
+            // weighted-average x/y, which can sit on a different floor.
+            info.pos = {float(qPoi.points[baked->pointIdx].x), float(qPoi.points[baked->pointIdx].y)};
+            info.hasBakedZ = true;
+            info.z = baked->z;
+        }
+        else
+        {
+            info.pos = {dx, dy};
+            info.z = std::max(bot->GetMap()->GetHeight(dx, dy, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(dx, dy));
+
+            if (info.z == INVALID_HEIGHT || info.z == VMAP_INVALID_HEIGHT_VALUE)
+                return std::nullopt;
+        }
+
+        if (bot->GetDistance2d(info.pos.x, info.pos.y) >= 1500.0f)
+            return std::nullopt;
+
+        if (bot->GetZoneId() != bot->GetMap()->GetZoneId(bot->GetPhaseMask(), info.pos.x, info.pos.y, info.z))
+            return std::nullopt;
+
+        return info;
+    };
+
     if (toComplete && q_status.Status == QUEST_STATUS_COMPLETE)
     {
         for (QuestPOI const& qPoi : *poiVector)
         {
-            if (qPoi.MapId != bot->GetMapId())
-                continue;
-
             // not the poi pos to reward quest
-            if (qPoi.ObjectiveIndex != -1)
+            if (qPoi.MapId != bot->GetMapId() || qPoi.ObjectiveIndex != -1)
                 continue;
 
-            if (qPoi.points.size() == 0)
-                continue;
-
-            float dx = 0, dy = 0;
-            std::vector<float> weights = GenerateRandomWeights(qPoi.points.size());
-            for (size_t i = 0; i < qPoi.points.size(); i++)
-            {
-                QuestPOIPoint const& point = qPoi.points[i];
-                dx += point.x * weights[i];
-                dy += point.y * weights[i];
-            }
-
-            if (bot->GetDistance2d(dx, dy) >= 1500.0f)
-                continue;
-
-            float dz = std::max(bot->GetMap()->GetHeight(dx, dy, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(dx, dy));
-
-            if (dz == INVALID_HEIGHT || dz == VMAP_INVALID_HEIGHT_VALUE)
-                continue;
-
-            if (bot->GetZoneId() != bot->GetMap()->GetZoneId(bot->GetPhaseMask(), dx, dy, dz))
-                continue;
-
-            poiInfo.push_back({{dx, dy}, qPoi.ObjectiveIndex, qPoi.Id});
+            if (std::optional<POIInfo> info = resolvePoi(qPoi))
+                poiInfo.push_back(*info);
         }
 
-        if (poiInfo.empty())
-            return false;
-
-        return true;
+        return !poiInfo.empty();
     }
 
     if (q_status.Status != QUEST_STATUS_INCOMPLETE)
@@ -882,29 +945,9 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
         }
         if (!inComplete)
             continue;
-        if (qPoi.points.size() == 0)
-            continue;
-        float dx = 0, dy = 0;
-        std::vector<float> weights = GenerateRandomWeights(qPoi.points.size());
-        for (size_t i = 0; i < qPoi.points.size(); i++)
-        {
-            QuestPOIPoint const& point = qPoi.points[i];
-            dx += point.x * weights[i];
-            dy += point.y * weights[i];
-        }
 
-        if (bot->GetDistance2d(dx, dy) >= 1500.0f)
-            continue;
-
-        float dz = std::max(bot->GetMap()->GetHeight(dx, dy, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(dx, dy));
-
-        if (dz == INVALID_HEIGHT || dz == VMAP_INVALID_HEIGHT_VALUE)
-            continue;
-
-        if (bot->GetZoneId() != bot->GetMap()->GetZoneId(bot->GetPhaseMask(), dx, dy, dz))
-            continue;
-
-        poiInfo.push_back({{dx, dy}, qPoi.ObjectiveIndex, qPoi.Id});
+        if (std::optional<POIInfo> info = resolvePoi(qPoi))
+            poiInfo.push_back(*info);
     }
 
     if (poiInfo.size() == 0)

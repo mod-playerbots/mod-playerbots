@@ -22,14 +22,18 @@ struct POIInfo
 {
     G3D::Vector2 pos;
     int32 objectiveIdx;
-    uint32 poiId{0}; // quest_poi.Id, the key for the baked Z store
+    uint32 poiId{0};        // quest_poi.Id, the key for the baked Z store
+    bool hasBakedZ{false};  // pos comes from the baked store and z is the baked floor
+    float z{0.0f};          // walkable floor, baked or terrain-estimated
 };
 
 // A resolved 3D objective/turn-in position from spawn data (quest guidp map).
 struct QuestObjectivePosition
 {
-    int32 objectiveIdx; // 0..3 NpcOrGo kill/GO objective slot, -1 turn-in
+    int32 objectiveIdx;  // 0..3 NpcOrGo kill/GO objective slot, -1 turn-in
     WorldPosition pos;
+    ObjectGuid::LowType spawnId{0};  // core spawn id, used to find the loaded object
+    bool gameObject{false};
 };
 
 /// A base (composition) class for all new rpg actions
@@ -67,6 +71,9 @@ protected:
     // has no entry - callers fall back to POI + baked/terrain height.
     static bool GetQuestObjectivePositions(Player* bot, uint32 questId,
                                            std::vector<QuestObjectivePosition>& outPositions, bool toComplete);
+    // Loaded creature/gameobject for a spawn entry, or nullptr when the spawn is not loaded.
+    static WorldObject* FindLoadedSpawn(Player* bot, QuestObjectivePosition const& candidate);
+
 protected:
     bool GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector<POIInfo>& poiInfo, bool toComplete = false);
     static WorldPosition SelectRandomGrindPos(Player* bot);
