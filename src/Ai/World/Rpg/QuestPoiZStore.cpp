@@ -48,7 +48,9 @@ void QuestPoiZStore::Load()
         candidate.z = fields[4].Get<float>();
         candidate.confidence = fields[5].Get<uint8>();
         candidate.navmeshOk = fields[6].Get<uint8>() != 0;
-        candidate.mapId = fields[7].Get<uint32>();
+        // PoiIdx and MapId are SMALLINT in the schema; reading them as uint32 would consume the
+        // neighbouring field in the prepared-statement row.
+        candidate.mapId = fields[7].Get<uint16>();
         candidate.evidence = fields[8].Get<std::string>();
 
         if (!fields[9].IsNull())
@@ -76,7 +78,7 @@ void QuestPoiZStore::Load()
         if (!candidate.walkablePoints.empty())
             ++walkableRows;
 
-        _candidates[Key(fields[0].Get<uint32>(), fields[1].Get<uint32>())].push_back(candidate);
+        _candidates[Key(fields[0].Get<uint32>(), fields[1].Get<uint16>())].push_back(candidate);
         ++rows;
     } while (result->NextRow());
 
