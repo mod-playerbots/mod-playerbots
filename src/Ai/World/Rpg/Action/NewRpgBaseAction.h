@@ -40,6 +40,10 @@ class NewRpgBaseAction : public MovementAction
 public:
     NewRpgBaseAction(PlayerbotAI* botAI, std::string name) : MovementAction(botAI, name) {}
 
+    // Builds the spawn index once on the world thread at startup, so the first questing bot does
+    // not pay a full spawn scan on a map thread.
+    static void WarmUpQuestObjectiveSpawnIndex();
+
 protected:
     /* MOVEMENT RELATED */
     bool MoveFarTo(WorldPosition dest);
@@ -63,9 +67,6 @@ protected:
     // has no entry - callers fall back to POI + baked/terrain height.
     static bool GetQuestObjectivePositions(Player* bot, uint32 questId,
                                            std::vector<QuestObjectivePosition>& outPositions, bool toComplete);
-    // Builds the spawn index once on the world thread at startup, so the first questing bot does
-    // not pay a full spawn scan on a map thread.
-    static void WarmUpQuestObjectiveSpawnIndex();
 protected:
     bool GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector<POIInfo>& poiInfo, bool toComplete = false);
     static WorldPosition SelectRandomGrindPos(Player* bot);
