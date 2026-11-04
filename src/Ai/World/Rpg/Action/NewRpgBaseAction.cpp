@@ -44,6 +44,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <unordered_map>
 
 namespace
 {
@@ -74,32 +75,62 @@ namespace
         float remainingLength = 0.0f;
     };
 
-    std::vector<QuestPoint> CollectQuestPoints(Player* bot)
+    std::vector<QuestPoint> CollectQuestPoints(Player* bot, PlayerbotAI* botAI)
     {
         std::vector<QuestPoint> points;
         for (uint16 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
         {
             uint32 const questId = bot->GetQuestSlotQuestId(slot);
-            if (!questId)
+            if (!questId || botAI->lowPriorityQuest.find(questId) != botAI->lowPriorityQuest.end())
                 continue;
 
             QuestStatus const status = bot->GetQuestStatus(questId);
             if (status != QUEST_STATUS_INCOMPLETE && status != QUEST_STATUS_COMPLETE)
                 continue;
 
+            Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
             QuestPOIVector const* pois = sObjectMgr->GetQuestPOIVector(questId);
-            if (!pois)
+            if (!quest || !pois)
                 continue;
 
+            QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
             bool const complete = status == QUEST_STATUS_COMPLETE;
+
+            auto objectiveSatisfied = [&](int32 objectiveIdx) -> bool
+            {
+                if (objectiveIdx >= 0 && objectiveIdx < QUEST_OBJECTIVES_COUNT)
+                {
+                    return quest->RequiredNpcOrGo[objectiveIdx] == 0 ||
+                           q_status.CreatureOrGOCount[objectiveIdx] >=
+                               quest->RequiredNpcOrGoCount[objectiveIdx];
+                }
+                if (objectiveIdx >= QUEST_OBJECTIVES_COUNT &&
+                    objectiveIdx < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
+                {
+                    int32 const itemIdx = objectiveIdx - QUEST_OBJECTIVES_COUNT;
+                    return quest->RequiredItemId[itemIdx] == 0 ||
+                           q_status.ItemCount[itemIdx] >= quest->RequiredItemCount[itemIdx];
+                }
+                if (objectiveIdx == 16)
+                    return q_status.Explored;
+                return false;
+            };
+
             for (QuestPOI const& poi : *pois)
             {
                 if (poi.MapId != bot->GetMapId() || poi.points.empty())
                     continue;
 
-                // Incomplete quests target their objective POIs; completed ones the turn-in.
-                if (poi.ObjectiveIndex == -1 ? !complete : complete)
+                // Incomplete quests target unsatisfied objective POIs; completed ones the turn-in.
+                if (poi.ObjectiveIndex == -1)
+                {
+                    if (!complete)
+                        continue;
+                }
+                else if (complete || objectiveSatisfied(poi.ObjectiveIndex))
+                {
                     continue;
+                }
 
                 float x = 0.0f;
                 float y = 0.0f;
@@ -129,31 +160,71 @@ namespace
         return distance;
     }
 
+    uint64 TaxiEdgeKey(uint32 from, uint32 to)
+    {
+        return (uint64(from) << 32) | uint64(to);
+    }
+
+    std::unordered_map<uint64, uint32> const& TaxiPathByEdge()
+    {
+        static std::unordered_map<uint64, uint32> const paths = []
+        {
+            std::unordered_map<uint64, uint32> result;
+            for (uint32 i = 0; i < sTaxiPathStore.GetNumRows(); ++i)
+            {
+                TaxiPathEntry const* entry = sTaxiPathStore.LookupEntry(i);
+                if (entry)
+                    result.emplace(TaxiEdgeKey(entry->from, entry->to), entry->ID);
+            }
+            return result;
+        }();
+        return paths;
+    }
+
     float TaxiRouteLength(std::vector<uint32> const& path)
     {
         if (path.size() < 2)
             return 0.0f;
 
         float length = 0.0f;
-        TaxiNodesEntry const* previous = nullptr;
-        for (uint32 nodeId : path)
+        for (size_t i = 1; i < path.size(); ++i)
         {
-            TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(nodeId);
-            if (!node)
+            TaxiNodesEntry const* from = sTaxiNodesStore.LookupEntry(path[i - 1]);
+            TaxiNodesEntry const* to = sTaxiNodesStore.LookupEntry(path[i]);
+            if (!from || !to || from->map_id != to->map_id)
                 return 0.0f;
 
-            if (previous)
+            float segment = 0.0f;
+            auto const& pathsByEdge = TaxiPathByEdge();
+            auto const edge = pathsByEdge.find(TaxiEdgeKey(path[i - 1], path[i]));
+            if (edge != pathsByEdge.end() && edge->second < sTaxiPathNodesByPath.size())
             {
-                if (node->map_id != previous->map_id)
-                    return 0.0f;
-
-                float const dx = node->x - previous->x;
-                float const dy = node->y - previous->y;
-                float const dz = node->z - previous->z;
-                length += std::sqrt(dx * dx + dy * dy + dz * dz);
+                TaxiPathNodeList const& nodes = sTaxiPathNodesByPath[edge->second];
+                for (size_t j = 1; j < nodes.size(); ++j)
+                {
+                    TaxiPathNodeEntry const* previous = nodes[j - 1];
+                    TaxiPathNodeEntry const* current = nodes[j];
+                    if (!previous || !current || previous->mapid != current->mapid)
+                    {
+                        segment = 0.0f;
+                        break;
+                    }
+                    float const dx = current->x - previous->x;
+                    float const dy = current->y - previous->y;
+                    float const dz = current->z - previous->z;
+                    segment += std::sqrt(dx * dx + dy * dy + dz * dz);
+                }
             }
 
-            previous = node;
+            // Fall back to the node-to-node distance only when the waypoint list is unavailable.
+            if (segment <= 0.0f)
+            {
+                float const dx = to->x - from->x;
+                float const dy = to->y - from->y;
+                float const dz = to->z - from->z;
+                segment = std::sqrt(dx * dx + dy * dy + dz * dz);
+            }
+            length += segment;
         }
 
         return length;
@@ -165,8 +236,9 @@ namespace
         WorldPosition end = destination;
         std::vector<WorldPosition> path = start.getPathTo(end, bot);
 
-        // Long walks can exceed the chained mmap budget. Keep the candidate and use the direct
-        // distance as a scoring approximation; the movement layer resolves the real path.
+        // Long walks can exceed the chained mmap budget. Keep the candidate and score the direct
+        // distance: an empty path cannot distinguish a very long walk from an unreachable origin,
+        // and the travel stuck recovery handles the rare unreachable case.
         length = start.GetExactDist(destination);
         if (path.size() >= 2 && end.isPathTo(path, INTERACTION_DISTANCE * 2.0f))
         {
@@ -1036,7 +1108,7 @@ bool NewRpgBaseAction::SelectRandomFlightTaxiNode(uint32& flightMasterEntry, Wor
     std::vector<ScoredFlightRoute> scoredRoutes;
     if (questAware && sPlayerbotAIConfig.QuestAwareTaxi)
     {
-        std::vector<QuestPoint> const questPoints = CollectQuestPoints(bot);
+        std::vector<QuestPoint> const questPoints = CollectQuestPoints(bot, botAI);
         if (!questPoints.empty())
         {
             // Origins are same-map and distance-filtered, not zone-filtered: the closest
