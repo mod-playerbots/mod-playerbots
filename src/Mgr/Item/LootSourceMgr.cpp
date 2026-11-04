@@ -12,7 +12,7 @@
 #include <functional>
 #include <unordered_set>
 
-LootSourceMgr& LootSourceMgr::Instance()
+LootSourceMgr& LootSourceMgr::instance()
 {
     static LootSourceMgr instance;
     return instance;

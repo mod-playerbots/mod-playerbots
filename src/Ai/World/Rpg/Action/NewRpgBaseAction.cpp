@@ -49,7 +49,7 @@
 namespace
 {
 std::mutex failedSpawnMutex;
-std::set<std::tuple<uint32, int32, uint32, uint32>> failedSpawnLookups;
+std::set<std::tuple<uint32, int32, uint32, uint32, bool>> failedSpawnLookups;
 }
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
@@ -841,9 +841,11 @@ bool NewRpgBaseAction::GetQuestObjectiveSpawnPosition(uint32 questId, int32 obje
     if (creatureEntries.empty() && goEntries.empty())
         return false;
 
-    // A missing spawn is stable for this objective and map; remember the failed
+    // A missing spawn is stable for this objective, map, phase and source set
+    // (skinning eligibility changes the item sources); remember the failed
     // lookup so a later pass does not rescan the full spawn stores.
-    auto const failedKey = std::make_tuple(questId, objectiveIdx, bot->GetMapId(), bot->GetPhaseMask());
+    auto const failedKey =
+        std::make_tuple(questId, objectiveIdx, bot->GetMapId(), bot->GetPhaseMask(), botAI->HasSkill(SKILL_SKINNING));
     {
         std::lock_guard<std::mutex> lock(failedSpawnMutex);
         if (failedSpawnLookups.count(failedKey))

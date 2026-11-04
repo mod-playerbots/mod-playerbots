@@ -21,7 +21,7 @@
 class LootSourceMgr
 {
 public:
-    static LootSourceMgr& Instance();
+    static LootSourceMgr& instance();
 
     void Init();
 
@@ -61,6 +61,6 @@ private:
     std::unordered_multimap<uint32, uint32> _itemToGameObjects;
 };
 
-#define sLootSourceMgr LootSourceMgr::Instance()
+#define sLootSourceMgr LootSourceMgr::instance()
 
 #endif
