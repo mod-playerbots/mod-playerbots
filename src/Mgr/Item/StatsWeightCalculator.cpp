@@ -1123,7 +1123,7 @@ void StatsWeightCalculator::ApplyRacialWeaponBonus(ItemTemplate const* proto)
         return;
 
     uint32 const subClass = proto->SubClass;
-    float expertiseSkill = 0.0f;
+    float expertisePoints = 0.0f;
     float critPct = 0.0f;
 
     // Racial weapon specializations are added to the item's stats, as if the weapon had them.
@@ -1133,16 +1133,16 @@ void StatsWeightCalculator::ApplyRacialWeaponBonus(ItemTemplate const* proto)
         case RACE_ORC:  // Orc Axe Specialization
             if (subClass == ITEM_SUBCLASS_WEAPON_AXE || subClass == ITEM_SUBCLASS_WEAPON_AXE2 ||
                 subClass == ITEM_SUBCLASS_WEAPON_FIST)
-                expertiseSkill = RACIAL_EXPERTISE_ORC_AXE_FIST;
+                expertisePoints = RACIAL_EXPERTISE_ORC_AXE_FIST;
             break;
         case RACE_HUMAN:  // Human Sword & Mace Specialization
             if (subClass == ITEM_SUBCLASS_WEAPON_SWORD || subClass == ITEM_SUBCLASS_WEAPON_SWORD2 ||
                 subClass == ITEM_SUBCLASS_WEAPON_MACE || subClass == ITEM_SUBCLASS_WEAPON_MACE2)
-                expertiseSkill = RACIAL_EXPERTISE_HUMAN_SWORD_MACE;
+                expertisePoints = RACIAL_EXPERTISE_HUMAN_SWORD_MACE;
             break;
         case RACE_DWARF:  // Dwarf Mace Specialization + Gun Specialization
             if (subClass == ITEM_SUBCLASS_WEAPON_MACE || subClass == ITEM_SUBCLASS_WEAPON_MACE2)
-                expertiseSkill = RACIAL_EXPERTISE_DWARF_MACE;
+                expertisePoints = RACIAL_EXPERTISE_DWARF_MACE;
             else if (subClass == ITEM_SUBCLASS_WEAPON_GUN)
                 critPct = RACIAL_CRIT_PCT_DWARF_GUN;
             break;
@@ -1154,8 +1154,8 @@ void StatsWeightCalculator::ApplyRacialWeaponBonus(ItemTemplate const* proto)
             return;
     }
 
-    if (expertiseSkill > 0.0f && (type_ & CollectorType::MELEE))
-        collector_->stats[STATS_TYPE_EXPERTISE] += expertiseSkill / player_->GetRatingMultiplier(CR_EXPERTISE);
+    if (expertisePoints > 0.0f && (type_ & CollectorType::MELEE))
+        collector_->stats[STATS_TYPE_EXPERTISE] += expertisePoints / player_->GetRatingMultiplier(CR_EXPERTISE);
 
     if (critPct > 0.0f && (type_ & CollectorType::RANGED))
         collector_->stats[STATS_TYPE_CRIT] += critPct / player_->GetRatingMultiplier(CR_CRIT_RANGED);
