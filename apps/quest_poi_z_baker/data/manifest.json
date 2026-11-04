@@ -1,0 +1,15 @@
+{
+  "generated_by": "apps/quest_poi_z_baker/quest_poi_z_baker.py",
+  "generated_at_utc": "2026-11-04T13:48:23Z",
+  "script_sha256": "ee6420568cbb9b46e068a37e0e42171bdeb41b31ec851b8986fce19f3a0e611c",
+  "bundle_sha256": "430e618c112475419eb8ac4aba309f70ec2fcdc5507ec9d08e3e3c7599a005cc",
+  "sql_sha256": "e8aff8b6a126da36927a41306ee6b618644f55318cd276bbff207aff97807915",
+  "world_database": "acore_world",
+  "mmaps_path": "/root/azerothcore-wotlk/env/dist/bin/mmaps",
+  "rows": 125226,
+  "quests": 8965,
+  "quest_poi_pairs": 18797,
+  "quest_poi_point_triples": 57226,
+  "trigger_rows": 101,
+  "walkable_rows": 122692
+}

@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+
+data/quest_poi_z_report.csv
+data/quest_poi_z_candidates.json
+data/quest_poi_z_candidates.jsonl
