@@ -1,9 +1,9 @@
 {
   "generated_by": "apps/quest_poi_z_baker/quest_poi_z_baker.py",
-  "generated_at_utc": "2026-11-04T14:09:31Z",
-  "script_sha256": "ee6420568cbb9b46e068a37e0e42171bdeb41b31ec851b8986fce19f3a0e611c",
-  "bundle_sha256": "43ac1690d3618b9952b2bc462dc58a6931c000981772aeffead463c99bae0743",
-  "sql_sha256": "e8aff8b6a126da36927a41306ee6b618644f55318cd276bbff207aff97807915",
+  "generated_at_utc": "2026-11-04T23:30:37Z",
+  "script_sha256": "34b72de0df7f801e06a140d7f0aadb119282c90cf9be4dbc397bec799c808691",
+  "bundle_sha256": "cd93853970dd37e419781bc70babe88f7af584acdf26cd0f3056faabf546e4ff",
+  "sql_sha256": "24c50b0a55921c5dba7937158718fb806cb8953353ce826453269767ae0890c4",
   "world_database": "acore_world",
   "mmaps_path": "/root/azerothcore-wotlk/env/dist/bin/mmaps",
   "rows": 125226,

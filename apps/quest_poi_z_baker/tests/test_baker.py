@@ -81,6 +81,16 @@ class BakePointTests(unittest.TestCase):
         self.assertLess(candidates[0]["confidence"], 90)
         self.assertIn("navmesh=1", candidates[0]["evidence"])
 
+    def test_quest_spawn_requires_matching_spawn(self) -> None:
+        candidates = bake_point(
+            0.0, 0.0, [], truth_zs=[0.0], trigger_zs=[],
+            cre_near=[(0.0, 0.0, 0.0, 123), (0.0, 0.0, 30.0, 456)], go_near=[],
+        )
+        by_z = {c["z"]: c for c in candidates}
+        self.assertTrue(by_z[0.0]["quest_spawn"])
+        self.assertFalse(by_z[30.0]["quest_spawn"])
+        self.assertEqual(by_z[30.0]["confidence"], 30)
+
 
 if __name__ == "__main__":
     unittest.main()

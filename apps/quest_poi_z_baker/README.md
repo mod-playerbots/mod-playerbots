@@ -38,7 +38,8 @@ apps/quest_poi_z_baker/.venv/bin/python apps/quest_poi_z_baker/quest_poi_z_baker
   --db-host 127.0.0.1 --db-port 3306 --db-user acore --db-name acore_world
 ```
 
-Subset (development / debugging):
+Subset (development / debugging; `--out` is required so the committed
+`data/` artifact is not overwritten):
 
 ```bash
 apps/quest_poi_z_baker/.venv/bin/python apps/quest_poi_z_baker/quest_poi_z_baker.py --quests 62,76 \
@@ -75,7 +76,8 @@ For every `quest_poi_points` row:
    grouped by Detour tile so each tile group's polygons are walked once.
 2. Find creature/GO spawns within the same radius. Spawns belonging to the
    quest's own objectives (NPC/GO objectives, item droppers, quest enders) are
-   ground truth; other spawns are semantic anchors.
+   ground truth; other spawns are semantic anchors. Item droppers are resolved
+   through `creature_template.lootid`, including nested reference-loot chains.
 3. Add quest area triggers whose center is within the radius.
 4. Cluster all Z values with an 8 yd gap.
 5. Score each cluster and keep up to four ranks.
@@ -130,7 +132,7 @@ cd apps/quest_poi_z_baker
 
 The tests do not need a database or `mmaps`; they cover the pure clustering /
 scoring functions and verify the committed SQL against the manifest and known
-quest-62 rows.
+quest-62 rows (16 tests).
 
 ## Attribution
 

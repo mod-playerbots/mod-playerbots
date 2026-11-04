@@ -62,6 +62,14 @@ class SqlArtifactTests(unittest.TestCase):
             self.assertLessEqual(confidence, 100)
             self.assertIn(row[8], ("0", "1"))
 
+    def test_ranks_contiguous_per_triple(self) -> None:
+        by_triple: dict[tuple[int, int, int], list[int]] = {}
+        for row in self.rows:
+            key = (int(row[0]), int(row[1]), int(row[2]))
+            by_triple.setdefault(key, []).append(int(row[5]))
+        for key, ranks in by_triple.items():
+            self.assertEqual(sorted(ranks), list(range(1, len(ranks) + 1)), key)
+
     def test_quest_62_trigger_candidates(self) -> None:
         q62 = [r for r in self.rows if int(r[0]) == 62]
         self.assertTrue(q62)
