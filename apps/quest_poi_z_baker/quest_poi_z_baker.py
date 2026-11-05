@@ -529,7 +529,7 @@ def _bundle_hash() -> str:
 
 def _write_report(outdir: Path, report: list[list[Any]]) -> None:
     report.sort(key=lambda r: (-int(r[7]) if r[7] else 0, r[0]))
-    with open(outdir / "quest_poi_z_report.csv", "w", newline="") as f:  # NOSONAR: local tool
+    with open(outdir / "quest_poi_z_report.csv", "w", newline="") as f:  # NOSONAR
         writer = csv.writer(f)
         writer.writerow(["quest", "poi_idx", "point_idx", "map", "best_z", "truth_z", "delta",
                          "confidence", "evidence", "tags"])
@@ -538,10 +538,10 @@ def _write_report(outdir: Path, report: list[list[Any]]) -> None:
 
 def _write_candidates(outdir: Path, json_out: list[dict[str, Any]]) -> None:
     if json_out and len(json_out) <= 5000:
-        (outdir / "quest_poi_z_candidates.json").write_text(  # NOSONAR: local tool
+        (outdir / "quest_poi_z_candidates.json").write_text(  # NOSONAR
             json.dumps(json_out, indent=1))
     elif json_out:
-        with open(outdir / "quest_poi_z_candidates.jsonl", "w") as f:  # NOSONAR: local tool
+        with open(outdir / "quest_poi_z_candidates.jsonl", "w") as f:  # NOSONAR
             for entry in json_out:
                 f.write(json.dumps(entry) + "\n")
 
@@ -550,8 +550,8 @@ def write_outputs(outdir: Path, result: BakeResult, db_name: str, mmaps: Path) -
     _write_report(outdir, result.report)
     _write_candidates(outdir, result.json_out)
 
-    sql_path = outdir / "playerbots_quest_poi_z.sql"  # NOSONAR: local tool
-    sql_path.write_text(_build_sql(result.sql_rows))  # NOSONAR: local tool
+    sql_path = outdir / "playerbots_quest_poi_z.sql"  # NOSONAR
+    sql_path.write_text(_build_sql(result.sql_rows))  # NOSONAR
     sql_bytes = sql_path.read_bytes()
 
     manifest = {
@@ -569,7 +569,7 @@ def write_outputs(outdir: Path, result: BakeResult, db_name: str, mmaps: Path) -
         "trigger_rows": result.trigger_rows,
         "walkable_rows": result.walkable_rows,
     }
-    (outdir / "manifest.json").write_text(  # NOSONAR: local tool
+    (outdir / "manifest.json").write_text(  # NOSONAR
         json.dumps(manifest, indent=2) + "\n")
 
 
@@ -615,7 +615,7 @@ def resolve_paths(args: argparse.Namespace,
             parser.error("pass --out with --quests so the committed data/ artifact is not overwritten")
         outdir = Path(__file__).resolve().parent / "data"
     else:
-        outdir = Path(args.out)  # NOSONAR: local CLI tool; the operator chooses the path
+        outdir = Path(args.out)  # NOSONAR
     mmaps = Path(args.mmaps) if args.mmaps else coords.get_data_paths()["mmaps"]  # NOSONAR
     return outdir, mmaps, args.db_name or DEFAULTS["database"]
 
@@ -642,7 +642,7 @@ def main() -> None:
 
     t0 = time.time()
     outdir, mmaps, db_name = resolve_paths(args, parser)
-    outdir.mkdir(parents=True, exist_ok=True)  # NOSONAR: local tool
+    outdir.mkdir(parents=True, exist_ok=True)  # NOSONAR
 
     quests = load_quests(args)
     print(f"quests: {len(quests)}", flush=True)
