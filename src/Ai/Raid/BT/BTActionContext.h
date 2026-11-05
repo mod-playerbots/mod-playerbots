@@ -113,6 +113,9 @@ public:
         creators["gurtogg bloodboil lead boss to tank position"] =
             &RaidBlackTempleActionContext::gurtogg_bloodboil_lead_boss_to_tank_position;
 
+        creators["gurtogg bloodboil stop attacking"] =
+            &RaidBlackTempleActionContext::gurtogg_bloodboil_stop_attacking;
+
         // Reliquary of Souls
         creators["reliquary of souls misdirect to main tank"] =
             &RaidBlackTempleActionContext::reliquary_of_souls_misdirect_to_main_tank;
@@ -225,11 +228,8 @@ public:
         creators["illidan stormrage position for landing"] =
             &RaidBlackTempleActionContext::illidan_stormrage_position_for_landing;
 
-        creators["illidan stormrage melee stop attacking"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_melee_stop_attacking;
-
-        creators["illidan stormrage stop shooting"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_stop_shooting;
+        creators["illidan stormrage stop attacking"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_stop_attacking;
 
         creators["illidan stormrage spread ranged"] =
             &RaidBlackTempleActionContext::illidan_stormrage_spread_ranged;
@@ -419,6 +419,10 @@ private:
             botAI, "gurtogg bloodboil lead boss to tank position",
             BtHelpers::BtBosses::DATA_GURTOGG_BLOODBOIL, BtHelpers::GURTOGG_TANK_POSITION);
     }
+    static Action* gurtogg_bloodboil_stop_attacking(PlayerbotAI* botAI)
+    {
+        return new GurtoggBloodboilStopAttackingAction(botAI);
+    }
 
     // Reliquary of Souls
     static Action* reliquary_of_souls_misdirect_to_main_tank(PlayerbotAI* botAI)
@@ -576,13 +580,9 @@ private:
     {
         return new IllidanStormragePositionForLandingAction(botAI);
     }
-    static Action* illidan_stormrage_melee_stop_attacking(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_stop_attacking(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageMeleeStopAttackingAction(botAI);
-    }
-    static Action* illidan_stormrage_stop_shooting(PlayerbotAI* botAI)
-    {
-        return new IllidanStormrageStopShootingAction(botAI);
+        return new IllidanStormrageStopAttackingAction(botAI);
     }
     static Action* illidan_stormrage_spread_ranged(PlayerbotAI* botAI)
     {

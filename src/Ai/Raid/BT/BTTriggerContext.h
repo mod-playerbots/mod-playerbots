@@ -114,6 +114,9 @@ public:
         creators["gurtogg bloodboil fel rage on bot"] =
             &RaidBlackTempleTriggerContext::gurtogg_bloodboil_fel_rage_on_bot;
 
+        creators["gurtogg bloodboil should stop attacking"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_should_stop_attacking;
+
         // Reliquary of Souls
         creators["reliquary of souls hunter should misdirect"] =
             &RaidBlackTempleTriggerContext::reliquary_of_souls_hunter_should_misdirect;
@@ -227,11 +230,8 @@ public:
         creators["illidan stormrage should position for landing"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_should_position_for_landing;
 
-        creators["illidan stormrage melee should stop attacking"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_melee_should_stop_attacking;
-
-        creators["illidan stormrage should stop shooting"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_should_stop_shooting;
+        creators["illidan stormrage should stop attacking"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_stop_attacking;
 
         creators["illidan stormrage ranged should spread"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_ranged_should_spread;
@@ -405,6 +405,10 @@ private:
     {
         return new GurtoggBloodboilFelRageOnBotTrigger(botAI);
     }
+    static Trigger* gurtogg_bloodboil_should_stop_attacking(PlayerbotAI* botAI)
+    {
+        return new GurtoggBloodboilShouldStopAttackingTrigger(botAI);
+    }
 
     // Reliquary of Souls
     static Trigger* reliquary_of_souls_hunter_should_misdirect(PlayerbotAI* botAI)
@@ -561,13 +565,9 @@ private:
     {
         return new IllidanStormrageShouldPositionForLandingTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_melee_should_stop_attacking(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_stop_attacking(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageMeleeShouldStopAttackingTrigger(botAI);
-    }
-    static Trigger* illidan_stormrage_should_stop_shooting(PlayerbotAI* botAI)
-    {
-        return new IllidanStormrageShouldStopShootingTrigger(botAI);
+        return new IllidanStormrageShouldStopAttackingTrigger(botAI);
     }
     static Trigger* illidan_stormrage_ranged_should_spread(PlayerbotAI* botAI)
     {

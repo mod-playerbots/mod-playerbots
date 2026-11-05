@@ -184,21 +184,29 @@ bool SisterOfPleasureFocusDpsAction::Execute(Event /*event*/)
         return pleasure && MarkTargetWithSkull(bot, pleasure);
     }
 
-    Unit* pain = AI_VALUE(Unit*, "current target");
-    if (!pain || pain->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PAIN))
-        return false;
-
-    for (CurrentSpellTypes const type :
-         { CURRENT_GENERIC_SPELL, CURRENT_CHANNELED_SPELL, CURRENT_AUTOREPEAT_SPELL })
+    Unit* pain = nullptr;
+    for (Unit* unit : { bot->GetVictim(), AI_VALUE(Unit*, "current target") })
     {
-        Spell* spell = bot->GetCurrentSpell(type);
-        if (spell && spell->m_targets.GetUnitTargetGUID() == pain->GetGUID())
-            bot->InterruptSpell(type);
+        if (unit && unit->GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN))
+        {
+            pain = unit;
+            break;
+        }
     }
 
-    bot->AttackStop();
-    context->GetValue<Unit*>("current target")->Set(nullptr);
-    return true;
+    if (!pain)
+        return false;
+
+    if (StopAttackingTarget(bot, *pain))
+        return true;
+
+    // With no other add to attack, the bot keeps Pain selected to stay in its combat engine but
+    // does not attack (due to the hold multiplier).
+    Unit* next = FindSisterOfPleasureLinkedTo(botAI, pain);
+    if (!next)
+        next = AI_VALUE(Unit*, "dps target");
+
+    return next && next != pain && Attack(next);
 }
 
 bool ShadowmoonReaverStopWandAction::Execute(Event /*event*/)
@@ -225,22 +233,14 @@ bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
 
         _previousReactState = pet->GetReactState();
         _passivePet = pet->GetGUID();
-        pet->AttackStop();
-        pet->InterruptNonMeleeSpells(false);
+        CallBackPets(bot);
         pet->SetReactState(REACT_PASSIVE);
-        if (CharmInfo* charmInfo = pet->GetCharmInfo())
-        {
-            charmInfo->SetIsCommandAttack(false);
-            charmInfo->SetIsCommandFollow(true);
-        }
-
-        pet->GetMotionMaster()->MoveFollow(bot, PET_FOLLOW_DIST, pet->GetFollowAngle());
         return true;
     }
 
     auto const sendPet = [pet](Unit* unit)
     {
-        pet->InterruptNonMeleeSpells(false);
+        pet->CastStop();
         return CommandPetAttack(pet, unit);
     };
 
@@ -1142,6 +1142,12 @@ bool GurtoggBloodboilRangedMoveOutOfFrontalConeAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
+bool GurtoggBloodboilStopAttackingAction::Execute(Event /*event*/)
+{
+    Unit* gurtogg = GetBtBoss(bot, BtBosses::DATA_GURTOGG_BLOODBOIL);
+    return gurtogg && StopAttackingTarget(bot, *gurtogg);
+}
+
 // Reliquary of Souls
 
 bool ReliquaryOfSoulsMisdirectToMainTankAction::Execute(Event /*event*/)
@@ -1727,6 +1733,9 @@ bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)
 
 bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 {
+    // Select a target without attacking while the DPS hold is active.
+    bool const isDpsHeld = IsIllidariCouncilDpsHoldActive(bot);
+
     IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);
     Unit* veras = members.veras;
     if (IsVerasVanished(veras))
@@ -1779,7 +1788,7 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
     if (!target || AI_VALUE(Unit*, "current target") == target)
         return false;
 
-    return Attack(target);
+    return isDpsHeld ? SelectTarget(botAI, target) : Attack(target);
 }
 
 bool IllidariCouncilAssignDpsTargetsAction::ShouldAttackMalande(
@@ -2033,15 +2042,9 @@ bool IllidanStormrageMainTankRepositionBossAction::FindDemonFormPosition(
     bool const isOnAdd = targetEntry == Id(BtNpcs::NPC_SHADOW_DEMON) ||
         targetEntry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND);
     if (isMoveIn && (target || bot->GetVictim()))
-    {
-        bot->AttackStop();
-        context->GetValue<Unit*>("current target")->Set(nullptr);
-        bot->SetSelection(ObjectGuid());
-    }
+        StandDown(botAI);
     else if (!isMoveIn && isOnAdd)
-    {
         return false;
-    }
 
     DemonFormLayout const layout = GetDemonFormLayout(illidan);
     if (IsIllidanDemonFormEnding(illidan, ILLIDAN_MAIN_TANK_STEP_IN_MS))
@@ -2534,7 +2537,7 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
         {
             _previousReactState = pet->GetReactState();
             _setPassive = true;
-            pet->AttackStop();
+            CallBackPets(bot);
             pet->SetReactState(REACT_PASSIVE);
         }
     }
@@ -2626,17 +2629,7 @@ bool IllidanStormragePositionForLandingAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool IllidanStormrageMeleeStopAttackingAction::Execute(Event /*event*/)
-{
-    bot->AttackStop();
-    bot->InterruptSpell(CURRENT_MELEE_SPELL);
-    bot->CastStop();
-    context->GetValue<Unit*>("current target")->Set(nullptr);
-    bot->SetSelection(ObjectGuid());
-    return true;
-}
-
-bool IllidanStormrageStopShootingAction::Execute(Event /*event*/)
+bool IllidanStormrageStopAttackingAction::Execute(Event /*event*/)
 {
     Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
@@ -2650,17 +2643,7 @@ bool IllidanStormrageStopShootingAction::Execute(Event /*event*/)
         isStopped = true;
     }
 
-    for (CurrentSpellTypes const type : { CURRENT_AUTOREPEAT_SPELL, CURRENT_CHANNELED_SPELL })
-    {
-        Spell* spell = bot->GetCurrentSpell(type);
-        if (spell && spell->m_targets.GetUnitTargetGUID() == illidan->GetGUID())
-        {
-            bot->InterruptSpell(type);
-            isStopped = true;
-        }
-    }
-
-    return isStopped;
+    return StopAttackingTarget(bot, *illidan) || isStopped;
 }
 
 bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)
@@ -2907,9 +2890,8 @@ bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
             return false;
         }
 
-        bot->AttackStop();
-        context->GetValue<Unit*>("current target")->Set(nullptr);
-        bot->SetSelection(ObjectGuid());
+        StandDown(botAI);
+        CallBackPets(bot);
         return true;
     }
 
@@ -2919,13 +2901,8 @@ bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
     bool const isHeld = target == illidan ?
         GetIllidanDpsHold(bot, illidan) != IllidanDpsHold::None :
         phase == IllidanPhase::Flying && IsFlameOfAzzinothDpsHeld(*illidan);
-    if (isHeld && !PlayerbotAI::IsRanged(bot))
-    {
-        context->GetValue<Unit*>("current target")->Set(target);
-        bot->SetSelection(target->GetGUID());
-        botAI->ChangeEngine(BOT_STATE_COMBAT);
-        return true;
-    }
+    if (isHeld)
+        return SelectTarget(botAI, target);
 
     return Attack(target);
 }

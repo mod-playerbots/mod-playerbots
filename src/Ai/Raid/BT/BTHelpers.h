@@ -230,7 +230,6 @@ inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 inline constexpr float BT_ARRIVAL_DISTANCE = 2.0f;
 
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
-bool CommandPetAttack(Creature* pet, Unit* target);
 GuidVector FindAttackerGuidsWithEntry(PlayerbotAI* botAI, uint32 entry);
 uint32 GetAuraElapsedMs(Aura const* aura);
 void FaceUnit(Player* bot, Unit* unit);
@@ -243,6 +242,7 @@ inline constexpr uint32 SISTER_OF_PLEASURE_CACHE_INTERVAL_MS = 1000;
 GuidVector FindSisterOfPleasureGuids(Player* bot);
 Unit* GetLinkedSisterOfPain(Unit* pleasure);
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
+Unit* FindSisterOfPleasureLinkedTo(PlayerbotAI* botAI, Unit* pain);
 Unit* GetSkulledSisterOfPain(Player* bot);
 
 enum class ChaoticChargeReach : uint8
@@ -430,6 +430,7 @@ bool IsGurtoggFelRageTarget(Player* player);
 Position GetGurtoggFelRageMeleePosition(
     Player* bot, Unit const& gurtogg, Unit const& felRageTarget);
 float FindGurtoggSecondTankThreat(Player* bot);
+bool IsGurtoggThreatHoldActive(PlayerbotAI* botAI, Unit* gurtogg);
 bool IsInGurtoggRectangle(
     Position const& point, Position const& center, Position const& facing, float halfWidth,
     float halfDepth);
@@ -538,6 +539,7 @@ IllidariCouncilMembers GetIllidariCouncilMembers(Player* bot);
 bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI);
 Player* GetZerevorMageTank(Player* bot);
 bool IsZerevorMageTank(Player* player);
+bool IsIllidariCouncilDpsHoldActive(Player* bot);
 bool HasDangerousCouncilAura(Player* bot);
 bool IsVerasVanished(Unit* veras);
 bool CanInterruptCircleOfHealing(Unit* malande);
@@ -794,7 +796,7 @@ inline constexpr float ILLIDAN_SHADOW_DEMON_GAP_CLOSER_DISTANCE =
 // When the Seed of Corruption and/or warlock tank Searing Pain action is active, use Life Tap when
 // below 20% mana and above 50% HP to ensure enough mana to cast the applicable spell.
 inline constexpr float ILLIDAN_LIFE_TAP_MANA_PCT = 20.0f;
-inline constexpr float ILLIDAN_LIFE_TAP_HEALTH_PCT = 50.0f;
+inline constexpr float ILLIDAN_LIFE_TAP_HEALTH_PCT = 75.0f;
 // The warlock tank's phase 4 position, 31 yd from Illidan and off his inward line. His reach is
 // only 1.5 yd in Demon Form, so a standard 30 yd spell (like Searing Pain) has a 33 yd range.
 inline constexpr float ILLIDAN_WARLOCK_POSITION_DISTANCE = 31.0f;

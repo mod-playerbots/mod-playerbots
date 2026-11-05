@@ -90,13 +90,12 @@ public:
 // Trash
 
 // Damage on the Sister of Pleasure is split evenly with her Sister of Pain, and they have equal
-// health, so killing Pleasure kills both without anyone hitting Pain through Shell of Pain. The
-// mechanic tracker skulls Pleasure, and every other non-tank drops Pain.
-class SisterOfPleasureFocusDpsAction : public Action
+// health, so killing Pleasure kills both without anyone hitting Pain through Shell of Pain.
+class SisterOfPleasureFocusDpsAction : public AttackAction
 {
 public:
     SisterOfPleasureFocusDpsAction(PlayerbotAI* botAI)
-        : Action(botAI, "sister of pleasure focus dps") {}
+        : AttackAction(botAI, "sister of pleasure focus dps") {}
     bool Execute(Event event) override;
 };
 
@@ -351,6 +350,14 @@ class GurtoggBloodboilRangedMoveOutOfFrontalConeAction : public MovementAction
 public:
     GurtoggBloodboilRangedMoveOutOfFrontalConeAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "gurtogg bloodboil ranged move out of frontal cone") {}
+    bool Execute(Event event) override;
+};
+
+class GurtoggBloodboilStopAttackingAction : public Action
+{
+public:
+    GurtoggBloodboilStopAttackingAction(PlayerbotAI* botAI)
+        : Action(botAI, "gurtogg bloodboil stop attacking") {}
     bool Execute(Event event) override;
 };
 
@@ -720,20 +727,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageMeleeStopAttackingAction : public Action
+class IllidanStormrageStopAttackingAction : public Action
 {
 public:
-    IllidanStormrageMeleeStopAttackingAction(PlayerbotAI* botAI)
-        : Action(botAI, "illidan stormrage melee stop attacking") {}
-    bool Execute(Event event) override;
-};
-
-// The target is kept: the hold keeps the shot or channel from starting again.
-class IllidanStormrageStopShootingAction : public Action
-{
-public:
-    IllidanStormrageStopShootingAction(PlayerbotAI* botAI)
-        : Action(botAI, "illidan stormrage stop shooting") {}
+    IllidanStormrageStopAttackingAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage stop attacking") {}
     bool Execute(Event event) override;
 };
 

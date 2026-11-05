@@ -93,27 +93,6 @@ bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
     return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
 }
 
-bool CommandPetAttack(Creature* pet, Unit* target)
-{
-    if (!pet || !target)
-        return false;
-
-    pet->ClearUnitState(UNIT_STATE_FOLLOW);
-    pet->AttackStop();
-    pet->SetTarget(target->GetGUID());
-    if (CharmInfo* charmInfo = pet->GetCharmInfo())
-    {
-        charmInfo->SetIsCommandAttack(true);
-        charmInfo->SetIsAtStay(false);
-        charmInfo->SetIsFollowing(false);
-        charmInfo->SetIsCommandFollow(false);
-        charmInfo->SetIsReturning(false);
-    }
-
-    pet->AI()->AttackStart(target);
-    return true;
-}
-
 GuidVector FindAttackerGuidsWithEntry(PlayerbotAI* botAI, uint32 entry)
 {
     GuidVector matchingGuids;
@@ -275,6 +254,19 @@ Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
     {
         Unit* sister = botAI->GetUnit(sisterGuid);
         if (GetLinkedSisterOfPain(sister))
+            return sister;
+    }
+
+    return nullptr;
+}
+
+Unit* FindSisterOfPleasureLinkedTo(PlayerbotAI* botAI, Unit* pain)
+{
+    for (ObjectGuid const& sisterGuid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("sisters of pleasure")->RefGet())
+    {
+        Unit* sister = botAI->GetUnit(sisterGuid);
+        if (sister && GetLinkedSisterOfPain(sister) == pain)
             return sister;
     }
 
@@ -1022,6 +1014,26 @@ float FindGurtoggSecondTankThreat(Player* bot)
     return secondThreat;
 }
 
+// Non-tanks other than healers should stay under GURTOGG_THREAT_HOLD_RATIO of the second tank's
+// threat, except during Fel Rage, when bots cannot gain threat.
+bool IsGurtoggThreatHoldActive(PlayerbotAI* botAI, Unit* gurtogg)
+{
+    Player* bot = botAI->GetBot();
+    if (PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot) ||
+        bot->HasAura(Id(BtSpells::SPELL_INSIGNIFICANCE)))
+    {
+        return false;
+    }
+
+    float const secondTankThreat =
+        botAI->GetAiObjectContext()->GetValue<float>("gurtogg bloodboil second tank threat")->Get();
+    if (secondTankThreat <= 0.0f)
+        return false;
+
+    return gurtogg->GetThreatMgr().GetThreat(bot) >=
+        secondTankThreat * GURTOGG_THREAT_HOLD_RATIO;
+}
+
 // The rectangle is a space in which bots can be given a randomized (by GUID) position. There are
 // two rectangles drawn, one for the 5 Bloodboil soakers and the other for other ranged bots.
 bool IsInGurtoggRectangle(
@@ -1197,6 +1209,20 @@ bool IsZerevorMageTank(Player* player)
 
     BtInstanceState const* state = FindBtState(player->GetInstanceId());
     return state && IsClassRolePlayer(player, state->zerevorMageTank);
+}
+
+bool IsIllidariCouncilDpsHoldActive(Player* bot)
+{
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    if (!state || !state->councilDpsWaitTimer ||
+        GetMSTimeDiffToNow(*state->councilDpsWaitTimer) >= COUNCIL_DPS_WAIT_MS)
+    {
+        return false;
+    }
+
+    return !((PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)) ||
+        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
+        PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) || IsZerevorMageTank(bot));
 }
 
 bool HasDangerousCouncilAura(Player* bot)
