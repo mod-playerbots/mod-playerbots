@@ -18,8 +18,6 @@ static constexpr uint32 SPELL_HAND_OF_SALVATION = 1038;
 static constexpr uint32 SPELL_HAND_OF_FREEDOM = 1044;
 static constexpr uint32 SPELL_HAND_OF_SACRIFICE = 6940;
 
-// Holy Shield lasts 10 s on an 8 s cooldown, so a recast in its last 2 s keeps it up. The trigger and the
-// action both need the margin, or the action turns down the early recast the trigger asks for.
 static constexpr uint32 HOLY_SHIELD_REFRESH_MS = 2000;
 
 inline bool HasHandFromCaster(Unit* target, Unit* caster, std::initializer_list<uint32> spellIds)
