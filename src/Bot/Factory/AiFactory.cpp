@@ -609,10 +609,7 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
             nonCombatEngine->addStrategy("grind", false);
 
             if (sPlayerbotAIConfig.EnableNewRpgStrategy)
-            {
                 nonCombatEngine->addStrategy("new rpg", false);
-                nonCombatEngine->removeStrategy("sell junk", false);  // new rpg sells at the vendors it visits
-            }
             else if (sPlayerbotAIConfig.AutoDoQuests)
             {
                 // nonCombatEngine->addStrategy("travel");

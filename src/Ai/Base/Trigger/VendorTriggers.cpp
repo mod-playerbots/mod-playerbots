@@ -13,6 +13,9 @@ bool CanSellAtVendorTrigger::IsActive()
     if (bot->IsInCombat() || bot->IsMounted() || bot->GetTradeData())
         return false;
 
+    if (botAI->HasStrategy("new rpg", BOT_STATE_NON_COMBAT))  // new rpg sells at the vendors it visits
+        return false;
+
     if (!AI_VALUE(bool, "can sell"))
         return false;
 

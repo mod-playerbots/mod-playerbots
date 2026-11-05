@@ -148,7 +148,8 @@ uint32 SellAction::SellToVendor(bool quiet)
 
     SellVendorItemsVisitor visitor(this, context);
     IterateItems(&visitor);
-    botAI->ConsolidateItems();  // re-stack what the partial sells fragmented
+    if (_soldCount)
+        botAI->ConsolidateItems();  // re-stack what the partial sells fragmented
 
     _quiet = false;
     return _soldCount;
@@ -242,6 +243,8 @@ void SellAction::Sell(Item* item, bool force)
             continue;
 
         ObjectGuid itemguid = item->GetGUID();
+        uint16 const itemPos = item->GetPos();
+        uint32 const countBefore = item->GetCount();
 
         uint32 botMoney = bot->GetMoney();
 
@@ -257,7 +260,12 @@ void SellAction::Sell(Item* item, bool force)
             bot->SetMoney(botMoney);
         }
 
-        ++_soldCount;
+        // The opcode reports no result; a sold stack leaves its slot or shrinks.
+        uint32 const sold = countBefore - (bot->GetItemByPos(itemPos) == item ? item->GetCount() : 0);
+        if (!sold)
+            break;
+
+        _soldCount += sold;
 
         if (!_quiet)
         {
