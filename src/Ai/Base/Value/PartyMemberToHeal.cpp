@@ -173,7 +173,6 @@ Unit* HealerLowMana::Calculate()
 
 Unit* PartyMemberToProtect::Calculate()
 {
-    return nullptr;
     Group* group = bot->GetGroup();
     if (!group)
         return nullptr;
@@ -198,9 +197,7 @@ Unit* PartyMemberToProtect::Calculate()
         if (ServerFacade::instance().GetDistance2d(pVictim, unit) > attackDistance)
             continue;
 
-        if (PlayerbotAI::IsTank((Player*)pVictim) && pVictim->GetHealthPct() > 10)
-            continue;
-        else if (pVictim->GetHealthPct() > 30)
+        if (PlayerbotAI::IsTank((Player*)pVictim) || pVictim->GetHealthPct() > 30)
             continue;
 
         if (find(needProtect.begin(), needProtect.end(), pVictim) == needProtect.end())
