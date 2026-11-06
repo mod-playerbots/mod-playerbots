@@ -280,10 +280,10 @@ inline constexpr float LEOTHERAS_CLASS_ROLE_REARM_DISTANCE = 150.0f;
 
 inline constexpr float LEOTHERAS_SEARCH_DISTANCE = 100.0f;
 inline constexpr uint32 LEOTHERAS_CACHE_INTERVAL_MS = 200;
-inline constexpr uint32 LEOTHERAS_HUMANOID_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
-inline constexpr uint32 LEOTHERAS_DEMON_DPS_WAIT_MS = 10 * IN_MILLISECONDS;
-inline constexpr uint32 LEOTHERAS_FINAL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
-inline constexpr uint32 LEOTHERAS_WHIRLWIND_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
+inline constexpr uint32 LEOTHERAS_HUMANOID_DPS_HOLD_MS = 3 * IN_MILLISECONDS;
+inline constexpr uint32 LEOTHERAS_DEMON_DPS_HOLD_MS = 10 * IN_MILLISECONDS;
+inline constexpr uint32 LEOTHERAS_FINAL_DPS_HOLD_MS = 5 * IN_MILLISECONDS;
+inline constexpr uint32 LEOTHERAS_WHIRLWIND_DPS_HOLD_MS = 3 * IN_MILLISECONDS;
 inline constexpr float LEOTHERAS_WHIRLWIND_HAZARD_RADIUS = 10.0f;
 // Ranged stay this distance from Leo during Humanoid phase until Whirlwind begins.
 inline constexpr float LEOTHERAS_RANGED_SAFE_DISTANCE = LEOTHERAS_WHIRLWIND_HAZARD_RADIUS + 5.0f;
@@ -347,7 +347,7 @@ inline constexpr std::array KARATHRESS_COUNCIL = {
 inline constexpr float KARATHRESS_BLESSING_HOLD_HEALTH_PCT = 85.0f;
 // The widest tank AoE is Death and Decay at 10 yd.
 inline constexpr float KARATHRESS_AOE_THREAT_CLEARANCE = 15.0f;
-inline constexpr uint32 KARATHRESS_DPS_WAIT_MS = 12 * IN_MILLISECONDS;
+inline constexpr uint32 KARATHRESS_DPS_HOLD_MS = 12 * IN_MILLISECONDS;
 
 inline constexpr float SPITFIRE_TOTEM_SEARCH_DISTANCE = 75.0f;
 // Ranged attack Spitfire Totems only when this close. This will exclude some ranged bots on
@@ -383,7 +383,7 @@ Unit* GetSharkkisPet(Player* bot);
 // Non-healer melee other than the main tank, from Karathress's KARATHRESS_BLESSING_HOLD_HEALTH_PCT
 // until Caribdis dies.
 bool IsKarathressBlessingHoldActive(Player* bot);
-// Non-tanks for the first KARATHRESS_DPS_WAIT_MS of the fight, and before the timer is stamped.
+// Non-tanks for the first KARATHRESS_DPS_HOLD_MS of the fight, and before the timer is stamped.
 bool IsKarathressStartDpsHoldActive(Player* bot);
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget);
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
@@ -851,7 +851,7 @@ struct SscInstanceState
     std::optional<uint32> leotherasWhirlwindEndTime;
     std::optional<uint32> leotherasDemonPhaseStartTime;
     std::optional<uint32> leotherasFinalPhaseStartTime;
-    std::optional<uint32> karathressDpsWaitTimer;
+    std::optional<uint32> karathressDpsHoldTimer;
     std::optional<ObjectGuid> vashjGroundingShaman;
     std::optional<VashjStationHolders> vashjStationHolders;
     std::optional<TaintedCoreLooter> vashjTaintedCoreLooter;

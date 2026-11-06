@@ -814,7 +814,8 @@ float GetDpsHoldValue(Player* bot, Action* action)
 Unit* GetActionTargetOrCurrentTarget(PlayerbotAI* botAI, Action* action)
 {
     if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ||
+        dynamic_cast<CastDebuffSpellOnMeleeAttackerAction*>(action))
     {
         return action->GetTarget();
     }
@@ -905,8 +906,8 @@ bool StopAttackingAndChanneling(Player* bot)
     return isStopped;
 }
 
-// Unlike StopAttackingAndChanneling(), CURRENT_MELEE_SPELL is not interrupted because a queued
-// swing ability fires on the next swing, at whatever the victim is then.
+// Unlike StopAttackingAndChanneling(), a queued swing ability is canceled only if the bot's swing is
+// on the target (by AttackStop()). Otherwise, it fires at the bot's actual victim, not the target.
 bool StopAttackingTarget(Player* bot, Unit const& target)
 {
     bool isStopped = false;
@@ -947,13 +948,16 @@ void StandDown(PlayerbotAI* botAI)
 
 bool SelectTarget(PlayerbotAI* botAI, Unit* target)
 {
-    Player* bot = botAI->GetBot();
-    if (!target || !AttackersValue::IsValidTarget(target, bot))
+    if (!target)
         return false;
 
     auto* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target");
     Unit* oldTarget = currentTarget->Get();
     if (oldTarget == target && botAI->GetState() == BOT_STATE_COMBAT)
+        return false;
+
+    Player* bot = botAI->GetBot();
+    if (!AttackersValue::IsValidTarget(target, bot))
         return false;
 
     if (oldTarget && oldTarget != target)

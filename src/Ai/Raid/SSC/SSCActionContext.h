@@ -103,8 +103,8 @@ public:
         creators["leotheras the blind select target for hold"] =
             &RaidSscActionContext::leotheras_the_blind_select_target_for_hold;
 
-        creators["leotheras the blind manage dps wait timers"] =
-            &RaidSscActionContext::leotheras_the_blind_manage_dps_wait_timers;
+        creators["leotheras the blind manage dps hold timers"] =
+            &RaidSscActionContext::leotheras_the_blind_manage_dps_hold_timers;
 
         creators["leotheras the blind announce class roles"] =
             &RaidSscActionContext::leotheras_the_blind_announce_class_roles;
@@ -358,9 +358,9 @@ private:
     {
         return new LeotherasTheBlindSelectTargetForHoldAction(botAI);
     }
-    static Action* leotheras_the_blind_manage_dps_wait_timers(PlayerbotAI* botAI)
+    static Action* leotheras_the_blind_manage_dps_hold_timers(PlayerbotAI* botAI)
     {
-        return new LeotherasTheBlindManageDpsWaitTimersAction(botAI);
+        return new LeotherasTheBlindManageDpsHoldTimersAction(botAI);
     }
     static Action* leotheras_the_blind_announce_class_roles(PlayerbotAI* botAI)
     {

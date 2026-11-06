@@ -367,9 +367,9 @@ bool IsKaelthasAdvisorDpsHoldActive(PlayerbotAI* botAI, Unit* kaelthas)
     if (GetKaelthasTkPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
         return false;
 
-    std::optional<uint32> const& waitStart = TkState(kaelthas->GetInstanceId()).advisorDpsWaitTimer;
-    if (waitStart && *waitStart != ADVISOR_DPS_WAIT_NOT_STARTED &&
-        getMSTimeDiff(*waitStart, getMSTime()) >= ADVISOR_DPS_WAIT_MS)
+    std::optional<uint32> const& holdStart = TkState(kaelthas->GetInstanceId()).advisorDpsHoldTimer;
+    if (holdStart && *holdStart != ADVISOR_DPS_HOLD_NOT_STARTED &&
+        getMSTimeDiff(*holdStart, getMSTime()) >= ADVISOR_DPS_HOLD_MS)
     {
         return false;
     }
@@ -572,7 +572,7 @@ bool TkResetInstance(uint32 instanceId)
 
     TkInstanceState& state = it->second;
     bool const wasSet = state.lastRebirthState || state.isAlarInPhase2 ||
-        !state.voidReaverArcaneOrbs.empty() || state.advisorDpsWaitTimer;
+        !state.voidReaverArcaneOrbs.empty() || state.advisorDpsHoldTimer;
 
     // Not erased: the class roles outlive encounters, see ClassRoleAssignment.
     TkInstanceState kept;

@@ -124,7 +124,7 @@ bool IsPositionInActiveConflagration(PlayerbotAI* botAI, float x, float y);
 
 struct MagInstanceState
 {
-    std::optional<uint32> magDpsWaitTimer;
+    std::optional<uint32> magDpsHoldTimer;
     std::optional<uint32> blastNovaTimer;
     std::optional<bool> lastBlastNovaState;
     bool ceilingCollapseApplied = false;

@@ -138,8 +138,8 @@ bool IsMagtheridonDpsHoldActive(Player* bot, Unit* magtheridon)
     if (!IsMagtheridonActive(magtheridon) || PlayerbotAI::IsMainTank(bot))
         return false;
 
-    std::optional<uint32> const& waitStart = MagState(magtheridon->GetInstanceId()).magDpsWaitTimer;
-    return !waitStart || getMSTimeDiff(*waitStart, getMSTime()) <= MAG_DPS_HOLD_MS;
+    std::optional<uint32> const& holdStart = MagState(magtheridon->GetInstanceId()).magDpsHoldTimer;
+    return !holdStart || getMSTimeDiff(*holdStart, getMSTime()) <= MAG_DPS_HOLD_MS;
 }
 
 bool IsCubeClicker(Player* bot)
@@ -229,7 +229,7 @@ bool MagResetInstance(uint32 instanceId)
         return false;
 
     MagInstanceState const& state = it->second;
-    bool const wasSet = state.magDpsWaitTimer || state.blastNovaTimer || state.lastBlastNovaState ||
+    bool const wasSet = state.magDpsHoldTimer || state.blastNovaTimer || state.lastBlastNovaState ||
         state.ceilingCollapseApplied || !state.botToCubeAssignments.empty();
 
     magStates.erase(it);

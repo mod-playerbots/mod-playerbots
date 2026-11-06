@@ -51,11 +51,8 @@ float MagtheridonUseManticronCubeMultiplier::GetValueInEncounter(Action* action)
 
 float MagtheridonHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!IsDpsHoldCandidate(bot, action) ||
-        dynamic_cast<MagtheridonSelectTargetForHoldAction*>(action))
-    {
+    if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
-    }
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     return IsMagtheridonDpsHoldActive(bot, magtheridon) ? GetDpsHoldValue(bot, action) : 1.0f;

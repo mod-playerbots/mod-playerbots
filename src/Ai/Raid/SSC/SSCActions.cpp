@@ -891,7 +891,7 @@ bool LeotherasTheBlindMisdirectDemonFormToTankAction::Execute(Event /*event*/)
     return MisdirectTargetToTank(botAI, leotherasDemon, tank);
 }
 
-bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
+bool LeotherasTheBlindManageDpsHoldTimersAction::Execute(Event /*event*/)
 {
     Unit* leotheras = FindThreatTarget(bot, "leotheras the blind");
     if (!leotheras)
@@ -929,7 +929,7 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
 
 // Whirlwind resets threat on every tick. Hold dps for a moment after it ends. But do not hold
 // dps while Whirlwind is active.
-bool LeotherasTheBlindManageDpsWaitTimersAction::TrackWhirlwindEnd(
+bool LeotherasTheBlindManageDpsHoldTimersAction::TrackWhirlwindEnd(
     Unit* leotheras, std::optional<uint32>& whirlwindEnd, uint32 now)
 {
     if (Aura const* whirlwind = leotheras->GetAura(Id(SscSpells::SPELL_LEOTHERAS_WHIRLWIND)))
@@ -944,7 +944,7 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::TrackWhirlwindEnd(
         return true;
     }
 
-    if (now - *whirlwindEnd >= LEOTHERAS_WHIRLWIND_DPS_WAIT_MS)
+    if (now - *whirlwindEnd >= LEOTHERAS_WHIRLWIND_DPS_HOLD_MS)
     {
         whirlwindEnd.reset();
         return true;
@@ -1155,9 +1155,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
         return ApproachCaribdis(caribdis);
 
     if (AI_VALUE(Unit*, "current target") != target)
-    {
         return isDpsHeld ? SelectTarget(botAI, target) : Attack(target);
-    }
 
     if (target == caribdis)
     {
@@ -1197,7 +1195,7 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
         return false;
 
     return EmplaceIfUnset(
-        SscState(karathress->GetInstanceId()).karathressDpsWaitTimer, getMSTime());
+        SscState(karathress->GetInstanceId()).karathressDpsHoldTimer, getMSTime());
 }
 
 bool FathomLordKarathressControlPetAggressionAction::Execute(Event /*event*/)

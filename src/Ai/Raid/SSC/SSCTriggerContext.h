@@ -98,8 +98,8 @@ public:
         creators["leotheras the blind dps hold is active"] =
             &RaidSscTriggerContext::leotheras_the_blind_dps_hold_is_active;
 
-        creators["leotheras the blind should manage dps wait timers"] =
-            &RaidSscTriggerContext::leotheras_the_blind_should_manage_dps_wait_timers;
+        creators["leotheras the blind should manage dps hold timers"] =
+            &RaidSscTriggerContext::leotheras_the_blind_should_manage_dps_hold_timers;
 
         // Fathom-Lord Karathress
         creators["fathom-lord karathress targets should be tanked"] =
@@ -337,9 +337,9 @@ private:
     {
         return new LeotherasTheBlindDpsHoldIsActiveTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_should_manage_dps_wait_timers(PlayerbotAI* botAI)
+    static Trigger* leotheras_the_blind_should_manage_dps_hold_timers(PlayerbotAI* botAI)
     {
-        return new LeotherasTheBlindShouldManageDpsWaitTimersTrigger(botAI);
+        return new LeotherasTheBlindShouldManageDpsHoldTimersTrigger(botAI);
     }
 
     // Fathom-Lord Karathress

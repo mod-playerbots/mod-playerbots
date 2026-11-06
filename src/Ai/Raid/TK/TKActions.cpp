@@ -1225,18 +1225,18 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
     if (!kaelthas)
         return false;
 
-    std::optional<uint32>& waitStart = TkState(kaelthas->GetInstanceId()).advisorDpsWaitTimer;
+    std::optional<uint32>& holdStart = TkState(kaelthas->GetInstanceId()).advisorDpsHoldTimer;
 
     if (advisorAtFullHp)
     {
-        waitStart = ADVISOR_DPS_WAIT_NOT_STARTED;
+        holdStart = ADVISOR_DPS_HOLD_NOT_STARTED;
         return false;
     }
 
-    if (!waitStart || *waitStart != ADVISOR_DPS_WAIT_NOT_STARTED)
+    if (!holdStart || *holdStart != ADVISOR_DPS_HOLD_NOT_STARTED)
         return false;
 
-    waitStart = getMSTime();
+    holdStart = getMSTime();
     return true;
 }
 

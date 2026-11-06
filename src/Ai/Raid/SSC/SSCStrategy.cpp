@@ -104,8 +104,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("leotheras the blind stop attacking", ACTION_RAID + 4),
           NextAction("leotheras the blind select target for hold", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode("leotheras the blind should manage dps wait timers",
-        { NextAction("leotheras the blind manage dps wait timers", ACTION_EMERGENCY + 10) }));
+    triggers.push_back(new TriggerNode("leotheras the blind should manage dps hold timers",
+        { NextAction("leotheras the blind manage dps hold timers", ACTION_EMERGENCY + 10) }));
 
     // Fathom-Lord Karathress
     triggers.push_back(new TriggerNode("fathom-lord karathress targets should be tanked",

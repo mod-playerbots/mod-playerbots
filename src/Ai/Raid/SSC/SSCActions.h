@@ -293,11 +293,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindManageDpsWaitTimersAction : public Action
+class LeotherasTheBlindManageDpsHoldTimersAction : public Action
 {
 public:
-    LeotherasTheBlindManageDpsWaitTimersAction(PlayerbotAI* botAI)
-        : Action(botAI, "leotheras the blind manage dps wait timers") {}
+    LeotherasTheBlindManageDpsHoldTimersAction(PlayerbotAI* botAI)
+        : Action(botAI, "leotheras the blind manage dps hold timers") {}
     bool Execute(Event event) override;
 
 private:

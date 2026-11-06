@@ -103,16 +103,16 @@ bool HydrossTheUnstableDpsHoldIsActiveTrigger::IsActiveInEncounter()
     if (!hydross)
         return false;
 
-    HydrossDpsHoldWindow const window = GetHydrossDpsHoldWindow(hydross);
-    if (window == HydrossDpsHoldWindow::None)
-        return false;
-
     // Each phase tank holds attacking for its entire offphase and never in its assigned phase.
     bool const isFrostPhase = IsHydrossInFrostPhase(hydross);
     if (IsHydrossFrostTank(bot))
         return !isFrostPhase;
     if (IsHydrossNatureTank(bot))
         return isFrostPhase;
+
+    HydrossDpsHoldWindow const window = GetHydrossDpsHoldWindow(hydross);
+    if (window == HydrossDpsHoldWindow::None)
+        return false;
 
     // Add tanks are held off Hydross only, in both windows.
     if (IsHydrossAddTank(bot))
@@ -361,7 +361,7 @@ bool LeotherasTheBlindDpsHoldIsActiveTrigger::IsActiveInEncounter()
     return leotheras && IsLeotherasDpsHoldActive(botAI, leotheras);
 }
 
-bool LeotherasTheBlindShouldManageDpsWaitTimersTrigger::IsActiveInEncounter()
+bool LeotherasTheBlindShouldManageDpsHoldTimersTrigger::IsActiveInEncounter()
 {
     return IsMechanicTrackerBot(bot, SSC_MAP_ID) && FindThreatTarget(bot, "leotheras the blind");
 }
@@ -409,7 +409,7 @@ bool FathomLordKarathressShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 
 bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()
 {
-    if (SscState(bot->GetInstanceId()).karathressDpsWaitTimer)
+    if (SscState(bot->GetInstanceId()).karathressDpsHoldTimer)
         return false;
 
     return IsMechanicTrackerBot(bot, SSC_MAP_ID) && FindThreatTarget(bot, "fathom-lord karathress");

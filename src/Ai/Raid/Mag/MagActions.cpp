@@ -526,7 +526,7 @@ bool MagtheridonUpdateTimersAndAssignmentsAction::Execute(Event /*event*/)
 
     bool updated = false;
     updated |= EmplaceIfUnset(state.blastNovaTimer, now);
-    updated |= EmplaceIfUnset(state.magDpsWaitTimer, now);
+    updated |= EmplaceIfUnset(state.magDpsHoldTimer, now);
 
     if (magtheridon->GetHealthPct() < CEILING_COLLAPSE_HP_PCT && !state.ceilingCollapseApplied)
     {

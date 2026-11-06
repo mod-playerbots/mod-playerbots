@@ -305,11 +305,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindShouldManageDpsWaitTimersTrigger : public SscEncounterTrigger
+class LeotherasTheBlindShouldManageDpsHoldTimersTrigger : public SscEncounterTrigger
 {
 public:
-    LeotherasTheBlindShouldManageDpsWaitTimersTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "leotheras the blind should manage dps wait timers") {}
+    LeotherasTheBlindShouldManageDpsHoldTimersTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "leotheras the blind should manage dps hold timers") {}
 
 protected:
     bool IsActiveInEncounter() override;
