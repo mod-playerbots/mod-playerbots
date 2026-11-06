@@ -187,14 +187,13 @@ bool PortalAction::Execute(Event event)
         order = portals;
     }
 
+    if (allMode && !destination.empty() && !requested && ReserveUnknownCityReply(claimKey))
+        Tell(requester, "portal_unknown", "I don't know a portal to %destination", {{"%destination", destination}});
+
     // Every portal available is already claimed.
     SpellInfo const* portal = ReservePortal(claimKey, order);
     if (!portal)
         return false;
-
-    if (allMode && !destination.empty() && !requested && ReserveUnknownCityReply(claimKey))
-        Tell(requester, "portal_unknown", "I don't know a portal to %destination",
-{{"%destination", destination}});
 
     if (!HasReagents(portal))
     {
