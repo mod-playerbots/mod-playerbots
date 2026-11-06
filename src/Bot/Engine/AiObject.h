@@ -194,13 +194,6 @@ protected:
         bool IsActive() override;                                       \
     }
 
-#define PROTECT_TRIGGER(clazz, spell)                                   \
-    class clazz : public ProtectPartyMemberTrigger                      \
-    {                                                                   \
-    public:                                                             \
-        clazz(PlayerbotAI* botAI) : ProtectPartyMemberTrigger(botAI) {} \
-    }
-
 #define DEFLECT_TRIGGER(clazz, spell)                                    \
     class clazz : public DeflectSpellTrigger                             \
     {                                                                    \
@@ -405,13 +398,6 @@ protected:
     {                                                                            \
     public:                                                                      \
         clazz(PlayerbotAI* botAI) : CastCrowdControlSpellAction(botAI, spell) {} \
-    }
-
-#define PROTECT_ACTION(clazz, spell)                                        \
-    class clazz : public CastProtectSpellAction                             \
-    {                                                                       \
-    public:                                                                 \
-        clazz(PlayerbotAI* botAI) : CastProtectSpellAction(botAI, spell) {} \
     }
 
 #define BEGIN_SPELL_ACTION(clazz, name)  \
