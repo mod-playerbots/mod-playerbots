@@ -4,6 +4,7 @@ on:
     branches: [ "master", "test-staging" ]
   pull_request:
     branches: [ "master", "test-staging" ]
+    types: [opened, reopened, synchronize, ready_for_review]
 
 concurrency:
   group: "macos-build-${{ github.event.pull_request.number }}"
@@ -11,6 +12,7 @@ concurrency:
 
 jobs:
   macos-build:
+    if: '!github.event.pull_request.draft'
     strategy:
       fail-fast: false
       matrix:

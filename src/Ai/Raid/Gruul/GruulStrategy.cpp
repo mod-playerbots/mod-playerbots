@@ -11,7 +11,11 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Shared
     triggers.push_back(new TriggerNode("gruul's lair no encounter in progress",
-        { NextAction("gruul's lair reset encounter states", ACTION_EMERGENCY + 10) }));
+        { NextAction("gruul's lair reset encounter states", ACTION_EMERGENCY + 10),
+          NextAction("high king maulgar announce class roles", ACTION_EMERGENCY + 8) }));
+
+    triggers.push_back(new TriggerNode("gruul's lair class roles should be assigned",
+        { NextAction("gruul's lair assign class roles", ACTION_EMERGENCY + 9) }));
 
     // High King Maulgar
     triggers.push_back(new TriggerNode("high king maulgar three ogres need melee tanks",
