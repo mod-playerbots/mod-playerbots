@@ -1430,8 +1430,7 @@ Playerbots.RestrictedHealerDPSMaps = "33,34,36,43,47,48,70,90,109,129,209,229,23
 #
 
 # Randombots will behave more like real players (experimental)
-# This option will override Playerbots.AutoDoQuests, RandomBotTeleLowerLevel, and RandomBotTeleHigherLevel
-# (the latter two still apply to Playerbots.RandomBotConcentrateInPlayerZone)
+# This option will override Playerbots.AutoDoQuests
 # Default: 1 (enabled)
 Playerbots.EnableNewRpgStrategy = 1
 
@@ -1651,12 +1650,14 @@ Playerbots.TeleToDalaranWeight = 1
 Playerbots.RandomBotTeleportDistance = 100
 
 # How many levels below the lowest-level creature in a zone, can a bot be
-# With Playerbots.EnableNewRpgStrategy enabled, only Playerbots.RandomBotConcentrateInPlayerZone uses it
+# With Playerbots.EnableNewRpgStrategy enabled, it sets the grind-spot level margin and, with
+# Playerbots.RandomBotConcentrateInPlayerZone, the margin around the player's zone; teleport hubs ignore it otherwise
 # Default: 1 (randombot will leave if they are more than 1 level lower)
 Playerbots.RandomBotTeleLowerLevel = 1
 
 # How many levels above the highest-level creature in a zone, can a bot be
-# With Playerbots.EnableNewRpgStrategy enabled, only Playerbots.RandomBotConcentrateInPlayerZone uses it
+# With Playerbots.EnableNewRpgStrategy enabled, it sets the grind-spot level margin and, with
+# Playerbots.RandomBotConcentrateInPlayerZone, the margin around the player's zone; teleport hubs ignore it otherwise
 # Default: 3 (randombot will leave if they are more than 3 levels higher)
 Playerbots.RandomBotTeleHigherLevel = 3
 
