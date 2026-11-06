@@ -510,8 +510,9 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
     if (isTankAssist)
         return HasInnerDemon(bot) || IsLeotherasFinalPhase(botAI) ? 0.0f : 1.0f;
 
+    // AoE threat spells can also hit Demon Leo and pull threat from the Warlock tank.
     if (HasInnerDemon(bot))
-        return 1.0f;
+        return IsAoeThreatAction(bot, action) ? 0.0f : 1.0f;
 
     // Disable all spells from tanks in demon phase if there is a Warlock tank, other than shifting
     // into bear form. Allow auto attacks to build rage in case the tank gets an Inner Demon.
@@ -772,8 +773,8 @@ float FathomLordKarathressStartHoldDpsMultiplier::GetValueInEncounter(Action* ac
         return 1.0f;
     }
 
-    // AttackAction for healers is used only to keep them in their combat engines. Their damage,
-    // including from wanding, all comes from CastSpellAction.
+    // AttackAction keeps healers in their combat engines. A healer in melee range also swings, but
+    // the threat is negligible.
     if (PlayerbotAI::IsHeal(bot) && dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
