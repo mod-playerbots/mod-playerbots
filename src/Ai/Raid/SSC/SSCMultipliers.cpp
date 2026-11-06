@@ -501,12 +501,12 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
     if (!FindThreatTarget(bot, "leotheras the blind"))
         return 1.0f;
 
-    // Only the Shadow of Leotheras can be taunted, and it must stay on the Warlock tank if there is one.
+    // The Shadow of Leotheras can be taunted, and it must stay on the Warlock tank if there is one.
     if (isTaunt)
         return IsLeotherasFinalPhase(botAI) && !GetLeotherasWarlockTank(bot) ? 1.0f : 0.0f;
 
-    // Tanks can always cast spells to attack Inner Demons or in the final phase, as long as they do
-    // not target Demon Leo or Shadow Leo.
+    // Tanks stay on their Inner Demons and, in the final phase, on the boss, so they do not target
+    // Demon Leo or Shadow Leo.
     if (isTankAssist)
         return HasInnerDemon(bot) || IsLeotherasFinalPhase(botAI) ? 0.0f : 1.0f;
 
