@@ -24,91 +24,91 @@
 
 namespace
 {
-    using PortalClaims = std::unordered_map<uint32, time_t>;
-    std::mutex portalClaimsMutex;
-    std::unordered_map<uint64, PortalClaims> portalClaims;
-    constexpr time_t PORTAL_CLAIM_SECONDS = 70; // 10 sec cast + 60 sec portal uptime.
-    constexpr float PORTAL_MAX_REQUESTER_DISTANCE = 30.0f;
+using PortalClaims = std::unordered_map<uint32, time_t>;
+std::mutex portalClaimsMutex;
+std::unordered_map<uint64, PortalClaims> portalClaims;
+constexpr time_t PORTAL_CLAIM_SECONDS = 70;  // 10 sec cast + 60 sec portal uptime.
+constexpr float PORTAL_MAX_REQUESTER_DISTANCE = 30.0f;
 
-    // "Portal: Thunder Bluff" -> "thunder bluff"
-    std::string CityName(SpellInfo const* spellInfo)
+// "Portal: Thunder Bluff" -> "thunder bluff"
+std::string CityName(SpellInfo const* spellInfo)
+{
+    std::string name = spellInfo->SpellName[LOCALE_enUS];
+    std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
+
+    std::string const prefix = "portal: ";
+    if (name.rfind(prefix, 0) == 0)
+        name.erase(0, prefix.size());
+
+    return name;
+}
+
+// Exact name first, then a city starting with the text, then one containing it
+SpellInfo const* FindPortal(std::vector<SpellInfo const*> const& portals, std::string const& destination)
+{
+    for (SpellInfo const* spellInfo : portals)
+        if (CityName(spellInfo) == destination)
+            return spellInfo;
+
+    for (SpellInfo const* spellInfo : portals)
+        if (CityName(spellInfo).rfind(destination, 0) == 0)
+            return spellInfo;
+
+    for (SpellInfo const* spellInfo : portals)
+        if (CityName(spellInfo).find(destination) != std::string::npos)
+            return spellInfo;
+
+    return nullptr;
+}
+
+void CleanupPortalClaims(time_t now)
+{
+    for (auto groupIt = portalClaims.begin(); groupIt != portalClaims.end();)
     {
-        std::string name = spellInfo->SpellName[LOCALE_enUS];
-        std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
-
-        std::string const prefix = "portal: ";
-        if (name.rfind(prefix, 0) == 0)
-            name.erase(0, prefix.size());
-
-        return name;
-    }
-
-    // Exact name first, then a city starting with the text, then one containing it
-    SpellInfo const* FindPortal(std::vector<SpellInfo const*> const& portals, std::string const& destination)
-    {
-        for (SpellInfo const* spellInfo : portals)
-            if (CityName(spellInfo) == destination)
-                return spellInfo;
-
-        for (SpellInfo const* spellInfo : portals)
-            if (CityName(spellInfo).rfind(destination, 0) == 0)
-                return spellInfo;
-
-        for (SpellInfo const* spellInfo : portals)
-            if (CityName(spellInfo).find(destination) != std::string::npos)
-                return spellInfo;
-
-        return nullptr;
-    }
-
-    void CleanupPortalClaims(time_t now)
-    {
-        for (auto groupIt = portalClaims.begin(); groupIt != portalClaims.end();)
+        PortalClaims& claims = groupIt->second;
+        for (auto it = claims.begin(); it != claims.end();)
         {
-            PortalClaims& claims = groupIt->second;
-            for (auto it = claims.begin(); it != claims.end();)
-            {
-                if (it->second <= now)
-                    it = claims.erase(it);
-                else
-                    ++it;
-            }
-
-            if (claims.empty())
-                groupIt = portalClaims.erase(groupIt);
+            if (it->second <= now)
+                it = claims.erase(it);
             else
-                ++groupIt;
-        }
-    }
-
-    SpellInfo const* ReservePortal(uint64 key, std::vector<SpellInfo const*> const& order)
-    {
-        std::lock_guard<std::mutex> lock(portalClaimsMutex);
-        time_t const now = time(nullptr);
-
-        CleanupPortalClaims(now);
-        PortalClaims& claims = portalClaims[key];
-
-        for (SpellInfo const* candidate : order)
-        {
-            if (claims.count(candidate->Id))
-                continue;
-
-            claims[candidate->Id] = now + PORTAL_CLAIM_SECONDS;
-            return candidate;
+                ++it;
         }
 
-        return nullptr;
-    }
-
-    void ReleasePortal(uint64 key, uint32 spellId)
-    {
-        std::lock_guard<std::mutex> lock(portalClaimsMutex);
-        auto it = portalClaims.find(key);
-        if (it != portalClaims.end())
-            it->second.erase(spellId);
+        if (claims.empty())
+            groupIt = portalClaims.erase(groupIt);
+        else
+            ++groupIt;
     }
 }
+
+SpellInfo const* ReservePortal(uint64 key, std::vector<SpellInfo const*> const& order)
+{
+    std::lock_guard<std::mutex> lock(portalClaimsMutex);
+    time_t const now = time(nullptr);
+
+    CleanupPortalClaims(now);
+    PortalClaims& claims = portalClaims[key];
+
+    for (SpellInfo const* candidate : order)
+    {
+        if (claims.count(candidate->Id))
+            continue;
+
+        claims[candidate->Id] = now + PORTAL_CLAIM_SECONDS;
+        return candidate;
+    }
+
+    return nullptr;
+}
+
+void ReleasePortal(uint64 key, uint32 spellId)
+{
+    std::lock_guard<std::mutex> lock(portalClaimsMutex);
+    auto it = portalClaims.find(key);
+    if (it != portalClaims.end())
+        it->second.erase(spellId);
+}
+}  // namespace
 
 bool PortalAction::isUseful() { return bot->getClass() == CLASS_MAGE; }
 
@@ -120,7 +120,8 @@ bool PortalAction::Execute(Event event)
 
     std::string destination = event.getParam();
     trim(destination);
-    std::transform(destination.begin(), destination.end(), destination.begin(), [](unsigned char c) { return std::tolower(c); });
+    std::transform(destination.begin(), destination.end(), destination.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
 
     bool const allMode = destination == "all" || destination.rfind("all ", 0) == 0;
     if (allMode)
@@ -131,7 +132,7 @@ bool PortalAction::Execute(Event event)
 
     std::vector<SpellInfo const*> portals = GetKnownPortals();
     std::sort(portals.begin(), portals.end(),
-        [](SpellInfo const* lhs, SpellInfo const* rhs) { return lhs->Id < rhs->Id; });
+              [](SpellInfo const* lhs, SpellInfo const* rhs) { return lhs->Id < rhs->Id; });
 
     if (portals.empty())
     {
@@ -180,7 +181,7 @@ bool PortalAction::Execute(Event event)
         return false;
 
     if (allMode && !destination.empty() && !requested && portal == order.front())
-        Tell(requester, "portal_unknown", "I don't know a portal to %destination",{{"%destination", destination}});
+        Tell(requester, "portal_unknown", "I don't know a portal to %destination", {{"%destination", destination}});
 
     if (!HasReagents(portal))
     {

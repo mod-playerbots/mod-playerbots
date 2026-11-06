@@ -18,4 +18,3 @@ INSERT INTO ai_playerbot_texts_chance (name, probability) VALUES
     ('portal_no_reagents', 100),
     ('portal_cannot_cast', 100),
     ('portal_casting', 100);
-    
