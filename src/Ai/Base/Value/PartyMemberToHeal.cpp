@@ -26,8 +26,6 @@ public:
     }
 };
 
-inline bool compareByHealth(Unit const* u1, Unit const* u2) { return u1->GetHealthPct() < u2->GetHealthPct(); }
-
 Unit* PartyMemberToHeal::Calculate()
 {
     IsTargetOfHealingSpell predicate;
@@ -177,37 +175,22 @@ Unit* PartyMemberToProtect::Calculate()
     if (!group)
         return nullptr;
 
-    std::vector<Unit*> needProtect;
+    constexpr float protectHealthPct = 30.0f;
+    MinValueCalculator calc(protectHealthPct);
 
-    GuidVector attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
-    for (GuidVector::iterator i = attackers.begin(); i != attackers.end(); ++i)
+    for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
     {
-        Unit* unit = botAI->GetUnit(*i);
-        if (!unit)
+        Player* player = gref->GetSource();
+        if (!player || player == bot)
+            continue;
+        if (player->IsGameMaster() || !player->IsAlive())
             continue;
 
-        Unit* pVictim = unit->GetVictim();
-        if (!pVictim || !pVictim->IsPlayer())
-            continue;
-
-        if (pVictim == bot)
-            continue;
-
-        float attackDistance = 30.0f;
-        if (ServerFacade::instance().GetDistance2d(pVictim, unit) > attackDistance)
-            continue;
-
-        if (PlayerbotAI::IsTank((Player*)pVictim) || pVictim->GetHealthPct() > 30)
-            continue;
-
-        if (find(needProtect.begin(), needProtect.end(), pVictim) == needProtect.end())
-            needProtect.push_back(pVictim);
+        float health = player->GetHealthPct();
+        if (health < calc.minValue && player->IsInMap(bot) && !player->getAttackers().empty() &&
+            !PlayerbotAI::IsTank(player) && Check(player))
+            calc.probe(health, player);
     }
 
-    if (needProtect.empty())
-        return nullptr;
-
-    sort(needProtect.begin(), needProtect.end(), compareByHealth);
-
-    return needProtect[0];
+    return static_cast<Unit*>(calc.param);
 }
