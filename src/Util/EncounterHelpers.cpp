@@ -925,16 +925,8 @@ bool StopAttackingTarget(Player* bot, Unit const& target)
 
 void StandDown(PlayerbotAI* botAI)
 {
-    Player* bot = botAI->GetBot();
-    // Not duplicative of StopAttackingTarget, which calls AttackStop only when the bot's victim is
-    // its current target. They can differ if the target is cleared or changed without Attack().
-    bot->AttackStop();
-
-    auto* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target");
-    if (Unit* target = currentTarget->Get())
-        StopAttackingTarget(bot, *target);
-
-    currentTarget->Set(nullptr);
+    StopAttackingAndChanneling(botAI->GetBot());
+    botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Set(nullptr);
 }
 
 bool SelectTarget(PlayerbotAI* botAI, Unit* target)

@@ -226,7 +226,7 @@ bool StopAttackingAndChanneling(Player* bot);
 // target enemy or on the ground at enemies, so channeled heals continue. Returns true if anything
 // is stopped.
 bool StopAttackingTarget(Player* bot, Unit const& target);
-// Ends the bot's swing on any unit, then calls StopAttackingTarget and clears the current target.
+// Calls StopAttackingAndChanneling and clears the current target.
 void StandDown(PlayerbotAI* botAI);
 // Activate the bot's combat engine and set its current target without attacking or sending a pet.
 // A multiplier is needed to keep the bot from attacking the target right after selection. Returns
