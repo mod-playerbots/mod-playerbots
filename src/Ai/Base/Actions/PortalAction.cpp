@@ -27,7 +27,7 @@ namespace
     using PortalClaims = std::unordered_map<uint32, time_t>;
     std::mutex portalClaimsMutex;
     std::unordered_map<uint64, PortalClaims> portalClaims;
-    constexpr time_t PORTAL_CLAIM_SECONDS = 60;
+    constexpr time_t PORTAL_CLAIM_SECONDS = 70; // 10 sec cast + 60 sec portal uptime.
     constexpr float PORTAL_MAX_REQUESTER_DISTANCE = 30.0f;
 
     // "Portal: Thunder Bluff" -> "thunder bluff"
@@ -135,7 +135,7 @@ bool PortalAction::Execute(Event event)
 
     if (portals.empty())
     {
-        Tell("portal_none_known", "I don't know any portals");
+        Tell(requester, "portal_none_known", "I don't know any portals");
         return false;
     }
 
@@ -146,14 +146,14 @@ bool PortalAction::Execute(Event event)
         for (SpellInfo const* spellInfo : portals)
             list += ChatHelper::FormatSpell(spellInfo) + " ";
 
-        Tell("portal_list", "I can open portals to: %portals", {{"%portals", list}});
+        Tell(requester, "portal_list", "I can open portals to: %portals", {{"%portals", list}});
         return true;
     }
 
     SpellInfo const* requested = destination.empty() ? nullptr : FindPortal(portals, destination);
     if (!allMode && !requested)
     {
-        Tell("portal_unknown", "I don't know a portal to %destination", {{"%destination", destination}});
+        Tell(requester, "portal_unknown", "I don't know a portal to %destination", {{"%destination", destination}});
         return false;
     }
 
@@ -179,10 +179,13 @@ bool PortalAction::Execute(Event event)
     if (!portal)
         return false;
 
+    if (allMode && !destination.empty() && !requested && portal == order.front())
+        Tell(requester, "portal_unknown", "I don't know a portal to %destination",{{"%destination", destination}});
+
     if (!HasReagents(portal))
     {
         ReleasePortal(claimKey, portal->Id);
-        Tell("portal_no_reagents", "I need a Rune of Portals for %portal",
+        Tell(requester, "portal_no_reagents", "I need a Rune of Portals for %portal",
              {{"%portal", ChatHelper::FormatSpell(portal)}});
         return false;
     }
@@ -201,12 +204,12 @@ bool PortalAction::Execute(Event event)
     if (!botAI->CastSpell(portal->Id, bot))
     {
         ReleasePortal(claimKey, portal->Id);
-        Tell("portal_cannot_cast", "I cannot open %portal right now",
+        Tell(requester, "portal_cannot_cast", "I cannot open %portal right now",
              {{"%portal", ChatHelper::FormatSpell(portal)}});
         return false;
     }
 
-    Tell("portal_casting", "Opening %portal", {{"%portal", ChatHelper::FormatSpell(portal)}});
+    Tell(requester, "portal_casting", "Opening %portal", {{"%portal", ChatHelper::FormatSpell(portal)}});
     return true;
 }
 
@@ -238,8 +241,12 @@ bool PortalAction::HasReagents(SpellInfo const* spellInfo) const
     return true;
 }
 
-void PortalAction::Tell(std::string const& key, std::string const& defaultText,
+void PortalAction::Tell(Player* requester, std::string const& key, std::string const& defaultText,
                         std::map<std::string, std::string> const& placeholders)
 {
-    botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(key, defaultText, placeholders));
+    std::string const text = PlayerbotTextMgr::instance().GetBotTextOrDefault(key, defaultText, placeholders);
+    if (requester && requester != GetMaster())
+        botAI->Whisper(text, requester->GetName());
+    else
+        botAI->TellMasterNoFacing(text);
 }

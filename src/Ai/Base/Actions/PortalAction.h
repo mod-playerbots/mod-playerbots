@@ -26,7 +26,7 @@ public:
 private:
     std::vector<SpellInfo const*> GetKnownPortals() const;
     bool HasReagents(SpellInfo const* spellInfo) const;
-    void Tell(std::string const& key, std::string const& defaultText,
+    void Tell(Player* requester, std::string const& key, std::string const& defaultText,
               std::map<std::string, std::string> const& placeholders = {});
 };
 
