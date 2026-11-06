@@ -313,10 +313,7 @@ float HydrossTheUnstableHoldDpsMultiplier::GetValueInEncounter(Action* action)
 
     // Add tanks stay off Hydross but keep tanking adds.
     if (IsHydrossAddTank(bot))
-    {
-        return GetActionTargetOrCurrentTarget(botAI, action) == hydross ?
-            GetDpsHoldValue(bot, action) : 1.0f;
-    }
+        return action->GetTarget() == hydross ? GetDpsHoldValue(bot, action) : 1.0f;
 
     return PlayerbotAI::IsTank(bot) ? 1.0f : GetDpsHoldValue(bot, action);
 }
@@ -790,10 +787,10 @@ float FathomLordKarathressBlessingHoldDpsMultiplier::GetValueInEncounter(Action*
         return 1.0f;
     }
 
+    // Totems target the bot itself, but fire totems can attack Karathress.
     Unit* karathress = FindThreatTarget(bot, "fathom-lord karathress");
-
-    Unit* target = GetActionTargetOrCurrentTarget(botAI, action);
-    return target == karathress ? GetDpsHoldValue(bot, action) : 1.0f;
+    return action->GetTarget() == karathress || dynamic_cast<CastTotemAction*>(action) ?
+        GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action* action)

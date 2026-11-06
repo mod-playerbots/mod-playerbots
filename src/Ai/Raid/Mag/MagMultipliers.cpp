@@ -55,7 +55,15 @@ float MagtheridonHoldDpsMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    return IsMagtheridonDpsHoldActive(bot, magtheridon) ? GetDpsHoldValue(bot, action) : 1.0f;
+    if (!IsMagtheridonDpsHoldActive(bot, magtheridon))
+        return 1.0f;
+
+    // It is technically possible to take so long that Magtheridon releases before all of the
+    // Channelers die, if you are doing something like fighting him with no weapons equipped.
+    if (IsAnyChannelerAlive(bot) && action->GetTarget() != magtheridon)
+        return 1.0f;
+
+    return GetDpsHoldValue(bot, action);
 }
 
 // Between the last Channeler's death and Magtheridon's release, bots keep their dead targets so

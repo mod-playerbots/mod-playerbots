@@ -200,10 +200,6 @@ bool IsAoeThreatAction(Player* bot, Action* action);
 bool IsDpsHoldCandidate(Player* bot, Action* action);
 // Healing, buffs etc. go through a dps hold. Totems don't because some are offensive.
 float GetDpsHoldValue(Player* bot, Action* action);
-// For holding dps assist, tank assist, and/or secondary dots on attackers against a single unit.
-// Such actions have target values of their own that can differ from the current target. Thus, we
-// must check the unit that the hold covers against the unit that a held action would hit.
-Unit* GetActionTargetOrCurrentTarget(PlayerbotAI* botAI, Action* action);
 
 // Stopping Attacks and Spells
 

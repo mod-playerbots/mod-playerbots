@@ -1356,7 +1356,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastation
     // Just in case melee ends up on the axe despite the priority list leaving them off. The
     // priority loop then picks the next weapon.
     if (isMeleeDps && AI_VALUE(Unit*, "current target") == axe)
-        StopAttackingTarget(bot, *axe);
+        StandDown(botAI);
 
     return result;
 }

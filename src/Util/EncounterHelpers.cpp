@@ -466,7 +466,10 @@ bool GetPathStepTowardPoint(
             if (fromDist <= stopDistance)
                 break;
 
-            ratio = (fromDist - stopDistance) / (fromDist - toDist);
+            float const a = segment * segment;
+            float const b = (from - targetPos).dot(to - from);
+            float const c = fromDist * fromDist - stopDistance * stopDistance;
+            ratio = (-b - std::sqrt(std::max(0.0f, b * b - a * c))) / a;
         }
 
         if (segment * ratio >= remaining)
@@ -809,18 +812,6 @@ float GetDpsHoldValue(Player* bot, Action* action)
         dynamic_cast<CastProtectSpellAction*>(action);
 
     return castOnRaidSpell ? 1.0f : 0.0f;
-}
-
-Unit* GetActionTargetOrCurrentTarget(PlayerbotAI* botAI, Action* action)
-{
-    if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ||
-        dynamic_cast<CastDebuffSpellOnMeleeAttackerAction*>(action))
-    {
-        return action->GetTarget();
-    }
-
-    return botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
 }
 
 // Stopping Attacks and Spells
