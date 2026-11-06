@@ -35,7 +35,7 @@ constexpr uint32 SPELL_NERVES_OF_COLD_STEEL = 50138;
 constexpr uint32 SPELL_SHADOW_FOCUS = 15835;
 constexpr uint32 SPELL_ARCANE_FOCUS = 12840;
 
-// Racial weapon specializations in 3.3.5: expertise in points, ranged crit in percent
+// Racial weapon specializations, expertise in points, ranged crit in percent
 constexpr float RACIAL_EXPERTISE_ORC_AXE_FIST = 5.0f;
 constexpr float RACIAL_EXPERTISE_HUMAN_SWORD_MACE = 3.0f;
 constexpr float RACIAL_EXPERTISE_DWARF_MACE = 5.0f;
@@ -1126,8 +1126,6 @@ void StatsWeightCalculator::ApplyRacialWeaponBonus(ItemTemplate const* proto)
     float expertisePoints = 0.0f;
     float critPct = 0.0f;
 
-    // Racial weapon specializations are added to the item's stats, as if the weapon had them.
-    // Troll Throwing Specialization is left out: RANGED is hunters only, and they value thrown weapons at 0.1
     switch (player_->getRace(true))
     {
         case RACE_ORC:  // Orc Axe Specialization
