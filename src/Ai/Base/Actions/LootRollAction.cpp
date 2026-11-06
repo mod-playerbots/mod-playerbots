@@ -65,12 +65,14 @@ bool LootRollAction::Execute(Event /*event*/)
                 case ITEM_CLASS_WEAPON:
                 case ITEM_CLASS_ARMOR:
                     if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
-                        // The bot is thinking of equipping the item, make sure it doesn't roll NEED on unique-equip items it already has copies of.
-                        // Fall back to disenchant logic instead if it already has a copy of a unique-equip item.
-                        if (RollUniqueCheck(proto, bot))
-                            vote = sPlayerbotAIConfig.LootRollDisenchant ? DISENCHANT : GREED;
-                        else
+                    {
+                        if (!RollUniqueCheck(proto, bot))
                             vote = NEED;
+                        else if (sPlayerbotAIConfig.LootRollDisenchant && CanBotDisenchant(proto, bot))
+                            vote = DISENCHANT;
+                        else
+                            vote = GREED;
+                    }
                     else if (usage != ITEM_USAGE_NONE)
                         vote = GREED;
                     break;
@@ -201,14 +203,17 @@ bool CanBotUseToken(ItemTemplate const* proto, Player* bot)
 
 bool RollUniqueCheck(ItemTemplate const* proto, Player* bot)
 {
-    // Check for both unique-equip and generic uniqueness.
-    // Standard item_template database have no equippable items with MaxCount > 1.
-    // Return true if the bot already has any of these items in any inventory, including
-    // their bank.
     if (proto->HasFlag(ITEM_FLAG_UNIQUE_EQUIPPABLE) || proto->MaxCount == 1)
         return (bot->GetItemCount(proto->ItemId, true) > 0);
 
     return false;
+}
+
+bool CanBotDisenchant(ItemTemplate const* proto, Player* bot)
+{
+    // A DE win on an item without DisenchantID destroys it
+    return proto->DisenchantID && proto->Bonding == BIND_WHEN_PICKED_UP && bot->HasSkill(SKILL_ENCHANTING) &&
+           bot->GetSkillValue(SKILL_ENCHANTING) >= proto->RequiredDisenchantSkill;
 }
 
 bool RollAction::Execute(Event event)
