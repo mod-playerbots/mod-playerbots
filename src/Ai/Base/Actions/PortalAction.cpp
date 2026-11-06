@@ -29,6 +29,7 @@ std::mutex portalClaimsMutex;
 std::unordered_map<uint64, PortalClaims> portalClaims;
 constexpr time_t PORTAL_CLAIM_SECONDS = 70;  // 10 sec cast + 60 sec portal uptime.
 constexpr float PORTAL_MAX_REQUESTER_DISTANCE = 30.0f;
+constexpr time_t UNKNOWN_CITY_REPLY_SECONDS = 5;
 
 // "Portal: Thunder Bluff" -> "thunder bluff"
 std::string CityName(SpellInfo const* spellInfo)
@@ -99,6 +100,17 @@ SpellInfo const* ReservePortal(uint64 key, std::vector<SpellInfo const*> const& 
     }
 
     return nullptr;
+}
+
+// One mage per group reports an unknown city in "portal all <city>"
+bool ReserveUnknownCityReply(uint64 key)
+{
+    std::lock_guard<std::mutex> lock(portalClaimsMutex);
+    time_t const now = time(nullptr);
+
+    CleanupPortalClaims(now);
+    // Spell id 0 is never a portal, so it can mark the reply
+    return portalClaims[key].emplace(0, now + UNKNOWN_CITY_REPLY_SECONDS).second;
 }
 
 void ReleasePortal(uint64 key, uint32 spellId)
@@ -180,8 +192,9 @@ bool PortalAction::Execute(Event event)
     if (!portal)
         return false;
 
-    if (allMode && !destination.empty() && !requested && portal == order.front())
-        Tell(requester, "portal_unknown", "I don't know a portal to %destination", {{"%destination", destination}});
+    if (allMode && !destination.empty() && !requested && ReserveUnknownCityReply(claimKey))
+        Tell(requester, "portal_unknown", "I don't know a portal to %destination",
+{{"%destination", destination}});
 
     if (!HasReagents(portal))
     {
