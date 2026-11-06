@@ -780,12 +780,8 @@ float FathomLordKarathressStartHoldDpsMultiplier::GetValueInEncounter(Action* ac
 
 float FathomLordKarathressBlessingHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!IsDpsHoldCandidate(bot, action) ||
-        dynamic_cast<FathomLordKarathressAssignDpsPriorityAction*>(action) ||
-        !IsKarathressBlessingHoldActive(bot))
-    {
+    if (!IsDpsHoldCandidate(bot, action) || !IsKarathressBlessingHoldActive(bot))
         return 1.0f;
-    }
 
     // Totems target the bot itself, but fire totems can attack Karathress.
     Unit* karathress = FindThreatTarget(bot, "fathom-lord karathress");
