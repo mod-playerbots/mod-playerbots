@@ -132,12 +132,9 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     }
 
     float dis = bot->GetExactDist(dest);
-    // TEMP-DEBUG (water recovery diagnosis): remove after validation.
-    LOG_DEBUG("playerbots", "[New RPG-DBG] {} MoveFarTo to ({:.0f},{:.0f},{:.0f}) dis={:.0f} newDest={}", bot->GetName(),
-              dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), dis, newDest);
+
     if (dis < pathFinderDis)
     {
-        LOG_DEBUG("playerbots", "[New RPG-DBG] {} MoveFarTo: direct branch (<70yd)", bot->GetName()); // TEMP-DEBUG
         return MoveTo(dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), false, false,
                       false, true);
     }
@@ -160,9 +157,7 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         path.CalculatePath(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ());
         PathType type = path.GetPathType();
         bool canReach = !(type & (~typeOk));
-        // TEMP-DEBUG (water recovery diagnosis): remove after validation.
-        LOG_DEBUG("playerbots", "[New RPG-DBG] {} MoveFarTo mmap: type={} canReach={}", bot->GetName(),
-                  uint32(type), canReach);
+
         if (canReach)
         {
             G3D::Vector3 const& endPos = path.GetActualEndPosition();
@@ -174,11 +169,8 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
             float endDistToDest = dest.GetExactDist(endPos.x, endPos.y, endPos.z);
             if (endDistToDest + 5.0f < disToDest)
             {
-                LOG_DEBUG("playerbots", "[New RPG-DBG] {} MoveFarTo: committing mmap endpoint", bot->GetName()); // TEMP-DEBUG
                 return MoveTo(bot->GetMapId(), endPos.x, endPos.y, endPos.z, false, false, false, true);
             }
-            LOG_DEBUG("playerbots", "[New RPG-DBG] {} MoveFarTo: mmap endpoint no progress ({:.0f} >= {:.0f})",
-                      bot->GetName(), endDistToDest, disToDest); // TEMP-DEBUG
         }
     }
 
@@ -219,10 +211,8 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     }
     if (found)
     {
-        LOG_DEBUG("playerbots", "[New RPG-DBG] {} MoveFarTo: cone sample commit", bot->GetName()); // TEMP-DEBUG
         return MoveTo(bot->GetMapId(), rx, ry, rz, false, false, false, true);
     }
-    LOG_DEBUG("playerbots", "[New RPG-DBG] {} MoveFarTo: giving up (no mmap path, no cone sample)", bot->GetName()); // TEMP-DEBUG
     return false;
 }
 
@@ -1015,9 +1005,7 @@ bool NewRpgBaseAction::UpdateFatigueRecovery()
     {
         botAI->rpgInfo.fatigueMs = std::min<uint32>(botAI->rpgInfo.fatigueMs + dt, fatigueMsMax);
         bool const shouldRecover = sPlayerbotAIConfig.RpgAreaRecovery && botAI->rpgInfo.fatigueMs >= fatigueMsMax / 2;
-        // TEMP-DEBUG (water recovery diagnosis): remove after validation.
-        LOG_DEBUG("playerbots", "[New RPG] {} fatigueMs {} / {} (dt {})", bot->GetName(), botAI->rpgInfo.fatigueMs,
-                  fatigueMsMax, dt);
+
         return shouldRecover;
     }
 

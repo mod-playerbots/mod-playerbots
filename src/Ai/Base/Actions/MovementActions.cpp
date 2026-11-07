@@ -172,17 +172,14 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool /*idle
     UpdateMovementState();
     if (!IsMovingAllowed())
     {
-        LOG_DEBUG("playerbots", "[New RPG-DBG] MoveTo blocked: not allowed"); // TEMP-DEBUG
         return false;
     }
     if (IsDuplicateMove(x, y, z))
     {
-        LOG_DEBUG("playerbots", "[New RPG-DBG] MoveTo blocked: duplicate move"); // TEMP-DEBUG
         return false;
     }
     if (IsWaitingForLastMove(priority))
     {
-        LOG_DEBUG("playerbots", "[New RPG-DBG] MoveTo blocked: waiting for last move"); // TEMP-DEBUG
         return false;
     }
 
@@ -1775,9 +1772,6 @@ void MovementAction::DoMovePoint(Unit* unit, float x, float y, float z, bool gen
         unit->UpdatePosition(unit->GetPositionX(), unit->GetPositionY(), gZ, false);
     }
 
-    // TEMP-DEBUG (water recovery diagnosis): remove after validation.
-    LOG_DEBUG("playerbots", "[New RPG-DBG] {} DoMovePoint -> ({:.0f},{:.0f},{:.0f}) genPath={}", unit->GetName(), x, y,
-              z, generatePath);
     mm->Clear();
     if (backwards)
     {
