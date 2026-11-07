@@ -967,7 +967,11 @@ bool NewRpgBaseAction::UpdateFatigueRecovery()
     if (IsInFatigueWater())
     {
         botAI->rpgInfo.fatigueMs = std::min<uint32>(botAI->rpgInfo.fatigueMs + dt, fatigueMsMax);
-        return sPlayerbotAIConfig.RpgAreaRecovery && botAI->rpgInfo.fatigueMs >= fatigueMsMax / 2;
+        bool const shouldRecover = sPlayerbotAIConfig.RpgAreaRecovery && botAI->rpgInfo.fatigueMs >= fatigueMsMax / 2;
+        // TEMP-DEBUG (water recovery diagnosis): remove after validation.
+        LOG_DEBUG("playerbots", "[New RPG] {} fatigueMs {} / {} (dt {})", bot->GetName(), botAI->rpgInfo.fatigueMs,
+                  fatigueMsMax, dt);
+        return shouldRecover;
     }
 
     botAI->rpgInfo.fatigueMs -= std::min<uint32>(botAI->rpgInfo.fatigueMs, 10 * dt);
@@ -977,8 +981,8 @@ bool NewRpgBaseAction::UpdateFatigueRecovery()
 bool NewRpgBaseAction::RecoverToRpgArea()
 {
     // The bot is somewhere RPG progression cannot continue (e.g. swimming in dark water with
-    // the fatigue bar half drained): walk/swim back to the nearest regular anchor so normal
-    // behaviour can resume. Travelled via the camp status, which brings its own stuck handling.
+    // the fatigue bar half drained): get back to the nearest regular anchor so normal behaviour
+    // can resume.
     WorldPosition anchor = FindRecoveryAnchor();
     if (anchor == WorldPosition())
         return false;
@@ -988,6 +992,20 @@ bool NewRpgBaseAction::RecoverToRpgArea()
               "[New RPG] {} recovering from zone {} ({}) to anchor Map:{} X:{} Y:{} Z:{} ({:.0f} yd away)",
               bot->GetName(), bot->GetZoneId(), PlayerbotAI::GetLocalizedAreaName(zoneEntry), anchor.GetMapId(),
               anchor.GetPositionX(), anchor.GetPositionY(), anchor.GetPositionZ(), bot->GetExactDist(anchor));
+
+    // A drowning bot cannot afford the walk: far swimming moves are path-gated and the fatigue
+    // bar empties (DAMAGE_EXHAUSTED) long before the 90s stuck fallback would fire. Teleport
+    // straight to the anchor; the camp status then resumes normal behaviour there.
+    if (IsInFatigueWater())
+    {
+        LOG_DEBUG("playerbots", "[New RPG] {} in dark water - teleporting to recovery anchor", bot->GetName());
+        botAI->rpgInfo.ChangeToGoCamp(anchor);
+        bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
+        return bot->TeleportTo(anchor);
+    }
+
+    // On land the walk is fine; travelled via the camp status, which brings its own stuck
+    // handling.
     botAI->rpgInfo.ChangeToGoCamp(anchor);
     return true;
 }
