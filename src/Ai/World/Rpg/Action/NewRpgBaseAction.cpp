@@ -142,7 +142,8 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
                       false, true);
     }
 
-    const uint32 typeOk = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY;
+    const uint32 typeOk = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY |
+                          PATHFIND_NOT_USING_PATH;
 
     // Primary strategy: ask mmap for a route to the TRUE destination.
     // If mmap can reach it directly (PATHFIND_NORMAL) or partially
