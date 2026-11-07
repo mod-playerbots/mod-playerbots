@@ -9,6 +9,7 @@
 #include "MotionMaster.h"
 #include "MoveSpline.h"
 #include "ObjectAccessor.h"
+#include "Pet.h"
 #include "Playerbots.h"
 #include "SSCActions.h"
 #include "SSCHelpers.h"
@@ -96,35 +97,33 @@ bool HydrossTheUnstableShouldMisdirectUponPhaseChangeTrigger::IsActiveInEncounte
     return IsHydrossInFrostPhase(hydross) ? HasNoMarkOfHydross(bot) : HasNoMarkOfCorruption(bot);
 }
 
-bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActiveInEncounter()
+bool HydrossTheUnstableDpsHoldIsActiveTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsDps(bot))
-        return false;
-
     Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
     if (!hydross)
         return false;
+
+    // Each phase tank holds attacking for its entire offphase and never in its assigned phase.
+    bool const isFrostPhase = IsHydrossInFrostPhase(hydross);
+    if (IsHydrossFrostTank(bot))
+        return !isFrostPhase;
+    if (IsHydrossNatureTank(bot))
+        return isFrostPhase;
 
     HydrossDpsHoldWindow const window = GetHydrossDpsHoldWindow(hydross);
-    return window == HydrossDpsHoldWindow::BeforePhaseChange ||
-        (window == HydrossDpsHoldWindow::AfterPhaseChange && bot->getClass() != CLASS_HUNTER);
-}
-
-bool HydrossTheUnstableOffPhaseTankAttackingTrigger::IsActiveInEncounter()
-{
-    if (!PlayerbotAI::IsTank(bot))
+    if (window == HydrossDpsHoldWindow::None)
         return false;
 
-    Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
-    if (!hydross)
-        return false;
+    // Add tanks are held off Hydross only, in both windows.
+    if (IsHydrossAddTank(bot))
+        return true;
 
-    bool const isOffPhaseTank =
-        IsHydrossInFrostPhase(hydross) ? IsHydrossNatureTank(bot) : IsHydrossFrostTank(bot);
-    if (!isOffPhaseTank)
-        return false;
+    // The after phase change window excludes hunters (for Misdirection).
+    if (window == HydrossDpsHoldWindow::AfterPhaseChange)
+        return bot->getClass() != CLASS_HUNTER;
 
-    return bot->GetVictim() == hydross || AI_VALUE(Unit*, "current target") == hydross;
+    // The before change window stops everybody other than the active phase tank.
+    return window == HydrossDpsHoldWindow::BeforePhaseChange;
 }
 
 bool HydrossTheUnstableShouldManagePhaseTimersTrigger::IsActiveInEncounter()
@@ -249,21 +248,6 @@ bool LeotherasTheBlindWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
     return IsLeotherasWarlockTank(bot);
 }
 
-bool LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger::IsActiveInEncounter()
-{
-    if (!PlayerbotAI::IsTank(bot))
-        return false;
-
-    if (!FindThreatTarget(bot, "leotheras the blind"))
-        return false;
-
-    if (HasInnerDemon(bot) || !GetLeotherasDemon(botAI))
-        return false;
-
-    // If there is no Warlock tank, then traditional tanks will have to tank the demon form.
-    return GetLeotherasWarlockTank(bot);
-}
-
 bool LeotherasTheBlindRangedShouldKeepDistanceTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
@@ -323,11 +307,8 @@ bool LeotherasTheBlindInnerDemonHasAwakenedTrigger::IsActiveInEncounter()
     return HasInnerDemon(bot);
 }
 
-bool LeotherasTheBlindInFinalPhaseTrigger::IsActiveInEncounter()
+bool LeotherasTheBlindShouldFocusBossInFinalPhaseTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsHeal(bot))
-        return false;
-
     if (!FindThreatTarget(bot, "leotheras the blind"))
         return false;
 
@@ -371,16 +352,16 @@ bool LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger::IsActiveInEncounter
     return GetLeotherasDemonOrShadow(botAI);
 }
 
-bool LeotherasTheBlindAggroResetsTrigger::IsActiveInEncounter()
+bool LeotherasTheBlindDpsHoldIsActiveTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsMelee(bot) || HasInnerDemon(bot))
+    if (HasInnerDemon(bot))
         return false;
 
     Unit* leotheras = FindThreatTarget(bot, "leotheras the blind");
     return leotheras && IsLeotherasDpsHoldActive(botAI, leotheras);
 }
 
-bool LeotherasTheBlindShouldManageDpsWaitTimersTrigger::IsActiveInEncounter()
+bool LeotherasTheBlindShouldManageDpsHoldTimersTrigger::IsActiveInEncounter()
 {
     return IsMechanicTrackerBot(bot, SSC_MAP_ID) && FindThreatTarget(bot, "leotheras the blind");
 }
@@ -428,10 +409,19 @@ bool FathomLordKarathressShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 
 bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()
 {
-    if (SscState(bot->GetInstanceId()).karathressDpsWaitTimer)
+    if (SscState(bot->GetInstanceId()).karathressDpsHoldTimer)
         return false;
 
     return IsMechanicTrackerBot(bot, SSC_MAP_ID) && FindThreatTarget(bot, "fathom-lord karathress");
+}
+
+bool FathomLordKarathressPetsShouldBeHeldTrigger::IsActiveInEncounter()
+{
+    Pet* pet = bot->GetPet();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    return IsKarathressBlessingHoldActive(bot) != pet->HasReactState(REACT_PASSIVE);
 }
 
 bool FathomLordKarathressRangedShouldSpreadTrigger::IsActiveInEncounter()

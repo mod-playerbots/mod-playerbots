@@ -51,24 +51,38 @@ float MagtheridonUseManticronCubeMultiplier::GetValueInEncounter(Action* action)
 
 float MagtheridonHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<AttackAction*>(action) && !dynamic_cast<CastSpellAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<CastHealingSpellAction*>(action))
+    if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon || !IsMagtheridonActive(magtheridon))
+    if (!IsMagtheridonDpsHoldActive(bot, magtheridon))
         return 1.0f;
 
-    if (PlayerbotAI::IsMainTank(bot))
+    // It is technically possible to take so long that Magtheridon releases before all of the
+    // Channelers die, if you are doing something like fighting him with no weapons equipped.
+    if (IsAnyChannelerAlive(bot) && action->GetTarget() != magtheridon)
         return 1.0f;
 
-    std::optional<uint32> const& waitStart = MagState(magtheridon->GetInstanceId()).magDpsWaitTimer;
-    if (!waitStart)
-        return 0.0f;
+    return GetDpsHoldValue(bot, action);
+}
 
-    return getMSTimeDiff(*waitStart, getMSTime()) <= MAG_DPS_HOLD_MS ? 0.0f : 1.0f;
+// Between the last Channeler's death and Magtheridon's release, bots keep their dead targets so
+// they stay in their combat engines.
+float MagtheridonKeepInCombatBeforeReleaseMultiplier::GetValueInEncounter(Action* action)
+{
+    bool const isDropTarget = dynamic_cast<DropTargetAction*>(action);
+    if (!isDropTarget && !dynamic_cast<ReachTargetAction*>(action))
+        return 1.0f;
+
+    if (!isDropTarget)
+    {
+        Unit* target = action->GetTarget();
+        if (!target || target->IsAlive())
+            return 1.0f;
+    }
+
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    return IsMagtheridonReleasePending(bot, magtheridon) ? 0.0f : 1.0f;
 }
 
 float MagtheridonControlTankActionsMultiplier::GetValueInEncounter(Action* action)

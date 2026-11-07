@@ -5,12 +5,11 @@
  */
 
 #include "SSCActions.h"
-#include "CharmInfo.h"
-#include "CreatureAI.h"
 #include "EncounterHelpers.h"
 #include "MotionMaster.h"
 #include "MoveSpline.h"
 #include "ObjectAccessor.h"
+#include "Pet.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "SSCHelpers.h"
@@ -76,20 +75,39 @@ bool SscMisdirectToMainTankAction::Execute(Event /*event*/)
 
 bool SscStopAttackingAction::Execute(Event /*event*/)
 {
-    if (!bot->GetVictim() && !AI_VALUE(Unit*, "current target") &&
-        !bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) &&
-        !bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
-    {
-        return false;
-    }
+    return StopAttackingAndChanneling(bot);
+}
 
-    bot->AttackStop();
-    bot->InterruptSpell(CURRENT_MELEE_SPELL);
-    bot->CastStop();
-    context->GetValue<Unit*>("current target")->Set(nullptr);
-    bot->SetSelection(ObjectGuid());
+bool HydrossTheUnstableStopAttackingAction::Execute(Event event)
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return SscStopAttackingAction::Execute(event);
 
-    return true;
+    Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
+    return hydross && StopAttackingTarget(bot, *hydross);
+}
+
+bool SscSelectTargetForHoldAction::isUseful()
+{
+    return botAI->GetState() == BOT_STATE_NON_COMBAT;
+}
+
+bool SscSelectTargetForHoldAction::Execute(Event /*event*/)
+{
+    return SelectTarget(botAI, AI_VALUE(Unit*, "dps target"));
+}
+
+bool HydrossTheUnstableSelectTargetForHoldAction::Execute(Event event)
+{
+    if (!IsHydrossAddTank(bot))
+        return SscSelectTargetForHoldAction::Execute(event);
+
+    return SelectTarget(botAI, AI_VALUE(Unit*, "tank target"));
+}
+
+bool LeotherasTheBlindSelectTargetForHoldAction::isUseful()
+{
+    return SscSelectTargetForHoldAction::isUseful() && !PlayerbotAI::IsTank(bot);
 }
 
 bool SscSpreadRangedAction::Execute(Event /*event*/)
@@ -174,8 +192,7 @@ bool HydrossTheUnstablePositionAndSwapTanksAction::Execute(Event /*event*/)
     if (markMaxedTime && getMSTimeDiff(*markMaxedTime, getMSTime()) >= phaseChangeDelayMs)
         return StepTo(otherPosition, hydross);
 
-    bot->AttackStop();
-    bot->CastStop();
+    StopAttackingAndChanneling(bot);
     return true;
 }
 
@@ -608,17 +625,15 @@ bool LeotherasTheBlindWarlockTankAttackDemonFormAction::Execute(Event /*event*/)
             Id(SscSpells::SPELL_VIGILANCE), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
     }
 
+    if (bot->GetPowerPct(POWER_MANA) < LEOTHERAS_LIFE_TAP_MANA_PCT &&
+        bot->GetHealthPct() > LEOTHERAS_LIFE_TAP_HEALTH_PCT &&
+        botAI->CanCastSpell("life tap", bot) && botAI->CastSpell("life tap", bot))
+    {
+        return true;
+    }
+
     return botAI->CanCastSpell("searing pain", leotherasDemon) &&
         botAI->CastSpell("searing pain", leotherasDemon);
-}
-
-bool LeotherasTheBlindTanksBuildRageOnDemonFormAction::Execute(Event /*event*/)
-{
-    Creature* leotherasDemon = GetLeotherasDemon(botAI);
-    if (!leotherasDemon)
-        return false;
-
-    return AI_VALUE(Unit*, "current target") != leotherasDemon && Attack(leotherasDemon);
 }
 
 bool LeotherasTheBlindRangedKeepDistanceAction::Execute(Event /*event*/)
@@ -876,7 +891,7 @@ bool LeotherasTheBlindMisdirectDemonFormToTankAction::Execute(Event /*event*/)
     return MisdirectTargetToTank(botAI, leotherasDemon, tank);
 }
 
-bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
+bool LeotherasTheBlindManageDpsHoldTimersAction::Execute(Event /*event*/)
 {
     Unit* leotheras = FindThreatTarget(bot, "leotheras the blind");
     if (!leotheras)
@@ -914,7 +929,7 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
 
 // Whirlwind resets threat on every tick. Hold dps for a moment after it ends. But do not hold
 // dps while Whirlwind is active.
-bool LeotherasTheBlindManageDpsWaitTimersAction::TrackWhirlwindEnd(
+bool LeotherasTheBlindManageDpsHoldTimersAction::TrackWhirlwindEnd(
     Unit* leotheras, std::optional<uint32>& whirlwindEnd, uint32 now)
 {
     if (Aura const* whirlwind = leotheras->GetAura(Id(SscSpells::SPELL_LEOTHERAS_WHIRLWIND)))
@@ -929,7 +944,7 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::TrackWhirlwindEnd(
         return true;
     }
 
-    if (now - *whirlwindEnd >= LEOTHERAS_WHIRLWIND_DPS_WAIT_MS)
+    if (now - *whirlwindEnd >= LEOTHERAS_WHIRLWIND_DPS_HOLD_MS)
     {
         whirlwindEnd.reset();
         return true;
@@ -1022,7 +1037,7 @@ bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event /*event
 
     float stepX;
     float stepY;
-    if (!GetPathStepTowardUnit(bot, caribdis, stopDistance, stepX, stepY))
+    if (!GetPathStepTowardUnit(bot, caribdis, stopDistance, PATH_STEP_DISTANCE, stepX, stepY))
         return false;
 
     return MoveTo(
@@ -1088,11 +1103,13 @@ bool FathomLordKarathressMisdirectToTanksAction::Execute(Event /*event*/)
 }
 
 // Priority: (1) Spitfire Totem, (2) Tidalvess, (3) Caribdis (ranged only), (4) Sharkkis,
-// (5) Sharkkis pet, (6) Karathress.
+// (5) Sharkkis pet, and (6) Karathress.
 bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
 {
-    Unit* target = nullptr;
+    // Select a target without attacking while the DPS hold is active.
+    bool const isDpsHeld = IsKarathressStartDpsHoldActive(bot);
 
+    Unit* target = nullptr;
     // Karathress gets the totem when Tidalvess dies, so it stays top priority for the whole fight.
     Unit* totem = GetSpitfireTotem(botAI);
     Unit* tidalvess = FindThreatTarget(bot, "fathom-guard tidalvess");
@@ -1125,12 +1142,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
             if (AI_VALUE(Unit*, "current target") != karathress)
                 return false;
 
-            bot->AttackStop();
-            bot->InterruptSpell(CURRENT_MELEE_SPELL);
-            bot->CastStop();
-            context->GetValue<Unit*>("current target")->Set(nullptr);
-            bot->SetSelection(ObjectGuid());
-            return true;
+            return StopAttackingTarget(bot, *karathress);
         }
 
         target = karathress;
@@ -1143,7 +1155,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
         return ApproachCaribdis(caribdis);
 
     if (AI_VALUE(Unit*, "current target") != target)
-        return Attack(target);
+        return isDpsHeld ? SelectTarget(botAI, target) : Attack(target);
 
     if (target == caribdis)
     {
@@ -1165,8 +1177,11 @@ bool FathomLordKarathressAssignDpsPriorityAction::ApproachCaribdis(Unit* caribdi
 {
     float stepX;
     float stepY;
-    if (!GetPathStepTowardUnit(bot, caribdis, CARIBDIS_APPROACH_STOP_DISTANCE, stepX, stepY))
+    if (!GetPathStepTowardUnit(
+            bot, caribdis, CARIBDIS_APPROACH_STOP_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
+    {
         return false;
+    }
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
@@ -1180,7 +1195,32 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
         return false;
 
     return EmplaceIfUnset(
-        SscState(karathress->GetInstanceId()).karathressDpsWaitTimer, getMSTime());
+        SscState(karathress->GetInstanceId()).karathressDpsHoldTimer, getMSTime());
+}
+
+bool FathomLordKarathressControlPetAggressionAction::Execute(Event /*event*/)
+{
+    Pet* pet = bot->GetPet();
+    if (!pet)
+        return false;
+
+    if (IsKarathressBlessingHoldActive(bot))
+    {
+        if (!pet->HasReactState(REACT_PASSIVE))
+        {
+            _previousReactState = pet->GetReactState();
+            _setPassive = true;
+            CallBackPets(bot);
+            pet->SetReactState(REACT_PASSIVE);
+        }
+    }
+    else if (_setPassive)
+    {
+        pet->SetReactState(_previousReactState);
+        _setPassive = false;
+    }
+
+    return false;
 }
 
 bool FathomLordKarathressDropToGroundAfterCycloneAction::Execute(Event /*event*/)
@@ -1315,8 +1355,11 @@ bool MorogrimTidewalkerReturnToBossAction::Execute(Event /*event*/)
 
     float stepX;
     float stepY;
-    if (!GetPathStepTowardUnit(bot, tidewalker, TIDEWALKER_MAX_DISTANCE_FROM_BOSS, stepX, stepY))
+    if (!GetPathStepTowardUnit(
+            bot, tidewalker, TIDEWALKER_MAX_DISTANCE_FROM_BOSS, PATH_STEP_DISTANCE, stepX, stepY))
+    {
         return false;
+    }
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
@@ -1597,8 +1640,11 @@ bool LadyVashjPhase3MoveIntoSightAction::Execute(Event /*event*/)
 
     float stepX;
     float stepY;
-    if (!GetPathStepTowardUnit(bot, vashj, VASHJ_PHASE_3_RANGED_DISTANCE, stepX, stepY))
+    if (!GetPathStepTowardUnit(
+            bot, vashj, VASHJ_PHASE_3_RANGED_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
+    {
         return false;
+    }
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
@@ -1885,13 +1931,7 @@ bool LadyVashjAssignTargetPriorityAction::Execute(Event /*event*/)
     if (currentTier < tiers.size() || !currentTarget)
         return false;
 
-    bot->AttackStop();
-    bot->InterruptSpell(CURRENT_MELEE_SPELL);
-    if (!PlayerbotAI::IsHeal(bot))
-        bot->CastStop();
-    context->GetValue<Unit*>("current target")->Set(nullptr);
-    bot->SetSelection(ObjectGuid());
-
+    StandDown(botAI);
     return false;
 }
 
@@ -1997,8 +2037,11 @@ bool LadyVashjTankWaitInTheMiddleAction::Execute(Event /*event*/)
 
     float stepX;
     float stepY;
-    if (!GetPathStepTowardUnit(bot, vashj, VASHJ_IDLE_TANK_DISTANCE, stepX, stepY))
+    if (!GetPathStepTowardUnit(
+            bot, vashj, VASHJ_IDLE_TANK_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
+    {
         return false;
+    }
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
@@ -2049,7 +2092,7 @@ bool LadyVashjAttackTaintedElementalAction::Execute(Event /*event*/)
     {
         float stepX;
         float stepY;
-        if (!GetPathStepTowardUnit(bot, tainted, stopDistance, stepX, stepY))
+        if (!GetPathStepTowardUnit(bot, tainted, stopDistance, PATH_STEP_DISTANCE, stepX, stepY))
             return false;
 
         bool const moved = MoveTo(
@@ -2081,7 +2124,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
 
         float stepX;
         float stepY;
-        if (!GetPathStepTowardUnit(bot, tainted, stopDistance, stepX, stepY))
+        if (!GetPathStepTowardUnit(bot, tainted, stopDistance, PATH_STEP_DISTANCE, stepX, stepY))
             return false;
 
         return MoveTo(
@@ -2308,45 +2351,14 @@ bool LadyVashjCommandPetTargetAction::Execute(Event /*event*/)
     if (!pet || !vashj)
         return false;
 
-    CharmInfo* charmInfo = pet->GetCharmInfo();
     Unit* target = GetVashjPetTarget(botAI, pet, vashj);
-
     if (!target)
     {
-        pet->AttackStop();
-        pet->InterruptNonMeleeSpells(false);
-        pet->GetMotionMaster()->MoveFollow(bot, PET_FOLLOW_DIST, pet->GetFollowAngle());
-        if (charmInfo)
-        {
-            charmInfo->SetCommandState(COMMAND_FOLLOW);
-            charmInfo->SetIsCommandAttack(false);
-            charmInfo->SetIsAtStay(false);
-            charmInfo->SetIsReturning(true);
-            charmInfo->SetIsCommandFollow(true);
-            charmInfo->SetIsFollowing(false);
-            charmInfo->RemoveStayPosition();
-        }
-
+        CallBackPets(bot);
         return true;
     }
 
-    if (!pet->IsValidAttackTarget(target))
-        return false;
-
-    pet->ClearUnitState(UNIT_STATE_FOLLOW);
-    pet->AttackStop();
-    pet->SetTarget(target->GetGUID());
-    if (charmInfo)
-    {
-        charmInfo->SetIsCommandAttack(true);
-        charmInfo->SetIsAtStay(false);
-        charmInfo->SetIsFollowing(false);
-        charmInfo->SetIsCommandFollow(false);
-        charmInfo->SetIsReturning(false);
-    }
-
-    pet->AI()->AttackStart(target);
-    return true;
+    return CommandPetAttack(pet, target);
 }
 
 bool LadyVashjReturnToTheGroundAction::Execute(Event /*event*/)
