@@ -75,6 +75,9 @@ constexpr uint32 VEHICLE_FLAG_FIXED_POSITION = 0x00200000;
 std::vector<std::string> PlayerbotAI::dispel_whitelist = {
     "mutating injection",
     "frostbolt",
+    "dreamless sleep",
+    "greater dreamless sleep",
+    "major dreamless sleep",
 };
 
 std::vector<std::string>& split(std::string const s, char delim, std::vector<std::string>& elems);
