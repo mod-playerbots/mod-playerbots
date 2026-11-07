@@ -1773,7 +1773,7 @@ uint32 PlayerbotFactory::InitTalentsTree(bool increment /*false*/, bool use_temp
     if (bot->GetFreeTalentPoints())
         InitTalents((specTab + 2) % 3);
 
-    if (bot->getClass() == CLASS_SHAMAN && bot->HasSpell(SPELL_SHAMAN_DUAL_WIELD))
+    if (bot->getClass() == CLASS_SHAMAN && bot->HasTalent(SPELL_SHAMAN_DUAL_WIELD, bot->GetActiveSpec()))
     {
         bot->SetSkill(SKILL_DUAL_WIELD, 0, 1, 1);
         bot->SetCanDualWield(true);
@@ -1878,7 +1878,7 @@ void PlayerbotFactory::InitTalentsBySpecNo(Player* bot, int specNo, bool reset)
         }
     }
 
-    if (bot->getClass() == CLASS_SHAMAN && bot->HasSpell(SPELL_SHAMAN_DUAL_WIELD))
+    if (bot->getClass() == CLASS_SHAMAN && bot->HasTalent(SPELL_SHAMAN_DUAL_WIELD, bot->GetActiveSpec()))
     {
         bot->SetSkill(SKILL_DUAL_WIELD, 0, 1, 1);
         bot->SetCanDualWield(true);
