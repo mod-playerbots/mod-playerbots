@@ -392,6 +392,7 @@ bool NewRpgGoCampAction::Execute(Event /*event*/)
     {
         if (MoveFarTo(data->pos))
             return true;
+        LOG_DEBUG("playerbots", "[New RPG-DBG] {} GoCamp: MoveFarTo failed, MoveRandomNear", bot->GetName()); // TEMP-DEBUG
         return MoveRandomNear(10.0f);
     }
 
