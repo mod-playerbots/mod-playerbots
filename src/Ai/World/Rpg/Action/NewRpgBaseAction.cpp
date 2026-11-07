@@ -619,9 +619,10 @@ bool NewRpgBaseAction::OrganizeQuestLog()
                 continue;
 
             // Rank candidates by their nearest reachable POI. Scoring needs x/y only: no height
-            // or zone lookup, so the map thread never loads terrain for a distant grid. A quest
-            // with POIs on another map is travelable (cross-zone retention) and drops after every
-            // same-map candidate; no POI data at all means unprogressable, so it drops first.
+            // or zone lookup, so the map thread never loads terrain for a distant grid. Drop
+            // order: no POI data at all (unprogressable) first, then cross-map-only quests
+            // (travelable under cross-zone retention, but deliberately ranked below same-map),
+            // then the furthest same-map quest. Class/sort quests are never dropped.
             bool const complete = bot->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE;
             float dist = std::numeric_limits<float>::max();
             bool hasSameMapPoi = false;
