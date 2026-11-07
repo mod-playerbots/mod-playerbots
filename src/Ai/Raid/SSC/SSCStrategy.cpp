@@ -9,6 +9,7 @@
 #include "Playerbots.h"
 #include "SSCHelpers.h"
 #include "SSCMultipliers.h"
+#include "ThreatHelpers.h"
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
@@ -289,17 +290,16 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 namespace
 {
 
-void AppendFathomLordKarathressBlessingHoldExclusions(
-    Player* bot, AiObjectContext* context, GuidSet& exclusions)
+void AppendFathomLordKarathressBlessingHoldExclusions(Player* bot, GuidSet& exclusions)
 {
     if (PlayerbotAI::IsHeal(bot) || !PlayerbotAI::IsMelee(bot))
         return;
 
-    Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+    Unit* karathress = FindThreatTarget(bot, "fathom-lord karathress");
     if (!karathress || karathress->GetHealthPct() > KARATHRESS_BLESSING_HOLD_HEALTH_PCT)
         return;
 
-    if (!AI_VALUE2(Unit*, "find target", "fathom-guard caribdis"))
+    if (!FindThreatTarget(bot, "fathom-guard caribdis"))
         return;
 
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
@@ -319,7 +319,7 @@ void AppendMorogrimTidewalkerMurlocExclusions(
 
         if (!tidewalker)
         {
-            tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+            tidewalker = FindThreatTarget(botAI->GetBot(), "morogrim tidewalker");
             if (!tidewalker)
                 return;
         }
@@ -330,9 +330,9 @@ void AppendMorogrimTidewalkerMurlocExclusions(
     }
 }
 
-void AppendLadyVashjGeneratorPhaseExclusions(AiObjectContext* context, GuidSet& exclusions)
+void AppendLadyVashjGeneratorPhaseExclusions(Player* bot, GuidSet& exclusions)
 {
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Unit* vashj = FindThreatTarget(bot, "lady vashj");
     if (vashj && vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER)))
         exclusions.insert(vashj->GetGUID());
 }
@@ -346,7 +346,7 @@ void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExc
         return;
 
     AiObjectContext* context = botAI->GetAiObjectContext();
-    AppendFathomLordKarathressBlessingHoldExclusions(bot, context, exclusions);
+    AppendFathomLordKarathressBlessingHoldExclusions(bot, exclusions);
     AppendMorogrimTidewalkerMurlocExclusions(botAI, context, exclusions);
-    AppendLadyVashjGeneratorPhaseExclusions(context, exclusions);
+    AppendLadyVashjGeneratorPhaseExclusions(bot, exclusions);
 }
