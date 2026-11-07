@@ -61,6 +61,9 @@ namespace BlackwingLairHelpers
         NPC_CORRUPTED_HEALING_TOTEM = 14664,
         NPC_CORRUPTED_WINDFURY_TOTEM = 14666,
 
+        // Nefarian phase 3
+        NPC_BONE_CONSTRUCT = 14605,
+
         // Trash
         NPC_DEATH_TALON_WYRMGUARD = 12460
     };
@@ -75,6 +78,8 @@ namespace BlackwingLairHelpers
     bool IsCorruptedTotemEntry(uint32 entry);
     bool IsCorruptedTotem(Unit const* unit);
     Unit* FindCorruptedTotem(PlayerbotAI* botAI);
+    bool IsBoneConstruct(Unit const* unit);
+    bool HasBoneConstructAttacker(PlayerbotAI* botAI);
 }
 
 #endif

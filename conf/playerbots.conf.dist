@@ -90,8 +90,8 @@ Playerbots.MinRandomBots = 500
 Playerbots.MaxRandomBots = 500
 
 # Randombot accounts
-# Set to 0 to automatically calculate needed accounts based on MaxRandomBots, EnablePeriodicOnlineOffline
-# and its ratio, and AddClassAccountPoolSize. Set manually if you want to create more accounts than needed.
+# Set to 0 to automatically calculate needed accounts based on MaxRandomBots and AddClassAccountPoolSize.
+# Set manually if you want to create more accounts than needed.
 # If the manual value is less than the required, the system will override it with the required value.
 # Default: 0 (automatic)
 Playerbots.RandomBotAccountCount = 0
@@ -117,6 +117,17 @@ Playerbots.DeleteRandomBotAccounts = 0
 Playerbots.DisabledWithoutRealPlayer = 0
 Playerbots.DisabledWithoutRealPlayerLoginDelay = 30
 Playerbots.DisabledWithoutRealPlayerLogoutDelay = 300
+
+# Online randombots count change
+#   0 = Static:     Fixed random count rolled once at server start, between Min/MaxRandomBots.
+#   1 = Variable:   Fluctuating random count rolled at server start, between Min/MaxRandomBots.
+#                   Re-rolled again at a time between RandomBotCountChangeMin/MaxInterval.
+#   2 = Scheduled:  Fluctuating time-cycled count, ranging from MinRandomBots at RandomBotCountMinTime,
+#                   to MaxRandomBots at RandomBotCountMaxTime.
+#                   When RandomBotCountMinTime = RandomBotCountMaxTime the count stays at MaxRandomBots.
+# When MinRandomBots = MaxRandomBots the count is constant and all modes behave identically.
+# Default: 0 (static)
+Playerbots.RandomBotCountMode = 0
 
 ####################################################################################################
 
@@ -747,7 +758,8 @@ Playerbots.SyncLevelWithPlayers = 0
 
 # Concentrate randombots teleporting into level-appropriate open-world zones that hold a real
 # (non-GM) player. Falls back to normal teleporting behaviour when no player's zone matches.
-# Best paired with Playerbots.SyncLevelWithPlayers.
+# A zone also counts when the bot is within RandomBotTeleLowerLevel / RandomBotTeleHigherLevel levels
+# of its level range. Best paired with Playerbots.SyncLevelWithPlayers.
 # Default: 0 (disabled)
 Playerbots.RandomBotConcentrateInPlayerZone = 0
 
@@ -765,16 +777,6 @@ Playerbots.RandomBotJoinLfg = 1
 # Seasonal bosses are exempt
 # Default: 1 (enabled)
 Playerbots.RandomBotJoinLfgOutleveledExpansion = 1
-
-# Enable/Disable periodic online - offline of randombots to mimic the real-world scenario where not all players are online simultaneously
-# When enabled, randombots are randomly selected to go online or offline periodically from a larger set
-# Default: 0 (disabled, the set of online bots remains fixed)
-Playerbots.EnablePeriodicOnlineOffline = 0
-
-# Defines the ratio between the total number of randombots (including offline ones) and the number of randombots currently online (MaxRandomBots)
-# This setting must greater than 1.0 and only applies when EnablePeriodicOnlineOffline
-# Default: 2.0 (total number of bots is twice the number of MaxRandomBots)
-Playerbots.PeriodicOnlineOfflineRatio = 2.0
 
 # Percentage ratio of Alliance and Horde randombots
 Playerbots.RandomBotAllianceRatio = 50
@@ -1428,7 +1430,7 @@ Playerbots.RestrictedHealerDPSMaps = "33,34,36,43,47,48,70,90,109,129,209,229,23
 #
 
 # Randombots will behave more like real players (experimental)
-# This option will override Playerbots.AutoDoQuests, RandomBotTeleLowerLevel, and RandomBotTeleHigherLevel
+# This option will override Playerbots.AutoDoQuests
 # Default: 1 (enabled)
 Playerbots.EnableNewRpgStrategy = 1
 
@@ -1648,12 +1650,14 @@ Playerbots.TeleToDalaranWeight = 1
 Playerbots.RandomBotTeleportDistance = 100
 
 # How many levels below the lowest-level creature in a zone, can a bot be
-# This will have no effect if Playerbots.EnableNewRpgStrategy is enabled
+# With Playerbots.EnableNewRpgStrategy enabled, it sets the grind-spot level margin and, with
+# Playerbots.RandomBotConcentrateInPlayerZone, the margin around the player's zone; teleport hubs ignore it otherwise
 # Default: 1 (randombot will leave if they are more than 1 level lower)
 Playerbots.RandomBotTeleLowerLevel = 1
 
 # How many levels above the highest-level creature in a zone, can a bot be
-# This will have no effect if Playerbots.EnableNewRpgStrategy is enabled
+# With Playerbots.EnableNewRpgStrategy enabled, it sets the grind-spot level margin and, with
+# Playerbots.RandomBotConcentrateInPlayerZone, the margin around the player's zone; teleport hubs ignore it otherwise
 # Default: 3 (randombot will leave if they are more than 3 levels higher)
 Playerbots.RandomBotTeleHigherLevel = 3
 
@@ -1775,15 +1779,18 @@ Playerbots.FastReactInBG = 1
 # Default: 20
 Playerbots.RandomBotUpdateInterval = 20
 
-# Minimum and maximum seconds before the manager re-evaluates and adjusts total randombot count
+# Minimum and maximum seconds before the randombot population count changes, when RandomBotCountMode = 1 or 2.
+# Bot count changes randomly at some random time between min and max interval value, when RandomBotCountMode = 1.
+# Bot count changes incrementally according to schedule, at every min interval value, when RandomBotCountMode = 2.
 # Defaults: 1800 (min), 7200 (max)
 Playerbots.RandomBotCountChangeMinInterval = 1800
 Playerbots.RandomBotCountChangeMaxInterval = 7200
 
-# Minimum and maximum seconds a randombot will stay online before logging out
-# Defaults: 600 (min), 28800 (max)
-Playerbots.MinRandomBotInWorldTime = 600
-Playerbots.MaxRandomBotInWorldTime = 28800
+# Local server time of day when randombot population count is at minimum or maximum, when RandomBotCountMode = 2.
+# Range: Integer values from 0 to 23
+# Defaults: 5 (min), 20 (max)
+Playerbots.RandomBotCountMinTime = 5
+Playerbots.RandomBotCountMaxTime = 20
 
 # Some aspects of randombots are periodically randomized while they are logged in and idle,
 # including their inventories and, if EquipAndSpecPersistence is disabled, their equipment and specs.
@@ -1810,10 +1817,6 @@ Playerbots.MaxRandomBotReviveTime = 300
 # Defaults: 3600 (min), 18000 (max)
 Playerbots.MinRandomBotTeleportInterval = 3600
 Playerbots.MaxRandomBotTeleportInterval = 18000
-
-# Number of seconds bots flagged as permanent stay in the world (31,104,000 ≈ 1 year)
-# Default: 31104000
-Playerbots.PermanentlyInWorldTime = 31104000
 
 #
 #

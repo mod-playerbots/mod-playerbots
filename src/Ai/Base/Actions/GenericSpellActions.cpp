@@ -180,6 +180,16 @@ bool CastSpellAction::Execute(Event /*event*/)
     return botAI->CastSpell(spell, GetTarget());
 }
 
+bool CastKnockbackSpellAction::IsBlocked(Player* bot, uint32 noKnockbackGlyph)
+{
+    return bot->GetMap()->IsDungeon() && !bot->HasAura(noKnockbackGlyph);
+}
+
+bool CastKnockbackSpellAction::isUseful()
+{
+    return !IsBlocked(bot, _noKnockbackGlyph) && CastSpellAction::isUseful();
+}
+
 bool CastSpellAction::isUseful()
 {
     if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
