@@ -6,7 +6,7 @@ AzerothCore CMake tree, and backed by MySQL.
 
 Design philosophy: **stability, performance, and predictability over behavioral
 realism.** Every action, trigger, and value runs per bot, per tick, across
-thousands of bots. Default behaviour must be cheap; expensive behaviour is opt-in.
+thousands of bots.
 
 The module is its own repository, checked out at `modules/mod-playerbots/` inside
 an AzerothCore fork. The fork's `AGENTS.md` and `.agents/docs/` apply as a base;
@@ -80,8 +80,12 @@ Read the matching doc(s) BEFORE starting the task:
   login paths on the world thread are the exception.
 - **Shared code must not branch on strategy names**, and one action does one job.
 - **Bot chat is translatable** via `GetBotTextOrDefault` plus a translation SQL update.
-- **Expensive or behaviour-changing features are opt-in** via `playerbots.conf.dist`.
-  Shared-code changes that ship alongside a gated feature are reviewed as if the
+- **Config options are for choices server owners will want to make**, such as
+  turning a default behaviour off or tuning it. A change to default behaviour does
+  not need one. Judge the change itself: if it is wrong, fix it; if it costs too
+  much, measure it with `pmon` and make it cheaper. When a PR does add an option,
+  ask whether owners will really want to change that setting. Shared-code changes
+  that ship alongside an existing off-by-default feature are reviewed as if the
   feature were off, because for most servers it will be.
 
 ## Persisting lessons

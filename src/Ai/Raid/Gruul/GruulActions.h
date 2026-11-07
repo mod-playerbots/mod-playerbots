@@ -22,6 +22,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class GruulsLairAssignClassRolesAction : public Action
+{
+public:
+    GruulsLairAssignClassRolesAction(PlayerbotAI* botAI)
+        : Action(botAI, "gruul's lair assign class roles") {}
+    bool Execute(Event event) override;
+};
+
 // High King Maulgar <Lord of the Ogres>
 
 class HighKingMaulgarMeleeTanksPositionBossesAction : public AttackAction
@@ -89,6 +97,14 @@ class HighKingMaulgarMisdirectOgresToTanksAction : public Action
 public:
     HighKingMaulgarMisdirectOgresToTanksAction(PlayerbotAI* botAI)
         : Action(botAI, "high king maulgar misdirect ogres to tanks") {}
+    bool Execute(Event event) override;
+};
+
+class HighKingMaulgarAnnounceClassRolesAction : public Action
+{
+public:
+    HighKingMaulgarAnnounceClassRolesAction(PlayerbotAI* botAI)
+        : Action(botAI, "high king maulgar announce class roles") {}
     bool Execute(Event event) override;
 };
 

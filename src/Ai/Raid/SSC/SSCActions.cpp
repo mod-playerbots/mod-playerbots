@@ -55,6 +55,11 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
+bool SscAssignClassRolesAction::Execute(Event /*event*/)
+{
+    return UpdateSscClassRoles(botAI);
+}
+
 bool SscMisdirectToMainTankAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
@@ -697,7 +702,7 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
         return true;
     }
 
-    bool const isBelowEnrageRageThreshold = bot->GetPower(POWER_RAGE) < 70;
+    bool const isBelowEnrageRageThreshold = bot->GetPower(POWER_RAGE) < 700; // 70 rage
     if (isBelowEnrageRageThreshold &&
         botAI->CanCastSpell("enrage", bot) && botAI->CastSpell("enrage", bot))
     {
@@ -725,7 +730,7 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
     if (!whisper)
         return false;
 
-    bool const isAboveMaulRageThreshold = bot->GetPower(POWER_RAGE) > 40;
+    bool const isAboveMaulRageThreshold = bot->GetPower(POWER_RAGE) > 400; // 40 rage
     constexpr int32 maulFreeUseMs = 4 * IN_MILLISECONDS;
     return (isAboveMaulRageThreshold || whisper->GetDuration() < maulFreeUseMs) &&
         botAI->CanCastSpell("maul", innerDemon) && botAI->CastSpell("maul", innerDemon);
@@ -930,6 +935,11 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::TrackWhirlwindEnd(
     }
 
     return false;
+}
+
+bool LeotherasTheBlindAnnounceClassRolesAction::Execute(Event /*event*/)
+{
+    return IsMechanicTrackerBot(bot, SSC_MAP_ID) && UpdateLeotherasClassRoleAnnouncement(botAI);
 }
 
 // Fathom-Lord Karathress

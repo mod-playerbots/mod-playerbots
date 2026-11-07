@@ -13,6 +13,7 @@
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "DatabaseEnv.h"
+#include "LocaleColumns.h"
 #include "Log.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
@@ -28,11 +29,41 @@
 #include "Timer.h"
 #include "World.h"
 
-std::string RandomPlayerbotFactory::GetLocalizedNameSelector(std::string const& column)
+void RandomPlayerbotFactory::LoadLocalizedNameColumns()
 {
-    LocaleConstant locale = sWorld->GetDefaultDbcLocale();
-    if (locale == LOCALE_enUS || locale >= TOTAL_LOCALES)
+    LocaleConstant const locale = sWorld->GetDefaultDbcLocale();
+    auto hasDefaultLocaleColumn = [locale](std::string const& table)
+    {
+        for (LocaleColumn const& localeColumn : GetLocaleColumns(CharacterDatabase, table,
+                 [](LocaleConstant columnLocale) { return std::string("name_") + localeNames[columnLocale]; }))
+        {
+            if (localeColumn.Locale == locale)
+                return true;
+        }
+
+        return false;
+    };
+
+    _guildNamesLocalized = hasDefaultLocaleColumn("playerbots_guild_names");
+    _arenaTeamNamesLocalized = hasDefaultLocaleColumn("playerbots_arena_team_names");
+}
+
+std::string RandomPlayerbotFactory::GetGuildNameSelector(std::string const& column)
+{
+    return GetLocalizedNameSelector(_guildNamesLocalized, column);
+}
+
+std::string RandomPlayerbotFactory::GetArenaTeamNameSelector(std::string const& column)
+{
+    return GetLocalizedNameSelector(_arenaTeamNamesLocalized, column);
+}
+
+std::string RandomPlayerbotFactory::GetLocalizedNameSelector(bool localized, std::string const& column)
+{
+    if (!localized)
         return column;
+
+    LocaleConstant const locale = sWorld->GetDefaultDbcLocale();
 
     // Fall back to the enUS column when the localized one is NULL or empty
     return Acore::StringFormat("COALESCE(NULLIF({}_{}, ''), {})", column, localeNames[locale], column);
@@ -329,9 +360,8 @@ std::string const RandomPlayerbotFactory::CreateRandomBotName(NameRaceAndGender 
 }
 
 // Calculates the total number of required accounts, either using the specified randomBotAccountCount
-// or determining it dynamically based on MaxRandomBots, EnablePeriodicOnlineOffline and its ratio,
-// and AddClassAccountPoolSize. The system also factors in the types of existing account, as assigned by
-// AssignAccountTypes()
+// or determining it dynamically based on MaxRandomBots and AddClassAccountPoolSize.
+// The system also factors in the types of existing account, as assigned by AssignAccountTypes().
 uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
 {
     // Reset account types if features are disabled
@@ -394,9 +424,6 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
 
     // Calculate max bots
     int maxBots = sPlayerbotAIConfig.MaxRandomBots;
-    // Take periodic online/offline into account
-    if (sPlayerbotAIConfig.EnablePeriodicOnlineOffline)
-        maxBots *= sPlayerbotAIConfig.PeriodicOnlineOfflineRatio;
 
     // Calculate number of accounts needed for RNDbots
     // Result is rounded up for maxBots not cleanly divisible by the divisor
@@ -800,7 +827,7 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
     uint32 maxId = fields[0].Get<uint32>();
 
     uint32 id = urand(0, maxId);
-    std::string nameExpr = GetLocalizedNameSelector("n.name");
+    std::string nameExpr = GetGuildNameSelector("n.name");
     result = CharacterDatabase.Query(
         "SELECT {} FROM playerbots_guild_names n "
         "LEFT OUTER JOIN guild e ON e.name = {} "
@@ -857,7 +884,7 @@ void RandomPlayerbotFactory::LoadArenaTeamData()
     _availableArenaTeamNames.clear();
 
     // Join on the localized name so already-taken localized names are filtered out
-    std::string nameExpr = GetLocalizedNameSelector("n.name");
+    std::string nameExpr = GetArenaTeamNameSelector("n.name");
     QueryResult result = CharacterDatabase.Query(
         "SELECT {} FROM playerbots_arena_team_names n "
         "LEFT OUTER JOIN arena_team e ON e.name = {} "
