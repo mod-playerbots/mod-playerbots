@@ -5,16 +5,10 @@
  */
 
 #include "PartyMemberToHeal.h"
+#include "BattlegroundEY.h"
 #include "BattlegroundWS.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-
-namespace
-{
-constexpr uint32 BG_WS_SPELL_WARSONG_FLAG = 23333;
-constexpr uint32 BG_WS_SPELL_SILVERWING_FLAG = 23335;
-constexpr uint32 BG_EY_NETHERSTORM_FLAG_SPELL = 34976;
-}
 
 class IsTargetOfHealingSpell : public SpellEntryPredicate
 {
