@@ -1784,7 +1784,7 @@ uint32 PlayerbotFactory::InitTalentsTree(bool increment /*false*/, bool use_temp
 }
 
 // LimitTalentsExpansion: up to level 60 rows 0-5 and the middle talent of row 6, up to 70 rows 0-7 and the
-// middle talent of row 8, as in InitTalentsByTemplate().
+// middle talent of row 8
 static bool IsAboveTalentExpansionLimit(Player* bot, uint32 row, uint32 col)
 {
     if (!sPlayerbotAIConfig.LimitTalentsExpansion)
@@ -1799,6 +1799,33 @@ static bool IsAboveTalentExpansionLimit(Player* bot, uint32 row, uint32 col)
     return false;
 }
 
+// The lowest template that can spend all of the bot's points, or the highest template if none can;
+// 0 when the spec has no template.
+static uint32 SelectTemplateLevel(Player* bot, uint32 cls, uint32 specIndex)
+{
+    std::map<uint8, uint32> spentTabs = AiFactory::GetPlayerSpecTabs(bot);
+    uint32 const totalPoints = bot->GetFreeTalentPoints() + spentTabs[0] + spentTabs[1] + spentTabs[2];
+
+    uint32 templateLevel = 0;
+    for (uint32 level = 1; level < MAX_LEVEL; ++level)
+    {
+        auto const& order = sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specIndex][level];
+        if (order.empty())
+            continue;
+
+        templateLevel = level;
+
+        uint32 points = 0;
+        for (std::vector<uint32> const& p : order)
+            points += p[3];
+
+        if (points >= totalPoints)
+            break;
+    }
+
+    return templateLevel;
+}
+
 void PlayerbotFactory::InitTalentsBySpecNo(Player* bot, int specNo, bool reset)
 {
     if (reset)
@@ -1806,7 +1833,6 @@ void PlayerbotFactory::InitTalentsBySpecNo(Player* bot, int specNo, bool reset)
         bot->resetTalents(true);
     }
     uint32 cls = bot->getClass();
-    int startLevel = bot->GetLevel();
     uint32 classMask = bot->getClassMask();
     std::unordered_map<uint32, std::vector<TalentEntry const*>> spells_row;
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
@@ -1824,57 +1850,62 @@ void PlayerbotFactory::InitTalentsBySpecNo(Player* bot, int specNo, bool reset)
 
         spells_row[talentInfo->Row].push_back(talentInfo);
     }
-    while (startLevel > 1 && startLevel < 80 &&
-           sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specNo][startLevel].size() == 0)
-    {
-        startLevel--;
-    }
-    for (int level = startLevel; level <= 80; level++)
-    {
-        if (sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specNo][level].size() == 0)
-        {
-            continue;
-        }
-        for (std::vector<uint32>& p : sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specNo][level])
-        {
-            uint32 tab = p[0], row = p[1], col = p[2], lvl = p[3];
-            if (IsAboveTalentExpansionLimit(bot, row, col))
-                continue;
 
-            uint32 talentID = -1;
-
-            std::vector<TalentEntry const*>& spells = spells_row[row];
-            if (spells.size() <= 0)
-            {
-                return;
-            }
-            for (TalentEntry const* talentInfo : spells)
-            {
-                if (talentInfo->Col != col)
-                {
-                    continue;
-                }
-                TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
-                if (talentTabInfo->tabpage != tab)
-                {
-                    continue;
-                }
-                if (talentInfo->DependsOn)
-                {
-                    bot->LearnTalent(talentInfo->DependsOn,
-                                     std::min(talentInfo->DependsOnRank, bot->GetFreeTalentPoints() - 1));
-                }
-                talentID = talentInfo->TalentID;
-            }
-            bot->LearnTalent(talentID, std::min(lvl, bot->GetFreeTalentPoints()) - 1);
-            if (bot->GetFreeTalentPoints() == 0)
-            {
-                break;
-            }
-        }
-        if (bot->GetFreeTalentPoints() == 0)
+    uint32 const templateLevel = SelectTemplateLevel(bot, cls, specNo);
+    if (templateLevel)
+    {
+        // LimitTalentsExpansion can leave points unspent; spend them in the next templates' orders
+        for (uint32 level = templateLevel; level < MAX_LEVEL && bot->GetFreeTalentPoints(); ++level)
         {
-            break;
+            for (std::vector<uint32> const& p : sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specNo][level])
+            {
+                uint32 tab = p[0], row = p[1], col = p[2], lvl = p[3];
+                if (IsAboveTalentExpansionLimit(bot, row, col))
+                    continue;
+
+                uint32 talentID = -1;
+                uint32 learnLevel = 0;
+
+                std::vector<TalentEntry const*>& spells = spells_row[row];
+                if (spells.size() <= 0)
+                {
+                    return;
+                }
+                for (TalentEntry const* talentInfo : spells)
+                {
+                    if (talentInfo->Col != col)
+                    {
+                        continue;
+                    }
+                    TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
+                    if (talentTabInfo->tabpage != tab)
+                    {
+                        continue;
+                    }
+                    if (talentInfo->DependsOn)
+                    {
+                        bot->LearnTalent(talentInfo->DependsOn,
+                                         std::min(talentInfo->DependsOnRank, bot->GetFreeTalentPoints() - 1));
+                    }
+                    talentID = talentInfo->TalentID;
+
+                    uint32 currentTalentRank = 0;
+                    for (uint8 rank = 0; rank < MAX_TALENT_RANK; ++rank)
+                    {
+                        if (talentInfo->RankID[rank] && bot->HasTalent(talentInfo->RankID[rank], bot->GetActiveSpec()))
+                        {
+                            currentTalentRank = rank + 1;
+                            break;
+                        }
+                    }
+                    learnLevel = std::min(lvl, bot->GetFreeTalentPoints() + currentTalentRank) - 1;
+                }
+                bot->LearnTalent(talentID, learnLevel);
+                if (bot->GetFreeTalentPoints() == 0)
+                {
+                    break;
+                }
+            }
         }
     }
 
@@ -3772,7 +3803,6 @@ void PlayerbotFactory::InitTalentsByTemplate(uint32 specTab)
     //     return;
     // }
     uint32 cls = bot->getClass();
-    int startLevel = bot->GetLevel();
     uint32 specIndex = sPlayerbotAIConfig.RandomClassSpecIndex[cls][specTab];
     uint32 classMask = bot->getClassMask();
     std::unordered_map<uint32, std::vector<TalentEntry const*>> spells_row;
@@ -3791,24 +3821,17 @@ void PlayerbotFactory::InitTalentsByTemplate(uint32 specTab)
 
         spells_row[talentInfo->Row].push_back(talentInfo);
     }
-    while (startLevel > 1 && startLevel < 80 &&
-           sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specIndex][startLevel].size() == 0)
+
+    uint32 const templateLevel = SelectTemplateLevel(bot, cls, specIndex);
+    if (!templateLevel)
+        return;
+
+    for (uint32 level = templateLevel; level < MAX_LEVEL && bot->GetFreeTalentPoints(); ++level)
     {
-        startLevel--;
-    }
-    for (int level = startLevel; level <= 80; level++)
-    {
-        if (sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specIndex][level].size() == 0)
-        {
-            continue;
-        }
-        for (std::vector<uint32>& p : sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specIndex][level])
+        for (std::vector<uint32> const& p : sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specIndex][level])
         {
             uint32 tab = p[0], row = p[1], col = p[2], lvl = p[3];
-            if (sPlayerbotAIConfig.LimitTalentsExpansion && bot->GetLevel() <= 60 && (row > 6 || (row == 6 && col != 1)))
-                continue;
-
-            if (sPlayerbotAIConfig.LimitTalentsExpansion && bot->GetLevel() <= 70 && (row > 8 || (row == 8 && col != 1)))
+            if (IsAboveTalentExpansionLimit(bot, row, col))
                 continue;
 
             uint32 talentID = 0;
@@ -3818,6 +3841,7 @@ void PlayerbotFactory::InitTalentsByTemplate(uint32 specTab)
             {
                 return;
             }
+
             for (TalentEntry const* talentInfo : spells)
             {
                 if (talentInfo->Col != col)
@@ -3847,15 +3871,12 @@ void PlayerbotFactory::InitTalentsByTemplate(uint32 specTab)
                 }
                 learnLevel = std::min(lvl, bot->GetFreeTalentPoints() + currentTalentRank) - 1;
             }
+
             bot->LearnTalent(talentID, learnLevel);
             if (bot->GetFreeTalentPoints() == 0)
             {
                 break;
             }
-        }
-        if (bot->GetFreeTalentPoints() == 0)
-        {
-            break;
         }
     }
 }
