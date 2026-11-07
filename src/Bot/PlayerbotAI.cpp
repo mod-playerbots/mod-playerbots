@@ -57,6 +57,7 @@
 #include "Vehicle.h"
 #include "WsgRouteState.h"
 #include <algorithm>
+#include <cfloat>
 #include <cmath>
 #include <map>
 #include <mutex>
@@ -288,6 +289,14 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     bool isCasting = bot->IsNonMeleeSpellCast(true);
     if (bot->IsInCombat())
     {
+        // Combat is not travel progress. Non-quest mobs count too: clearing a
+        // tunnel or a room can take longer than the travel stuck timeout, and the
+        // non-combat RPG action may not run at all while the combat engine is
+        // active. Keep the timer fresh here so combat time never contributes to
+        // the teleport recovery.
+        rpgInfo.stuckTs = getMSTime();
+        rpgInfo.stuckAttempts = 0;
+
         if (!inCombat)
         {
             // "attackers" is cached for 1 s; refresh it so the assist actions see the new attacker
@@ -303,6 +312,12 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     {
         if (inCombat && !isCasting)
             ResetActionDuration();
+
+        // Start the next travel attempt from the current distance, not the pre-combat minimum.
+        // Otherwise the old baseline can make the post-combat progress check fail for 90 s and
+        // trigger the teleport recovery.
+        if (inCombat)
+            rpgInfo.nearestMoveFarDis = FLT_MAX;
 
         inCombat = false;
     }
