@@ -296,11 +296,15 @@ public:
         CastSpellAction(botAI, "lightning bolt") {}
 };
 
-class CastThunderstormAction : public CastSpellAction
+inline constexpr uint32 SPELL_GLYPH_OF_THUNDERSTORM = 62132;
+
+class CastThunderstormAction : public CastKnockbackSpellAction
 {
 public:
     CastThunderstormAction(PlayerbotAI* botAI) :
-        CastSpellAction(botAI, "thunderstorm") {}
+        CastKnockbackSpellAction(botAI, "thunderstorm", SPELL_GLYPH_OF_THUNDERSTORM) {}
+    std::string const GetTargetName() override { return "self target"; }
+    bool isUseful() override;
 };
 
 class CastLavaBurstAction : public CastSpellAction
