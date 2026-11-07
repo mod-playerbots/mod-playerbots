@@ -100,6 +100,7 @@ void NewRpgInfo::Reset()
     ignoredQuestGivers.clear();
     fatigueMs = 0;
     fatigueCheckMs = 0;
+    fatigueRecovery = false;
 }
 
 void NewRpgInfo::SetMoveFarTo(WorldPosition pos)

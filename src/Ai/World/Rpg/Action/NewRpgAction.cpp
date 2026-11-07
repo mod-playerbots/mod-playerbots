@@ -252,9 +252,10 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
     NewRpgStatus status = info.GetStatus();
 
     // Fatigue guard: keep the module-side fatigue bar ticking every update and recover to the
-    // nearest anchor once it is below half drained. GO_CAMP is the recovery vehicle itself, so
-    // it never re-triggers mid-recovery.
-    if (status != RPG_GO_CAMP && UpdateFatigueRecovery())
+    // nearest anchor once it is below half drained. Runs in every status — a bot that chose
+    // GO_CAMP/GO_GRIND on land and then ends up in dark water must be covered too. The
+    // fatigueRecovery flag suppresses re-triggering while a dark-water rescue is in progress.
+    if (UpdateFatigueRecovery() && !botAI->rpgInfo.fatigueRecovery)
         return RecoverToRpgArea();
 
     switch (status)

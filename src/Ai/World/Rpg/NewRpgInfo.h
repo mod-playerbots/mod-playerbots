@@ -109,6 +109,7 @@ struct NewRpgInfo
     // FATIGUE (dark water)
     uint32 fatigueMs{0};       // module-side mirror of Player's fatigue bar (0..fatigueMsMax)
     uint32 fatigueCheckMs{0};  // last tick the bar was updated
+    bool fatigueRecovery{false};  // a dark-water recovery to the anchor is in progress
     // END FATIGUE
 
     using RpgData = std::variant<

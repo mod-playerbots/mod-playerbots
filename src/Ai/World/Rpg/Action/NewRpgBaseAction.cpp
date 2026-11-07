@@ -975,6 +975,8 @@ bool NewRpgBaseAction::UpdateFatigueRecovery()
     }
 
     botAI->rpgInfo.fatigueMs -= std::min<uint32>(botAI->rpgInfo.fatigueMs, 10 * dt);
+    // Re-arm the trigger once the bot is out of dark water, so a later re-entry is handled.
+    botAI->rpgInfo.fatigueRecovery = false;
     return false;
 }
 
@@ -999,6 +1001,7 @@ bool NewRpgBaseAction::RecoverToRpgArea()
     if (IsInFatigueWater())
     {
         LOG_DEBUG("playerbots", "[New RPG] {} in dark water - teleporting to recovery anchor", bot->GetName());
+        botAI->rpgInfo.fatigueRecovery = true;
         botAI->rpgInfo.ChangeToGoCamp(anchor);
         bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
         return bot->TeleportTo(anchor);
@@ -1006,6 +1009,7 @@ bool NewRpgBaseAction::RecoverToRpgArea()
 
     // On land the walk is fine; travelled via the camp status, which brings its own stuck
     // handling.
+    botAI->rpgInfo.fatigueRecovery = true;
     botAI->rpgInfo.ChangeToGoCamp(anchor);
     return true;
 }
