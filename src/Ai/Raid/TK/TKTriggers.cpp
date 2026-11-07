@@ -35,6 +35,11 @@ bool TempestKeepStuckFallingTrigger::IsActive()
     return !IsEncounterInProgress(bot, TK_MAP_ID);
 }
 
+bool TempestKeepClassRolesShouldBeAssignedTrigger::IsActive()
+{
+    return IsMechanicTrackerBot(bot, TK_MAP_ID);
+}
+
 // Trash
 
 bool CrimsonHandCenturionCastsArcaneFlurryTrigger::IsActive()

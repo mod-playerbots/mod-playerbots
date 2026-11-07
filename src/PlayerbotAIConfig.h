@@ -121,6 +121,7 @@ public:
     bool AutoSaveMana;
     uint32 SaveManaThreshold;
     AutoPartyBuffMode AutoGreaterBlessings;
+    uint32 BlessingRefreshThresholdSeconds;
     AutoPartyBuffMode AutoPartyBuffs;
     bool TellWhenMissingBuffReagents;
     uint32 MissingBuffReagentMessageCooldown;
@@ -139,6 +140,7 @@ public:
     bool BotAutologin;
     std::string RandomBotMapsAsString;
     float ProbTeleToBankers;
+    float ProbTeleToQuestGivers;
     bool EnableWeightTeleToCityBankers;
     int WeightTeleToStormwind;
     int WeightTeleToIronforge;
@@ -164,13 +166,13 @@ public:
     float RandomBotMinLevelChance, RandomBotMaxLevelChance;
     float RandomBotRpgChance;
     uint32 MinRandomBots, MaxRandomBots;
+    uint32 RandomBotCountMode;
     uint32 RandomBotUpdateInterval, RandomBotCountChangeMinInterval, RandomBotCountChangeMaxInterval;
-    uint32 MinRandomBotInWorldTime, MaxRandomBotInWorldTime;
+    uint32 RandomBotCountMinTime, RandomBotCountMaxTime;
     uint32 MinRandomBotRandomizeTime, MaxRandomBotRandomizeTime;
     uint32 MinRandomBotChangeStrategyTime, MaxRandomBotChangeStrategyTime;
     uint32 MinRandomBotReviveTime, MaxRandomBotReviveTime;
     uint32 MinRandomBotTeleportInterval, MaxRandomBotTeleportInterval;
-    uint32 PermanentlyInWorldTime;
     uint32 MinRandomBotPvpTime, MaxRandomBotPvpTime;
     uint32 RandomBotsPerInterval;
     uint32 RandomBotPrintStatsInterval;
@@ -314,8 +316,6 @@ public:
     uint32 LimitEnchantExpansion;
     uint32 LimitGearExpansion;
     uint32 RandomBotStartingLevel;
-    bool EnablePeriodicOnlineOffline;
-    float PeriodicOnlineOfflineRatio;
     bool GearScoreCheck;
     bool RandomBotPreQuests;
     bool BotSendMailEnabled;
@@ -389,6 +389,7 @@ public:
     bool DropObsoleteQuests;
     bool AllowLearnTrainerSpells;
     bool AutoPickTalents;
+    bool AutoPickTalentsForPlayerControlledBots;
     bool AutoUpgradeEquip;
     int32 HunterWolfPet;
     int32 DefaultPetStance;
@@ -396,6 +397,8 @@ public:
     bool AutoLearnTrainerSpells;
     bool AutoDoQuests;
     bool EnableNewRpgStrategy;
+    float RpgTargetSearchDistance;
+    bool CollectDetailedQuestStats;
     std::unordered_map<NewRpgStatus, uint32> RpgStatusProbWeight;
     bool SyncLevelWithPlayers;
     bool RandomBotConcentrateInPlayerZone;
