@@ -13,6 +13,7 @@
 #include "GossipDef.h"
 #include "GridTerrainData.h"
 #include "IVMapMgr.h"
+#include "LootSourceMgr.h"
 #include "NewRpgHelpers.h"
 #include "NewRpgInfo.h"
 #include "QuestLevelRules.h"
@@ -39,6 +40,17 @@
 #include "Timer.h"
 #include "TravelMgr.h"
 #include "G3D/Vector2.h"
+#include <cfloat>
+#include <mutex>
+#include <set>
+#include <tuple>
+#include <unordered_set>
+
+namespace
+{
+std::mutex failedSpawnMutex;
+std::set<std::tuple<uint32, int32, uint32, uint32, bool>> failedSpawnLookups;
+}
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 {
@@ -785,6 +797,108 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
     }
 
     return true;
+}
+
+bool NewRpgBaseAction::GetQuestObjectiveSpawnPosition(uint32 questId, int32 objectiveIdx, WorldPosition& out)
+{
+    Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+    if (!quest)
+        return false;
+
+    std::unordered_set<uint32> creatureEntries;
+    std::unordered_set<uint32> goEntries;
+
+    if (objectiveIdx >= 0 && objectiveIdx < QUEST_OBJECTIVES_COUNT)
+    {
+        // RequiredNpcOrGo is signed: >0 creature, <0 gameobject.
+        int32 rawEntry = quest->RequiredNpcOrGo[objectiveIdx];
+        if (!rawEntry)
+            return false;
+        if (rawEntry > 0)
+            creatureEntries.insert(rawEntry);
+        else
+            goEntries.insert(-rawEntry);
+    }
+    else if (objectiveIdx >= QUEST_OBJECTIVES_COUNT &&
+             objectiveIdx < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
+    {
+        uint32 itemId = quest->RequiredItemId[objectiveIdx - QUEST_OBJECTIVES_COUNT];
+        if (!itemId)
+            return false;
+        for (uint32 creatureEntry : sLootSourceMgr.GetCreatureSources(itemId))
+            creatureEntries.insert(creatureEntry);
+        if (botAI->HasSkill(SKILL_SKINNING))
+            for (uint32 creatureEntry : sLootSourceMgr.GetSkinningSources(itemId))
+                creatureEntries.insert(creatureEntry);
+        for (uint32 goEntry : sLootSourceMgr.GetGameObjectSources(itemId))
+            goEntries.insert(goEntry);
+    }
+    else
+    {
+        return false;
+    }
+
+    if (creatureEntries.empty() && goEntries.empty())
+        return false;
+
+    // A missing spawn is stable for this objective, map, phase and source set
+    // (skinning eligibility changes the item sources); remember the failed
+    // lookup so a later pass does not rescan the full spawn stores.
+    auto const failedKey =
+        std::make_tuple(questId, objectiveIdx, bot->GetMapId(), bot->GetPhaseMask(), botAI->HasSkill(SKILL_SKINNING));
+    {
+        std::lock_guard<std::mutex> lock(failedSpawnMutex);
+        if (failedSpawnLookups.count(failedKey))
+            return false;
+    }
+
+    // Single pass over the spawn stores tracking the nearest spawn (same map).
+    // A creature spawn point can roll between its base entry and the
+    // creature_multispawn alternates (id2/id3), so all three are checked.
+    // O(#spawns) once per objective resolution; the caller caches the resolved
+    // position, so this does not run every tick.
+    uint32 const mapId = bot->GetMapId();
+    float bestDist = FLT_MAX;
+    bool found = false;
+
+    for (auto const& [spawnId, data] : sObjectMgr->GetAllCreatureData())
+    {
+        if (data.mapid != mapId || (data.phaseMask && !(data.phaseMask & bot->GetPhaseMask())))
+            continue;
+        for (uint32 entry : {data.id, data.id2, data.id3})
+        {
+            if (!entry || !creatureEntries.count(entry))
+                continue;
+            float dist = bot->GetDistance(data.posX, data.posY, data.posZ);
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                out = WorldPosition(data.mapid, data.posX, data.posY, data.posZ);
+                found = true;
+            }
+        }
+    }
+    for (auto const& [spawnId, data] : sObjectMgr->GetAllGOData())
+    {
+        if (data.mapid != mapId || (data.phaseMask && !(data.phaseMask & bot->GetPhaseMask())) ||
+            !goEntries.count(data.id))
+            continue;
+        float dist = bot->GetDistance(data.posX, data.posY, data.posZ);
+        if (dist < bestDist)
+        {
+            bestDist = dist;
+            out = WorldPosition(data.mapid, data.posX, data.posY, data.posZ);
+            found = true;
+        }
+    }
+
+    if (!found)
+    {
+        std::lock_guard<std::mutex> lock(failedSpawnMutex);
+        failedSpawnLookups.insert(failedKey);
+    }
+
+    return found;
 }
 
 WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
