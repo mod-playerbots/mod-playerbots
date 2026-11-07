@@ -91,6 +91,8 @@ void NewRpgInfo::Reset()
     startT = getMSTime();
     questGiver.Clear();
     ignoredQuestGivers.clear();
+    fatigueMs = 0;
+    fatigueCheckMs = 0;
 }
 
 void NewRpgInfo::SetMoveFarTo(WorldPosition pos)

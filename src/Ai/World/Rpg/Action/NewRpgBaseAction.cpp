@@ -942,40 +942,43 @@ WorldPosition NewRpgBaseAction::FindRecoveryAnchor()
     return best;
 }
 
-bool NewRpgBaseAction::IsStrandedInOpenWater()
+bool NewRpgBaseAction::IsInFatigueWater()
 {
-    // A diving bot is not stranded; it is pursuing something below the surface. A bot swimming
-    // at the surface with no ground under it was swept out or lost its way.
-    if (!bot->IsInWater() || bot->IsUnderWater())
-        return false;
+    // The fatigue bar (Player::HandleDrowning) drains only in dark water: an authored liquid
+    // type (MAP_LIQUID_TYPE_DARK_WATER), not deep water in general — a bot crossing ordinary
+    // deep water is safe and must not be recovered. Same exclusions as the server: no fatigue
+    // on flight paths or transports.
+    LiquidData const& liquid = bot->GetLiquidData();
+    return (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER) && !bot->IsInFlight() && !bot->GetTransport();
+}
 
-    // Serviced areas (capitals, cities, travel hubs) may have deep water; never recover there.
-    if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(bot->GetZoneId()))
+bool NewRpgBaseAction::UpdateFatigueRecovery()
+{
+    // Module-side mirror of Player::HandleDrowning's fatigue bar (the server timer is private):
+    // 1x drain per tick in dark water, 10x regen outside it. Deltas are capped so a paused AI
+    // (combat, control loss) cannot over-credit drain. Returns true once the bar is below half
+    // drained, which is when RecoverToRpgArea should fire — well before DAMAGE_EXHAUSTED starts
+    // at empty.
+    uint32 const now = getMSTime();
+    uint32 const last = botAI->rpgInfo.fatigueCheckMs;
+    uint32 const dt = last ? std::min<uint32>(getMSTimeDiff(last, now), 2000u) : 0;
+    botAI->rpgInfo.fatigueCheckMs = now;
+
+    if (IsInFatigueWater())
     {
-        if (area->flags & (AREA_FLAG_CAPITAL | AREA_FLAG_CITY | AREA_FLAG_SLAVE_CAPITAL | AREA_FLAG_SLAVE_CAPITAL2))
-            return false;
+        botAI->rpgInfo.fatigueMs = std::min<uint32>(botAI->rpgInfo.fatigueMs + dt, fatigueMsMax);
+        return sPlayerbotAIConfig.RpgAreaRecovery && botAI->rpgInfo.fatigueMs >= fatigueMsMax / 2;
     }
 
-    auto nearHub = [this](std::vector<WorldLocation> const& hubs)
-    {
-        for (WorldLocation const& hub : hubs)
-            if (hub.GetMapId() == bot->GetMapId() && bot->GetExactDist(hub) < 200.0f)
-                return true;
-        return false;
-    };
-    if (nearHub(sTravelMgr.GetCityLocations(bot)) || nearHub(sTravelMgr.GetTravelHubs(bot)))
-        return false;
-
-    float const ground = bot->GetMap()->GetHeight(bot->GetPhaseMask(), bot->GetPositionX(), bot->GetPositionY(),
-                                                  bot->GetPositionZ() + bot->GetCollisionHeight(), true, 5.0f);
-    return ground == INVALID_HEIGHT || ground == VMAP_INVALID_HEIGHT_VALUE;
+    botAI->rpgInfo.fatigueMs -= std::min<uint32>(botAI->rpgInfo.fatigueMs, 10 * dt);
+    return false;
 }
 
 bool NewRpgBaseAction::RecoverToRpgArea()
 {
-    // The bot is somewhere RPG progression cannot continue (e.g. swept out into The Great Sea):
-    // walk/swim back to the nearest regular anchor so normal behaviour can resume. Travelled via
-    // the camp status, which brings its own stuck handling.
+    // The bot is somewhere RPG progression cannot continue (e.g. swimming in dark water with
+    // the fatigue bar half drained): walk/swim back to the nearest regular anchor so normal
+    // behaviour can resume. Travelled via the camp status, which brings its own stuck handling.
     WorldPosition anchor = FindRecoveryAnchor();
     if (anchor == WorldPosition())
         return false;
@@ -991,11 +994,6 @@ bool NewRpgBaseAction::RecoverToRpgArea()
 
 bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateStatus)
 {
-    // The bot is somewhere RPG progression cannot continue (e.g. swept out into The Great Sea):
-    // walk/swim back to the nearest regular anchor instead of idling or resting there.
-    if (sPlayerbotAIConfig.RpgAreaRecovery && IsStrandedInOpenWater() && RecoverToRpgArea())
-        return true;
-
     std::vector<NewRpgStatus> availableStatus;
     uint32 probSum = 0;
     for (NewRpgStatus status : candidateStatus)

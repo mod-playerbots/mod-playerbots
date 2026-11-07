@@ -250,6 +250,13 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
 {
     NewRpgInfo& info = botAI->rpgInfo;
     NewRpgStatus status = info.GetStatus();
+
+    // Fatigue guard: keep the module-side fatigue bar ticking every update and recover to the
+    // nearest anchor once it is below half drained. GO_CAMP is the recovery vehicle itself, so
+    // it never re-triggers mid-recovery.
+    if (status != RPG_GO_CAMP && UpdateFatigueRecovery())
+        return RecoverToRpgArea();
+
     switch (status)
     {
         case RPG_IDLE:
@@ -274,8 +281,9 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             auto& data = std::get<NewRpgInfo::GoCamp>(info.data);
             WorldPosition& originalPos = data.pos;
             assert(data.pos != WorldPosition());
-            // Keep camping while still stranded: a near anchor must not flip the status early.
-            if (bot->GetExactDist(originalPos) < 10.0f && !IsStrandedInOpenWater())
+            // Keep camping while still in fatigue water: a near anchor must not flip the
+            // status early.
+            if (bot->GetExactDist(originalPos) < 10.0f && !IsInFatigueWater())
             {
                 info.ChangeToWanderNpc();
                 return true;
