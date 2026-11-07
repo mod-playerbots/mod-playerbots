@@ -1021,7 +1021,7 @@ bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event /*event
 
     float stepX;
     float stepY;
-    if (!GetPathStepTowardUnit(bot, caribdis, stopDistance, stepX, stepY))
+    if (!GetPathStepTowardUnit(bot, caribdis, stopDistance, PATH_STEP_DISTANCE, stepX, stepY))
         return false;
 
     return MoveTo(
@@ -1164,8 +1164,11 @@ bool FathomLordKarathressAssignDpsPriorityAction::ApproachCaribdis(Unit* caribdi
 {
     float stepX;
     float stepY;
-    if (!GetPathStepTowardUnit(bot, caribdis, CARIBDIS_APPROACH_STOP_DISTANCE, stepX, stepY))
+    if (!GetPathStepTowardUnit(
+            bot, caribdis, CARIBDIS_APPROACH_STOP_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
+    {
         return false;
+    }
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
@@ -1314,8 +1317,11 @@ bool MorogrimTidewalkerReturnToBossAction::Execute(Event /*event*/)
 
     float stepX;
     float stepY;
-    if (!GetPathStepTowardUnit(bot, tidewalker, TIDEWALKER_MAX_DISTANCE_FROM_BOSS, stepX, stepY))
+    if (!GetPathStepTowardUnit(
+            bot, tidewalker, TIDEWALKER_MAX_DISTANCE_FROM_BOSS, PATH_STEP_DISTANCE, stepX, stepY))
+    {
         return false;
+    }
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
@@ -1596,8 +1602,11 @@ bool LadyVashjPhase3MoveIntoSightAction::Execute(Event /*event*/)
 
     float stepX;
     float stepY;
-    if (!GetPathStepTowardUnit(bot, vashj, VASHJ_PHASE_3_RANGED_DISTANCE, stepX, stepY))
+    if (!GetPathStepTowardUnit(
+            bot, vashj, VASHJ_PHASE_3_RANGED_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
+    {
         return false;
+    }
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
@@ -1996,8 +2005,11 @@ bool LadyVashjTankWaitInTheMiddleAction::Execute(Event /*event*/)
 
     float stepX;
     float stepY;
-    if (!GetPathStepTowardUnit(bot, vashj, VASHJ_IDLE_TANK_DISTANCE, stepX, stepY))
+    if (!GetPathStepTowardUnit(
+            bot, vashj, VASHJ_IDLE_TANK_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
+    {
         return false;
+    }
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
@@ -2048,7 +2060,7 @@ bool LadyVashjAttackTaintedElementalAction::Execute(Event /*event*/)
     {
         float stepX;
         float stepY;
-        if (!GetPathStepTowardUnit(bot, tainted, stopDistance, stepX, stepY))
+        if (!GetPathStepTowardUnit(bot, tainted, stopDistance, PATH_STEP_DISTANCE, stepX, stepY))
             return false;
 
         bool const moved = MoveTo(
@@ -2080,7 +2092,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
 
         float stepX;
         float stepY;
-        if (!GetPathStepTowardUnit(bot, tainted, stopDistance, stepX, stepY))
+        if (!GetPathStepTowardUnit(bot, tainted, stopDistance, PATH_STEP_DISTANCE, stepX, stepY))
             return false;
 
         return MoveTo(
