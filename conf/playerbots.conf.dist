@@ -1214,6 +1214,15 @@ Playerbots.PreferClassArmorType = 0
 # Default: 0 (disabled)
 Playerbots.PreferredSpecWeapons = 0
 
+# When enabled, new-RPG flight destinations are scored by the total travel time
+# to the bot's active quest objectives: walking to the flight master, the taxi
+# route itself, and the remaining distance from the destination node to the
+# nearest quest point. Nearby flight masters on the same map are considered,
+# including ones across a zone border, and each destination node in range is
+# scored instead of one random node per zone.
+# Default: 0 (disabled)
+Playerbots.QuestAwareTaxi = 0
+
 # Set minimum level of bots that will enchant and socket gems into their equipment with maintenance
 # If greater than RandomBotMaxlevel, bots will not automatically enchant equipment or socket gems
 # Default: 60
