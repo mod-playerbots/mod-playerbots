@@ -316,10 +316,6 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             auto& data = std::get<NewRpgInfo::TravelFlight>(info.data);
             if (data.inFlight && !bot->IsInFlight())
             {
-                // The flight is over. A pending giver keeps us in TRAVEL_FLIGHT so the
-                // travel-flight action handles the visit and combat keeps its normal
-                // relevance; otherwise go idle. Do not drive the giver search here: it
-                // returns false while a walk is in progress, which would drop us to idle.
                 if (AI_VALUE(ObjectGuid, "new rpg quest giver").IsEmpty())
                 {
                     info.ChangeToIdle();
@@ -714,9 +710,7 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         return false;
     }
 
-    // Landed (inFlight was set during the taxi) with no giver left: hand back to the
-    // status update action, which will go idle. Resuming the flight-master approach
-    // here would send the bot walking back toward the departure master.
+    // after landing, stop here and let the status update switch to idle
     if (data.inFlight)
         return false;
 
