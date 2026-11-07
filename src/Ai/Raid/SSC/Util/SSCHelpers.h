@@ -162,11 +162,6 @@ bool CastTankTaunt(PlayerbotAI* botAI, Unit* target);
 bool FindHazardEscapeStep(
     Player* bot, Position const& hazard, float moveDist, float& stepX, float& stepY, float& stepZ);
 bool IsDryGround(Player* bot, float x, float y);
-bool GetPathStepTowardPoint(
-    Player* bot, Position const& destination, float stopDistance, float stepDistance,
-    float& stepX, float& stepY);
-bool GetPathStepTowardUnit(
-    Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY);
 bool GetRangedArcAngle(Player* bot, float arcCenter, float arcSpan, float& angle);
 std::vector<Unit*> GetOtherLivingGroupMembers(Player* bot);
 
@@ -285,10 +280,10 @@ inline constexpr float LEOTHERAS_CLASS_ROLE_REARM_DISTANCE = 150.0f;
 
 inline constexpr float LEOTHERAS_SEARCH_DISTANCE = 100.0f;
 inline constexpr uint32 LEOTHERAS_CACHE_INTERVAL_MS = 200;
-inline constexpr uint32 LEOTHERAS_HUMANOID_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
-inline constexpr uint32 LEOTHERAS_DEMON_DPS_WAIT_MS = 10 * IN_MILLISECONDS;
-inline constexpr uint32 LEOTHERAS_FINAL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
-inline constexpr uint32 LEOTHERAS_WHIRLWIND_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
+inline constexpr uint32 LEOTHERAS_HUMANOID_DPS_HOLD_MS = 3 * IN_MILLISECONDS;
+inline constexpr uint32 LEOTHERAS_DEMON_DPS_HOLD_MS = 10 * IN_MILLISECONDS;
+inline constexpr uint32 LEOTHERAS_FINAL_DPS_HOLD_MS = 5 * IN_MILLISECONDS;
+inline constexpr uint32 LEOTHERAS_WHIRLWIND_DPS_HOLD_MS = 3 * IN_MILLISECONDS;
 inline constexpr float LEOTHERAS_WHIRLWIND_HAZARD_RADIUS = 10.0f;
 // Ranged stay this distance from Leo during Humanoid phase until Whirlwind begins.
 inline constexpr float LEOTHERAS_RANGED_SAFE_DISTANCE = LEOTHERAS_WHIRLWIND_HAZARD_RADIUS + 5.0f;
@@ -300,6 +295,9 @@ inline constexpr float LEOTHERAS_CHAOS_BLAST_HAZARD_RADIUS = 8.0f;
 inline constexpr float LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE =
     LEOTHERAS_CHAOS_BLAST_HAZARD_RADIUS + 2.0f;
 inline constexpr float LEOTHERAS_SHADOW_SEPARATION_DISTANCE = 20.0f;
+
+inline constexpr float LEOTHERAS_LIFE_TAP_MANA_PCT = 20.0f;
+inline constexpr float LEOTHERAS_LIFE_TAP_HEALTH_PCT = 90.0f;
 
 inline Position const LEOTHERAS_SPAWN_POSITION = { 376.543f, -438.631f, 29.608f };
 
@@ -349,7 +347,7 @@ inline constexpr std::array KARATHRESS_COUNCIL = {
 inline constexpr float KARATHRESS_BLESSING_HOLD_HEALTH_PCT = 85.0f;
 // The widest tank AoE is Death and Decay at 10 yd.
 inline constexpr float KARATHRESS_AOE_THREAT_CLEARANCE = 15.0f;
-inline constexpr uint32 KARATHRESS_DPS_WAIT_MS = 12 * IN_MILLISECONDS;
+inline constexpr uint32 KARATHRESS_DPS_HOLD_MS = 12 * IN_MILLISECONDS;
 
 inline constexpr float SPITFIRE_TOTEM_SEARCH_DISTANCE = 75.0f;
 // Ranged attack Spitfire Totems only when this close. This will exclude some ranged bots on
@@ -382,6 +380,11 @@ bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem);
 // Sharkkis's tank picks up his pets too.
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI);
 Unit* GetSharkkisPet(Player* bot);
+// Non-healer melee other than the main tank, from Karathress's KARATHRESS_BLESSING_HOLD_HEALTH_PCT
+// until Caribdis dies.
+bool IsKarathressBlessingHoldActive(Player* bot);
+// Non-tanks for the first KARATHRESS_DPS_HOLD_MS of the fight, and before the timer is stamped.
+bool IsKarathressStartDpsHoldActive(Player* bot);
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget);
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
 
@@ -848,7 +851,7 @@ struct SscInstanceState
     std::optional<uint32> leotherasWhirlwindEndTime;
     std::optional<uint32> leotherasDemonPhaseStartTime;
     std::optional<uint32> leotherasFinalPhaseStartTime;
-    std::optional<uint32> karathressDpsWaitTimer;
+    std::optional<uint32> karathressDpsHoldTimer;
     std::optional<ObjectGuid> vashjGroundingShaman;
     std::optional<VashjStationHolders> vashjStationHolders;
     std::optional<TaintedCoreLooter> vashjTaintedCoreLooter;
