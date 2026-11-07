@@ -282,6 +282,10 @@ public:
     std::string RandomBotCombatStrategies, RandomBotNonCombatStrategies;
     std::string ReactStrategies, RandomBotReactStrategies;
     bool ApplyInstanceStrategies;
+    bool UlduarVezaxHardMode;
+    bool UlduarIronAssemblyHardMode;
+    bool UlduarMimironHardMode;
+    bool UlduarXT002HardMode;
     uint32 RandomBotMinLevel, RandomBotMaxLevel;
     float RandomChangeMultiplier;
 
