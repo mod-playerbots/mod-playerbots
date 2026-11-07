@@ -526,6 +526,22 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidariCouncilPositionToInterruptMalandeAction : public MovementAction
+{
+public:
+    IllidariCouncilPositionToInterruptMalandeAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidari council position to interrupt malande") {}
+    bool Execute(Event event) override;
+};
+
+class IllidariCouncilNonTanksAvoidZerevorAction : public MovementAction
+{
+public:
+    IllidariCouncilNonTanksAvoidZerevorAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidari council non-tanks avoid zerevor") {}
+    bool Execute(Event event) override;
+};
+
 class IllidariCouncilCommandPetTargetAction : public AttackAction
 {
 public:

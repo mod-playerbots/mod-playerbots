@@ -570,6 +570,30 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class IllidariCouncilRangedInterrupterShouldRepositionTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    IllidariCouncilRangedInterrupterShouldRepositionTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "illidari council ranged interrupter should reposition",
+            BtHelpers::BtBosses::DATA_ILLIDARI_COUNCIL) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class IllidariCouncilNonTanksShouldAvoidZerevorTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    IllidariCouncilNonTanksShouldAvoidZerevorTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "illidari council non-tanks should avoid zerevor",
+            BtHelpers::BtBosses::DATA_ILLIDARI_COUNCIL) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class IllidariCouncilRangedShouldSpreadTrigger : public BlackTempleEncounterTrigger
 {
 public:

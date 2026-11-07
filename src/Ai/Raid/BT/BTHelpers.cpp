@@ -283,6 +283,18 @@ Unit* GetSkulledSisterOfPain(Player* bot)
         ObjectAccessor::GetUnit(*bot, group->GetTargetIcon(RtiTargetValue::skullIndex)));
 }
 
+Unit* FindEngagedSisterOfPain(PlayerbotAI* botAI)
+{
+    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    for (Unit* target : { botAI->GetBot()->GetVictim(), currentTarget })
+    {
+        if (target && target->GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN))
+            return target;
+    }
+
+    return nullptr;
+}
+
 // True while magic would risk building a Chaotic Charge: (1) during Spell Absorption, (2) before
 // the first Spell Absorption is cast, and (3) in the margin before the earliest possible recast.
 bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
@@ -1174,6 +1186,40 @@ bool CanMoveStraightTo(Player* bot, Position const& point)
     return point.GetExactDist2d(x, y) <= clampTolerance;
 }
 
+bool IsGroupMemberNear(Player* bot, Position const& point, float radius)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member != bot && member->IsAlive() && member->GetExactDist2d(point) < radius)
+            return true;
+    }
+
+    return false;
+}
+
+float GetCircleInterruptRange(Player* bot)
+{
+    return bot->getClass() == CLASS_MAGE ? COUNTERSPELL_RANGE : WIND_SHEAR_RANGE;
+}
+
+float GetMalandeInterruptRingRadius(Player* bot, Unit* malande)
+{
+    return GetCircleInterruptRange(bot) + bot->GetCombatReach() + malande->GetCombatReach() -
+        CIRCLE_INTERRUPTER_RANGE_MARGIN;
+}
+
+float GetMalandeInterrupterTargetRange(PlayerbotAI* botAI)
+{
+    float const range = botAI->GetRange("spell");
+    return botAI->GetBot()->getClass() == CLASS_SHAMAN ?
+        range + ELEMENTAL_REACH_BONUS_RANGE : range;
+}
+
 } // end anonymous namespace (Illidari Council)
 
 IllidariCouncilMembers GetIllidariCouncilMembers(Player* bot)
@@ -1307,6 +1353,101 @@ bool ShouldRangedInterruptCircleOfHealing(Unit* malande, Unit* gathios, Unit* ze
         IsMalandeInCouncilPatch(malande, gathios, zerevor);
 }
 
+bool IsCircleRangedInterrupter(Player* bot)
+{
+    // Warlocks also interrupt but do so with Felhunters, so they do not need special positioning.
+    if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_SHAMAN)
+        return false;
+
+    return PlayerbotAI::IsRangedDps(bot) && !IsZerevorMageTank(bot);
+}
+
+bool IsInMalandeInterruptPosition(PlayerbotAI* botAI, Unit* malande)
+{
+    Player* bot = botAI->GetBot();
+    if (!bot->IsWithinCombatRange(malande, GetCircleInterruptRange(bot)))
+        return false;
+
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Unit* target = AI_VALUE(Unit*, "current target");
+    float const targetRange = GetMalandeInterrupterTargetRange(botAI);
+    if (!target || bot->IsWithinCombatRange(target, targetRange + CONTACT_DISTANCE))
+        return true;
+
+    // Interrupt range to Malande wins if no point is in range of Malande and Gathios.
+    float const targetRadius = targetRange + bot->GetCombatReach() + target->GetCombatReach();
+    return target->GetExactDist2d(malande) >=
+        GetMalandeInterruptRingRadius(bot, malande) + targetRadius;
+}
+
+bool FindMalandeInterruptPosition(
+    PlayerbotAI* botAI, IllidariCouncilMembers const& members, Position& destination)
+{
+    Unit* malande = members.malande;
+    if (!malande)
+        return false;
+
+    constexpr uint8 pointCount = 64;
+
+    Player* bot = botAI->GetBot();
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Unit* target = AI_VALUE(Unit*, "current target");
+    float const targetRadius = target ?
+        GetMalandeInterrupterTargetRange(botAI) + bot->GetCombatReach() + target->GetCombatReach() :
+        0.0f;
+    float const ringRadius = GetMalandeInterruptRingRadius(bot, malande);
+    float const axisAngle = malande->GetAngle(target ? target : bot);
+
+    auto const getRingPoint = [&](float angle)
+    {
+        return Position(
+            malande->GetPositionX() + ringRadius * std::cos(angle),
+            malande->GetPositionY() + ringRadius * std::sin(angle), bot->GetPositionZ());
+    };
+    auto const isClearOfHazards = [&](Position const& point)
+    {
+        return !IsInCouncilPatch(point, members.gathios, members.zerevor, COUNCIL_PATCH_MARGIN) &&
+            (!members.zerevor || members.zerevor->GetExactDist2d(point) >= ZEREVOR_AVOID_DISTANCE);
+    };
+
+    std::vector<Position> candidates;
+    for (uint8 i = 0; i < pointCount; ++i)
+    {
+        Position const point =
+            getRingPoint(axisAngle + 2.0f * static_cast<float>(M_PI) * i / pointCount);
+        if (isClearOfHazards(point) && (!target || target->GetExactDist(point) <= targetRadius))
+            candidates.push_back(point);
+    }
+
+    std::sort(
+        candidates.begin(), candidates.end(),
+        [bot](Position const& a, Position const& b)
+        {
+            return bot->GetExactDist2d(a) < bot->GetExactDist2d(b);
+        });
+
+    for (Position const& candidate : candidates)
+    {
+        if (IsGroupMemberNear(bot, candidate, COUNCIL_RANGED_SPREAD_DISTANCE) ||
+            !CanMoveStraightTo(bot, candidate) ||
+            !malande->IsWithinLOS(
+                candidate.GetPositionX(), candidate.GetPositionY(), candidate.GetPositionZ()))
+        {
+            continue;
+        }
+
+        destination = candidate;
+        return true;
+    }
+
+    Position const nearestTarget = getRingPoint(axisAngle);
+    if (!isClearOfHazards(nearestTarget))
+        return false;
+
+    destination = nearestTarget;
+    return true;
+}
+
 bool IsZerevorOnMageTank(Player* bot, Unit* zerevor)
 {
     if (!zerevor)
@@ -1314,6 +1455,45 @@ bool IsZerevorOnMageTank(Player* bot, Unit* zerevor)
 
     Player* mageTank = GetZerevorMageTank(bot);
     return mageTank && zerevor->GetVictim() == mageTank;
+}
+
+bool FindZerevorAvoidPosition(Player* bot, Unit* gathios, Unit* zerevor, Position& destination)
+{
+    if (!zerevor)
+        return false;
+
+    constexpr uint8 pointCount = 16;
+
+    std::vector<Position> candidates;
+    for (uint8 i = 0; i < pointCount; ++i)
+    {
+        float const angle = 2.0f * static_cast<float>(M_PI) * i / pointCount;
+        Position const point(
+            zerevor->GetPositionX() + ZEREVOR_AVOID_DISTANCE * std::cos(angle),
+            zerevor->GetPositionY() + ZEREVOR_AVOID_DISTANCE * std::sin(angle),
+            bot->GetPositionZ());
+
+        if (!IsInCouncilPatch(point, gathios, zerevor, COUNCIL_PATCH_MARGIN))
+            candidates.push_back(point);
+    }
+
+    std::sort(
+        candidates.begin(), candidates.end(),
+        [bot](Position const& a, Position const& b)
+        {
+            return bot->GetExactDist2d(a) < bot->GetExactDist2d(b);
+        });
+
+    for (Position const& candidate : candidates)
+    {
+        if (!CanMoveStraightTo(bot, candidate))
+            continue;
+
+        destination = candidate;
+        return true;
+    }
+
+    return false;
 }
 
 // Within heal range of the mage tank, clear of Arcane Explosion, and not standing in a patch.

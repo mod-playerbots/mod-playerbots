@@ -337,6 +337,7 @@ private:
     float GetTankValue(Action* action);
     float GetNonTankValue(Action* action);
     float GetHealerValue(Action* action);
+    bool IsMeleeTargetNearZerevor();
 };
 
 class IllidariCouncilDisableMageTankActionsMultiplier : public BlackTempleEncounterMultiplier

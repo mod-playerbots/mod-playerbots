@@ -180,6 +180,12 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidari council mage tank healer should reposition",
         { NextAction("illidari council position mage tank healer", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("illidari council ranged interrupter should reposition",
+        { NextAction("illidari council position to interrupt malande", ACTION_RAID) }));
+
+    triggers.push_back(new TriggerNode("illidari council non-tanks should avoid zerevor",
+        { NextAction("illidari council non-tanks avoid zerevor", ACTION_EMERGENCY + 2) }));
+
     triggers.push_back(new TriggerNode("illidari council ranged should spread",
         { NextAction("illidari council spread ranged", ACTION_RAID + 2) }));
 
@@ -417,6 +423,21 @@ void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
         exclusions.insert(demon->GetGUID());
 }
 
+// Exclude secondary DoTs on Zerevor to not take aggro from the Mage tank at pull (and after pull,
+// Zerevor will be out of range anyway).
+void AppendZerevorDebuffExclusion(Player* bot, GuidSet& exclusions)
+{
+    if (!IsBossInProgress(bot, BT_MAP_ID, Id(BtBosses::DATA_ILLIDARI_COUNCIL)))
+        return;
+
+    Player* mageTank = GetZerevorMageTank(bot);
+    if (!mageTank || mageTank == bot)
+        return;
+
+    if (Unit* zerevor = GetIllidariCouncilMembers(bot).zerevor)
+        exclusions.insert(zerevor->GetGUID());
+}
+
 } // end anonymous namespace
 
 void RaidBlackTempleStrategy::AppendTargetExclusions(
@@ -437,6 +458,9 @@ void RaidBlackTempleStrategy::AppendTargetExclusions(
 
     if (type == TargetValueExclusionType::TankTarget || type == TargetValueExclusionType::DpsTarget)
         AppendShadeOfAkamaChannelerExclusions(botAI, exclusions);
+
+    if (type == TargetValueExclusionType::DebuffTarget)
+        AppendZerevorDebuffExclusion(bot, exclusions);
 
     AppendShadowyConstructExclusions(botAI, exclusions);
     AppendIllidanMeleeExclusions(botAI, exclusions);

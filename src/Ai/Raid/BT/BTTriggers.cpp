@@ -51,13 +51,7 @@ bool SisterOfPleasureShouldBeFocusedTrigger::IsActive()
     if (PlayerbotAI::IsTank(bot))
         return false;
 
-    for (Unit* target : { bot->GetVictim(), AI_VALUE(Unit*, "current target") })
-    {
-        if (target && target->GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN))
-            return true;
-    }
-
-    return false;
+    return FindEngagedSisterOfPain(botAI);
 }
 
 // Wands keep shooting once started, so a multiplier alone can't stop wanding.
@@ -529,6 +523,34 @@ bool IllidariCouncilMageTankHealerShouldRepositionTrigger::IsActiveInEncounter()
     Player* mageTank = GetZerevorMageTank(bot);
     return !IsMageTankHealerPositionSafe(bot->GetPosition(), mageTank, zerevor) ||
         !bot->IsWithinLOSInMap(mageTank);
+}
+
+bool IllidariCouncilRangedInterrupterShouldRepositionTrigger::IsActiveInEncounter()
+{
+    if (!IsCircleRangedInterrupter(bot) || bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        return false;
+
+    Unit* malande = GetIllidariCouncilMembers(bot).malande;
+    return malande && !IsInMalandeInterruptPosition(botAI, malande);
+}
+
+bool IllidariCouncilNonTanksShouldAvoidZerevorTrigger::IsActiveInEncounter()
+{
+    if (PlayerbotAI::IsTank(bot) || IsZerevorMageTank(bot))
+        return false;
+
+    Unit* zerevor = GetIllidariCouncilMembers(bot).zerevor;
+    if (!zerevor || bot->GetExactDist2d(zerevor) >= ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE)
+        return false;
+
+    Player* mageTank = GetZerevorMageTank(bot);
+    if (!mageTank)
+        return false;
+
+    if (zerevor->GetVictim() == mageTank && PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
+        return false;
+
+    return true;
 }
 
 bool IllidariCouncilRangedShouldSpreadTrigger::IsActiveInEncounter()

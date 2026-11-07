@@ -76,8 +76,10 @@ std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId)
         return std::nullopt;
 
     for (uint32 bossId = 0; bossId < instance->GetEncounterCount(); ++bossId)
+    {
         if (instance->GetBossState(bossId) == IN_PROGRESS)
             return bossId;
+    }
 
     return std::nullopt;
 }
@@ -491,7 +493,10 @@ bool GetPathStepTowardPoint(
             if (fromDist <= stopDistance)
                 break;
 
-            ratio = (fromDist - stopDistance) / (fromDist - toDist);
+            float const a = segment * segment;
+            float const b = (from - targetPos).dot(to - from);
+            float const c = fromDist * fromDist - stopDistance * stopDistance;
+            ratio = (-b - std::sqrt(std::max(0.0f, b * b - a * c))) / a;
         }
 
         if (segment * ratio >= remaining)
@@ -791,16 +796,19 @@ bool IsAoeThreatAction(Player* bot, Action* action)
         case CLASS_DEATH_KNIGHT:
             return dynamic_cast<CastDeathAndDecayAction*>(action) ||
                 dynamic_cast<CastPestilenceAction*>(action) ||
-                dynamic_cast<CastBloodBoilAction*>(action);
+                dynamic_cast<CastBloodBoilAction*>(action) ||
+                dynamic_cast<CastHeartStrikeAction*>(action);
 
         case CLASS_DRUID:
             return dynamic_cast<CastSwipeBearAction*>(action) ||
                 dynamic_cast<CastMaulAction*>(action) || // Hits multiple targets with the Glyph
-                dynamic_cast<CastDemoralizingRoarAction*>(action);
+                dynamic_cast<CastDemoralizingRoarAction*>(action) ||
+                dynamic_cast<CastBerserkAction*>(action); // Causes Mangle (Bear) to chain
 
         case CLASS_PALADIN:
             return dynamic_cast<CastAvengersShieldAction*>(action) ||
-                dynamic_cast<CastConsecrationAction*>(action);
+                dynamic_cast<CastConsecrationAction*>(action) ||
+                dynamic_cast<CastHammerOfTheRighteousAction*>(action);
 
         case CLASS_WARRIOR:
             return dynamic_cast<CastThunderClapAction*>(action) ||
@@ -834,17 +842,6 @@ float GetDpsHoldValue(Player* bot, Action* action)
         dynamic_cast<CastProtectSpellAction*>(action);
 
     return castOnRaidSpell ? 1.0f : 0.0f;
-}
-
-Unit* GetActionTargetOrCurrentTarget(PlayerbotAI* botAI, Action* action)
-{
-    if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
-    {
-        return action->GetTarget();
-    }
-
-    return botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
 }
 
 // Stopping Attacks and Spells
@@ -930,8 +927,8 @@ bool StopAttackingAndChanneling(Player* bot)
     return isStopped;
 }
 
-// Unlike StopAttackingAndChanneling(), CURRENT_MELEE_SPELL is not interrupted because a queued
-// swing ability fires on the next swing, at whatever the victim is then.
+// Unlike StopAttackingAndChanneling(), a queued swing ability is canceled only if the bot's swing is
+// on the target (by AttackStop()). Otherwise, it fires at the bot's actual victim, not the target.
 bool StopAttackingTarget(Player* bot, Unit const& target)
 {
     bool isStopped = false;
@@ -958,27 +955,22 @@ bool StopAttackingTarget(Player* bot, Unit const& target)
 
 void StandDown(PlayerbotAI* botAI)
 {
-    Player* bot = botAI->GetBot();
-    // Not duplicative of StopAttackingTarget, which calls AttackStop only when the bot's victim is
-    // its current target. They can differ if the target is cleared or changed without Attack().
-    bot->AttackStop();
-
-    auto* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target");
-    if (Unit* target = currentTarget->Get())
-        StopAttackingTarget(bot, *target);
-
-    currentTarget->Set(nullptr);
+    StopAttackingAndChanneling(botAI->GetBot());
+    botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Set(nullptr);
 }
 
 bool SelectTarget(PlayerbotAI* botAI, Unit* target)
 {
-    Player* bot = botAI->GetBot();
-    if (!target || !AttackersValue::IsValidTarget(target, bot))
+    if (!target)
         return false;
 
     auto* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target");
     Unit* oldTarget = currentTarget->Get();
     if (oldTarget == target && botAI->GetState() == BOT_STATE_COMBAT)
+        return false;
+
+    Player* bot = botAI->GetBot();
+    if (!AttackersValue::IsValidTarget(target, bot))
         return false;
 
     if (oldTarget && oldTarget != target)

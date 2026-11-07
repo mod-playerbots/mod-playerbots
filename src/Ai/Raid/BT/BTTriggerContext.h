@@ -174,6 +174,12 @@ public:
         creators["illidari council mage tank healer should reposition"] =
             &RaidBlackTempleTriggerContext::illidari_council_mage_tank_healer_should_reposition;
 
+        creators["illidari council ranged interrupter should reposition"] =
+            &RaidBlackTempleTriggerContext::illidari_council_ranged_interrupter_should_reposition;
+
+        creators["illidari council non-tanks should avoid zerevor"] =
+            &RaidBlackTempleTriggerContext::illidari_council_non_tanks_should_avoid_zerevor;
+
         creators["illidari council ranged should spread"] =
             &RaidBlackTempleTriggerContext::illidari_council_ranged_should_spread;
 
@@ -490,6 +496,14 @@ private:
     static Trigger* illidari_council_mage_tank_healer_should_reposition(PlayerbotAI* botAI)
     {
         return new IllidariCouncilMageTankHealerShouldRepositionTrigger(botAI);
+    }
+    static Trigger* illidari_council_ranged_interrupter_should_reposition(PlayerbotAI* botAI)
+    {
+        return new IllidariCouncilRangedInterrupterShouldRepositionTrigger(botAI);
+    }
+    static Trigger* illidari_council_non_tanks_should_avoid_zerevor(PlayerbotAI* botAI)
+    {
+        return new IllidariCouncilNonTanksShouldAvoidZerevorTrigger(botAI);
     }
     static Trigger* illidari_council_ranged_should_spread(PlayerbotAI* botAI)
     {
