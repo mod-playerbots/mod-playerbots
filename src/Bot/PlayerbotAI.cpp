@@ -1417,6 +1417,10 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                 horizontalSpeed = 0.11f;
             verticalSpeed = -verticalSpeed;
 
+            constexpr float maxIndoorVerticalSpeed = 15.0f;
+            if (!bot->IsOutdoors())
+                verticalSpeed = std::min(verticalSpeed, maxIndoorVerticalSpeed);
+
             bot->CastStop();
             bot->StopMoving();
             bot->GetMotionMaster()->Clear();
