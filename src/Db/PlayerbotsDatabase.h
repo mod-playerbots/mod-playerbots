@@ -113,6 +113,8 @@ enum PlayerbotsDatabaseStatements : uint32
 
     PLAYERBOTS_SEL_TEXT_CHANCE,
 
+    PLAYERBOTS_SEL_QUEST_POI_Z,
+
     MAX_PLAYERBOTS_STATEMENTS
 };
 
