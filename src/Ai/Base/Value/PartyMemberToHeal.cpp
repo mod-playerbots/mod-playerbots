@@ -9,6 +9,13 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
+namespace
+{
+constexpr uint32 BG_WS_SPELL_WARSONG_FLAG = 23333;
+constexpr uint32 BG_WS_SPELL_SILVERWING_FLAG = 23335;
+constexpr uint32 BG_EY_NETHERSTORM_FLAG_SPELL = 34976;
+}
+
 class IsTargetOfHealingSpell : public SpellEntryPredicate
 {
 public:
@@ -184,6 +191,9 @@ Unit* PartyMemberToProtect::Calculate()
         if (!player || player == bot)
             continue;
         if (player->IsGameMaster() || !player->IsAlive())
+            continue;
+        if (player->HasAura(BG_WS_SPELL_WARSONG_FLAG) || player->HasAura(BG_WS_SPELL_SILVERWING_FLAG) ||
+            player->HasAura(BG_EY_NETHERSTORM_FLAG_SPELL))
             continue;
 
         float health = player->GetHealthPct();
