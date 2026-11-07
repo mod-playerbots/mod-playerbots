@@ -59,10 +59,6 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         botAI->rpgInfo.SetMoveFarTo(dest);
     }
 
-    // Combat is not travel progress. Non-quest mobs count too: clearing a
-    // tunnel or a room can take longer than the stuck timeout, and the bot
-    // is busy fighting rather than stuck on the path. Reset the timer so
-    // combat time never contributes to the teleport recovery.
     bool const inCombat = bot->IsInCombat();
     if (inCombat)
     {
