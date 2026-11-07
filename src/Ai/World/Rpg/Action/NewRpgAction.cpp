@@ -250,6 +250,14 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
 {
     NewRpgInfo& info = botAI->rpgInfo;
     NewRpgStatus status = info.GetStatus();
+
+    // Fatigue guard: keep the module-side fatigue bar ticking every update and recover to the
+    // nearest anchor once it is below half drained. Runs in every status — a bot that chose
+    // GO_CAMP/GO_GRIND on land and then ends up in dark water must be covered too. The
+    // fatigueRecovery flag suppresses re-triggering while a dark-water rescue is in progress.
+    if (UpdateFatigueRecovery() && !botAI->rpgInfo.fatigueRecovery)
+        return RecoverToRpgArea();
+
     switch (status)
     {
         case RPG_IDLE:
@@ -274,8 +282,9 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             auto& data = std::get<NewRpgInfo::GoCamp>(info.data);
             WorldPosition& originalPos = data.pos;
             assert(data.pos != WorldPosition());
-            // GO_CAMP -> WANDER_NPC
-            if (bot->GetExactDist(originalPos) < 10.0f)
+            // Keep camping while still in fatigue water: a near anchor must not flip the
+            // status early.
+            if (bot->GetExactDist(originalPos) < 10.0f && !IsInFatigueWater())
             {
                 info.ChangeToWanderNpc();
                 return true;

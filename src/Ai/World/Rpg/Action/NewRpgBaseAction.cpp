@@ -13,6 +13,7 @@
 #include "GossipDef.h"
 #include "GridTerrainData.h"
 #include "IVMapMgr.h"
+#include "GameGraveyard.h"
 #include "NewRpgHelpers.h"
 #include "NewRpgInfo.h"
 #include "QuestLevelRules.h"
@@ -131,13 +132,15 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     }
 
     float dis = bot->GetExactDist(dest);
+
     if (dis < pathFinderDis)
     {
         return MoveTo(dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), false, false,
                       false, true);
     }
 
-    const uint32 typeOk = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY;
+    const uint32 typeOk = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY |
+                          PATHFIND_NOT_USING_PATH;
 
     // Primary strategy: ask mmap for a route to the TRUE destination.
     // If mmap can reach it directly (PATHFIND_NORMAL) or partially
@@ -154,6 +157,7 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         path.CalculatePath(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ());
         PathType type = path.GetPathType();
         bool canReach = !(type & (~typeOk));
+
         if (canReach)
         {
             G3D::Vector3 const& endPos = path.GetActualEndPosition();
@@ -797,7 +801,10 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
         hiRange /= 3;
         loRange /= 3;
     }
-    std::vector<WorldLocation> lo_prepared_locs, hi_prepared_locs;
+    // Same-zone candidates are preferred; same-map cross-zone candidates are the fallback, so a
+    // bot in a zone without grind positions (e.g. The Veiled Sea) heads for the nearest safe
+    // spot in a neighbouring zone instead of idling.
+    std::vector<WorldLocation> hiSameZone, loSameZone, hiCrossZone, loCrossZone;
 
     bool inCity = false;
     if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(bot->GetZoneId()))
@@ -811,37 +818,56 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
         if (bot->GetMapId() != loc.GetMapId())
             continue;
 
-        if (bot->GetExactDist(loc) > 2500.0f)
+        float dist = bot->GetExactDist(loc);
+        if (dist > loRange)
             continue;
 
-        if (!inCity && bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(), loc.GetPositionY(),
-                                                loc.GetPositionZ()) != bot->GetZoneId())
+        // Dark water drains the fatigue bar to death; such cells are never valid destinations.
+        LiquidData const liquid = bot->GetMap()->GetLiquidData(bot->GetPhaseMask(), loc.GetPositionX(),
+                                                               loc.GetPositionY(), loc.GetPositionZ(),
+                                                               bot->GetCollisionHeight(), {});
+        if (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER)
             continue;
 
-        if (bot->GetExactDist(loc) < hiRange)
-        {
-            hi_prepared_locs.push_back(loc);
-        }
+        bool const sameZone = inCity || bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(),
+                                                                 loc.GetPositionY(),
+                                                                 loc.GetPositionZ()) == bot->GetZoneId();
 
-        if (bot->GetExactDist(loc) < loRange)
-        {
-            lo_prepared_locs.push_back(loc);
-        }
+        auto& hi = sameZone ? hiSameZone : hiCrossZone;
+        auto& lo = sameZone ? loSameZone : loCrossZone;
+
+        if (dist < hiRange)
+            hi.push_back(loc);
+
+        lo.push_back(loc);
     }
+
     WorldPosition dest{};
-    if (urand(1, 100) <= 50 && !hi_prepared_locs.empty())
+    if (urand(1, 100) <= 50 && !hiSameZone.empty())
     {
-        uint32 idx = urand(0, hi_prepared_locs.size() - 1);
-        dest = hi_prepared_locs[idx];
+        uint32 idx = urand(0, hiSameZone.size() - 1);
+        dest = hiSameZone[idx];
     }
-    else if (!lo_prepared_locs.empty())
+    else if (!loSameZone.empty())
     {
-        uint32 idx = urand(0, lo_prepared_locs.size() - 1);
-        dest = lo_prepared_locs[idx];
+        uint32 idx = urand(0, loSameZone.size() - 1);
+        dest = loSameZone[idx];
     }
-    LOG_DEBUG("playerbots", "[New RPG] Bot {} select random grind pos Map:{} X:{} Y:{} Z:{} ({}+{} available in {})",
+    else if (urand(1, 100) <= 50 && !hiCrossZone.empty())
+    {
+        uint32 idx = urand(0, hiCrossZone.size() - 1);
+        dest = hiCrossZone[idx];
+    }
+    else if (!loCrossZone.empty())
+    {
+        uint32 idx = urand(0, loCrossZone.size() - 1);
+        dest = loCrossZone[idx];
+    }
+    LOG_DEBUG("playerbots",
+              "[New RPG] Bot {} select random grind pos Map:{} X:{} Y:{} Z:{} ({}+{} same-zone, {}+{} cross-zone, {} cached)",
               bot->GetName(), dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(),
-              hi_prepared_locs.size(), lo_prepared_locs.size() - hi_prepared_locs.size(), locs.size());
+              hiSameZone.size(), loSameZone.size() - hiSameZone.size(), hiCrossZone.size(),
+              loCrossZone.size() - hiCrossZone.size(), locs.size());
     return dest;
 }
 
@@ -857,7 +883,8 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
             inCity = true;
     }
 
-    std::vector<WorldLocation> prepared_locs;
+    // Same-zone hubs preferred, same-map cross-zone hubs as fallback — see SelectRandomGrindPos.
+    std::vector<WorldLocation> sameZoneLocs, crossZoneLocs;
     for (auto& loc : locs)
     {
         if (bot->GetMapId() != loc.GetMapId())
@@ -870,21 +897,32 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
         if (bot->GetExactDist(loc) < 50.0f)
             continue;
 
-        if (!inCity && bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(), loc.GetPositionY(),
-                                                loc.GetPositionZ()) != bot->GetZoneId())
+        // Dark water drains the fatigue bar to death; never camp there.
+        LiquidData const liquid = bot->GetMap()->GetLiquidData(bot->GetPhaseMask(), loc.GetPositionX(),
+                                                               loc.GetPositionY(), loc.GetPositionZ(),
+                                                               bot->GetCollisionHeight(), {});
+        if (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER)
             continue;
 
-        prepared_locs.push_back(loc);
+        bool const sameZone = inCity || bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(),
+                                                                 loc.GetPositionY(),
+                                                                 loc.GetPositionZ()) == bot->GetZoneId();
+        (sameZone ? sameZoneLocs : crossZoneLocs).push_back(loc);
     }
+
+    std::vector<WorldLocation>& prepared_locs =
+        !sameZoneLocs.empty() ? sameZoneLocs : crossZoneLocs;
+
     WorldPosition dest{};
     if (!prepared_locs.empty())
     {
         uint32 idx = urand(0, prepared_locs.size() - 1);
         dest = prepared_locs[idx];
     }
-    LOG_DEBUG("playerbots", "[New RPG] Bot {} select random inn keeper pos Map:{} X:{} Y:{} Z:{} ({} available in {})",
+    LOG_DEBUG("playerbots",
+              "[New RPG] Bot {} select random inn keeper pos Map:{} X:{} Y:{} Z:{} ({} same-zone, {} cross-zone, {} hubs)",
               bot->GetName(), dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(),
-              prepared_locs.size(), locs.size());
+              sameZoneLocs.size(), crossZoneLocs.size(), locs.size());
     return dest;
 }
 
@@ -906,6 +944,99 @@ bool NewRpgBaseAction::SelectRandomFlightTaxiNode(uint32& flightMasterEntry, Wor
     return true;
 }
 
+WorldPosition NewRpgBaseAction::FindRecoveryAnchor()
+{
+    WorldPosition best{};
+    float bestDist = std::numeric_limits<float>::max();
+    auto consider = [&](WorldLocation const& loc)
+    {
+        if (bot->GetMapId() != loc.GetMapId())
+            return;
+
+        float dist = bot->GetExactDist(loc);
+        if (dist > 0.0f && dist < bestDist)
+        {
+            bestDist = dist;
+            best = WorldPosition(loc);
+        }
+    };
+
+    // Nearby RPG targets (cached) act as the quest giver anchors.
+    for (ObjectGuid const& guid : AI_VALUE(GuidVector, "possible new rpg targets"))
+    {
+        if (WorldObject* object = ObjectAccessor::GetWorldObject(*bot, guid))
+            consider(WorldPosition(object));
+    }
+    for (WorldLocation const& loc : sTravelMgr.GetCityLocations(bot))
+        consider(loc);
+    for (WorldLocation const& loc : sTravelMgr.GetTravelHubs(bot))
+        consider(loc);
+    if (TravelMgr::FlightMasterInfo const* info = sTravelMgr.GetNearestFlightMasterInfo(bot))
+        consider(info->pos);
+    if (GraveyardStruct const* graveyard = sGraveyard->GetClosestGraveyard(bot, bot->GetTeamId()))
+        consider(WorldPosition(graveyard->Map, graveyard->x, graveyard->y, graveyard->z));
+
+    return best;
+}
+
+bool NewRpgBaseAction::IsInFatigueWater()
+{
+    // The fatigue bar (Player::HandleDrowning) drains only in dark water: an authored liquid
+    // type (MAP_LIQUID_TYPE_DARK_WATER), not deep water in general — a bot crossing ordinary
+    // deep water is safe and must not be recovered. Same exclusions as the server: no fatigue
+    // on flight paths or transports.
+    LiquidData const& liquid = bot->GetLiquidData();
+    return (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER) && !bot->IsInFlight() && !bot->GetTransport();
+}
+
+bool NewRpgBaseAction::UpdateFatigueRecovery()
+{
+    // Module-side mirror of Player::HandleDrowning's fatigue bar (the server timer is private):
+    // 1x drain per tick in dark water, 10x regen outside it. Deltas are capped so a paused AI
+    // (combat, control loss) cannot over-credit drain. Returns true once the bar is below half
+    // drained, which is when RecoverToRpgArea should fire — well before DAMAGE_EXHAUSTED starts
+    // at empty.
+    uint32 const now = getMSTime();
+    uint32 const last = botAI->rpgInfo.fatigueCheckMs;
+    uint32 const dt = last ? std::min<uint32>(getMSTimeDiff(last, now), 2000u) : 0;
+    botAI->rpgInfo.fatigueCheckMs = now;
+
+    if (IsInFatigueWater())
+    {
+        botAI->rpgInfo.fatigueMs = std::min<uint32>(botAI->rpgInfo.fatigueMs + dt, fatigueMsMax);
+        bool const shouldRecover = sPlayerbotAIConfig.RpgAreaRecovery && botAI->rpgInfo.fatigueMs >= fatigueMsMax / 2;
+
+        return shouldRecover;
+    }
+
+    botAI->rpgInfo.fatigueMs -= std::min<uint32>(botAI->rpgInfo.fatigueMs, 10 * dt);
+    // Re-arm the trigger once the bot is out of dark water, so a later re-entry is handled.
+    botAI->rpgInfo.fatigueRecovery = false;
+    return false;
+}
+
+bool NewRpgBaseAction::RecoverToRpgArea()
+{
+    // The bot is somewhere RPG progression cannot continue (e.g. swimming in dark water with
+    // the fatigue bar half drained): swim/walk back to the nearest regular anchor so normal
+    // behaviour can resume. Travelled via the camp status, which brings its own stuck handling.
+    // Swimming works since far moves accept the pathfinder's NOT_USING_PATH straight-line
+    // result for swimmers; no teleport - a bot that dies making the swim was sent somewhere
+    // no bot should have been sent (dark water is excluded from target selection).
+    WorldPosition anchor = FindRecoveryAnchor();
+    if (anchor == WorldPosition())
+        return false;
+
+    AreaTableEntry const* zoneEntry = sAreaTableStore.LookupEntry(bot->GetZoneId());
+    LOG_DEBUG("playerbots",
+              "[New RPG] {} recovering from zone {} ({}) to anchor Map:{} X:{} Y:{} Z:{} ({:.0f} yd away)",
+              bot->GetName(), bot->GetZoneId(), PlayerbotAI::GetLocalizedAreaName(zoneEntry), anchor.GetMapId(),
+              anchor.GetPositionX(), anchor.GetPositionY(), anchor.GetPositionZ(), bot->GetExactDist(anchor));
+    botAI->rpgInfo.fatigueRecovery = true;
+    botAI->rpgInfo.ChangeToGoCamp(anchor);
+    return true;
+}
+
 bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateStatus)
 {
     std::vector<NewRpgStatus> availableStatus;
@@ -921,9 +1052,12 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             probSum += sPlayerbotAIConfig.RpgStatusProbWeight[status];
         }
     }
-    // Safety check. Default to "rest" if all RPG weights = 0
+    // Safety check. No usable status where the bot currently is: recover before resting.
     if (availableStatus.empty() || probSum == 0)
     {
+        if (sPlayerbotAIConfig.RpgAreaRecovery && RecoverToRpgArea())
+            return true;
+
         botAI->rpgInfo.ChangeToRest();
         bot->SetStandState(UNIT_STAND_STATE_SIT);
         return true;

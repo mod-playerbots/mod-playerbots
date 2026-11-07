@@ -50,6 +50,12 @@ protected:
     bool TurnInQuest(Quest const* quest, ObjectGuid guid);
     bool OrganizeQuestLog();
 
+    /* STUCK / UNUSABLE AREA RECOVERY */
+    WorldPosition FindRecoveryAnchor();
+    bool IsInFatigueWater();
+    bool UpdateFatigueRecovery();
+    bool RecoverToRpgArea();
+
 protected:
     bool GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector<POIInfo>& poiInfo, bool toComplete = false);
     static WorldPosition SelectRandomGrindPos(Player* bot);
@@ -69,6 +75,12 @@ protected:
     // the teleport fires, but long enough that a genuine long
     // walk that is slowly making progress never triggers it.
     const uint32 stuckTime = 90 * IN_MILLISECONDS;
+
+    /* FOR RECOVERY */
+    // Player::HandleDrowning's fatigue bar: 60s capacity, drains in dark water, regenerates
+    // 10x as fast outside it, then DAMAGE_EXHAUSTED every second once empty. Recovery fires
+    // when half the bar is gone — ordinary deep water never triggers it.
+    const uint32 fatigueMsMax = 60 * IN_MILLISECONDS;
 
     /* FOR QUEST GIVER */
     // Time on one giver, walking and interacting, after which it is skipped until the next IDLE.

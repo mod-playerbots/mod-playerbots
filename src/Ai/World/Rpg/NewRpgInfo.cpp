@@ -18,6 +18,13 @@ void NewRpgInfo::ChangeToGoCamp(WorldPosition pos)
 {
     startT = getMSTime();
     data = GoCamp{pos};
+    // A fresh camp target must not inherit stale stuck state, or the first MoveFarTo call
+    // would instantly fire the stuck teleport back to the old destination (observed: a bot
+    // teleported out of dark water bounced straight back to the previous anchor).
+    nearestMoveFarDis = FLT_MAX;
+    stuckTs = getMSTime();
+    stuckAttempts = 0;
+    moveFarPos = WorldPosition();
 }
 
 void NewRpgInfo::ChangeToWanderNpc()
@@ -91,6 +98,9 @@ void NewRpgInfo::Reset()
     startT = getMSTime();
     questGiver.Clear();
     ignoredQuestGivers.clear();
+    fatigueMs = 0;
+    fatigueCheckMs = 0;
+    fatigueRecovery = false;
 }
 
 void NewRpgInfo::SetMoveFarTo(WorldPosition pos)
