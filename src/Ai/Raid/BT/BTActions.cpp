@@ -388,7 +388,7 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    Aura* shield = najentus->GetAura(Id(BtSpells::SPELL_TIDAL_SHIELD));
+    Aura const* shield = najentus->GetAura(Id(BtSpells::SPELL_TIDAL_SHIELD));
     Item* spine = bot->GetItemByEntry(Id(BtItems::ITEM_NAJENTUS_SPINE));
     if (!shield || !spine)
         return false;

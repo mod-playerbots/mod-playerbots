@@ -241,7 +241,7 @@ Unit* GetLinkedSisterOfPain(Unit* pleasure)
         return nullptr;
     }
 
-    Aura* bonds = pleasure->GetAura(Id(BtSpells::SPELL_SHARED_BONDS));
+    Aura const* bonds = pleasure->GetAura(Id(BtSpells::SPELL_SHARED_BONDS));
     Unit* pain = bonds ? bonds->GetCaster() : nullptr;
     return pain && pain->IsAlive() ? pain : nullptr;
 }
@@ -323,7 +323,7 @@ bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
     ObjectGuid const unitGuid = unit->GetGUID();
     uint32 const instanceId = unit->GetInstanceId();
     std::lock_guard lock(btStateMutex);
-    if (Aura* absorption = unit->GetAura(Id(BtSpells::SPELL_SPELL_ABSORPTION)))
+    if (Aura const* absorption = unit->GetAura(Id(BtSpells::SPELL_SPELL_ABSORPTION)))
     {
         reaverAbsorptionStarts[instanceId][unitGuid] = getMSTime() - GetAuraElapsedMs(absorption);
         return true;
@@ -625,7 +625,7 @@ float GetSupremusFixateTimeRemaining(Unit* supremus)
     if (!supremus)
         return 0.0f;
 
-    Aura* snareSelf = supremus->GetAura(Id(BtSpells::SPELL_SNARE_SELF));
+    Aura const* snareSelf = supremus->GetAura(Id(BtSpells::SPELL_SNARE_SELF));
     if (!snareSelf)
         return 0.0f;
 
@@ -940,7 +940,7 @@ GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot)
         int32 totalRemaining = 0;
         for (Player* member : group)
         {
-            Aura* bloodboil = member->GetAura(Id(BtSpells::SPELL_BLOODBOIL));
+            Aura const* bloodboil = member->GetAura(Id(BtSpells::SPELL_BLOODBOIL));
             if (!bloodboil)
                 continue;
 

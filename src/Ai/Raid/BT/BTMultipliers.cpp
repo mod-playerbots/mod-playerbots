@@ -385,7 +385,7 @@ float TeronGorefiendControlMovementMultiplier::GetValueInEncounter(Action* actio
 
 float TeronGorefiendMarkedBotOnlyMoveToDieMultiplier::GetValueInEncounter(Action* action)
 {
-    Aura* shadow = bot->GetAura(Id(BtSpells::SPELL_SHADOW_OF_DEATH));
+    Aura const* shadow = bot->GetAura(Id(BtSpells::SPELL_SHADOW_OF_DEATH));
     if (!shadow || shadow->GetDuration() > GOREFIEND_SHADOW_OF_DEATH_MOVE_MS)
         return 1.0f;
 
@@ -524,7 +524,7 @@ float ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier::GetValueInEncounter(Act
     if (!target || target->GetEntry() != Id(BtNpcs::NPC_ESSENCE_OF_DESIRE))
         return 1.0f;
 
-    Aura* runeShield = target->GetAura(Id(BtSpells::SPELL_RUNE_SHIELD));
+    Aura const* runeShield = target->GetAura(Id(BtSpells::SPELL_RUNE_SHIELD));
     if (!runeShield)
         return 1.0f;
 
