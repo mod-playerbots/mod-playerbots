@@ -51,7 +51,8 @@ bool SisterOfPleasureShouldBeFocusedTrigger::IsActive()
     if (PlayerbotAI::IsTank(bot))
         return false;
 
-    return FindEngagedSisterOfPain(botAI);
+    Unit* pain = FindEngagedSisterOfPain(botAI);
+    return pain && IsSisterOfPainHeld(botAI, pain);
 }
 
 // Wands keep shooting once started, so a multiplier alone can't stop wanding.

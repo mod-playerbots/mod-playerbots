@@ -486,4 +486,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class IllidanStormrageNeglectThreatOnAddsMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    IllidanStormrageNeglectThreatOnAddsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidan stormrage neglect threat on adds",
+            BtHelpers::BtBosses::DATA_ILLIDAN_STORMRAGE) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 #endif

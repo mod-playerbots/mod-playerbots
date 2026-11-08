@@ -225,15 +225,19 @@ float ShadowmoonReaverHoldChargeBuildingSpellsMultiplier::GetValue(Action* actio
     return IsAnyShadowmoonReaverUnsafeForMagic(botAI) ? 0.0f : 1.0f;
 }
 
-// Non-tanks should never attack a Sister of Pain, only her linked Sister of Pleasure.
+// Non-tanks attack a Sister of Pain only once her linked Sister of Pleasure is dead, and never while
+// Shell of Pain is up.
 float SisterOfPainHoldDpsMultiplier::GetValue(Action* action)
 {
     if (PlayerbotAI::IsTank(bot) || !IsDpsHoldCandidate(bot, action))
         return 1.0f;
 
     Unit* target = action->GetTarget();
-    if (!target || target->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PAIN))
+    if (!target || target->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PAIN) ||
+        !IsSisterOfPainHeld(botAI, target))
+    {
         return 1.0f;
+    }
 
     if (dynamic_cast<SisterOfPleasureFocusDpsAction*>(action))
         return 1.0f;
@@ -962,6 +966,13 @@ bool IsIllidanShadowBlastOnBot(Unit* illidan, Player* bot)
         spell->m_targets.GetUnitTargetGUID() == bot->GetGUID();
 }
 
+bool IsTargetingIllidanAdd(PlayerbotAI* botAI)
+{
+    Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    uint32 const entry = target ? target->GetEntry() : 0;
+    return entry == Id(BtNpcs::NPC_SHADOW_DEMON) || entry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND);
+}
+
 } // end anonymous namespace (Illidan Stormrage)
 
 // During Illidan's speech, bots move only to their pull places. Not gated on the encounter, which
@@ -1083,15 +1094,8 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTargetingValue(
     if (action->getThreatType() == Action::ActionThreatType::None)
         return 1.0f;
 
-    Unit* target = AI_VALUE(Unit*, "current target");
-    uint32 const entry = target ? target->GetEntry() : 0;
-    if (entry != Id(BtNpcs::NPC_SHADOW_DEMON) && entry != Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND))
-        return 1.0f;
-
-    // The opt-in threat strategy reads an add no tank has touched as 100% threat.
-    context->GetValue<bool>("neglect threat")->Set(true);
     // A dot on an attacker would go on something other than the add, and the add must be focused.
-    return 0.0f;
+    return IsTargetingIllidanAdd(botAI) ? 0.0f : 1.0f;
 }
 
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValue(
@@ -1226,7 +1230,9 @@ float IllidanStormrageHoldNearNewShadowfiendMultiplier::GetValueInEncounter(Acti
     if (!castSpellAction && !isAttackAction)
         return 1.0f;
 
-    Unit* target = castSpellAction ? AI_VALUE(Unit*, "current target") : action->GetTarget();
+    // A dot on an attacker picks its own target, which can be a Shadowfiend while Illidan is selected.
+    Unit* target = castSpellAction && !dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ?
+        AI_VALUE(Unit*, "current target") : action->GetTarget();
     bool const isOnShadowfiend =
         target && target->GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND);
     bool const isAoeSpell = IsIllidanAoeAction(bot, action);
@@ -1404,4 +1410,20 @@ float IllidanStormrageDisableAoeOnShadowDemonsMultiplier::GetValueInEncounter(Ac
     auto const& shadowDemons =
         context->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
     return shadowDemons.empty() ? 1.0f : 0.0f;
+}
+
+// Lets the bot cast on a Demon or Shadowfiend even with the +threat strategy, which reads an add
+// no tank has hit as 100% threat.
+float IllidanStormrageNeglectThreatOnAddsMultiplier::GetValueInEncounter(Action* action)
+{
+    if (action->getThreatType() == Action::ActionThreatType::None ||
+        botAI->GetState() != BOT_STATE_COMBAT)
+    {
+        return 1.0f;
+    }
+
+    if (IsTargetingIllidanAdd(botAI))
+        context->GetValue<bool>("neglect threat")->Set(true);
+
+    return 1.0f;
 }

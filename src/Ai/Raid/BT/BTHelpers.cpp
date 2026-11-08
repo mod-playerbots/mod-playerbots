@@ -295,6 +295,24 @@ Unit* FindEngagedSisterOfPain(PlayerbotAI* botAI)
     return nullptr;
 }
 
+bool IsSisterOfPainHeld(PlayerbotAI* botAI, Unit* pain)
+{
+    if (!pain || pain->HasAura(Id(BtSpells::SPELL_SHELL_OF_PAIN)))
+        return true;
+
+    for (ObjectGuid const& guid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet())
+    {
+        if (guid.GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PLEASURE) &&
+            GetLinkedSisterOfPain(botAI->GetUnit(guid)) == pain)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // True while magic would risk building a Chaotic Charge: (1) during Spell Absorption, (2) before
 // the first Spell Absorption is cast, and (3) in the margin before the earliest possible recast.
 bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
@@ -1872,6 +1890,9 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
     IllidanPhase const phase = GetIllidanPhase(illidan);
     if (phase == IllidanPhase::Demon)
     {
+        if (IsIllidanDemonFormEnding(*illidan, ILLIDAN_DEMON_FORM_END_HOLD_MS))
+            return IllidanDpsHold::DemonFormEnd;
+
         // A phase 5 form is already under 30%, so it gets the usual windows.
         float const healthPct = illidan->GetHealthPct();
         if (healthPct > ILLIDAN_PHASE_5_HEALTH_PCT &&
@@ -1879,9 +1900,6 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
         {
             return IllidanDpsHold::DemonFormNoPush;
         }
-
-        if (IsIllidanDemonFormEnding(*illidan, ILLIDAN_DEMON_FORM_END_HOLD_MS))
-            return IllidanDpsHold::DemonFormEnd;
 
         return IsIllidanPhaseStartWithin(*illidan, phase, ILLIDAN_DEMON_FORM_DPS_WAIT_MS) ?
             IllidanDpsHold::DemonFormStart : IllidanDpsHold::None;

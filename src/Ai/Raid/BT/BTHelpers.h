@@ -44,6 +44,7 @@ enum class BtSpells : uint32
 {
     // Trash
     SPELL_SHARED_BONDS              = 41363,
+    SPELL_SHELL_OF_PAIN             = 41371,
     SPELL_SPELL_ABSORPTION          = 41034,
 
     // High Warlord Naj'entus
@@ -246,6 +247,7 @@ Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
 Unit* FindSisterOfPleasureLinkedTo(PlayerbotAI* botAI, Unit* pain);
 Unit* GetSkulledSisterOfPain(Player* bot);
 Unit* FindEngagedSisterOfPain(PlayerbotAI* botAI);
+bool IsSisterOfPainHeld(PlayerbotAI* botAI, Unit* pain);
 
 enum class ChaoticChargeReach : uint8
 {

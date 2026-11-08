@@ -333,6 +333,10 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidanStormrageHoldDpsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageDisableTankSoulshatterMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageDisableAoeOnShadowDemonsMultiplier(botAI));
+
+    // Must be registered last because an action blocked by another multiplier does not reach the
+    // threat check that clears the flag, causing it to carry over to whatever action comes next.
+    multipliers.push_back(new IllidanStormrageNeglectThreatOnAddsMultiplier(botAI));
 }
 
 namespace
@@ -346,8 +350,11 @@ void AppendSisterOfPainExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
     for (ObjectGuid const& guid :
          botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet())
     {
-        if (guid.GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN))
+        if (guid.GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN) &&
+            IsSisterOfPainHeld(botAI, botAI->GetUnit(guid)))
+        {
             exclusions.insert(guid);
+        }
     }
 }
 
