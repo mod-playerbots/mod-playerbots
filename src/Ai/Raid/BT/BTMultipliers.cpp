@@ -231,7 +231,7 @@ float SisterOfPainHoldDpsMultiplier::GetValue(Action* action)
     if (PlayerbotAI::IsTank(bot) || !IsDpsHoldCandidate(bot, action))
         return 1.0f;
 
-    Unit* target = GetActionTargetOrCurrentTarget(botAI, action);
+    Unit* target = action->GetTarget();
     if (!target || target->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PAIN))
         return 1.0f;
 
@@ -1330,7 +1330,7 @@ float IllidanStormrageHoldDpsMultiplier::GetValueInEncounter(Action* action)
         if (isHeal || isItem)
             return 0.0f;
 
-        Unit* target = GetActionTargetOrCurrentTarget(botAI, action);
+        Unit* target = action->GetTarget();
         bool const isAoe = action->getThreatType() == Action::ActionThreatType::Aoe;
         return IsIllidanPickupExemptTarget(target, isAoe) ? 1.0f : 0.0f;
     }
@@ -1354,7 +1354,7 @@ float IllidanStormrageHoldDpsMultiplier::GetValueInEncounter(Action* action)
         if (!IsFlameOfAzzinothDpsHeld(*illidan) || IsFlameOfAzzinothTank(bot))
             return 1.0f;
 
-        Unit* target = GetActionTargetOrCurrentTarget(botAI, action);
+        Unit* target = action->GetTarget();
         bool const isOnFlame = target && target->GetEntry() == Id(BtNpcs::NPC_FLAME_OF_AZZINOTH);
         return isOnFlame ? GetDpsHoldValue(bot, action) : 1.0f;
     }
