@@ -93,6 +93,7 @@ void NewRpgInfo::Reset()
     ignoredQuestGivers.clear();
     waterEscapeTarget = WorldPosition();
     waterEscapeCheckMs = 0;
+    waterEscapeStep = WorldPosition();
     inFatigueWater = false;
     waterCheckMs = 0;
 }

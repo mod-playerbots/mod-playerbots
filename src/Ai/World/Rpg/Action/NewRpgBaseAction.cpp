@@ -41,8 +41,9 @@
 #include "G3D/Vector2.h"
 #include <cmath>
 #include <limits>
+#include <map>
 #include <mutex>
-#include <unordered_map>
+#include <tuple>
 
 namespace
 {
@@ -51,12 +52,16 @@ namespace
     // cache, which otherwise adds up to hundreds of collision-tree lookups per selection.
     bool IsDarkWaterCell(Map* map, uint32 phaseMask, float x, float y, float z, float collisionHeight)
     {
+        // The key carries map, phase, and the full 50-yd cell (including height): the same
+        // X/Y column can hold a surface cell and an underground cell with different liquids.
+        // Concurrent misses may repeat a query, but the result is identical.
         static std::mutex cacheMutex;
-        static std::unordered_map<uint64, bool> darkWaterCells;
+        static std::map<std::tuple<uint32, uint32, int32, int32, int32>, bool> darkWaterCells;
 
         int32 const cellX = int32(std::lround(x / 50.0f));
         int32 const cellY = int32(std::lround(y / 50.0f));
-        uint64 const key = (uint64(map->GetId()) << 40) ^ (uint64(cellX + 32768) << 20) ^ uint64(cellY + 32768);
+        int32 const cellZ = int32(std::lround(z / 50.0f));
+        auto const key = std::make_tuple(map->GetId(), phaseMask, cellX, cellY, cellZ);
 
         {
             std::lock_guard<std::mutex> lock(cacheMutex);
@@ -106,6 +111,7 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
                 (next == WorldPosition() || previous == WorldPosition() || next.GetExactDist(previous) > 20.0f))
             {
                 info.waterEscapeTarget = next;
+                info.waterEscapeStep = WorldPosition();
                 if (next != WorldPosition())
                 {
                     LOG_DEBUG("playerbots", "[New RPG] {} escaping dark water via ({:.0f},{:.0f},{:.0f})",
@@ -115,8 +121,12 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
             info.waterEscapeCheckMs = getMSTime();
         }
 
+        // Keep the step destination stable until it is reached or the target changed: a dest
+        // that follows the bot would reset stuck tracking on every call.
         WorldPosition const& escape = botAI->rpgInfo.waterEscapeTarget;
-        if (escape != WorldPosition())
+        if (escape != WorldPosition() &&
+            (botAI->rpgInfo.waterEscapeStep == WorldPosition() ||
+             bot->GetExactDist(botAI->rpgInfo.waterEscapeStep) < 5.0f))
         {
             float const step = 50.0f;
             float const dx = escape.GetPositionX() - bot->GetPositionX();
@@ -126,21 +136,34 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
             if (len > 0.01f)
             {
                 float const f = std::min(1.0f, step / len);
-                dest = WorldPosition(bot->GetMapId(), bot->GetPositionX() + dx * f, bot->GetPositionY() + dy * f,
-                                     bot->GetPositionZ() + dz * f);
+                botAI->rpgInfo.waterEscapeStep =
+                    WorldPosition(bot->GetMapId(), bot->GetPositionX() + dx * f, bot->GetPositionY() + dy * f,
+                                  bot->GetPositionZ() + dz * f);
             }
         }
+        if (botAI->rpgInfo.waterEscapeStep != WorldPosition())
+            dest = botAI->rpgInfo.waterEscapeStep;
     }
     else
     {
         botAI->rpgInfo.waterEscapeTarget = WorldPosition();
+        botAI->rpgInfo.waterEscapeStep = WorldPosition();
     }
 
     bool newDest = dest != botAI->rpgInfo.moveFarPos;
     if (newDest)
     {
-        // clear stuck information if it's a new dest
-        botAI->rpgInfo.SetMoveFarTo(dest);
+        if (IsInFatigueWater())
+        {
+            // Escape steps move with the bot by design; keep tracking stuck progress toward
+            // the current step instead of resetting the counters on every hop.
+            botAI->rpgInfo.moveFarPos = dest;
+        }
+        else
+        {
+            // clear stuck information if it's a new dest
+            botAI->rpgInfo.SetMoveFarTo(dest);
+        }
     }
 
     // performance optimization
