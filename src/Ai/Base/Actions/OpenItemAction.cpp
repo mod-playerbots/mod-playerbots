@@ -15,20 +15,23 @@
 
 bool OpenItemAction::Execute(Event /*event*/)
 {
-    bool foundOpenable = false;
-
-    Item* item = botAI->FindOpenableItem();
-    if (item)
+    if (Item* item = botAI->FindOpenableItem())
     {
         uint8 bag = item->GetBagSlot();  // Retrieves the bag slot (0 for main inventory)
         uint8 slot = item->GetSlot();    // Retrieves the actual slot inside the bag
 
         OpenItem(item, bag, slot);
-        foundOpenable = true;
+        return true;
     }
 
-    return foundOpenable;
+    // Clams and similar junk are "opened" by using them: the on-use spell creates the loot.
+    if (Item* item = botAI->FindOpenJunkItem())
+        return UseItemAuto(item);
+
+    return false;
 }
+
+bool OpenItemAction::isPossible() { return botAI->FindOpenableItem() != nullptr || botAI->FindOpenJunkItem() != nullptr; }
 
 void OpenItemAction::OpenItem(Item* item, uint8 bag, uint8 slot)
 {
