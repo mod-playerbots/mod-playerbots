@@ -41,6 +41,39 @@
 #include "G3D/Vector2.h"
 #include <cmath>
 #include <limits>
+#include <mutex>
+#include <unordered_map>
+
+namespace
+{
+    // Destination cells are immutable, so remember the dark-water result per map/cell. This
+    // keeps the same liquid query from being repeated for every bot sharing the destination
+    // cache, which otherwise adds up to hundreds of collision-tree lookups per selection.
+    bool IsDarkWaterCell(Map* map, uint32 phaseMask, float x, float y, float z, float collisionHeight)
+    {
+        static std::mutex cacheMutex;
+        static std::unordered_map<uint64, bool> darkWaterCells;
+
+        int32 const cellX = int32(std::lround(x / 50.0f));
+        int32 const cellY = int32(std::lround(y / 50.0f));
+        uint64 const key = (uint64(map->GetId()) << 40) ^ (uint64(cellX + 32768) << 20) ^ uint64(cellY + 32768);
+
+        {
+            std::lock_guard<std::mutex> lock(cacheMutex);
+            auto const itr = darkWaterCells.find(key);
+            if (itr != darkWaterCells.end())
+                return itr->second;
+        }
+
+        LiquidData const liquid = map->GetLiquidData(phaseMask, x, y, z, collisionHeight, {});
+        bool const dark = (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER) != 0;
+        {
+            std::lock_guard<std::mutex> lock(cacheMutex);
+            darkWaterCells.emplace(key, dark);
+        }
+        return dark;
+    }
+}
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 {
@@ -59,18 +92,27 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     // straight lines) is used. Once out of dark water the caller's real target applies again.
     if (IsInFatigueWater())
     {
-        if (botAI->rpgInfo.waterEscapeTarget == WorldPosition() ||
-            GetMSTimeDiffToNow(botAI->rpgInfo.waterEscapeCheckMs) > 2000)
+        NewRpgInfo& info = botAI->rpgInfo;
+        bool const hasTarget = info.waterEscapeTarget != WorldPosition();
+        uint32 const sinceCheck = GetMSTimeDiffToNow(info.waterEscapeCheckMs);
+        // A failed search retries after 2s; a chosen target is kept for 8s, so movement and
+        // stuck tracking stay on one heading instead of being rewritten on every scan.
+        if ((!hasTarget && sinceCheck > 2000) || (hasTarget && sinceCheck > 8000))
         {
-            WorldPosition const previous = botAI->rpgInfo.waterEscapeTarget;
+            WorldPosition const previous = info.waterEscapeTarget;
             WorldPosition const next = FindWaterEscapeTarget();
-            if (next != previous && next != WorldPosition())
+            // Ignore small shifts of the sampled point to avoid oscillation between steps.
+            if (next != previous &&
+                (next == WorldPosition() || previous == WorldPosition() || next.GetExactDist(previous) > 20.0f))
             {
-                LOG_DEBUG("playerbots", "[New RPG] {} escaping dark water via ({:.0f},{:.0f},{:.0f})",
-                          bot->GetName(), next.GetPositionX(), next.GetPositionY(), next.GetPositionZ());
+                info.waterEscapeTarget = next;
+                if (next != WorldPosition())
+                {
+                    LOG_DEBUG("playerbots", "[New RPG] {} escaping dark water via ({:.0f},{:.0f},{:.0f})",
+                              bot->GetName(), next.GetPositionX(), next.GetPositionY(), next.GetPositionZ());
+                }
             }
-            botAI->rpgInfo.waterEscapeTarget = next;
-            botAI->rpgInfo.waterEscapeCheckMs = getMSTime();
+            info.waterEscapeCheckMs = getMSTime();
         }
 
         WorldPosition const& escape = botAI->rpgInfo.waterEscapeTarget;
@@ -871,7 +913,13 @@ WorldPosition NewRpgBaseAction::FindWaterEscapeTarget()
             if (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER)
                 continue;
 
-            float const z = std::max(bot->GetMap()->GetHeight(x, y, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(x, y));
+            float const groundZ = bot->GetMap()->GetHeight(x, y, MAX_HEIGHT);
+            float const waterZ = bot->GetMap()->GetWaterLevel(x, y);
+            if (groundZ == INVALID_HEIGHT && waterZ == INVALID_HEIGHT)
+                continue;
+            float const z = std::max(groundZ, waterZ);
+            if (z == INVALID_HEIGHT)
+                continue;
             WorldPosition const candidate(bot->GetMapId(), x, y, z);
             float const d = bot->GetExactDist(candidate);
             if (d < bestDist)
@@ -918,10 +966,8 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
             continue;
 
         // Dark water drains the fatigue bar to death; such cells are never valid destinations.
-        LiquidData const liquid = bot->GetMap()->GetLiquidData(bot->GetPhaseMask(), loc.GetPositionX(),
-                                                               loc.GetPositionY(), loc.GetPositionZ(),
-                                                               bot->GetCollisionHeight(), {});
-        if (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER)
+        if (IsDarkWaterCell(bot->GetMap(), bot->GetPhaseMask(), loc.GetPositionX(), loc.GetPositionY(),
+                            loc.GetPositionZ(), bot->GetCollisionHeight()))
             continue;
 
         bool const sameZone = inCity || bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(),
@@ -993,10 +1039,8 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
             continue;
 
         // Dark water drains the fatigue bar to death; never camp there.
-        LiquidData const liquid = bot->GetMap()->GetLiquidData(bot->GetPhaseMask(), loc.GetPositionX(),
-                                                               loc.GetPositionY(), loc.GetPositionZ(),
-                                                               bot->GetCollisionHeight(), {});
-        if (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER)
+        if (IsDarkWaterCell(bot->GetMap(), bot->GetPhaseMask(), loc.GetPositionX(), loc.GetPositionY(),
+                            loc.GetPositionZ(), bot->GetCollisionHeight()))
             continue;
 
         bool const sameZone = inCity || bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(),
