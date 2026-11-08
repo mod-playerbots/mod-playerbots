@@ -93,6 +93,8 @@ void NewRpgInfo::Reset()
     ignoredQuestGivers.clear();
     waterEscapeTarget = WorldPosition();
     waterEscapeCheckMs = 0;
+    inFatigueWater = false;
+    waterCheckMs = 0;
 }
 
 void NewRpgInfo::SetMoveFarTo(WorldPosition pos)

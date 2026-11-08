@@ -62,7 +62,14 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         if (botAI->rpgInfo.waterEscapeTarget == WorldPosition() ||
             GetMSTimeDiffToNow(botAI->rpgInfo.waterEscapeCheckMs) > 2000)
         {
-            botAI->rpgInfo.waterEscapeTarget = FindWaterEscapeTarget();
+            WorldPosition const previous = botAI->rpgInfo.waterEscapeTarget;
+            WorldPosition const next = FindWaterEscapeTarget();
+            if (next != previous && next != WorldPosition())
+            {
+                LOG_DEBUG("playerbots", "[New RPG] {} escaping dark water via ({:.0f},{:.0f},{:.0f})",
+                          bot->GetName(), next.GetPositionX(), next.GetPositionY(), next.GetPositionZ());
+            }
+            botAI->rpgInfo.waterEscapeTarget = next;
             botAI->rpgInfo.waterEscapeCheckMs = getMSTime();
         }
 
@@ -80,8 +87,6 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
                 dest = WorldPosition(bot->GetMapId(), bot->GetPositionX() + dx * f, bot->GetPositionY() + dy * f,
                                      bot->GetPositionZ() + dz * f);
             }
-            LOG_DEBUG("playerbots", "[New RPG] {} escaping dark water via ({:.0f},{:.0f},{:.0f})", bot->GetName(),
-                      dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ());
         }
     }
     else
@@ -827,10 +832,21 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
 bool NewRpgBaseAction::IsInFatigueWater()
 {
     // The fatigue bar (Player::HandleDrowning) drains only in dark water: an authored liquid
-    // type, not deep water in general. Same exclusions as the server: no fatigue on flight
-    // paths or transports.
-    LiquidData const& liquid = bot->GetLiquidData();
-    return (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER) && !bot->IsInFlight() && !bot->GetTransport();
+    // type, not deep water in general. Query the map directly - the bot's cached liquid data
+    // can be stale right after a teleport - and throttle it, since this runs from MoveFarTo.
+    NewRpgInfo& info = botAI->rpgInfo;
+    if (info.waterCheckMs && GetMSTimeDiffToNow(info.waterCheckMs) < 1000)
+        return info.inFatigueWater;
+
+    LiquidData const liquid = bot->GetMap()->GetLiquidData(bot->GetPhaseMask(), bot->GetPositionX(),
+                                                           bot->GetPositionY(), bot->GetPositionZ(),
+                                                           bot->GetCollisionHeight(), {});
+    info.inFatigueWater =
+        (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER) && !bot->IsInFlight() && !bot->GetTransport();
+    info.waterCheckMs = getMSTime();
+    if (!info.inFatigueWater)
+        info.waterEscapeTarget = WorldPosition();
+    return info.inFatigueWater;
 }
 
 WorldPosition NewRpgBaseAction::FindWaterEscapeTarget()
