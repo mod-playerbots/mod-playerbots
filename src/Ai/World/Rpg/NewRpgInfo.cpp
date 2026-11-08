@@ -91,6 +91,8 @@ void NewRpgInfo::Reset()
     startT = getMSTime();
     questGiver.Clear();
     ignoredQuestGivers.clear();
+    waterEscapeTarget = WorldPosition();
+    waterEscapeCheckMs = 0;
 }
 
 void NewRpgInfo::SetMoveFarTo(WorldPosition pos)
