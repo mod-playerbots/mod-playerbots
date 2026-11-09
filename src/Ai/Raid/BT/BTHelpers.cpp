@@ -248,9 +248,8 @@ Unit* GetLinkedSisterOfPain(Unit* pleasure)
 
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
 {
-    auto const& sisterGuids =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("sisters of pleasure")->RefGet();
-    for (ObjectGuid const& sisterGuid : sisterGuids)
+    for (ObjectGuid const& sisterGuid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("sisters of pleasure")->RefGet())
     {
         Unit* sister = botAI->GetUnit(sisterGuid);
         if (GetLinkedSisterOfPain(sister))
@@ -262,14 +261,11 @@ Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
 
 Unit* FindSisterOfPleasureLinkedTo(PlayerbotAI* botAI, Unit* pain)
 {
-    if (!pain)
-        return nullptr;
-
     for (ObjectGuid const& sisterGuid :
          botAI->GetAiObjectContext()->GetValue<GuidVector>("sisters of pleasure")->RefGet())
     {
         Unit* sister = botAI->GetUnit(sisterGuid);
-        if (sister && GetLinkedSisterOfPain(sister) == pain)
+        if (pain && GetLinkedSisterOfPain(sister) == pain)
             return sister;
     }
 
@@ -1955,13 +1951,13 @@ bool IsFlameOfAzzinothDpsHeld(Unit* illidan)
 
 bool IsOnlineOnIllidanThreatList(Unit* illidan, Player* bot)
 {
-    if (!illidan)
-        return false;
-
-    for (ThreatReference const* ref : illidan->GetThreatMgr().GetUnsortedThreatList())
+    if (illidan) // I prefer an early return, but that produces a Sonar false positive...
     {
-        if (ref->GetVictim() == bot)
-            return ref->GetOnlineState() == ThreatReference::ONLINE_STATE_ONLINE;
+        for (ThreatReference const* ref : illidan->GetThreatMgr().GetUnsortedThreatList())
+        {
+            if (ref->GetVictim() == bot)
+                return ref->IsOnline();
+        }
     }
 
     return false;

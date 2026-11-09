@@ -853,16 +853,9 @@ namespace
 // excludes friendly channeled AoEs.
 bool IsGroundChannelOnEnemies(Spell const* channel)
 {
-    if (!channel)
-        return false;
-
-    for (SpellEffectInfo const& effect : channel->GetSpellInfo()->Effects)
-    {
-        if (effect.TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY)
-            return true;
-    }
-
-    return false;
+    return channel && std::ranges::any_of(
+        channel->GetSpellInfo()->Effects, [](SpellEffectInfo const& effect)
+        { return effect.TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY; });
 }
 
 bool IsAutoRepeatAimedAt(Player* bot, Unit* target)

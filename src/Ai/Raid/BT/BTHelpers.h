@@ -243,7 +243,9 @@ inline constexpr uint32 SISTER_OF_PLEASURE_CACHE_INTERVAL_MS = 1000;
 
 GuidVector FindSisterOfPleasureGuids(Player* bot);
 Unit* GetLinkedSisterOfPain(Unit* pleasure);
+// Find any Sister of Pleasure that still has a living linked Sister of Pain.
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
+// Find the Sister of Pleasure linked to a specific Sister of Pain.
 Unit* FindSisterOfPleasureLinkedTo(PlayerbotAI* botAI, Unit* pain);
 Unit* GetSkulledSisterOfPain(Player* bot);
 Unit* FindEngagedSisterOfPain(PlayerbotAI* botAI);
