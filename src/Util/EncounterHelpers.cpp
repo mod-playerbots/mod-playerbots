@@ -851,9 +851,12 @@ namespace
 
 // Blizzard, Hurricane, Rain of Fire, and Volley have no unit target. TARGET_DEST_DYNOBJ_ENEMY
 // excludes friendly channeled AoEs.
-bool IsGroundChannelOnEnemies(Spell const& channel)
+bool IsGroundChannelOnEnemies(Spell const* channel)
 {
-    for (SpellEffectInfo const& effect : channel.GetSpellInfo()->Effects)
+    if (!channel)
+        return false;
+
+    for (SpellEffectInfo const& effect : channel->GetSpellInfo()->Effects)
     {
         if (effect.TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY)
             return true;
@@ -862,26 +865,35 @@ bool IsGroundChannelOnEnemies(Spell const& channel)
     return false;
 }
 
-bool IsAutoRepeatAimedAt(Player* bot, Unit const& target)
+bool IsAutoRepeatAimedAt(Player* bot, Unit* target)
 {
+    if (!target)
+        return false;
+
     Spell* shot = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
-    return shot && shot->m_targets.GetUnitTargetGUID() == target.GetGUID();
+    return shot && shot->m_targets.GetUnitTargetGUID() == target->GetGUID();
 }
 
 // True if the channel is on this unit, or on the ground at enemies (which counts as on every
 // enemy). Excludes a self-channel (e.g., Evocation).
-bool IsChannelAimedAt(Player* bot, Unit const& target)
+bool IsChannelAimedAt(Player* bot, Unit* target)
 {
+    if (!target)
+        return false;
+
     Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-    return channel && (channel->m_targets.GetUnitTargetGUID() == target.GetGUID() ||
-        IsGroundChannelOnEnemies(*channel));
+    return channel && (channel->m_targets.GetUnitTargetGUID() == target->GetGUID() ||
+        IsGroundChannelOnEnemies(channel));
 }
 
 // True if the channel is on a hostile unit, whichever one, or on the ground at enemies. Excludes a
 // self-channel or channeled heal (Tranquility, Divine Hymn, Penance on an ally).
-bool IsOffensiveChannel(Player* bot, Spell const& channel)
+bool IsOffensiveChannel(Player* bot, Spell const* channel)
 {
-    if (Unit* unitTarget = channel.m_targets.GetUnitTarget())
+    if (!channel)
+        return false;
+
+    if (Unit* unitTarget = channel->m_targets.GetUnitTarget())
         return bot->IsHostileTo(unitTarget);
 
     return IsGroundChannelOnEnemies(channel);
@@ -889,9 +901,12 @@ bool IsOffensiveChannel(Player* bot, Spell const& channel)
 
 } // end anonymous namespace (Stopping Attacks and Spells)
 
-bool IsAttackingTarget(Player* bot, Unit const& target)
+bool IsAttackingTarget(Player* bot, Unit* target)
 {
-    return bot->GetVictim() == &target || IsAutoRepeatAimedAt(bot, target) ||
+    if (!target)
+        return false;
+
+    return bot->GetVictim() == target || IsAutoRepeatAimedAt(bot, target) ||
         IsChannelAimedAt(bot, target);
 }
 
@@ -918,7 +933,7 @@ bool StopAttackingAndChanneling(Player* bot)
     }
 
     Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-    if (channel && IsOffensiveChannel(bot, *channel))
+    if (channel && IsOffensiveChannel(bot, channel))
     {
         bot->InterruptSpell(CURRENT_CHANNELED_SPELL);
         isStopped = true;
@@ -929,10 +944,13 @@ bool StopAttackingAndChanneling(Player* bot)
 
 // Unlike StopAttackingAndChanneling(), a queued swing ability is canceled only if the bot's swing is
 // on the target (by AttackStop()). Otherwise, it fires at the bot's actual victim, not the target.
-bool StopAttackingTarget(Player* bot, Unit const& target)
+bool StopAttackingTarget(Player* bot, Unit* target)
 {
+    if (!target)
+        return false;
+
     bool isStopped = false;
-    if (bot->GetVictim() == &target)
+    if (bot->GetVictim() == target)
     {
         bot->AttackStop();
         isStopped = true;
@@ -974,7 +992,7 @@ bool SelectTarget(PlayerbotAI* botAI, Unit* target)
         return false;
 
     if (oldTarget && oldTarget != target)
-        StopAttackingTarget(bot, *oldTarget);
+        StopAttackingTarget(bot, oldTarget);
 
     if (bot->GetVictim() && bot->GetVictim() != target)
         bot->AttackStop();

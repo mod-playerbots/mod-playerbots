@@ -874,8 +874,7 @@ bool IsHeldAtIllidanLandingStack(Action* action)
         !dynamic_cast<IllidanStormrageIsolateBotWithInfectionAction*>(action);
 }
 
-bool IsHeldIllidanReach(
-    PlayerbotAI* botAI, Unit const& illidan, Action* action, IllidanPhase phase)
+bool IsHeldIllidanReach(PlayerbotAI* botAI, Unit* illidan, Action* action, IllidanPhase phase)
 {
     Player* bot = botAI->GetBot();
 
@@ -902,7 +901,7 @@ bool IsHeldIllidanReach(
 
     float const releaseDistance = isGapCloser ?
         ILLIDAN_SHADOW_DEMON_GAP_CLOSER_DISTANCE : ILLIDAN_SHADOW_DEMON_CHASE_DISTANCE;
-    return illidan.GetExactDist2d(target) < releaseDistance;
+    return illidan->GetExactDist2d(target) < releaseDistance;
 }
 
 bool IsHeldIllidanHeal(Player* bot, Unit* illidan, Action* action)
@@ -920,7 +919,7 @@ bool IsHeldIllidanHeal(Player* bot, Unit* illidan, Action* action)
     if (illidan->HasUnitState(UNIT_STATE_CONTROLLED))
         return false;
 
-    return !DoIllidanTanksHaveAggro(bot, *illidan, phase);
+    return !DoIllidanTanksHaveAggro(bot, illidan, phase);
 }
 
 bool IsIllidanAoeAction(Player* bot, Action* action)
@@ -1032,7 +1031,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
     {
         bool const isHeldMove = dynamic_cast<FollowAction*>(action) ||
             dynamic_cast<CombatFormationMoveAction*>(action) ||
-            IsHeldIllidanReach(botAI, *illidan, action, phase);
+            IsHeldIllidanReach(botAI, illidan, action, phase);
         return isHeldMove && HasParasiticShadowfiend(bot) ? 0.0f : 1.0f;
     }
 
@@ -1059,7 +1058,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
         // humanoid form, so it is ready for an immediate pickup. Other melee can be in their
         // non-combat engines; mainly that allows assist tank paladins/druids to help with healing.
         return phase == IllidanPhase::Demon &&
-            IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_MOVE_IN_MS) ? 0.0f : 1.0f;
+            IsIllidanDemonFormEnding(illidan, ILLIDAN_MAIN_TANK_MOVE_IN_MS) ? 0.0f : 1.0f;
     }
 
     bool const isTankAssist = dynamic_cast<TankAssistAction*>(action);
@@ -1117,7 +1116,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
     {
         if (!PlayerbotAI::IsMainTank(bot))
         {
-            if (IsHeldIllidanReach(botAI, *illidan, action, phase))
+            if (IsHeldIllidanReach(botAI, illidan, action, phase))
                 return 0.0f;
 
             if (phase != IllidanPhase::Landing)
@@ -1135,8 +1134,8 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
         }
 
         bool const canChaseDemon = phase == IllidanPhase::Demon &&
-            !IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_MOVE_IN_MS) &&
-            !IsHeldIllidanReach(botAI, *illidan, action, phase);
+            !IsIllidanDemonFormEnding(illidan, ILLIDAN_MAIN_TANK_MOVE_IN_MS) &&
+            !IsHeldIllidanReach(botAI, illidan, action, phase);
 
         if (isMove)
         {
@@ -1169,7 +1168,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
         }
 
         if (dynamic_cast<AvoidAoeAction*>(action) ||
-            IsHeldIllidanReach(botAI, *illidan, action, phase))
+            IsHeldIllidanReach(botAI, illidan, action, phase))
         {
             return 0.0f;
         }
@@ -1219,7 +1218,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankMovementV
     if (phase == IllidanPhase::Flying)
         return 0.0f;
 
-    return IsHeldIllidanReach(botAI, *illidan, action, phase) ? 0.0f : 1.0f;
+    return IsHeldIllidanReach(botAI, illidan, action, phase) ? 0.0f : 1.0f;
 }
 
 // Near a new Shadowfiend, don't attack it, cast AoE, or heal. Switching targets is fine.
@@ -1284,7 +1283,7 @@ float IllidanStormrageHoldTotemsMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (IsIllidanTankAggroPending(*illidan, phase))
+    if (IsIllidanTankAggroPending(illidan, phase))
         return 0.0f;
 
     if (phase != IllidanPhase::Initial && phase != IllidanPhase::Grounded &&
@@ -1357,7 +1356,7 @@ float IllidanStormrageHoldDpsMultiplier::GetValueInEncounter(Action* action)
 
     if (GetIllidanPhase(illidan) == IllidanPhase::Flying)
     {
-        if (!IsFlameOfAzzinothDpsHeld(*illidan) || IsFlameOfAzzinothTank(bot))
+        if (!IsFlameOfAzzinothDpsHeld(illidan) || IsFlameOfAzzinothTank(bot))
             return 1.0f;
 
         Unit* target = action->GetTarget();

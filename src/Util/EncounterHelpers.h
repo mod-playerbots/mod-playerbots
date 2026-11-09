@@ -224,7 +224,7 @@ float GetDpsHoldValue(Player* bot, Action* action);
 
 // True if the bot's swing, auto shot, wand, or channel is aimed at the target. A channel on the
 // ground at enemies counts as aimed at any enemy.
-bool IsAttackingTarget(Player* bot, Unit const& target);
+bool IsAttackingTarget(Player* bot, Unit* target);
 // Stops the bot's swing, queued swing ability (e.g., Heroic Strike), auto shot or wand, and channel
 // aimed at any enemy, regardless of which one, so channeled heals continue. Returns true if
 // anything is stopped.
@@ -232,7 +232,7 @@ bool StopAttackingAndChanneling(Player* bot);
 // Stops only what is aimed at the target: the bot's swing, auto shot or wand, and channel on the
 // target enemy or on the ground at enemies, so channeled heals continue. Returns true if anything
 // is stopped.
-bool StopAttackingTarget(Player* bot, Unit const& target);
+bool StopAttackingTarget(Player* bot, Unit* target);
 // Calls StopAttackingAndChanneling and clears the current target.
 void StandDown(PlayerbotAI* botAI);
 // Activate the bot's combat engine and set its current target without attacking or sending a pet.
