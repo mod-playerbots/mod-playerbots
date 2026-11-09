@@ -5,15 +5,13 @@
  */
 
 #include "HoLTriggers.h"
-#include "AiObjectContext.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 bool StormforgedLieutenantTrigger::IsActive()
 {
     if (!PlayerbotAI::IsDps(bot)) { return false; }
 
-    // Target is not findable from threat table using AI_VALUE2(),
-    // therefore need to search manually for the unit name
     GuidVector targets = AI_VALUE(GuidVector, "possible targets");
 
     for (auto& target : targets)
@@ -30,7 +28,7 @@ bool StormforgedLieutenantTrigger::IsActive()
 
 bool BjarngrimWhirlwindTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "general bjarngrim");
+    Unit* boss = FindThreatTarget(bot, "general bjarngrim");
     if (!boss) { return false; }
 
     return boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_WHIRLWIND_BJARNGRIM);
@@ -38,8 +36,7 @@ bool BjarngrimWhirlwindTrigger::IsActive()
 
 bool VolkhanTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "volkhan");
-    return boss && !PlayerbotAI::IsTank(bot) && !PlayerbotAI::IsHeal(bot);
+    return FindThreatTarget(bot, "volkhan") && PlayerbotAI::IsDps(bot);
 }
 
 bool IonarStaticOverloadTrigger::IsActive()
@@ -60,7 +57,7 @@ bool IonarBallLightningTrigger::IsActive()
 {
     if (PlayerbotAI::IsMelee(bot)) { return false; }
 
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ionar");
+    Unit* boss = FindThreatTarget(bot, "ionar");
     if (!boss) { return false; }
 
     return boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_BALL_LIGHTNING);
@@ -70,15 +67,14 @@ bool IonarTankAggroTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot)) { return false; }
 
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ionar");
-    if (!boss) { return false; }
+    if (!FindThreatTarget(bot, "ionar")) { return false; }
 
     return AI_VALUE2(bool, "has aggro", "current target");
 }
 
 bool IonarDisperseTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ionar");
+    Unit* boss = FindThreatTarget(bot, "ionar");
     if (!boss) { return false; }
 
     return !bot->CanSeeOrDetect(boss) || boss->FindCurrentSpellBySpellId(SPELL_DISPERSE);
@@ -86,12 +82,12 @@ bool IonarDisperseTrigger::IsActive()
 
 bool LokenRangedTrigger::IsActive()
 {
-    return !PlayerbotAI::IsMelee(bot) && AI_VALUE2(Unit*, "find target", "loken");
+    return !PlayerbotAI::IsMelee(bot) && FindThreatTarget(bot, "loken");
 }
 
 bool LokenLightningNovaTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "loken");
+    Unit* boss = FindThreatTarget(bot, "loken");
     if (!boss) { return false; }
 
     return boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_LIGHTNING_NOVA);

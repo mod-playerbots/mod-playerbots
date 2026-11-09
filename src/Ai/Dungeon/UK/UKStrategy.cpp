@@ -18,12 +18,6 @@ void WotlkDungeonUKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
              { NextAction("attack dalronn", ACTION_RAID + 1) }));
 
     // Ingvar the Plunderer
-
-    // No easy way to check LoS here, the pillars do not seem to count as gameobjects.
-    // Not implemented for now, unsure if this is needed as a good group can probably burst through the boss
-    // and just eat the debuff.
-    // triggers.push_back(new TriggerNode("ingvar dreadful roar",
-    //          { NextAction("ingvar hide los", ACTION_RAID + 1) }));
     triggers.push_back(new TriggerNode("ingvar smash tank",
             { NextAction("ingvar dodge smash", ACTION_MOVE + 5) }));
     triggers.push_back(new TriggerNode("ingvar smash tank return",

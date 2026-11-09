@@ -5,7 +5,6 @@
  */
 
 #include "TOCStrategy.h"
-
 #include "TOCMultipliers.h"
 
 void WotlkDungeonToCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -20,7 +19,6 @@ void WotlkDungeonToCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("toc mounted", ACTION_RAID + 6) }));
     triggers.push_back(new TriggerNode("toc eadric",
         { NextAction("toc eadric", ACTION_RAID + 3) }));
-
 }
 
 void WotlkDungeonToCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

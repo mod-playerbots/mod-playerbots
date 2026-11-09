@@ -5,11 +5,14 @@
  */
 
 #include "PoSActions.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include "PoSTriggers.h"
+#include "ThreatHelpers.h"
 
 bool IckAndKrickAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "Ick");
+    Unit* boss = FindThreatTarget(bot, "ick");
     if (!boss)
         return false;
 
@@ -39,7 +42,7 @@ bool IckAndKrickAction::Execute(Event /*event*/)
     if (poisonNova && PoisonNova(poisonNova, boss))
         return true;
 
-    if (explosiveBarrage && ExplosiveBarrage(explosiveBarrage, boss))
+    if (explosiveBarrage && ExplosiveBarrage(boss))
         return true;
 
     if (isTank && !pursuit && !poisonNova && !explosiveBarrage)
@@ -78,28 +81,23 @@ bool IckAndKrickAction::TankPosition(Unit* boss)
 
 bool IckAndKrickAction::Pursuit(bool pursuit, Unit* boss)
 {
-    // Only execute this action when pursuit is active and for non-tank players
     if (!pursuit || PlayerbotAI::IsTank(bot))
         return false;
 
     // Get the tank position as a reference point
     Position tankPosition = ICKANDKRICK_TANK_POSITION;
 
-    // Calculate distance from boss
     float distanceToBoss = bot->GetExactDist2d(boss);
 
     // If boss is close, move in a circular pattern
     if (distanceToBoss < 20.0f)
     {
-        // Current bot position
         float x = bot->GetPositionX();
         float y = bot->GetPositionY();
 
-        // Calculate vector from tank to bot
         float dx = x - tankPosition.GetPositionX();
         float dy = y - tankPosition.GetPositionY();
 
-        // Normalize the vector
         float distance = std::sqrt(dx * dx + dy * dy);
         if (distance > 0)
         {
@@ -120,8 +118,7 @@ bool IckAndKrickAction::Pursuit(bool pursuit, Unit* boss)
         targetPos.Relocate(tankPosition.GetPositionX() + rotatedX * targetRadius,
                            tankPosition.GetPositionY() + rotatedY * targetRadius, bot->GetPositionZ());
 
-        // Move to the calculated circular position
-        botAI->Reset();
+        EncounterHelpers::StandDown(botAI);
         return MoveTo(bot->GetMapId(), targetPos.GetPositionX(), targetPos.GetPositionY(), bot->GetPositionZ(),
                       false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
 
@@ -140,13 +137,12 @@ bool IckAndKrickAction::PoisonNova(bool poisonNova, Unit* boss)
     return false;
 }
 
-bool IckAndKrickAction::ExplosiveBarrage(bool /*explosiveBarrage*/, Unit* boss)
+bool IckAndKrickAction::ExplosiveBarrage(Unit* boss)
 {
     std::vector<Unit*> orbs;
     Unit* closestOrb = nullptr;
     float closestDistance = std::numeric_limits<float>::max();
 
-    // First gather all orbs
     GuidVector npcs1 = AI_VALUE(GuidVector, "nearest hostile npcs");
     for (auto& npc : npcs1)
     {
@@ -257,11 +253,9 @@ bool IckAndKrickAction::ExplosiveBarrage(bool /*explosiveBarrage*/, Unit* boss)
         // If we found a valid position, move there
         if (foundValidPos)
         {
-            botAI->Reset();
-            // Use MoveTo instead of FleePosition since we already calculated the exact position
+            EncounterHelpers::StandDown(botAI);
             return MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bot->GetPositionZ(), false,
-                          false,
-                          false, true, MovementPriority::MOVEMENT_COMBAT);
+                          false, false, true, MovementPriority::MOVEMENT_COMBAT);
         }
         else
         {
@@ -274,7 +268,7 @@ bool IckAndKrickAction::ExplosiveBarrage(bool /*explosiveBarrage*/, Unit* boss)
 
 bool TyrannusAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "scourgelord tyrannus");
+    Unit* boss = FindThreatTarget(bot, "scourgelord tyrannus");
     if (!boss)
         return false;
 

@@ -8,8 +8,6 @@
 #define PLAYERBOTS_ANTRIGGERS_H
 
 #include "DungeonStrategyUtils.h"
-#include "GenericTriggers.h"
-#include "PlayerbotAIConfig.h"
 #include "Trigger.h"
 
 enum AzjolNerubIDs
@@ -26,10 +24,6 @@ enum AzjolNerubIDs
     NPC_WEB_WRAP                    = 28619,
 
     // Anub'arak
-    // Not sure how to track this - first one is cast as a buff on himself,
-    // which triggers periodic casts of the spikes spell.
-    SPELL_IMPALE_PERIODIC           = 53456,
-    SPELL_IMPALE_SPIKES             = 53457,
     SPELL_POUND_N                   = 53472,
     SPELL_POUND_H                   = 59433,
 };
@@ -49,13 +43,6 @@ public:
     KrikthirWatchersTrigger(PlayerbotAI* botAI) : Trigger(botAI, "krik'thir watchers") {}
     bool IsActive() override;
 };
-
-// class AnubarakImpaleTrigger : public Trigger
-// {
-// public:
-//     AnubarakImpaleTrigger(PlayerbotAI* botAI) : Trigger(botAI, "anub'arak impale") {}
-//     bool IsActive() override;
-// };
 
 class AnubarakPoundTrigger : public Trigger
 {

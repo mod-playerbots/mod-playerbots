@@ -7,7 +7,7 @@
 #ifndef PLAYERBOTS_RAMPTRIGGERCONTEXT_H
 #define PLAYERBOTS_RAMPTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 #include "RampTriggers.h"
 
 class TbcDungeonHellfireRampartsTriggerContext : public NamedObjectContext<Trigger>

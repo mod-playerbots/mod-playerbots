@@ -7,9 +7,8 @@
 #ifndef PLAYERBOTS_MGTACTIONCONTEXT_H
 #define PLAYERBOTS_MGTACTIONCONTEXT_H
 
-#include "Action.h"
-#include "AiObjectContext.h"
 #include "MgTActions.h"
+#include "NamedObjectContext.h"
 
 class TbcDungeonMagistersTerraceActionContext : public NamedObjectContext<Action>
 {

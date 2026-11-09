@@ -11,20 +11,16 @@
 
 class SkadiMultiplier : public Multiplier
 {
-    public:
-        SkadiMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "skadi the ruthless") {}
-
-    public:
-        float GetValue(Action* action) override;
+public:
+    SkadiMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "skadi the ruthless") {}
+    float GetValue(Action* action) override;
 };
 
 class YmironMultiplier : public Multiplier
 {
-    public:
-        YmironMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "king ymiron") {}
-
-    public:
-        float GetValue(Action* action) override;
+public:
+    YmironMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "king ymiron") {}
+    float GetValue(Action* action) override;
 };
 
 #endif

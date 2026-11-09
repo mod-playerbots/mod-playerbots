@@ -6,11 +6,11 @@
 
 #include "HoSActions.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 bool ShatterSpreadAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "krystallus");
-    if (!boss) { return false; }
+    if (!FindThreatTarget(bot, "krystallus")) { return false; }
 
     float radius = 40.0f;
     Unit* closestMember = nullptr;
@@ -33,7 +33,6 @@ bool ShatterSpreadAction::Execute(Event /*event*/)
     {
         // Move in small increments so course can be corrected, otherwise two bots may
         // run in the same direction and not adjust until they reach the destination
-        // return MoveAway(closestMember, radius - bot->GetExactDist2d(closestMember));
         return MoveAway(closestMember, 5.0f);
     }
 
@@ -42,7 +41,7 @@ bool ShatterSpreadAction::Execute(Event /*event*/)
 
 bool AvoidLightningRingAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "sjonnir the ironshaper");
+    Unit* boss = FindThreatTarget(bot, "sjonnir the ironshaper");
     if (!boss) { return false; }
 
     float distance = bot->GetExactDist2d(boss->GetPosition());

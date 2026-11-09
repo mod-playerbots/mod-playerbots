@@ -5,11 +5,13 @@
  */
 
 #include "GDActions.h"
+#include "GDTriggers.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 bool AvoidPoisonNovaAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "slad'ran");
+    Unit* boss = FindThreatTarget(bot, "slad'ran");
     if (!boss) { return false; }
 
     float distance = bot->GetExactDist2d(boss->GetPosition());
@@ -52,7 +54,7 @@ bool SladranTankHoldAction::Execute(Event /*event*/)
 
 bool AvoidWhirlingSlashAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "gal'darah");
+    Unit* boss = FindThreatTarget(bot, "gal'darah");
     if (!boss) { return false; }
 
     float distance = bot->GetExactDist2d(boss->GetPosition());

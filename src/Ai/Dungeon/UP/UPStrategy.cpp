@@ -10,19 +10,13 @@
 
 void WotlkDungeonUPStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // Svala Sorrowgrave
-
-    // Gortok Palehoof
-
     // Skadi the Ruthless
-    // TODO: Harpoons launchable via GameObject. For now players should do them
     triggers.push_back(new TriggerNode("freezing cloud",
         { NextAction("avoid freezing cloud", ACTION_RAID + 5) }));
     triggers.push_back(new TriggerNode("skadi whirlwind",
         { NextAction("avoid skadi whirlwind", ACTION_RAID + 4) }));
 
     // King Ymiron
-    // May need to avoid orb.. unclear if the generic avoid AoE does this well
     triggers.push_back(new TriggerNode("ymiron bane",
         { NextAction("drop target", ACTION_RAID + 5) }));
 }

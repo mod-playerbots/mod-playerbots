@@ -7,6 +7,7 @@
 #include "UBActions.h"
 #include "Playerbots.h"
 #include "Timer.h"
+#include "ThreatHelpers.h"
 #include "UBShared.h"
 #include <cmath>
 
@@ -14,7 +15,7 @@ using namespace UnderbogHungarfen;
 
 bool UBRetreatFromFoulSporesAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "hungarfen");
+    Unit* boss = FindThreatTarget(bot, "hungarfen");
     if (!boss)
         return false;
 
@@ -60,7 +61,7 @@ bool UBVacateSporeCloudAction::Execute(Event /*event*/)
 
     if (PlayerbotAI::IsTank(bot))
     {
-        Unit* boss = AI_VALUE2(Unit*, "find target", "hungarfen");
+        Unit* boss = FindThreatTarget(bot, "hungarfen");
         if (boss && boss->GetVictim() == bot)
         {
             float const currentDistance = bot->GetDistance2d(mushroom);

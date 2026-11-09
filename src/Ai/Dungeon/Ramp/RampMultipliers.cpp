@@ -13,6 +13,7 @@
 #include "RampShared.h"
 #include "ReachTargetActions.h"
 #include "ShamanActions.h"
+#include "ThreatHelpers.h"
 
 using namespace EncounterHelpers;
 using namespace RampShared;
@@ -35,7 +36,7 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
     if (!isMovementSpell && !dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
-    Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
+    Unit* omor = FindThreatTarget(bot, "omor the unscarred");
 
     // If Omor isn't found, allow all actions
     if (!omor)
@@ -87,7 +88,7 @@ float NazanSetTremorTotemMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
+    Unit* nazan = FindThreatTarget(bot, "nazan");
     return nazan && !nazan->IsFlying() ? 0.0f : 1.0f;
 }
 
@@ -107,7 +108,7 @@ float NazanSetFireResistanceTotemMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
+    Unit* nazan = FindThreatTarget(bot, "nazan");
     return nazan && !nazan->IsFlying() ? 0.0f : 1.0f;
 }
 
@@ -130,6 +131,6 @@ float NazanSetFireResistanceAuraMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
+    Unit* nazan = FindThreatTarget(bot, "nazan");
     return nazan && !nazan->IsFlying() ? 0.0f : 1.0f;
 }

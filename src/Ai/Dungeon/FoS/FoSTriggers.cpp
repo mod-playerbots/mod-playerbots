@@ -5,12 +5,12 @@
  */
 
 #include "FoSTriggers.h"
-#include "AiObjectContext.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 bool MoveFromBronjahmTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "bronjahm");
+    Unit* boss = FindThreatTarget(bot, "bronjahm");
     if (!boss)
         return false;
 
@@ -25,8 +25,7 @@ bool MoveFromBronjahmTrigger::IsActive()
 
 bool SwitchToSoulFragment::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "bronjahm");
-    if (!boss)
+    if (!FindThreatTarget(bot, "bronjahm"))
         return false;
 
     Unit* corruptedSoul = bot->FindNearestCreature(NPC_CORRUPTED_SOUL_FRAGMENT, 50.0f);
@@ -40,8 +39,7 @@ bool SwitchToSoulFragment::IsActive()
 
 bool BronjahmPositionTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "bronjahm");
-    if (!boss)
+    if (!FindThreatTarget(bot, "bronjahm"))
         return false;
 
     if (bot->HasAura(SPELL_CORRUPT_SOUL))
@@ -52,9 +50,5 @@ bool BronjahmPositionTrigger::IsActive()
 
 bool DevourerOfSoulsTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "devourer of souls");
-    if (!boss)
-        return false;
-
-    return true;
+    return FindThreatTarget(bot, "devourer of souls");
 }

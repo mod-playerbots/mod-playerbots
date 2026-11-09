@@ -11,6 +11,7 @@
 #include "MovementActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
+#include "ThreatHelpers.h"
 #include "UBActions.h"
 #include "UBShared.h"
 
@@ -25,7 +26,7 @@ float HungarfenFoulSporesMultiplier::GetValue(Action* action)
         dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    Unit* boss = AI_VALUE2(Unit*, "find target", "hungarfen");
+    Unit* boss = FindThreatTarget(bot, "hungarfen");
     if (!boss || !boss->HasAura(SPELL_FOUL_SPORES))
         return 1.0f;
 

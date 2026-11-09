@@ -6,7 +6,6 @@
 
 #include "SethStrategy.h"
 #include "SethMultipliers.h"
-#include "SethTriggers.h"
 
 void TbcDungeonSethekkHallsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {

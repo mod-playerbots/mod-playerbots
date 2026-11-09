@@ -6,14 +6,13 @@
 
 #include "UKActions.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
+#include "UKTriggers.h"
 
 bool AttackFrostTombAction::isUseful() { return !PlayerbotAI::IsHeal(bot); }
 bool AttackFrostTombAction::Execute(Event /*event*/)
 {
     Unit* frostTomb = nullptr;
-
-    // Target is not findable from threat table using AI_VALUE2(),
-    // therefore need to search manually for the unit name
     GuidVector targets = AI_VALUE(GuidVector, "possible targets no los");
 
     for (auto& target : targets)
@@ -32,10 +31,9 @@ bool AttackFrostTombAction::Execute(Event /*event*/)
     return Attack(frostTomb);
 }
 
-// TODO: Possibly add player stacking behaviour close to tank, to prevent Skarvald charging ranged
 bool AttackDalronnAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "dalronn the controller");
+    Unit* boss = FindThreatTarget(bot, "dalronn the controller");
     if (!boss) { return false; }
 
     if (AI_VALUE(Unit*, "current target") == boss)
@@ -48,7 +46,7 @@ bool AttackDalronnAction::Execute(Event /*event*/)
 bool IngvarDodgeSmashAction::isUseful() { return !AI_VALUE2(bool, "behind", "current target"); }
 bool IngvarDodgeSmashAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
+    Unit* boss = FindThreatTarget(bot, "ingvar the plunderer");
     if (!boss) { return false; }
 
     float distance = bot->GetExactDist2d(boss->GetPosition());
@@ -62,7 +60,7 @@ bool IngvarDodgeSmashAction::Execute(Event /*event*/)
 bool IngvarSmashReturnAction::isUseful() { return AI_VALUE2(bool, "behind", "current target"); }
 bool IngvarSmashReturnAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
+    Unit* boss = FindThreatTarget(bot, "ingvar the plunderer");
     if (!boss) { return false; }
 
     float distance = bot->GetExactDist2d(boss->GetPosition());

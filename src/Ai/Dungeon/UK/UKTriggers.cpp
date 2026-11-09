@@ -5,8 +5,8 @@
  */
 
 #include "UKTriggers.h"
-#include "AiObjectContext.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 bool KelesethFrostTombTrigger::IsActive()
 {
@@ -24,7 +24,7 @@ bool KelesethFrostTombTrigger::IsActive()
 
 bool DalronnDpsTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "dalronn the controller");
+    Unit* boss = FindThreatTarget(bot, "dalronn the controller");
     if (!boss || !boss->isTargetableForAttack()) { return false; }
 
     // This doesn't cause issues with healers currently and they will continue to heal even when included here
@@ -33,7 +33,7 @@ bool DalronnDpsTrigger::IsActive()
 
 bool IngvarDreadfulRoarTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
+    Unit* boss = FindThreatTarget(bot, "ingvar the plunderer");
     if (!boss) { return false; }
 
     if (boss->FindCurrentSpellBySpellId(SPELL_DREADFUL_ROAR))
@@ -45,32 +45,27 @@ bool IngvarDreadfulRoarTrigger::IsActive()
 
 bool IngvarSmashTankTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
+    Unit* boss = FindThreatTarget(bot, "ingvar the plunderer");
     if (!boss || !PlayerbotAI::IsTank(bot)) { return false; }
 
     if (boss->FindCurrentSpellBySpellId(SPELL_SMASH) ||
         boss->FindCurrentSpellBySpellId(SPELL_DARK_SMASH))
-        {
-            return true;
-        }
+    {
+        return true;
+    }
     return false;
 }
 
 bool IngvarSmashTankReturnTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
-    // if (!boss || !PlayerbotAI::IsTank(bot) || boss->HasUnitState(UNIT_STATE_CASTING))
     // Ignore casting state as Ingvar will sometimes chain-cast a roar after a smash..
     // We don't want this to prevent our tank from repositioning properly.
-    if (!boss || !PlayerbotAI::IsTank(bot)) { return false; }
-
-    return true;
+    return FindThreatTarget(bot, "ingvar the plunderer") && PlayerbotAI::IsTank(bot);
 }
 
 bool NotBehindIngvarTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
-    if (!boss || PlayerbotAI::IsTank(bot)) { return false; }
+    if (!FindThreatTarget(bot, "ingvar the plunderer") || PlayerbotAI::IsTank(bot)) { return false; }
 
     return AI_VALUE2(bool, "behind", "current target");
 }

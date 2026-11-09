@@ -7,13 +7,13 @@
 #include "VHMultipliers.h"
 #include "ChooseTargetActions.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 #include "VHActions.h"
 #include "VHTriggers.h"
 
 float ErekemMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "erekem");
-    if (!boss || !PlayerbotAI::IsDps(bot)) { return 1.0f; }
+    if (!FindThreatTarget(bot, "erekem") || !PlayerbotAI::IsDps(bot)) { return 1.0f; }
 
     if (dynamic_cast<DpsAssistAction*>(action))
     {
@@ -28,8 +28,7 @@ float ErekemMultiplier::GetValue(Action* action)
 
 float IchoronMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ichoron");
-    if (!boss) { return 1.0f; }
+    if (!FindThreatTarget(bot, "ichoron")) { return 1.0f; }
 
     if (dynamic_cast<DpsAssistAction*>(action)
         || dynamic_cast<TankAssistAction*>(action)
@@ -42,7 +41,7 @@ float IchoronMultiplier::GetValue(Action* action)
 
 float ZuramatMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "zuramat the obliterator");
+    Unit* boss = FindThreatTarget(bot, "zuramat the obliterator");
     if (!boss) { return 1.0f; }
 
     if (bot->HasAura(SPELL_VOID_SHIFTED))

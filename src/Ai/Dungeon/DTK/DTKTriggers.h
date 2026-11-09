@@ -8,8 +8,6 @@
 #define PLAYERBOTS_DTKTRIGGERS_H
 
 #include "DungeonStrategyUtils.h"
-#include "GenericTriggers.h"
-#include "PlayerbotAIConfig.h"
 #include "Trigger.h"
 
 enum DrakTharonIDs
@@ -42,13 +40,6 @@ public:
     ArcaneFieldTrigger(PlayerbotAI* botAI) : Trigger(botAI, "arcane field") {}
     bool IsActive() override;
 };
-
-// class CrystalHandlerTrigger : public Trigger
-// {
-// public:
-//     CrystalHandlerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "crystal handler") {}
-//     bool IsActive() override;
-// };
 
 class GiftOfTharonjaTrigger : public Trigger
 {

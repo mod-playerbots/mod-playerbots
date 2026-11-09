@@ -29,7 +29,7 @@ protected:
         if (!_scanning && !bot->IsInCombat())
             return {};
 
-        Unit* boss = UnderbogHungarfen::HungarfenTarget(context);
+        Unit* boss = UnderbogHungarfen::HungarfenTarget(bot);
 
         if (!_scanning)
         {

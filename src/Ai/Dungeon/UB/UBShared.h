@@ -49,7 +49,7 @@ constexpr uint32 MUSHROOM_LINGER_TIME = 30000;
 
 float MaxEffectRadius(uint32 spellId, float fallback);
 
-Unit* HungarfenTarget(AiObjectContext* context);
+Unit* HungarfenTarget(Player* bot);
 
 ObjectGuid FindHungarfenGuid(Player* bot);
 

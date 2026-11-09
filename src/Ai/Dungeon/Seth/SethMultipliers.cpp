@@ -15,6 +15,7 @@
 #include "SethActions.h"
 #include "SethShared.h"
 #include "ShamanActions.h"
+#include "ThreatHelpers.h"
 
 using namespace SethShared;
 using namespace EncounterHelpers;
@@ -35,7 +36,7 @@ float SethekkProphetSetTremorTotemMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    return AI_VALUE2(Unit*, "find target", "sethekk prophet") ? 0.0f : 1.0f;
+    return FindThreatTarget(bot, "sethekk prophet") ? 0.0f : 1.0f;
 }
 
 float AnzuControlSpellCastingWithSpellBombMultiplier::GetValue(Action* action)
@@ -74,7 +75,7 @@ float TalonKingIkissDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
+    Unit* ikiss = FindThreatTarget(bot, "talon king ikiss");
     if (!ikiss)
         return 1.0f;
 
@@ -103,7 +104,7 @@ float TalonKingIkissControlMovementMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
+    Unit* ikiss = FindThreatTarget(bot, "talon king ikiss");
     if (!ikiss)
         return 1.0f;
 
