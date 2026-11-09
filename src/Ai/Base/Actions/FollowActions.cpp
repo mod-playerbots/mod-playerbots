@@ -235,10 +235,10 @@ bool FollowAction::Execute(Event /*event*/)
         // Other players see a straight spline in a battleground, so cut it to one step. The route is searched again
         // from there, and a step usually has one.
         if (bot->InBattleground() && IsMovingAllowed() && !IsDuplicateMove(x, y, z) &&
-            !IsWaitingForLastMove(priority) && WouldMoveInStraightLine(bot, x, y, z))
+            !IsWaitingForLastMove(priority))
         {
             float const distance = bot->GetExactDist(x, y, z);
-            if (distance > sPlayerbotAIConfig.SpellDistance)
+            if (distance > sPlayerbotAIConfig.SpellDistance && WouldMoveInStraightLine(bot, x, y, z))
             {
                 float const fraction = sPlayerbotAIConfig.SpellDistance / distance;
                 x = bot->GetPositionX() + (x - bot->GetPositionX()) * fraction;
@@ -249,6 +249,19 @@ bool FollowAction::Execute(Event /*event*/)
                 // There is no floor below a point inside a hill.
                 if (ground <= INVALID_HEIGHT)
                     z = std::max(z, bot->GetMap()->GetGridHeight(x, y));
+
+                // Not taken: a step over 45 degrees (a cliff hop) or under a yard, except in water. The formation spot
+                // is recorded as the last move, so the search repeats after it changes or MaxWaitForMove.
+                constexpr float minRun = 1.0f;
+                constexpr float maxSlope = 1.0f;
+                float const run = bot->GetExactDist2d(x, y);
+                if (!bot->IsInWater() && (run < minRun || std::abs(z - bot->GetPositionZ()) > run * maxSlope))
+                {
+                    AI_VALUE(LastMovement&, "last movement")
+                        .Set(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(),
+                             bot->GetOrientation(), 0.0f, priority);
+                    return false;
+                }
             }
         }
 
