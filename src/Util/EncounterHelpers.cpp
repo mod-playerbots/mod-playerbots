@@ -914,7 +914,7 @@ bool StopAttackingAndChanneling(Player* bot)
 
     if (bot->GetCurrentSpell(CURRENT_MELEE_SPELL))
     {
-        // AttackStop() returns early without a victim, which would leave a queued swing ability.
+        // AttackStop returns early without a victim, which would leave a queued swing ability.
         bot->InterruptSpell(CURRENT_MELEE_SPELL);
         isStopped = true;
     }
@@ -935,8 +935,8 @@ bool StopAttackingAndChanneling(Player* bot)
     return isStopped;
 }
 
-// Unlike StopAttackingAndChanneling(), a queued swing ability is canceled only if the bot's swing is
-// on the target (by AttackStop()). Otherwise, it fires at the bot's actual victim, not the target.
+// Unlike StopAttackingAndChanneling, a queued swing ability is canceled only if the bot's swing is
+// on the target (by AttackStop). Otherwise, it fires at the bot's actual victim, not the target.
 bool StopAttackingTarget(Player* bot, Unit* target)
 {
     if (!target)
@@ -987,6 +987,7 @@ bool SelectTarget(PlayerbotAI* botAI, Unit* target)
     if (oldTarget && oldTarget != target)
         StopAttackingTarget(bot, oldTarget);
 
+    // The swing and the current target can differ if the target changed without calling Attack.
     if (bot->GetVictim() && bot->GetVictim() != target)
         bot->AttackStop();
 

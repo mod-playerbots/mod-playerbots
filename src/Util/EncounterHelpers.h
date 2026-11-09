@@ -235,10 +235,11 @@ bool StopAttackingAndChanneling(Player* bot);
 bool StopAttackingTarget(Player* bot, Unit* target);
 // Calls StopAttackingAndChanneling and clears the current target.
 void StandDown(PlayerbotAI* botAI);
-// Activate the bot's combat engine and set its current target without attacking or sending a pet.
-// A multiplier is needed to keep the bot from attacking the target right after selection. Returns
-// false if the unit isn't a valid target, or is already the target of a bot in its combat engine.
-// Useful for holding dps upon a pull.
+// Like calling Attack, but without attacking or sending a pet. This switches the bot to its combat
+// engine and makes the unit its current target. Also calls StopAttackingTarget on the old target.
+// This can hold dps upon a pull, or switch targets without starting an attack. A multiplier is
+// needed to keep the bot from attacking the new target right after selection. Returns false if the
+// unit isn't a valid target, or is already the current target of a bot in its combat engine.
 bool SelectTarget(PlayerbotAI* botAI, Unit* target);
 
 // Commanding Pets
