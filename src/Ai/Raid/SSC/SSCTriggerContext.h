@@ -19,6 +19,9 @@ public:
         creators["ssc no encounter in progress"] =
             &RaidSscTriggerContext::ssc_no_encounter_in_progress;
 
+        creators["ssc class roles should be assigned"] =
+            &RaidSscTriggerContext::ssc_class_roles_should_be_assigned;
+
         // Trash
         creators["underbog colossus in toxic pool"] =
             &RaidSscTriggerContext::underbog_colossus_in_toxic_pool;
@@ -39,11 +42,8 @@ public:
         creators["hydross the unstable should misdirect upon phase change"] =
             &RaidSscTriggerContext::hydross_the_unstable_should_misdirect_upon_phase_change;
 
-        creators["hydross the unstable aggro resets upon phase change"] =
-            &RaidSscTriggerContext::hydross_the_unstable_aggro_resets_upon_phase_change;
-
-        creators["hydross the unstable off phase tank attacking"] =
-            &RaidSscTriggerContext::hydross_the_unstable_off_phase_tank_attacking;
+        creators["hydross the unstable dps hold is active"] =
+            &RaidSscTriggerContext::hydross_the_unstable_dps_hold_is_active;
 
         creators["hydross the unstable should manage phase timers"] =
             &RaidSscTriggerContext::hydross_the_unstable_should_manage_phase_timers;
@@ -74,9 +74,6 @@ public:
         creators["leotheras the blind warlock should tank demon form"] =
             &RaidSscTriggerContext::leotheras_the_blind_warlock_should_tank_demon_form;
 
-        creators["leotheras the blind tanks should auto-attack demon form"] =
-            &RaidSscTriggerContext::leotheras_the_blind_tanks_should_auto_attack_demon_form;
-
         creators["leotheras the blind ranged should keep distance"] =
             &RaidSscTriggerContext::leotheras_the_blind_ranged_should_keep_distance;
 
@@ -89,8 +86,8 @@ public:
         creators["leotheras the blind inner demon has awakened"] =
             &RaidSscTriggerContext::leotheras_the_blind_inner_demon_has_awakened;
 
-        creators["leotheras the blind in final phase"] =
-            &RaidSscTriggerContext::leotheras_the_blind_in_final_phase;
+        creators["leotheras the blind should focus boss in final phase"] =
+            &RaidSscTriggerContext::leotheras_the_blind_should_focus_boss_in_final_phase;
 
         creators["leotheras the blind should separate boss from demon"] =
             &RaidSscTriggerContext::leotheras_the_blind_should_separate_boss_from_demon;
@@ -98,11 +95,11 @@ public:
         creators["leotheras the blind hunter should misdirect demon form"] =
             &RaidSscTriggerContext::leotheras_the_blind_hunter_should_misdirect_demon_form;
 
-        creators["leotheras the blind aggro resets"] =
-            &RaidSscTriggerContext::leotheras_the_blind_aggro_resets;
+        creators["leotheras the blind dps hold is active"] =
+            &RaidSscTriggerContext::leotheras_the_blind_dps_hold_is_active;
 
-        creators["leotheras the blind should manage dps wait timers"] =
-            &RaidSscTriggerContext::leotheras_the_blind_should_manage_dps_wait_timers;
+        creators["leotheras the blind should manage dps hold timers"] =
+            &RaidSscTriggerContext::leotheras_the_blind_should_manage_dps_hold_timers;
 
         // Fathom-Lord Karathress
         creators["fathom-lord karathress targets should be tanked"] =
@@ -116,6 +113,9 @@ public:
 
         creators["fathom-lord karathress should assign dps priority"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_assign_dps_priority;
+
+        creators["fathom-lord karathress pets should be held"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_pets_should_be_held;
 
         creators["fathom-lord karathress should manage dps timer"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_manage_dps_timer;
@@ -229,6 +229,11 @@ private:
         return new SscNoEncounterInProgressTrigger(botAI);
     }
 
+    static Trigger* ssc_class_roles_should_be_assigned(PlayerbotAI* botAI)
+    {
+        return new SscClassRolesShouldBeAssignedTrigger(botAI);
+    }
+
     // Trash
     static Trigger* underbog_colossus_in_toxic_pool(PlayerbotAI* botAI)
     {
@@ -256,13 +261,9 @@ private:
     {
         return new HydrossTheUnstableShouldMisdirectUponPhaseChangeTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_aggro_resets_upon_phase_change(PlayerbotAI* botAI)
+    static Trigger* hydross_the_unstable_dps_hold_is_active(PlayerbotAI* botAI)
     {
-        return new HydrossTheUnstableAggroResetsUponPhaseChangeTrigger(botAI);
-    }
-    static Trigger* hydross_the_unstable_off_phase_tank_attacking(PlayerbotAI* botAI)
-    {
-        return new HydrossTheUnstableOffPhaseTankAttackingTrigger(botAI);
+        return new HydrossTheUnstableDpsHoldIsActiveTrigger(botAI);
     }
     static Trigger* hydross_the_unstable_should_manage_phase_timers(PlayerbotAI* botAI)
     {
@@ -304,10 +305,6 @@ private:
     {
         return new LeotherasTheBlindWarlockShouldTankDemonFormTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_tanks_should_auto_attack_demon_form(PlayerbotAI* botAI)
-    {
-        return new LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger(botAI);
-    }
     static Trigger* leotheras_the_blind_ranged_should_keep_distance(PlayerbotAI* botAI)
     {
         return new LeotherasTheBlindRangedShouldKeepDistanceTrigger(botAI);
@@ -324,9 +321,9 @@ private:
     {
         return new LeotherasTheBlindInnerDemonHasAwakenedTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_in_final_phase(PlayerbotAI* botAI)
+    static Trigger* leotheras_the_blind_should_focus_boss_in_final_phase(PlayerbotAI* botAI)
     {
-        return new LeotherasTheBlindInFinalPhaseTrigger(botAI);
+        return new LeotherasTheBlindShouldFocusBossInFinalPhaseTrigger(botAI);
     }
     static Trigger* leotheras_the_blind_should_separate_boss_from_demon(PlayerbotAI* botAI)
     {
@@ -336,13 +333,13 @@ private:
     {
         return new LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_aggro_resets(PlayerbotAI* botAI)
+    static Trigger* leotheras_the_blind_dps_hold_is_active(PlayerbotAI* botAI)
     {
-        return new LeotherasTheBlindAggroResetsTrigger(botAI);
+        return new LeotherasTheBlindDpsHoldIsActiveTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_should_manage_dps_wait_timers(PlayerbotAI* botAI)
+    static Trigger* leotheras_the_blind_should_manage_dps_hold_timers(PlayerbotAI* botAI)
     {
-        return new LeotherasTheBlindShouldManageDpsWaitTimersTrigger(botAI);
+        return new LeotherasTheBlindShouldManageDpsHoldTimersTrigger(botAI);
     }
 
     // Fathom-Lord Karathress
@@ -362,6 +359,10 @@ private:
     static Trigger* fathom_lord_karathress_should_assign_dps_priority(PlayerbotAI* botAI)
     {
         return new FathomLordKarathressShouldAssignDpsPriorityTrigger(botAI);
+    }
+    static Trigger* fathom_lord_karathress_pets_should_be_held(PlayerbotAI* botAI)
+    {
+        return new FathomLordKarathressPetsShouldBeHeldTrigger(botAI);
     }
     static Trigger* fathom_lord_karathress_should_manage_dps_timer(PlayerbotAI* botAI)
     {

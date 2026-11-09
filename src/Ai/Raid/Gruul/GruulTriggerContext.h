@@ -19,6 +19,9 @@ public:
         creators["gruul's lair no encounter in progress"] =
             &RaidGruulsLairTriggerContext::gruuls_lair_no_encounter_in_progress;
 
+        creators["gruul's lair class roles should be assigned"] =
+            &RaidGruulsLairTriggerContext::gruuls_lair_class_roles_should_be_assigned;
+
         // High King Maulgar <Lord of the Ogres>
         creators["high king maulgar three ogres need melee tanks"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_three_ogres_need_melee_tanks;
@@ -63,6 +66,11 @@ private:
     static Trigger* gruuls_lair_no_encounter_in_progress(PlayerbotAI* botAI)
     {
         return new GruulsLairNoEncounterInProgressTrigger(botAI);
+    }
+
+    static Trigger* gruuls_lair_class_roles_should_be_assigned(PlayerbotAI* botAI)
+    {
+        return new GruulsLairClassRolesShouldBeAssignedTrigger(botAI);
     }
 
     // High King Maulgar <Lord of the Ogres>

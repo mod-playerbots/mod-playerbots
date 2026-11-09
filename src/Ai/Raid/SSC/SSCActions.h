@@ -29,6 +29,13 @@ public:
     bool Execute(Event event) override;
 };
 
+class SscAssignClassRolesAction : public Action
+{
+public:
+    SscAssignClassRolesAction(PlayerbotAI* botAI) : Action(botAI, "ssc assign class roles") {}
+    bool Execute(Event event) override;
+};
+
 // Used for Morogrim Tidewalker and Lady Vashj.
 class SscMisdirectToMainTankAction : public Action
 {
@@ -49,6 +56,44 @@ public:
     SscStopAttackingAction(PlayerbotAI* botAI, std::string const& name)
         : Action(botAI, name) {}
     bool Execute(Event event) override;
+};
+
+// Add tanks stop attacking Hydross only, so they keep tanking adds.
+class HydrossTheUnstableStopAttackingAction : public SscStopAttackingAction
+{
+public:
+    HydrossTheUnstableStopAttackingAction(PlayerbotAI* botAI)
+        : SscStopAttackingAction(botAI, "hydross the unstable stop attacking") {}
+    bool Execute(Event event) override;
+};
+
+// Select the target that dps assist would select, without attacking it. Used for Hydross the
+// Unstable and Leotheras the Blind.
+class SscSelectTargetForHoldAction : public Action
+{
+public:
+    SscSelectTargetForHoldAction(PlayerbotAI* botAI, std::string const& name)
+        : Action(botAI, name) {}
+    bool isUseful() override;
+    bool Execute(Event event) override;
+};
+
+// Add tanks select the target tank assist would, which is Hydross if no adds are up.
+class HydrossTheUnstableSelectTargetForHoldAction : public SscSelectTargetForHoldAction
+{
+public:
+    HydrossTheUnstableSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : SscSelectTargetForHoldAction(botAI, "hydross the unstable select target for hold") {}
+    bool Execute(Event event) override;
+};
+
+// For bots with no target. Tanks pick up Leotheras themselves.
+class LeotherasTheBlindSelectTargetForHoldAction : public SscSelectTargetForHoldAction
+{
+public:
+    LeotherasTheBlindSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : SscSelectTargetForHoldAction(botAI, "leotheras the blind select target for hold") {}
+    bool isUseful() override;
 };
 
 // Used for Hydross the Unstable, Leotheras the Blind, and Fathom-Lord Karathress.
@@ -187,14 +232,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindTanksBuildRageOnDemonFormAction : public AttackAction
-{
-public:
-    LeotherasTheBlindTanksBuildRageOnDemonFormAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "leotheras the blind tanks build rage on demon form") {}
-    bool Execute(Event event) override;
-};
-
 class LeotherasTheBlindRangedKeepDistanceAction : public MovementAction
 {
 public:
@@ -256,15 +293,23 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindManageDpsWaitTimersAction : public Action
+class LeotherasTheBlindManageDpsHoldTimersAction : public Action
 {
 public:
-    LeotherasTheBlindManageDpsWaitTimersAction(PlayerbotAI* botAI)
-        : Action(botAI, "leotheras the blind manage dps wait timers") {}
+    LeotherasTheBlindManageDpsHoldTimersAction(PlayerbotAI* botAI)
+        : Action(botAI, "leotheras the blind manage dps hold timers") {}
     bool Execute(Event event) override;
 
 private:
     bool TrackWhirlwindEnd(Unit* leotheras, std::optional<uint32>& whirlwindEnd, uint32 now);
+};
+
+class LeotherasTheBlindAnnounceClassRolesAction : public Action
+{
+public:
+    LeotherasTheBlindAnnounceClassRolesAction(PlayerbotAI* botAI)
+        : Action(botAI, "leotheras the blind announce class roles") {}
+    bool Execute(Event event) override;
 };
 
 // Fathom-Lord Karathress
@@ -310,6 +355,18 @@ public:
     FathomLordKarathressManageDpsTimerAction(PlayerbotAI* botAI)
         : Action(botAI, "fathom-lord karathress manage dps timer") {}
     bool Execute(Event event) override;
+};
+
+class FathomLordKarathressControlPetAggressionAction : public Action
+{
+public:
+    FathomLordKarathressControlPetAggressionAction(PlayerbotAI* botAI)
+        : Action(botAI, "fathom-lord karathress control pet aggression") {}
+    bool Execute(Event event) override;
+
+private:
+    ReactStates _previousReactState = REACT_DEFENSIVE;
+    bool _setPassive = false;
 };
 
 class FathomLordKarathressDropToGroundAfterCycloneAction : public MovementAction

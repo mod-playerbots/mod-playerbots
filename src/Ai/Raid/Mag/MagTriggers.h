@@ -76,6 +76,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class MagtheridonDpsHoldIsActiveTrigger : public MagtheridonEncounterTrigger
+{
+public:
+    MagtheridonDpsHoldIsActiveTrigger(PlayerbotAI* botAI)
+        : MagtheridonEncounterTrigger(botAI, "magtheridon dps hold is active") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class MagtheridonBurningAbyssalSpawnedTrigger : public MagtheridonEncounterTrigger
 {
 public:

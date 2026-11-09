@@ -255,6 +255,9 @@ private:
     float activityMod = 0.25;
     bool _isBotInitializing = true;
     bool _isBotLogging = true;
+    bool _botCountRolled = false;
+    time_t _nextScheduledCountUpdate = 0;
+    uint32 _rolledCountMode = 0;
     NewRpgStatistic rpgStasticTotal;
     CachedEvent* FindEvent(uint32 bot, std::string const& event);
     uint32 GetEventValue(uint32 bot, std::string const& event);
@@ -270,6 +273,9 @@ private:
     time_t DelayLoginBotsTimer;
     time_t printStatsTimer;
     uint32 AddRandomBots();
+    uint32 RemoveRandomBots();
+    uint32 GetScheduledBotCount();
+    bool IsRemovableBot(Player* bot);
     bool ProcessBot(uint32 bot);
     void ScheduleRandomize(uint32 bot, uint32 time);
     void RandomTeleport(Player* bot);
@@ -277,6 +283,10 @@ private:
     uint32 GetZoneLevel(uint16 mapId, float teleX, float teleY, float teleZ);
     void UpdatePlayerZones();
     std::vector<WorldLocation> GetPlayerZoneTeleportLocations(std::vector<WorldLocation> const& locs, Player* bot);
+    std::vector<WorldLocation> GetPlayerZoneHubLocations(std::vector<WorldLocation> const& hubs, Player* bot);
+    std::set<std::pair<uint32, uint32>> GetPlayerZones();
+    std::vector<WorldLocation> FilterPlayerZoneTeleportLocations(
+        std::vector<WorldLocation> const& locs, Player* bot, std::set<std::pair<uint32, uint32>> const& playerMapZones);
     typedef void (RandomPlayerbotMgr::*ConsoleCommandHandler)(Player*);
     std::vector<Player*> players;
 

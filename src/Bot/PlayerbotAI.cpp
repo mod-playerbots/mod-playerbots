@@ -56,7 +56,9 @@
 #include "UpdateTime.h"
 #include "Vehicle.h"
 #include "WsgRouteState.h"
+#include <algorithm>
 #include <cmath>
+#include <map>
 #include <mutex>
 #include <sstream>
 #include <string>
@@ -460,7 +462,7 @@ bool PlayerbotAI::UpdateAIReaction(uint32 elapsed, bool minimal, bool canControl
         if (reaction)
         {
             if (reaction->ShouldInterruptCast())
-                bot->InterruptNonMeleeSpells(true);
+                bot->CastStop();
 
             if (reaction->ShouldInterruptMovement())
                 bot->StopMoving();
@@ -558,10 +560,13 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
     if (!bot->GetMap())
         return; // instances are created and destroyed on demand
 
-    // kinda expensive call to make on every single updateAI, do we really need this information?
-    std::string const mapString = WorldPosition(bot).isOverworld() ? std::to_string(bot->GetMapId()) : "I";
-    PerfMonitorOperation* pmo =
-        sPerfMonitor.start(PERF_MON_TOTAL, "PlayerbotAI::UpdateAIInternal " + mapString);
+    // Only build the metric name when the profiler is enabled; start() returns nullptr otherwise.
+    PerfMonitorOperation* pmo = nullptr;
+    if (sPerfMonitor.IsEnabled())
+    {
+        std::string const mapString = WorldPosition(bot).isOverworld() ? std::to_string(bot->GetMapId()) : "I";
+        pmo = sPerfMonitor.start(PERF_MON_TOTAL, "PlayerbotAI::UpdateAIInternal " + mapString);
+    }
 
     ExternalEventHelper helper(aiObjectContext);
 
@@ -586,7 +591,8 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
     {
         WorldSession* botWorldSessionPtr = bot->GetSession();
         bool logout = botWorldSessionPtr->ShouldLogOut(time(nullptr));
-        if (!master || !master->GetSession()->GetPlayer())
+
+        if (!master || !master->IsInWorld() || !master->GetSession() || !master->GetSession()->GetPlayer())
             logout = true;
 
         if (bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || bot->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
@@ -595,7 +601,7 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
             logout = true;
         }
 
-        if (master &&
+        if (master && master->IsInWorld() &&
             (master->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || master->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
              (master->GetSession() &&
               master->GetSession()->HasPermission(rbac::RBAC_PERM_INSTANT_LOGOUT))))
@@ -737,6 +743,12 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const& text, Player& fr
     if (filtered.empty())
         return;
 
+    // Security gate for all commands, including "debug" (same rule as the Player* overload).
+    if (!IsAllowedCommand(filtered) &&
+        !GetSecurity()->CheckLevelFor(PlayerbotSecurityLevel::PLAYERBOT_SECURITY_ALLOW_ALL,
+                                      type != CHAT_MSG_WHISPER, &fromPlayer))
+        return;
+
     if (filtered.substr(0, 6) == "debug ")
     {
         std::string response = HandleRemoteCommand(filtered.substr(6));
@@ -748,9 +760,6 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const& text, Player& fr
     }
 
     bool const allowedCommand = IsAllowedCommand(filtered);
-    if (!allowedCommand && !GetSecurity()->CheckLevelFor(PlayerbotSecurityLevel::PLAYERBOT_SECURITY_ALLOW_ALL,
-                                                         type != CHAT_MSG_WHISPER, &fromPlayer))
-        return;
 
     PlayerbotSecurityLevel const requiredLevel =
         allowedCommand ? PLAYERBOT_SECURITY_DENY_ALL : PLAYERBOT_SECURITY_ALLOW_ALL;
@@ -1085,6 +1094,11 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     if (filtered.empty())
         return;
 
+    // Gate "debug" to prevent AI state leaking to INVITE-level players.
+    if (!IsAllowedCommand(filtered) &&
+        (!GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_ALLOW_ALL, type != CHAT_MSG_WHISPER, fromPlayer)))
+        return;
+
     if (filtered.substr(0, 6) == "debug ")
     {
         std::string const response = HandleRemoteCommand(filtered.substr(6));
@@ -1095,9 +1109,6 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
         return;
     }
     bool const allowedCommand = IsAllowedCommand(filtered);
-    if (!allowedCommand &&
-        (!GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_ALLOW_ALL, type != CHAT_MSG_WHISPER, fromPlayer)))
-        return;
 
     PlayerbotSecurityLevel const requiredLevel =
         allowedCommand ? PLAYERBOT_SECURITY_INVITE : PLAYERBOT_SECURITY_ALLOW_ALL;
@@ -1730,7 +1741,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         "tbc-seth", "tbc-ub", "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk",
         "wotlk-eoe", "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hos", "wotlk-nex", "wotlk-occ",
         "wotlk-ok", "wotlk-os", "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh",
-        "zulaman"
+        "zulaman", "zulgurub"
     };
 
     for (std::string const& strat : allInstanceStrategies)
@@ -1744,6 +1755,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
     {
         case 249:
             strategyName = "onyxia";  // Onyxia's Lair
+            break;
+        case 309:
+            strategyName = "zulgurub";  // Zul'Gurub
             break;
         case 409:
             strategyName = "moltencore";  // Molten Core
@@ -3854,11 +3868,13 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
         }
     }
 
-    if (bot->isMoving() && spell->GetCastTime())
+    // Before prepare(): afterwards the event owns it and GetCastTime() becomes valid; a
+    // CanPrepare veto returns before the event exists, so the spell would leak instead.
+    if (bot->isMoving() && (spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) &&
+        spellInfo->CalcCastTime(bot) > 0)
     {
         // bot->StopMoving();
         SetNextCheckDelay(sPlayerbotAIConfig.ReactDelay);
-        spell->cancel();
         delete spell;
         return false;
     }
@@ -4057,6 +4073,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, float x, float y, float z, Item* ite
     }
     else
     {
+        delete spell;
         return false;
     }
 
@@ -4068,16 +4085,20 @@ bool PlayerbotAI::CastSpell(uint32 spellId, float x, float y, float z, Item* ite
         return false;
     }
 
-    spell->prepare(&targets);
-
-    if (bot->isMoving() && spell->GetCastTime())
+    // Before prepare(): afterwards the event owns and deletes the spell (no double free).
+    // A CanPrepare veto returns before the event exists, so the spell would leak instead.
+    if (bot->isMoving() && (spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) &&
+        spellInfo->CalcCastTime(bot) > 0)
     {
         // bot->StopMoving();
         SetNextCheckDelay(sPlayerbotAIConfig.ReactDelay);
-        spell->cancel();
         delete spell;
         return false;
     }
+
+    SpellCastResult result = spell->prepare(&targets);
+    if (result != SPELL_CAST_OK)
+        return false;
 
     // WaitForSpellCast(spell);
     aiObjectContext->GetValue<LastSpellCast&>("last spell cast")->Get().Set(spellId, bot->GetGUID(), time(nullptr));
@@ -5717,6 +5738,7 @@ Item* PlayerbotAI::FindStoneFor(Item* weapon) const
         ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE,   ELEMENTAL_SHARPENING_STONE, DENSE_SHARPENING_STONE,
         SOLID_SHARPENING_STONE,      HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE,    ROUGH_SHARPENING_STONE};
 
+    // Elemental Sharpening Stone also works on maces/staves/fists, so it is a valid fallback.
     static const std::vector<uint32_t> uPrioritizedWeightStoneIds = {
         ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE,    ELEMENTAL_SHARPENING_STONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
         HEAVY_WEIGHTSTONE,      COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
@@ -5948,6 +5970,78 @@ uint32 PlayerbotAI::GetInventoryItemsCountWithId(uint32 itemId)
     }
 
     return count;
+}
+
+void PlayerbotAI::ConsolidateItems()
+{
+    if (!bot || !bot->IsAlive())
+        return;
+
+    // Only entries with two or more stacks in the bags can be consolidated.
+    std::map<uint32, uint32> entryCounts;
+    for (Item* item : GetInventoryItems())
+        if (item && item->GetCount() > 0)
+            ++entryCounts[item->GetEntry()];
+
+    for (auto const& [entry, stackCount] : entryCounts)
+    {
+        if (stackCount < 2)
+            continue;
+
+        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
+        if (!proto || proto->GetMaxStackSize() <= 1)
+            continue;
+
+        // Merge into the fullest partial stack through the core's drag-to-stack path, one move
+        // per pass. Each successful move removes one partial stack (a target fills or a source
+        // empties), so the initial stack count bounds the passes.
+        for (uint32 pass = 0; pass < stackCount; ++pass)
+        {
+            std::vector<Item*> stacks;
+            for (Item* item : GetInventoryItems())
+                if (item && item->GetEntry() == entry && item->GetCount() > 0)
+                    stacks.push_back(item);
+
+            if (stacks.size() < 2)
+                break;
+
+            // Target: the fullest stack that still has space.
+            Item* target = nullptr;
+            for (Item* item : stacks)
+                if (item->GetCount() < proto->GetMaxStackSize() && (!target || item->GetCount() > target->GetCount()))
+                    target = item;
+            if (!target)
+                break;  // all stacks are full
+
+            // Source: the largest other partial stack. A full stack must never be a source.
+            Item* source = nullptr;
+            for (Item* item : stacks)
+                if (item != target && item->GetCount() < proto->GetMaxStackSize() &&
+                    (!source || item->GetCount() > source->GetCount()))
+                    source = item;
+            if (!source)
+                break;
+
+            std::vector<uint32> before;
+            before.reserve(stacks.size());
+            for (Item* item : stacks)
+                before.push_back(item->GetCount());
+            std::sort(before.begin(), before.end());
+
+            // The core merges as much as fits and leaves any remainder in the source slot.
+            bot->SwapItem(source->GetPos(), target->GetPos());
+
+            // SwapItem can refuse (dead, busy) or move without merging; stop instead of retrying
+            // the same pair for the rest of the pass budget.
+            std::vector<uint32> after;
+            for (Item* item : GetInventoryItems())
+                if (item && item->GetEntry() == entry && item->GetCount() > 0)
+                    after.push_back(item->GetCount());
+            std::sort(after.begin(), after.end());
+            if (after == before)
+                break;
+        }
+    }
 }
 
 bool PlayerbotAI::HasItemInInventory(uint32 itemId)

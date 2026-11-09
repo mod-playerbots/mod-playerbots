@@ -13,6 +13,7 @@
 #include "IVMapMgr.h"
 #include "MotionMaster.h"
 #include "MoveSpline.h"
+#include "NewRpgHelpers.h"
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
 #include "Object.h"
@@ -315,9 +316,11 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             auto& data = std::get<NewRpgInfo::TravelFlight>(info.data);
             if (data.inFlight && !bot->IsInFlight())
             {
-                // flight arrival
-                info.ChangeToIdle();
-                return true;
+                if (AI_VALUE(ObjectGuid, "new rpg quest giver").IsEmpty())
+                {
+                    info.ChangeToIdle();
+                    return true;
+                }
             }
             break;
         }
@@ -408,8 +411,19 @@ bool NewRpgWanderNpcAction::Execute(Event /*event*/)
     auto& data = *dataPtr;
     if (!data.npcOrGo)
     {
-        // No npc can be found, switch to IDLE
-        ObjectGuid npcOrGo = ChooseNpcOrGameObjectToInteract();
+        // Prefer a giver with something to accept or reward, else any nearby npc; none -> IDLE
+        ObjectGuid npcOrGo = NewRpgHelpers::FindQuestGiver(botAI);
+        if (npcOrGo.IsEmpty())
+        {
+            GuidVector possibleTargets = AI_VALUE(GuidVector, "possible new rpg targets");
+            if (!possibleTargets.empty())
+            {
+                uint32 idx = urand(0, possibleTargets.size() - 1);
+                WorldObject* object = ObjectAccessor::GetWorldObject(*bot, possibleTargets[idx]);
+                if (object && object->IsInWorld())
+                    npcOrGo = object->GetGUID();
+            }
+        }
         if (npcOrGo.IsEmpty())
         {
             info.ChangeToIdle();
@@ -686,12 +700,19 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         return false;
 
     auto& data = *dataPtr;
+    if (!bot->IsInFlight() && SearchQuestGiverAndAcceptOrReward())
+        return true;
+
     if (bot->IsInFlight())
     {
         data.inFlight = true;
         ContinueCrossMapTaxi();
         return false;
     }
+
+    // after landing, stop here and let the status update switch to idle
+    if (data.inFlight)
+        return false;
 
     if (bot->GetDistance(data.flightMasterPos) > INTERACTION_DISTANCE)
         return MoveFarTo(data.flightMasterPos);

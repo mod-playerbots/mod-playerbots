@@ -38,6 +38,14 @@ public:
     bool IsActive() override;
 };
 
+class SscClassRolesShouldBeAssignedTrigger : public Trigger
+{
+public:
+    SscClassRolesShouldBeAssignedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "ssc class roles should be assigned", 1000) {}
+    bool IsActive() override;
+};
+
 // Used for Fathom-Lord Karathress, Morogrim Tidewalker, and Lady Vashj.
 class SscHunterShouldMisdirectTrigger : public SscEncounterTrigger
 {
@@ -113,21 +121,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HydrossTheUnstableAggroResetsUponPhaseChangeTrigger : public SscEncounterTrigger
+class HydrossTheUnstableDpsHoldIsActiveTrigger : public SscEncounterTrigger
 {
 public:
-    HydrossTheUnstableAggroResetsUponPhaseChangeTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "hydross the unstable aggro resets upon phase change") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class HydrossTheUnstableOffPhaseTankAttackingTrigger : public SscEncounterTrigger
-{
-public:
-    HydrossTheUnstableOffPhaseTankAttackingTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "hydross the unstable off phase tank attacking") {}
+    HydrossTheUnstableDpsHoldIsActiveTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "hydross the unstable dps hold is active") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -227,16 +225,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger : public SscEncounterTrigger
-{
-public:
-    LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "leotheras the blind tanks should auto-attack demon form") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class LeotherasTheBlindRangedShouldKeepDistanceTrigger : public SscEncounterTrigger
 {
 public:
@@ -277,11 +265,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindInFinalPhaseTrigger : public SscEncounterTrigger
+class LeotherasTheBlindShouldFocusBossInFinalPhaseTrigger : public SscEncounterTrigger
 {
 public:
-    LeotherasTheBlindInFinalPhaseTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "leotheras the blind in final phase") {}
+    LeotherasTheBlindShouldFocusBossInFinalPhaseTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "leotheras the blind should focus boss in final phase") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -307,21 +295,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindAggroResetsTrigger : public SscEncounterTrigger
+class LeotherasTheBlindDpsHoldIsActiveTrigger : public SscEncounterTrigger
 {
 public:
-    LeotherasTheBlindAggroResetsTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "leotheras the blind aggro resets") {}
+    LeotherasTheBlindDpsHoldIsActiveTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "leotheras the blind dps hold is active") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindShouldManageDpsWaitTimersTrigger : public SscEncounterTrigger
+class LeotherasTheBlindShouldManageDpsHoldTimersTrigger : public SscEncounterTrigger
 {
 public:
-    LeotherasTheBlindShouldManageDpsWaitTimersTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "leotheras the blind should manage dps wait timers") {}
+    LeotherasTheBlindShouldManageDpsHoldTimersTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "leotheras the blind should manage dps hold timers") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -365,6 +353,16 @@ class FathomLordKarathressShouldManageDpsTimerTrigger : public SscEncounterTrigg
 public:
     FathomLordKarathressShouldManageDpsTimerTrigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(botAI, "fathom-lord karathress should manage dps timer") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class FathomLordKarathressPetsShouldBeHeldTrigger : public SscEncounterTrigger
+{
+public:
+    FathomLordKarathressPetsShouldBeHeldTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "fathom-lord karathress pets should be held") {}
 
 protected:
     bool IsActiveInEncounter() override;

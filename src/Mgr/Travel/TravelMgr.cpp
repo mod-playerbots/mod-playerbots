@@ -1230,7 +1230,10 @@ bool QuestObjectiveTravelDestination::isActive(Player* bot)
     if (getEntry() > 0)
     {
         CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(getEntry());
-        if (cInfo && (int)cInfo->maxlevel - (int)bot->GetLevel() > 4)
+        if (!cInfo)
+            return false;
+
+        if ((int)cInfo->maxlevel - (int)bot->GetLevel() > 4)
             return false;
 
         // Do not try to hand-in dungeon/elite quests in instances without a group.
@@ -4492,7 +4495,11 @@ std::vector<std::vector<uint32>> TravelMgr::GetOptimalFlightDestinations(Player*
 
 const std::vector<WorldLocation> TravelMgr::GetTeleportLocations(Player* bot)
 {
-    uint32 level = bot->GetLevel();
+    return GetTeleportLocations(bot, bot->GetLevel());
+}
+
+const std::vector<WorldLocation> TravelMgr::GetTeleportLocations(Player* bot, uint32 level)
+{
     std::map<uint8, std::vector<WorldLocation>> const& cache =
         !sPlayerbotAIConfig.EnableNewRpgStrategy ? locsPerLevelCache
         : bot->GetTeamId() == TEAM_ALLIANCE      ? allianceHubsPerLevelCache
@@ -4887,16 +4894,21 @@ void TravelMgr::PrepareDestinationCache()
         {
             CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureDataList[0].id);
             uint32 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
+
+            std::vector<WorldPosition> spawns;
+            spawns.reserve(creatureDataList.size());
+            for (CreatureData const& creatureData : creatureDataList)
+                spawns.emplace_back(std::get<0>(gridTuple), creatureData.posX, creatureData.posY, creatureData.posZ);
+
+            // A real spawn, not the grid key * 50, which can be up to 25 yd in the air or underground.
+            WorldLocation const loc = WorldPosition(spawns, WP_MEAN_CENTROID);
             for (int32 l = (int32)level - (int32)sPlayerbotAIConfig.RandomBotTeleLowerLevel;
                  l <= (int32)level + (int32)sPlayerbotAIConfig.RandomBotTeleHigherLevel; l++)
             {
                 if (l < 1 || l > int32(maxLevel))
                     continue;
 
-                locsPerLevelCache[(uint8)l].push_back(WorldLocation(std::get<0>(gridTuple),
-                    static_cast<float>(std::get<1>(gridTuple)) * 50.0f,
-                    static_cast<float>(std::get<2>(gridTuple)) * 50.0f,
-                    static_cast<float>(std::get<3>(gridTuple)) * 50.0f));
+                locsPerLevelCache[(uint8)l].push_back(loc);
             }
         }
     }
