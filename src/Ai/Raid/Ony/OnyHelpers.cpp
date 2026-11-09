@@ -7,6 +7,7 @@
 #include "OnyHelpers.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include "Spell.h"
 #include "ThreatManager.h"
 #include <mutex>
 #include <shared_mutex>
@@ -43,14 +44,7 @@ bool IsHoldTimeUp(Player* bot, Unit* onyxia)
     uint32 const instanceId = bot->GetInstanceId();
     if (onyxia->IsFlying())
     {
-        {
-            std::shared_lock lock(holdStateMutex);
-            if (!holdStates.contains(instanceId))
-                return false;
-        }
-
-        std::unique_lock lock(holdStateMutex);
-        holdStates.erase(instanceId);
+        ResetHoldState(instanceId);
         return false;
     }
 
@@ -87,9 +81,60 @@ bool IsOnyxia(Unit* unit)
     return unit && (unit->GetEntry() == Id(OnyNpcs::NPC_ONYXIA) || unit->GetEntry() == Id(OnyNpcs::NPC_ONYXIA_40));
 }
 
+Unit* FindOnyxia(Player* bot)
+{
+    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
+    {
+        Unit* unit = ref->GetOwner();
+        if (IsOnyxia(unit))
+            return unit->IsInWorld() ? unit : nullptr;
+    }
+
+    return nullptr;
+}
+
+bool IsAttackingOnyxia(Player* bot, Unit const& onyxia)
+{
+    if (bot->GetVictim() == &onyxia)
+        return true;
+
+    Spell* shot = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
+    if (shot && shot->m_targets.GetUnitTargetGUID() == onyxia.GetGUID())
+        return true;
+
+    Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+    return channel && channel->m_targets.GetUnitTargetGUID() == onyxia.GetGUID();
+}
+
+bool StopAttackingOnyxia(Player* bot, Unit const& onyxia)
+{
+    bool isStopped = false;
+    if (bot->GetVictim() == &onyxia)
+    {
+        bot->AttackStop();
+        isStopped = true;
+    }
+
+    Spell* shot = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
+    if (shot && shot->m_targets.GetUnitTargetGUID() == onyxia.GetGUID())
+    {
+        bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+        isStopped = true;
+    }
+
+    Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+    if (channel && channel->m_targets.GetUnitTargetGUID() == onyxia.GetGUID())
+    {
+        bot->InterruptSpell(CURRENT_CHANNELED_SPELL);
+        isStopped = true;
+    }
+
+    return isStopped;
+}
+
 bool MustHoldPhaseThreeThreat(Player* bot, Unit* onyxia, float requiredLead)
 {
-    if (onyxia->GetHealthPct() > ONYXIA_PHASE_THREE_HEALTH_PCT)
+    if (!IsOnyxia(onyxia) || onyxia->GetHealthPct() > ONYXIA_PHASE_THREE_HEALTH_PCT)
         return false;
 
     if (IsHoldExpired(bot, onyxia))
@@ -104,6 +149,18 @@ bool MustHoldPhaseThreeThreat(Player* bot, Unit* onyxia, float requiredLead)
         return false;
 
     return !IsHoldTimeUp(bot, onyxia);
+}
+
+bool ResetHoldState(uint32 instanceId)
+{
+    {
+        std::shared_lock lock(holdStateMutex);
+        if (!holdStates.contains(instanceId))
+            return false;
+    }
+
+    std::unique_lock lock(holdStateMutex);
+    return holdStates.erase(instanceId) > 0;
 }
 
 }

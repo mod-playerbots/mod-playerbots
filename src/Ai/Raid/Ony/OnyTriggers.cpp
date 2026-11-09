@@ -5,6 +5,7 @@
  */
 
 #include "OnyTriggers.h"
+#include "EncounterHelpers.h"
 #include "GenericTriggers.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
@@ -102,9 +103,20 @@ bool RaidOnyxiaWhelpsSpawnTrigger::IsActive()
 
 bool OnyxiaPhaseThreeThreatHoldTrigger::IsActive()
 {
-    Unit* victim = bot->GetVictim();
-    return OnyxiaHelpers::IsOnyxia(victim) &&
-           OnyxiaHelpers::MustHoldPhaseThreeThreat(bot, victim, OnyxiaHelpers::THREAT_LEAD_KEEP);
+    if (PlayerbotAI::IsHeal(bot))
+        return false;
+
+    Unit* onyxia = OnyxiaHelpers::FindOnyxia(bot);
+    return onyxia && OnyxiaHelpers::IsAttackingOnyxia(bot, *onyxia) &&
+           OnyxiaHelpers::MustHoldPhaseThreeThreat(bot, onyxia, OnyxiaHelpers::THREAT_LEAD_KEEP);
+}
+
+bool OnyxiaNoEncounterInProgressTrigger::IsActive()
+{
+    if (EncounterHelpers::IsEncounterInProgress(bot, OnyxiaHelpers::ONYXIAS_LAIR_MAP_ID))
+        return false;
+
+    return EncounterHelpers::IsMechanicTrackerBot(bot, OnyxiaHelpers::ONYXIAS_LAIR_MAP_ID);
 }
 
 OnyxiaAvoidEggsTrigger::OnyxiaAvoidEggsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "ony avoid eggs") {}

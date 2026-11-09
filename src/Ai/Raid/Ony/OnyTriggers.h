@@ -8,7 +8,6 @@
 #ifndef PLAYERBOTS_ONYTRIGGERS_H
 #define PLAYERBOTS_ONYTRIGGERS_H
 
-#include "PlayerbotAI.h"
 #include "Trigger.h"
 
 // Mechanics
@@ -44,6 +43,14 @@ class OnyxiaPhaseThreeThreatHoldTrigger : public Trigger
 {
 public:
     OnyxiaPhaseThreeThreatHoldTrigger(PlayerbotAI* botAI) : Trigger(botAI, "ony phase three threat hold") {}
+    bool IsActive() override;
+};
+
+class OnyxiaNoEncounterInProgressTrigger : public Trigger
+{
+public:
+    OnyxiaNoEncounterInProgressTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "ony no encounter in progress", 1 * IN_MILLISECONDS) {}
     bool IsActive() override;
 };
 

@@ -9,6 +9,9 @@
 
 void RaidOnyxiaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    triggers.push_back(new TriggerNode(
+        "ony no encounter in progress", { NextAction("ony reset encounter state", ACTION_EMERGENCY + 10) }));
+
     // ----------- Phase 1 (100% - 65%) -----------
 
     triggers.push_back(new TriggerNode(

@@ -22,6 +22,7 @@ public:
         creators["ony kill whelps"] = &RaidOnyxiaActionContext::kill_whelps;
         creators["ony avoid eggs move"] = &RaidOnyxiaActionContext::avoid_eggs;
         creators["ony stop attack"] = &RaidOnyxiaActionContext::stop_attack;
+        creators["ony reset encounter state"] = &RaidOnyxiaActionContext::reset_encounter_state;
     }
 
 private:
@@ -31,6 +32,7 @@ private:
     static Action* kill_whelps(PlayerbotAI* botAI) { return new RaidOnyxiaKillWhelpsAction(botAI); }
     static Action* avoid_eggs(PlayerbotAI* botAI) { return new OnyxiaAvoidEggsAction(botAI); }
     static Action* stop_attack(PlayerbotAI* botAI) { return new OnyxiaStopAttackAction(botAI); }
+    static Action* reset_encounter_state(PlayerbotAI* botAI) { return new OnyxiaResetEncounterStateAction(botAI); }
 };
 
 #endif

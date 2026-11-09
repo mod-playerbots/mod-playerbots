@@ -31,15 +31,20 @@ enum class OnyNpcs : uint32
 inline constexpr uint32 ONYXIAS_LAIR_MAP_ID = 249;
 inline constexpr float ONYXIA_PHASE_THREE_HEALTH_PCT = 40.0f;
 
-// The main tank must lead a bot by this much before it may start an attack on her; a running auto-attack
+// The main tank must lead a bot by this much before it may start an attack on her; a running attack
 // stops below half of it
-inline constexpr float THREAT_LEAD = 4000.0f;
+inline constexpr float THREAT_LEAD = 10000.0f;
 inline constexpr float THREAT_LEAD_KEEP = THREAT_LEAD / 2;
 // Longest hold once she is on the ground, so a main tank who never gets to her cannot hold everyone
 inline constexpr uint32 HOLD_LIMIT_MS = 10 * IN_MILLISECONDS;
 
 bool IsOnyxia(Unit* unit);
+Unit* FindOnyxia(Player* bot);
+// A swing, Auto Shot or channel on her, not a ground channel (Blizzard) that happens to hit her
+bool IsAttackingOnyxia(Player* bot, Unit const& onyxia);
+bool StopAttackingOnyxia(Player* bot, Unit const& onyxia);
 bool MustHoldPhaseThreeThreat(Player* bot, Unit* onyxia, float requiredLead);
+bool ResetHoldState(uint32 instanceId);
 
 }
 
