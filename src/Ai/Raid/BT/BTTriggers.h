@@ -712,12 +712,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidanStormragePetsDieToHazardsTrigger : public BlackTempleEncounterTrigger
+class IllidanStormrageShouldManagePetAggressionTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormragePetsDieToHazardsTrigger(PlayerbotAI* botAI)
+    IllidanStormrageShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
         : BlackTempleEncounterTrigger(
-            botAI, "illidan stormrage pets die to hazards",
+            botAI, "illidan stormrage should manage pet aggression",
             BtHelpers::BtBosses::DATA_ILLIDAN_STORMRAGE) {}
 
 protected:

@@ -17,7 +17,6 @@
 #include <limits>
 #include <list>
 #include <optional>
-#include <utility>
 
 using namespace BtHelpers;
 using namespace EncounterHelpers;
@@ -95,6 +94,10 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     {
         reset = true;
     }
+
+    Action* petAction = context->GetAction("illidan stormrage set pet stance");
+    if (petAction && static_cast<IllidanStormrageSetPetStanceAction*>(petAction)->ResetPetStance())
+        reset = true;
 
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
         return reset;
@@ -2579,29 +2582,16 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(
 
 // Illidan's numerous phases and threat drops make it a very sensitive fight with respect to initial
 // tank aggro. Pets easily ruin pickups so their stances need to be managed.
-bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
+bool IllidanStormrageSetPetStanceAction::Execute(Event /*event*/)
 {
-    Pet* pet = bot->GetPet();
-    if (!pet)
-        return false;
+    Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
+    return SetMinionStancesForHold(
+        bot, ShouldIllidanPetsBePassive(bot, illidan), _previousReactStates);
+}
 
-    if (ShouldIllidanPetsBePassive(bot, GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE)))
-    {
-        if (!pet->HasReactState(REACT_PASSIVE))
-        {
-            _previousReactState = pet->GetReactState();
-            _setPassive = true;
-            CallBackPets(bot);
-            pet->SetReactState(REACT_PASSIVE);
-        }
-    }
-    else if (_setPassive)
-    {
-        pet->SetReactState(_previousReactState);
-        _setPassive = false;
-    }
-
-    return false;
+bool IllidanStormrageSetPetStanceAction::ResetPetStance()
+{
+    return SetMinionStancesForHold(bot, false, _previousReactStates);
 }
 
 bool IllidanStormrageCommandPetAttackAddAction::Execute(Event /*event*/)

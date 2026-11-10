@@ -999,6 +999,17 @@ bool SelectTarget(PlayerbotAI* botAI, Unit* target)
 
 // Commanding Pets
 
+namespace
+{
+
+bool IsControllableMinion(Unit* unit)
+{
+    Creature* creature = unit ? unit->ToCreature() : nullptr;
+    return creature && creature->IsAlive() && creature->GetCharmInfo();
+}
+
+} // end anonymous namespace (Commanding Pets)
+
 void CallBackPets(Player* bot)
 {
     for (Unit* controlled : bot->m_Controlled)
@@ -1057,6 +1068,55 @@ bool CommandPetAttack(Creature* pet, Unit* target)
         pet->AI()->AttackStart(target);
     else
         pet->Attack(target, true);
+
+    return true;
+}
+
+bool IsMinionStanceWrongForHold(Player* bot, bool isHeld)
+{
+    return std::any_of(
+        bot->m_Controlled.begin(), bot->m_Controlled.end(),
+        [isHeld](Unit* unit)
+        {
+            return IsControllableMinion(unit) &&
+                unit->ToCreature()->HasReactState(REACT_PASSIVE) != isHeld;
+        });
+}
+
+bool SetMinionStancesForHold(
+    Player* bot, bool isHeld, std::vector<std::pair<ObjectGuid, ReactStates>>& savedStances)
+{
+    if (!isHeld)
+    {
+        if (savedStances.empty())
+            return false;
+
+        for (auto const& [guid, reactState] : savedStances)
+        {
+            if (Creature* minion = ObjectAccessor::GetCreatureOrPetOrVehicle(*bot, guid))
+                minion->SetReactState(reactState);
+        }
+
+        savedStances.clear();
+        return true;
+    }
+
+    std::vector<Creature*> minionsToHold;
+    for (Unit* unit : bot->m_Controlled)
+    {
+        if (IsControllableMinion(unit) && !unit->ToCreature()->HasReactState(REACT_PASSIVE))
+            minionsToHold.push_back(unit->ToCreature());
+    }
+
+    if (minionsToHold.empty())
+        return false;
+
+    CallBackPets(bot);
+    for (Creature* minion : minionsToHold)
+    {
+        savedStances.emplace_back(minion->GetGUID(), minion->GetReactState());
+        minion->SetReactState(REACT_PASSIVE);
+    }
 
     return true;
 }

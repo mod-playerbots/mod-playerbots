@@ -211,8 +211,8 @@ public:
         creators["illidan stormrage flames of azzinoth should be tanked"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_flames_of_azzinoth_should_be_tanked;
 
-        creators["illidan stormrage pets die to hazards"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_pets_die_to_hazards;
+        creators["illidan stormrage should manage pet aggression"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_manage_pet_aggression;
 
         creators["illidan stormrage pet should attack shadowfiend"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_pet_should_attack_shadowfiend;
@@ -547,9 +547,9 @@ private:
     {
         return new IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_pets_die_to_hazards(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_manage_pet_aggression(PlayerbotAI* botAI)
     {
-        return new IllidanStormragePetsDieToHazardsTrigger(botAI);
+        return new IllidanStormrageShouldManagePetAggressionTrigger(botAI);
     }
     static Trigger* illidan_stormrage_pet_should_attack_shadowfiend(PlayerbotAI* botAI)
     {

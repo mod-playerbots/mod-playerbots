@@ -14,6 +14,7 @@
 #include "Unit.h"
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 // Shared
@@ -683,16 +684,16 @@ private:
     uint8 _tankStep = 0;
 };
 
-class IllidanStormrageControlPetAggressionAction : public Action
+class IllidanStormrageSetPetStanceAction : public Action
 {
 public:
-    IllidanStormrageControlPetAggressionAction(PlayerbotAI* botAI)
-        : Action(botAI, "illidan stormrage control pet aggression") {}
+    IllidanStormrageSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage set pet stance") {}
     bool Execute(Event event) override;
+    bool ResetPetStance();
 
 private:
-    ReactStates _previousReactState = REACT_DEFENSIVE;
-    bool _setPassive = false;
+    std::vector<std::pair<ObjectGuid, ReactStates>> _previousReactStates;
 };
 
 class IllidanStormrageCommandPetAttackAddAction : public Action

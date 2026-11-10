@@ -738,17 +738,13 @@ bool IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger::IsActiveInEncounter(
     return IsFlameOfAzzinothTank(bot) && !IsIllidanInfectionPositionKeptInFlight(bot);
 }
 
-bool IllidanStormragePetsDieToHazardsTrigger::IsActiveInEncounter()
+bool IllidanStormrageShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
-    Pet* pet = bot->GetPet();
-    if (!pet || !pet->IsAlive())
+    if (bot->m_Controlled.empty())
         return false;
 
     Unit* illidan = GetEncounterBoss();
-    if (!illidan)
-        return false;
-
-    return ShouldIllidanPetsBePassive(bot, illidan) != pet->HasReactState(REACT_PASSIVE);
+    return illidan && IsMinionStanceWrongForHold(bot, ShouldIllidanPetsBePassive(bot, illidan));
 }
 
 // Pets are ideal for killing Shadowfiends because they cannot be infected.

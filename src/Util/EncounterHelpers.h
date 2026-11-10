@@ -20,6 +20,7 @@ class Creature;
 class Player;
 class PlayerbotAI;
 class Unit;
+enum ReactStates : uint8;
 
 namespace EncounterHelpers
 {
@@ -244,17 +245,26 @@ bool SelectTarget(PlayerbotAI* botAI, Unit* target);
 
 // Commanding Pets
 
-// The pet Follow command a player gives (PetHandler.cpp, COMMAND_FOLLOW), with CastStop in place
-// of the same InterruptNonMeleeSpells(false), for every unit with pet controls: the pet,
-// controllable guardians, and charmed creatures. This does not change a pet's stance, so if the
-// purpose is to keep a pet from engaging at all, a separate call of pet->SetReactState() to
-// passive is needed. There is no helper for stance changes because a flag is needed to restore the
-// prior stance, and that is best handled in the specific raid actions.
+// Functionally, the pet Follow command a player gives (PetHandler.cpp, COMMAND_FOLLOW), for every
+// unit with pet controls: standard pets, controllable guardians, and charmed creatures. This does
+// not change a pet's stance, so a pet called back this way will attack again. To keep pets out of a
+// fight, use SetMinionStancesForHold, which also calls this.
 void CallBackPets(Player* bot);
 // The pet Attack command a player gives (PetHandler.cpp, COMMAND_ATTACK), for a pet, guardian, or
 // charmed creature. A cast in progress is not stopped, but unlike for players, CastStop can be
 // called from an action to interrupt a pet's pending cast. Returns true if a command was issued.
 bool CommandPetAttack(Creature* pet, Unit* target);
+// True if a pet or guardian with pet controls is passive outside a hold, or not passive in one.
+// Triggers can check bot->m_Controlled.empty() first, since most bots control nothing.
+bool IsMinionStanceWrongForHold(Player* bot, bool isHeld);
+// Keeps pets and guardians with pet controls out of a fight while a hold lasts. When held, calls
+// them back and sets them passive, saving each one's prior stance in savedStances. When not held,
+// applies the saved stances and clears the list. Stances are restored by GUID, so any pet
+// summoned after they were saved keeps its own stance, even the same pet dismissed and called
+// again. Returns false if there was nothing to do. The raid action keeps savedStances as a member,
+// and its reset calls this with isHeld false.
+bool SetMinionStancesForHold(
+    Player* bot, bool isHeld, std::vector<std::pair<ObjectGuid, ReactStates>>& savedStances);
 
 // Miscellaneous
 

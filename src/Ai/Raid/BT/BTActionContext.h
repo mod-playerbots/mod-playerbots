@@ -213,8 +213,8 @@ public:
         creators["illidan stormrage assist tanks handle flames"] =
             &RaidBlackTempleActionContext::illidan_stormrage_assist_tanks_handle_flames;
 
-        creators["illidan stormrage control pet aggression"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_control_pet_aggression;
+        creators["illidan stormrage set pet stance"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_set_pet_stance;
 
         creators["illidan stormrage command pet attack add"] =
             &RaidBlackTempleActionContext::illidan_stormrage_command_pet_attack_add;
@@ -566,9 +566,9 @@ private:
     {
         return new IllidanStormrageAssistTanksHandleFlamesAction(botAI);
     }
-    static Action* illidan_stormrage_control_pet_aggression(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_set_pet_stance(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageControlPetAggressionAction(botAI);
+        return new IllidanStormrageSetPetStanceAction(botAI);
     }
     static Action* illidan_stormrage_command_pet_attack_add(PlayerbotAI* botAI)
     {
