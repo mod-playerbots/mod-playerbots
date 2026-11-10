@@ -92,7 +92,7 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
             }
 
             // Above 95%, cooldowns other than Bloodlust can be used, then disable them until 62%
-            // (i.e., get one use in and then save until phase 3, when cooldown should be back up).
+            // (i.e., get one use in and then save until phase 3, when cooldowns should be back up).
             return illidan->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 1.0f : 0.0f;
         }
         case BtBosses::DATA_RELIQUARY_OF_SOULS:
@@ -150,6 +150,7 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
 
 // Supremus's bounding radius is 80 yd, far beyond his combat reach, and Killing Spree places the
 // rogue by bounding radius, so it takes the rogue well out of the fight.
+//
 // Essence of Suffering targets the closest player, and Killing Spree makes the rogue the closest.
 float BlackTempleDisableKillingSpreeMultiplier::GetValueInEncounter(Action* action)
 {
