@@ -103,11 +103,9 @@ bool RaidOnyxiaWhelpsSpawnTrigger::IsActive()
 
 bool OnyxiaPhaseThreeThreatHoldTrigger::IsActive()
 {
-    if (PlayerbotAI::IsHeal(bot))
-        return false;
-
     Unit* onyxia = OnyxiaHelpers::FindOnyxia(bot);
-    return onyxia && OnyxiaHelpers::IsAttackingOnyxia(bot, *onyxia) &&
+    return onyxia && onyxia->GetHealthPct() <= OnyxiaHelpers::ONYXIA_PHASE_THREE_HEALTH_PCT &&
+           OnyxiaHelpers::IsAttackingOnyxia(bot, *onyxia) &&
            OnyxiaHelpers::MustHoldPhaseThreeThreat(bot, onyxia, OnyxiaHelpers::THREAT_LEAD_KEEP);
 }
 

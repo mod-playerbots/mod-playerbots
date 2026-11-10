@@ -9,6 +9,7 @@
 #include "Playerbots.h"
 #include "Spell.h"
 #include "ThreatManager.h"
+#include <array>
 #include <mutex>
 #include <shared_mutex>
 #include <unordered_map>
@@ -74,6 +75,15 @@ bool IsHoldTimeUp(Player* bot, Unit* onyxia)
     return state.expired;
 }
 
+constexpr std::array<CurrentSpellTypes, 3> ATTACK_SPELL_TYPES = { CURRENT_AUTOREPEAT_SPELL, CURRENT_CHANNELED_SPELL,
+                                                                  CURRENT_GENERIC_SPELL };
+
+bool IsSpellAimedAt(Player* bot, CurrentSpellTypes type, Unit const& target)
+{
+    Spell* spell = bot->GetCurrentSpell(type);
+    return spell && spell->m_targets.GetUnitTargetGUID() == target.GetGUID();
+}
+
 }
 
 bool IsOnyxia(Unit* unit)
@@ -95,38 +105,31 @@ Unit* FindOnyxia(Player* bot)
 
 bool IsAttackingOnyxia(Player* bot, Unit const& onyxia)
 {
-    if (bot->GetVictim() == &onyxia)
-        return true;
+    for (CurrentSpellTypes const type : ATTACK_SPELL_TYPES)
+    {
+        if (IsSpellAimedAt(bot, type, onyxia))
+            return true;
+    }
 
-    Spell* shot = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
-    if (shot && shot->m_targets.GetUnitTargetGUID() == onyxia.GetGUID())
-        return true;
-
-    Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-    return channel && channel->m_targets.GetUnitTargetGUID() == onyxia.GetGUID();
+    return bot->GetVictim() == &onyxia && !PlayerbotAI::IsHeal(bot);
 }
 
 bool StopAttackingOnyxia(Player* bot, Unit const& onyxia)
 {
     bool isStopped = false;
-    if (bot->GetVictim() == &onyxia)
+    if (bot->GetVictim() == &onyxia && !PlayerbotAI::IsHeal(bot))
     {
         bot->AttackStop();
         isStopped = true;
     }
 
-    Spell* shot = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
-    if (shot && shot->m_targets.GetUnitTargetGUID() == onyxia.GetGUID())
+    for (CurrentSpellTypes const type : ATTACK_SPELL_TYPES)
     {
-        bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
-        isStopped = true;
-    }
-
-    Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-    if (channel && channel->m_targets.GetUnitTargetGUID() == onyxia.GetGUID())
-    {
-        bot->InterruptSpell(CURRENT_CHANNELED_SPELL);
-        isStopped = true;
+        if (IsSpellAimedAt(bot, type, onyxia))
+        {
+            bot->InterruptSpell(type);
+            isStopped = true;
+        }
     }
 
     return isStopped;

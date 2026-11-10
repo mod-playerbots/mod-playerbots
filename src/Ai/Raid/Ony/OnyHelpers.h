@@ -40,7 +40,8 @@ inline constexpr uint32 HOLD_LIMIT_MS = 10 * IN_MILLISECONDS;
 
 bool IsOnyxia(Unit* unit);
 Unit* FindOnyxia(Player* bot);
-// A swing, Auto Shot or channel on her, not a ground channel (Blizzard) that happens to hit her
+// A swing (not a healer's, so healers stay in their combat engine), Auto Shot, wand, channel or cast in
+// flight with her as the unit target; not a cast bar still filling or a ground channel
 bool IsAttackingOnyxia(Player* bot, Unit const& onyxia);
 bool StopAttackingOnyxia(Player* bot, Unit const& onyxia);
 bool MustHoldPhaseThreeThreat(Player* bot, Unit* onyxia, float requiredLead);
