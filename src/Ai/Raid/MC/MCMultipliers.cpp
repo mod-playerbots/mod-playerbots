@@ -142,3 +142,59 @@ float GolemaggMultiplier::GetValue(Action* action)
     }
     return 1.0f;
 }
+
+float MajordomoReflectionMultiplier::GetValue(Action* action)
+{
+    // Majordomo shields his adds for 10 s: Magic Reflection sends spells back at the caster, Damage Shield
+    // burns every melee hit. Bots hold those attacks while the target has it; tanks keep the adds.
+    if (PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    // Only melee swings hit the shield. A ranged bot or one without a target gets its target and the combat engine
+    // from these actions, so it is let through, and the trigger stops it if that starts a swing.
+    if (dynamic_cast<AttackAction*>(action))
+    {
+        if (!PlayerbotAI::IsMelee(bot) || !AI_VALUE(Unit*, "current target"))
+            return 1.0f;
+
+        // "dps assist" attacks "dps target"; the plain attack actions keep the base "self target" name.
+        Unit* target =
+            action->GetTargetName() == "self target" ? AI_VALUE(Unit*, "current target") : action->GetTarget();
+        return IsMajordomoAdd(target) && target->HasAura(SPELL_DAMAGE_SHIELD) ? 0.0f : 1.0f;
+    }
+
+    auto* spellAction = dynamic_cast<CastSpellAction*>(action);
+    if (!spellAction)
+        return 1.0f;
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(AI_VALUE2(uint32, "spell id", spellAction->getSpell()));
+    if (!spellInfo)
+        return 1.0f;
+
+    // The core's own tests: Spell::m_canReflect, and Unit::DealDamage for Damage Shield procs.
+    auto const canReflect = [](SpellInfo const* info)
+    {
+        return info && info->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !info->HasAttribute(SPELL_ATTR0_IS_ABILITY) &&
+               !info->HasAttribute(SPELL_ATTR1_NO_REFLECTION) && !info->HasAttribute(SPELL_ATTR0_NO_IMMUNITIES) &&
+               !info->IsPassive() && (!info->IsPositive() || info->HasEffect(SPELL_EFFECT_DISPEL));
+    };
+    bool reflectable = canReflect(spellInfo);
+    // A channel like Arcane Missiles is not reflected itself, but the spells it triggers are.
+    for (SpellEffectInfo const& effect : spellInfo->GetEffects())
+        reflectable = reflectable || (effect.TriggerSpell && canReflect(sSpellMgr->GetSpellInfo(effect.TriggerSpell)));
+
+    bool const meleeHit =
+        spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE && !(spellInfo->GetSchoolMask() & SPELL_SCHOOL_MASK_HOLY);
+    if (!reflectable && !meleeHit)
+        return 1.0f;
+
+    // DoTs and crowd control pick their own target, which need not be "current target".
+    Unit* target = spellAction->GetTarget();
+    if (!IsMajordomoAdd(target))
+        return 1.0f;
+
+    return (reflectable && target->HasAura(SPELL_MAGIC_REFLECTION)) ||
+                   (meleeHit && target->HasAura(SPELL_DAMAGE_SHIELD))
+               ? 0.0f
+               : 1.0f;
+}

@@ -48,6 +48,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class MagtheridonKeepInCombatBeforeReleaseMultiplier : public MagtheridonEncounterMultiplier
+{
+public:
+    MagtheridonKeepInCombatBeforeReleaseMultiplier(PlayerbotAI* botAI)
+        : MagtheridonEncounterMultiplier(botAI, "magtheridon keep in combat before release") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class MagtheridonControlTankActionsMultiplier : public MagtheridonEncounterMultiplier
 {
 public:

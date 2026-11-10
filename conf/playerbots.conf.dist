@@ -766,7 +766,8 @@ Playerbots.SyncLevelWithPlayers = 0
 
 # Concentrate randombots teleporting into level-appropriate open-world zones that hold a real
 # (non-GM) player. Falls back to normal teleporting behaviour when no player's zone matches.
-# Best paired with Playerbots.SyncLevelWithPlayers.
+# A zone also counts when the bot is within RandomBotTeleLowerLevel / RandomBotTeleHigherLevel levels
+# of its level range. Best paired with Playerbots.SyncLevelWithPlayers.
 # Default: 0 (disabled)
 Playerbots.RandomBotConcentrateInPlayerZone = 0
 
@@ -1437,7 +1438,7 @@ Playerbots.RestrictedHealerDPSMaps = "33,34,36,43,47,48,70,90,109,129,209,229,23
 #
 
 # Randombots will behave more like real players (experimental)
-# This option will override Playerbots.AutoDoQuests, RandomBotTeleLowerLevel, and RandomBotTeleHigherLevel
+# This option will override Playerbots.AutoDoQuests
 # Default: 1 (enabled)
 Playerbots.EnableNewRpgStrategy = 1
 
@@ -1657,12 +1658,14 @@ Playerbots.TeleToDalaranWeight = 1
 Playerbots.RandomBotTeleportDistance = 100
 
 # How many levels below the lowest-level creature in a zone, can a bot be
-# This will have no effect if Playerbots.EnableNewRpgStrategy is enabled
+# With Playerbots.EnableNewRpgStrategy enabled, it sets the grind-spot level margin and, with
+# Playerbots.RandomBotConcentrateInPlayerZone, the margin around the player's zone; teleport hubs ignore it otherwise
 # Default: 1 (randombot will leave if they are more than 1 level lower)
 Playerbots.RandomBotTeleLowerLevel = 1
 
 # How many levels above the highest-level creature in a zone, can a bot be
-# This will have no effect if Playerbots.EnableNewRpgStrategy is enabled
+# With Playerbots.EnableNewRpgStrategy enabled, it sets the grind-spot level margin and, with
+# Playerbots.RandomBotConcentrateInPlayerZone, the margin around the player's zone; teleport hubs ignore it otherwise
 # Default: 3 (randombot will leave if they are more than 3 levels higher)
 Playerbots.RandomBotTeleHigherLevel = 3
 

@@ -166,10 +166,12 @@ public:
     ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
 };
 
-class CastTyphoonAction : public CastSpellAction
+inline constexpr uint32 SPELL_GLYPH_OF_TYPHOON = 62135;
+
+class CastTyphoonAction : public CastKnockbackSpellAction
 {
 public:
-    CastTyphoonAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "typhoon") {}
+    CastTyphoonAction(PlayerbotAI* botAI) : CastKnockbackSpellAction(botAI, "typhoon", SPELL_GLYPH_OF_TYPHOON) {}
     ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
     bool isUseful() override;
 };
@@ -379,13 +381,10 @@ protected:
     ObjectGuid Calculate() override;
 };
 
-class CastBlanketHotAction : public CastSpellAction
+class CastBlanketHotAction : public CastHealingSpellAction
 {
 public:
-    CastBlanketHotAction(PlayerbotAI* botAI, std::string const& spell) : CastSpellAction(botAI, spell)
-    {
-        range = botAI->GetRange("heal");
-    }
+    CastBlanketHotAction(PlayerbotAI* botAI, std::string const& spell) : CastHealingSpellAction(botAI, spell) {}
 
     Unit* GetTarget() override;
     bool isUseful() override;

@@ -362,6 +362,38 @@ bool IsAdvisorActive(Unit* advisor)
         !advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
 }
 
+bool IsKaelthasAdvisorDpsHoldActive(PlayerbotAI* botAI, Unit* kaelthas)
+{
+    if (GetKaelthasTkPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
+        return false;
+
+    std::optional<uint32> const& holdStart = TkState(kaelthas->GetInstanceId()).advisorDpsHoldTimer;
+    if (holdStart && *holdStart != ADVISOR_DPS_HOLD_NOT_STARTED &&
+        getMSTimeDiff(*holdStart, getMSTime()) >= ADVISOR_DPS_HOLD_MS)
+    {
+        return false;
+    }
+
+    Player* bot = botAI->GetBot();
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    if (IsAdvisorActive(context->GetValue<Unit*>("find target", "lord sanguinar")->Get()))
+        return !PlayerbotAI::IsMainTank(bot);
+
+    if (IsAdvisorActive(
+        context->GetValue<Unit*>("find target", "grand astromancer capernian")->Get()))
+    {
+        return !IsCapernianTank(bot);
+    }
+
+    if (IsAdvisorActive(
+        context->GetValue<Unit*>("find target", "master engineer telonicus")->Get()))
+    {
+        return !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+    }
+
+    return false;
+}
+
 bool UpdateTkClassRoles(PlayerbotAI* botAI)
 {
     TkInstanceState& state = TkState(botAI->GetBot()->GetInstanceId());
@@ -540,7 +572,7 @@ bool TkResetInstance(uint32 instanceId)
 
     TkInstanceState& state = it->second;
     bool const wasSet = state.lastRebirthState || state.isAlarInPhase2 ||
-        !state.voidReaverArcaneOrbs.empty() || state.advisorDpsWaitTimer;
+        !state.voidReaverArcaneOrbs.empty() || state.advisorDpsHoldTimer;
 
     // Not erased: the class roles outlive encounters, see ClassRoleAssignment.
     TkInstanceState kept;
