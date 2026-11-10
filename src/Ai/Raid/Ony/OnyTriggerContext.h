@@ -20,6 +20,8 @@ public:
         creators["ony fireball splash incoming"] = &RaidOnyxiaTriggerContext::fireball_splash;
         creators["ony whelps spawn"] = &RaidOnyxiaTriggerContext::whelps_spawn;
         creators["ony avoid eggs"] = &RaidOnyxiaTriggerContext::avoid_eggs;
+        creators["ony phase three threat hold"] = &RaidOnyxiaTriggerContext::phase_three_threat_hold;
+        creators["ony no encounter in progress"] = &RaidOnyxiaTriggerContext::no_encounter_in_progress;
     }
 
 private:
@@ -28,6 +30,11 @@ private:
     static Trigger* fireball_splash(PlayerbotAI* botAI) { return new RaidOnyxiaFireballSplashTrigger(botAI); }
     static Trigger* whelps_spawn(PlayerbotAI* botAI) { return new RaidOnyxiaWhelpsSpawnTrigger(botAI); }
     static Trigger* avoid_eggs(PlayerbotAI* botAI) { return new OnyxiaAvoidEggsTrigger(botAI); }
+    static Trigger* phase_three_threat_hold(PlayerbotAI* botAI) { return new OnyxiaPhaseThreeThreatHoldTrigger(botAI); }
+    static Trigger* no_encounter_in_progress(PlayerbotAI* botAI)
+    {
+        return new OnyxiaNoEncounterInProgressTrigger(botAI);
+    }
 };
 
 #endif

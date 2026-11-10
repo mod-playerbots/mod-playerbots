@@ -8,6 +8,7 @@
 #ifndef PLAYERBOTS_ONYACTIONS_H
 #define PLAYERBOTS_ONYACTIONS_H
 
+#include "Action.h"
 #include "AttackAction.h"
 #include "GenericSpellActions.h"
 #include "MovementActions.h"
@@ -101,6 +102,20 @@ public:
     {
     }
 
+    bool Execute(Event event) override;
+};
+
+class OnyxiaStopAttackAction : public Action
+{
+public:
+    OnyxiaStopAttackAction(PlayerbotAI* botAI) : Action(botAI, "ony stop attack") {}
+    bool Execute(Event event) override;
+};
+
+class OnyxiaResetEncounterStateAction : public Action
+{
+public:
+    OnyxiaResetEncounterStateAction(PlayerbotAI* botAI) : Action(botAI, "ony reset encounter state") {}
     bool Execute(Event event) override;
 };
 

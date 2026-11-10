@@ -8,6 +8,7 @@
 #include "GenericSpellActions.h"
 #include "LastMovementValue.h"
 #include "MovementActions.h"
+#include "OnyHelpers.h"
 #include "Playerbots.h"
 #include "PositionAction.h"
 
@@ -135,6 +136,17 @@ bool RaidOnyxiaKillWhelpsAction::Execute(Event /*event*/)
         }
     }
     return false;
+}
+
+bool OnyxiaStopAttackAction::Execute(Event /*event*/)
+{
+    Unit* onyxia = OnyxiaHelpers::FindOnyxia(bot);
+    return onyxia && OnyxiaHelpers::StopAttackingOnyxia(bot, *onyxia);
+}
+
+bool OnyxiaResetEncounterStateAction::Execute(Event /*event*/)
+{
+    return OnyxiaHelpers::ResetHoldState(bot->GetInstanceId());
 }
 
 bool OnyxiaAvoidEggsAction::Execute(Event /*event*/)
