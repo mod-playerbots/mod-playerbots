@@ -90,8 +90,6 @@ public:
 
 // Trash
 
-// Damage on the Sister of Pleasure is split evenly with her Sister of Pain, and they have equal
-// health, so killing Pleasure kills both without anyone hitting Pain through Shell of Pain.
 class SisterOfPleasureFocusDpsAction : public AttackAction
 {
 public:
@@ -108,9 +106,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// Imps, water elementals, succubi and felhunters are kept off Reavers while anything else can be
-// attacked. With only Reavers left, the pet waits passive by its owner while one is unsafe, and
-// is sent onto them otherwise.
 class ShadowmoonReaverControlCasterPetAction : public Action
 {
 public:
@@ -217,12 +212,10 @@ private:
         float turn;
         float timeUntilCaught;
     };
-
     float GetCollisionFreeDistance(float angle, float maxDistance);
     float SimulateChase(
         Unit const& supremus, float timeRemaining, float catchDistance, float angle,
         float runDistance);
-
     float _lastAngle = 0.0f;
     uint32 _lastStepTime = 0;
 };
@@ -443,8 +436,8 @@ private:
 // Illidari Council
 
 // Hunter bots in group order: the first, and any after the fourth, misdirect Zerevor to the mage
-// tank; the second Malande to the first assist tank; the third Gathios to the main tank; the
-// fourth Veras to the second assist tank.
+// tank; the second, Malande to the first assist tank; the third, Gathios to the main tank; and the
+// fourth, Veras to the second assist tank.
 class IllidariCouncilMisdirectToTanksAction : public Action
 {
 public:
@@ -483,8 +476,6 @@ private:
     bool CastWarriorInterrupt(Unit* malande);
 };
 
-// Leaves a council patch only for a position from which it can still hit Malande; otherwise it
-// stays.
 class IllidariCouncilFirstAssistTankFocusMalandeAction : public AttackAction
 {
 public:
@@ -678,7 +669,6 @@ public:
 
 private:
     bool RepositionToAvoidEyeBlast(BtHelpers::EyeBlastDangerArea const& dangerArea);
-    // While the beam's head is near, dangerArea is its path ahead, which the steps keep out of.
     bool RepositionToAvoidBlaze(Unit* flame, BtHelpers::EyeBlastDangerArea const* dangerArea);
 
     uint8 _tankStep = 0;
@@ -736,7 +726,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// Everyone but the main tank waits at the landing stack, out of his way to the ring.
 class IllidanStormragePositionForLandingAction : public MovementAction
 {
 public:
@@ -753,10 +742,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// Phase 1: stacked on the grate center. Phases 3 and 5: in the grate slots by roster, healers
-// first, the warlock tank in the one nearest its Demon Form position, and ranged DPS no farther
-// than their spell reach of him. Phase 4: healers and ranged DPS each in their own slots, by
-// roster.
 class IllidanStormrageSpreadRangedAction : public MovementAction
 {
 public:
@@ -768,8 +753,6 @@ private:
     bool FindDemonFormSlot(Unit* illidan, Position& position);
 };
 
-// Short steps toward the Demon, so the bot stops once in reach, never into Aura of Dread or near
-// Shadow Blast round his victim. Spread ranged brings it back once the Demon is dead.
 class IllidanStormrageReachShadowDemonAction : public MovementAction
 {
 public:
@@ -778,8 +761,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// Melee and tanks but the main tank, which has its own positions, wait in their Demon Form slots,
-// facing him, and leave them only for a Shadow Demon.
 class IllidanStormrageMeleeStayAwayFromDemonFormAction : public MovementAction
 {
 public:
@@ -788,8 +769,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// The warlock tank holds him from its position with Shadow Ward and Searing Pain, Life Tapping
-// between Searing Pains.
 class IllidanStormrageWarlockTankHandleDemonFormAction : public MovementAction
 {
 public:
@@ -798,7 +777,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// A channel would hold the first Seed back; Life Tap comes between Seeds.
 class IllidanStormrageSeedShadowDemonsAction : public Action
 {
 public:

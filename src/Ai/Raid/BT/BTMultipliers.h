@@ -27,15 +27,13 @@ public:
     float GetValue(Action* action) final
     {
         bool const inProgress = _boss ?
-            EncounterHelpers::IsBossInProgress(
-                bot, BtHelpers::BT_MAP_ID, BtHelpers::Id(*_boss)) :
+            EncounterHelpers::IsBossInProgress(bot, BtHelpers::BT_MAP_ID, BtHelpers::Id(*_boss)) :
             EncounterHelpers::IsEncounterInProgress(bot, BtHelpers::BT_MAP_ID);
         return inProgress ? GetValueInEncounter(action) : 1.0f;
     }
 
 protected:
     virtual float GetValueInEncounter(Action* action) = 0;
-
     Unit* GetEncounterBoss()
     {
         return _boss ? BtHelpers::GetBtBoss(bot, *_boss) : nullptr;

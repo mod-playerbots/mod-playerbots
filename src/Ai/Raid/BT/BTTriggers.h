@@ -31,7 +31,6 @@ public:
 
 protected:
     virtual bool IsActiveInEncounter() = 0;
-
     Unit* GetEncounterBoss() { return BtHelpers::GetBtBoss(bot, _boss); }
 
 private:

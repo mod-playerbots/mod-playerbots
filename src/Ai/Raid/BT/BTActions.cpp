@@ -179,6 +179,8 @@ bool BlackTempleCastSpellReflectionAction::Execute(Event /*event*/)
 
 // Trash
 
+// Damage on the Sister of Pleasure is split evenly with her Sister of Pain, and they have equal
+// health, so killing Pleasure kills both without anyone hitting Pain through Shell of Pain.
 bool SisterOfPleasureFocusDpsAction::Execute(Event /*event*/)
 {
     if (IsMechanicTrackerBot(bot, BT_MAP_ID))
@@ -209,6 +211,9 @@ bool ShadowmoonReaverStopWandAction::Execute(Event /*event*/)
     return true;
 }
 
+// Imps, water elementals, succubi and felhunters are kept off Reavers while anything else can be
+// attacked. With only Reavers left, the pet waits passive by its owner while one is unsafe, and
+// is sent onto them otherwise.
 bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
 {
     Guardian* pet = bot->GetGuardianPet();
@@ -329,7 +334,7 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
     constexpr float useDistance = 3.0f;
     bool const atSpine = bot->GetExactDist2d(spineGo) <= useDistance;
 
-    // For realism, a reaction delay of 1 to 2s per spine, before clicking or moving to it.
+    // For realism, a reaction delay of 1 to 2s per spine before clicking or moving to it.
     constexpr uint32 minReactionMs = 1000;
     constexpr uint32 maxReactionMs = 2000;
     if (spineGo->GetGUID() != _spineGuid)
@@ -414,7 +419,7 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
 
 // Supremus
 
-namespace // Supremus
+namespace
 {
 
 constexpr float NEVER_CAUGHT = std::numeric_limits<float>::max();
