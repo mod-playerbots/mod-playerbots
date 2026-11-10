@@ -124,6 +124,12 @@ bool HasQuestToAcceptOrReward(Player* bot, WorldObject* object)
         if (!quest)
             continue;
 
+        // Dropped under log pressure: the accept menu refuses it, so targeting its giver
+        // would only park the bot at the NPC until the give-up timer. Never treat it as an
+        // acceptable offer; completed quests still turn in through the loop above.
+        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot); botAI && botAI->lowPriorityQuest.count(item.QuestId))
+            continue;
+
         QuestStatus const& status = bot->GetQuestStatus(item.QuestId);
         if (status == QUEST_STATUS_NONE && bot->CanTakeQuest(quest, false) && bot->CanAddQuest(quest, false) &&
             IsQuestWorthDoing(bot, quest) && IsQuestCapableDoing(bot, quest))
