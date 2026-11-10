@@ -2591,7 +2591,9 @@ bool IllidanStormrageSetPetStanceAction::Execute(Event /*event*/)
 
 bool IllidanStormrageSetPetStanceAction::ResetPetStance()
 {
-    return SetMinionStancesForHold(bot, false, _previousReactStates);
+    bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
+    _previousReactStates.clear();
+    return restored;
 }
 
 bool IllidanStormrageCommandPetAttackAddAction::Execute(Event /*event*/)

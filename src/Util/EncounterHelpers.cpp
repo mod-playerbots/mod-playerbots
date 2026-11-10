@@ -1072,6 +1072,11 @@ bool CommandPetAttack(Creature* pet, Unit* target)
     return true;
 }
 
+bool HasControllableMinion(Player* bot)
+{
+    return std::any_of(bot->m_Controlled.begin(), bot->m_Controlled.end(), IsControllableMinion);
+}
+
 bool IsMinionStanceWrongForHold(Player* bot, bool isHeld)
 {
     return std::any_of(
@@ -1083,22 +1088,38 @@ bool IsMinionStanceWrongForHold(Player* bot, bool isHeld)
         });
 }
 
-bool SetMinionStancesForHold(
-    Player* bot, bool isHeld, std::vector<std::pair<ObjectGuid, ReactStates>>& savedStances)
+bool SetMinionStancesForHold(Player* bot, bool isHeld, std::vector<SavedMinionStance>& savedStances)
 {
     if (!isHeld)
     {
-        if (savedStances.empty())
-            return false;
+        Pet* pet = bot->GetPet();
+        CharmInfo* petCharmInfo = pet ? pet->GetCharmInfo() : nullptr;
+        uint32 const petNumber = petCharmInfo ? petCharmInfo->GetPetNumber() : 0;
 
-        for (auto const& [guid, reactState] : savedStances)
+        bool restored = false;
+        std::vector<SavedMinionStance> petsAway;
+        for (SavedMinionStance const& saved : savedStances)
         {
-            if (Creature* minion = ObjectAccessor::GetCreatureOrPetOrVehicle(*bot, guid))
-                minion->SetReactState(reactState);
+            Creature* minion = nullptr;
+            if (!saved.petNumber)
+                minion = ObjectAccessor::GetCreatureOrPetOrVehicle(*bot, saved.guid);
+            else if (saved.petNumber == petNumber)
+                minion = pet;
+
+            if (minion)
+            {
+                minion->SetReactState(saved.reactState);
+                restored = true;
+            }
+            // A missing guardian has expired, and a new one starts with its default stance, so
+            // its entry is dropped. A missing pet keeps its entry: it comes back passive when it
+            // is revived or summoned again.
+            else if (saved.petNumber)
+                petsAway.push_back(saved);
         }
 
-        savedStances.clear();
-        return true;
+        savedStances = std::move(petsAway);
+        return restored;
     }
 
     std::vector<Creature*> minionsToHold;
@@ -1114,7 +1135,8 @@ bool SetMinionStancesForHold(
     CallBackPets(bot);
     for (Creature* minion : minionsToHold)
     {
-        savedStances.emplace_back(minion->GetGUID(), minion->GetReactState());
+        uint32 const petNumber = minion->IsPet() ? minion->GetCharmInfo()->GetPetNumber() : 0;
+        savedStances.push_back({ minion->GetGUID(), petNumber, minion->GetReactState() });
         minion->SetReactState(REACT_PASSIVE);
     }
 

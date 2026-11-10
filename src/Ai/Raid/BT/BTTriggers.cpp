@@ -740,7 +740,7 @@ bool IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger::IsActiveInEncounter(
 
 bool IllidanStormrageShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
-    if (bot->m_Controlled.empty())
+    if (!HasControllableMinion(bot))
         return false;
 
     Unit* illidan = GetEncounterBoss();

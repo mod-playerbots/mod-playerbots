@@ -10,11 +10,11 @@
 #include "Action.h"
 #include "AttackAction.h"
 #include "BTHelpers.h"
+#include "EncounterHelpers.h"
 #include "MovementActions.h"
 #include "Unit.h"
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 // Shared
@@ -693,7 +693,7 @@ public:
     bool ResetPetStance();
 
 private:
-    std::vector<std::pair<ObjectGuid, ReactStates>> _previousReactStates;
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
 };
 
 class IllidanStormrageCommandPetAttackAddAction : public Action

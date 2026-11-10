@@ -254,17 +254,28 @@ void CallBackPets(Player* bot);
 // charmed creature. A cast in progress is not stopped, but unlike for players, CastStop can be
 // called from an action to interrupt a pet's pending cast. Returns true if a command was issued.
 bool CommandPetAttack(Creature* pet, Unit* target);
+// A pet or guardian set passive by a hold, and the stance to give back. A pet comes back with a
+// new GUID after it dies or is dismissed, so it is found by its pet number; a guardian has none
+// (0) and is found by GUID.
+struct SavedMinionStance
+{
+    ObjectGuid guid;
+    uint32 petNumber;
+    ReactStates reactState;
+};
+
+// True if the bot has a living pet or guardian with pet controls. Totems are in m_Controlled too,
+// so this, not m_Controlled.empty(), is the cheap first check for a pet trigger.
+bool HasControllableMinion(Player* bot);
 // True if a pet or guardian with pet controls is passive outside a hold, or not passive in one.
-// Triggers can check bot->m_Controlled.empty() first, since most bots control nothing.
 bool IsMinionStanceWrongForHold(Player* bot, bool isHeld);
 // Keeps pets and guardians with pet controls out of a fight while a hold lasts. When held, calls
-// them back and sets them passive, saving each one's prior stance in savedStances. When not held,
-// applies the saved stances and clears the list. Stances are restored by GUID, so any pet
-// summoned after they were saved keeps its own stance, even the same pet dismissed and called
-// again. Returns false if there was nothing to do. The raid action keeps savedStances as a member,
-// and its reset calls this with isHeld false.
+// them back and sets them passive, saving each one's prior stance. When not held, restores the
+// saved stances and drops them from the list, except a pet that isn't summoned, which keeps its
+// entry until it returns. Returns true if a stance was set or restored. The raid action keeps
+// savedStances as a member; its reset calls this with isHeld false, then clears the list.
 bool SetMinionStancesForHold(
-    Player* bot, bool isHeld, std::vector<std::pair<ObjectGuid, ReactStates>>& savedStances);
+    Player* bot, bool isHeld, std::vector<SavedMinionStance>& savedStances);
 
 // Miscellaneous
 
