@@ -495,7 +495,6 @@ inline constexpr float COUNCIL_CLASS_ROLE_ANNOUNCE_DISTANCE = 125.0f;
 // 175 yd extends to the top of the steps leading to the courtyard outside the Council's room.
 inline constexpr float COUNCIL_CLASS_ROLE_REARM_DISTANCE = 175.0f;
 inline constexpr float COUNCIL_MEMBER_SEARCH_RADIUS = COUNCIL_CLASS_ROLE_ANNOUNCE_DISTANCE;
-
 inline constexpr uint32 COUNCIL_DPS_WAIT_MS = 5 * IN_MILLISECONDS; // on pull
 inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
 // A minor spread is maintained by ranged when clear of hazards to avoid the next one hitting too
