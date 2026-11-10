@@ -72,7 +72,7 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
 
 // Vazruden & Nazan
 
-float NazanSetTremorTotemMultiplier::GetValue(Action* action)
+float NazanKeepTremorTotemMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;

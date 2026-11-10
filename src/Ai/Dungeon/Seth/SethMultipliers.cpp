@@ -20,7 +20,7 @@
 using namespace SethShared;
 using namespace EncounterHelpers;
 
-float SethekkProphetSetTremorTotemMultiplier::GetValue(Action* action)
+float SethekkProphetKeepTremorTotemMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
