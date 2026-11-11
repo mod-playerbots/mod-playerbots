@@ -85,90 +85,16 @@ uint32 ElapsedSinceEncounterStart(Player* bot)
 
 bool IsPhysicalTwinDamage(Player* player) { return PlayerbotAI::IsMelee(player) || player->getClass() == CLASS_HUNTER; }
 
-Unit* GetDamageTarget(Player* bot)
+Unit* PickKillTarget(Player* bot, std::vector<uint32> const& priorities)
 {
-    Aq40InstanceState& state = Aq40State(bot->GetInstanceId());
-    Aq40Encounter encounter = GetCurrentEncounter(bot);
-    if (encounter == Aq40Encounter::Skeram)
-    {
-        auto side = state.skeramMemberPlatform.find(bot->GetGUID());
-        if (side == state.skeramMemberPlatform.end())
-            return nullptr;
-        Creature* original = nullptr;
-        for (Creature* unit : GetUnits(bot, Id(Aq40Npcs::NPC_SKERAM)))
-        {
-            if (!IsAllowedDamage(bot, unit))
-                continue;
-            if (!unit->IsSummon())
-                original = unit;
-            else if (auto body = state.skeramImagePlatform.find(unit->GetGUID());
-                     body != state.skeramImagePlatform.end() && body->second == side->second && IsHeld(bot, unit))
-                return unit;
-        }
-        // Before images spawn, and until the assist tank picks up our image, help the main tank.
-        // A missing or moving tank on another platform must not block this target.
-        return original && IsHeld(bot, original) ? original : nullptr;
-    }
-    std::vector<uint32> priorities;
-    switch (encounter)
-    {
-        case Aq40Encounter::Trio:
-            priorities = {Id(Aq40Npcs::NPC_YAUJ_BROOD), Id(Aq40Npcs::NPC_KRI), Id(Aq40Npcs::NPC_YAUJ),
-                          Id(Aq40Npcs::NPC_VEM)};
-            // A living bug marked skull explicitly overrides the default Kri/Yauj/Vem order.
-            if (Group* group = bot->GetGroup())
-                if (Creature* marked = bot->GetMap()->GetCreature(group->GetTargetIcon(SKULL_ICON)))
-                    if (marked->GetEntry() == Id(Aq40Npcs::NPC_KRI) || marked->GetEntry() == Id(Aq40Npcs::NPC_YAUJ) ||
-                        marked->GetEntry() == Id(Aq40Npcs::NPC_VEM))
-                        priorities.insert(priorities.begin() + 1, marked->GetEntry());
-            break;
-        case Aq40Encounter::Sartura:
-            priorities = {Id(Aq40Npcs::NPC_SARTURA_ROYAL_GUARD), Id(Aq40Npcs::NPC_SARTURA)};
-            break;
-        case Aq40Encounter::Fankriss:
-            priorities = {Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS), Id(Aq40Npcs::NPC_FANKRISS)};
-            break;
-        case Aq40Encounter::Viscidus:
-            priorities = {Id(Aq40Npcs::NPC_GLOB_OF_VISCIDUS), Id(Aq40Npcs::NPC_VISCIDUS)};
-            break;
-        case Aq40Encounter::Huhuran:
-            priorities = {Id(Aq40Npcs::NPC_HUHURAN)};
-            break;
-        case Aq40Encounter::Twins:
-            priorities = {Id(Aq40Npcs::NPC_QIRAJI_SCARAB), Id(Aq40Npcs::NPC_QIRAJI_SCORPION),
-                          IsPhysicalTwinDamage(bot) ? Id(Aq40Npcs::NPC_VEKNILASH) : Id(Aq40Npcs::NPC_VEKLOR)};
-            break;
-        case Aq40Encounter::Ouro:
-            priorities = {Id(Aq40Npcs::NPC_OURO_SCARAB), Id(Aq40Npcs::NPC_OURO)};
-            break;
-        case Aq40Encounter::Cthun:
-            if (InStomach(bot))
-                priorities = {Id(Aq40Npcs::NPC_FLESH_TENTACLE)};
-            else if (IsCthunWeakened(bot))
-                priorities = {Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE), Id(Aq40Npcs::NPC_CTHUN),
-                              Id(Aq40Npcs::NPC_EYE_TENTACLE), Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE),
-                              Id(Aq40Npcs::NPC_CLAW_TENTACLE)};
-            else
-                priorities = {Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE), Id(Aq40Npcs::NPC_EYE_TENTACLE),
-                              Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE), Id(Aq40Npcs::NPC_CLAW_TENTACLE),
-                              Id(Aq40Npcs::NPC_EYE_OF_CTHUN)};
-            break;
-        default:
-            return nullptr;
-    }
     for (uint32 entry : priorities)
     {
         bool bug = entry == Id(Aq40Npcs::NPC_QIRAJI_SCARAB) || entry == Id(Aq40Npcs::NPC_QIRAJI_SCORPION);
         std::vector<Creature*> candidates = GetUnits(bot, entry);
-        candidates.erase(std::remove_if(candidates.begin(), candidates.end(),
-                                        [&](Creature* unit)
-                                        {
-                                            return !IsAllowedDamage(bot, unit) ||
-                                                   (encounter == Aq40Encounter::Cthun && !InStomach(bot) &&
-                                                    unit->GetDistance(bot) > CTHUN_TARGET_REACH) ||
-                                                   (bug && unit->GetDistance(bot) > TWIN_BUG_REACH);
-                                        }),
-                         candidates.end());
+        candidates.erase(
+            std::remove_if(candidates.begin(), candidates.end(), [&](Creature* unit)
+                           { return !IsAllowedDamage(bot, unit) || (bug && unit->GetDistance(bot) > TWIN_BUG_REACH); }),
+            candidates.end());
         if (candidates.empty())
             continue;
         // Bosses and other shared targets go by lowest GUID, so the raid agrees on one; local adds go by distance.
@@ -186,6 +112,137 @@ Unit* GetDamageTarget(Player* bot)
         return needsTank && !IsHeld(bot, selected) ? nullptr : selected;
     }
     return nullptr;
+}
+
+Unit* GetOwnedTarget(Player* bot)
+{
+    Unit* selected = nullptr;
+    float score = -1.0f;
+    for (Creature* unit : GetUnits(bot))
+    {
+        if (GetTankFor(bot, unit) != bot || !IsAllowedDamage(bot, unit))
+            continue;
+        float current = unit->GetVictim() == bot ? 1.0f : 10.0f;
+        if (Unit* victim = unit->GetVictim())
+            if (victim->IsPlayer() && PlayerbotAI::IsHeal(victim->ToPlayer()))
+                current += 100.0f;
+        if (unit->GetEntry() == Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS))
+            current += 20.0f;
+        if (!selected || current > score)
+        {
+            selected = unit;
+            score = current;
+        }
+    }
+    return selected;
+}
+
+// An unassigned off-tank can help damage, but must never taunt another tank's boss.
+Unit* GetTankOrKillTarget(Player* bot, std::vector<uint32> const& priorities)
+{
+    Unit* owned = PlayerbotAI::IsTank(bot) ? GetOwnedTarget(bot) : nullptr;
+    return owned ? owned : PickKillTarget(bot, priorities);
+}
+
+Unit* GetSkeramTarget(Player* bot)
+{
+    if (PlayerbotAI::IsTank(bot))
+        return GetOwnedTarget(bot);
+    Aq40InstanceState& state = Aq40State(bot->GetInstanceId());
+    auto side = state.skeramMemberPlatform.find(bot->GetGUID());
+    if (side == state.skeramMemberPlatform.end())
+        return nullptr;
+    Creature* original = nullptr;
+    for (Creature* unit : GetUnits(bot, Id(Aq40Npcs::NPC_SKERAM)))
+    {
+        if (!IsAllowedDamage(bot, unit))
+            continue;
+        if (!unit->IsSummon())
+            original = unit;
+        else if (auto body = state.skeramImagePlatform.find(unit->GetGUID());
+                 body != state.skeramImagePlatform.end() && body->second == side->second && IsHeld(bot, unit))
+            return unit;
+    }
+    // Before images spawn, and until the assist tank picks up our image, help the main tank.
+    // A missing or moving tank on another platform must not block this target.
+    return original && IsHeld(bot, original) ? original : nullptr;
+}
+
+Unit* GetBugTrioTarget(Player* bot)
+{
+    std::vector<uint32> priorities = {Id(Aq40Npcs::NPC_YAUJ_BROOD), Id(Aq40Npcs::NPC_KRI), Id(Aq40Npcs::NPC_YAUJ),
+                                      Id(Aq40Npcs::NPC_VEM)};
+    // A living bug marked skull explicitly overrides the default Kri/Yauj/Vem order.
+    if (Group* group = bot->GetGroup())
+        if (Creature* marked = bot->GetMap()->GetCreature(group->GetTargetIcon(SKULL_ICON)))
+            if (marked->GetEntry() == Id(Aq40Npcs::NPC_KRI) || marked->GetEntry() == Id(Aq40Npcs::NPC_YAUJ) ||
+                marked->GetEntry() == Id(Aq40Npcs::NPC_VEM))
+                priorities.insert(priorities.begin() + 1, marked->GetEntry());
+    return GetTankOrKillTarget(bot, priorities);
+}
+
+Unit* GetSarturaTarget(Player* bot)
+{
+    return GetTankOrKillTarget(bot, {Id(Aq40Npcs::NPC_SARTURA_ROYAL_GUARD), Id(Aq40Npcs::NPC_SARTURA)});
+}
+
+Unit* GetFankrissTarget(Player* bot)
+{
+    return GetTankOrKillTarget(bot, {Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS), Id(Aq40Npcs::NPC_FANKRISS)});
+}
+
+Unit* GetViscidusTarget(Player* bot)
+{
+    return GetTankOrKillTarget(bot, {Id(Aq40Npcs::NPC_GLOB_OF_VISCIDUS), Id(Aq40Npcs::NPC_VISCIDUS)});
+}
+
+Unit* GetHuhuranTarget(Player* bot) { return GetTankOrKillTarget(bot, {Id(Aq40Npcs::NPC_HUHURAN)}); }
+
+Unit* GetTwinEmperorsTarget(Player* bot)
+{
+    std::vector<uint32> const priorities = {
+        Id(Aq40Npcs::NPC_QIRAJI_SCARAB), Id(Aq40Npcs::NPC_QIRAJI_SCORPION),
+        IsPhysicalTwinDamage(bot) ? Id(Aq40Npcs::NPC_VEKNILASH) : Id(Aq40Npcs::NPC_VEKLOR)};
+    if (IsTwinLock(bot, bot))
+    {
+        // Only the warlock on Vek'lor's side builds threat; the other one waits for his next phase.
+        for (Creature* veklor : GetUnits(bot, Id(Aq40Npcs::NPC_VEKLOR)))
+            if (GetTankFor(bot, veklor) == bot && IsAllowedDamage(bot, veklor))
+                return veklor;
+        return nullptr;
+    }
+    // Vek'nilash cannot be taunted: when his tank dies he goes to the next name on his threat list. A spare tank
+    // keeps that name a tank instead of a healer.
+    if (IsTwinSpareTank(bot, bot))
+    {
+        // Bugs come first for damage dealers, but a spare tank busy on a scorpion builds no threat on Vek'nilash,
+        // who then goes to a damage dealer when his tank dies.
+        for (Creature* nilash : GetUnits(bot, Id(Aq40Npcs::NPC_VEKNILASH)))
+            if (IsAllowedDamage(bot, nilash) && IsHeld(bot, nilash))
+                return nilash;
+        return PickKillTarget(bot, priorities);
+    }
+    return PlayerbotAI::IsTank(bot) ? GetOwnedTarget(bot) : PickKillTarget(bot, priorities);
+}
+
+Unit* GetOuroTarget(Player* bot)
+{
+    if (PlayerbotAI::IsTank(bot))
+    {
+        if (Unit* owned = GetOwnedTarget(bot))
+            return owned;
+        // Backup tanks must keep building threat before the next Sand Blast.
+        if (Creature* boss = GetBoss(bot); boss && IsAllowedDamage(bot, boss))
+            return boss;
+    }
+    return PickKillTarget(bot, {Id(Aq40Npcs::NPC_OURO_SCARAB), Id(Aq40Npcs::NPC_OURO)});
+}
+
+Unit* GetCthunStomachTarget(Player* bot)
+{
+    // No last-Flesh hold: waiting on the Giant tentacles outside wastes 36-94 s per window, while melee on
+    // C'Thun and the Giant Eye response make the burn safe without it.
+    return StomachExitNeeded(bot) ? nullptr : PickKillTarget(bot, {Id(Aq40Npcs::NPC_FLESH_TENTACLE)});
 }
 
 bool IsCthunEyeMelee(Player* bot)
@@ -705,66 +762,31 @@ bool IsAllowedDamage(Player* bot, Unit* unit)
 Unit* ComputeAssignedTarget(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    Aq40Encounter encounter = GetCurrentEncounter(bot);
-    if (encounter == Aq40Encounter::None || HasTrueFulfillment(bot))
+    if (HasTrueFulfillment(bot))
         return nullptr;
-    if (encounter == Aq40Encounter::Cthun && InStomach(bot))
+    switch (GetCurrentEncounter(bot))
     {
-        if (StomachExitNeeded(bot))
+        case Aq40Encounter::Skeram:
+            return GetSkeramTarget(bot);
+        case Aq40Encounter::Trio:
+            return GetBugTrioTarget(bot);
+        case Aq40Encounter::Sartura:
+            return GetSarturaTarget(bot);
+        case Aq40Encounter::Fankriss:
+            return GetFankrissTarget(bot);
+        case Aq40Encounter::Viscidus:
+            return GetViscidusTarget(bot);
+        case Aq40Encounter::Huhuran:
+            return GetHuhuranTarget(bot);
+        case Aq40Encounter::Twins:
+            return GetTwinEmperorsTarget(bot);
+        case Aq40Encounter::Ouro:
+            return GetOuroTarget(bot);
+        case Aq40Encounter::Cthun:
+            return InStomach(bot) ? GetCthunStomachTarget(bot) : GetCthunTarget(bot);
+        default:
             return nullptr;
-        // No last-Flesh hold: waiting on the Giant tentacles outside wastes 36-94 s per window, while melee on
-        // C'Thun and the Giant Eye response make the burn safe without it.
-        return GetDamageTarget(bot);
     }
-    if (encounter == Aq40Encounter::Cthun)
-        return GetCthunTarget(bot);
-    if (IsTwinLock(bot, bot))
-    {
-        // Only the warlock on Vek'lor's side builds threat; the other one waits for his next phase.
-        for (Creature* veklor : GetUnits(bot, Id(Aq40Npcs::NPC_VEKLOR)))
-            if (GetTankFor(bot, veklor) == bot && IsAllowedDamage(bot, veklor))
-                return veklor;
-        return nullptr;
-    }
-    // Vek'nilash cannot be taunted: when his tank dies he goes to the next name on his threat list. A spare tank
-    // keeps that name a tank instead of a healer.
-    if (IsTwinSpareTank(bot, bot))
-    {
-        // Bugs come first for damage dealers, but a spare tank busy on a scorpion builds no threat on Vek'nilash,
-        // who then goes to a damage dealer when his tank dies.
-        for (Creature* nilash : GetUnits(bot, Id(Aq40Npcs::NPC_VEKNILASH)))
-            if (IsAllowedDamage(bot, nilash) && IsHeld(bot, nilash))
-                return nilash;
-        return GetDamageTarget(bot);
-    }
-    if (!PlayerbotAI::IsTank(bot))
-        return GetDamageTarget(bot);
-    Unit* selected = nullptr;
-    float score = -1.0f;
-    for (Creature* unit : GetUnits(bot))
-    {
-        if (GetTankFor(bot, unit) != bot || !IsAllowedDamage(bot, unit))
-            continue;
-        float current = unit->GetVictim() == bot ? 1.0f : 10.0f;
-        if (Unit* victim = unit->GetVictim())
-            if (victim->IsPlayer() && PlayerbotAI::IsHeal(victim->ToPlayer()))
-                current += 100.0f;
-        if (unit->GetEntry() == Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS))
-            current += 20.0f;
-        if (!selected || current > score)
-        {
-            selected = unit;
-            score = current;
-        }
-    }
-    if (!selected && encounter == Aq40Encounter::Ouro)
-        if (Creature* boss = GetBoss(bot))
-            if (IsAllowedDamage(bot, boss))
-                return boss;  // Backup tanks must keep building threat before the next Sand Blast.
-    // An unassigned off-tank can help damage, but must never taunt another tank's boss.
-    if (!selected && encounter != Aq40Encounter::Twins && encounter != Aq40Encounter::Skeram)
-        selected = GetDamageTarget(bot);
-    return selected;
 }
 
 Unit* GetAssignedTarget(PlayerbotAI* botAI)

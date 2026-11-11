@@ -301,7 +301,6 @@ inline constexpr float CTHUN_STACK_MELEE_LEASH = 30.0f;
 // long when every ranged bot picks the nearest tentacle; two ranged bots take only those.
 inline constexpr float CTHUN_FAR_TENTACLE = 30.0f;
 inline constexpr uint32 CTHUN_TENTACLE_KILLERS = 2;
-inline constexpr float CTHUN_TARGET_REACH = 45.0f;
 // Dark Glare band (5 yd) plus a margin, and how many 1-second ticks ahead a bot starts moving.
 inline constexpr float GLARE_HALF_WIDTH = 8.0f;
 inline constexpr int GLARE_LOOKAHEAD = 3;
