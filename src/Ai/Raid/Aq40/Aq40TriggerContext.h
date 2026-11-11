@@ -417,8 +417,7 @@ private:
     }
     static Trigger* c_thun_should_assign_dps_priority(PlayerbotAI* botAI)
     {
-        return new Aq40AssignedTargetTrigger(botAI, "c'thun should assign dps priority",
-                                             Aq40Helpers::Aq40Encounter::Cthun);
+        return new CthunShouldAssignDpsPriorityTrigger(botAI);
     }
 };
 

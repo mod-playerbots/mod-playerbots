@@ -79,15 +79,12 @@ class Aq40AssignedTargetTrigger : public Aq40EncounterTrigger
 {
 public:
     Aq40AssignedTargetTrigger(PlayerbotAI* botAI, std::string const& name, Aq40Helpers::Aq40Encounter encounter)
-        : Aq40EncounterTrigger(botAI, name), _encounter(encounter)
+        : Aq40EncounterTrigger(botAI, name, encounter)
     {
     }
 
 protected:
     bool IsActiveInEncounter() override;
-
-private:
-    Aq40Helpers::Aq40Encounter const _encounter;
 };
 
 class Aq40NoAssignedTargetTrigger : public Aq40EncounterTrigger
@@ -575,6 +572,18 @@ protected:
 };
 
 // C'Thun
+
+class CthunShouldAssignDpsPriorityTrigger : public Aq40AssignedTargetTrigger
+{
+public:
+    CthunShouldAssignDpsPriorityTrigger(PlayerbotAI* botAI)
+        : Aq40AssignedTargetTrigger(botAI, "c'thun should assign dps priority", Aq40Helpers::Aq40Encounter::Cthun)
+    {
+    }
+
+protected:
+    bool IsActiveInEncounter() override;
+};
 
 class CthunMeleeOutOfBurnRangeTrigger : public Aq40EncounterTrigger
 {
