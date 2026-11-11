@@ -10,6 +10,7 @@
 #include "EncounterHelpers.h"
 #include "InstanceScript.h"
 #include "LastMovementValue.h"
+#include "MoveSpline.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "PathGenerator.h"
@@ -1726,6 +1727,12 @@ bool CthunMeleeBurn(PlayerbotAI* botAI)
            target->HasAura(Id(Aq40Spells::SPELL_PURPLE_COLORATION));
 }
 
+void ClearStaleLastMove(PlayerbotAI* botAI)
+{
+    if (botAI->GetBot()->movespline->Finalized())
+        botAI->GetAiObjectContext()->GetValue<LastMovement&>("last movement")->Get().clear();
+}
+
 bool GetRouteStep(Player* bot, Position goal, bool allowPartial, Position& next)
 {
     bot->UpdateAllowedPositionZ(goal.GetPositionX(), goal.GetPositionY(), goal.m_positionZ);
@@ -1757,6 +1764,50 @@ bool GetRouteStep(Player* bot, Position goal, bool allowPartial, Position& next)
         remaining -= segment;
     }
     return true;
+}
+
+bool GetEscapeStep(Player* bot, Position const& goal, std::vector<Creature*> const& avoid, Position& step)
+{
+    float const distance = bot->GetExactDist2d(goal);
+    if (distance < 1.5f)
+        return false;
+    float const angle = bot->GetAngle(&goal);
+    float const length = std::min(distance, 7.0f);
+    bool found = false;
+    float bestClearance = -1.0f;
+    for (float turn : {0.0f, 0.9f, -0.9f, 1.8f, -1.8f, AQ40_PI})
+    {
+        float x = bot->GetPositionX() + length * std::cos(angle + turn);
+        float y = bot->GetPositionY() + length * std::sin(angle + turn);
+        float z = bot->GetPositionZ();
+        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
+                                                            bot->GetPositionZ(), x, y, z))
+            continue;
+        PathGenerator path(bot);
+        if (!path.CalculatePath(x, y, z) || path.GetPathType() != PATHFIND_NORMAL)
+            continue;
+        float pathLength = 0.0f;
+        Position previous = bot->GetPosition();
+        for (auto const& point : path.GetPath())
+        {
+            Position corner(point.x, point.y, point.z);
+            pathLength += previous.GetExactDist(corner);
+            previous = corner;
+        }
+        if (pathLength > 12.0f)
+            continue;
+        float clearance = std::numeric_limits<float>::max();
+        for (Creature* unit : avoid)
+            clearance = std::min(clearance, unit->GetExactDist2d(x, y));
+        if (found && clearance <= bestClearance)
+            continue;
+        found = true;
+        step.Relocate(x, y, z);
+        bestClearance = clearance;
+        if (avoid.empty())
+            break;
+    }
+    return found;
 }
 
 // Hazard escapes

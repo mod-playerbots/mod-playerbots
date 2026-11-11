@@ -29,7 +29,6 @@ public:
     Aq40MovementAction(PlayerbotAI* botAI, std::string const& name) : MovementAction(botAI, name) {}
 
 protected:
-    bool MoveToGoal(Position goal, bool hazard);
     // Before the pull, neither "follow" (drags the bot back to the master) nor "stay" (keeps pulling it back
     // mid-fight) works, so the bot walks to its spot and holds it.
     bool MoveToPrepullSpot(Position const& spot);
@@ -123,11 +122,11 @@ public:
 
 // Bug Trio
 
-class BugTrioMoveAwayFromPoisonCloudAction : public Aq40MovementAction
+class BugTrioMoveAwayFromPoisonCloudAction : public MovementAction, public Aq40ActionTag
 {
 public:
     BugTrioMoveAwayFromPoisonCloudAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "bug trio move away from poison cloud")
+        : MovementAction(botAI, "bug trio move away from poison cloud")
     {
     }
     bool Execute(Event event) override;
@@ -142,11 +141,11 @@ public:
 
 // Battleguard Sartura
 
-class BattleguardSarturaMoveAwayFromWhirlwindAction : public Aq40MovementAction
+class BattleguardSarturaMoveAwayFromWhirlwindAction : public MovementAction, public Aq40ActionTag
 {
 public:
     BattleguardSarturaMoveAwayFromWhirlwindAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "battleguard sartura move away from whirlwind")
+        : MovementAction(botAI, "battleguard sartura move away from whirlwind")
     {
     }
     bool Execute(Event event) override;
@@ -177,10 +176,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class ViscidusEscapeToxinCloudsAction : public Aq40MovementAction
+class ViscidusEscapeToxinCloudsAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    ViscidusEscapeToxinCloudsAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "viscidus escape toxin clouds") {}
+    ViscidusEscapeToxinCloudsAction(PlayerbotAI* botAI) : MovementAction(botAI, "viscidus escape toxin clouds") {}
     bool Execute(Event event) override;
 };
 
@@ -367,38 +366,38 @@ public:
     bool Execute(Event event) override;
 };
 
-class TwinEmperorsMoveAwayFromExplodingBugAction : public Aq40MovementAction
+class TwinEmperorsMoveAwayFromExplodingBugAction : public MovementAction, public Aq40ActionTag
 {
 public:
     TwinEmperorsMoveAwayFromExplodingBugAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "twin emperors move away from exploding bug")
+        : MovementAction(botAI, "twin emperors move away from exploding bug")
     {
     }
     bool Execute(Event event) override;
 };
 
-class TwinEmperorsEscapeBlizzardAction : public Aq40MovementAction
+class TwinEmperorsEscapeBlizzardAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    TwinEmperorsEscapeBlizzardAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "twin emperors escape blizzard") {}
+    TwinEmperorsEscapeBlizzardAction(PlayerbotAI* botAI) : MovementAction(botAI, "twin emperors escape blizzard") {}
     bool Execute(Event event) override;
 };
 
-class TwinEmperorsMoveAwayFromVeklorAction : public Aq40MovementAction
+class TwinEmperorsMoveAwayFromVeklorAction : public MovementAction, public Aq40ActionTag
 {
 public:
     TwinEmperorsMoveAwayFromVeklorAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "twin emperors move away from vek'lor")
+        : MovementAction(botAI, "twin emperors move away from vek'lor")
     {
     }
     bool Execute(Event event) override;
 };
 
-class TwinEmperorsClearVeknilashLandingSpotAction : public Aq40MovementAction
+class TwinEmperorsClearVeknilashLandingSpotAction : public MovementAction, public Aq40ActionTag
 {
 public:
     TwinEmperorsClearVeknilashLandingSpotAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "twin emperors clear vek'nilash landing spot")
+        : MovementAction(botAI, "twin emperors clear vek'nilash landing spot")
     {
     }
     bool Execute(Event event) override;
@@ -456,17 +455,17 @@ public:
 
 // Ouro
 
-class OuroMoveOutOfFrontalConeAction : public Aq40MovementAction
+class OuroMoveOutOfFrontalConeAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    OuroMoveOutOfFrontalConeAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "ouro move out of frontal cone") {}
+    OuroMoveOutOfFrontalConeAction(PlayerbotAI* botAI) : MovementAction(botAI, "ouro move out of frontal cone") {}
     bool Execute(Event event) override;
 };
 
-class OuroAvoidDirtMoundAction : public Aq40MovementAction
+class OuroAvoidDirtMoundAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    OuroAvoidDirtMoundAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "ouro avoid dirt mound") {}
+    OuroAvoidDirtMoundAction(PlayerbotAI* botAI) : MovementAction(botAI, "ouro avoid dirt mound") {}
     bool Execute(Event event) override;
 };
 
@@ -546,17 +545,17 @@ public:
     bool Execute(Event event) override;
 };
 
-class CthunExitStomachAction : public Aq40MovementAction
+class CthunExitStomachAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    CthunExitStomachAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "c'thun exit stomach") {}
+    CthunExitStomachAction(PlayerbotAI* botAI) : MovementAction(botAI, "c'thun exit stomach") {}
     bool Execute(Event event) override;
 };
 
-class EyeOfCthunDodgeDarkGlareAction : public Aq40MovementAction
+class EyeOfCthunDodgeDarkGlareAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    EyeOfCthunDodgeDarkGlareAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "eye of c'thun dodge dark glare") {}
+    EyeOfCthunDodgeDarkGlareAction(PlayerbotAI* botAI) : MovementAction(botAI, "eye of c'thun dodge dark glare") {}
     bool Execute(Event event) override;
 };
 

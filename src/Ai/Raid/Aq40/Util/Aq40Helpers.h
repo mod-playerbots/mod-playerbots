@@ -469,9 +469,16 @@ bool IsCthunWeakened(Player* bot);
 bool IsCthunTentacleKiller(Player* bot);
 bool CthunMeleeBurn(PlayerbotAI* botAI);
 
+// MoveTo() refuses a destination it believes is still being walked. Forgets the last one once the bot has stopped:
+// a knockback may have cancelled it.
+void ClearStaleLastMove(PlayerbotAI* botAI);
 // The farthest point within 250 yd along the bot's path to the goal. Fails unless the path ends at the goal, or,
 // with allowPartial, stops short of it.
 bool GetRouteStep(Player* bot, Position goal, bool allowPartial, Position& next);
+// A walkable step of up to 7 yd toward the goal, turned aside when the straight line is walled in. With units to
+// avoid, the step farthest from them wins. Callers interrupt the bot's cast only after this succeeds, so a stuck
+// healer keeps healing.
+bool GetEscapeStep(Player* bot, Position const& goal, std::vector<Creature*> const& avoid, Position& step);
 
 // Hazard escapes. Each returns where the bot should step to.
 

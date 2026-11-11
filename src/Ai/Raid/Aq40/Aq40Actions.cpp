@@ -7,135 +7,17 @@
 #include "Aq40Actions.h"
 #include "Aq40Helpers.h"
 #include "EncounterHelpers.h"
-#include "LastMovementValue.h"
 #include "MoveSpline.h"
 #include "ObjectMgr.h"
-#include "PathGenerator.h"
 #include "Playerbots.h"
 #include "Timer.h"
-#include <algorithm>
 #include <cmath>
-#include <limits>
 #include <vector>
 
 using namespace Aq40Helpers;
 using namespace EncounterHelpers;
 
 // Shared
-
-bool Aq40MovementAction::MoveToGoal(Position goal, bool hazard)
-{
-    Aq40Encounter encounter = GetCurrentEncounter(bot);
-    bool const twins = encounter == Aq40Encounter::Twins;
-    // C'Thun: the entrance ramps reach the floor only by one slope south-southeast of the Eye, so a spot is often
-    // 100+ yd of path away and short steps stall on the ramps.
-    bool const cthunRoute = encounter == Aq40Encounter::Cthun && !InStomach(bot);
-    if (twins || cthunRoute)
-    {
-        // A long C'Thun route may come back incomplete; walk its reachable part and path again from there.
-        Position next;
-        if (!GetRouteStep(bot, goal, cthunRoute, next))
-            return false;
-        if (twins)
-            StopAttacking(bot);
-        if (hazard)
-            bot->CastStop();
-        if (bot->movespline->Finalized())
-            AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
-        bool const moved =
-            MoveTo(bot->GetMapId(), next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true,
-                   true, hazard ? MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT, true);
-        // An escape still running this route is refused as a duplicate. It keeps the bot's turn, or a lower action
-        // re-faces the bot and stops the run.
-        return moved || (hazard && !bot->movespline->Finalized());
-    }
-    bool const stomachExit = hazard && encounter == Aq40Encounter::Cthun && InStomach(bot);
-    float distance = bot->GetExactDist2d(goal);
-    if (distance < 1.5f)
-    {
-        if (stomachExit)
-        {
-            StopMoving(botAI);  // Stay on the exit while the server's delayed area-trigger checks run.
-            Aq40BotCache& cache = BotCache(botAI);
-            uint32 const now = getMSTime();
-            if ((!cache.exitAttemptTime || getMSTimeDiff(cache.exitAttemptTime, now) > 4 * IN_MILLISECONDS) &&
-                std::abs(bot->GetPositionZ() - goal.GetPositionZ()) < 4.0f)
-            {
-                cache.exitAttemptTime = now;
-                WorldPacket packet(CMSG_AREATRIGGER);
-                packet << uint32(CTHUN_STOMACH_EXIT_TRIGGER);
-                bot->GetSession()->HandleAreaTriggerOpcode(packet);
-            }
-        }
-        return false;
-    }
-    float angle = bot->GetAngle(&goal);
-    float length = std::min(distance, hazard ? 7.0f : 4.0f);
-    // A hazard escape can be walled in (ramp edge, cloud cluster). Turn before giving up, and only interrupt the
-    // bot's cast once a step is actually possible, so a stuck healer keeps healing.
-    std::vector<float> turns =
-        hazard ? std::vector<float>{0.0f, 0.9f, -0.9f, 1.8f, -1.8f, AQ40_PI} : std::vector<float>{0.0f};
-    std::vector<Creature*> clouds = hazard && encounter == Aq40Encounter::Viscidus
-                                        ? GetUnits(bot, Id(Aq40Npcs::NPC_TOXIC_SLIME))
-                                        : std::vector<Creature*>{};
-    bool found = false;
-    float bestX = 0.0f;
-    float bestY = 0.0f;
-    float bestZ = 0.0f;
-    float bestClearance = -1.0f;
-    for (float turn : turns)
-    {
-        float x = bot->GetPositionX() + length * std::cos(angle + turn);
-        float y = bot->GetPositionY() + length * std::sin(angle + turn);
-        float z = bot->GetPositionZ();
-        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
-                                                            bot->GetPositionZ(), x, y, z))
-            continue;
-        PathGenerator path(bot);
-        if (!path.CalculatePath(x, y, z) || path.GetPathType() != PATHFIND_NORMAL)
-            continue;
-        float pathLength = 0.0f;
-        Position previous = bot->GetPosition();
-        for (auto const& point : path.GetPath())
-        {
-            Position step(point.x, point.y, point.z);
-            pathLength += previous.GetExactDist(step);
-            previous = step;
-        }
-        if (pathLength > (hazard ? 12.0f : 8.0f))
-            continue;
-        float clearance = std::numeric_limits<float>::max();
-        for (Creature* cloud : clouds)
-            clearance = std::min(clearance, cloud->GetExactDist2d(x, y));
-        if (found && clearance <= bestClearance)
-            continue;
-        found = true;
-        bestX = x;
-        bestY = y;
-        bestZ = z;
-        bestClearance = clearance;
-        if (clouds.empty())
-            break;
-    }
-    if (!found && stomachExit)
-    {
-        // Players drop from the stomach entrance into the pool, but a bot hangs where it was teleported and no short
-        // step validates from mid-air. Go straight to the exit.
-        bot->CastStop();
-        bot->GetMotionMaster()->MovePoint(0, goal.GetPositionX(), goal.GetPositionY(), goal.GetPositionZ(),
-                                          FORCED_MOVEMENT_NONE, 0.0f, 0.0f, false, false);
-        return true;
-    }
-    if (!found)
-        return false;
-    if (hazard)
-    {
-        StopAttacking(bot);
-        bot->CastStop();
-    }
-    return MoveTo(bot->GetMapId(), bestX, bestY, bestZ, false, false, false, true,
-                  hazard ? MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT);
-}
 
 bool Aq40ResetEncounterStatesAction::Execute(Event /*event*/)
 {
@@ -249,8 +131,14 @@ bool TheProphetSkeramMoveToAssignedPlatformAction::Execute(Event /*event*/)
 
 bool BugTrioMoveAwayFromPoisonCloudAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetPoisonCloudEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+    Position spot;
+    Position step;
+    if (!GetPoisonCloudEscapeGoal(botAI, spot) || !GetEscapeStep(bot, spot, {}, step))
+        return false;
+    StopAttacking(bot);
+    bot->CastStop();
+    return MoveTo(AQ40_MAP_ID, step.GetPositionX(), step.GetPositionY(), step.GetPositionZ(), false, false, false, true,
+                  MovementPriority::MOVEMENT_FORCED);
 }
 
 bool BugTrioTanksSeparateBossesAction::Execute(Event /*event*/)
@@ -272,9 +160,13 @@ bool BugTrioTanksSeparateBossesAction::Execute(Event /*event*/)
 bool BattleguardSarturaMoveAwayFromWhirlwindAction::Execute(Event /*event*/)
 {
     Creature* whirler = GetWhirlwindInRange(bot);
-    if (!whirler)
+    Position step;
+    if (!whirler || !GetEscapeStep(bot, Around(bot, WHIRLWIND_ESCAPE_STEP, whirler->GetAngle(bot)), {}, step))
         return false;
-    return MoveToGoal(Around(bot, WHIRLWIND_ESCAPE_STEP, whirler->GetAngle(bot)), true);
+    StopAttacking(bot);
+    bot->CastStop();
+    return MoveTo(AQ40_MAP_ID, step.GetPositionX(), step.GetPositionY(), step.GetPositionZ(), false, false, false, true,
+                  MovementPriority::MOVEMENT_FORCED);
 }
 
 // Fankriss the Unyielding
@@ -319,8 +211,15 @@ bool ViscidusMeleeShatterAction::Execute(Event /*event*/)
 
 bool ViscidusEscapeToxinCloudsAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetToxinEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+    Position spot;
+    Position step;
+    if (!GetToxinEscapeGoal(botAI, spot) ||
+        !GetEscapeStep(bot, spot, GetUnits(bot, Id(Aq40Npcs::NPC_TOXIC_SLIME)), step))
+        return false;
+    StopAttacking(bot);
+    bot->CastStop();
+    return MoveTo(AQ40_MAP_ID, step.GetPositionX(), step.GetPositionY(), step.GetPositionZ(), false, false, false, true,
+                  MovementPriority::MOVEMENT_FORCED);
 }
 
 bool ViscidusMeleeMoveInToShatterAction::Execute(Event /*event*/)
@@ -562,26 +461,66 @@ bool TwinEmperorsAssignTanksAndSidesAction::Execute(Event /*event*/)
 
 bool TwinEmperorsMoveAwayFromExplodingBugAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetExplodingBugEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+    Position spot;
+    Position next;
+    if (!GetExplodingBugEscapeGoal(botAI, spot) || !GetRouteStep(bot, spot, false, next))
+        return false;
+    StopAttacking(bot);
+    bot->CastStop();
+    ClearStaleLastMove(botAI);
+    bool const moved = MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false,
+                              true, true, MovementPriority::MOVEMENT_FORCED, true);
+    // A repeat of a route still running is refused as a duplicate. Keeping the turn stops lower actions from
+    // re-facing the bot and breaking up the run.
+    return moved || !bot->movespline->Finalized();
 }
 
 bool TwinEmperorsEscapeBlizzardAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetBlizzardEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+    Position spot;
+    Position next;
+    if (!GetBlizzardEscapeGoal(botAI, spot) || !GetRouteStep(bot, spot, false, next))
+        return false;
+    StopAttacking(bot);
+    bot->CastStop();
+    ClearStaleLastMove(botAI);
+    bool const moved = MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false,
+                              true, true, MovementPriority::MOVEMENT_FORCED, true);
+    // A repeat of a route still running is refused as a duplicate. Keeping the turn stops lower actions from
+    // re-facing the bot and breaking up the run.
+    return moved || !bot->movespline->Finalized();
 }
 
 bool TwinEmperorsMoveAwayFromVeklorAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetVeklorEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+    Position spot;
+    Position next;
+    if (!GetVeklorEscapeGoal(botAI, spot) || !GetRouteStep(bot, spot, false, next))
+        return false;
+    StopAttacking(bot);
+    bot->CastStop();
+    ClearStaleLastMove(botAI);
+    bool const moved = MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false,
+                              true, true, MovementPriority::MOVEMENT_FORCED, true);
+    // A repeat of a route still running is refused as a duplicate. Keeping the turn stops lower actions from
+    // re-facing the bot and breaking up the run.
+    return moved || !bot->movespline->Finalized();
 }
 
 bool TwinEmperorsClearVeknilashLandingSpotAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetVeknilashLandingEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+    Position spot;
+    Position next;
+    if (!GetVeknilashLandingEscapeGoal(botAI, spot) || !GetRouteStep(bot, spot, false, next))
+        return false;
+    StopAttacking(bot);
+    bot->CastStop();
+    ClearStaleLastMove(botAI);
+    bool const moved = MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false,
+                              true, true, MovementPriority::MOVEMENT_FORCED, true);
+    // A repeat of a route still running is refused as a duplicate. Keeping the turn stops lower actions from
+    // re-facing the bot and breaking up the run.
+    return moved || !bot->movespline->Finalized();
 }
 
 bool TwinEmperorsTanksPositionEmperorsAction::Execute(Event /*event*/)
@@ -590,8 +529,7 @@ bool TwinEmperorsTanksPositionEmperorsAction::Execute(Event /*event*/)
     Position next;
     if (!GetTwinTankGoal(botAI, spot) || !GetRouteStep(bot, spot, false, next))
         return false;
-    if (bot->movespline->Finalized())
-        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    ClearStaleLastMove(botAI);
     return MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true, true,
                   MovementPriority::MOVEMENT_COMBAT, true);
 }
@@ -603,8 +541,7 @@ bool EmperorVeklorWarlockTankKeepRangeAction::Execute(Event /*event*/)
     if (!GetTwinWarlockGoal(botAI, spot) || !GetRouteStep(bot, spot, false, next))
         return false;
     StopAttacking(bot);
-    if (bot->movespline->Finalized())
-        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    ClearStaleLastMove(botAI);
     bool const moved = MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false,
                               true, true, MovementPriority::MOVEMENT_COMBAT, true);
     // A repeat of a route still running is refused as a duplicate. Keeping the turn stops attack set-up from
@@ -621,8 +558,7 @@ bool TwinEmperorsMeleeLeaveLandingSpotsAction::Execute(Event /*event*/)
     bool const tank = PlayerbotAI::IsTank(bot);
     if (!tank)
         StopAttacking(bot);
-    if (bot->movespline->Finalized())
-        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    ClearStaleLastMove(botAI);
     bool const moved = MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false,
                               true, true, MovementPriority::MOVEMENT_COMBAT, true);
     // A repeat of a route still running is refused as a duplicate. Keeping the turn stops attack set-up from
@@ -639,8 +575,7 @@ bool TwinEmperorsDpsMoveToAssignedEmperorAction::Execute(Event /*event*/)
     bool const tank = PlayerbotAI::IsTank(bot);
     if (!tank)
         StopAttacking(bot);
-    if (bot->movespline->Finalized())
-        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    ClearStaleLastMove(botAI);
     bool const moved = MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false,
                               true, true, MovementPriority::MOVEMENT_COMBAT, true);
     // A repeat of a route still running is refused as a duplicate. Keeping the turn stops attack set-up from
@@ -655,8 +590,7 @@ bool TwinEmperorsHealersPositionBetweenTankAndWarlockAction::Execute(Event /*eve
     if (!GetTwinHealerGoal(botAI, spot) || !GetRouteStep(bot, spot, false, next))
         return false;
     StopAttacking(bot);
-    if (bot->movespline->Finalized())
-        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    ClearStaleLastMove(botAI);
     return MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true, true,
                   MovementPriority::MOVEMENT_COMBAT, true);
 }
@@ -665,14 +599,26 @@ bool TwinEmperorsHealersPositionBetweenTankAndWarlockAction::Execute(Event /*eve
 
 bool OuroMoveOutOfFrontalConeAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetOuroConeEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+    Position spot;
+    Position step;
+    if (!GetOuroConeEscapeGoal(botAI, spot) || !GetEscapeStep(bot, spot, {}, step))
+        return false;
+    StopAttacking(bot);
+    bot->CastStop();
+    return MoveTo(AQ40_MAP_ID, step.GetPositionX(), step.GetPositionY(), step.GetPositionZ(), false, false, false, true,
+                  MovementPriority::MOVEMENT_FORCED);
 }
 
 bool OuroAvoidDirtMoundAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetDirtMoundEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+    Position spot;
+    Position step;
+    if (!GetDirtMoundEscapeGoal(botAI, spot) || !GetEscapeStep(bot, spot, {}, step))
+        return false;
+    StopAttacking(bot);
+    bot->CastStop();
+    return MoveTo(AQ40_MAP_ID, step.GetPositionX(), step.GetPositionY(), step.GetPositionZ(), false, false, false, true,
+                  MovementPriority::MOVEMENT_FORCED);
 }
 
 bool OuroAcceptNewMainTankAction::Execute(Event /*event*/)
@@ -761,14 +707,53 @@ bool CthunAssignGiantClawTanksAction::Execute(Event /*event*/)
 
 bool CthunExitStomachAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetStomachExitGoal(botAI, goal) && MoveToGoal(goal, true);
+    Position exit;
+    if (!GetStomachExitGoal(botAI, exit))
+        return false;
+    if (bot->GetExactDist2d(exit) < 1.5f)
+    {
+        StopMoving(botAI);  // Stay on the exit while the server's delayed area-trigger checks run.
+        Aq40BotCache& cache = BotCache(botAI);
+        uint32 const now = getMSTime();
+        if ((!cache.exitAttemptTime || getMSTimeDiff(cache.exitAttemptTime, now) > 4 * IN_MILLISECONDS) &&
+            std::abs(bot->GetPositionZ() - exit.GetPositionZ()) < 4.0f)
+        {
+            cache.exitAttemptTime = now;
+            WorldPacket packet(CMSG_AREATRIGGER);
+            packet << uint32(CTHUN_STOMACH_EXIT_TRIGGER);
+            bot->GetSession()->HandleAreaTriggerOpcode(packet);
+        }
+        return false;
+    }
+    Position step;
+    if (!GetEscapeStep(bot, exit, {}, step))
+    {
+        // Players drop from the stomach entrance into the pool, but a bot hangs where it was teleported and no short
+        // step validates from mid-air. Go straight to the exit.
+        bot->CastStop();
+        bot->GetMotionMaster()->MovePoint(0, exit.GetPositionX(), exit.GetPositionY(), exit.GetPositionZ(),
+                                          FORCED_MOVEMENT_NONE, 0.0f, 0.0f, false, false);
+        return true;
+    }
+    StopAttacking(bot);
+    bot->CastStop();
+    return MoveTo(AQ40_MAP_ID, step.GetPositionX(), step.GetPositionY(), step.GetPositionZ(), false, false, false, true,
+                  MovementPriority::MOVEMENT_FORCED);
 }
 
 bool EyeOfCthunDodgeDarkGlareAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetDarkGlareEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+    Position spot;
+    Position next;
+    if (!GetDarkGlareEscapeGoal(botAI, spot) || !GetRouteStep(bot, spot, true, next))
+        return false;
+    bot->CastStop();
+    ClearStaleLastMove(botAI);
+    bool const moved = MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false,
+                              true, true, MovementPriority::MOVEMENT_FORCED, true);
+    // A repeat of a route still running is refused as a duplicate. Keeping the turn stops lower actions from
+    // re-facing the bot and breaking up the run.
+    return moved || !bot->movespline->Finalized();
 }
 
 bool EyeOfCthunPullerHoldPullSpotAction::Execute(Event /*event*/)
@@ -777,8 +762,7 @@ bool EyeOfCthunPullerHoldPullSpotAction::Execute(Event /*event*/)
     Position next;
     if (!GetCthunPullerHoldGoal(botAI, spot) || !GetRouteStep(bot, spot, true, next))
         return false;
-    if (bot->movespline->Finalized())
-        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    ClearStaleLastMove(botAI);
     return MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true, true,
                   MovementPriority::MOVEMENT_COMBAT, true);
 }
@@ -789,8 +773,7 @@ bool EyeOfCthunMoveToAssignedSpotAction::Execute(Event /*event*/)
     Position next;
     if (!GetCthunSpotGoal(botAI, spot) || !GetRouteStep(bot, spot, true, next))
         return false;
-    if (bot->movespline->Finalized())
-        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    ClearStaleLastMove(botAI);
     return MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true, true,
                   MovementPriority::MOVEMENT_COMBAT, true);
 }
@@ -801,8 +784,7 @@ bool CthunMoveToStackAction::Execute(Event /*event*/)
     Position next;
     if (!GetCthunStackGoal(botAI, spot) || !GetRouteStep(bot, spot, true, next))
         return false;
-    if (bot->movespline->Finalized())
-        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    ClearStaleLastMove(botAI);
     return MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true, true,
                   MovementPriority::MOVEMENT_COMBAT, true);
 }
@@ -813,8 +795,7 @@ bool CthunMeleeMoveIntoBurnRangeAction::Execute(Event /*event*/)
     Position next;
     if (!GetCthunMeleeBurnGoal(botAI, spot) || !GetRouteStep(bot, spot, true, next))
         return false;
-    if (bot->movespline->Finalized())
-        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    ClearStaleLastMove(botAI);
     return MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true, true,
                   MovementPriority::MOVEMENT_COMBAT, true);
 }
