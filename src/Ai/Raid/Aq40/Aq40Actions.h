@@ -11,7 +11,6 @@
 #include "Aq40Helpers.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
-#include "Position.h"
 #include <string>
 
 // Shared
@@ -21,17 +20,6 @@ class Aq40ActionTag
 {
 public:
     virtual ~Aq40ActionTag() = default;
-};
-
-class Aq40MovementAction : public MovementAction, public Aq40ActionTag
-{
-public:
-    Aq40MovementAction(PlayerbotAI* botAI, std::string const& name) : MovementAction(botAI, name) {}
-
-protected:
-    // Before the pull, neither "follow" (drags the bot back to the master) nor "stay" (keeps pulling it back
-    // mid-fight) works, so the bot walks to its spot and holds it.
-    bool MoveToPrepullSpot(Position const& spot);
 };
 
 class Aq40ResetEncounterStatesAction : public Action, public Aq40ActionTag
@@ -349,11 +337,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class TwinEmperorsWarlockMoveToStartSpotAction : public Aq40MovementAction
+class TwinEmperorsWarlockMoveToStartSpotAction : public MovementAction, public Aq40ActionTag
 {
 public:
     TwinEmperorsWarlockMoveToStartSpotAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "twin emperors warlock move to start spot")
+        : MovementAction(botAI, "twin emperors warlock move to start spot")
     {
     }
     bool Execute(Event event) override;
@@ -501,19 +489,17 @@ public:
     bool Execute(Event event) override;
 };
 
-class CthunPullerMoveToPullSpotAction : public Aq40MovementAction
+class CthunPullerMoveToPullSpotAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    CthunPullerMoveToPullSpotAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "c'thun puller move to pull spot")
-    {
-    }
+    CthunPullerMoveToPullSpotAction(PlayerbotAI* botAI) : MovementAction(botAI, "c'thun puller move to pull spot") {}
     bool Execute(Event event) override;
 };
 
-class CthunTrailPullerAction : public Aq40MovementAction
+class CthunTrailPullerAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    CthunTrailPullerAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "c'thun trail puller") {}
+    CthunTrailPullerAction(PlayerbotAI* botAI) : MovementAction(botAI, "c'thun trail puller") {}
     bool Execute(Event event) override;
 };
 

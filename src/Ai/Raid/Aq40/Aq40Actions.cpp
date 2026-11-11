@@ -33,20 +33,6 @@ bool Aq40DropToGroundAction::Execute(Event /*event*/)
     return true;
 }
 
-bool Aq40MovementAction::MoveToPrepullSpot(Position const& spot)
-{
-    if (bot->GetExactDist2d(spot) > 2.0f)
-    {
-        if (!bot->isMoving() || bot->movespline->Finalized())
-            bot->GetMotionMaster()->MovePoint(0, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ());
-        return true;
-    }
-    // Hold the spot: returning true keeps "follow" from walking the bot back to the master.
-    if (bot->isMoving())
-        StopMoving(botAI);
-    return true;
-}
-
 bool Aq40AttackAssignedTargetAction::Execute(Event /*event*/)
 {
     Unit* target = GetAssignedTarget(botAI);
@@ -450,7 +436,18 @@ bool TwinEmperorsLeadEmperorToPlatformAction::Execute(Event /*event*/)
 bool TwinEmperorsWarlockMoveToStartSpotAction::Execute(Event /*event*/)
 {
     Position spot;
-    return GetTwinPrepullSpot(botAI, spot) && MoveToPrepullSpot(spot);
+    if (!GetTwinPrepullSpot(botAI, spot))
+        return false;
+    if (bot->GetExactDist2d(spot) > 2.0f)
+    {
+        if (!bot->isMoving() || bot->movespline->Finalized())
+            bot->GetMotionMaster()->MovePoint(0, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ());
+        return true;
+    }
+    // Hold the spot: returning true keeps "follow" from walking the bot back to the master.
+    if (bot->isMoving())
+        StopMoving(botAI);
+    return true;
 }
 
 bool TwinEmperorsAssignTanksAndSidesAction::Execute(Event /*event*/)
@@ -672,13 +669,35 @@ bool CthunSendSpitOutTriggerAction::Execute(Event /*event*/)
 bool CthunPullerMoveToPullSpotAction::Execute(Event /*event*/)
 {
     Position spot;
-    return GetCthunPullerPrepullSpot(botAI, spot) && MoveToPrepullSpot(spot);
+    if (!GetCthunPullerPrepullSpot(botAI, spot))
+        return false;
+    if (bot->GetExactDist2d(spot) > 2.0f)
+    {
+        if (!bot->isMoving() || bot->movespline->Finalized())
+            bot->GetMotionMaster()->MovePoint(0, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ());
+        return true;
+    }
+    // Hold the spot: returning true keeps "follow" from walking the bot back to the master.
+    if (bot->isMoving())
+        StopMoving(botAI);
+    return true;
 }
 
 bool CthunTrailPullerAction::Execute(Event /*event*/)
 {
     Position spot;
-    return GetCthunTrailSpot(botAI, spot) && MoveToPrepullSpot(spot);
+    if (!GetCthunTrailSpot(botAI, spot))
+        return false;
+    if (bot->GetExactDist2d(spot) > 2.0f)
+    {
+        if (!bot->isMoving() || bot->movespline->Finalized())
+            bot->GetMotionMaster()->MovePoint(0, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ());
+        return true;
+    }
+    // Hold the spot: returning true keeps "follow" from walking the bot back to the master.
+    if (bot->isMoving())
+        StopMoving(botAI);
+    return true;
 }
 
 bool EyeOfCthunTrackDarkGlareAction::Execute(Event /*event*/)
