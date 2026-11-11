@@ -13,6 +13,7 @@
 #include "ItemPackets.h"
 #include "ItemUsageValue.h"
 #include "ItemVisitors.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 
 class SellItemsVisitor : public IterateItemsVisitor
@@ -104,9 +105,7 @@ bool SellAction::Execute(Event event)
 
     if (text == "vendor")
     {
-        SellVendorItemsVisitor visitor(this, context);
-        IterateItems(&visitor);
-        botAI->ConsolidateItems();  // re-stack what the partial sells fragmented
+        SellToVendor(false);
         return true;
     }
 
@@ -140,6 +139,31 @@ bool SellAction::Execute(Event event)
 
     botAI->TellError("Usage: s gray/*/vendor/<quality> [all]/[item link]");
     return false;
+}
+
+uint32 SellAction::SellToVendor(bool quiet)
+{
+    _quiet = quiet;
+    _soldCount = 0;
+
+    SellVendorItemsVisitor visitor(this, context);
+    IterateItems(&visitor);
+    if (_soldCount)
+        botAI->ConsolidateItems();  // re-stack what the partial sells fragmented
+
+    _quiet = false;
+    return _soldCount;
+}
+
+bool SellVendorAction::Execute(Event /*event*/)
+{
+    uint32 const sold = SellToVendor(true);
+    if (!sold)
+        return false;
+
+    botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        "sell_vendor_summary", "Sold items: %count", {{"%count", std::to_string(sold)}}));
+    return true;
 }
 
 void SellAction::Sell(FindItemVisitor* visitor)
@@ -219,6 +243,8 @@ void SellAction::Sell(Item* item, bool force)
             continue;
 
         ObjectGuid itemguid = item->GetGUID();
+        uint16 const itemPos = item->GetPos();
+        uint32 const countBefore = item->GetCount();
 
         uint32 botMoney = bot->GetMoney();
 
@@ -234,10 +260,20 @@ void SellAction::Sell(Item* item, bool force)
             bot->SetMoney(botMoney);
         }
 
-        out << "Selling " << chat->FormatItem(proto);
-        if (keepRequirement > 0)
-            out << " (keeping " << keepRequirement << ")";
-        botAI->TellMaster(out);
+        // The opcode reports no result; a sold stack leaves its slot or shrinks.
+        uint32 const sold = countBefore - (bot->GetItemByPos(itemPos) == item ? item->GetCount() : 0);
+        if (!sold)
+            break;
+
+        _soldCount += sold;
+
+        if (!_quiet)
+        {
+            out << "Selling " << chat->FormatItem(proto);
+            if (keepRequirement > 0)
+                out << " (keeping " << keepRequirement << ")";
+            botAI->TellMaster(out);
+        }
 
         bot->PlayDistanceSound(120);
         break;
