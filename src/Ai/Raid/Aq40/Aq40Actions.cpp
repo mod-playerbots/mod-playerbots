@@ -171,35 +171,14 @@ bool Aq40ResetEncounterStatesAction::Execute(Event /*event*/)
     return false;
 }
 
-bool Aq40TrackerAction::Execute(Event /*event*/)
-{
-    _track(bot);
-    return false;
-}
-
 bool Aq40DropToGroundAction::Execute(Event /*event*/)
 {
     bot->GetMotionMaster()->MoveFall();
     return true;
 }
 
-bool Aq40EscapeHazardAction::Execute(Event /*event*/)
+bool Aq40MovementAction::MoveToPrepullSpot(Position const& spot)
 {
-    Position goal;
-    return _hazard(botAI, goal) && MoveToGoal(goal, true);
-}
-
-bool Aq40MoveToFormationAction::Execute(Event /*event*/)
-{
-    Position goal;
-    return _formation(botAI, goal) && MoveToGoal(goal, false);
-}
-
-bool Aq40MoveToPrepullSpotAction::Execute(Event /*event*/)
-{
-    Position spot;
-    if (!_spot(botAI, spot))
-        return false;
     if (bot->GetExactDist2d(spot) > 2.0f)
     {
         if (!bot->isMoving() || bot->movespline->Finalized())
@@ -232,6 +211,24 @@ bool Aq40TankTauntAssignedTargetAction::Execute(Event /*event*/)
     return target && !taunt.empty() && TryCast(botAI, taunt, target);
 }
 
+bool Aq40TrackEncounterAction::Execute(Event /*event*/)
+{
+    TrackEncounter(bot);
+    return false;
+}
+
+bool Aq40AssignAddTanksAction::Execute(Event /*event*/)
+{
+    AssignAddTanks(bot);
+    return false;
+}
+
+bool Aq40RangedMoveIntoBossRangeAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetBossRangeGoal(botAI, goal) && MoveToGoal(goal, false);
+}
+
 // The Prophet Skeram
 
 bool TheProphetSkeramCrowdControlMindControlledAction::Execute(Event /*event*/)
@@ -245,6 +242,32 @@ bool TheProphetSkeramCrowdControlMindControlledAction::Execute(Event /*event*/)
     return false;
 }
 
+bool TheProphetSkeramAssignPlatformsAction::Execute(Event /*event*/)
+{
+    AssignSkeramPlatforms(bot);
+    return false;
+}
+
+bool TheProphetSkeramMoveToAssignedPlatformAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetSkeramPlatformGoal(botAI, goal) && MoveToGoal(goal, false);
+}
+
+// Bug Trio
+
+bool BugTrioMoveAwayFromPoisonCloudAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetPoisonCloudEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+}
+
+bool BugTrioTanksSeparateBossesAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetTrioTankGoal(botAI, goal) && MoveToGoal(goal, false);
+}
+
 // Battleguard Sartura
 
 bool BattleguardSarturaMoveAwayFromWhirlwindAction::Execute(Event /*event*/)
@@ -253,6 +276,14 @@ bool BattleguardSarturaMoveAwayFromWhirlwindAction::Execute(Event /*event*/)
     if (!whirler)
         return false;
     return MoveToGoal(Around(bot, WHIRLWIND_ESCAPE_STEP, whirler->GetAngle(bot)), true);
+}
+
+// Fankriss the Unyielding
+
+bool FankrissTheUnyieldingSwapTanksAction::Execute(Event /*event*/)
+{
+    SwapFankrissTanks(bot);
+    return false;
 }
 
 // Viscidus
@@ -287,6 +318,24 @@ bool ViscidusMeleeShatterAction::Execute(Event /*event*/)
     return starting && bot->Attack(target, true);
 }
 
+bool ViscidusEscapeToxinCloudsAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetToxinEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+}
+
+bool ViscidusMeleeMoveInToShatterAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetViscidusShatterGoal(botAI, goal) && MoveToGoal(goal, false);
+}
+
+bool ViscidusPositionRangedOnRingAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetViscidusRingGoal(botAI, goal) && MoveToGoal(goal, false);
+}
+
 // Princess Huhuran
 
 bool PrincessHuhuranTranquilizingShotAction::Execute(Event /*event*/)
@@ -305,6 +354,30 @@ bool PrincessHuhuranCureWyvernStingAction::Execute(Event /*event*/)
         if (TryCast(botAI, name, tank))
             return true;
     return false;
+}
+
+bool PrincessHuhuranAssignPoisonBoltSoakersAction::Execute(Event /*event*/)
+{
+    AssignHuhuranSoakers(bot);
+    return false;
+}
+
+bool PrincessHuhuranSwapTanksAction::Execute(Event /*event*/)
+{
+    SwapHuhuranTanks(bot);
+    return false;
+}
+
+bool PrincessHuhuranSoakersStandNearBossAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetHuhuranSoakGoal(botAI, goal) && MoveToGoal(goal, false);
+}
+
+bool PrincessHuhuranSpreadRangedAndHealersAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetHuhuranSpreadGoal(botAI, goal) && MoveToGoal(goal, false);
 }
 
 // Twin Emperors
@@ -445,6 +518,92 @@ bool TwinEmperorsLeadEmperorToPlatformAction::Execute(Event /*event*/)
     return true;
 }
 
+bool TwinEmperorsWarlockMoveToStartSpotAction::Execute(Event /*event*/)
+{
+    Position spot;
+    return GetTwinPrepullSpot(botAI, spot) && MoveToPrepullSpot(spot);
+}
+
+bool TwinEmperorsAssignTanksAndSidesAction::Execute(Event /*event*/)
+{
+    AssignTwinRoles(bot);
+    return false;
+}
+
+bool TwinEmperorsMoveAwayFromExplodingBugAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetExplodingBugEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+}
+
+bool TwinEmperorsEscapeBlizzardAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetBlizzardEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+}
+
+bool TwinEmperorsMoveAwayFromVeklorAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetVeklorEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+}
+
+bool TwinEmperorsClearVeknilashLandingSpotAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetVeknilashLandingEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+}
+
+bool TwinEmperorsTanksPositionEmperorsAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetTwinTankGoal(botAI, goal) && MoveToGoal(goal, false);
+}
+
+bool EmperorVeklorWarlockTankKeepRangeAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetTwinWarlockGoal(botAI, goal) && MoveToGoal(goal, false);
+}
+
+bool TwinEmperorsMeleeLeaveLandingSpotsAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetTwinMeleeSwapGoal(botAI, goal) && MoveToGoal(goal, false);
+}
+
+bool TwinEmperorsDpsMoveToAssignedEmperorAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetTwinDpsGoal(botAI, goal) && MoveToGoal(goal, false);
+}
+
+bool TwinEmperorsHealersPositionBetweenTankAndWarlockAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetTwinHealerGoal(botAI, goal) && MoveToGoal(goal, false);
+}
+
+// Ouro
+
+bool OuroMoveOutOfFrontalConeAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetOuroConeEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+}
+
+bool OuroAvoidDirtMoundAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetDirtMoundEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+}
+
+bool OuroAcceptNewMainTankAction::Execute(Event /*event*/)
+{
+    AcceptOuroTank(bot);
+    return false;
+}
+
 // C'Thun
 
 bool CthunHealersDamageCthunAction::Execute(Event /*event*/)
@@ -485,4 +644,76 @@ bool CthunSendSpitOutTriggerAction::Execute(Event /*event*/)
     packet << uint32(CTHUN_SPIT_OUT_TRIGGER);
     bot->GetSession()->HandleAreaTriggerOpcode(packet);
     return true;
+}
+
+bool CthunPullerMoveToPullSpotAction::Execute(Event /*event*/)
+{
+    Position spot;
+    return GetCthunPullerPrepullSpot(botAI, spot) && MoveToPrepullSpot(spot);
+}
+
+bool CthunTrailPullerAction::Execute(Event /*event*/)
+{
+    Position spot;
+    return GetCthunTrailSpot(botAI, spot) && MoveToPrepullSpot(spot);
+}
+
+bool EyeOfCthunTrackDarkGlareAction::Execute(Event /*event*/)
+{
+    TrackDarkGlare(bot);
+    return false;
+}
+
+bool CthunAssignSpotsAction::Execute(Event /*event*/)
+{
+    AssignCthunSpots(bot);
+    return false;
+}
+
+bool CthunAssignTentacleKillersAction::Execute(Event /*event*/)
+{
+    AssignCthunTentacleKillers(bot);
+    return false;
+}
+
+bool CthunAssignGiantClawTanksAction::Execute(Event /*event*/)
+{
+    AssignCthunClawTanks(bot);
+    return false;
+}
+
+bool CthunExitStomachAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetStomachExitGoal(botAI, goal) && MoveToGoal(goal, true);
+}
+
+bool EyeOfCthunDodgeDarkGlareAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetDarkGlareEscapeGoal(botAI, goal) && MoveToGoal(goal, true);
+}
+
+bool EyeOfCthunPullerHoldPullSpotAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetCthunPullerHoldGoal(botAI, goal) && MoveToGoal(goal, false);
+}
+
+bool EyeOfCthunMoveToAssignedSpotAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetCthunSpotGoal(botAI, goal) && MoveToGoal(goal, false);
+}
+
+bool CthunMoveToStackAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetCthunStackGoal(botAI, goal) && MoveToGoal(goal, false);
+}
+
+bool CthunMeleeMoveIntoBurnRangeAction::Execute(Event /*event*/)
+{
+    Position goal;
+    return GetCthunMeleeBurnGoal(botAI, goal) && MoveToGoal(goal, false);
 }

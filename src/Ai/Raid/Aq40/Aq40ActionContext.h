@@ -141,14 +141,8 @@ public:
 
 private:
     static Action* aq40_reset_encounter_states(PlayerbotAI* botAI) { return new Aq40ResetEncounterStatesAction(botAI); }
-    static Action* aq40_track_encounter(PlayerbotAI* botAI)
-    {
-        return new Aq40TrackerAction(botAI, "aq40 track encounter", &Aq40Helpers::TrackEncounter);
-    }
-    static Action* aq40_assign_add_tanks(PlayerbotAI* botAI)
-    {
-        return new Aq40TrackerAction(botAI, "aq40 assign add tanks", &Aq40Helpers::AssignAddTanks);
-    }
+    static Action* aq40_track_encounter(PlayerbotAI* botAI) { return new Aq40TrackEncounterAction(botAI); }
+    static Action* aq40_assign_add_tanks(PlayerbotAI* botAI) { return new Aq40AssignAddTanksAction(botAI); }
     static Action* aq40_drop_to_ground(PlayerbotAI* botAI) { return new Aq40DropToGroundAction(botAI); }
     static Action* aq40_tank_taunt_assigned_target(PlayerbotAI* botAI)
     {
@@ -160,11 +154,11 @@ private:
     }
     static Action* aq40_ranged_move_into_boss_range(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "aq40 ranged move into boss range", &Aq40Helpers::GetBossRangeGoal);
+        return new Aq40RangedMoveIntoBossRangeAction(botAI);
     }
     static Action* the_prophet_skeram_assign_platforms(PlayerbotAI* botAI)
     {
-        return new Aq40TrackerAction(botAI, "the prophet skeram assign platforms", &Aq40Helpers::AssignSkeramPlatforms);
+        return new TheProphetSkeramAssignPlatformsAction(botAI);
     }
     static Action* the_prophet_skeram_crowd_control_mind_controlled(PlayerbotAI* botAI)
     {
@@ -172,8 +166,7 @@ private:
     }
     static Action* the_prophet_skeram_move_to_assigned_platform(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "the prophet skeram move to assigned platform",
-                                             &Aq40Helpers::GetSkeramPlatformGoal);
+        return new TheProphetSkeramMoveToAssignedPlatformAction(botAI);
     }
     static Action* the_prophet_skeram_assign_dps_priority(PlayerbotAI* botAI)
     {
@@ -181,12 +174,11 @@ private:
     }
     static Action* bug_trio_move_away_from_poison_cloud(PlayerbotAI* botAI)
     {
-        return new Aq40EscapeHazardAction(botAI, "bug trio move away from poison cloud",
-                                          &Aq40Helpers::GetPoisonCloudEscapeGoal);
+        return new BugTrioMoveAwayFromPoisonCloudAction(botAI);
     }
     static Action* bug_trio_tanks_separate_bosses(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "bug trio tanks separate bosses", &Aq40Helpers::GetTrioTankGoal);
+        return new BugTrioTanksSeparateBossesAction(botAI);
     }
     static Action* bug_trio_assign_dps_priority(PlayerbotAI* botAI)
     {
@@ -202,7 +194,7 @@ private:
     }
     static Action* fankriss_the_unyielding_swap_tanks(PlayerbotAI* botAI)
     {
-        return new Aq40TrackerAction(botAI, "fankriss the unyielding swap tanks", &Aq40Helpers::SwapFankrissTanks);
+        return new FankrissTheUnyieldingSwapTanksAction(botAI);
     }
     static Action* fankriss_the_unyielding_assign_dps_priority(PlayerbotAI* botAI)
     {
@@ -210,19 +202,17 @@ private:
     }
     static Action* viscidus_escape_toxin_clouds(PlayerbotAI* botAI)
     {
-        return new Aq40EscapeHazardAction(botAI, "viscidus escape toxin clouds", &Aq40Helpers::GetToxinEscapeGoal);
+        return new ViscidusEscapeToxinCloudsAction(botAI);
     }
     static Action* viscidus_cast_frost_spells(PlayerbotAI* botAI) { return new ViscidusCastFrostSpellsAction(botAI); }
     static Action* viscidus_melee_shatter(PlayerbotAI* botAI) { return new ViscidusMeleeShatterAction(botAI); }
     static Action* viscidus_melee_move_in_to_shatter(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "viscidus melee move in to shatter",
-                                             &Aq40Helpers::GetViscidusShatterGoal);
+        return new ViscidusMeleeMoveInToShatterAction(botAI);
     }
     static Action* viscidus_position_ranged_on_ring(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "viscidus position ranged on ring",
-                                             &Aq40Helpers::GetViscidusRingGoal);
+        return new ViscidusPositionRangedOnRingAction(botAI);
     }
     static Action* viscidus_assign_dps_priority(PlayerbotAI* botAI)
     {
@@ -230,22 +220,16 @@ private:
     }
     static Action* princess_huhuran_assign_poison_bolt_soakers(PlayerbotAI* botAI)
     {
-        return new Aq40TrackerAction(botAI, "princess huhuran assign poison bolt soakers",
-                                     &Aq40Helpers::AssignHuhuranSoakers);
+        return new PrincessHuhuranAssignPoisonBoltSoakersAction(botAI);
     }
-    static Action* princess_huhuran_swap_tanks(PlayerbotAI* botAI)
-    {
-        return new Aq40TrackerAction(botAI, "princess huhuran swap tanks", &Aq40Helpers::SwapHuhuranTanks);
-    }
+    static Action* princess_huhuran_swap_tanks(PlayerbotAI* botAI) { return new PrincessHuhuranSwapTanksAction(botAI); }
     static Action* princess_huhuran_soakers_stand_near_boss(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "princess huhuran soakers stand near boss",
-                                             &Aq40Helpers::GetHuhuranSoakGoal);
+        return new PrincessHuhuranSoakersStandNearBossAction(botAI);
     }
     static Action* princess_huhuran_spread_ranged_and_healers(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "princess huhuran spread ranged and healers",
-                                             &Aq40Helpers::GetHuhuranSpreadGoal);
+        return new PrincessHuhuranSpreadRangedAndHealersAction(botAI);
     }
     static Action* princess_huhuran_tranquilizing_shot(PlayerbotAI* botAI)
     {
@@ -261,31 +245,27 @@ private:
     }
     static Action* twin_emperors_warlock_move_to_start_spot(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToPrepullSpotAction(botAI, "twin emperors warlock move to start spot",
-                                               &Aq40Helpers::GetTwinPrepullSpot);
+        return new TwinEmperorsWarlockMoveToStartSpotAction(botAI);
     }
     static Action* twin_emperors_assign_tanks_and_sides(PlayerbotAI* botAI)
     {
-        return new Aq40TrackerAction(botAI, "twin emperors assign tanks and sides", &Aq40Helpers::AssignTwinRoles);
+        return new TwinEmperorsAssignTanksAndSidesAction(botAI);
     }
     static Action* twin_emperors_move_away_from_exploding_bug(PlayerbotAI* botAI)
     {
-        return new Aq40EscapeHazardAction(botAI, "twin emperors move away from exploding bug",
-                                          &Aq40Helpers::GetExplodingBugEscapeGoal);
+        return new TwinEmperorsMoveAwayFromExplodingBugAction(botAI);
     }
     static Action* twin_emperors_escape_blizzard(PlayerbotAI* botAI)
     {
-        return new Aq40EscapeHazardAction(botAI, "twin emperors escape blizzard", &Aq40Helpers::GetBlizzardEscapeGoal);
+        return new TwinEmperorsEscapeBlizzardAction(botAI);
     }
     static Action* twin_emperors_move_away_from_vek_lor(PlayerbotAI* botAI)
     {
-        return new Aq40EscapeHazardAction(botAI, "twin emperors move away from vek'lor",
-                                          &Aq40Helpers::GetVeklorEscapeGoal);
+        return new TwinEmperorsMoveAwayFromVeklorAction(botAI);
     }
     static Action* twin_emperors_clear_vek_nilash_landing_spot(PlayerbotAI* botAI)
     {
-        return new Aq40EscapeHazardAction(botAI, "twin emperors clear vek'nilash landing spot",
-                                          &Aq40Helpers::GetVeknilashLandingEscapeGoal);
+        return new TwinEmperorsClearVeknilashLandingSpotAction(botAI);
     }
     static Action* twin_emperors_lead_emperor_to_platform(PlayerbotAI* botAI)
     {
@@ -309,28 +289,23 @@ private:
     }
     static Action* twin_emperors_tanks_position_emperors(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "twin emperors tanks position emperors",
-                                             &Aq40Helpers::GetTwinTankGoal);
+        return new TwinEmperorsTanksPositionEmperorsAction(botAI);
     }
     static Action* emperor_vek_lor_warlock_tank_keep_range(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "emperor vek'lor warlock tank keep range",
-                                             &Aq40Helpers::GetTwinWarlockGoal);
+        return new EmperorVeklorWarlockTankKeepRangeAction(botAI);
     }
     static Action* twin_emperors_melee_leave_landing_spots(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "twin emperors melee leave landing spots",
-                                             &Aq40Helpers::GetTwinMeleeSwapGoal);
+        return new TwinEmperorsMeleeLeaveLandingSpotsAction(botAI);
     }
     static Action* twin_emperors_dps_move_to_assigned_emperor(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "twin emperors dps move to assigned emperor",
-                                             &Aq40Helpers::GetTwinDpsGoal);
+        return new TwinEmperorsDpsMoveToAssignedEmperorAction(botAI);
     }
     static Action* twin_emperors_healers_position_between_tank_and_warlock(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "twin emperors healers position between tank and warlock",
-                                             &Aq40Helpers::GetTwinHealerGoal);
+        return new TwinEmperorsHealersPositionBetweenTankAndWarlockAction(botAI);
     }
     static Action* twin_emperors_heal_emperor_targets(PlayerbotAI* botAI)
     {
@@ -358,73 +333,50 @@ private:
     }
     static Action* ouro_move_out_of_frontal_cone(PlayerbotAI* botAI)
     {
-        return new Aq40EscapeHazardAction(botAI, "ouro move out of frontal cone", &Aq40Helpers::GetOuroConeEscapeGoal);
+        return new OuroMoveOutOfFrontalConeAction(botAI);
     }
-    static Action* ouro_avoid_dirt_mound(PlayerbotAI* botAI)
-    {
-        return new Aq40EscapeHazardAction(botAI, "ouro avoid dirt mound", &Aq40Helpers::GetDirtMoundEscapeGoal);
-    }
-    static Action* ouro_accept_new_main_tank(PlayerbotAI* botAI)
-    {
-        return new Aq40TrackerAction(botAI, "ouro accept new main tank", &Aq40Helpers::AcceptOuroTank);
-    }
+    static Action* ouro_avoid_dirt_mound(PlayerbotAI* botAI) { return new OuroAvoidDirtMoundAction(botAI); }
+    static Action* ouro_accept_new_main_tank(PlayerbotAI* botAI) { return new OuroAcceptNewMainTankAction(botAI); }
     static Action* ouro_assign_dps_priority(PlayerbotAI* botAI)
     {
         return new Aq40AttackAssignedTargetAction(botAI, "ouro assign dps priority");
     }
     static Action* c_thun_puller_move_to_pull_spot(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToPrepullSpotAction(botAI, "c'thun puller move to pull spot",
-                                               &Aq40Helpers::GetCthunPullerPrepullSpot);
+        return new CthunPullerMoveToPullSpotAction(botAI);
     }
-    static Action* c_thun_trail_puller(PlayerbotAI* botAI)
-    {
-        return new Aq40MoveToPrepullSpotAction(botAI, "c'thun trail puller", &Aq40Helpers::GetCthunTrailSpot);
-    }
+    static Action* c_thun_trail_puller(PlayerbotAI* botAI) { return new CthunTrailPullerAction(botAI); }
     static Action* eye_of_c_thun_track_dark_glare(PlayerbotAI* botAI)
     {
-        return new Aq40TrackerAction(botAI, "eye of c'thun track dark glare", &Aq40Helpers::TrackDarkGlare);
+        return new EyeOfCthunTrackDarkGlareAction(botAI);
     }
-    static Action* c_thun_assign_spots(PlayerbotAI* botAI)
-    {
-        return new Aq40TrackerAction(botAI, "c'thun assign spots", &Aq40Helpers::AssignCthunSpots);
-    }
+    static Action* c_thun_assign_spots(PlayerbotAI* botAI) { return new CthunAssignSpotsAction(botAI); }
     static Action* c_thun_assign_tentacle_killers(PlayerbotAI* botAI)
     {
-        return new Aq40TrackerAction(botAI, "c'thun assign tentacle killers", &Aq40Helpers::AssignCthunTentacleKillers);
+        return new CthunAssignTentacleKillersAction(botAI);
     }
     static Action* c_thun_assign_giant_claw_tanks(PlayerbotAI* botAI)
     {
-        return new Aq40TrackerAction(botAI, "c'thun assign giant claw tanks", &Aq40Helpers::AssignCthunClawTanks);
+        return new CthunAssignGiantClawTanksAction(botAI);
     }
     static Action* c_thun_send_spit_out_trigger(PlayerbotAI* botAI) { return new CthunSendSpitOutTriggerAction(botAI); }
-    static Action* c_thun_exit_stomach(PlayerbotAI* botAI)
-    {
-        return new Aq40EscapeHazardAction(botAI, "c'thun exit stomach", &Aq40Helpers::GetStomachExitGoal);
-    }
+    static Action* c_thun_exit_stomach(PlayerbotAI* botAI) { return new CthunExitStomachAction(botAI); }
     static Action* eye_of_c_thun_dodge_dark_glare(PlayerbotAI* botAI)
     {
-        return new Aq40EscapeHazardAction(botAI, "eye of c'thun dodge dark glare",
-                                          &Aq40Helpers::GetDarkGlareEscapeGoal);
+        return new EyeOfCthunDodgeDarkGlareAction(botAI);
     }
     static Action* eye_of_c_thun_puller_hold_pull_spot(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "eye of c'thun puller hold pull spot",
-                                             &Aq40Helpers::GetCthunPullerHoldGoal);
+        return new EyeOfCthunPullerHoldPullSpotAction(botAI);
     }
     static Action* eye_of_c_thun_move_to_assigned_spot(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "eye of c'thun move to assigned spot",
-                                             &Aq40Helpers::GetCthunSpotGoal);
+        return new EyeOfCthunMoveToAssignedSpotAction(botAI);
     }
-    static Action* c_thun_move_to_stack(PlayerbotAI* botAI)
-    {
-        return new Aq40MoveToFormationAction(botAI, "c'thun move to stack", &Aq40Helpers::GetCthunStackGoal);
-    }
+    static Action* c_thun_move_to_stack(PlayerbotAI* botAI) { return new CthunMoveToStackAction(botAI); }
     static Action* c_thun_melee_move_into_burn_range(PlayerbotAI* botAI)
     {
-        return new Aq40MoveToFormationAction(botAI, "c'thun melee move into burn range",
-                                             &Aq40Helpers::GetCthunMeleeBurnGoal);
+        return new CthunMeleeMoveIntoBurnRangeAction(botAI);
     }
     static Action* c_thun_melee_hold_until_in_burn_range(PlayerbotAI* botAI)
     {

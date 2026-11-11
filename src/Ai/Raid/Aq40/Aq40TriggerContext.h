@@ -162,8 +162,7 @@ private:
     static Trigger* aq40_no_assigned_target(PlayerbotAI* botAI) { return new Aq40NoAssignedTargetTrigger(botAI); }
     static Trigger* aq40_ranged_should_hold_boss_range(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "aq40 ranged should hold boss range", &Aq40Helpers::GetBossRangeGoal,
-                                        Aq40Helpers::POSITION_INTERVAL_MS);
+        return new Aq40RangedShouldHoldBossRangeTrigger(botAI);
     }
     static Trigger* the_prophet_skeram_should_assign_platforms(PlayerbotAI* botAI)
     {
@@ -176,8 +175,7 @@ private:
     }
     static Trigger* the_prophet_skeram_should_move_to_platform(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "the prophet skeram should move to platform",
-                                        &Aq40Helpers::GetSkeramPlatformGoal);
+        return new TheProphetSkeramShouldMoveToPlatformTrigger(botAI);
     }
     static Trigger* the_prophet_skeram_should_assign_dps_priority(PlayerbotAI* botAI)
     {
@@ -186,13 +184,9 @@ private:
     }
     static Trigger* bug_trio_poison_cloud_nearby(PlayerbotAI* botAI)
     {
-        return new Aq40HazardTrigger(botAI, "bug trio poison cloud nearby", &Aq40Helpers::GetPoisonCloudEscapeGoal);
+        return new BugTrioPoisonCloudNearbyTrigger(botAI);
     }
-    static Trigger* bug_trio_bosses_too_close(PlayerbotAI* botAI)
-    {
-        return new Aq40FormationTrigger(botAI, "bug trio bosses too close", &Aq40Helpers::GetTrioTankGoal,
-                                        Aq40Helpers::POSITION_INTERVAL_MS);
-    }
+    static Trigger* bug_trio_bosses_too_close(PlayerbotAI* botAI) { return new BugTrioBossesTooCloseTrigger(botAI); }
     static Trigger* bug_trio_should_assign_dps_priority(PlayerbotAI* botAI)
     {
         return new Aq40AssignedTargetTrigger(botAI, "bug trio should assign dps priority",
@@ -219,19 +213,17 @@ private:
     }
     static Trigger* viscidus_toxin_cloud_nearby(PlayerbotAI* botAI)
     {
-        return new Aq40HazardTrigger(botAI, "viscidus toxin cloud nearby", &Aq40Helpers::GetToxinEscapeGoal);
+        return new ViscidusToxinCloudNearbyTrigger(botAI);
     }
     static Trigger* viscidus_should_be_frozen(PlayerbotAI* botAI) { return new ViscidusShouldBeFrozenTrigger(botAI); }
     static Trigger* viscidus_is_frozen(PlayerbotAI* botAI) { return new ViscidusIsFrozenTrigger(botAI); }
     static Trigger* viscidus_frozen_out_of_melee_range(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "viscidus frozen out of melee range",
-                                        &Aq40Helpers::GetViscidusShatterGoal);
+        return new ViscidusFrozenOutOfMeleeRangeTrigger(botAI);
     }
     static Trigger* viscidus_ranged_should_hold_ring(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "viscidus ranged should hold ring", &Aq40Helpers::GetViscidusRingGoal,
-                                        Aq40Helpers::POSITION_INTERVAL_MS);
+        return new ViscidusRangedShouldHoldRingTrigger(botAI);
     }
     static Trigger* viscidus_should_assign_dps_priority(PlayerbotAI* botAI)
     {
@@ -249,13 +241,11 @@ private:
     }
     static Trigger* princess_huhuran_soaker_too_far(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "princess huhuran soaker too far", &Aq40Helpers::GetHuhuranSoakGoal,
-                                        Aq40Helpers::POSITION_INTERVAL_MS);
+        return new PrincessHuhuranSoakerTooFarTrigger(botAI);
     }
     static Trigger* princess_huhuran_ranged_should_spread(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "princess huhuran ranged should spread",
-                                        &Aq40Helpers::GetHuhuranSpreadGoal, Aq40Helpers::POSITION_INTERVAL_MS);
+        return new PrincessHuhuranRangedShouldSpreadTrigger(botAI);
     }
     static Trigger* princess_huhuran_frenzied(PlayerbotAI* botAI) { return new PrincessHuhuranFrenziedTrigger(botAI); }
     static Trigger* princess_huhuran_wyvern_sting_on_tank(PlayerbotAI* botAI)
@@ -269,8 +259,7 @@ private:
     }
     static Trigger* twin_emperors_warlock_should_take_start_spot(PlayerbotAI* botAI)
     {
-        return new Aq40PrepullTrigger(botAI, "twin emperors warlock should take start spot",
-                                      &Aq40Helpers::GetTwinPrepullSpot);
+        return new TwinEmperorsWarlockShouldTakeStartSpotTrigger(botAI);
     }
     static Trigger* twin_emperors_should_assign_roles(PlayerbotAI* botAI)
     {
@@ -278,21 +267,16 @@ private:
     }
     static Trigger* twin_emperors_exploding_bug_nearby(PlayerbotAI* botAI)
     {
-        return new Aq40HazardTrigger(botAI, "twin emperors exploding bug nearby",
-                                     &Aq40Helpers::GetExplodingBugEscapeGoal);
+        return new TwinEmperorsExplodingBugNearbyTrigger(botAI);
     }
-    static Trigger* twin_emperors_in_blizzard(PlayerbotAI* botAI)
-    {
-        return new Aq40HazardTrigger(botAI, "twin emperors in blizzard", &Aq40Helpers::GetBlizzardEscapeGoal);
-    }
+    static Trigger* twin_emperors_in_blizzard(PlayerbotAI* botAI) { return new TwinEmperorsInBlizzardTrigger(botAI); }
     static Trigger* emperor_vek_lor_arcane_burst_range(PlayerbotAI* botAI)
     {
-        return new Aq40HazardTrigger(botAI, "emperor vek'lor arcane burst range", &Aq40Helpers::GetVeklorEscapeGoal);
+        return new EmperorVeklorArcaneBurstRangeTrigger(botAI);
     }
     static Trigger* emperor_vek_nilash_choosing_target_after_teleport(PlayerbotAI* botAI)
     {
-        return new Aq40HazardTrigger(botAI, "emperor vek'nilash choosing target after teleport",
-                                     &Aq40Helpers::GetVeknilashLandingEscapeGoal);
+        return new EmperorVeknilashChoosingTargetAfterTeleportTrigger(botAI);
     }
     static Trigger* twin_emperors_emperor_cannot_reach_target(PlayerbotAI* botAI)
     {
@@ -316,26 +300,23 @@ private:
     }
     static Trigger* twin_emperors_tanks_should_hold_platforms(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "twin emperors tanks should hold platforms",
-                                        &Aq40Helpers::GetTwinTankGoal);
+        return new TwinEmperorsTanksShouldHoldPlatformsTrigger(botAI);
     }
     static Trigger* emperor_vek_lor_warlock_tank_out_of_range(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "emperor vek'lor warlock tank out of range",
-                                        &Aq40Helpers::GetTwinWarlockGoal);
+        return new EmperorVeklorWarlockTankOutOfRangeTrigger(botAI);
     }
     static Trigger* twin_emperors_teleport_imminent(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "twin emperors teleport imminent", &Aq40Helpers::GetTwinMeleeSwapGoal);
+        return new TwinEmperorsTeleportImminentTrigger(botAI);
     }
     static Trigger* twin_emperors_dps_should_position(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "twin emperors dps should position", &Aq40Helpers::GetTwinDpsGoal);
+        return new TwinEmperorsDpsShouldPositionTrigger(botAI);
     }
     static Trigger* twin_emperors_healers_should_position(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "twin emperors healers should position",
-                                        &Aq40Helpers::GetTwinHealerGoal);
+        return new TwinEmperorsHealersShouldPositionTrigger(botAI);
     }
     static Trigger* twin_emperors_healer_should_focus_emperor_targets(PlayerbotAI* botAI)
     {
@@ -362,14 +343,8 @@ private:
         return new Aq40AssignedTargetTrigger(botAI, "twin emperors should assign dps priority",
                                              Aq40Helpers::Aq40Encounter::Twins);
     }
-    static Trigger* ouro_frontal_cone(PlayerbotAI* botAI)
-    {
-        return new Aq40HazardTrigger(botAI, "ouro frontal cone", &Aq40Helpers::GetOuroConeEscapeGoal);
-    }
-    static Trigger* ouro_dirt_mound_nearby(PlayerbotAI* botAI)
-    {
-        return new Aq40HazardTrigger(botAI, "ouro dirt mound nearby", &Aq40Helpers::GetDirtMoundEscapeGoal);
-    }
+    static Trigger* ouro_frontal_cone(PlayerbotAI* botAI) { return new OuroFrontalConeTrigger(botAI); }
+    static Trigger* ouro_dirt_mound_nearby(PlayerbotAI* botAI) { return new OuroDirtMoundNearbyTrigger(botAI); }
     static Trigger* ouro_should_accept_new_main_tank(PlayerbotAI* botAI)
     {
         return new Aq40TrackerTrigger(botAI, "ouro should accept new main tank", Aq40Helpers::Aq40Encounter::Ouro);
@@ -381,11 +356,11 @@ private:
     }
     static Trigger* c_thun_puller_should_walk_in(PlayerbotAI* botAI)
     {
-        return new Aq40PrepullTrigger(botAI, "c'thun puller should walk in", &Aq40Helpers::GetCthunPullerPrepullSpot);
+        return new CthunPullerShouldWalkInTrigger(botAI);
     }
     static Trigger* c_thun_raid_should_trail_puller(PlayerbotAI* botAI)
     {
-        return new Aq40PrepullTrigger(botAI, "c'thun raid should trail puller", &Aq40Helpers::GetCthunTrailSpot);
+        return new CthunRaidShouldTrailPullerTrigger(botAI);
     }
     static Trigger* eye_of_c_thun_should_track_dark_glare(PlayerbotAI* botAI)
     {
@@ -409,28 +384,24 @@ private:
     static Trigger* c_thun_on_spit_out_circle(PlayerbotAI* botAI) { return new CthunOnSpitOutCircleTrigger(botAI); }
     static Trigger* c_thun_should_leave_stomach(PlayerbotAI* botAI)
     {
-        return new Aq40HazardTrigger(botAI, "c'thun should leave stomach", &Aq40Helpers::GetStomachExitGoal);
+        return new CthunShouldLeaveStomachTrigger(botAI);
     }
     static Trigger* eye_of_c_thun_dark_glare_incoming(PlayerbotAI* botAI)
     {
-        return new Aq40HazardTrigger(botAI, "eye of c'thun dark glare incoming", &Aq40Helpers::GetDarkGlareEscapeGoal);
+        return new EyeOfCthunDarkGlareIncomingTrigger(botAI);
     }
     static Trigger* eye_of_c_thun_puller_holding(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "eye of c'thun puller holding", &Aq40Helpers::GetCthunPullerHoldGoal);
+        return new EyeOfCthunPullerHoldingTrigger(botAI);
     }
     static Trigger* eye_of_c_thun_out_of_assigned_spot(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "eye of c'thun out of assigned spot", &Aq40Helpers::GetCthunSpotGoal);
+        return new EyeOfCthunOutOfAssignedSpotTrigger(botAI);
     }
-    static Trigger* c_thun_out_of_stack(PlayerbotAI* botAI)
-    {
-        return new Aq40FormationTrigger(botAI, "c'thun out of stack", &Aq40Helpers::GetCthunStackGoal);
-    }
+    static Trigger* c_thun_out_of_stack(PlayerbotAI* botAI) { return new CthunOutOfStackTrigger(botAI); }
     static Trigger* c_thun_melee_should_close_in_for_burn(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "c'thun melee should close in for burn",
-                                        &Aq40Helpers::GetCthunMeleeBurnGoal);
+        return new CthunMeleeShouldCloseInForBurnTrigger(botAI);
     }
     static Trigger* c_thun_melee_out_of_burn_range(PlayerbotAI* botAI)
     {

@@ -32,6 +32,9 @@ public:
 protected:
     // Hazard escapes (forced) may turn around obstacles and interrupt the bot's cast.
     bool MoveToGoal(Position goal, bool hazard);
+    // Before the pull, neither "follow" (drags the bot back to the master) nor "stay" (keeps pulling it back
+    // mid-fight) works, so the bot walks to its spot and holds it.
+    bool MoveToPrepullSpot(Position const& spot);
 };
 
 class Aq40ResetEncounterStatesAction : public Action, public Aq40ActionTag
@@ -41,67 +44,11 @@ public:
     bool Execute(Event event) override;
 };
 
-// Mechanic tracker bookkeeping. Never takes the bot's turn.
-class Aq40TrackerAction : public Action, public Aq40ActionTag
-{
-public:
-    using TrackFn = void (*)(Player* bot);
-
-    Aq40TrackerAction(PlayerbotAI* botAI, std::string const& name, TrackFn track) : Action(botAI, name), _track(track)
-    {
-    }
-    bool Execute(Event event) override;
-
-private:
-    TrackFn const _track;
-};
-
 class Aq40DropToGroundAction : public MovementAction, public Aq40ActionTag
 {
 public:
     Aq40DropToGroundAction(PlayerbotAI* botAI) : MovementAction(botAI, "aq40 drop to ground") {}
     bool Execute(Event event) override;
-};
-
-class Aq40EscapeHazardAction : public Aq40MovementAction
-{
-public:
-    Aq40EscapeHazardAction(PlayerbotAI* botAI, std::string const& name, Aq40Helpers::Aq40GoalFn hazard)
-        : Aq40MovementAction(botAI, name), _hazard(hazard)
-    {
-    }
-    bool Execute(Event event) override;
-
-private:
-    Aq40Helpers::Aq40GoalFn const _hazard;
-};
-
-class Aq40MoveToFormationAction : public Aq40MovementAction
-{
-public:
-    Aq40MoveToFormationAction(PlayerbotAI* botAI, std::string const& name, Aq40Helpers::Aq40GoalFn formation)
-        : Aq40MovementAction(botAI, name), _formation(formation)
-    {
-    }
-    bool Execute(Event event) override;
-
-private:
-    Aq40Helpers::Aq40GoalFn const _formation;
-};
-
-// Before the pull, neither "follow" (drags the bot back to the master) nor "stay" (keeps pulling it back mid-fight)
-// works, so the bot walks to its spot and holds it.
-class Aq40MoveToPrepullSpotAction : public MovementAction, public Aq40ActionTag
-{
-public:
-    Aq40MoveToPrepullSpotAction(PlayerbotAI* botAI, std::string const& name, Aq40Helpers::Aq40GoalFn spot)
-        : MovementAction(botAI, name), _spot(spot)
-    {
-    }
-    bool Execute(Event event) override;
-
-private:
-    Aq40Helpers::Aq40GoalFn const _spot;
 };
 
 // Each boss's kill order lives in the "aq40 assigned target" value; these actions attack it.
@@ -126,6 +73,32 @@ public:
     bool Execute(Event event) override;
 };
 
+// Tracker bookkeeping: this and every assign, swap and track action below returns false, so it never takes
+// the bot's turn.
+class Aq40TrackEncounterAction : public Action, public Aq40ActionTag
+{
+public:
+    Aq40TrackEncounterAction(PlayerbotAI* botAI) : Action(botAI, "aq40 track encounter") {}
+    bool Execute(Event event) override;
+};
+
+class Aq40AssignAddTanksAction : public Action, public Aq40ActionTag
+{
+public:
+    Aq40AssignAddTanksAction(PlayerbotAI* botAI) : Action(botAI, "aq40 assign add tanks") {}
+    bool Execute(Event event) override;
+};
+
+class Aq40RangedMoveIntoBossRangeAction : public Aq40MovementAction
+{
+public:
+    Aq40RangedMoveIntoBossRangeAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "aq40 ranged move into boss range")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
 // The Prophet Skeram
 
 class TheProphetSkeramCrowdControlMindControlledAction : public Action, public Aq40ActionTag
@@ -133,6 +106,44 @@ class TheProphetSkeramCrowdControlMindControlledAction : public Action, public A
 public:
     TheProphetSkeramCrowdControlMindControlledAction(PlayerbotAI* botAI)
         : Action(botAI, "the prophet skeram crowd control mind controlled")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class TheProphetSkeramAssignPlatformsAction : public Action, public Aq40ActionTag
+{
+public:
+    TheProphetSkeramAssignPlatformsAction(PlayerbotAI* botAI) : Action(botAI, "the prophet skeram assign platforms") {}
+    bool Execute(Event event) override;
+};
+
+class TheProphetSkeramMoveToAssignedPlatformAction : public Aq40MovementAction
+{
+public:
+    TheProphetSkeramMoveToAssignedPlatformAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "the prophet skeram move to assigned platform")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+// Bug Trio
+
+class BugTrioMoveAwayFromPoisonCloudAction : public Aq40MovementAction
+{
+public:
+    BugTrioMoveAwayFromPoisonCloudAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "bug trio move away from poison cloud")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class BugTrioTanksSeparateBossesAction : public Aq40MovementAction
+{
+public:
+    BugTrioTanksSeparateBossesAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "bug trio tanks separate bosses")
     {
     }
     bool Execute(Event event) override;
@@ -148,6 +159,15 @@ public:
         : Aq40MovementAction(botAI, "battleguard sartura move away from whirlwind")
     {
     }
+    bool Execute(Event event) override;
+};
+
+// Fankriss the Unyielding
+
+class FankrissTheUnyieldingSwapTanksAction : public Action, public Aq40ActionTag
+{
+public:
+    FankrissTheUnyieldingSwapTanksAction(PlayerbotAI* botAI) : Action(botAI, "fankriss the unyielding swap tanks") {}
     bool Execute(Event event) override;
 };
 
@@ -167,6 +187,33 @@ public:
     bool Execute(Event event) override;
 };
 
+class ViscidusEscapeToxinCloudsAction : public Aq40MovementAction
+{
+public:
+    ViscidusEscapeToxinCloudsAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "viscidus escape toxin clouds") {}
+    bool Execute(Event event) override;
+};
+
+class ViscidusMeleeMoveInToShatterAction : public Aq40MovementAction
+{
+public:
+    ViscidusMeleeMoveInToShatterAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "viscidus melee move in to shatter")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class ViscidusPositionRangedOnRingAction : public Aq40MovementAction
+{
+public:
+    ViscidusPositionRangedOnRingAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "viscidus position ranged on ring")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
 // Princess Huhuran
 
 class PrincessHuhuranTranquilizingShotAction : public Action, public Aq40ActionTag
@@ -180,6 +227,43 @@ class PrincessHuhuranCureWyvernStingAction : public Action, public Aq40ActionTag
 {
 public:
     PrincessHuhuranCureWyvernStingAction(PlayerbotAI* botAI) : Action(botAI, "princess huhuran cure wyvern sting") {}
+    bool Execute(Event event) override;
+};
+
+class PrincessHuhuranAssignPoisonBoltSoakersAction : public Action, public Aq40ActionTag
+{
+public:
+    PrincessHuhuranAssignPoisonBoltSoakersAction(PlayerbotAI* botAI)
+        : Action(botAI, "princess huhuran assign poison bolt soakers")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class PrincessHuhuranSwapTanksAction : public Action, public Aq40ActionTag
+{
+public:
+    PrincessHuhuranSwapTanksAction(PlayerbotAI* botAI) : Action(botAI, "princess huhuran swap tanks") {}
+    bool Execute(Event event) override;
+};
+
+class PrincessHuhuranSoakersStandNearBossAction : public Aq40MovementAction
+{
+public:
+    PrincessHuhuranSoakersStandNearBossAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "princess huhuran soakers stand near boss")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class PrincessHuhuranSpreadRangedAndHealersAction : public Aq40MovementAction
+{
+public:
+    PrincessHuhuranSpreadRangedAndHealersAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "princess huhuran spread ranged and healers")
+    {
+    }
     bool Execute(Event event) override;
 };
 
@@ -278,6 +362,133 @@ public:
     bool Execute(Event event) override;
 };
 
+class TwinEmperorsWarlockMoveToStartSpotAction : public Aq40MovementAction
+{
+public:
+    TwinEmperorsWarlockMoveToStartSpotAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "twin emperors warlock move to start spot")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class TwinEmperorsAssignTanksAndSidesAction : public Action, public Aq40ActionTag
+{
+public:
+    TwinEmperorsAssignTanksAndSidesAction(PlayerbotAI* botAI) : Action(botAI, "twin emperors assign tanks and sides") {}
+    bool Execute(Event event) override;
+};
+
+class TwinEmperorsMoveAwayFromExplodingBugAction : public Aq40MovementAction
+{
+public:
+    TwinEmperorsMoveAwayFromExplodingBugAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "twin emperors move away from exploding bug")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class TwinEmperorsEscapeBlizzardAction : public Aq40MovementAction
+{
+public:
+    TwinEmperorsEscapeBlizzardAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "twin emperors escape blizzard") {}
+    bool Execute(Event event) override;
+};
+
+class TwinEmperorsMoveAwayFromVeklorAction : public Aq40MovementAction
+{
+public:
+    TwinEmperorsMoveAwayFromVeklorAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "twin emperors move away from vek'lor")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class TwinEmperorsClearVeknilashLandingSpotAction : public Aq40MovementAction
+{
+public:
+    TwinEmperorsClearVeknilashLandingSpotAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "twin emperors clear vek'nilash landing spot")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class TwinEmperorsTanksPositionEmperorsAction : public Aq40MovementAction
+{
+public:
+    TwinEmperorsTanksPositionEmperorsAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "twin emperors tanks position emperors")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class EmperorVeklorWarlockTankKeepRangeAction : public Aq40MovementAction
+{
+public:
+    EmperorVeklorWarlockTankKeepRangeAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "emperor vek'lor warlock tank keep range")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class TwinEmperorsMeleeLeaveLandingSpotsAction : public Aq40MovementAction
+{
+public:
+    TwinEmperorsMeleeLeaveLandingSpotsAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "twin emperors melee leave landing spots")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class TwinEmperorsDpsMoveToAssignedEmperorAction : public Aq40MovementAction
+{
+public:
+    TwinEmperorsDpsMoveToAssignedEmperorAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "twin emperors dps move to assigned emperor")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class TwinEmperorsHealersPositionBetweenTankAndWarlockAction : public Aq40MovementAction
+{
+public:
+    TwinEmperorsHealersPositionBetweenTankAndWarlockAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "twin emperors healers position between tank and warlock")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+// Ouro
+
+class OuroMoveOutOfFrontalConeAction : public Aq40MovementAction
+{
+public:
+    OuroMoveOutOfFrontalConeAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "ouro move out of frontal cone") {}
+    bool Execute(Event event) override;
+};
+
+class OuroAvoidDirtMoundAction : public Aq40MovementAction
+{
+public:
+    OuroAvoidDirtMoundAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "ouro avoid dirt mound") {}
+    bool Execute(Event event) override;
+};
+
+class OuroAcceptNewMainTankAction : public Action, public Aq40ActionTag
+{
+public:
+    OuroAcceptNewMainTankAction(PlayerbotAI* botAI) : Action(botAI, "ouro accept new main tank") {}
+    bool Execute(Event event) override;
+};
+
 // C'Thun
 
 class CthunHealersDamageCthunAction : public Action, public Aq40ActionTag
@@ -300,6 +511,101 @@ class CthunSendSpitOutTriggerAction : public Action, public Aq40ActionTag
 {
 public:
     CthunSendSpitOutTriggerAction(PlayerbotAI* botAI) : Action(botAI, "c'thun send spit-out trigger") {}
+    bool Execute(Event event) override;
+};
+
+class CthunPullerMoveToPullSpotAction : public Aq40MovementAction
+{
+public:
+    CthunPullerMoveToPullSpotAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "c'thun puller move to pull spot")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class CthunTrailPullerAction : public Aq40MovementAction
+{
+public:
+    CthunTrailPullerAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "c'thun trail puller") {}
+    bool Execute(Event event) override;
+};
+
+class EyeOfCthunTrackDarkGlareAction : public Action, public Aq40ActionTag
+{
+public:
+    EyeOfCthunTrackDarkGlareAction(PlayerbotAI* botAI) : Action(botAI, "eye of c'thun track dark glare") {}
+    bool Execute(Event event) override;
+};
+
+class CthunAssignSpotsAction : public Action, public Aq40ActionTag
+{
+public:
+    CthunAssignSpotsAction(PlayerbotAI* botAI) : Action(botAI, "c'thun assign spots") {}
+    bool Execute(Event event) override;
+};
+
+class CthunAssignTentacleKillersAction : public Action, public Aq40ActionTag
+{
+public:
+    CthunAssignTentacleKillersAction(PlayerbotAI* botAI) : Action(botAI, "c'thun assign tentacle killers") {}
+    bool Execute(Event event) override;
+};
+
+class CthunAssignGiantClawTanksAction : public Action, public Aq40ActionTag
+{
+public:
+    CthunAssignGiantClawTanksAction(PlayerbotAI* botAI) : Action(botAI, "c'thun assign giant claw tanks") {}
+    bool Execute(Event event) override;
+};
+
+class CthunExitStomachAction : public Aq40MovementAction
+{
+public:
+    CthunExitStomachAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "c'thun exit stomach") {}
+    bool Execute(Event event) override;
+};
+
+class EyeOfCthunDodgeDarkGlareAction : public Aq40MovementAction
+{
+public:
+    EyeOfCthunDodgeDarkGlareAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "eye of c'thun dodge dark glare") {}
+    bool Execute(Event event) override;
+};
+
+class EyeOfCthunPullerHoldPullSpotAction : public Aq40MovementAction
+{
+public:
+    EyeOfCthunPullerHoldPullSpotAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "eye of c'thun puller hold pull spot")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class EyeOfCthunMoveToAssignedSpotAction : public Aq40MovementAction
+{
+public:
+    EyeOfCthunMoveToAssignedSpotAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "eye of c'thun move to assigned spot")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class CthunMoveToStackAction : public Aq40MovementAction
+{
+public:
+    CthunMoveToStackAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "c'thun move to stack") {}
+    bool Execute(Event event) override;
+};
+
+class CthunMeleeMoveIntoBurnRangeAction : public Aq40MovementAction
+{
+public:
+    CthunMeleeMoveIntoBurnRangeAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "c'thun melee move into burn range")
+    {
+    }
     bool Execute(Event event) override;
 };
 

@@ -178,7 +178,7 @@ float AnubisathDefenderAvoidReflectedSchoolsMultiplier::GetValue(Action* action)
 
 float SkeramStayOnPlatformMultiplier::GetValueInEncounter(Action* action)
 {
-    if (IsOwnAction(action) || !IsInEncounter(bot, Aq40Encounter::Skeram))
+    if (IsOwnAction(action))
         return 1.0f;
     bool const hostile = IsHostileTarget(bot, action);
     bool const movement = IsGenericMovement(action);
@@ -202,7 +202,7 @@ float SkeramStayOnPlatformMultiplier::GetValueInEncounter(Action* action)
 
 float ViscidusFrostOnlyMultiplier::GetValueInEncounter(Action* action)
 {
-    if (IsOwnAction(action) || !IsInEncounter(bot, Aq40Encounter::Viscidus) || !IsHostileTarget(bot, action))
+    if (IsOwnAction(action) || !IsHostileTarget(bot, action))
         return 1.0f;
     Unit* target = action->GetTarget();
     if (target->GetEntry() != Id(Aq40Npcs::NPC_VISCIDUS))
@@ -222,7 +222,7 @@ float ViscidusFrostOnlyMultiplier::GetValueInEncounter(Action* action)
 float HuhuranControlWyvernStingDispelMultiplier::GetValueInEncounter(Action* action)
 {
     // The dedicated selective dispel handles tanks above the damage safety margin.
-    if (IsOwnAction(action) || !IsInEncounter(bot, Aq40Encounter::Huhuran))
+    if (IsOwnAction(action))
         return 1.0f;
     Unit* target = action->GetTarget();
     SpellInfo const* spell = ActionSpell(botAI, action);
@@ -236,7 +236,7 @@ float HuhuranControlWyvernStingDispelMultiplier::GetValueInEncounter(Action* act
 
 float HuhuranDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (IsOwnAction(action) || !IsInEncounter(bot, Aq40Encounter::Huhuran) || !IsDpsCooldownAction(bot, action))
+    if (IsOwnAction(action) || !IsDpsCooldownAction(bot, action))
         return 1.0f;
     Creature* boss = GetBoss(bot);
     return boss && boss->GetHealthPct() > HUHURAN_COOLDOWN_HEALTH_PCT ? 0.0f : 1.0f;
@@ -246,7 +246,7 @@ float HuhuranDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 
 float TwinEmperorsOpeningHealHoldMultiplier::GetValueInEncounter(Action* action)
 {
-    if (IsOwnAction(action) || !PlayerbotAI::IsHeal(bot) || !IsInEncounter(bot, Aq40Encounter::Twins))
+    if (IsOwnAction(action) || !PlayerbotAI::IsHeal(bot))
         return 1.0f;
     SpellInfo const* spell = ActionSpell(botAI, action);
     if (!spell || !spell->IsPositive())
@@ -259,7 +259,7 @@ float TwinEmperorsPriestShieldOnlyEmperorTargetsMultiplier::GetValueInEncounter(
 {
     // Instant priest spells cast on anyone drain the priests' mana within about two minutes. In this fight Shield
     // and Renew are for the emperors' targets only.
-    if (IsOwnAction(action) || bot->getClass() != CLASS_PRIEST || !IsInEncounter(bot, Aq40Encounter::Twins))
+    if (IsOwnAction(action) || bot->getClass() != CLASS_PRIEST)
         return 1.0f;
     CastSpellAction* cast = dynamic_cast<CastSpellAction*>(action);
     if (!cast || (cast->getSpell() != "power word: shield" && cast->getSpell() != "renew"))
@@ -274,8 +274,7 @@ float TwinEmperorsPriestShieldOnlyEmperorTargetsMultiplier::GetValueInEncounter(
 
 float TwinEmperorsHoldDamageInTransitMultiplier::GetValueInEncounter(Action* action)
 {
-    if (IsOwnAction(action) || PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot) ||
-        !IsInEncounter(bot, Aq40Encounter::Twins))
+    if (IsOwnAction(action) || PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot))
         return 1.0f;
     if (!IsTargetPicker(action) && !IsHostileTarget(bot, action))
         return 1.0f;
@@ -284,7 +283,7 @@ float TwinEmperorsHoldDamageInTransitMultiplier::GetValueInEncounter(Action* act
 
 float TwinEmperorsSkipImmuneTargetsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (IsOwnAction(action) || !IsInEncounter(bot, Aq40Encounter::Twins) || !IsHostileTarget(bot, action))
+    if (IsOwnAction(action) || !IsHostileTarget(bot, action))
         return 1.0f;
     SpellInfo const* spell = ActionSpell(botAI, action);
     return spell && action->GetTarget()->IsImmunedToDamage(bot, spell) ? 0.0f : 1.0f;
@@ -294,8 +293,7 @@ float TwinEmperorsVeklorThreatCapMultiplier::GetValueInEncounter(Action* action)
 {
     // Vek'lor's tank holds him from outside Arcane Burst with taunt threat only, and his Shadow Bolt hits for ~4k.
     // Damage pauses before it would out-threaten that tank.
-    if (IsOwnAction(action) || PlayerbotAI::IsTank(bot) || !IsInEncounter(bot, Aq40Encounter::Twins) ||
-        !IsHostileTarget(bot, action))
+    if (IsOwnAction(action) || PlayerbotAI::IsTank(bot) || !IsHostileTarget(bot, action))
         return 1.0f;
     Unit* target = action->GetTarget();
     if (target->GetEntry() != Id(Aq40Npcs::NPC_VEKLOR))
@@ -328,7 +326,7 @@ float TwinEmperorsTanksHoldAnchorMultiplier::GetValueInEncounter(Action* action)
 {
     // A Twin tank belongs to a platform, including while its boss is displaced. Ordinary chase and charge must not
     // undo the anchor as soon as the positioning action reaches its goal.
-    if (IsOwnAction(action) || !PlayerbotAI::IsTank(bot) || !IsInEncounter(bot, Aq40Encounter::Twins))
+    if (IsOwnAction(action) || !PlayerbotAI::IsTank(bot))
         return 1.0f;
     if (IsGenericMovement(action))
         return 0.0f;
@@ -342,7 +340,7 @@ float CthunDisableFollowMultiplier::GetValueInEncounter(Action* action)
 {
     // Every bot's place comes from the strategy. A bot briefly out of combat would otherwise follow the raid leader,
     // possibly back up the entrance ramp during phase 1.
-    return dynamic_cast<FollowAction*>(action) && IsInEncounter(bot, Aq40Encounter::Cthun) ? 0.0f : 1.0f;
+    return dynamic_cast<FollowAction*>(action) ? 0.0f : 1.0f;
 }
 
 float CthunStomachExitOnlyMultiplier::GetValueInEncounter(Action* action)
@@ -360,13 +358,13 @@ float CthunStomachNoTreeOfLifeMultiplier::GetValueInEncounter(Action* action)
     CastSpellAction* cast = dynamic_cast<CastSpellAction*>(action);
     if (!cast || cast->getSpell() != "tree of life")
         return 1.0f;
-    return IsInEncounter(bot, Aq40Encounter::Cthun) && InStomach(bot) ? 0.0f : 1.0f;
+    return InStomach(bot) ? 0.0f : 1.0f;
 }
 
 float CthunStomachNoFloorHealsMultiplier::GetValueInEncounter(Action* action)
 {
     // Nobody on the floor is in range of a healer in the stomach; those casts only fail and cost its turns.
-    if (IsOwnAction(action) || !IsInEncounter(bot, Aq40Encounter::Cthun) || !InStomach(bot))
+    if (IsOwnAction(action) || !InStomach(bot))
         return 1.0f;
     SpellInfo const* spell = ActionSpell(botAI, action);
     Unit* target = action->GetTarget();
@@ -376,8 +374,7 @@ float CthunStomachNoFloorHealsMultiplier::GetValueInEncounter(Action* action)
 
 float CthunStomachHoldMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (IsOwnAction(action) || !IsGenericMovement(action) || !IsInEncounter(bot, Aq40Encounter::Cthun) ||
-        !InStomach(bot))
+    if (IsOwnAction(action) || !IsGenericMovement(action) || !InStomach(bot))
         return 1.0f;
     Unit* target = action->GetTarget();
     return dynamic_cast<ReachTargetAction*>(action) && target && target->GetPositionZ() <= CTHUN_STOMACH_Z ? 1.0f

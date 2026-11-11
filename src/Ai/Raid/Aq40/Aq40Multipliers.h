@@ -10,6 +10,7 @@
 #include "Aq40Helpers.h"
 #include "EncounterHelpers.h"
 #include "Multiplier.h"
+#include <optional>
 #include <string>
 
 // Shared
@@ -17,17 +18,28 @@
 class Aq40EncounterMultiplier : public Multiplier
 {
 public:
+    // Applies in any AQ40 encounter.
     Aq40EncounterMultiplier(PlayerbotAI* botAI, std::string const name) : Multiplier(botAI, name) {}
+    // Applies in one boss's encounter only.
+    Aq40EncounterMultiplier(PlayerbotAI* botAI, std::string const name, Aq40Helpers::Aq40Encounter encounter)
+        : Multiplier(botAI, name), _encounter(encounter)
+    {
+    }
 
     float GetValue(Action* action) final
     {
-        return action && EncounterHelpers::IsEncounterInProgress(bot, Aq40Helpers::AQ40_MAP_ID)
-                   ? GetValueInEncounter(action)
-                   : 1.0f;
+        if (!action)
+            return 1.0f;
+        bool const inProgress = _encounter ? Aq40Helpers::IsInEncounter(bot, *_encounter)
+                                           : EncounterHelpers::IsEncounterInProgress(bot, Aq40Helpers::AQ40_MAP_ID);
+        return inProgress ? GetValueInEncounter(action) : 1.0f;
     }
 
 protected:
     virtual float GetValueInEncounter(Action* action) = 0;
+
+private:
+    std::optional<Aq40Helpers::Aq40Encounter> const _encounter;
 };
 
 // Lets server-driven knockbacks and falls finish before any action, the strategy's own included, can replace them.
@@ -136,7 +148,7 @@ class SkeramStayOnPlatformMultiplier : public Aq40EncounterMultiplier
 {
 public:
     SkeramStayOnPlatformMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "the prophet skeram stay on platform")
+        : Aq40EncounterMultiplier(botAI, "the prophet skeram stay on platform", Aq40Helpers::Aq40Encounter::Skeram)
     {
     }
 
@@ -148,7 +160,10 @@ protected:
 class ViscidusFrostOnlyMultiplier : public Aq40EncounterMultiplier
 {
 public:
-    ViscidusFrostOnlyMultiplier(PlayerbotAI* botAI) : Aq40EncounterMultiplier(botAI, "viscidus frost only") {}
+    ViscidusFrostOnlyMultiplier(PlayerbotAI* botAI)
+        : Aq40EncounterMultiplier(botAI, "viscidus frost only", Aq40Helpers::Aq40Encounter::Viscidus)
+    {
+    }
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -159,7 +174,8 @@ class HuhuranControlWyvernStingDispelMultiplier : public Aq40EncounterMultiplier
 {
 public:
     HuhuranControlWyvernStingDispelMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "princess huhuran control wyvern sting dispel")
+        : Aq40EncounterMultiplier(botAI, "princess huhuran control wyvern sting dispel",
+                                  Aq40Helpers::Aq40Encounter::Huhuran)
     {
     }
 
@@ -171,7 +187,7 @@ class HuhuranDelayDpsCooldownsMultiplier : public Aq40EncounterMultiplier
 {
 public:
     HuhuranDelayDpsCooldownsMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "princess huhuran delay dps cooldowns")
+        : Aq40EncounterMultiplier(botAI, "princess huhuran delay dps cooldowns", Aq40Helpers::Aq40Encounter::Huhuran)
     {
     }
 
@@ -184,7 +200,7 @@ class TwinEmperorsOpeningHealHoldMultiplier : public Aq40EncounterMultiplier
 {
 public:
     TwinEmperorsOpeningHealHoldMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "twin emperors opening heal hold")
+        : Aq40EncounterMultiplier(botAI, "twin emperors opening heal hold", Aq40Helpers::Aq40Encounter::Twins)
     {
     }
 
@@ -196,7 +212,8 @@ class TwinEmperorsPriestShieldOnlyEmperorTargetsMultiplier : public Aq40Encounte
 {
 public:
     TwinEmperorsPriestShieldOnlyEmperorTargetsMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "twin emperors priest shield only emperor targets")
+        : Aq40EncounterMultiplier(botAI, "twin emperors priest shield only emperor targets",
+                                  Aq40Helpers::Aq40Encounter::Twins)
     {
     }
 
@@ -208,7 +225,7 @@ class TwinEmperorsHoldDamageInTransitMultiplier : public Aq40EncounterMultiplier
 {
 public:
     TwinEmperorsHoldDamageInTransitMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "twin emperors hold damage in transit")
+        : Aq40EncounterMultiplier(botAI, "twin emperors hold damage in transit", Aq40Helpers::Aq40Encounter::Twins)
     {
     }
 
@@ -220,7 +237,7 @@ class TwinEmperorsSkipImmuneTargetsMultiplier : public Aq40EncounterMultiplier
 {
 public:
     TwinEmperorsSkipImmuneTargetsMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "twin emperors skip immune targets")
+        : Aq40EncounterMultiplier(botAI, "twin emperors skip immune targets", Aq40Helpers::Aq40Encounter::Twins)
     {
     }
 
@@ -232,7 +249,7 @@ class TwinEmperorsVeklorThreatCapMultiplier : public Aq40EncounterMultiplier
 {
 public:
     TwinEmperorsVeklorThreatCapMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "twin emperors vek'lor threat cap")
+        : Aq40EncounterMultiplier(botAI, "twin emperors vek'lor threat cap", Aq40Helpers::Aq40Encounter::Twins)
     {
     }
 
@@ -244,7 +261,7 @@ class TwinEmperorsSpareTankThreatCapMultiplier : public Aq40EncounterMultiplier
 {
 public:
     TwinEmperorsSpareTankThreatCapMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "twin emperors spare tank threat cap")
+        : Aq40EncounterMultiplier(botAI, "twin emperors spare tank threat cap", Aq40Helpers::Aq40Encounter::Twins)
     {
     }
 
@@ -256,7 +273,7 @@ class TwinEmperorsTanksHoldAnchorMultiplier : public Aq40EncounterMultiplier
 {
 public:
     TwinEmperorsTanksHoldAnchorMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "twin emperors tanks hold anchor")
+        : Aq40EncounterMultiplier(botAI, "twin emperors tanks hold anchor", Aq40Helpers::Aq40Encounter::Twins)
     {
     }
 
@@ -268,7 +285,10 @@ protected:
 class CthunDisableFollowMultiplier : public Aq40EncounterMultiplier
 {
 public:
-    CthunDisableFollowMultiplier(PlayerbotAI* botAI) : Aq40EncounterMultiplier(botAI, "c'thun disable follow") {}
+    CthunDisableFollowMultiplier(PlayerbotAI* botAI)
+        : Aq40EncounterMultiplier(botAI, "c'thun disable follow", Aq40Helpers::Aq40Encounter::Cthun)
+    {
+    }
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -277,7 +297,10 @@ protected:
 class CthunStomachExitOnlyMultiplier : public Aq40EncounterMultiplier
 {
 public:
-    CthunStomachExitOnlyMultiplier(PlayerbotAI* botAI) : Aq40EncounterMultiplier(botAI, "c'thun stomach exit only") {}
+    CthunStomachExitOnlyMultiplier(PlayerbotAI* botAI)
+        : Aq40EncounterMultiplier(botAI, "c'thun stomach exit only", Aq40Helpers::Aq40Encounter::Cthun)
+    {
+    }
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -287,7 +310,7 @@ class CthunStomachNoTreeOfLifeMultiplier : public Aq40EncounterMultiplier
 {
 public:
     CthunStomachNoTreeOfLifeMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "c'thun stomach no tree of life")
+        : Aq40EncounterMultiplier(botAI, "c'thun stomach no tree of life", Aq40Helpers::Aq40Encounter::Cthun)
     {
     }
 
@@ -299,7 +322,7 @@ class CthunStomachNoFloorHealsMultiplier : public Aq40EncounterMultiplier
 {
 public:
     CthunStomachNoFloorHealsMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "c'thun stomach no floor heals")
+        : Aq40EncounterMultiplier(botAI, "c'thun stomach no floor heals", Aq40Helpers::Aq40Encounter::Cthun)
     {
     }
 
@@ -311,7 +334,7 @@ class CthunStomachHoldMovementMultiplier : public Aq40EncounterMultiplier
 {
 public:
     CthunStomachHoldMovementMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "c'thun stomach hold movement")
+        : Aq40EncounterMultiplier(botAI, "c'thun stomach hold movement", Aq40Helpers::Aq40Encounter::Cthun)
     {
     }
 
@@ -322,7 +345,10 @@ protected:
 class CthunMeleeBurnRangeMultiplier : public Aq40EncounterMultiplier
 {
 public:
-    CthunMeleeBurnRangeMultiplier(PlayerbotAI* botAI) : Aq40EncounterMultiplier(botAI, "c'thun melee burn range") {}
+    CthunMeleeBurnRangeMultiplier(PlayerbotAI* botAI)
+        : Aq40EncounterMultiplier(botAI, "c'thun melee burn range", Aq40Helpers::Aq40Encounter::Cthun)
+    {
+    }
 
 protected:
     float GetValueInEncounter(Action* action) override;
