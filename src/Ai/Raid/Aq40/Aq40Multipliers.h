@@ -119,6 +119,18 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class Aq40RangedHoldBossRangeMultiplier : public Aq40EncounterMultiplier
+{
+public:
+    Aq40RangedHoldBossRangeMultiplier(PlayerbotAI* botAI)
+        : Aq40EncounterMultiplier(botAI, "aq40 ranged hold boss range")
+    {
+    }
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Trash
 
 // Not encounter gated: an Anubisath Defender reflects two schools for its whole fight.
@@ -138,6 +150,19 @@ class SkeramStayOnPlatformMultiplier : public Aq40EncounterMultiplier
 public:
     SkeramStayOnPlatformMultiplier(PlayerbotAI* botAI)
         : Aq40EncounterMultiplier(botAI, "the prophet skeram stay on platform", Aq40Helpers::Aq40Encounter::Skeram)
+    {
+    }
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+// Bug Trio
+class BugTrioControlTankMovementMultiplier : public Aq40EncounterMultiplier
+{
+public:
+    BugTrioControlTankMovementMultiplier(PlayerbotAI* botAI)
+        : Aq40EncounterMultiplier(botAI, "bug trio control tank movement", Aq40Helpers::Aq40Encounter::Trio)
     {
     }
 

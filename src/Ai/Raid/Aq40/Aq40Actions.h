@@ -85,13 +85,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class Aq40RangedMoveIntoBossRangeAction : public Aq40MovementAction
+class Aq40RangedMoveIntoBossRangeAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    Aq40RangedMoveIntoBossRangeAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "aq40 ranged move into boss range")
-    {
-    }
+    Aq40RangedMoveIntoBossRangeAction(PlayerbotAI* botAI) : MovementAction(botAI, "aq40 ranged move into boss range") {}
     bool Execute(Event event) override;
 };
 
@@ -136,12 +133,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class BugTrioTanksSeparateBossesAction : public Aq40MovementAction
+class BugTrioTanksSeparateBossesAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    BugTrioTanksSeparateBossesAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "bug trio tanks separate bosses")
-    {
-    }
+    BugTrioTanksSeparateBossesAction(PlayerbotAI* botAI) : MovementAction(botAI, "bug trio tanks separate bosses") {}
     bool Execute(Event event) override;
 };
 

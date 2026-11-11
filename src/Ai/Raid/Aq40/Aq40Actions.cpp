@@ -229,8 +229,16 @@ bool Aq40AssignAddTanksAction::Execute(Event /*event*/)
 
 bool Aq40RangedMoveIntoBossRangeAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetBossRangeGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    if (!GetBossRangeGoal(botAI, spot))
+        return false;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, spot, 0.0f, nullptr, moveX, moveY, backwards))
+        return false;
+    return MoveTo(AQ40_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // The Prophet Skeram
@@ -268,8 +276,16 @@ bool BugTrioMoveAwayFromPoisonCloudAction::Execute(Event /*event*/)
 
 bool BugTrioTanksSeparateBossesAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetTrioTankGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    if (!GetTrioTankGoal(botAI, spot))
+        return false;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, spot, 0.0f, GetAssignedTarget(botAI), moveX, moveY, backwards))
+        return false;
+    return MoveTo(AQ40_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // Battleguard Sartura

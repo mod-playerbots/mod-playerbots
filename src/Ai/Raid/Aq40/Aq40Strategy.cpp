@@ -211,12 +211,16 @@ void RaidAq40Strategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new Aq40AllowedDamageMultiplier(botAI));
     multipliers.push_back(new Aq40DisableAoeMultiplier(botAI));
     multipliers.push_back(new Aq40MaintainFormationMultiplier(botAI));
+    multipliers.push_back(new Aq40RangedHoldBossRangeMultiplier(botAI));
 
     // Trash
     multipliers.push_back(new AnubisathDefenderAvoidReflectedSchoolsMultiplier(botAI));
 
     // The Prophet Skeram
     multipliers.push_back(new SkeramStayOnPlatformMultiplier(botAI));
+
+    // Bug Trio
+    multipliers.push_back(new BugTrioControlTankMovementMultiplier(botAI));
 
     // Viscidus
     multipliers.push_back(new ViscidusFrostOnlyMultiplier(botAI));

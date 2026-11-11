@@ -2356,10 +2356,9 @@ bool GetBossRangeGoal(PlayerbotAI* botAI, Position& goal)
 
 bool ComputeFormationGoal(PlayerbotAI* botAI, Position& goal)
 {
-    for (Aq40GoalFn formation :
-         {&GetSkeramPlatformGoal, &GetTwinTankGoal, &GetTwinWarlockGoal, &GetTwinMeleeSwapGoal, &GetTwinDpsGoal,
-          &GetTwinHealerGoal, &GetCthunPullerHoldGoal, &GetCthunMeleeBurnGoal, &GetCthunSpotGoal, &GetCthunStackGoal,
-          &GetTrioTankGoal, &GetViscidusShatterGoal, &GetViscidusRingGoal, &GetBossRangeGoal})
+    for (Aq40GoalFn formation : {&GetSkeramPlatformGoal, &GetTwinTankGoal, &GetTwinWarlockGoal, &GetTwinMeleeSwapGoal,
+                                 &GetTwinDpsGoal, &GetTwinHealerGoal, &GetCthunPullerHoldGoal, &GetCthunMeleeBurnGoal,
+                                 &GetCthunSpotGoal, &GetCthunStackGoal, &GetViscidusShatterGoal, &GetViscidusRingGoal})
         if (formation(botAI, goal))
             return true;
     return false;

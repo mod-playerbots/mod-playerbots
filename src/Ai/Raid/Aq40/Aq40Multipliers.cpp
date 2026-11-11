@@ -150,6 +150,17 @@ float Aq40MaintainFormationMultiplier::GetValueInEncounter(Action* action)
     return HasFormationGoal(botAI) ? 0.0f : 1.0f;
 }
 
+float Aq40RangedHoldBossRangeMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<ReachTargetAction*>(action) && !dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action) && !IsRepositionAction(bot, action))
+        return 1.0f;
+    if (dynamic_cast<SetBehindTargetAction*>(action))
+        return 1.0f;
+    Position spot;
+    return GetBossRangeGoal(botAI, spot) ? 0.0f : 1.0f;
+}
+
 // Trash
 
 float AnubisathDefenderAvoidReflectedSchoolsMultiplier::GetValue(Action* action)
@@ -196,6 +207,16 @@ float SkeramStayOnPlatformMultiplier::GetValueInEncounter(Action* action)
                       target->GetExactDist2d(platform) <= SKERAM_LOCAL_REACH &&
                       std::abs(target->GetPositionZ() - platform.GetPositionZ()) <= SKERAM_PLATFORM_HEIGHT_TOLERANCE;
     return localReach ? 1.0f : 0.0f;
+}
+
+// Bug Trio
+
+float BugTrioControlTankMovementMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<ReachTargetAction*>(action) && !dynamic_cast<CombatFormationMoveAction*>(action))
+        return 1.0f;
+    Position spot;
+    return GetTrioTankGoal(botAI, spot) ? 0.0f : 1.0f;
 }
 
 // Viscidus
