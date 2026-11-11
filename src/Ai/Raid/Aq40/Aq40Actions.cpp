@@ -346,14 +346,29 @@ bool ViscidusEscapeToxinCloudsAction::Execute(Event /*event*/)
 
 bool ViscidusMeleeMoveInToShatterAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetViscidusShatterGoal(botAI, goal) && MoveToGoal(goal, false);
+    Creature* boss = GetBoss(bot);
+    Position spot;
+    if (!boss || !GetViscidusShatterGoal(botAI, spot))
+        return false;
+    float stepX;
+    float stepY;
+    if (!GetPathStepTowardUnit(bot, boss, boss->GetCombatReach(), PATH_STEP_DISTANCE, stepX, stepY))
+        return false;
+    return MoveTo(AQ40_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool ViscidusPositionRangedOnRingAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetViscidusRingGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    if (!GetViscidusRingGoal(botAI, spot))
+        return false;
+    float stepX;
+    float stepY;
+    if (!GetPathStepTowardPoint(bot, spot, 0.0f, PATH_STEP_DISTANCE, stepX, stepY))
+        return false;
+    return MoveTo(AQ40_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 // Princess Huhuran

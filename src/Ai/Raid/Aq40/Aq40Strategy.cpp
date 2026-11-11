@@ -223,6 +223,7 @@ void RaidAq40Strategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new BugTrioControlTankMovementMultiplier(botAI));
 
     // Viscidus
+    multipliers.push_back(new ViscidusControlMovementMultiplier(botAI));
     multipliers.push_back(new ViscidusFrostOnlyMultiplier(botAI));
 
     // Princess Huhuran

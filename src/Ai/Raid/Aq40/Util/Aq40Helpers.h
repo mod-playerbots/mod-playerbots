@@ -162,6 +162,7 @@ inline constexpr uint32 BOT_CACHE_INTERVAL_MS = 100;
 // Positioning that shares the bot with its rotation rechecks at this pace, so an unreachable spot can't hold the bot
 // every tick.
 inline constexpr uint32 POSITION_INTERVAL_MS = 500;
+inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 
 // The Prophet Skeram
 

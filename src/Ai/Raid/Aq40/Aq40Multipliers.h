@@ -171,6 +171,18 @@ protected:
 };
 
 // Viscidus
+class ViscidusControlMovementMultiplier : public Aq40EncounterMultiplier
+{
+public:
+    ViscidusControlMovementMultiplier(PlayerbotAI* botAI)
+        : Aq40EncounterMultiplier(botAI, "viscidus control movement", Aq40Helpers::Aq40Encounter::Viscidus)
+    {
+    }
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class ViscidusFrostOnlyMultiplier : public Aq40EncounterMultiplier
 {
 public:

@@ -221,6 +221,17 @@ float BugTrioControlTankMovementMultiplier::GetValueInEncounter(Action* action)
 
 // Viscidus
 
+float ViscidusControlMovementMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<ReachTargetAction*>(action) && !dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action) && !IsRepositionAction(bot, action))
+        return 1.0f;
+    if (dynamic_cast<SetBehindTargetAction*>(action))
+        return 1.0f;
+    Position spot;
+    return GetViscidusShatterGoal(botAI, spot) || GetViscidusRingGoal(botAI, spot) ? 0.0f : 1.0f;
+}
+
 float ViscidusFrostOnlyMultiplier::GetValueInEncounter(Action* action)
 {
     if (IsOwnAction(action) || !IsHostileTarget(bot, action))

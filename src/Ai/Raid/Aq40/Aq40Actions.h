@@ -184,21 +184,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class ViscidusMeleeMoveInToShatterAction : public Aq40MovementAction
+class ViscidusMeleeMoveInToShatterAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    ViscidusMeleeMoveInToShatterAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "viscidus melee move in to shatter")
+    ViscidusMeleeMoveInToShatterAction(PlayerbotAI* botAI) : MovementAction(botAI, "viscidus melee move in to shatter")
     {
     }
     bool Execute(Event event) override;
 };
 
-class ViscidusPositionRangedOnRingAction : public Aq40MovementAction
+class ViscidusPositionRangedOnRingAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    ViscidusPositionRangedOnRingAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "viscidus position ranged on ring")
+    ViscidusPositionRangedOnRingAction(PlayerbotAI* botAI) : MovementAction(botAI, "viscidus position ranged on ring")
     {
     }
     bool Execute(Event event) override;
