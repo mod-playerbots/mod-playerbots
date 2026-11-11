@@ -12,6 +12,7 @@
 #include "Position.h"
 #include <array>
 #include <map>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -324,14 +325,13 @@ struct Aq40InstanceState
     uint32 trackerSeen = 0;
     Aq40Encounter encounter = Aq40Encounter::None;
     ObjectGuid group;
-    uint32 encounterStart = 0;
+    std::optional<uint32> encounterStart;
     GuidVector units;  // Sorted; every live unit of the encounter's entries near the boss.
     ObjectGuid mainTank;
     std::map<ObjectGuid, ObjectGuid> owners;  // Unit -> the tank that holds it.
 
     // The Prophet Skeram
-    bool skeramPlatformsReady = false;
-    std::array<Position, 3> skeramPlatforms{};
+    std::optional<std::array<Position, 3>> skeramPlatforms;
     std::array<ObjectGuid, 3> skeramPlatformTanks{};
     std::map<ObjectGuid, uint32> skeramMemberPlatform;
     std::map<ObjectGuid, uint32> skeramImagePlatform;
@@ -341,16 +341,14 @@ struct Aq40InstanceState
     GuidVector huhuranSoakers;
 
     // Twin Emperors
-    bool twinSidesReady = false;
-    std::array<Position, 2> twinSides{};  // Side 0 is Vek'nilash's spawn side.
+    std::optional<std::array<Position, 2>> twinSides;  // Side 0 is Vek'nilash's spawn side.
     std::map<ObjectGuid, uint32> twinMemberSide;
     std::array<ObjectGuid, 2> twinTanks{};
     std::array<ObjectGuid, 2> twinLocks{};  // Per side: Square = side 0 (Vek'nilash's), Moon = side 1.
     ObjectGuid twinLock;                    // The warlock holding Vek'lor right now.
     ObjectGuid twinWaiter;
-    bool twinLastReady = false;
-    std::array<Position, 2> twinLast{};
-    uint32 twinLastSwap = 0;
+    std::optional<std::array<Position, 2>> twinLast;
+    std::optional<uint32> twinLastSwap;
 
     // C'Thun
     ObjectGuid cthunPuller;  // Takes the three opening Eye Beams; stays put while the raid spreads.

@@ -80,7 +80,7 @@ std::vector<uint32> EncounterEntries(Aq40Encounter encounter)
 uint32 ElapsedSinceEncounterStart(Player* bot)
 {
     Aq40InstanceState const& state = Aq40State(bot->GetInstanceId());
-    return state.encounterStart ? getMSTimeDiff(state.encounterStart, getMSTime()) : 0;
+    return state.encounterStart ? getMSTimeDiff(*state.encounterStart, getMSTime()) : 0;
 }
 
 bool IsPhysicalTwinDamage(Player* player) { return PlayerbotAI::IsMelee(player) || player->getClass() == CLASS_HUNTER; }
@@ -412,7 +412,7 @@ bool GetCthunGoalOfKind(PlayerbotAI* botAI, Position& goal, CthunGoalKind wanted
 bool IsTwinPlatformTankBot(Player* bot)
 {
     Aq40InstanceState const& state = Aq40State(bot->GetInstanceId());
-    return state.twinSidesReady && (bot->GetGUID() == state.twinTanks[0] || bot->GetGUID() == state.twinTanks[1]);
+    return state.twinSides && (bot->GetGUID() == state.twinTanks[0] || bot->GetGUID() == state.twinTanks[1]);
 }
 
 bool IsTwinDamageRole(Player* bot)
@@ -917,18 +917,20 @@ void AssignSkeramPlatforms(Player* bot)
     std::vector<Player*> tanks = GetMembers(bot, true);
     if (tanks.empty())
         return;
-    if (!state.skeramPlatformsReady)
+    if (!state.skeramPlatforms)
     {
+        std::array<Position, 3> found;
         for (uint32 index = 0; index < blinks.size(); ++index)
         {
             SpellTargetPosition const* point = sSpellMgr->GetSpellTargetPosition(Id(blinks[index]), EFFECT_0);
             if (!point)
                 return;
-            state.skeramPlatforms[index].Relocate(point->target_X, point->target_Y, point->target_Z);
+            found[index].Relocate(point->target_X, point->target_Y, point->target_Z);
         }
-        state.skeramPlatformsReady = true;
+        state.skeramPlatforms = found;
         state.skeramPlatformTanks[SKERAM_CENTER_PLATFORM] = state.mainTank;
     }
+    std::array<Position, 3> const& platforms = *state.skeramPlatforms;
 
     std::set<ObjectGuid> assigned;
     for (ObjectGuid& guid : state.skeramPlatformTanks)
@@ -943,8 +945,7 @@ void AssignSkeramPlatforms(Player* bot)
             Player* nearest = nullptr;
             for (Player* tank : tanks)
                 if (!assigned.count(tank->GetGUID()) &&
-                    (!nearest || tank->GetExactDist(state.skeramPlatforms[index]) <
-                                     nearest->GetExactDist(state.skeramPlatforms[index])))
+                    (!nearest || tank->GetExactDist(platforms[index]) < nearest->GetExactDist(platforms[index])))
                     nearest = tank;
             if (nearest)
             {
@@ -1000,7 +1001,7 @@ void AssignSkeramPlatforms(Player* bot)
         {
             uint32 side = SKERAM_CENTER_PLATFORM;
             for (uint32 index : {0u, 2u})
-                if (unit->GetExactDist(state.skeramPlatforms[index]) < unit->GetExactDist(state.skeramPlatforms[side]))
+                if (unit->GetExactDist(platforms[index]) < unit->GetExactDist(platforms[side]))
                     side = index;
             state.skeramImagePlatform[guid] = side;
         }
@@ -1015,8 +1016,7 @@ bool GetSkeramPlatform(PlayerbotAI* botAI, Position& platform)
     Player* bot = botAI->GetBot();
     Aq40InstanceState const& state = Aq40State(bot->GetInstanceId());
     auto it = state.skeramMemberPlatform.find(bot->GetGUID());
-    if (!IsInEncounter(bot, Aq40Encounter::Skeram) || !state.skeramPlatformsReady ||
-        it == state.skeramMemberPlatform.end())
+    if (!IsInEncounter(bot, Aq40Encounter::Skeram) || !state.skeramPlatforms || it == state.skeramMemberPlatform.end())
         return false;
     uint32 side = it->second;
     if (!PlayerbotAI::IsHeal(bot))
@@ -1042,7 +1042,7 @@ bool GetSkeramPlatform(PlayerbotAI* botAI, Position& platform)
                 // Reach and pick up the real boss before bringing it back. Images stay on their platforms.
                 if (tank || acquired)
                 {
-                    platform = acquired ? state.skeramPlatforms[SKERAM_CENTER_PLATFORM] : target->GetPosition();
+                    platform = acquired ? (*state.skeramPlatforms)[SKERAM_CENTER_PLATFORM] : target->GetPosition();
                     return true;
                 }
             }
@@ -1053,7 +1053,7 @@ bool GetSkeramPlatform(PlayerbotAI* botAI, Position& platform)
                     side = body->second;
         }
     }
-    platform = state.skeramPlatforms[side];
+    platform = (*state.skeramPlatforms)[side];
     return true;
 }
 
@@ -1155,15 +1155,15 @@ void AssignTwinRoles(Player* bot)
     std::vector<Player*> tanks = GetMembers(bot, true);
     std::vector<Creature*> physical = GetUnits(bot, Id(Aq40Npcs::NPC_VEKNILASH));
     std::vector<Creature*> caster = GetUnits(bot, Id(Aq40Npcs::NPC_VEKLOR));
-    if (!state.twinSidesReady && !physical.empty() && !caster.empty())
+    if (!state.twinSides && !physical.empty() && !caster.empty())
     {
         // Side 0 is Vek'nilash's spawn side. Sides use the floor spots: the emperors move at engage (Vek'lor walks
         // toward targets beyond 45 yd), and the pedestal stairs break their pathing so they heal to full.
-        state.twinSides = TWIN_FLOOR_SPOTS;
-        if (physical.front()->GetHomePosition().GetExactDist2d(&state.twinSides[0]) >
-            physical.front()->GetHomePosition().GetExactDist2d(&state.twinSides[1]))
-            std::swap(state.twinSides[0], state.twinSides[1]);
-        state.twinSidesReady = true;
+        std::array<Position, 2> spots = TWIN_FLOOR_SPOTS;
+        if (physical.front()->GetHomePosition().GetExactDist2d(&spots[0]) >
+            physical.front()->GetHomePosition().GetExactDist2d(&spots[1]))
+            std::swap(spots[0], spots[1]);
+        state.twinSides = spots;
         // The raid is stacked on its leader at the pull, so proximity puts nearly everyone on one emperor. Deal each
         // role out alternately instead, so both sides get healers, melee and casters.
         std::array<uint32, 3> dealt{};
@@ -1175,12 +1175,12 @@ void AssignTwinRoles(Player* bot)
             state.twinMemberSide[member->GetGUID()] = dealt[role]++ % 2;
         }
     }
-    if (!state.twinSidesReady)
+    if (!state.twinSides)
         return;
+    std::array<Position, 2> const& sides = *state.twinSides;
     for (Player* member : GetMembers(bot))
-        state.twinMemberSide.try_emplace(
-            member->GetGUID(),
-            member->GetExactDist2d(state.twinSides[0]) < member->GetExactDist2d(state.twinSides[1]) ? 0 : 1);
+        state.twinMemberSide.try_emplace(member->GetGUID(),
+                                         member->GetExactDist2d(sides[0]) < member->GetExactDist2d(sides[1]) ? 0 : 1);
     // Vek'lor is not physically immune on this core, so one plate tank per platform holds whichever emperor lands
     // there and taunts on every swap. Warlocks are ordinary casters.
     auto assignSides = [&](std::array<ObjectGuid, 2>& owners, std::vector<Player*> const& candidates)
@@ -1193,8 +1193,7 @@ void AssignTwinRoles(Player* bot)
             Player* nearest = nullptr;
             for (Player* candidate : candidates)
                 if (candidate->GetGUID() != owners[1 - side] &&
-                    (!nearest ||
-                     candidate->GetExactDist2d(state.twinSides[side]) < nearest->GetExactDist2d(state.twinSides[side])))
+                    (!nearest || candidate->GetExactDist2d(sides[side]) < nearest->GetExactDist2d(sides[side])))
                     nearest = candidate;
             if (nearest)
                 owners[side] = nearest->GetGUID();
@@ -1231,8 +1230,8 @@ void AssignTwinRoles(Player* bot)
     {
         Player* first = botTanks[0];
         Player* second = botTanks[1];
-        float straight = first->GetExactDist2d(state.twinSides[0]) + second->GetExactDist2d(state.twinSides[1]);
-        float crossed = first->GetExactDist2d(state.twinSides[1]) + second->GetExactDist2d(state.twinSides[0]);
+        float straight = first->GetExactDist2d(sides[0]) + second->GetExactDist2d(sides[1]);
+        float crossed = first->GetExactDist2d(sides[1]) + second->GetExactDist2d(sides[0]);
         state.twinTanks = straight <= crossed ? std::array<ObjectGuid, 2>{first->GetGUID(), second->GetGUID()}
                                               : std::array<ObjectGuid, 2>{second->GetGUID(), first->GetGUID()};
     }
@@ -1259,15 +1258,14 @@ void AssignTwinRoles(Player* bot)
         return;
     // Match both emperors together. A displaced boss must not give one tank both owners and leave the opposite
     // platform without a pickup assignment.
-    float original =
-        physical.front()->GetExactDist2d(state.twinSides[0]) + caster.front()->GetExactDist2d(state.twinSides[1]);
-    float swapped =
-        physical.front()->GetExactDist2d(state.twinSides[1]) + caster.front()->GetExactDist2d(state.twinSides[0]);
+    float original = physical.front()->GetExactDist2d(sides[0]) + caster.front()->GetExactDist2d(sides[1]);
+    float swapped = physical.front()->GetExactDist2d(sides[1]) + caster.front()->GetExactDist2d(sides[0]);
     // Keep the matching stable while both emperors are off their platforms: flipping owners on small moves hands
     // both to one tank. Re-match after a teleport, for a new or dead owner, or if clearly better.
     uint32 physicalSide = original <= swapped ? 0 : 1;
-    if (state.twinLastReady && physical.front()->GetExactDist2d(state.twinLast[0]) < TWIN_TELEPORT_JUMP &&
-        caster.front()->GetExactDist2d(state.twinLast[1]) < TWIN_TELEPORT_JUMP && std::abs(original - swapped) < 40.0f)
+    if (state.twinLast && physical.front()->GetExactDist2d((*state.twinLast)[0]) < TWIN_TELEPORT_JUMP &&
+        caster.front()->GetExactDist2d((*state.twinLast)[1]) < TWIN_TELEPORT_JUMP &&
+        std::abs(original - swapped) < 40.0f)
         for (uint32 side = 0; side < 2; ++side)
             if (state.twinTanks[side] && state.owners[physical.front()->GetGUID()] == state.twinTanks[side] &&
                 state.owners[caster.front()->GetGUID()] == state.twinTanks[1 - side])
@@ -1278,11 +1276,10 @@ void AssignTwinRoles(Player* bot)
         for (uint32 side = 0; side < 2; ++side)
             if (state.twinTanks[side] && victim->GetGUID() == state.twinTanks[side])
                 physicalSide = side;
-    if (state.twinLastReady && (physical.front()->GetExactDist2d(state.twinLast[0]) > TWIN_TELEPORT_JUMP ||
-                                caster.front()->GetExactDist2d(state.twinLast[1]) > TWIN_TELEPORT_JUMP))
+    if (state.twinLast && (physical.front()->GetExactDist2d((*state.twinLast)[0]) > TWIN_TELEPORT_JUMP ||
+                           caster.front()->GetExactDist2d((*state.twinLast)[1]) > TWIN_TELEPORT_JUMP))
         state.twinLastSwap = getMSTime();
-    state.twinLast = {physical.front()->GetPosition(), caster.front()->GetPosition()};
-    state.twinLastReady = true;
+    state.twinLast = std::array<Position, 2>{physical.front()->GetPosition(), caster.front()->GetPosition()};
     state.owners[physical.front()->GetGUID()] = state.twinTanks[physicalSide];
     state.owners[caster.front()->GetGUID()] = state.twinTanks[1 - physicalSide];
     // At the pull the warriors have no threat on Vek'lor and healing pulls him across the room, so a raid-marked
@@ -1335,13 +1332,14 @@ bool IsTwinSpareTank(Player* bot, Player* player)
 
 uint32 TwinSideOf(Aq40InstanceState const& state, Position const& pos)
 {
-    return pos.GetExactDist2d(&state.twinSides[0]) < pos.GetExactDist2d(&state.twinSides[1]) ? 0 : 1;
+    std::array<Position, 2> const& sides = *state.twinSides;
+    return pos.GetExactDist2d(&sides[0]) < pos.GetExactDist2d(&sides[1]) ? 0 : 1;
 }
 
 Position TwinLockSpot(Aq40InstanceState const& state, uint32 side)
 {
-    return TWIN_LOCK_SPOTS[0].GetExactDist2d(&state.twinSides[side]) <
-                   TWIN_LOCK_SPOTS[1].GetExactDist2d(&state.twinSides[side])
+    std::array<Position, 2> const& sides = *state.twinSides;
+    return TWIN_LOCK_SPOTS[0].GetExactDist2d(&sides[side]) < TWIN_LOCK_SPOTS[1].GetExactDist2d(&sides[side])
                ? TWIN_LOCK_SPOTS[0]
                : TWIN_LOCK_SPOTS[1];
 }
@@ -1350,7 +1348,7 @@ bool TwinSwapWindow(Player* bot)
 {
     Aq40InstanceState const& state = Aq40State(bot->GetInstanceId());
     return IsInEncounter(bot, Aq40Encounter::Twins) && state.twinLastSwap &&
-           getMSTimeDiff(state.twinLastSwap, getMSTime()) >= TWIN_SWAP_WINDOW_MS;
+           getMSTimeDiff(*state.twinLastSwap, getMSTime()) >= TWIN_SWAP_WINDOW_MS;
 }
 
 bool TwinOpeningHold(Player* bot, Unit* target)
@@ -1365,14 +1363,15 @@ Position TwinUnstuckSpot(Player* bot, Unit* emperor)
     // The platform tops are where the emperors spawn, so their pathing is known good. The stairs down from them are
     // not: Vek'nilash can lose his path to a tank standing right next to him there.
     Aq40InstanceState const& state = Aq40State(bot->GetInstanceId());
-    if (!state.twinSidesReady)
+    if (!state.twinSides)
         return emperor->GetPosition();
+    std::array<Position, 2> const& sides = *state.twinSides;
     uint32 side = TwinSideOf(state, emperor->GetPosition());
-    float inward = state.twinSides[side].GetAngle(&state.twinSides[1 - side]);
+    float inward = sides[side].GetAngle(&sides[1 - side]);
     float offset = emperor->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR)
                        ? emperor->GetCombatReach() + TWIN_BURST_CLEARANCE + 2.0f
                        : TWIN_TANK_OFFSET;
-    Position spot = state.twinSides[side];
+    Position spot = sides[side];
     spot.m_positionX += offset * std::cos(inward);
     spot.m_positionY += offset * std::sin(inward);
     return spot;
@@ -1980,10 +1979,11 @@ bool GetVeklorEscapeGoal(PlayerbotAI* botAI, Position& goal)
         if (bot->GetExactDist2d(veklor) >= TWIN_BYSTANDER_DISTANCE - 2.0f)
             continue;
         float escape = veklor->GetAngle(bot);
-        if (state.twinSidesReady)
+        if (state.twinSides)
         {
+            std::array<Position, 2> const& sides = *state.twinSides;
             uint32 side = TwinSideOf(state, veklor->GetPosition());
-            float inward = state.twinSides[side].GetAngle(&state.twinSides[1 - side]);
+            float inward = sides[side].GetAngle(&sides[1 - side]);
             float offset = AngleDelta(escape, inward);
             // A bot knocked behind Vek'lor must leave around his side. Retreating straight outward makes its
             // cross-room route pass through him and repeat the escape forever.
@@ -2062,6 +2062,7 @@ bool GetTwinTankGoal(PlayerbotAI* botAI, Position& goal)
     if (!FormationPrelude(bot, Aq40Encounter::Twins) || !IsTwinPlatformTankBot(bot))
         return false;
     Aq40InstanceState const& state = Aq40State(bot->GetInstanceId());
+    std::array<Position, 2> const& sides = *state.twinSides;
     uint32 side = bot->GetGUID() == state.twinTanks[0] ? 0 : 1;
     // Hold a world-space anchor, not an offset from a boss that follows us. Chasing that moving offset lets
     // knockbacks and teleports ratchet both emperors across the room.
@@ -2072,10 +2073,10 @@ bool GetTwinTankGoal(PlayerbotAI* botAI, Position& goal)
     for (Creature* nilash : GetUnits(bot, Id(Aq40Npcs::NPC_VEKNILASH)))
         if (GetTankFor(bot, nilash) == bot)
             for (Creature* lor : GetUnits(bot, Id(Aq40Npcs::NPC_VEKLOR)))
-                if (lor->GetExactDist2d(state.twinSides[side]) + 20.0f < lor->GetExactDist2d(state.twinSides[1 - side]))
+                if (lor->GetExactDist2d(sides[side]) + 20.0f < lor->GetExactDist2d(sides[1 - side]))
                     home = 1 - side;
-    float away = state.twinSides[1 - home].GetAngle(&state.twinSides[home]);
-    goal = state.twinSides[home];
+    float away = sides[1 - home].GetAngle(&sides[home]);
+    goal = sides[home];
     goal.m_positionX += TWIN_TANK_OFFSET * std::cos(away);
     goal.m_positionY += TWIN_TANK_OFFSET * std::sin(away);
     for (Creature* incoming : GetUnits(bot))
@@ -2110,7 +2111,7 @@ bool GetTwinWarlockGoal(PlayerbotAI* botAI, Position& goal)
     if (!FormationPrelude(bot, Aq40Encounter::Twins) || IsTwinPlatformTankBot(bot) || !IsTwinLock(bot, bot))
         return false;
     Aq40InstanceState const& state = Aq40State(bot->GetInstanceId());
-    if (!state.twinSidesReady)
+    if (!state.twinSides)
         return false;
     uint32 mySide = state.twinLocks[0] == bot->GetGUID() ? 0 : 1;
     Position spot = TwinLockSpot(state, mySide);
@@ -2140,13 +2141,13 @@ bool GetTwinMeleeSwapGoal(PlayerbotAI* botAI, Position& goal)
         !TwinSwapWindow(bot))
         return false;
     Aq40InstanceState const& state = Aq40State(bot->GetInstanceId());
-    if (!state.twinSidesReady || GetUnits(bot, Id(Aq40Npcs::NPC_VEKNILASH)).empty())
+    if (!state.twinSides || GetUnits(bot, Id(Aq40Npcs::NPC_VEKNILASH)).empty())
         return false;
+    std::array<Position, 2> const& sides = *state.twinSides;
     // Before the teleport window opens, melee leave Vek'nilash for the middle of the path between the spots:
     // Vek'lor lands where Vek'nilash stood and Arcane Bursts everyone in melee range.
-    goal.Relocate((state.twinSides[0].GetPositionX() + state.twinSides[1].GetPositionX()) / 2.0f,
-                  (state.twinSides[0].GetPositionY() + state.twinSides[1].GetPositionY()) / 2.0f,
-                  state.twinSides[0].GetPositionZ());
+    goal.Relocate((sides[0].GetPositionX() + sides[1].GetPositionX()) / 2.0f,
+                  (sides[0].GetPositionY() + sides[1].GetPositionY()) / 2.0f, sides[0].GetPositionZ());
     bot->UpdateAllowedPositionZ(goal.GetPositionX(), goal.GetPositionY(), goal.m_positionZ);
     return bot->GetExactDist2d(goal) > 6.0f;
 }
@@ -2160,8 +2161,9 @@ bool GetTwinDpsGoal(PlayerbotAI* botAI, Position& goal)
     if (melee && TwinSwapWindow(bot))
         return false;  // The melee swap goal owns this window.
     Aq40InstanceState const& state = Aq40State(bot->GetInstanceId());
-    if (!state.twinSidesReady)
+    if (!state.twinSides)
         return false;
+    std::array<Position, 2> const& sides = *state.twinSides;
     bool physical = IsPhysicalTwinDamage(bot);
     std::vector<Creature*> emperors = GetUnits(bot, physical ? Id(Aq40Npcs::NPC_VEKNILASH) : Id(Aq40Npcs::NPC_VEKLOR));
     if (emperors.empty())
@@ -2174,7 +2176,7 @@ bool GetTwinDpsGoal(PlayerbotAI* botAI, Position& goal)
     constexpr float pickupDistance = 20.0f;
     constexpr float meleeDistance = 3.0f;
     float distance = melee ? (IsHeld(bot, emperor) ? meleeDistance : pickupDistance) : rangedDistance;
-    float inward = state.twinSides[side].GetAngle(&state.twinSides[1 - side]);
+    float inward = sides[side].GetAngle(&sides[1 - side]);
     if (!melee)
     {
         uint32 slot = 0;
@@ -2205,8 +2207,9 @@ bool GetTwinHealerGoal(PlayerbotAI* botAI, Position& goal)
         IsTwinLock(bot, bot))
         return false;
     Aq40InstanceState const& state = Aq40State(bot->GetInstanceId());
-    if (!state.twinSidesReady)
+    if (!state.twinSides)
         return false;
+    std::array<Position, 2> const& sides = *state.twinSides;
     // Only healers consume healing slots. Counting the whole raid pushes the later healers beyond healing range,
     // especially after their tank is knocked back.
     auto sideIt = state.twinMemberSide.find(bot->GetGUID());
@@ -2217,7 +2220,7 @@ bool GetTwinHealerGoal(PlayerbotAI* botAI, Position& goal)
     if (Player* lock = GetMember(bot, state.twinLock))
         for (Creature* veklor : GetUnits(bot, Id(Aq40Npcs::NPC_VEKLOR)))
             if (GetTankFor(bot, veklor) == lock && tank &&
-                veklor->GetExactDist2d(state.twinSides[side]) < veklor->GetExactDist2d(state.twinSides[1 - side]))
+                veklor->GetExactDist2d(sides[side]) < veklor->GetExactDist2d(sides[1 - side]))
                 tank = lock;
     std::vector<Creature*> veklors = GetUnits(bot, Id(Aq40Npcs::NPC_VEKLOR));
     auto clearOfVeklor = [&](Position const& spot)
@@ -2230,7 +2233,7 @@ bool GetTwinHealerGoal(PlayerbotAI* botAI, Position& goal)
     if (tank && bot->GetExactDist(tank) >= 18.0f && bot->GetExactDist(tank) <= 30.0f && bot->IsWithinLOSInMap(tank) &&
         clearOfVeklor(bot->GetPosition()))
         return false;  // Keep healing instead of repositioning for every small tank movement.
-    float axis = state.twinSides[side].GetAngle(&state.twinSides[1 - side]);
+    float axis = sides[side].GetAngle(&sides[1 - side]);
     uint32 slot = 0;
     uint32 count = 0;
     for (Player* member : GetMembers(bot))
@@ -2247,7 +2250,7 @@ bool GetTwinHealerGoal(PlayerbotAI* botAI, Position& goal)
     // Follow the assigned tank on this platform. Keep room for a knockback within normal healing range, and stay
     // outside Vek'lor's Arcane Burst radius.
     float spread = (float(slot) + 0.5f) / float(std::max(count, 1u)) - 0.5f;
-    Position anchor = tank ? tank->GetPosition() : state.twinSides[side];
+    Position anchor = tank ? tank->GetPosition() : sides[side];
     // Healers stand between their tank and their side's warlock spot, toward the entrance.
     Position lockSpot = TwinLockSpot(state, side);
     float angle =
