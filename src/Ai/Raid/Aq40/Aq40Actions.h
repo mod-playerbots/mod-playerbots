@@ -560,38 +560,37 @@ public:
     bool Execute(Event event) override;
 };
 
-class EyeOfCthunPullerHoldPullSpotAction : public Aq40MovementAction
+class EyeOfCthunPullerHoldPullSpotAction : public MovementAction, public Aq40ActionTag
 {
 public:
     EyeOfCthunPullerHoldPullSpotAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "eye of c'thun puller hold pull spot")
+        : MovementAction(botAI, "eye of c'thun puller hold pull spot")
     {
     }
     bool Execute(Event event) override;
 };
 
-class EyeOfCthunMoveToAssignedSpotAction : public Aq40MovementAction
+class EyeOfCthunMoveToAssignedSpotAction : public MovementAction, public Aq40ActionTag
 {
 public:
     EyeOfCthunMoveToAssignedSpotAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "eye of c'thun move to assigned spot")
+        : MovementAction(botAI, "eye of c'thun move to assigned spot")
     {
     }
     bool Execute(Event event) override;
 };
 
-class CthunMoveToStackAction : public Aq40MovementAction
+class CthunMoveToStackAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    CthunMoveToStackAction(PlayerbotAI* botAI) : Aq40MovementAction(botAI, "c'thun move to stack") {}
+    CthunMoveToStackAction(PlayerbotAI* botAI) : MovementAction(botAI, "c'thun move to stack") {}
     bool Execute(Event event) override;
 };
 
-class CthunMeleeMoveIntoBurnRangeAction : public Aq40MovementAction
+class CthunMeleeMoveIntoBurnRangeAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    CthunMeleeMoveIntoBurnRangeAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "c'thun melee move into burn range")
+    CthunMeleeMoveIntoBurnRangeAction(PlayerbotAI* botAI) : MovementAction(botAI, "c'thun melee move into burn range")
     {
     }
     bool Execute(Event event) override;

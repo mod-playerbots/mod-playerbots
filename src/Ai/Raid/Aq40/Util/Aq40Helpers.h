@@ -376,14 +376,6 @@ struct Aq40BotCache
     uint32 exitAttemptTime = 0;
 };
 
-struct Aq40Goal
-{
-    bool active = false;
-    Position goal;
-};
-
-using Aq40GoalFn = bool (*)(PlayerbotAI* botAI, Position& goal);
-
 // General
 
 Aq40Encounter GetCurrentEncounter(Player* bot);
@@ -502,6 +494,8 @@ bool GetTwinWarlockGoal(PlayerbotAI* botAI, Position& goal);
 bool GetTwinMeleeSwapGoal(PlayerbotAI* botAI, Position& goal);
 bool GetTwinDpsGoal(PlayerbotAI* botAI, Position& goal);
 bool GetTwinHealerGoal(PlayerbotAI* botAI, Position& goal);
+// The bot's C'Thun position, whichever of the four below applies to its role and the phase.
+bool GetCthunPositionGoal(PlayerbotAI* botAI, Position& goal);
 bool GetCthunPullerHoldGoal(PlayerbotAI* botAI, Position& goal);
 bool GetCthunMeleeBurnGoal(PlayerbotAI* botAI, Position& goal);
 bool GetCthunSpotGoal(PlayerbotAI* botAI, Position& goal);
@@ -512,8 +506,6 @@ bool GetHuhuranSoakGoal(PlayerbotAI* botAI, Position& goal);
 bool GetHuhuranSpreadGoal(PlayerbotAI* botAI, Position& goal);
 bool GetViscidusRingGoal(PlayerbotAI* botAI, Position& goal);
 bool GetBossRangeGoal(PlayerbotAI* botAI, Position& goal);
-bool ComputeFormationGoal(PlayerbotAI* botAI, Position& goal);
-bool HasFormationGoal(PlayerbotAI* botAI);
 
 // Before the pull
 

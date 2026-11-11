@@ -210,7 +210,6 @@ void RaidAq40Strategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new Aq40DisableAutoTargetMultiplier(botAI));
     multipliers.push_back(new Aq40AllowedDamageMultiplier(botAI));
     multipliers.push_back(new Aq40DisableAoeMultiplier(botAI));
-    multipliers.push_back(new Aq40MaintainFormationMultiplier(botAI));
     multipliers.push_back(new Aq40RangedHoldBossRangeMultiplier(botAI));
 
     // Trash
@@ -242,7 +241,7 @@ void RaidAq40Strategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new TwinEmperorsTanksHoldAnchorMultiplier(botAI));
 
     // C'Thun
-    multipliers.push_back(new CthunDisableFollowMultiplier(botAI));
+    multipliers.push_back(new CthunControlMovementMultiplier(botAI));
     multipliers.push_back(new CthunStomachExitOnlyMultiplier(botAI));
     multipliers.push_back(new CthunStomachNoTreeOfLifeMultiplier(botAI));
     multipliers.push_back(new CthunStomachNoFloorHealsMultiplier(botAI));

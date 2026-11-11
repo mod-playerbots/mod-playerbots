@@ -142,14 +142,6 @@ float Aq40DisableAoeMultiplier::GetValueInEncounter(Action* action)
     return hold ? 0.0f : 1.0f;
 }
 
-float Aq40MaintainFormationMultiplier::GetValueInEncounter(Action* action)
-{
-    // Encounter positioning owns movement while a phase or role imposes a specific location.
-    if (IsOwnAction(action) || !IsGenericMovement(action))
-        return 1.0f;
-    return HasFormationGoal(botAI) ? 0.0f : 1.0f;
-}
-
 float Aq40RangedHoldBossRangeMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<ReachTargetAction*>(action) && !dynamic_cast<CombatFormationMoveAction*>(action) &&
@@ -380,11 +372,17 @@ float TwinEmperorsTanksHoldAnchorMultiplier::GetValueInEncounter(Action* action)
 
 // C'Thun
 
-float CthunDisableFollowMultiplier::GetValueInEncounter(Action* action)
+float CthunControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
     // Every bot's place comes from the strategy. A bot briefly out of combat would otherwise follow the raid leader,
     // possibly back up the entrance ramp during phase 1.
-    return dynamic_cast<FollowAction*>(action) ? 0.0f : 1.0f;
+    if (dynamic_cast<FollowAction*>(action))
+        return 0.0f;
+    if (!dynamic_cast<ReachTargetAction*>(action) && !dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<FleeAction*>(action) && !IsRepositionAction(bot, action))
+        return 1.0f;
+    Position spot;
+    return GetCthunPositionGoal(botAI, spot) ? 0.0f : 1.0f;
 }
 
 float CthunStomachExitOnlyMultiplier::GetValueInEncounter(Action* action)

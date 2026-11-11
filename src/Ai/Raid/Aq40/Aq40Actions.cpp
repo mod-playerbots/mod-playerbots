@@ -773,24 +773,48 @@ bool EyeOfCthunDodgeDarkGlareAction::Execute(Event /*event*/)
 
 bool EyeOfCthunPullerHoldPullSpotAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetCthunPullerHoldGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    Position next;
+    if (!GetCthunPullerHoldGoal(botAI, spot) || !GetRouteStep(bot, spot, true, next))
+        return false;
+    if (bot->movespline->Finalized())
+        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    return MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true, true,
+                  MovementPriority::MOVEMENT_COMBAT, true);
 }
 
 bool EyeOfCthunMoveToAssignedSpotAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetCthunSpotGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    Position next;
+    if (!GetCthunSpotGoal(botAI, spot) || !GetRouteStep(bot, spot, true, next))
+        return false;
+    if (bot->movespline->Finalized())
+        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    return MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true, true,
+                  MovementPriority::MOVEMENT_COMBAT, true);
 }
 
 bool CthunMoveToStackAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetCthunStackGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    Position next;
+    if (!GetCthunStackGoal(botAI, spot) || !GetRouteStep(bot, spot, true, next))
+        return false;
+    if (bot->movespline->Finalized())
+        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    return MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true, true,
+                  MovementPriority::MOVEMENT_COMBAT, true);
 }
 
 bool CthunMeleeMoveIntoBurnRangeAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetCthunMeleeBurnGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    Position next;
+    if (!GetCthunMeleeBurnGoal(botAI, spot) || !GetRouteStep(bot, spot, true, next))
+        return false;
+    if (bot->movespline->Finalized())
+        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    return MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true, true,
+                  MovementPriority::MOVEMENT_COMBAT, true);
 }

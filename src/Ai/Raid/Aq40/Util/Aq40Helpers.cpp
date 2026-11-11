@@ -2228,6 +2228,12 @@ bool GetTwinHealerGoal(PlayerbotAI* botAI, Position& goal)
     return bot->GetExactDist2d(goal) > 5.0f || std::abs(bot->GetPositionZ() - goal.GetPositionZ()) > 3.0f;
 }
 
+bool GetCthunPositionGoal(PlayerbotAI* botAI, Position& goal)
+{
+    CthunGoalKind kind;
+    return GetCthunGoal(botAI, goal, kind);
+}
+
 bool GetCthunPullerHoldGoal(PlayerbotAI* botAI, Position& goal)
 {
     return GetCthunGoalOfKind(botAI, goal, CthunGoalKind::PullerHold);
@@ -2385,20 +2391,6 @@ bool GetBossRangeGoal(PlayerbotAI* botAI, Position& goal)
         return false;
     goal = Around(boss, 28.0f + boss->GetCombatReach(), boss->GetAngle(bot));
     return true;
-}
-
-bool ComputeFormationGoal(PlayerbotAI* botAI, Position& goal)
-{
-    for (Aq40GoalFn formation :
-         {&GetCthunPullerHoldGoal, &GetCthunMeleeBurnGoal, &GetCthunSpotGoal, &GetCthunStackGoal})
-        if (formation(botAI, goal))
-            return true;
-    return false;
-}
-
-bool HasFormationGoal(PlayerbotAI* botAI)
-{
-    return botAI->GetAiObjectContext()->GetValue<Aq40Goal>("aq40 formation")->Get().active;
 }
 
 // Before the pull

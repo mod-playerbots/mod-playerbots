@@ -110,15 +110,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class Aq40MaintainFormationMultiplier : public Aq40EncounterMultiplier
-{
-public:
-    Aq40MaintainFormationMultiplier(PlayerbotAI* botAI) : Aq40EncounterMultiplier(botAI, "aq40 maintain formation") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 class Aq40RangedHoldBossRangeMultiplier : public Aq40EncounterMultiplier
 {
 public:
@@ -333,11 +324,11 @@ protected:
 };
 
 // C'Thun
-class CthunDisableFollowMultiplier : public Aq40EncounterMultiplier
+class CthunControlMovementMultiplier : public Aq40EncounterMultiplier
 {
 public:
-    CthunDisableFollowMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "c'thun disable follow", Aq40Helpers::Aq40Encounter::Cthun)
+    CthunControlMovementMultiplier(PlayerbotAI* botAI)
+        : Aq40EncounterMultiplier(botAI, "c'thun control movement", Aq40Helpers::Aq40Encounter::Cthun)
     {
     }
 
