@@ -111,11 +111,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class TheProphetSkeramMoveToAssignedPlatformAction : public Aq40MovementAction
+class TheProphetSkeramMoveToAssignedPlatformAction : public MovementAction, public Aq40ActionTag
 {
 public:
     TheProphetSkeramMoveToAssignedPlatformAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "the prophet skeram move to assigned platform")
+        : MovementAction(botAI, "the prophet skeram move to assigned platform")
     {
     }
     bool Execute(Event event) override;

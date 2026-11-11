@@ -187,26 +187,28 @@ float AnubisathDefenderAvoidReflectedSchoolsMultiplier::GetValue(Action* action)
 
 // The Prophet Skeram
 
-float SkeramStayOnPlatformMultiplier::GetValueInEncounter(Action* action)
+float TheProphetSkeramControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (IsOwnAction(action))
-        return 1.0f;
-    bool const hostile = IsHostileTarget(bot, action);
-    bool const movement = IsGenericMovement(action);
-    if (!hostile && !movement)
+    bool const reach = dynamic_cast<ReachTargetAction*>(action) != nullptr;
+    if (!reach && !dynamic_cast<CombatFormationMoveAction*>(action) && !dynamic_cast<FollowAction*>(action) &&
+        !dynamic_cast<FleeAction*>(action) && !IsRepositionAction(bot, action))
         return 1.0f;
     Position platform;
     if (!GetSkeramPlatform(botAI, platform))
         return 1.0f;
-    if (hostile && HasFormationGoal(botAI))
-        return 0.0f;
-    if (!movement)
-        return 1.0f;
     Unit* target = action->GetTarget();
-    bool localReach = dynamic_cast<ReachTargetAction*>(action) && target &&
-                      target->GetExactDist2d(platform) <= SKERAM_LOCAL_REACH &&
-                      std::abs(target->GetPositionZ() - platform.GetPositionZ()) <= SKERAM_PLATFORM_HEIGHT_TOLERANCE;
+    bool const localReach =
+        reach && target && target->GetExactDist2d(platform) <= SKERAM_LOCAL_REACH &&
+        std::abs(target->GetPositionZ() - platform.GetPositionZ()) <= SKERAM_PLATFORM_HEIGHT_TOLERANCE;
     return localReach ? 1.0f : 0.0f;
+}
+
+float TheProphetSkeramHoldDamageInTransitMultiplier::GetValueInEncounter(Action* action)
+{
+    if (IsOwnAction(action) || !IsHostileTarget(bot, action))
+        return 1.0f;
+    Position spot;
+    return GetSkeramPlatformGoal(botAI, spot) ? 0.0f : 1.0f;
 }
 
 // Bug Trio

@@ -31,12 +31,9 @@ bool Aq40MovementAction::MoveToGoal(Position goal, bool hazard)
     // C'Thun: the entrance ramps reach the floor only by one slope south-southeast of the Eye, so a spot is often
     // 100+ yd of path away and short steps stall on the ramps.
     bool const cthunRoute = encounter == Aq40Encounter::Cthun && !InStomach(bot);
-    if ((!hazard && encounter == Aq40Encounter::Skeram) || twins || cthunRoute)
+    if (twins || cthunRoute)
     {
-        if (twins || cthunRoute)
-            bot->UpdateAllowedPositionZ(goal.GetPositionX(), goal.GetPositionY(), goal.m_positionZ);
-        else if (!tank)
-            StopAttacking(bot);
+        bot->UpdateAllowedPositionZ(goal.GetPositionX(), goal.GetPositionY(), goal.m_positionZ);
         PathGenerator route(bot);
         if (!route.CalculatePath(goal.GetPositionX(), goal.GetPositionY(), goal.GetPositionZ()) ||
             route.GetPath().empty())
@@ -50,7 +47,7 @@ bool Aq40MovementAction::MoveToGoal(Position goal, bool hazard)
             return false;
         // Twins transfers run continuously across the room: stopping every few yards adds an AI reaction delay per
         // segment and can miss the next teleport. A hazard escape can still interrupt this route.
-        float remaining = twins || cthunRoute ? 250.0f : 4.0f;
+        float remaining = 250.0f;
         Position next = bot->GetPosition();
         for (auto const& point : route.GetPath())
         {
@@ -70,7 +67,7 @@ bool Aq40MovementAction::MoveToGoal(Position goal, bool hazard)
             StopAttacking(bot);
         if (hazard)
             bot->CastStop();
-        if ((twins || cthunRoute) && bot->movespline->Finalized())
+        if (bot->movespline->Finalized())
             AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
         bool const moved =
             MoveTo(bot->GetMapId(), next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true,
@@ -262,8 +259,17 @@ bool TheProphetSkeramAssignPlatformsAction::Execute(Event /*event*/)
 
 bool TheProphetSkeramMoveToAssignedPlatformAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetSkeramPlatformGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    if (!GetSkeramPlatformGoal(botAI, spot))
+        return false;
+    if (!PlayerbotAI::IsTank(bot))
+        StopAttacking(bot);
+    float stepX;
+    float stepY;
+    if (!GetPathStepTowardPoint(bot, spot, 0.0f, PATH_STEP_DISTANCE, stepX, stepY))
+        return false;
+    return MoveTo(AQ40_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 // Bug Trio

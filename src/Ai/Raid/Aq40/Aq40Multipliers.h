@@ -145,11 +145,24 @@ public:
 };
 
 // The Prophet Skeram
-class SkeramStayOnPlatformMultiplier : public Aq40EncounterMultiplier
+class TheProphetSkeramControlMovementMultiplier : public Aq40EncounterMultiplier
 {
 public:
-    SkeramStayOnPlatformMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "the prophet skeram stay on platform", Aq40Helpers::Aq40Encounter::Skeram)
+    TheProphetSkeramControlMovementMultiplier(PlayerbotAI* botAI)
+        : Aq40EncounterMultiplier(botAI, "the prophet skeram control movement", Aq40Helpers::Aq40Encounter::Skeram)
+    {
+    }
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class TheProphetSkeramHoldDamageInTransitMultiplier : public Aq40EncounterMultiplier
+{
+public:
+    TheProphetSkeramHoldDamageInTransitMultiplier(PlayerbotAI* botAI)
+        : Aq40EncounterMultiplier(botAI, "the prophet skeram hold damage in transit",
+                                  Aq40Helpers::Aq40Encounter::Skeram)
     {
     }
 

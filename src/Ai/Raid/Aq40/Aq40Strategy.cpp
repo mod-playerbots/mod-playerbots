@@ -217,7 +217,8 @@ void RaidAq40Strategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new AnubisathDefenderAvoidReflectedSchoolsMultiplier(botAI));
 
     // The Prophet Skeram
-    multipliers.push_back(new SkeramStayOnPlatformMultiplier(botAI));
+    multipliers.push_back(new TheProphetSkeramControlMovementMultiplier(botAI));
+    multipliers.push_back(new TheProphetSkeramHoldDamageInTransitMultiplier(botAI));
 
     // Bug Trio
     multipliers.push_back(new BugTrioControlTankMovementMultiplier(botAI));
