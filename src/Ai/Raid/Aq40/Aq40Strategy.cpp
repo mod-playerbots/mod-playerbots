@@ -18,6 +18,8 @@ namespace
 // Out of combat, just above follow (1.0) and below everything else, so summoning the Voidwalker, buffing and
 // drinking still happen at the start spot.
 constexpr float ACTION_PREPULL = ACTION_BG + 1.0f;
+// In combat, below heals and the class rotation: a spot the bot can't reach must not cost it a cast.
+constexpr float ACTION_POSITION = ACTION_LIGHT_HEAL - 1.0f;
 }  // namespace
 
 void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -31,20 +33,16 @@ void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode("aq40 should assign add tanks", {NextAction("aq40 assign add tanks", ACTION_EMERGENCY + 10)}));
     triggers.push_back(new TriggerNode("aq40 stuck midair after knockback",
                                        {NextAction("aq40 drop to ground", ACTION_EMERGENCY + 9)}));
-    triggers.push_back(new TriggerNode("aq40 healer should stop for urgent heal",
-                                       {NextAction("aq40 stop moving for urgent heal", ACTION_EMERGENCY + 2)}));
     triggers.push_back(new TriggerNode("aq40 tank should taunt assigned target",
                                        {NextAction("aq40 tank taunt assigned target", ACTION_RAID + 4)}));
     triggers.push_back(new TriggerNode("aq40 no assigned target",
                                        {NextAction("aq40 stop attacking without assigned target", ACTION_RAID + 1)}));
     triggers.push_back(new TriggerNode("aq40 ranged should hold boss range",
-                                       {NextAction("aq40 ranged move into boss range", ACTION_RAID)}));
+                                       {NextAction("aq40 ranged move into boss range", ACTION_POSITION)}));
 
     // The Prophet Skeram
     triggers.push_back(new TriggerNode("the prophet skeram should assign platforms",
                                        {NextAction("the prophet skeram assign platforms", ACTION_EMERGENCY + 10)}));
-    triggers.push_back(new TriggerNode("the prophet skeram casting arcane explosion",
-                                       {NextAction("the prophet skeram interrupt arcane explosion", ACTION_RAID + 4)}));
     triggers.push_back(
         new TriggerNode("the prophet skeram raid member mind controlled",
                         {NextAction("the prophet skeram crowd control mind controlled", ACTION_RAID + 2)}));
@@ -57,9 +55,7 @@ void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("bug trio poison cloud nearby",
                                        {NextAction("bug trio move away from poison cloud", ACTION_EMERGENCY + 1)}));
     triggers.push_back(
-        new TriggerNode("princess yauj casting", {NextAction("princess yauj interrupt heal", ACTION_RAID + 4)}));
-    triggers.push_back(
-        new TriggerNode("bug trio bosses too close", {NextAction("bug trio tanks separate bosses", ACTION_RAID)}));
+        new TriggerNode("bug trio bosses too close", {NextAction("bug trio tanks separate bosses", ACTION_POSITION)}));
     triggers.push_back(new TriggerNode("bug trio should assign dps priority",
                                        {NextAction("bug trio assign dps priority", ACTION_RAID + 1)}));
 
@@ -85,7 +81,7 @@ void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("viscidus frozen out of melee range",
                                        {NextAction("viscidus melee move in to shatter", ACTION_RAID + 3)}));
     triggers.push_back(new TriggerNode("viscidus ranged should hold ring",
-                                       {NextAction("viscidus position ranged on ring", ACTION_RAID)}));
+                                       {NextAction("viscidus position ranged on ring", ACTION_POSITION)}));
     triggers.push_back(new TriggerNode("viscidus should assign dps priority",
                                        {NextAction("viscidus assign dps priority", ACTION_RAID + 1)}));
 
@@ -187,11 +183,6 @@ void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode("c'thun should leave stomach", {NextAction("c'thun exit stomach", ACTION_EMERGENCY + 8)}));
     triggers.push_back(new TriggerNode("eye of c'thun dark glare incoming",
                                        {NextAction("eye of c'thun dodge dark glare", ACTION_EMERGENCY + 6)}));
-    triggers.push_back(new TriggerNode("c'thun giant eye tentacle casting",
-                                       {NextAction("c'thun interrupt giant eye tentacle", ACTION_EMERGENCY + 3),
-                                        NextAction("c'thun stun giant eye tentacle", ACTION_EMERGENCY + 2)}));
-    triggers.push_back(
-        new TriggerNode("c'thun eye tentacle casting", {NextAction("c'thun interrupt eye tentacle", ACTION_RAID + 4)}));
     triggers.push_back(new TriggerNode("eye of c'thun puller holding",
                                        {NextAction("eye of c'thun puller hold pull spot", ACTION_RAID + 3)}));
     triggers.push_back(new TriggerNode("eye of c'thun out of assigned spot",
@@ -214,7 +205,6 @@ void RaidAq40Strategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Shared
     multipliers.push_back(new Aq40WaitForKnockbackMultiplier(botAI));
     multipliers.push_back(new Aq40HazardEscapeMultiplier(botAI));
-    multipliers.push_back(new Aq40UrgentHealHoldMovementMultiplier(botAI));
     multipliers.push_back(new Aq40DontAttackMindControlledMultiplier(botAI));
     multipliers.push_back(new Aq40ControlTauntingMultiplier(botAI));
     multipliers.push_back(new Aq40TanksDisableTankAssistMultiplier(botAI));

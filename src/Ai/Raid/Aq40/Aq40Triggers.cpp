@@ -18,8 +18,6 @@ using namespace EncounterHelpers;
 
 bool Aq40EncounterTrigger::IsFreeToAct() { return !bot->HasUnitState(UNIT_STATE_CASTING) && !HasHazard(botAI); }
 
-bool Aq40EncounterTrigger::IsFreeToActAfterHeals() { return IsFreeToAct() && !UrgentHeal(botAI); }
-
 bool Aq40NoEncounterInProgressTrigger::IsActive()
 {
     return bot->GetMapId() == AQ40_MAP_ID && !IsEncounterInProgress(bot, AQ40_MAP_ID);
@@ -55,7 +53,7 @@ bool Aq40HazardTrigger::IsActiveInEncounter()
 
 bool Aq40FormationTrigger::IsActiveInEncounter()
 {
-    if (bot->HasUnitState(UNIT_STATE_CASTING) || UrgentHeal(botAI) || HasHazard(botAI))
+    if (!IsFreeToAct())
         return false;
     Position goal;
     return _formation(botAI, goal);
@@ -63,14 +61,15 @@ bool Aq40FormationTrigger::IsActiveInEncounter()
 
 bool Aq40AssignedTargetTrigger::IsActiveInEncounter()
 {
-    if (!IsInEncounter(bot, _encounter) || PlayerbotAI::IsHeal(bot) || !IsFreeToActAfterHeals())
+    if (!IsInEncounter(bot, _encounter) || PlayerbotAI::IsHeal(bot) || !IsFreeToAct())
         return false;
     Unit* target = GetAssignedTarget(botAI);
     if (!target)
         return false;
-    // A transfer owns the bot until it reaches its assigned emperor: attack setup and ranged casts would stop the
-    // spline the position action just started.
-    if (_encounter == Aq40Encounter::Twins && !PlayerbotAI::IsTank(bot) && HasFormationGoal(botAI))
+    // A transfer owns the bot until it reaches its assigned emperor or C'Thun spot: attack setup re-faces the target
+    // every tick and breaks up the walk the position action just started.
+    if (((_encounter == Aq40Encounter::Twins && !PlayerbotAI::IsTank(bot)) || _encounter == Aq40Encounter::Cthun) &&
+        HasFormationGoal(botAI))
         return false;
     // Weakened burn: melee hit C'Thun only from within 10 yd of his center; until then they walk in.
     if (CthunMeleeBurn(botAI) && bot->GetExactDist2d(target) > CTHUN_BURN_MELEE_REACH)
@@ -80,7 +79,7 @@ bool Aq40AssignedTargetTrigger::IsActiveInEncounter()
 
 bool Aq40NoAssignedTargetTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsHeal(bot) || !IsFreeToActAfterHeals() || GetAssignedTarget(botAI))
+    if (PlayerbotAI::IsHeal(bot) || !IsFreeToAct() || GetAssignedTarget(botAI))
         return false;
     return bot->GetVictim() || (bot->GetPet() && bot->GetPet()->GetVictim());
 }
@@ -93,13 +92,6 @@ bool Aq40TankShouldTauntTrigger::IsActiveInEncounter()
     return target && GetTankFor(bot, target) == bot && target->GetVictim() != bot && !Whirling(target);
 }
 
-bool Aq40HealerShouldStopForUrgentHealTrigger::IsActiveInEncounter()
-{
-    return bot->isMoving() && botAI->CanMove() && !HasHazard(botAI) && UrgentHeal(botAI);
-}
-
-bool Aq40UnitCastingTrigger::IsActiveInEncounter() { return _finder(bot) != nullptr; }
-
 bool Aq40PrepullTrigger::IsActive()
 {
     Position spot;
@@ -110,19 +102,19 @@ bool Aq40PrepullTrigger::IsActive()
 
 bool TheProphetSkeramRaidMemberMindControlledTrigger::IsActiveInEncounter()
 {
-    return IsInEncounter(bot, Aq40Encounter::Skeram) && IsFreeToActAfterHeals() && GetMindControlledMember(bot);
+    return IsInEncounter(bot, Aq40Encounter::Skeram) && IsFreeToAct() && GetMindControlledMember(bot);
 }
 
 // Viscidus
 
 bool ViscidusShouldBeFrozenTrigger::IsActiveInEncounter()
 {
-    return ViscidusShouldBeFrozen(bot) && IsFreeToActAfterHeals();
+    return ViscidusShouldBeFrozen(bot) && IsFreeToAct();
 }
 
 bool ViscidusIsFrozenTrigger::IsActiveInEncounter()
 {
-    if (!IsInEncounter(bot, Aq40Encounter::Viscidus) || PlayerbotAI::IsHeal(bot) || !IsFreeToActAfterHeals())
+    if (!IsInEncounter(bot, Aq40Encounter::Viscidus) || PlayerbotAI::IsHeal(bot) || !IsFreeToAct())
         return false;
     Unit* target = GetAssignedTarget(botAI);
     return target && target->HasAura(Id(Aq40Spells::SPELL_VISCIDUS_FREEZE)) && bot->IsWithinMeleeRange(target) &&
@@ -133,7 +125,7 @@ bool ViscidusIsFrozenTrigger::IsActiveInEncounter()
 
 bool PrincessHuhuranFrenziedTrigger::IsActiveInEncounter()
 {
-    if (!IsInEncounter(bot, Aq40Encounter::Huhuran) || bot->getClass() != CLASS_HUNTER || !IsFreeToActAfterHeals())
+    if (!IsInEncounter(bot, Aq40Encounter::Huhuran) || bot->getClass() != CLASS_HUNTER || !IsFreeToAct())
         return false;
     Creature* boss = GetBoss(bot);
     return boss && boss->HasAura(Id(Aq40Spells::SPELL_FRENZY));
@@ -144,7 +136,7 @@ bool PrincessHuhuranWyvernStingOnTankTrigger::IsActiveInEncounter()
     uint8 const botClass = bot->getClass();
     if (botClass != CLASS_PALADIN && botClass != CLASS_DRUID && botClass != CLASS_SHAMAN)
         return false;
-    return IsInEncounter(bot, Aq40Encounter::Huhuran) && IsFreeToActAfterHeals() && GetWyvernStungTank(bot);
+    return IsInEncounter(bot, Aq40Encounter::Huhuran) && IsFreeToAct() && GetWyvernStungTank(bot);
 }
 
 // Twin Emperors
@@ -181,7 +173,7 @@ bool TwinEmperorsHealerShouldFocusEmperorTargetsTrigger::IsActiveInEncounter()
 
 bool TwinEmperorsWarlockPetActiveTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_WARLOCK || !IsInEncounter(bot, Aq40Encounter::Twins) || !IsFreeToActAfterHeals())
+    if (bot->getClass() != CLASS_WARLOCK || !IsInEncounter(bot, Aq40Encounter::Twins) || !IsFreeToAct())
         return false;
     Pet* pet = bot->GetPet();
     return pet && pet->GetReactState() != REACT_PASSIVE;
@@ -189,7 +181,7 @@ bool TwinEmperorsWarlockPetActiveTrigger::IsActiveInEncounter()
 
 bool TwinEmperorsWarlockWaitingTrigger::IsActiveInEncounter()
 {
-    if (!IsTwinLock(bot, bot) || !IsFreeToActAfterHeals() || GetAssignedTarget(botAI))
+    if (!IsTwinLock(bot, bot) || !IsFreeToAct() || GetAssignedTarget(botAI))
         return false;
     // Between his phases a side's warlock refills mana with Life Tap (never while tanking: a phase costs ~4000 mana)
     // and puts up Shadow Ward before the teleport window.
@@ -200,7 +192,7 @@ bool TwinEmperorsWarlockWaitingTrigger::IsActiveInEncounter()
 
 bool EmperorVeklorHeldByWrongPlayerTrigger::IsActiveInEncounter()
 {
-    if (!IsInEncounter(bot, Aq40Encounter::Twins) || !IsTwinWaiter(bot, bot) || !IsFreeToActAfterHeals() ||
+    if (!IsInEncounter(bot, Aq40Encounter::Twins) || !IsTwinWaiter(bot, bot) || !IsFreeToAct() ||
         TauntSpell(bot).empty())
         return false;
     // The warrior waiting beside a warlock-held Vek'lor peels him off anyone else (the puller at the opening, a
@@ -214,7 +206,7 @@ bool EmperorVeklorHeldByWrongPlayerTrigger::IsActiveInEncounter()
 
 bool EmperorVeklorShouldBeTankedByWarlockTrigger::IsActiveInEncounter()
 {
-    if (!IsTwinLock(bot, bot) || !IsFreeToActAfterHeals())
+    if (!IsTwinLock(bot, bot) || !IsFreeToAct())
         return false;
     Unit* target = GetAssignedTarget(botAI);
     return target && target->GetEntry() == Id(Aq40Npcs::NPC_VEKLOR);
@@ -235,7 +227,7 @@ bool EmperorVeklorWarlockTankLowHealthTrigger::IsActiveInEncounter()
 bool EmperorVeklorTankInShoutRangeTrigger::IsActiveInEncounter()
 {
     if ((bot->getClass() != CLASS_WARRIOR && bot->getClass() != CLASS_DRUID) ||
-        !IsInEncounter(bot, Aq40Encounter::Twins) || !IsFreeToActAfterHeals())
+        !IsInEncounter(bot, Aq40Encounter::Twins) || !IsFreeToAct())
         return false;
     // Vek'lor's tank waits outside melee, so Taunt alone only ties the puller's threat and he drifts back once it
     // fades. The shout reaches him from the waiting spot and builds a margin.
@@ -265,7 +257,7 @@ bool CthunHealersShouldDamageCthunTrigger::IsActiveInEncounter()
 {
     // While C'Thun is Weakened there is no healing to be done, so healers damage him too.
     if (!IsInEncounter(bot, Aq40Encounter::Cthun) || !PlayerbotAI::IsHeal(bot) || InStomach(bot) ||
-        !IsFreeToActAfterHeals())
+        !IsFreeToAct())
         return false;
     Creature* body = GetCthunBody(bot);
     return body && IsCthunWeakened(bot) && IsAllowedDamage(bot, body);
@@ -276,7 +268,7 @@ bool CthunHealersShouldDamageFleshTentaclesTrigger::IsActiveInEncounter()
     // A swallowed healer damages the Flesh Tentacles: its heals can't reach the raid ~170 yd above. Heals on anyone
     // inside still rank above this.
     if (!IsInEncounter(bot, Aq40Encounter::Cthun) || !PlayerbotAI::IsHeal(bot) || !InStomach(bot) ||
-        StomachExitNeeded(bot) || !IsFreeToActAfterHeals())
+        StomachExitNeeded(bot) || !IsFreeToAct())
         return false;
     for (Creature* flesh : GetUnits(bot, Id(Aq40Npcs::NPC_FLESH_TENTACLE)))
         if (IsAllowedDamage(bot, flesh))

@@ -32,8 +32,6 @@ protected:
     virtual bool IsActiveInEncounter() = 0;
     // The bot is free to act: not casting and not escaping a hazard.
     bool IsFreeToAct();
-    // As above, and a healer has nobody to save first.
-    bool IsFreeToActAfterHeals();
 };
 
 class Aq40NoEncounterInProgressTrigger : public Trigger
@@ -89,8 +87,9 @@ private:
 class Aq40FormationTrigger : public Aq40EncounterTrigger
 {
 public:
-    Aq40FormationTrigger(PlayerbotAI* botAI, std::string const& name, Aq40Helpers::Aq40GoalFn formation)
-        : Aq40EncounterTrigger(botAI, name), _formation(formation)
+    Aq40FormationTrigger(PlayerbotAI* botAI, std::string const& name, Aq40Helpers::Aq40GoalFn formation,
+                         int32 checkInterval = 1)
+        : Aq40EncounterTrigger(botAI, name, checkInterval), _formation(formation)
     {
     }
 
@@ -136,34 +135,6 @@ public:
 
 protected:
     bool IsActiveInEncounter() override;
-};
-
-class Aq40HealerShouldStopForUrgentHealTrigger : public Aq40EncounterTrigger
-{
-public:
-    Aq40HealerShouldStopForUrgentHealTrigger(PlayerbotAI* botAI)
-        : Aq40EncounterTrigger(botAI, "aq40 healer should stop for urgent heal")
-    {
-    }
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-// Shared by every interrupt: the finder returns the unit casting the spell to stop.
-class Aq40UnitCastingTrigger : public Aq40EncounterTrigger
-{
-public:
-    Aq40UnitCastingTrigger(PlayerbotAI* botAI, std::string const& name, Aq40Helpers::Aq40UnitFinder finder)
-        : Aq40EncounterTrigger(botAI, name), _finder(finder)
-    {
-    }
-
-protected:
-    bool IsActiveInEncounter() override;
-
-private:
-    Aq40Helpers::Aq40UnitFinder const _finder;
 };
 
 // Out of combat: shared by the walks to a pre-pull spot.

@@ -49,17 +49,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class Aq40UrgentHealHoldMovementMultiplier : public Aq40EncounterMultiplier
-{
-public:
-    Aq40UrgentHealHoldMovementMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "aq40 urgent heal hold movement")
-    {
-    }
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
 
 class Aq40DontAttackMindControlledMultiplier : public Aq40EncounterMultiplier
 {

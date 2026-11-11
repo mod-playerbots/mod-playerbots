@@ -540,32 +540,14 @@ SpellInfo const* SpellFor(PlayerbotAI* botAI, std::string const& name)
     return sSpellMgr->GetSpellInfo(id);
 }
 
-bool TryCast(PlayerbotAI* botAI, std::string const& name, Unit* target, bool interruptCast)
+bool TryCast(PlayerbotAI* botAI, std::string const& name, Unit* target)
 {
     Player* player = botAI->GetBot();
     SpellInfo const* spell = SpellFor(botAI, name);
-    if (!spell || !target || (player->HasUnitState(UNIT_STATE_CASTING) && !interruptCast) ||
-        !player->IsWithinLOSInMap(target) ||
+    if (!spell || !target || player->HasUnitState(UNIT_STATE_CASTING) || !player->IsWithinLOSInMap(target) ||
         player->GetDistance(target) > spell->GetMaxRange(spell->IsPositive(), player) ||
         target->IsImmunedToSpell(spell))
         return false;
-    if (interruptCast)
-    {
-        if (!spell->HasEffect(SPELL_EFFECT_INTERRUPT_CAST) || !player->HasSpell(spell->Id) ||
-            player->HasSpellCooldown(spell->Id) || player->HasUnitState(UNIT_STATE_LOST_CONTROL))
-            return false;
-        if (player->HasUnitState(UNIT_STATE_CASTING))
-        {
-            // Check readiness before sacrificing an in-progress heal or Frostbolt to Counterspell.
-            Spell check(player, spell, TRIGGERED_IGNORE_CAST_IN_PROGRESS);
-            check.m_targets.SetUnitTarget(target);
-            SpellCastResult result = check.CheckCast(true);
-            if (result != SPELL_CAST_OK && result != SPELL_FAILED_NOT_INFRONT &&
-                result != SPELL_FAILED_UNIT_NOT_INFRONT)
-                return false;
-            player->CastStop();
-        }
-    }
     if (player->isMoving() && spell->CalcCastTime())
         StopMoving(botAI);
     return botAI->CanCastSpell(spell->Id, target) && botAI->CastSpell(spell->Id, target);
@@ -788,40 +770,6 @@ Unit* GetAssignedTarget(PlayerbotAI* botAI)
 {
     ObjectGuid guid = botAI->GetAiObjectContext()->GetValue<ObjectGuid>("aq40 assigned target")->Get();
     return guid ? botAI->GetUnit(guid) : nullptr;
-}
-
-bool UrgentHeal(PlayerbotAI* botAI)
-{
-    Player* bot = botAI->GetBot();
-    if (!PlayerbotAI::IsHeal(bot))
-        return false;
-    Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("party member to heal")->Get();
-    // Twin Emperors tanks lose ~40% in a few seconds, so healers stop moving to heal much earlier there.
-    float const threshold = IsInEncounter(bot, Aq40Encounter::Twins) ? 75.0f : 40.0f;
-    return target && target->IsAlive() && target->GetHealthPct() < threshold && target->GetMap() == bot->GetMap() &&
-           bot->GetDistance(target) < botAI->GetRange("heal") - 2.0f && bot->IsWithinLOSInMap(target);
-}
-
-bool TryInterrupt(PlayerbotAI* botAI, Unit* unit, bool urgent, bool kicks, bool stuns)
-{
-    // No Earth Shock: since 3.0 it no longer interrupts (Wind Shear does), so it would only do damage.
-    static char const* const kickSpells[] = {"kick",         "pummel",      "shield bash",   "wind shear",
-                                             "counterspell", "mind freeze", "silencing shot"};
-    // C'Thun's tentacles can be stunned (only the Eye and C'Thun are immune): a stun also stops the Giant Eye's
-    // chaining beam, which it recasts every 2.1 s.
-    static char const* const stunSpells[] = {"hammer of justice", "concussion blow", "bash",
-                                             "war stomp",         "kidney shot",     "gouge"};
-    if (!unit)
-        return false;
-    if (kicks)
-        for (char const* name : kickSpells)
-            if (TryCast(botAI, name, unit, urgent))
-                return true;
-    if (stuns)
-        for (char const* name : stunSpells)
-            if (TryCast(botAI, name, unit))
-                return true;
-    return false;
 }
 
 // Mechanic tracker
@@ -1103,27 +1051,6 @@ Player* GetMindControlledMember(Player* bot)
             if (member->IsAlive() && member->GetMap() == bot->GetMap() && HasTrueFulfillment(member) &&
                 !member->HasAuraType(SPELL_AURA_MOD_CONFUSE) && !member->HasAuraType(SPELL_AURA_MOD_STUN))
                 return member;
-    return nullptr;
-}
-
-Creature* GetSkeramCastingArcaneExplosion(Player* bot)
-{
-    for (Creature* unit : GetUnits(bot, Id(Aq40Npcs::NPC_SKERAM)))
-        if (Spell* spell = unit->GetCurrentSpell(CURRENT_GENERIC_SPELL))
-            if (spell->m_spellInfo->Id == Id(Aq40Spells::SPELL_ARCANE_EXPLOSION) &&
-                spell->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE &&
-                (spell->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT))
-                return unit;
-    return nullptr;
-}
-
-// Bug Trio
-
-Creature* GetCastingYauj(Player* bot)
-{
-    for (Creature* unit : GetUnits(bot, Id(Aq40Npcs::NPC_YAUJ)))
-        if (unit->GetCurrentSpell(CURRENT_GENERIC_SPELL))
-            return unit;
     return nullptr;
 }
 
@@ -1772,27 +1699,6 @@ bool CthunMeleeBurn(PlayerbotAI* botAI)
            target->HasAura(Id(Aq40Spells::SPELL_PURPLE_COLORATION));
 }
 
-Creature* GetCastingEyeTentacle(Player* bot)
-{
-    if (InStomach(bot))
-        return nullptr;
-    // Eye Tentacles channel Mind Flay (750 a second for 10 s); kicks stop channels too.
-    for (Creature* unit : GetUnits(bot, Id(Aq40Npcs::NPC_EYE_TENTACLE)))
-        if (unit->GetCurrentSpell(CURRENT_GENERIC_SPELL) || unit->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-            return unit;
-    return nullptr;
-}
-
-Creature* GetCastingGiantEyeTentacle(Player* bot)
-{
-    if (InStomach(bot) || HasTrueFulfillment(bot))
-        return nullptr;
-    for (Creature* unit : GetUnits(bot, Id(Aq40Npcs::NPC_GIANT_EYE_TENTACLE)))
-        if (unit->GetCurrentSpell(CURRENT_GENERIC_SPELL))
-            return unit;
-    return nullptr;
-}
-
 // Hazard escapes
 
 bool GetStomachExitGoal(PlayerbotAI* botAI, Position& goal)
@@ -2379,8 +2285,29 @@ bool GetHuhuranSpreadGoal(PlayerbotAI* botAI, Position& goal)
         center += AQ40_PI;
     float angle = center - span + span * 2.0f * (float(slot) + 0.5f) / float(std::max(slots, 1u));
     float radius = boss->GetCombatReach() + (ring == 0 ? 20.0f : 27.0f);
-    goal = Around(boss, radius, angle);
-    return bot->GetExactDist2d(goal) > 5.0f;
+    // Tanked near the cave edge, part of the ring lands on the wall: bots climbed it chasing a slot at the boss's
+    // height. Take the nearest variant whose floor is at the boss's level and that sees her; else hold position.
+    bool found = false;
+    for (float pull : {0.0f, 4.0f, 8.0f, 12.0f})
+    {
+        for (float turn : {0.0f, 0.2f, -0.2f, 0.4f, -0.4f})
+        {
+            goal = Around(boss, radius - pull, angle + turn);
+            bot->UpdateAllowedPositionZ(goal.GetPositionX(), goal.GetPositionY(), goal.m_positionZ);
+            if (std::abs(goal.GetPositionZ() - boss->GetPositionZ()) < HUHURAN_SPREAD_MAX_RISE &&
+                boss->IsWithinLOS(goal.GetPositionX(), goal.GetPositionY(), goal.GetPositionZ()))
+            {
+                found = true;
+                break;
+            }
+        }
+        if (found)
+            break;
+    }
+    if (!found)
+        return false;
+    return bot->GetExactDist2d(goal) > 5.0f ||
+           std::abs(bot->GetPositionZ() - goal.GetPositionZ()) > HUHURAN_SPREAD_MAX_RISE;
 }
 
 bool GetViscidusRingGoal(PlayerbotAI* botAI, Position& goal)

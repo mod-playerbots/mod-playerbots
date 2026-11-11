@@ -126,31 +126,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// Stops the healer and returns false, so the queued healing spell can run in this same engine update.
-class Aq40StopMovingForUrgentHealAction : public Action, public Aq40ActionTag
-{
-public:
-    Aq40StopMovingForUrgentHealAction(PlayerbotAI* botAI) : Action(botAI, "aq40 stop moving for urgent heal") {}
-    bool Execute(Event event) override;
-};
-
-class Aq40InterruptAction : public Action, public Aq40ActionTag
-{
-public:
-    Aq40InterruptAction(PlayerbotAI* botAI, std::string const& name, Aq40Helpers::Aq40UnitFinder finder, bool urgent,
-                        bool kicks, bool stuns)
-        : Action(botAI, name), _finder(finder), _urgent(urgent), _kicks(kicks), _stuns(stuns)
-    {
-    }
-    bool Execute(Event event) override;
-
-private:
-    Aq40Helpers::Aq40UnitFinder const _finder;
-    bool const _urgent;
-    bool const _kicks;
-    bool const _stuns;
-};
-
 // The Prophet Skeram
 
 class TheProphetSkeramCrowdControlMindControlledAction : public Action, public Aq40ActionTag

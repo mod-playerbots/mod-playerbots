@@ -21,8 +21,6 @@ public:
         creators["aq40 should track encounter"] = &RaidAq40TriggerContext::aq40_should_track_encounter;
         creators["aq40 should assign add tanks"] = &RaidAq40TriggerContext::aq40_should_assign_add_tanks;
         creators["aq40 stuck midair after knockback"] = &RaidAq40TriggerContext::aq40_stuck_midair_after_knockback;
-        creators["aq40 healer should stop for urgent heal"] =
-            &RaidAq40TriggerContext::aq40_healer_should_stop_for_urgent_heal;
         creators["aq40 tank should taunt assigned target"] =
             &RaidAq40TriggerContext::aq40_tank_should_taunt_assigned_target;
         creators["aq40 no assigned target"] = &RaidAq40TriggerContext::aq40_no_assigned_target;
@@ -31,8 +29,6 @@ public:
         // The Prophet Skeram
         creators["the prophet skeram should assign platforms"] =
             &RaidAq40TriggerContext::the_prophet_skeram_should_assign_platforms;
-        creators["the prophet skeram casting arcane explosion"] =
-            &RaidAq40TriggerContext::the_prophet_skeram_casting_arcane_explosion;
         creators["the prophet skeram raid member mind controlled"] =
             &RaidAq40TriggerContext::the_prophet_skeram_raid_member_mind_controlled;
         creators["the prophet skeram should move to platform"] =
@@ -42,7 +38,6 @@ public:
 
         // Bug Trio
         creators["bug trio poison cloud nearby"] = &RaidAq40TriggerContext::bug_trio_poison_cloud_nearby;
-        creators["princess yauj casting"] = &RaidAq40TriggerContext::princess_yauj_casting;
         creators["bug trio bosses too close"] = &RaidAq40TriggerContext::bug_trio_bosses_too_close;
         creators["bug trio should assign dps priority"] = &RaidAq40TriggerContext::bug_trio_should_assign_dps_priority;
 
@@ -134,8 +129,6 @@ public:
         creators["c'thun on spit-out circle"] = &RaidAq40TriggerContext::c_thun_on_spit_out_circle;
         creators["c'thun should leave stomach"] = &RaidAq40TriggerContext::c_thun_should_leave_stomach;
         creators["eye of c'thun dark glare incoming"] = &RaidAq40TriggerContext::eye_of_c_thun_dark_glare_incoming;
-        creators["c'thun giant eye tentacle casting"] = &RaidAq40TriggerContext::c_thun_giant_eye_tentacle_casting;
-        creators["c'thun eye tentacle casting"] = &RaidAq40TriggerContext::c_thun_eye_tentacle_casting;
         creators["eye of c'thun puller holding"] = &RaidAq40TriggerContext::eye_of_c_thun_puller_holding;
         creators["eye of c'thun out of assigned spot"] = &RaidAq40TriggerContext::eye_of_c_thun_out_of_assigned_spot;
         creators["c'thun out of stack"] = &RaidAq40TriggerContext::c_thun_out_of_stack;
@@ -162,10 +155,6 @@ private:
         return new Aq40TrackerTrigger(botAI, "aq40 should assign add tanks", Aq40Helpers::Aq40Encounter::None);
     }
     static Trigger* aq40_stuck_midair_after_knockback(PlayerbotAI* botAI) { return new Aq40StuckMidairTrigger(botAI); }
-    static Trigger* aq40_healer_should_stop_for_urgent_heal(PlayerbotAI* botAI)
-    {
-        return new Aq40HealerShouldStopForUrgentHealTrigger(botAI);
-    }
     static Trigger* aq40_tank_should_taunt_assigned_target(PlayerbotAI* botAI)
     {
         return new Aq40TankShouldTauntTrigger(botAI);
@@ -173,17 +162,13 @@ private:
     static Trigger* aq40_no_assigned_target(PlayerbotAI* botAI) { return new Aq40NoAssignedTargetTrigger(botAI); }
     static Trigger* aq40_ranged_should_hold_boss_range(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "aq40 ranged should hold boss range", &Aq40Helpers::GetBossRangeGoal);
+        return new Aq40FormationTrigger(botAI, "aq40 ranged should hold boss range", &Aq40Helpers::GetBossRangeGoal,
+                                        Aq40Helpers::POSITION_INTERVAL_MS);
     }
     static Trigger* the_prophet_skeram_should_assign_platforms(PlayerbotAI* botAI)
     {
         return new Aq40TrackerTrigger(botAI, "the prophet skeram should assign platforms",
                                       Aq40Helpers::Aq40Encounter::Skeram);
-    }
-    static Trigger* the_prophet_skeram_casting_arcane_explosion(PlayerbotAI* botAI)
-    {
-        return new Aq40UnitCastingTrigger(botAI, "the prophet skeram casting arcane explosion",
-                                          &Aq40Helpers::GetSkeramCastingArcaneExplosion);
     }
     static Trigger* the_prophet_skeram_raid_member_mind_controlled(PlayerbotAI* botAI)
     {
@@ -203,13 +188,10 @@ private:
     {
         return new Aq40HazardTrigger(botAI, "bug trio poison cloud nearby", &Aq40Helpers::GetPoisonCloudEscapeGoal);
     }
-    static Trigger* princess_yauj_casting(PlayerbotAI* botAI)
-    {
-        return new Aq40UnitCastingTrigger(botAI, "princess yauj casting", &Aq40Helpers::GetCastingYauj);
-    }
     static Trigger* bug_trio_bosses_too_close(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "bug trio bosses too close", &Aq40Helpers::GetTrioTankGoal);
+        return new Aq40FormationTrigger(botAI, "bug trio bosses too close", &Aq40Helpers::GetTrioTankGoal,
+                                        Aq40Helpers::POSITION_INTERVAL_MS);
     }
     static Trigger* bug_trio_should_assign_dps_priority(PlayerbotAI* botAI)
     {
@@ -249,7 +231,8 @@ private:
     }
     static Trigger* viscidus_ranged_should_hold_ring(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "viscidus ranged should hold ring", &Aq40Helpers::GetViscidusRingGoal);
+        return new Aq40FormationTrigger(botAI, "viscidus ranged should hold ring", &Aq40Helpers::GetViscidusRingGoal,
+                                        Aq40Helpers::POSITION_INTERVAL_MS);
     }
     static Trigger* viscidus_should_assign_dps_priority(PlayerbotAI* botAI)
     {
@@ -267,12 +250,13 @@ private:
     }
     static Trigger* princess_huhuran_soaker_too_far(PlayerbotAI* botAI)
     {
-        return new Aq40FormationTrigger(botAI, "princess huhuran soaker too far", &Aq40Helpers::GetHuhuranSoakGoal);
+        return new Aq40FormationTrigger(botAI, "princess huhuran soaker too far", &Aq40Helpers::GetHuhuranSoakGoal,
+                                        Aq40Helpers::POSITION_INTERVAL_MS);
     }
     static Trigger* princess_huhuran_ranged_should_spread(PlayerbotAI* botAI)
     {
         return new Aq40FormationTrigger(botAI, "princess huhuran ranged should spread",
-                                        &Aq40Helpers::GetHuhuranSpreadGoal);
+                                        &Aq40Helpers::GetHuhuranSpreadGoal, Aq40Helpers::POSITION_INTERVAL_MS);
     }
     static Trigger* princess_huhuran_frenzied(PlayerbotAI* botAI) { return new PrincessHuhuranFrenziedTrigger(botAI); }
     static Trigger* princess_huhuran_wyvern_sting_on_tank(PlayerbotAI* botAI)
@@ -431,15 +415,6 @@ private:
     static Trigger* eye_of_c_thun_dark_glare_incoming(PlayerbotAI* botAI)
     {
         return new Aq40HazardTrigger(botAI, "eye of c'thun dark glare incoming", &Aq40Helpers::GetDarkGlareEscapeGoal);
-    }
-    static Trigger* c_thun_giant_eye_tentacle_casting(PlayerbotAI* botAI)
-    {
-        return new Aq40UnitCastingTrigger(botAI, "c'thun giant eye tentacle casting",
-                                          &Aq40Helpers::GetCastingGiantEyeTentacle);
-    }
-    static Trigger* c_thun_eye_tentacle_casting(PlayerbotAI* botAI)
-    {
-        return new Aq40UnitCastingTrigger(botAI, "c'thun eye tentacle casting", &Aq40Helpers::GetCastingEyeTentacle);
     }
     static Trigger* eye_of_c_thun_puller_holding(PlayerbotAI* botAI)
     {

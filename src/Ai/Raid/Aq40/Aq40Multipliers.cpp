@@ -67,13 +67,6 @@ float Aq40HazardEscapeMultiplier::GetValueInEncounter(Action* action)
     return HasHazard(botAI) ? 0.0f : 1.0f;
 }
 
-float Aq40UrgentHealHoldMovementMultiplier::GetValueInEncounter(Action* action)
-{
-    if (IsOwnAction(action) || !dynamic_cast<MovementAction*>(action))
-        return 1.0f;
-    return UrgentHeal(botAI) ? 0.0f : 1.0f;
-}
-
 float Aq40DontAttackMindControlledMultiplier::GetValueInEncounter(Action* action)
 {
     // Only the explicit nonlethal crowd-control action may target raid members.

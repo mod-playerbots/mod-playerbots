@@ -232,17 +232,6 @@ bool Aq40TankTauntAssignedTargetAction::Execute(Event /*event*/)
     return target && !taunt.empty() && TryCast(botAI, taunt, target);
 }
 
-bool Aq40StopMovingForUrgentHealAction::Execute(Event /*event*/)
-{
-    StopMoving(botAI);
-    return false;
-}
-
-bool Aq40InterruptAction::Execute(Event /*event*/)
-{
-    return TryInterrupt(botAI, _finder(bot), _urgent, _kicks, _stuns);
-}
-
 // The Prophet Skeram
 
 bool TheProphetSkeramCrowdControlMindControlledAction::Execute(Event /*event*/)

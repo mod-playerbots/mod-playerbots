@@ -92,10 +92,8 @@ The marks must be set by the raid leader or an assistant.
 ### Phase 2 — C'Thun
 - **The stack:** everyone gathers about 14 yd due south of C'Thun (−8592.8, 1986.2), a tight group about 5 yd
   across, outside his 7 yd center circle.
-- **Giant Eye Tentacle** (highest priority): interrupted or stunned the moment it starts casting, by whoever has a
-  kick, pummel, shield bash, wind shear, counterspell, mind freeze, silencing shot, hammer of justice, concussion blow,
-  bash, war stomp, kidney shot or gouge ready. If one spawns more than 20 yd from the stack, the whole stack moves
-  next to it and kills it there.
+- **Giant Eye Tentacle** (highest priority): killed first. If one spawns more than 20 yd from the stack, the whole
+  stack moves next to it and kills it there.
 - **Eye Tentacles:** two ranged bots (hunters first, then mages, then other ranged) take the Eye Tentacles more than
   30 yd from the stack, out of reach for casters standing in it, even during Weakened windows. They step out just far
   enough to reach each one and return when it dies; everyone else handles the near ones from the stack.
@@ -130,8 +128,7 @@ are needed except Skull on the Bug Trio.
   Fire + Arcane). Casters don't cast those schools at it.
 - **The Prophet Skeram:**
   - Each tank takes one of the three platforms. When Skeram splits, each image is tanked on its own platform.
-  - The raid is split across the platforms by role, so every platform gets healers, mages and rogues for interrupts.
-  - Arcane Explosion is interrupted.
+  - The raid is split across the platforms by role, so every platform gets healers, mages and rogues.
   - Mind-controlled raid members are crowd-controlled (Polymorph, Hammer of Justice or Cyclone) instead of attacked.
   - Non-tanks don't use area damage.
 - **Bug Trio:**

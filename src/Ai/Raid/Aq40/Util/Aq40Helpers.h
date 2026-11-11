@@ -106,7 +106,6 @@ enum class Aq40Spells : uint32
 {
     // The Prophet Skeram
     SPELL_TRUE_FULFILLMENT = 785,
-    SPELL_ARCANE_EXPLOSION = 26192,
     SPELL_SKERAM_BLINK_1 = 4801,
     SPELL_SKERAM_BLINK_2 = 8195,
     SPELL_SKERAM_BLINK_3 = 20449,
@@ -160,6 +159,9 @@ inline constexpr float AQ40_PI = 3.14159265358979323846f;
 inline constexpr float ENCOUNTER_SCAN_DISTANCE = 220.0f;
 inline constexpr uint32 TRACKER_INTERVAL_MS = 250;
 inline constexpr uint32 BOT_CACHE_INTERVAL_MS = 100;
+// Positioning that shares the bot with its rotation rechecks at this pace, so an unreachable spot can't hold the bot
+// every tick.
+inline constexpr uint32 POSITION_INTERVAL_MS = 500;
 
 // The Prophet Skeram
 
@@ -200,6 +202,8 @@ inline constexpr uint32 HUHURAN_SWAP_STACKS = 5;
 // Dispel damage is exactly 3,000 in this server's aura script.
 inline constexpr uint32 WYVERN_STING_SAFE_HEALTH = 4500;
 inline constexpr float HUHURAN_COOLDOWN_HEALTH_PCT = 30.0f;
+// A spread slot whose floor sits more than this above or below Huhuran is on the cave wall.
+inline constexpr float HUHURAN_SPREAD_MAX_RISE = 3.0f;
 
 // Twin Emperors
 
@@ -375,7 +379,6 @@ struct Aq40Goal
 };
 
 using Aq40GoalFn = bool (*)(PlayerbotAI* botAI, Position& goal);
-using Aq40UnitFinder = Creature* (*)(Player* bot);
 
 // General
 
@@ -393,7 +396,7 @@ bool Passive(Unit* unit);
 void StopMoving(PlayerbotAI* botAI);
 void StopAttacking(Player* player);
 SpellInfo const* SpellFor(PlayerbotAI* botAI, std::string const& name);
-bool TryCast(PlayerbotAI* botAI, std::string const& name, Unit* target, bool interruptCast = false);
+bool TryCast(PlayerbotAI* botAI, std::string const& name, Unit* target);
 std::string TauntSpell(Player* player);
 Aq40BotCache& BotCache(PlayerbotAI* botAI);
 
@@ -407,8 +410,6 @@ bool IsHeld(Player* bot, Unit* unit);
 bool IsAllowedDamage(Player* bot, Unit* unit);
 Unit* ComputeAssignedTarget(PlayerbotAI* botAI);
 Unit* GetAssignedTarget(PlayerbotAI* botAI);
-bool UrgentHeal(PlayerbotAI* botAI);
-bool TryInterrupt(PlayerbotAI* botAI, Unit* unit, bool urgent, bool kicks, bool stuns);
 
 // Mechanic tracker
 
@@ -423,11 +424,6 @@ void SwapHuhuranTanks(Player* bot);
 void AssignSkeramPlatforms(Player* bot);
 bool GetSkeramPlatform(PlayerbotAI* botAI, Position& platform);
 Player* GetMindControlledMember(Player* bot);
-Creature* GetSkeramCastingArcaneExplosion(Player* bot);
-
-// Bug Trio
-
-Creature* GetCastingYauj(Player* bot);
 
 // Princess Huhuran
 
@@ -470,8 +466,6 @@ bool IsCthunPhase2(Player* bot);
 bool IsCthunWeakened(Player* bot);
 bool IsCthunTentacleKiller(Player* bot);
 bool CthunMeleeBurn(PlayerbotAI* botAI);
-Creature* GetCastingEyeTentacle(Player* bot);
-Creature* GetCastingGiantEyeTentacle(Player* bot);
 
 // Hazard escapes, cheapest first. Each returns where the bot should step to.
 

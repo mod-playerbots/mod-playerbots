@@ -21,7 +21,6 @@ public:
         creators["aq40 track encounter"] = &RaidAq40ActionContext::aq40_track_encounter;
         creators["aq40 assign add tanks"] = &RaidAq40ActionContext::aq40_assign_add_tanks;
         creators["aq40 drop to ground"] = &RaidAq40ActionContext::aq40_drop_to_ground;
-        creators["aq40 stop moving for urgent heal"] = &RaidAq40ActionContext::aq40_stop_moving_for_urgent_heal;
         creators["aq40 tank taunt assigned target"] = &RaidAq40ActionContext::aq40_tank_taunt_assigned_target;
         creators["aq40 stop attacking without assigned target"] =
             &RaidAq40ActionContext::aq40_stop_attacking_without_assigned_target;
@@ -29,8 +28,6 @@ public:
 
         // The Prophet Skeram
         creators["the prophet skeram assign platforms"] = &RaidAq40ActionContext::the_prophet_skeram_assign_platforms;
-        creators["the prophet skeram interrupt arcane explosion"] =
-            &RaidAq40ActionContext::the_prophet_skeram_interrupt_arcane_explosion;
         creators["the prophet skeram crowd control mind controlled"] =
             &RaidAq40ActionContext::the_prophet_skeram_crowd_control_mind_controlled;
         creators["the prophet skeram move to assigned platform"] =
@@ -40,7 +37,6 @@ public:
 
         // Bug Trio
         creators["bug trio move away from poison cloud"] = &RaidAq40ActionContext::bug_trio_move_away_from_poison_cloud;
-        creators["princess yauj interrupt heal"] = &RaidAq40ActionContext::princess_yauj_interrupt_heal;
         creators["bug trio tanks separate bosses"] = &RaidAq40ActionContext::bug_trio_tanks_separate_bosses;
         creators["bug trio assign dps priority"] = &RaidAq40ActionContext::bug_trio_assign_dps_priority;
 
@@ -131,9 +127,6 @@ public:
         creators["c'thun send spit-out trigger"] = &RaidAq40ActionContext::c_thun_send_spit_out_trigger;
         creators["c'thun exit stomach"] = &RaidAq40ActionContext::c_thun_exit_stomach;
         creators["eye of c'thun dodge dark glare"] = &RaidAq40ActionContext::eye_of_c_thun_dodge_dark_glare;
-        creators["c'thun interrupt giant eye tentacle"] = &RaidAq40ActionContext::c_thun_interrupt_giant_eye_tentacle;
-        creators["c'thun stun giant eye tentacle"] = &RaidAq40ActionContext::c_thun_stun_giant_eye_tentacle;
-        creators["c'thun interrupt eye tentacle"] = &RaidAq40ActionContext::c_thun_interrupt_eye_tentacle;
         creators["eye of c'thun puller hold pull spot"] = &RaidAq40ActionContext::eye_of_c_thun_puller_hold_pull_spot;
         creators["eye of c'thun move to assigned spot"] = &RaidAq40ActionContext::eye_of_c_thun_move_to_assigned_spot;
         creators["c'thun move to stack"] = &RaidAq40ActionContext::c_thun_move_to_stack;
@@ -157,10 +150,6 @@ private:
         return new Aq40TrackerAction(botAI, "aq40 assign add tanks", &Aq40Helpers::AssignAddTanks);
     }
     static Action* aq40_drop_to_ground(PlayerbotAI* botAI) { return new Aq40DropToGroundAction(botAI); }
-    static Action* aq40_stop_moving_for_urgent_heal(PlayerbotAI* botAI)
-    {
-        return new Aq40StopMovingForUrgentHealAction(botAI);
-    }
     static Action* aq40_tank_taunt_assigned_target(PlayerbotAI* botAI)
     {
         return new Aq40TankTauntAssignedTargetAction(botAI);
@@ -176,11 +165,6 @@ private:
     static Action* the_prophet_skeram_assign_platforms(PlayerbotAI* botAI)
     {
         return new Aq40TrackerAction(botAI, "the prophet skeram assign platforms", &Aq40Helpers::AssignSkeramPlatforms);
-    }
-    static Action* the_prophet_skeram_interrupt_arcane_explosion(PlayerbotAI* botAI)
-    {
-        return new Aq40InterruptAction(botAI, "the prophet skeram interrupt arcane explosion",
-                                       &Aq40Helpers::GetSkeramCastingArcaneExplosion, true, true, false);
     }
     static Action* the_prophet_skeram_crowd_control_mind_controlled(PlayerbotAI* botAI)
     {
@@ -199,11 +183,6 @@ private:
     {
         return new Aq40EscapeHazardAction(botAI, "bug trio move away from poison cloud",
                                           &Aq40Helpers::GetPoisonCloudEscapeGoal);
-    }
-    static Action* princess_yauj_interrupt_heal(PlayerbotAI* botAI)
-    {
-        return new Aq40InterruptAction(botAI, "princess yauj interrupt heal", &Aq40Helpers::GetCastingYauj, false, true,
-                                       false);
     }
     static Action* bug_trio_tanks_separate_bosses(PlayerbotAI* botAI)
     {
@@ -428,21 +407,6 @@ private:
     {
         return new Aq40EscapeHazardAction(botAI, "eye of c'thun dodge dark glare",
                                           &Aq40Helpers::GetDarkGlareEscapeGoal);
-    }
-    static Action* c_thun_interrupt_giant_eye_tentacle(PlayerbotAI* botAI)
-    {
-        return new Aq40InterruptAction(botAI, "c'thun interrupt giant eye tentacle",
-                                       &Aq40Helpers::GetCastingGiantEyeTentacle, true, true, false);
-    }
-    static Action* c_thun_stun_giant_eye_tentacle(PlayerbotAI* botAI)
-    {
-        return new Aq40InterruptAction(botAI, "c'thun stun giant eye tentacle",
-                                       &Aq40Helpers::GetCastingGiantEyeTentacle, false, false, true);
-    }
-    static Action* c_thun_interrupt_eye_tentacle(PlayerbotAI* botAI)
-    {
-        return new Aq40InterruptAction(botAI, "c'thun interrupt eye tentacle", &Aq40Helpers::GetCastingEyeTentacle,
-                                       true, true, true);
     }
     static Action* eye_of_c_thun_puller_hold_pull_spot(PlayerbotAI* botAI)
     {

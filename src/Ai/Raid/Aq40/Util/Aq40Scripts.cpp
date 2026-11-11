@@ -11,47 +11,6 @@
 
 using namespace Aq40Helpers;
 
-// Spell preparation wakes the encounter actions; it never casts on the bot's behalf.
-class SkeramExplosionBotScript : public AllSpellScript
-{
-public:
-    SkeramExplosionBotScript() : AllSpellScript("SkeramExplosionBotScript") {}
-
-    void OnSpellPrepare(Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo) override
-    {
-        if (!spellInfo || spellInfo->Id != Id(Aq40Spells::SPELL_ARCANE_EXPLOSION) || !caster ||
-            caster->GetMapId() != AQ40_MAP_ID || caster->GetEntry() != Id(Aq40Npcs::NPC_SKERAM))
-            return;
-        for (auto const& ref : caster->GetMap()->GetPlayers())
-        {
-            Player* player = ref.GetSource();
-            if (!player || !player->IsAlive() || HasTrueFulfillment(player))
-                continue;
-            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-            if (!botAI || !botAI->HasStrategy("aq40", BOT_STATE_COMBAT))
-                continue;
-            if (player->HasUnitState(UNIT_STATE_CASTING))
-            {
-                std::string name = player->getClass() == CLASS_MAGE     ? "counterspell"
-                                   : player->getClass() == CLASS_SHAMAN ? "wind shear"
-                                                                        : "";
-                SpellInfo const* interrupt = name.empty() ? nullptr : SpellFor(botAI, name);
-                if (!interrupt || !player->HasSpell(interrupt->Id) || player->HasSpellCooldown(interrupt->Id) ||
-                    player->HasUnitState(UNIT_STATE_LOST_CONTROL) || !player->IsWithinLOSInMap(caster) ||
-                    player->GetDistance(caster) > interrupt->GetMaxRange(false, player) ||
-                    caster->IsImmunedToSpell(interrupt))
-                    continue;
-                Spell check(player, interrupt, TRIGGERED_IGNORE_CAST_IN_PROGRESS);
-                check.m_targets.SetUnitTarget(caster);
-                if (check.CheckCast(true) != SPELL_CAST_OK)
-                    continue;
-                botAI->RequestSpellInterrupt();
-            }
-            botAI->SetNextCheckDelay(0);
-        }
-    }
-};
-
 // The emperors swap instantly, attack the nearest player 2 s later, and Arcane Burst returns 2.3 s after that. Wake
 // every AQ40 bot on the teleport so the melee under Vek'lor run and the landing tank taunts in time.
 class TwinTeleportBotScript : public AllSpellScript
@@ -81,6 +40,5 @@ public:
 
 void AddSC_Aq40BotScripts()
 {
-    new SkeramExplosionBotScript();
     new TwinTeleportBotScript();
 }
