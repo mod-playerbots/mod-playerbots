@@ -242,21 +242,21 @@ public:
     bool Execute(Event event) override;
 };
 
-class PrincessHuhuranSoakersStandNearBossAction : public Aq40MovementAction
+class PrincessHuhuranSoakersStandNearBossAction : public MovementAction, public Aq40ActionTag
 {
 public:
     PrincessHuhuranSoakersStandNearBossAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "princess huhuran soakers stand near boss")
+        : MovementAction(botAI, "princess huhuran soakers stand near boss")
     {
     }
     bool Execute(Event event) override;
 };
 
-class PrincessHuhuranSpreadRangedAndHealersAction : public Aq40MovementAction
+class PrincessHuhuranSpreadRangedAndHealersAction : public MovementAction, public Aq40ActionTag
 {
 public:
     PrincessHuhuranSpreadRangedAndHealersAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "princess huhuran spread ranged and healers")
+        : MovementAction(botAI, "princess huhuran spread ranged and healers")
     {
     }
     bool Execute(Event event) override;

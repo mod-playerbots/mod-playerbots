@@ -159,10 +159,22 @@ protected:
 };
 
 // Princess Huhuran
-class HuhuranControlWyvernStingDispelMultiplier : public Aq40EncounterMultiplier
+class PrincessHuhuranControlMovementMultiplier : public Aq40EncounterMultiplier
 {
 public:
-    HuhuranControlWyvernStingDispelMultiplier(PlayerbotAI* botAI)
+    PrincessHuhuranControlMovementMultiplier(PlayerbotAI* botAI)
+        : Aq40EncounterMultiplier(botAI, "princess huhuran control movement", Aq40Helpers::Aq40Encounter::Huhuran)
+    {
+    }
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class PrincessHuhuranControlWyvernStingDispelMultiplier : public Aq40EncounterMultiplier
+{
+public:
+    PrincessHuhuranControlWyvernStingDispelMultiplier(PlayerbotAI* botAI)
         : Aq40EncounterMultiplier(botAI, "princess huhuran control wyvern sting dispel",
                                   Aq40Helpers::Aq40Encounter::Huhuran)
     {
@@ -172,10 +184,10 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class HuhuranDelayDpsCooldownsMultiplier : public Aq40EncounterMultiplier
+class PrincessHuhuranDelayDpsCooldownsMultiplier : public Aq40EncounterMultiplier
 {
 public:
-    HuhuranDelayDpsCooldownsMultiplier(PlayerbotAI* botAI)
+    PrincessHuhuranDelayDpsCooldownsMultiplier(PlayerbotAI* botAI)
         : Aq40EncounterMultiplier(botAI, "princess huhuran delay dps cooldowns", Aq40Helpers::Aq40Encounter::Huhuran)
     {
     }

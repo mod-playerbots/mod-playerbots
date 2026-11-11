@@ -11,6 +11,8 @@
 #include "EncounterHelpers.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
+#include "HunterActions.h"
+#include "MageActions.h"
 #include "MoveSpline.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
@@ -44,6 +46,12 @@ SpellInfo const* ActionSpell(PlayerbotAI* botAI, Action* action)
 }
 
 bool IsGenericMovement(Action* action) { return dynamic_cast<MovementAction*>(action) && !IsTargetPicker(action); }
+
+bool IsRepositionAction(Player* bot, Action* action)
+{
+    return (bot->getClass() == CLASS_HUNTER && dynamic_cast<CastDisengageAction*>(action)) ||
+           (bot->getClass() == CLASS_MAGE && dynamic_cast<CastBlinkBackAction*>(action));
+}
 
 }  // namespace
 
@@ -211,11 +219,21 @@ float ViscidusFrostOnlyMultiplier::GetValueInEncounter(Action* action)
 
 // Princess Huhuran
 
-float HuhuranControlWyvernStingDispelMultiplier::GetValueInEncounter(Action* action)
+float PrincessHuhuranControlMovementMultiplier::GetValueInEncounter(Action* action)
+{
+    bool const rangedReach = dynamic_cast<ReachTargetAction*>(action) && !PlayerbotAI::IsMelee(bot);
+    if (!rangedReach && !dynamic_cast<CombatFormationMoveAction*>(action) && !dynamic_cast<FollowAction*>(action) &&
+        !dynamic_cast<FleeAction*>(action) && !IsRepositionAction(bot, action))
+        return 1.0f;
+    if (dynamic_cast<SetBehindTargetAction*>(action) || PlayerbotAI::IsTank(bot))
+        return 1.0f;
+    // Soakers and everyone at range hold a spot; the other melee stay on the boss.
+    return IsHuhuranSoaker(bot) || !PlayerbotAI::IsMelee(bot) ? 0.0f : 1.0f;
+}
+
+float PrincessHuhuranControlWyvernStingDispelMultiplier::GetValueInEncounter(Action* action)
 {
     // The dedicated selective dispel handles tanks above the damage safety margin.
-    if (IsOwnAction(action))
-        return 1.0f;
     Unit* target = action->GetTarget();
     SpellInfo const* spell = ActionSpell(botAI, action);
     if (!spell || !target || !target->HasAura(Id(Aq40Spells::SPELL_WYVERN_STING)))
@@ -226,9 +244,9 @@ float HuhuranControlWyvernStingDispelMultiplier::GetValueInEncounter(Action* act
     return 1.0f;
 }
 
-float HuhuranDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
+float PrincessHuhuranDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (IsOwnAction(action) || !IsDpsCooldownAction(bot, action))
+    if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
     Creature* boss = GetBoss(bot);
     return boss && boss->GetHealthPct() > HUHURAN_COOLDOWN_HEALTH_PCT ? 0.0f : 1.0f;

@@ -222,8 +222,9 @@ void RaidAq40Strategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new ViscidusFrostOnlyMultiplier(botAI));
 
     // Princess Huhuran
-    multipliers.push_back(new HuhuranControlWyvernStingDispelMultiplier(botAI));
-    multipliers.push_back(new HuhuranDelayDpsCooldownsMultiplier(botAI));
+    multipliers.push_back(new PrincessHuhuranControlMovementMultiplier(botAI));
+    multipliers.push_back(new PrincessHuhuranControlWyvernStingDispelMultiplier(botAI));
+    multipliers.push_back(new PrincessHuhuranDelayDpsCooldownsMultiplier(botAI));
 
     // Twin Emperors
     multipliers.push_back(new TwinEmperorsOpeningHealHoldMultiplier(botAI));

@@ -374,14 +374,30 @@ bool PrincessHuhuranSwapTanksAction::Execute(Event /*event*/)
 
 bool PrincessHuhuranSoakersStandNearBossAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetHuhuranSoakGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    if (!GetHuhuranSoakGoal(botAI, spot))
+        return false;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, spot, 0.0f, nullptr, moveX, moveY, backwards))
+        return false;
+    return MoveTo(AQ40_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool PrincessHuhuranSpreadRangedAndHealersAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetHuhuranSpreadGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    if (!GetHuhuranSpreadGoal(botAI, spot))
+        return false;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, spot, 0.0f, nullptr, moveX, moveY, backwards))
+        return false;
+    return MoveTo(AQ40_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // Twin Emperors
