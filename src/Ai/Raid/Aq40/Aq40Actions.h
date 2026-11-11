@@ -138,6 +138,19 @@ public:
     bool Execute(Event event) override;
 };
 
+// Battleguard Sartura
+
+// Tanks leave too: a whirlwinding Sartura or guard is neither taunted nor damaged until it stops.
+class BattleguardSarturaMoveAwayFromWhirlwindAction : public Aq40MovementAction
+{
+public:
+    BattleguardSarturaMoveAwayFromWhirlwindAction(PlayerbotAI* botAI)
+        : Aq40MovementAction(botAI, "battleguard sartura move away from whirlwind")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
 // Viscidus
 
 class ViscidusCastFrostSpellsAction : public Action, public Aq40ActionTag

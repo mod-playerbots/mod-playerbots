@@ -183,6 +183,7 @@ inline constexpr float POISON_CLOUD_RADIUS = 12.0f;
 // Battleguard Sartura
 
 inline constexpr float WHIRLWIND_SAFE_DISTANCE = 18.0f;
+inline constexpr float WHIRLWIND_ESCAPE_STEP = 5.0f;
 
 // Viscidus: Toxin (25989) is a 5-yard persistent cloud that never despawns, so the room fills up.
 // The raid is pulled from a ramp that descends from the entrance (z -24) to the floor (z -45..-53).
@@ -424,6 +425,11 @@ void SwapHuhuranTanks(Player* bot);
 void AssignSkeramPlatforms(Player* bot);
 bool GetSkeramPlatform(PlayerbotAI* botAI, Position& platform);
 Player* GetMindControlledMember(Player* bot);
+
+// Battleguard Sartura
+
+// A whirlwinding Sartura or Royal Guard inside WHIRLWIND_SAFE_DISTANCE of the bot.
+Creature* GetWhirlwindInRange(Player* bot);
 
 // Princess Huhuran
 

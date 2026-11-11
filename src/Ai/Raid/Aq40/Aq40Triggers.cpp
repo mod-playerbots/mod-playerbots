@@ -105,6 +105,10 @@ bool TheProphetSkeramRaidMemberMindControlledTrigger::IsActiveInEncounter()
     return IsInEncounter(bot, Aq40Encounter::Skeram) && IsFreeToAct() && GetMindControlledMember(bot);
 }
 
+// Battleguard Sartura
+
+bool BattleguardSarturaWhirlwindNearbyTrigger::IsActiveInEncounter() { return GetWhirlwindInRange(bot) != nullptr; }
+
 // Viscidus
 
 bool ViscidusShouldBeFrozenTrigger::IsActiveInEncounter()

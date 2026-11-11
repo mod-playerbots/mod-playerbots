@@ -1054,6 +1054,18 @@ Player* GetMindControlledMember(Player* bot)
     return nullptr;
 }
 
+// Battleguard Sartura
+
+Creature* GetWhirlwindInRange(Player* bot)
+{
+    if (!IsInEncounter(bot, Aq40Encounter::Sartura))
+        return nullptr;
+    for (Creature* unit : GetUnits(bot))
+        if (Whirling(unit) && bot->GetDistance2d(unit) < WHIRLWIND_SAFE_DISTANCE)
+            return unit;
+    return nullptr;
+}
+
 // Princess Huhuran
 
 void AssignHuhuranSoakers(Player* bot)
@@ -1768,8 +1780,12 @@ bool GetToxinEscapeGoal(PlayerbotAI* botAI, Position& goal)
 
 bool GetWhirlwindEscapeGoal(PlayerbotAI* botAI, Position& goal)
 {
-    return IsInEncounter(botAI->GetBot(), Aq40Encounter::Sartura) &&
-           EscapeUnitHazard(botAI, goal, WHIRLWIND_SAFE_DISTANCE, &Whirling);
+    Player* bot = botAI->GetBot();
+    Creature* whirler = GetWhirlwindInRange(bot);
+    if (!whirler)
+        return false;
+    goal = Around(bot, WHIRLWIND_ESCAPE_STEP, whirler->GetAngle(bot));
+    return true;
 }
 
 bool GetPoisonCloudEscapeGoal(PlayerbotAI* botAI, Position& goal)

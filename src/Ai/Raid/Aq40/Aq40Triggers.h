@@ -10,6 +10,7 @@
 #include "Aq40Helpers.h"
 #include "EncounterHelpers.h"
 #include "Trigger.h"
+#include <optional>
 #include <string>
 
 // Shared
@@ -17,21 +18,32 @@
 class Aq40EncounterTrigger : public Trigger
 {
 public:
+    // Active in any AQ40 encounter.
     Aq40EncounterTrigger(PlayerbotAI* botAI, std::string const name, int32 checkInterval = 1)
         : Trigger(botAI, name, checkInterval)
+    {
+    }
+    // Active in one boss's encounter only.
+    Aq40EncounterTrigger(PlayerbotAI* botAI, std::string const name, Aq40Helpers::Aq40Encounter encounter,
+                         int32 checkInterval = 1)
+        : Trigger(botAI, name, checkInterval), _encounter(encounter)
     {
     }
 
     bool IsActive() final
     {
-        return EncounterHelpers::IsEncounterInProgress(bot, Aq40Helpers::AQ40_MAP_ID) &&
-               !Aq40Helpers::HasTrueFulfillment(bot) && IsActiveInEncounter();
+        bool const inProgress = _encounter ? Aq40Helpers::IsInEncounter(bot, *_encounter)
+                                           : EncounterHelpers::IsEncounterInProgress(bot, Aq40Helpers::AQ40_MAP_ID);
+        return inProgress && !Aq40Helpers::HasTrueFulfillment(bot) && IsActiveInEncounter();
     }
 
 protected:
     virtual bool IsActiveInEncounter() = 0;
     // The bot is free to act: not casting and not escaping a hazard.
     bool IsFreeToAct();
+
+private:
+    std::optional<Aq40Helpers::Aq40Encounter> const _encounter;
 };
 
 class Aq40NoEncounterInProgressTrigger : public Trigger
@@ -158,6 +170,20 @@ class TheProphetSkeramRaidMemberMindControlledTrigger : public Aq40EncounterTrig
 public:
     TheProphetSkeramRaidMemberMindControlledTrigger(PlayerbotAI* botAI)
         : Aq40EncounterTrigger(botAI, "the prophet skeram raid member mind controlled")
+    {
+    }
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+// Battleguard Sartura
+
+class BattleguardSarturaWhirlwindNearbyTrigger : public Aq40EncounterTrigger
+{
+public:
+    BattleguardSarturaWhirlwindNearbyTrigger(PlayerbotAI* botAI)
+        : Aq40EncounterTrigger(botAI, "battleguard sartura whirlwind nearby", Aq40Helpers::Aq40Encounter::Sartura)
     {
     }
 

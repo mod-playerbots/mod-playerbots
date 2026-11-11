@@ -245,6 +245,16 @@ bool TheProphetSkeramCrowdControlMindControlledAction::Execute(Event /*event*/)
     return false;
 }
 
+// Battleguard Sartura
+
+bool BattleguardSarturaMoveAwayFromWhirlwindAction::Execute(Event /*event*/)
+{
+    Creature* whirler = GetWhirlwindInRange(bot);
+    if (!whirler)
+        return false;
+    return MoveToGoal(Around(bot, WHIRLWIND_ESCAPE_STEP, whirler->GetAngle(bot)), true);
+}
+
 // Viscidus
 
 bool ViscidusCastFrostSpellsAction::Execute(Event /*event*/)

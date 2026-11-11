@@ -194,8 +194,7 @@ private:
     }
     static Action* battleguard_sartura_move_away_from_whirlwind(PlayerbotAI* botAI)
     {
-        return new Aq40EscapeHazardAction(botAI, "battleguard sartura move away from whirlwind",
-                                          &Aq40Helpers::GetWhirlwindEscapeGoal);
+        return new BattleguardSarturaMoveAwayFromWhirlwindAction(botAI);
     }
     static Action* battleguard_sartura_assign_dps_priority(PlayerbotAI* botAI)
     {

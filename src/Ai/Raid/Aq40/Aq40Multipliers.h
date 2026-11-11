@@ -49,7 +49,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-
 class Aq40DontAttackMindControlledMultiplier : public Aq40EncounterMultiplier
 {
 public:

@@ -200,8 +200,7 @@ private:
     }
     static Trigger* battleguard_sartura_whirlwind_nearby(PlayerbotAI* botAI)
     {
-        return new Aq40HazardTrigger(botAI, "battleguard sartura whirlwind nearby",
-                                     &Aq40Helpers::GetWhirlwindEscapeGoal);
+        return new BattleguardSarturaWhirlwindNearbyTrigger(botAI);
     }
     static Trigger* battleguard_sartura_should_assign_dps_priority(PlayerbotAI* botAI)
     {
