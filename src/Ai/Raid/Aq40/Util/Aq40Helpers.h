@@ -11,6 +11,7 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
+#include <cmath>
 #include <map>
 #include <optional>
 #include <string>
@@ -152,7 +153,6 @@ enum class Aq40Spells : uint32
 };
 
 inline constexpr uint32 AQ40_MAP_ID = 531;
-inline constexpr float AQ40_PI = 3.14159265358979323846f;
 
 // General
 
@@ -255,9 +255,49 @@ inline constexpr float TWIN_BUG_REACH = 30.0f;
 inline constexpr float DIRT_MOUND_RADIUS = 12.0f;
 inline constexpr float OURO_CONE_RANGE = 40.0f;
 
-// C'Thun: the Eye and C'Thun share this center. Spots are offsets from it (Aq40Rules::CthunSlots).
+// C'Thun: the Eye and C'Thun share this center. Spots are offsets from it (CTHUN_SLOTS).
 
 inline Position const CTHUN_CENTER = {-8578.8f, 1986.2f, 100.7f};
+// Raid spots, offsets (x = north, y = west) from the center. Eye Beam jumps to the closest player within ~13 yd
+// (10 yd plus both combat reaches) at x1.5 damage, so the 40 spots fit the walkable floor (z 100.7) with no chain
+// longer than two at 13.5 yd. Four melee stand on the Eye at N/W/S/E (inside its 17.8-yd melee range); the middle
+// ring (30-42 yd) keeps ranged in reach (30-yd spells reach 46.5 yd from its center); healers take the outer ring.
+enum class CthunSlotKind : uint8
+{
+    EyeMelee,
+    Middle,
+    Outer
+};
+
+struct CthunSlotSpot
+{
+    float x;
+    float y;
+    CthunSlotKind kind;
+};
+
+inline constexpr CthunSlotSpot CTHUN_SLOTS[] = {
+    {16.5f, 0.0f, CthunSlotKind::EyeMelee},  {0.0f, 16.5f, CthunSlotKind::EyeMelee},
+    {-16.5f, 0.0f, CthunSlotKind::EyeMelee}, {0.0f, -16.5f, CthunSlotKind::EyeMelee},
+    {-42.0f, -0.4f, CthunSlotKind::Middle},  {-28.1f, -13.1f, CthunSlotKind::Middle},
+    {-28.9f, -30.5f, CthunSlotKind::Middle}, {-14.3f, -26.4f, CthunSlotKind::Middle},
+    {-12.5f, -40.1f, CthunSlotKind::Middle}, {2.9f, -34.4f, CthunSlotKind::Middle},
+    {16.7f, -38.6f, CthunSlotKind::Middle},  {20.6f, -21.8f, CthunSlotKind::Middle},
+    {34.5f, -24.0f, CthunSlotKind::Middle},  {31.8f, -7.6f, CthunSlotKind::Middle},
+    {42.0f, 0.1f, CthunSlotKind::Middle},    {26.7f, 13.7f, CthunSlotKind::Middle},
+    {33.0f, 26.0f, CthunSlotKind::Middle},   {15.1f, 25.9f, CthunSlotKind::Middle},
+    {12.5f, 40.1f, CthunSlotKind::Middle},   {-1.5f, 42.0f, CthunSlotKind::Middle},
+    {-14.0f, 39.6f, CthunSlotKind::Middle},  {-20.7f, 21.8f, CthunSlotKind::Middle},
+    {-30.7f, 28.7f, CthunSlotKind::Middle},  {-31.2f, 8.6f, CthunSlotKind::Middle},
+    {-62.9f, -11.7f, CthunSlotKind::Outer},  {-48.3f, -16.7f, CthunSlotKind::Outer},
+    {-45.0f, -30.7f, CthunSlotKind::Outer},  {10.0f, -53.0f, CthunSlotKind::Outer},
+    {32.1f, -47.0f, CthunSlotKind::Outer},   {50.1f, -35.0f, CthunSlotKind::Outer},
+    {61.5f, -17.7f, CthunSlotKind::Outer},   {55.5f, -5.0f, CthunSlotKind::Outer},
+    {43.0f, 15.5f, CthunSlotKind::Outer},    {34.5f, 50.0f, CthunSlotKind::Outer},
+    {12.8f, 62.7f, CthunSlotKind::Outer},    {-11.0f, 62.8f, CthunSlotKind::Outer},
+    {-32.5f, 51.0f, CthunSlotKind::Outer},   {-45.5f, 33.0f, CthunSlotKind::Outer},
+    {-47.0f, 20.6f, CthunSlotKind::Outer},   {-61.0f, 9.9f, CthunSlotKind::Outer},
+};
 // Melee leave their spot only for a tentacle whose edge is this close to the spot.
 inline constexpr float CTHUN_MELEE_LEASH = 10.0f;
 // Ranged hit what their 30-yard spells reach from the spot (edge to edge, as GetDistance measures).
@@ -267,6 +307,11 @@ inline constexpr uint32 CTHUN_SPIT_OUT_TRIGGER = 4036;
 inline constexpr float CTHUN_SPIT_OUT_RADIUS = 6.5f;
 inline constexpr uint32 CTHUN_STOMACH_EXIT_TRIGGER = 4033;
 inline constexpr float CTHUN_STOMACH_Z = -40.0f;
+// Leave the stomach at 6 stacks of Digestive Acid (9 with a healer inside) or below 55% health: leaving earlier
+// lets the Flesh Tentacles live for minutes, leaving later kills bots on the exit pad during its 3-second wait.
+inline constexpr uint32 CTHUN_STOMACH_LEAVE_STACKS = 6;
+inline constexpr uint32 CTHUN_STOMACH_LEAVE_STACKS_WITH_HEALER = 9;
+inline constexpr float CTHUN_STOMACH_LEAVE_HEALTH_PCT = 55.0f;
 // Weakened burn: C'Thun can be hit from about 10 yd of his center, although his combat reach is 1 yd and the
 // server lets bot strikes land from ~26 yd. Melee stand at 8 yd, outside the 7-yd spit-out circle.
 inline constexpr float CTHUN_BURN_MELEE_REACH = 10.0f;
@@ -304,6 +349,8 @@ inline constexpr uint32 CTHUN_TENTACLE_KILLERS = 2;
 // Dark Glare band (5 yd) plus a margin, and how many 1-second ticks ahead a bot starts moving.
 inline constexpr float GLARE_HALF_WIDTH = 8.0f;
 inline constexpr int GLARE_LOOKAHEAD = 3;
+// The glare line turns pi/35 per 1-second tick (spell_cthun_dark_glare).
+inline constexpr float GLARE_STEP = static_cast<float>(M_PI) / 35.0f;
 // A glare dodge stays at least this far from the Eye, steps in this much at a time where the floor runs out, and
 // needs floor this far past its goal.
 inline constexpr float GLARE_MIN_RADIUS = 15.0f;

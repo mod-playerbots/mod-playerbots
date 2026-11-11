@@ -6,7 +6,6 @@
 
 #include "Aq40Helpers.h"
 #include "AiFactory.h"
-#include "Aq40Rules.h"
 #include "EncounterHelpers.h"
 #include "InstanceScript.h"
 #include "LastMovementValue.h"
@@ -36,7 +35,42 @@ namespace
 std::mutex aq40StateMutex;
 std::unordered_map<uint32, Aq40InstanceState> aq40States;
 
-using Aq40Rules::AngleDelta;
+float AngleDelta(float to, float from) { return std::remainder(to - from, 2.0f * static_cast<float>(M_PI)); }
+
+// Dark Glare hits anyone in front of the Eye less than 5 yd from its facing line (spell_cthun_dark_glare -> HasInLine).
+bool InGlareBand(float bearing, float distance, float line, float halfWidth)
+{
+    float relative = AngleDelta(bearing, line);
+    return std::abs(relative) < static_cast<float>(M_PI) / 2.0f && std::abs(std::sin(relative)) * distance < halfWidth;
+}
+
+// In the band now or within the next `ticks` ticks. Direction 0 means not known yet: both ways count.
+bool InGlarePath(float bearing, float distance, float facing, float direction, float halfWidth, int ticks)
+{
+    for (int tick = 0; tick <= ticks; ++tick)
+    {
+        if (direction != 0.0f && InGlareBand(bearing, distance, facing + direction * GLARE_STEP * tick, halfWidth))
+            return true;
+        if (direction == 0.0f && (InGlareBand(bearing, distance, facing + GLARE_STEP * tick, halfWidth) ||
+                                  InGlareBand(bearing, distance, facing - GLARE_STEP * tick, halfWidth)))
+            return true;
+    }
+    return false;
+}
+
+// Bearing (around the Eye) to step to: ahead of the sweep for anyone it is coming toward, behind it for anyone it is
+// leaving, and away from the line on the bot's own side while the direction is unknown.
+float GlareEscapeBearing(float bearing, float distance, float facing, float direction, float halfWidth, int ticks)
+{
+    float relative = AngleDelta(bearing, facing);
+    float side = relative >= 0.0f ? 1.0f : -1.0f;
+    bool ahead = direction != 0.0f && relative * direction > 0.0f;
+    if (ahead)
+        side = direction;
+    float clear = std::asin(std::min(1.0f, halfWidth / std::max(distance, halfWidth)));
+    float lead = direction == 0.0f || ahead ? GLARE_STEP * float(ticks + 1) : GLARE_STEP;
+    return facing + side * (clear + lead);
+}
 
 bool OnCthunFloor(WorldObject* probe, float x, float y)
 {
@@ -251,8 +285,7 @@ bool IsCthunEyeMelee(Player* bot)
         return false;
     Aq40InstanceState const& state = Aq40State(bot->GetInstanceId());
     auto found = state.cthunSpots.find(bot->GetGUID());
-    return found != state.cthunSpots.end() &&
-           Aq40Rules::CthunSlots[found->second].kind == Aq40Rules::CthunSlotKind::EyeMelee;
+    return found != state.cthunSpots.end() && CTHUN_SLOTS[found->second].kind == CthunSlotKind::EyeMelee;
 }
 
 Unit* GetCthunTarget(Player* bot)
@@ -362,8 +395,8 @@ Position GlareDodge(PlayerbotAI* botAI, Unit* eye, float bearing, float distance
     float radius = std::max(GLARE_MIN_RADIUS, distance);
     while (true)
     {
-        float escape = Aq40Rules::GlareEscapeBearing(bearing, radius, eye->GetOrientation(), direction,
-                                                     GLARE_HALF_WIDTH, GLARE_LOOKAHEAD);
+        float escape =
+            GlareEscapeBearing(bearing, radius, eye->GetOrientation(), direction, GLARE_HALF_WIDTH, GLARE_LOOKAHEAD);
         goal = Around(eye, radius, escape);
         Position beyond = Around(eye, radius + GLARE_FLOOR_MARGIN, escape);
         if (radius <= GLARE_MIN_RADIUS || (OnCthunFloor(bot, beyond.GetPositionX(), beyond.GetPositionY()) &&
@@ -1418,7 +1451,7 @@ Position TwinWaitSpot(PlayerbotAI* botAI, Unit* veklor)
     if (cache.waitAngleTime && getMSTimeDiff(cache.waitAngleTime, now) < IN_MILLISECONDS)
         return spot(base + cache.waitAngle);
     float chosen = 0.0f;
-    for (float offset : {0.0f, 0.6f, -0.6f, 1.2f, -1.2f, 1.9f, -1.9f, 2.6f, -2.6f, AQ40_PI})
+    for (float offset : {0.0f, 0.6f, -0.6f, 1.2f, -1.2f, 1.9f, -1.9f, 2.6f, -2.6f, static_cast<float>(M_PI)})
     {
         Position goal = spot(base + offset);
         PathGenerator route(bot);
@@ -1478,8 +1511,7 @@ Player* GetTwinHealFocus(Player* bot)
 
 void AssignCthunSpots(Player* bot)
 {
-    using Aq40Rules::CthunSlotKind;
-    constexpr uint32 count = sizeof(Aq40Rules::CthunSlots) / sizeof(Aq40Rules::CthunSlots[0]);
+    constexpr uint32 count = sizeof(CTHUN_SLOTS) / sizeof(CTHUN_SLOTS[0]);
     Aq40InstanceState& state = Aq40State(bot->GetInstanceId());
     std::vector<Player*> members = GetMembers(bot);
 
@@ -1528,7 +1560,7 @@ void AssignCthunSpots(Player* bot)
     {
         for (CthunSlotKind kind : kinds)
             for (uint32 index = 0; index < count; ++index)
-                if (Aq40Rules::CthunSlots[index].kind == kind && !taken(index))
+                if (CTHUN_SLOTS[index].kind == kind && !taken(index))
                 {
                     state.cthunSpots[guid] = index;
                     return true;
@@ -1547,16 +1579,15 @@ void AssignCthunSpots(Player* bot)
             auto previous = old.find(member->GetGUID());
             if (previous == old.end())
                 continue;
-            CthunSlotKind kind = Aq40Rules::CthunSlots[previous->second].kind;
+            CthunSlotKind kind = CTHUN_SLOTS[previous->second].kind;
             float best = std::numeric_limits<float>::max();
             uint32 bestIndex = previous->second;
             for (uint32 index = 0; index < count; ++index)
             {
-                if (Aq40Rules::CthunSlots[index].kind != kind || taken(index))
+                if (CTHUN_SLOTS[index].kind != kind || taken(index))
                     continue;
-                Position spot(CTHUN_CENTER.GetPositionX() + Aq40Rules::CthunSlots[index].x,
-                              CTHUN_CENTER.GetPositionY() + Aq40Rules::CthunSlots[index].y,
-                              CTHUN_CENTER.GetPositionZ());
+                Position spot(CTHUN_CENTER.GetPositionX() + CTHUN_SLOTS[index].x,
+                              CTHUN_CENTER.GetPositionY() + CTHUN_SLOTS[index].y, CTHUN_CENTER.GetPositionZ());
                 float distance = member->GetExactDist2d(&spot);
                 if (distance < best)
                 {
@@ -1678,8 +1709,10 @@ bool StomachExitNeeded(Player* bot)
     bool healerInside = false;
     for (Player* member : GetMembers(bot))
         healerInside = healerInside || (member != bot && PlayerbotAI::IsHeal(member) && InStomach(member));
-    return Aq40Rules::LeaveStomach(Stacks(bot, Id(Aq40Spells::SPELL_DIGESTIVE_ACID)), bot->GetHealthPct(),
-                                   !GetUnits(bot, Id(Aq40Npcs::NPC_FLESH_TENTACLE)).empty(), healerInside);
+    uint32 const leaveStacks = healerInside ? CTHUN_STOMACH_LEAVE_STACKS_WITH_HEALER : CTHUN_STOMACH_LEAVE_STACKS;
+    return Stacks(bot, Id(Aq40Spells::SPELL_DIGESTIVE_ACID)) >= leaveStacks ||
+           bot->GetHealthPct() < CTHUN_STOMACH_LEAVE_HEALTH_PCT ||
+           GetUnits(bot, Id(Aq40Npcs::NPC_FLESH_TENTACLE)).empty();
 }
 
 bool GetCthunSpot(Player* bot, Position& spot)
@@ -1710,7 +1743,7 @@ bool GetCthunSpot(Player* bot, Position& spot)
                       center.GetPositionY() + radius * std::sin(index * 2.4f), center.GetPositionZ());
         return true;
     }
-    Aq40Rules::CthunSlotSpot const& slot = Aq40Rules::CthunSlots[found->second];
+    CthunSlotSpot const& slot = CTHUN_SLOTS[found->second];
     spot.Relocate(CTHUN_CENTER.GetPositionX() + slot.x, CTHUN_CENTER.GetPositionY() + slot.y,
                   CTHUN_CENTER.GetPositionZ());
     return true;
@@ -1796,7 +1829,7 @@ bool GetEscapeStep(Player* bot, Position const& goal, std::vector<Creature*> con
     float const length = std::min(distance, 7.0f);
     bool found = false;
     float bestClearance = -1.0f;
-    for (float turn : {0.0f, 0.9f, -0.9f, 1.8f, -1.8f, AQ40_PI})
+    for (float turn : {0.0f, 0.9f, -0.9f, 1.8f, -1.8f, static_cast<float>(M_PI)})
     {
         float x = bot->GetPositionX() + length * std::cos(angle + turn);
         float y = bot->GetPositionY() + length * std::sin(angle + turn);
@@ -1932,8 +1965,7 @@ bool GetDarkGlareEscapeGoal(PlayerbotAI* botAI, Position& goal)
         // Only the real band moves anyone: a fixed angle would flag ~26 yd either side at 40 yd.
         float bearing = eye->GetAngle(bot);
         float distance = eye->GetExactDist2d(bot);
-        if (Aq40Rules::InGlarePath(bearing, distance, eye->GetOrientation(), direction, GLARE_HALF_WIDTH,
-                                   GLARE_LOOKAHEAD))
+        if (InGlarePath(bearing, distance, eye->GetOrientation(), direction, GLARE_HALF_WIDTH, GLARE_LOOKAHEAD))
         {
             goal = GlareDodge(botAI, eye, bearing, distance);
             return true;
@@ -1949,7 +1981,7 @@ bool GetOuroConeEscapeGoal(PlayerbotAI* botAI, Position& goal)
         return false;
     for (Creature* ouro : GetUnits(bot, Id(Aq40Npcs::NPC_OURO)))
         if (ouro->GetVictim() != bot && bot->GetDistance2d(ouro) < OURO_CONE_RANGE &&
-            std::abs(AngleDelta(ouro->GetAngle(bot), ouro->GetOrientation())) < AQ40_PI / 3.0f)
+            std::abs(AngleDelta(ouro->GetAngle(bot), ouro->GetOrientation())) < static_cast<float>(M_PI) / 3.0f)
         {
             float angle = ouro->GetAngle(bot);
             float side = AngleDelta(angle, ouro->GetOrientation()) >= 0.0f ? 1.0f : -1.0f;
@@ -2009,7 +2041,9 @@ bool GetVeklorEscapeGoal(PlayerbotAI* botAI, Position& goal)
             float offset = AngleDelta(escape, inward);
             // A bot knocked behind Vek'lor must leave around his side. Retreating straight outward makes its
             // cross-room route pass through him and repeat the escape forever.
-            escape = std::cos(offset) < 0.0f ? inward + (offset >= 0.0f ? AQ40_PI / 2.0f : -AQ40_PI / 2.0f) : inward;
+            escape = std::cos(offset) < 0.0f ? inward + (offset >= 0.0f ? static_cast<float>(M_PI) / 2.0f
+                                                                        : -static_cast<float>(M_PI) / 2.0f)
+                                             : inward;
         }
         // Fan the escapes out: everyone leaving along one bearing ends in a stack that a single Blizzard can kill.
         escape += 0.3f * (float(bot->GetGUID().GetCounter() % 7) - 3.0f);
@@ -2275,8 +2309,9 @@ bool GetTwinHealerGoal(PlayerbotAI* botAI, Position& goal)
     Position anchor = tank ? tank->GetPosition() : sides[side];
     // Healers stand between their tank and their side's warlock spot, toward the entrance.
     Position lockSpot = TwinLockSpot(state, side);
-    float angle =
-        (anchor.GetExactDist2d(&lockSpot) > 3.0f ? anchor.GetAngle(&lockSpot) : axis + AQ40_PI / 2.0f) + spread;
+    float angle = (anchor.GetExactDist2d(&lockSpot) > 3.0f ? anchor.GetAngle(&lockSpot)
+                                                           : axis + static_cast<float>(M_PI) / 2.0f) +
+                  spread;
     // Healers stay farther from Vek'lor than his waiting tank, or Vek'nilash lands on them.
     bool found = false;
     Position fallback;
@@ -2399,7 +2434,7 @@ bool GetHuhuranSpreadGoal(PlayerbotAI* botAI, Position& goal)
     float center = anchor ? boss->GetAngle(anchor) : boss->GetOrientation();
     float span = healer ? 1.4f : 1.7f;
     if (!healer)
-        center += AQ40_PI;
+        center += static_cast<float>(M_PI);
     float angle = center - span + span * 2.0f * (float(slot) + 0.5f) / float(std::max(slots, 1u));
     float radius = boss->GetCombatReach() + (ring == 0 ? 20.0f : 27.0f);
     // Tanked near the cave edge, part of the ring lands on the wall: bots climbed it chasing a slot at the boss's
