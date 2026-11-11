@@ -59,14 +59,6 @@ float Aq40WaitForKnockbackMultiplier::GetValueInEncounter(Action* /*action*/)
                : 1.0f;
 }
 
-float Aq40HazardEscapeMultiplier::GetValueInEncounter(Action* action)
-{
-    if (IsOwnAction(action) ||
-        (!IsTargetPicker(action) && !dynamic_cast<MovementAction*>(action) && !IsHostileTarget(bot, action)))
-        return 1.0f;
-    return HasHazard(botAI) ? 0.0f : 1.0f;
-}
-
 float Aq40DontAttackMindControlledMultiplier::GetValueInEncounter(Action* action)
 {
     // Only the explicit nonlethal crowd-control action may target raid members.

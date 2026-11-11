@@ -1793,16 +1793,6 @@ bool GetToxinEscapeGoal(PlayerbotAI* botAI, Position& goal)
     return true;
 }
 
-bool GetWhirlwindEscapeGoal(PlayerbotAI* botAI, Position& goal)
-{
-    Player* bot = botAI->GetBot();
-    Creature* whirler = GetWhirlwindInRange(bot);
-    if (!whirler)
-        return false;
-    goal = Around(bot, WHIRLWIND_ESCAPE_STEP, whirler->GetAngle(bot));
-    return true;
-}
-
 bool GetPoisonCloudEscapeGoal(PlayerbotAI* botAI, Position& goal)
 {
     return IsInEncounter(botAI->GetBot(), Aq40Encounter::Trio) &&
@@ -1942,25 +1932,6 @@ bool GetBlizzardEscapeGoal(PlayerbotAI* botAI, Position& goal)
             return true;
         }
     return false;
-}
-
-bool ComputeHazardGoal(PlayerbotAI* botAI, Position& goal)
-{
-    Player* bot = botAI->GetBot();
-    if (GetCurrentEncounter(bot) == Aq40Encounter::None || HasTrueFulfillment(bot))
-        return false;
-    for (Aq40GoalFn hazard :
-         {&GetStomachExitGoal, &GetToxinEscapeGoal, &GetWhirlwindEscapeGoal, &GetPoisonCloudEscapeGoal,
-          &GetDirtMoundEscapeGoal, &GetExplodingBugEscapeGoal, &GetDarkGlareEscapeGoal, &GetOuroConeEscapeGoal,
-          &GetVeknilashLandingEscapeGoal, &GetVeklorEscapeGoal, &GetBlizzardEscapeGoal})
-        if (hazard(botAI, goal))
-            return true;
-    return false;
-}
-
-bool HasHazard(PlayerbotAI* botAI)
-{
-    return botAI->GetAiObjectContext()->GetValue<Aq40Goal>("aq40 hazard")->Get().active;
 }
 
 // Encounter positions
@@ -2397,24 +2368,6 @@ bool ComputeFormationGoal(PlayerbotAI* botAI, Position& goal)
 bool HasFormationGoal(PlayerbotAI* botAI)
 {
     return botAI->GetAiObjectContext()->GetValue<Aq40Goal>("aq40 formation")->Get().active;
-}
-
-bool IsTacticalFormation(Player* bot)
-{
-    switch (GetCurrentEncounter(bot))
-    {
-        case Aq40Encounter::Skeram:
-        case Aq40Encounter::Twins:
-        case Aq40Encounter::Cthun:
-        case Aq40Encounter::Huhuran:
-            return true;
-        case Aq40Encounter::Viscidus:
-            if (Creature* boss = GetBoss(bot))
-                return boss->HasAura(Id(Aq40Spells::SPELL_VISCIDUS_FREEZE));
-            return false;
-        default:
-            return false;
-    }
 }
 
 // Before the pull

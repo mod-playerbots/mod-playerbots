@@ -16,7 +16,7 @@ using namespace EncounterHelpers;
 
 // Shared
 
-bool Aq40EncounterTrigger::IsFreeToAct() { return !bot->HasUnitState(UNIT_STATE_CASTING) && !HasHazard(botAI); }
+bool Aq40EncounterTrigger::IsFreeToAct() { return !bot->HasUnitState(UNIT_STATE_CASTING); }
 
 bool Aq40NoEncounterInProgressTrigger::IsActive()
 {
@@ -71,7 +71,7 @@ bool Aq40NoAssignedTargetTrigger::IsActiveInEncounter()
 
 bool Aq40TankShouldTauntTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsTank(bot) || HasHazard(botAI) || TauntSpell(bot).empty())
+    if (!PlayerbotAI::IsTank(bot) || TauntSpell(bot).empty())
         return false;
     Unit* target = GetAssignedTarget(botAI);
     return target && GetTankFor(bot, target) == bot && target->GetVictim() != bot && !Whirling(target);

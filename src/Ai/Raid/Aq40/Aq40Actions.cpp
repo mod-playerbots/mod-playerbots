@@ -72,8 +72,12 @@ bool Aq40MovementAction::MoveToGoal(Position goal, bool hazard)
             bot->CastStop();
         if ((twins || cthunRoute) && bot->movespline->Finalized())
             AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
-        return MoveTo(bot->GetMapId(), next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false,
-                      true, true, hazard ? MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT, true);
+        bool const moved =
+            MoveTo(bot->GetMapId(), next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true,
+                   true, hazard ? MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT, true);
+        // An escape still running this route is refused as a duplicate. It keeps the bot's turn, or a lower action
+        // re-faces the bot and stops the run.
+        return moved || (hazard && !bot->movespline->Finalized());
     }
     bool const stomachExit = hazard && encounter == Aq40Encounter::Cthun && InStomach(bot);
     float distance = bot->GetExactDist2d(goal);

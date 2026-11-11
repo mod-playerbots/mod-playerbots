@@ -41,23 +41,6 @@ protected:
     }
 };
 
-class Aq40HazardValue : public CalculatedValue<Aq40Helpers::Aq40Goal>
-{
-public:
-    Aq40HazardValue(PlayerbotAI* botAI)
-        : CalculatedValue<Aq40Helpers::Aq40Goal>(botAI, "aq40 hazard", Aq40Helpers::BOT_CACHE_INTERVAL_MS)
-    {
-    }
-
-protected:
-    Aq40Helpers::Aq40Goal Calculate() override
-    {
-        Aq40Helpers::Aq40Goal result;
-        result.active = Aq40Helpers::ComputeHazardGoal(botAI, result.goal);
-        return result;
-    }
-};
-
 class Aq40FormationValue : public CalculatedValue<Aq40Helpers::Aq40Goal>
 {
 public:
@@ -98,7 +81,6 @@ public:
     {
         creators["aq40 bot cache"] = &RaidAq40ValueContext::aq40_bot_cache;
         creators["aq40 assigned target"] = &RaidAq40ValueContext::aq40_assigned_target;
-        creators["aq40 hazard"] = &RaidAq40ValueContext::aq40_hazard;
         creators["aq40 formation"] = &RaidAq40ValueContext::aq40_formation;
         creators["aq40 blizzard positions"] = &RaidAq40ValueContext::aq40_blizzard_positions;
     }
@@ -106,7 +88,6 @@ public:
 private:
     static UntypedValue* aq40_bot_cache(PlayerbotAI* botAI) { return new Aq40BotCacheValue(botAI); }
     static UntypedValue* aq40_assigned_target(PlayerbotAI* botAI) { return new Aq40AssignedTargetValue(botAI); }
-    static UntypedValue* aq40_hazard(PlayerbotAI* botAI) { return new Aq40HazardValue(botAI); }
     static UntypedValue* aq40_formation(PlayerbotAI* botAI) { return new Aq40FormationValue(botAI); }
     static UntypedValue* aq40_blizzard_positions(PlayerbotAI* botAI) { return new Aq40BlizzardPositionsValue(botAI); }
 };

@@ -50,15 +50,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class Aq40HazardEscapeMultiplier : public Aq40EncounterMultiplier
-{
-public:
-    Aq40HazardEscapeMultiplier(PlayerbotAI* botAI) : Aq40EncounterMultiplier(botAI, "aq40 hazard escape") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 class Aq40DontAttackMindControlledMultiplier : public Aq40EncounterMultiplier
 {
 public:

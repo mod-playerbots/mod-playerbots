@@ -476,11 +476,10 @@ bool IsCthunWeakened(Player* bot);
 bool IsCthunTentacleKiller(Player* bot);
 bool CthunMeleeBurn(PlayerbotAI* botAI);
 
-// Hazard escapes, cheapest first. Each returns where the bot should step to.
+// Hazard escapes. Each returns where the bot should step to.
 
 bool GetStomachExitGoal(PlayerbotAI* botAI, Position& goal);
 bool GetToxinEscapeGoal(PlayerbotAI* botAI, Position& goal);
-bool GetWhirlwindEscapeGoal(PlayerbotAI* botAI, Position& goal);
 bool GetPoisonCloudEscapeGoal(PlayerbotAI* botAI, Position& goal);
 bool GetDirtMoundEscapeGoal(PlayerbotAI* botAI, Position& goal);
 bool GetExplodingBugEscapeGoal(PlayerbotAI* botAI, Position& goal);
@@ -489,8 +488,6 @@ bool GetOuroConeEscapeGoal(PlayerbotAI* botAI, Position& goal);
 bool GetVeknilashLandingEscapeGoal(PlayerbotAI* botAI, Position& goal);
 bool GetVeklorEscapeGoal(PlayerbotAI* botAI, Position& goal);
 bool GetBlizzardEscapeGoal(PlayerbotAI* botAI, Position& goal);
-bool ComputeHazardGoal(PlayerbotAI* botAI, Position& goal);
-bool HasHazard(PlayerbotAI* botAI);
 
 // Encounter positions. Each returns true while the bot is away from its spot.
 
@@ -512,7 +509,6 @@ bool GetViscidusRingGoal(PlayerbotAI* botAI, Position& goal);
 bool GetBossRangeGoal(PlayerbotAI* botAI, Position& goal);
 bool ComputeFormationGoal(PlayerbotAI* botAI, Position& goal);
 bool HasFormationGoal(PlayerbotAI* botAI);
-bool IsTacticalFormation(Player* bot);
 
 // Before the pull
 

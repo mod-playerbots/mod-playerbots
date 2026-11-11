@@ -53,7 +53,7 @@ void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Bug Trio
     triggers.push_back(new TriggerNode("bug trio poison cloud nearby",
-                                       {NextAction("bug trio move away from poison cloud", ACTION_EMERGENCY + 1)}));
+                                       {NextAction("bug trio move away from poison cloud", ACTION_EMERGENCY + 5)}));
     triggers.push_back(
         new TriggerNode("bug trio bosses too close", {NextAction("bug trio tanks separate bosses", ACTION_POSITION)}));
     triggers.push_back(new TriggerNode("bug trio should assign dps priority",
@@ -62,7 +62,7 @@ void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Battleguard Sartura
     triggers.push_back(
         new TriggerNode("battleguard sartura whirlwind nearby",
-                        {NextAction("battleguard sartura move away from whirlwind", ACTION_EMERGENCY + 1)}));
+                        {NextAction("battleguard sartura move away from whirlwind", ACTION_EMERGENCY + 5)}));
     triggers.push_back(new TriggerNode("battleguard sartura should assign dps priority",
                                        {NextAction("battleguard sartura assign dps priority", ACTION_RAID + 1)}));
 
@@ -109,7 +109,7 @@ void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                                        {NextAction("twin emperors assign tanks and sides", ACTION_EMERGENCY + 10)}));
     triggers.push_back(
         new TriggerNode("twin emperors exploding bug nearby",
-                        {NextAction("twin emperors move away from exploding bug", ACTION_EMERGENCY + 1)}));
+                        {NextAction("twin emperors move away from exploding bug", ACTION_EMERGENCY + 5)}));
     triggers.push_back(new TriggerNode("twin emperors in blizzard",
                                        {NextAction("twin emperors escape blizzard", ACTION_EMERGENCY + 5)}));
     triggers.push_back(new TriggerNode("emperor vek'lor arcane burst range",
@@ -156,9 +156,9 @@ void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Ouro
     triggers.push_back(
-        new TriggerNode("ouro frontal cone", {NextAction("ouro move out of frontal cone", ACTION_EMERGENCY + 1)}));
+        new TriggerNode("ouro frontal cone", {NextAction("ouro move out of frontal cone", ACTION_EMERGENCY + 5)}));
     triggers.push_back(
-        new TriggerNode("ouro dirt mound nearby", {NextAction("ouro avoid dirt mound", ACTION_EMERGENCY + 1)}));
+        new TriggerNode("ouro dirt mound nearby", {NextAction("ouro avoid dirt mound", ACTION_EMERGENCY + 5)}));
     triggers.push_back(new TriggerNode("ouro should accept new main tank",
                                        {NextAction("ouro accept new main tank", ACTION_EMERGENCY + 10)}));
     triggers.push_back(
@@ -204,7 +204,6 @@ void RaidAq40Strategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // Shared
     multipliers.push_back(new Aq40WaitForKnockbackMultiplier(botAI));
-    multipliers.push_back(new Aq40HazardEscapeMultiplier(botAI));
     multipliers.push_back(new Aq40DontAttackMindControlledMultiplier(botAI));
     multipliers.push_back(new Aq40ControlTauntingMultiplier(botAI));
     multipliers.push_back(new Aq40TanksDisableTankAssistMultiplier(botAI));
