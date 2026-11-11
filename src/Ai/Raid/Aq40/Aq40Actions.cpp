@@ -27,43 +27,16 @@ bool Aq40MovementAction::MoveToGoal(Position goal, bool hazard)
 {
     Aq40Encounter encounter = GetCurrentEncounter(bot);
     bool const twins = encounter == Aq40Encounter::Twins;
-    bool const tank = PlayerbotAI::IsTank(bot);
     // C'Thun: the entrance ramps reach the floor only by one slope south-southeast of the Eye, so a spot is often
     // 100+ yd of path away and short steps stall on the ramps.
     bool const cthunRoute = encounter == Aq40Encounter::Cthun && !InStomach(bot);
     if (twins || cthunRoute)
     {
-        bot->UpdateAllowedPositionZ(goal.GetPositionX(), goal.GetPositionY(), goal.m_positionZ);
-        PathGenerator route(bot);
-        if (!route.CalculatePath(goal.GetPositionX(), goal.GetPositionY(), goal.GetPositionZ()) ||
-            route.GetPath().empty())
-            return false;
         // A long C'Thun route may come back incomplete; walk its reachable part and path again from there.
-        bool partial = cthunRoute && route.GetPathType() == PATHFIND_INCOMPLETE;
-        if (route.GetPathType() != PATHFIND_NORMAL && !partial)
+        Position next;
+        if (!GetRouteStep(bot, goal, cthunRoute, next))
             return false;
-        auto const& end = route.GetPath().back();
-        if (!partial && goal.GetExactDist(end.x, end.y, end.z) > 3.0f)
-            return false;
-        // Twins transfers run continuously across the room: stopping every few yards adds an AI reaction delay per
-        // segment and can miss the next teleport. A hazard escape can still interrupt this route.
-        float remaining = 250.0f;
-        Position next = bot->GetPosition();
-        for (auto const& point : route.GetPath())
-        {
-            float segment = next.GetExactDist(point.x, point.y, point.z);
-            if (segment > remaining)
-            {
-                float fraction = remaining / segment;
-                next.Relocate(next.GetPositionX() + (point.x - next.GetPositionX()) * fraction,
-                              next.GetPositionY() + (point.y - next.GetPositionY()) * fraction,
-                              next.GetPositionZ() + (point.z - next.GetPositionZ()) * fraction);
-                break;
-            }
-            next.Relocate(point.x, point.y, point.z);
-            remaining -= segment;
-        }
-        if (twins && (!tank || hazard))
+        if (twins)
             StopAttacking(bot);
         if (hazard)
             bot->CastStop();
@@ -613,32 +586,79 @@ bool TwinEmperorsClearVeknilashLandingSpotAction::Execute(Event /*event*/)
 
 bool TwinEmperorsTanksPositionEmperorsAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetTwinTankGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    Position next;
+    if (!GetTwinTankGoal(botAI, spot) || !GetRouteStep(bot, spot, false, next))
+        return false;
+    if (bot->movespline->Finalized())
+        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    return MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true, true,
+                  MovementPriority::MOVEMENT_COMBAT, true);
 }
 
 bool EmperorVeklorWarlockTankKeepRangeAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetTwinWarlockGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    Position next;
+    if (!GetTwinWarlockGoal(botAI, spot) || !GetRouteStep(bot, spot, false, next))
+        return false;
+    StopAttacking(bot);
+    if (bot->movespline->Finalized())
+        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    bool const moved = MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false,
+                              true, true, MovementPriority::MOVEMENT_COMBAT, true);
+    // A repeat of a route still running is refused as a duplicate. Keeping the turn stops attack set-up from
+    // re-facing the bot and breaking up the run.
+    return moved || !bot->movespline->Finalized();
 }
 
 bool TwinEmperorsMeleeLeaveLandingSpotsAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetTwinMeleeSwapGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    Position next;
+    if (!GetTwinMeleeSwapGoal(botAI, spot) || !GetRouteStep(bot, spot, false, next))
+        return false;
+    bool const tank = PlayerbotAI::IsTank(bot);
+    if (!tank)
+        StopAttacking(bot);
+    if (bot->movespline->Finalized())
+        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    bool const moved = MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false,
+                              true, true, MovementPriority::MOVEMENT_COMBAT, true);
+    // A repeat of a route still running is refused as a duplicate. Keeping the turn stops attack set-up from
+    // re-facing the bot and breaking up the run.
+    return moved || (!tank && !bot->movespline->Finalized());
 }
 
 bool TwinEmperorsDpsMoveToAssignedEmperorAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetTwinDpsGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    Position next;
+    if (!GetTwinDpsGoal(botAI, spot) || !GetRouteStep(bot, spot, false, next))
+        return false;
+    bool const tank = PlayerbotAI::IsTank(bot);
+    if (!tank)
+        StopAttacking(bot);
+    if (bot->movespline->Finalized())
+        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    bool const moved = MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false,
+                              true, true, MovementPriority::MOVEMENT_COMBAT, true);
+    // A repeat of a route still running is refused as a duplicate. Keeping the turn stops attack set-up from
+    // re-facing the bot and breaking up the run.
+    return moved || (!tank && !bot->movespline->Finalized());
 }
 
 bool TwinEmperorsHealersPositionBetweenTankAndWarlockAction::Execute(Event /*event*/)
 {
-    Position goal;
-    return GetTwinHealerGoal(botAI, goal) && MoveToGoal(goal, false);
+    Position spot;
+    Position next;
+    if (!GetTwinHealerGoal(botAI, spot) || !GetRouteStep(bot, spot, false, next))
+        return false;
+    StopAttacking(bot);
+    if (bot->movespline->Finalized())
+        AI_VALUE(LastMovement&, "last movement").clear();  // A knockback may have cancelled the old route.
+    return MoveTo(AQ40_MAP_ID, next.GetPositionX(), next.GetPositionY(), next.GetPositionZ(), false, false, true, true,
+                  MovementPriority::MOVEMENT_COMBAT, true);
 }
 
 // Ouro

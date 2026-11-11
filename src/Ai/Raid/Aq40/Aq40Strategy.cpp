@@ -235,7 +235,7 @@ void RaidAq40Strategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Twin Emperors
     multipliers.push_back(new TwinEmperorsOpeningHealHoldMultiplier(botAI));
     multipliers.push_back(new TwinEmperorsPriestShieldOnlyEmperorTargetsMultiplier(botAI));
-    multipliers.push_back(new TwinEmperorsHoldDamageInTransitMultiplier(botAI));
+    multipliers.push_back(new TwinEmperorsControlHealerMovementMultiplier(botAI));
     multipliers.push_back(new TwinEmperorsSkipImmuneTargetsMultiplier(botAI));
     multipliers.push_back(new TwinEmperorsVeklorThreatCapMultiplier(botAI));
     multipliers.push_back(new TwinEmperorsSpareTankThreatCapMultiplier(botAI));

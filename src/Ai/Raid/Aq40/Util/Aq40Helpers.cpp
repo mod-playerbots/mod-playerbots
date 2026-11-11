@@ -1726,6 +1726,39 @@ bool CthunMeleeBurn(PlayerbotAI* botAI)
            target->HasAura(Id(Aq40Spells::SPELL_PURPLE_COLORATION));
 }
 
+bool GetRouteStep(Player* bot, Position goal, bool allowPartial, Position& next)
+{
+    bot->UpdateAllowedPositionZ(goal.GetPositionX(), goal.GetPositionY(), goal.m_positionZ);
+    PathGenerator route(bot);
+    if (!route.CalculatePath(goal.GetPositionX(), goal.GetPositionY(), goal.GetPositionZ()) || route.GetPath().empty())
+        return false;
+    bool const partial = allowPartial && route.GetPathType() == PATHFIND_INCOMPLETE;
+    if (route.GetPathType() != PATHFIND_NORMAL && !partial)
+        return false;
+    auto const& end = route.GetPath().back();
+    if (!partial && goal.GetExactDist(end.x, end.y, end.z) > 3.0f)
+        return false;
+    // Twins transfers run continuously across the room: stopping every few yards adds an AI reaction delay per
+    // segment and can miss the next teleport.
+    float remaining = 250.0f;
+    next = bot->GetPosition();
+    for (auto const& point : route.GetPath())
+    {
+        float segment = next.GetExactDist(point.x, point.y, point.z);
+        if (segment > remaining)
+        {
+            float fraction = remaining / segment;
+            next.Relocate(next.GetPositionX() + (point.x - next.GetPositionX()) * fraction,
+                          next.GetPositionY() + (point.y - next.GetPositionY()) * fraction,
+                          next.GetPositionZ() + (point.z - next.GetPositionZ()) * fraction);
+            break;
+        }
+        next.Relocate(point.x, point.y, point.z);
+        remaining -= segment;
+    }
+    return true;
+}
+
 // Hazard escapes
 
 bool GetStomachExitGoal(PlayerbotAI* botAI, Position& goal)
@@ -2357,8 +2390,7 @@ bool GetBossRangeGoal(PlayerbotAI* botAI, Position& goal)
 bool ComputeFormationGoal(PlayerbotAI* botAI, Position& goal)
 {
     for (Aq40GoalFn formation :
-         {&GetTwinTankGoal, &GetTwinWarlockGoal, &GetTwinMeleeSwapGoal, &GetTwinDpsGoal, &GetTwinHealerGoal,
-          &GetCthunPullerHoldGoal, &GetCthunMeleeBurnGoal, &GetCthunSpotGoal, &GetCthunStackGoal})
+         {&GetCthunPullerHoldGoal, &GetCthunMeleeBurnGoal, &GetCthunSpotGoal, &GetCthunStackGoal})
         if (formation(botAI, goal))
             return true;
     return false;

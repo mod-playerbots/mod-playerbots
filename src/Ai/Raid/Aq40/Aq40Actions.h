@@ -404,51 +404,51 @@ public:
     bool Execute(Event event) override;
 };
 
-class TwinEmperorsTanksPositionEmperorsAction : public Aq40MovementAction
+class TwinEmperorsTanksPositionEmperorsAction : public MovementAction, public Aq40ActionTag
 {
 public:
     TwinEmperorsTanksPositionEmperorsAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "twin emperors tanks position emperors")
+        : MovementAction(botAI, "twin emperors tanks position emperors")
     {
     }
     bool Execute(Event event) override;
 };
 
-class EmperorVeklorWarlockTankKeepRangeAction : public Aq40MovementAction
+class EmperorVeklorWarlockTankKeepRangeAction : public MovementAction, public Aq40ActionTag
 {
 public:
     EmperorVeklorWarlockTankKeepRangeAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "emperor vek'lor warlock tank keep range")
+        : MovementAction(botAI, "emperor vek'lor warlock tank keep range")
     {
     }
     bool Execute(Event event) override;
 };
 
-class TwinEmperorsMeleeLeaveLandingSpotsAction : public Aq40MovementAction
+class TwinEmperorsMeleeLeaveLandingSpotsAction : public MovementAction, public Aq40ActionTag
 {
 public:
     TwinEmperorsMeleeLeaveLandingSpotsAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "twin emperors melee leave landing spots")
+        : MovementAction(botAI, "twin emperors melee leave landing spots")
     {
     }
     bool Execute(Event event) override;
 };
 
-class TwinEmperorsDpsMoveToAssignedEmperorAction : public Aq40MovementAction
+class TwinEmperorsDpsMoveToAssignedEmperorAction : public MovementAction, public Aq40ActionTag
 {
 public:
     TwinEmperorsDpsMoveToAssignedEmperorAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "twin emperors dps move to assigned emperor")
+        : MovementAction(botAI, "twin emperors dps move to assigned emperor")
     {
     }
     bool Execute(Event event) override;
 };
 
-class TwinEmperorsHealersPositionBetweenTankAndWarlockAction : public Aq40MovementAction
+class TwinEmperorsHealersPositionBetweenTankAndWarlockAction : public MovementAction, public Aq40ActionTag
 {
 public:
     TwinEmperorsHealersPositionBetweenTankAndWarlockAction(PlayerbotAI* botAI)
-        : Aq40MovementAction(botAI, "twin emperors healers position between tank and warlock")
+        : MovementAction(botAI, "twin emperors healers position between tank and warlock")
     {
     }
     bool Execute(Event event) override;

@@ -272,11 +272,11 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class TwinEmperorsHoldDamageInTransitMultiplier : public Aq40EncounterMultiplier
+class TwinEmperorsControlHealerMovementMultiplier : public Aq40EncounterMultiplier
 {
 public:
-    TwinEmperorsHoldDamageInTransitMultiplier(PlayerbotAI* botAI)
-        : Aq40EncounterMultiplier(botAI, "twin emperors hold damage in transit", Aq40Helpers::Aq40Encounter::Twins)
+    TwinEmperorsControlHealerMovementMultiplier(PlayerbotAI* botAI)
+        : Aq40EncounterMultiplier(botAI, "twin emperors control healer movement", Aq40Helpers::Aq40Encounter::Twins)
     {
     }
 

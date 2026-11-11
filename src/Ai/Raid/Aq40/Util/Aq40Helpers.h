@@ -477,6 +477,10 @@ bool IsCthunWeakened(Player* bot);
 bool IsCthunTentacleKiller(Player* bot);
 bool CthunMeleeBurn(PlayerbotAI* botAI);
 
+// The farthest point within 250 yd along the bot's path to the goal. Fails unless the path ends at the goal, or,
+// with allowPartial, stops short of it.
+bool GetRouteStep(Player* bot, Position goal, bool allowPartial, Position& next);
+
 // Hazard escapes. Each returns where the bot should step to.
 
 bool GetStomachExitGoal(PlayerbotAI* botAI, Position& goal);

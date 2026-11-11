@@ -316,13 +316,13 @@ float TwinEmperorsPriestShieldOnlyEmperorTargetsMultiplier::GetValueInEncounter(
     return emperorTarget && who->GetHealthPct() <= 80.0f ? 1.0f : 0.0f;
 }
 
-float TwinEmperorsHoldDamageInTransitMultiplier::GetValueInEncounter(Action* action)
+float TwinEmperorsControlHealerMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (IsOwnAction(action) || PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot))
+    if (!dynamic_cast<ReachTargetAction*>(action) && !dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action))
         return 1.0f;
-    if (!IsTargetPicker(action) && !IsHostileTarget(bot, action))
-        return 1.0f;
-    return HasFormationGoal(botAI) ? 0.0f : 1.0f;
+    Position spot;
+    return GetTwinHealerGoal(botAI, spot) ? 0.0f : 1.0f;
 }
 
 float TwinEmperorsSkipImmuneTargetsMultiplier::GetValueInEncounter(Action* action)

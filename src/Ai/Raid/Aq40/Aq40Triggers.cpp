@@ -51,10 +51,9 @@ bool Aq40AssignedTargetTrigger::IsActiveInEncounter()
     Unit* target = GetAssignedTarget(botAI);
     if (!target)
         return false;
-    // A transfer owns the bot until it reaches its assigned emperor or C'Thun spot: attack setup re-faces the target
-    // every tick and breaks up the walk the position action just started.
-    if (((_encounter == Aq40Encounter::Twins && !PlayerbotAI::IsTank(bot)) || _encounter == Aq40Encounter::Cthun) &&
-        HasFormationGoal(botAI))
+    // A transfer owns the bot until it reaches its C'Thun spot: attack setup re-faces the target every tick and
+    // breaks up the walk the position action just started.
+    if (_encounter == Aq40Encounter::Cthun && HasFormationGoal(botAI))
         return false;
     // Weakened burn: melee hit C'Thun only from within 10 yd of his center; until then they walk in.
     if (CthunMeleeBurn(botAI) && bot->GetExactDist2d(target) > CTHUN_BURN_MELEE_REACH)
