@@ -316,9 +316,11 @@ inline constexpr float CTHUN_FLOOR_TOLERANCE = 3.0f;
 
 // Shared state
 
-// What the mechanic tracker found and assigned for the current encounter. Only the tracker writes it.
+// What the mechanic tracker found and assigned for the current encounter. Only the acting tracker writes it.
 struct Aq40InstanceState
 {
+    ObjectGuid tracker;
+    uint32 trackerSeen = 0;
     Aq40Encounter encounter = Aq40Encounter::None;
     ObjectGuid group;
     uint32 encounterStart = 0;
@@ -414,6 +416,8 @@ Unit* GetAssignedTarget(PlayerbotAI* botAI);
 
 // Mechanic tracker
 
+// A casting bot's AI does not tick, so the tracker's jobs pass to another bot once the holder falls silent.
+bool IsActingTracker(Player* bot);
 void TrackEncounter(Player* bot);
 void AssignAddTanks(Player* bot);
 bool SwapTanksOnStacks(Player* bot, uint32 aura, uint32 stacks);
@@ -428,7 +432,6 @@ Player* GetMindControlledMember(Player* bot);
 
 // Battleguard Sartura
 
-// A whirlwinding Sartura or Royal Guard inside WHIRLWIND_SAFE_DISTANCE of the bot.
 Creature* GetWhirlwindInRange(Player* bot);
 
 // Princess Huhuran

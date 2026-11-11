@@ -774,6 +774,17 @@ Unit* GetAssignedTarget(PlayerbotAI* botAI)
 
 // Mechanic tracker
 
+bool IsActingTracker(Player* bot)
+{
+    Aq40InstanceState& state = Aq40State(bot->GetInstanceId());
+    uint32 const now = getMSTime();
+    if (state.tracker && state.tracker != bot->GetGUID() && getMSTimeDiff(state.trackerSeen, now) < TRACKER_INTERVAL_MS)
+        return false;
+    state.tracker = bot->GetGUID();
+    state.trackerSeen = now;
+    return true;
+}
+
 void TrackEncounter(Player* bot)
 {
     InstanceScript* instance = bot->GetInstanceScript();
@@ -784,7 +795,11 @@ void TrackEncounter(Player* bot)
     Aq40Encounter current = GetCurrentEncounter(bot);
     if (current != state.encounter || state.group != group->GetGUID())
     {
+        ObjectGuid const tracker = state.tracker;
+        uint32 const trackerSeen = state.trackerSeen;
         state = Aq40InstanceState();
+        state.tracker = tracker;
+        state.trackerSeen = trackerSeen;
         state.encounter = current;
         state.group = group->GetGUID();
         state.encounterStart = getMSTime();

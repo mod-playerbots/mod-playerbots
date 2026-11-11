@@ -25,7 +25,6 @@ private:
     Aq40Helpers::Aq40BotCache _data;
 };
 
-// The bot's target for the current encounter, read by several multipliers per tick.
 class Aq40AssignedTargetValue : public CalculatedValue<ObjectGuid>
 {
 public:

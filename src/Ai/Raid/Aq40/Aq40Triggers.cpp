@@ -25,8 +25,7 @@ bool Aq40NoEncounterInProgressTrigger::IsActive()
 
 bool Aq40TrackerTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, AQ40_MAP_ID) &&
-           (_encounter == Aq40Encounter::None || IsInEncounter(bot, _encounter));
+    return (_encounter == Aq40Encounter::None || IsInEncounter(bot, _encounter)) && IsActingTracker(bot);
 }
 
 bool Aq40StuckMidairTrigger::IsActiveInEncounter()

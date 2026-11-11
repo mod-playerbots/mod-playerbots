@@ -18,12 +18,10 @@
 class Aq40EncounterTrigger : public Trigger
 {
 public:
-    // Active in any AQ40 encounter.
     Aq40EncounterTrigger(PlayerbotAI* botAI, std::string const name, int32 checkInterval = 1)
         : Trigger(botAI, name, checkInterval)
     {
     }
-    // Active in one boss's encounter only.
     Aq40EncounterTrigger(PlayerbotAI* botAI, std::string const name, Aq40Helpers::Aq40Encounter encounter,
                          int32 checkInterval = 1)
         : Trigger(botAI, name, checkInterval), _encounter(encounter)
@@ -39,7 +37,6 @@ public:
 
 protected:
     virtual bool IsActiveInEncounter() = 0;
-    // The bot is free to act: not casting and not escaping a hazard.
     bool IsFreeToAct();
 
 private:
@@ -54,7 +51,6 @@ public:
     bool IsActive() override;
 };
 
-// Fires for the mechanic tracker bot only, in the given encounter (None: any encounter).
 class Aq40TrackerTrigger : public Aq40EncounterTrigger
 {
 public:
@@ -79,7 +75,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// Shared by each boss's kill order: the bot has an assigned target it is not attacking yet.
 class Aq40AssignedTargetTrigger : public Aq40EncounterTrigger
 {
 public:

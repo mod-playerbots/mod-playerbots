@@ -23,14 +23,12 @@ public:
     virtual ~Aq40ActionTag() = default;
 };
 
-// Movement shared by hazard escapes and encounter positions.
 class Aq40MovementAction : public MovementAction, public Aq40ActionTag
 {
 public:
     Aq40MovementAction(PlayerbotAI* botAI, std::string const& name) : MovementAction(botAI, name) {}
 
 protected:
-    // Hazard escapes (forced) may turn around obstacles and interrupt the bot's cast.
     bool MoveToGoal(Position goal, bool hazard);
     // Before the pull, neither "follow" (drags the bot back to the master) nor "stay" (keeps pulling it back
     // mid-fight) works, so the bot walks to its spot and holds it.
@@ -51,7 +49,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// Each boss's kill order lives in the "aq40 assigned target" value; these actions attack it.
 class Aq40AttackAssignedTargetAction : public AttackAction, public Aq40ActionTag
 {
 public:
@@ -73,8 +70,7 @@ public:
     bool Execute(Event event) override;
 };
 
-// Tracker bookkeeping: this and every assign, swap and track action below returns false, so it never takes
-// the bot's turn.
+// Tracker actions return false so they never take the bot's turn.
 class Aq40TrackEncounterAction : public Action, public Aq40ActionTag
 {
 public:
@@ -151,7 +147,6 @@ public:
 
 // Battleguard Sartura
 
-// Tanks leave too: a whirlwinding Sartura or guard is neither taunted nor damaged until it stops.
 class BattleguardSarturaMoveAwayFromWhirlwindAction : public Aq40MovementAction
 {
 public:

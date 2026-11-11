@@ -18,9 +18,7 @@
 class Aq40EncounterMultiplier : public Multiplier
 {
 public:
-    // Applies in any AQ40 encounter.
     Aq40EncounterMultiplier(PlayerbotAI* botAI, std::string const name) : Multiplier(botAI, name) {}
-    // Applies in one boss's encounter only.
     Aq40EncounterMultiplier(PlayerbotAI* botAI, std::string const name, Aq40Helpers::Aq40Encounter encounter)
         : Multiplier(botAI, name), _encounter(encounter)
     {
