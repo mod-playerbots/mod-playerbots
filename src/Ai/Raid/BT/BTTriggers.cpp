@@ -10,7 +10,6 @@
 #include "Playerbots.h"
 #include "SharedDefines.h"
 #include "Spell.h"
-#include "ThreatHelpers.h"
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -31,13 +30,13 @@ bool BlackTempleClassRolesShouldBeAssignedTrigger::IsActive()
 }
 
 // Misdirect immediately after the pull. Used for High Warlord Naj'entus, Supremus, Teron Gorefiend,
-// Gurtogg Bloodboil, Mother Shahraz, and the Illidari Council (on Gathios).
+// Gurtogg Bloodboil, Mother Shahraz, and the Illidari Council.
 bool BlackTempleHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* boss = _target ? FindThreatTarget(bot, *_target) : GetEncounterBoss();
+    Unit* boss = GetEncounterBoss();
     return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 

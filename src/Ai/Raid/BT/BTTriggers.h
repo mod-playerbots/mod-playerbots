@@ -10,7 +10,6 @@
 #include "BTHelpers.h"
 #include "EncounterHelpers.h"
 #include "Trigger.h"
-#include <optional>
 #include <string>
 
 // Shared
@@ -57,15 +56,11 @@ class BlackTempleHunterShouldMisdirectTrigger : public BlackTempleEncounterTrigg
 {
 public:
     BlackTempleHunterShouldMisdirectTrigger(
-        PlayerbotAI* botAI, std::string const& name, BtHelpers::BtBosses boss,
-        std::optional<std::string_view> target = std::nullopt)
-        : BlackTempleEncounterTrigger(botAI, name, boss), _target(target) {}
+        PlayerbotAI* botAI, std::string const& name, BtHelpers::BtBosses boss)
+        : BlackTempleEncounterTrigger(botAI, name, boss) {}
 
 protected:
     bool IsActiveInEncounter() override;
-
-private:
-    std::optional<std::string_view> const _target;
 };
 
 // Trash

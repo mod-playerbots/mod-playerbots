@@ -26,7 +26,6 @@
 #include "ShamanActions.h"
 #include "Spell.h"
 #include "SpellMgr.h"
-#include "ThreatHelpers.h"
 #include "ThreatManager.h"
 #include "Timer.h"
 #include "UseItemAction.h"
@@ -133,15 +132,10 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
         case BtBosses::DATA_TERON_GOREFIEND:
         case BtBosses::DATA_GURTOGG_BLOODBOIL:
         case BtBosses::DATA_MOTHER_SHAHRAZ:
+        case BtBosses::DATA_ILLIDARI_COUNCIL:
         {
             Unit* boss = GetBtBoss(bot, static_cast<BtBosses>(*bossId));
             return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
-        }
-        case BtBosses::DATA_ILLIDARI_COUNCIL:
-        {
-            // Empyreal Balance shares health, so Gathios's HP percentage is the Council's.
-            Unit* gathios = FindThreatTarget(bot, "gathios the shatterer");
-            return gathios && gathios->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
         }
         default:
             return 1.0f;

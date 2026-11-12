@@ -60,13 +60,45 @@ constexpr std::string_view BossName(BtBosses boss)
             return "reliquary of the lost";
         case BtBosses::DATA_MOTHER_SHAHRAZ:
             return "mother shahraz";
-        // The Illidari Council's boss is its controller, a trigger that is never on a threat list.
-        // GetIllidariCouncilMembers finds the members instead.
+        // The Illidari Council is absent: its boss ai is a controller that is never on a threat
+        // list, so GetBtBoss resolves Gathios for it instead.
         case BtBosses::DATA_ILLIDAN_STORMRAGE:
             return "illidan stormrage";
         default:
             return {};
     }
+}
+
+// The Council members add the raid to their threat lists only at the pull, not every 5s like most
+// bosses. So a resurrected bot can't find a member through its own threat list until it attacks or
+// is attacked by that member, or casts on an ally in the fight. Being blind to some members can
+// cause undesired behaviors (e.g., a bot attacks the wrong member because it doesn't see its
+// assigned one). To solve this, on a miss for any member, we check groupmates' threat lists for it.
+//
+// This approach is cheap here only because the members share a health pool and die together. So if
+// one is on a bot's threat list, all four are present, and the first living groupmate is likely to
+// have all members on its list. In other council fights, where members die separately, misses are
+// normal, and this approach would result in frequent inefficient full-raid scans.
+Unit* FindCouncilMember(Player* bot, std::string_view name)
+{
+    if (Unit* member = FindThreatTarget(bot, name))
+        return member;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* player = ref->GetSource();
+        if (!player || player == bot || !player->IsAlive() || player->GetMapId() != BT_MAP_ID)
+            continue;
+
+        if (Unit* member = FindThreatTarget(player, name))
+            return member;
+    }
+
+    return nullptr;
 }
 
 } // end anonymous namespace (Shared)
@@ -75,6 +107,11 @@ Unit* GetBtBoss(Player* bot, BtBosses boss)
 {
     if (!IsBossInProgress(bot, BT_MAP_ID, Id(boss)))
         return nullptr;
+
+    // The Council has no single boss unit, and Empyreal Balance shares the members' health, so
+    // Gathios's health percentage is used to represent the Council's as a whole.
+    if (boss == BtBosses::DATA_ILLIDARI_COUNCIL)
+        return FindCouncilMember(bot, "gathios the shatterer");
 
     return FindThreatTarget(bot, BossName(boss));
 }
@@ -1150,38 +1187,6 @@ bool IsShahrazBeingPositioned(Unit* shahraz)
 
 namespace
 {
-
-// The Council members add the raid to their threat lists only at the pull, not every 5s like most
-// bosses. So a resurrected bot can't find a member through its own threat list until it attacks or
-// is attacked by that member, or casts on an ally in the fight. Being blind to some members can
-// cause undesired behaviors (e.g., a bot attacks the wrong member because it doesn't see its
-// assigned one). To solve this, on a miss for any member, we check groupmates' threat lists for it.
-//
-// This approach is cheap here only because the members share a health pool and die together. So if
-// one is on a bot's threat list, all four are present, and the first living groupmate is likely to
-// have all members on its list. In other council fights, where members die separately, misses are
-// normal, and this approach would result in frequent inefficient full-raid scans.
-Unit* FindCouncilMember(Player* bot, std::string_view name)
-{
-    if (Unit* member = FindThreatTarget(bot, name))
-        return member;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* player = ref->GetSource();
-        if (!player || player == bot || !player->IsAlive() || player->GetMapId() != BT_MAP_ID)
-            continue;
-
-        if (Unit* member = FindThreatTarget(player, name))
-            return member;
-    }
-
-    return nullptr;
-}
 
 // A blocked ray stops at the obstacle and still counts as success, so a point that returns short
 // means the move is blocked. Both callers compute the spot rather than using a fixed position (mage
