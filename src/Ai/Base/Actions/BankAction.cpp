@@ -82,7 +82,7 @@ bool BankAction::Withdraw(uint32 itemid)
     }
 
     std::ostringstream out;
-    out << "got " << chat->FormatItem(pItem->GetTemplate(), pItem->GetCount()) << " from bank";
+    out << "got " << chat->FormatItem(pItem, pItem->GetCount()) << " from bank";
 
     bot->RemoveItem(pItem->GetBagSlot(), pItem->GetSlot(), true);
     bot->StoreItem(dest, pItem, true);
@@ -102,7 +102,7 @@ bool BankAction::Deposit(Item* pItem)
     }
 
     std::ostringstream out;
-    out << "put " << chat->FormatItem(pItem->GetTemplate(), pItem->GetCount()) << " to bank";
+    out << "put " << chat->FormatItem(pItem, pItem->GetCount()) << " to bank";
 
     bot->RemoveItem(pItem->GetBagSlot(), pItem->GetSlot(), true);
     bot->BankItem(dest, pItem, true);
@@ -115,28 +115,9 @@ void BankAction::ListItems()
 {
     botAI->TellMaster("=== Bank ===");
 
-    std::map<uint32, uint32> items;
-    std::map<uint32, bool> soulbound;
-    for (uint32 i = BANK_SLOT_ITEM_START; i < BANK_SLOT_ITEM_END; ++i)
-        if (Item* pItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
-            if (pItem)
-            {
-                items[pItem->GetTemplate()->ItemId] += pItem->GetCount();
-                soulbound[pItem->GetTemplate()->ItemId] = pItem->IsSoulBound();
-            }
-
-    for (uint32 i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; ++i)
-        if (Bag* pBag = (Bag*)bot->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
-            if (pBag)
-                for (uint32 j = 0; j < pBag->GetBagSize(); ++j)
-                    if (Item* pItem = pBag->GetItemByPos(j))
-                        if (pItem)
-                        {
-                            items[pItem->GetTemplate()->ItemId] += pItem->GetCount();
-                            soulbound[pItem->GetTemplate()->ItemId] = pItem->IsSoulBound();
-                        }
-
-    TellItems(items, soulbound);
+    CollectItemsVisitor visitor;
+    IterateItems(&visitor, ITERATE_ITEMS_IN_BANK);
+    TellItems(visitor.items);
 }
 
 Item* BankAction::FindItemInBank(uint32 ItemId)
