@@ -40,7 +40,7 @@
 #include "TravelMgr.h"
 #include "G3D/Vector2.h"
 #include <cmath>
-#include <limits>
+#include <cstring>
 #include <map>
 #include <mutex>
 #include <tuple>
@@ -50,18 +50,26 @@ namespace
     // Destination cells are immutable, so remember the dark-water result per map/cell. This
     // keeps the same liquid query from being repeated for every bot sharing the destination
     // cache, which otherwise adds up to hundreds of collision-tree lookups per selection.
+    uint32 FloatBits(float value)
+    {
+        uint32 bits = 0;
+        static_assert(sizeof(bits) == sizeof(value));
+        std::memcpy(&bits, &value, sizeof(bits));
+        return bits;
+    }
+
     bool IsDarkWaterCell(Map* map, uint32 phaseMask, float x, float y, float z, float collisionHeight)
     {
-        // The key carries map, phase, and the full 50-yd cell (including height): the same
-        // X/Y column can hold a surface cell and an underground cell with different liquids.
+        // Cache key: map, phase, exact position and collision height. Destination cells store
+        // their centre verbatim, so repeated checks for the same destination hit the cache
+        // across bots; any different position or height is a different key and performs its
+        // own query, so a hit is by definition the same query the map returned before.
         // Concurrent misses may repeat a query, but the result is identical.
         static std::mutex cacheMutex;
-        static std::map<std::tuple<uint32, uint32, int32, int32, int32>, bool> darkWaterCells;
+        static std::map<std::tuple<uint32, uint32, uint32, uint32, uint32, uint32>, bool> darkWaterCells;
 
-        int32 const cellX = int32(std::lround(x / 50.0f));
-        int32 const cellY = int32(std::lround(y / 50.0f));
-        int32 const cellZ = int32(std::lround(z / 50.0f));
-        auto const key = std::make_tuple(map->GetId(), phaseMask, cellX, cellY, cellZ);
+        auto const key = std::make_tuple(map->GetId(), phaseMask, FloatBits(x), FloatBits(y), FloatBits(z),
+                                         FloatBits(collisionHeight));
 
         {
             std::lock_guard<std::mutex> lock(cacheMutex);
@@ -92,78 +100,11 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     if (bot->IsInFlight())
         return true;
 
-    // In fatigue water, head for the nearest regular-water/shore point in short steps. The
-    // ordinary short-move branch below performs the swim; no pathfinder fallback (collisionless
-    // straight lines) is used. Once out of dark water the caller's real target applies again.
-    if (IsInFatigueWater())
-    {
-        NewRpgInfo& info = botAI->rpgInfo;
-        bool const hasTarget = info.waterEscapeTarget != WorldPosition();
-        uint32 const sinceCheck = GetMSTimeDiffToNow(info.waterEscapeCheckMs);
-        // A failed search retries after 2s; a chosen target is kept for 8s, so movement and
-        // stuck tracking stay on one heading instead of being rewritten on every scan.
-        if ((!hasTarget && sinceCheck > 2000) || (hasTarget && sinceCheck > 8000))
-        {
-            WorldPosition const previous = info.waterEscapeTarget;
-            WorldPosition const next = FindWaterEscapeTarget();
-            // Ignore small shifts of the sampled point to avoid oscillation between steps.
-            if (next != previous &&
-                (next == WorldPosition() || previous == WorldPosition() || next.GetExactDist(previous) > 20.0f))
-            {
-                info.waterEscapeTarget = next;
-                info.waterEscapeStep = WorldPosition();
-                if (next != WorldPosition())
-                {
-                    LOG_DEBUG("playerbots", "[New RPG] {} escaping dark water via ({:.0f},{:.0f},{:.0f})",
-                              bot->GetName(), next.GetPositionX(), next.GetPositionY(), next.GetPositionZ());
-                }
-            }
-            info.waterEscapeCheckMs = getMSTime();
-        }
-
-        // Keep the step destination stable until it is reached or the target changed: a dest
-        // that follows the bot would reset stuck tracking on every call.
-        WorldPosition const& escape = botAI->rpgInfo.waterEscapeTarget;
-        if (escape != WorldPosition() &&
-            (botAI->rpgInfo.waterEscapeStep == WorldPosition() ||
-             bot->GetExactDist(botAI->rpgInfo.waterEscapeStep) < 5.0f))
-        {
-            float const step = 50.0f;
-            float const dx = escape.GetPositionX() - bot->GetPositionX();
-            float const dy = escape.GetPositionY() - bot->GetPositionY();
-            float const dz = escape.GetPositionZ() - bot->GetPositionZ();
-            float const len = std::sqrt(dx * dx + dy * dy + dz * dz);
-            if (len > 0.01f)
-            {
-                float const f = std::min(1.0f, step / len);
-                botAI->rpgInfo.waterEscapeStep =
-                    WorldPosition(bot->GetMapId(), bot->GetPositionX() + dx * f, bot->GetPositionY() + dy * f,
-                                  bot->GetPositionZ() + dz * f);
-            }
-        }
-        if (botAI->rpgInfo.waterEscapeStep != WorldPosition())
-            dest = botAI->rpgInfo.waterEscapeStep;
-    }
-    else
-    {
-        botAI->rpgInfo.waterEscapeTarget = WorldPosition();
-        botAI->rpgInfo.waterEscapeStep = WorldPosition();
-    }
-
     bool newDest = dest != botAI->rpgInfo.moveFarPos;
     if (newDest)
     {
-        if (IsInFatigueWater())
-        {
-            // Escape steps move with the bot by design; keep tracking stuck progress toward
-            // the current step instead of resetting the counters on every hop.
-            botAI->rpgInfo.moveFarPos = dest;
-        }
-        else
-        {
-            // clear stuck information if it's a new dest
-            botAI->rpgInfo.SetMoveFarTo(dest);
-        }
+        // clear stuck information if it's a new dest
+        botAI->rpgInfo.SetMoveFarTo(dest);
     }
 
     // performance optimization
@@ -892,69 +833,6 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
     }
 
     return true;
-}
-
-bool NewRpgBaseAction::IsInFatigueWater()
-{
-    // The fatigue bar (Player::HandleDrowning) drains only in dark water: an authored liquid
-    // type, not deep water in general. Query the map directly - the bot's cached liquid data
-    // can be stale right after a teleport - and throttle it, since this runs from MoveFarTo.
-    NewRpgInfo& info = botAI->rpgInfo;
-    if (info.waterCheckMs && GetMSTimeDiffToNow(info.waterCheckMs) < 1000)
-        return info.inFatigueWater;
-
-    LiquidData const liquid = bot->GetMap()->GetLiquidData(bot->GetPhaseMask(), bot->GetPositionX(),
-                                                           bot->GetPositionY(), bot->GetPositionZ(),
-                                                           bot->GetCollisionHeight(), {});
-    info.inFatigueWater =
-        (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER) && !bot->IsInFlight() && !bot->GetTransport();
-    info.waterCheckMs = getMSTime();
-    if (!info.inFatigueWater)
-        info.waterEscapeTarget = WorldPosition();
-    return info.inFatigueWater;
-}
-
-WorldPosition NewRpgBaseAction::FindWaterEscapeTarget()
-{
-    // The way out of dark water is the nearest point that is not dark water: regular water or
-    // land. Sample rings around the bot so the escape is a short swim the ordinary short-move
-    // branch can cover.
-    float const rings[] = {40.0f, 80.0f, 120.0f, 160.0f, 200.0f, 240.0f};
-    uint32 const directions = 16;
-    for (float radius : rings)
-    {
-        WorldPosition best{};
-        float bestDist = std::numeric_limits<float>::max();
-        for (uint32 i = 0; i < directions; ++i)
-        {
-            float const angle = float(i) * 2.0f * float(M_PI) / float(directions);
-            float const x = bot->GetPositionX() + std::cos(angle) * radius;
-            float const y = bot->GetPositionY() + std::sin(angle) * radius;
-
-            LiquidData const liquid = bot->GetMap()->GetLiquidData(bot->GetPhaseMask(), x, y, bot->GetPositionZ(),
-                                                                   bot->GetCollisionHeight(), {});
-            if (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER)
-                continue;
-
-            float const groundZ = bot->GetMap()->GetHeight(x, y, MAX_HEIGHT);
-            float const waterZ = bot->GetMap()->GetWaterLevel(x, y);
-            if (groundZ == INVALID_HEIGHT && waterZ == INVALID_HEIGHT)
-                continue;
-            float const z = std::max(groundZ, waterZ);
-            if (z == INVALID_HEIGHT)
-                continue;
-            WorldPosition const candidate(bot->GetMapId(), x, y, z);
-            float const d = bot->GetExactDist(candidate);
-            if (d < bestDist)
-            {
-                bestDist = d;
-                best = candidate;
-            }
-        }
-        if (best != WorldPosition())
-            return best;
-    }
-    return WorldPosition{};
 }
 
 WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)

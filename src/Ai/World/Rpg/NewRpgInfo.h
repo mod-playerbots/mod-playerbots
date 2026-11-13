@@ -99,14 +99,6 @@ struct NewRpgInfo
     WorldPosition moveFarPos;
     // END MOVE_FAR
 
-    // WATER ESCAPE (dark water)
-    WorldPosition waterEscapeTarget;  // nearest non-dark-water point, cached while escaping
-    uint32 waterEscapeCheckMs{0};     // last search timestamp
-    WorldPosition waterEscapeStep;    // current step destination, kept until reached
-    bool inFatigueWater{false};       // throttled map query result
-    uint32 waterCheckMs{0};           // last map query timestamp
-    // END WATER ESCAPE
-
     // QUEST GIVER
     ObjectGuid questGiver;  // giver the bot is walking to or talking with
     uint32 questGiverSince{0};
