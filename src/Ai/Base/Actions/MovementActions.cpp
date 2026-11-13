@@ -2764,6 +2764,71 @@ bool MoveOutOfCollisionAction::isUseful()
            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest friendly players")->Get().size() < 15;
 }
 
+bool MoveOutOfDarkWaterAction::Execute(Event /*event*/)
+{
+    if (!botAI->IsInDarkWater())
+        return false;
+
+    PlayerbotAI::WaterEscapeState& state = botAI->waterEscape;
+    bool const hasTarget = state.target != WorldPosition();
+    uint32 const sinceCheck = GetMSTimeDiffToNow(state.targetCheckMs);
+    // A failed search retries after 10s (each attempt scans up to 96 liquid samples); a
+    // chosen target is kept for 8s so movement stays on one heading instead of being
+    // rewritten on every scan.
+    if ((!hasTarget && sinceCheck > 10000) || (hasTarget && sinceCheck > 8000))
+    {
+        WorldPosition const previous = state.target;
+        WorldPosition const next = botAI->FindDarkWaterEscapeTarget();
+        // Ignore small shifts of the sampled point to avoid oscillation between steps.
+        if (next != previous &&
+            (next == WorldPosition() || previous == WorldPosition() || next.GetExactDist(previous) > 20.0f))
+        {
+            state.target = next;
+            state.step = WorldPosition();
+            if (next != WorldPosition())
+            {
+                LOG_DEBUG("playerbots", "[AI] {} escaping dark water via ({:.0f},{:.0f},{:.0f})",
+                          bot->GetName(), next.GetPositionX(), next.GetPositionY(), next.GetPositionZ());
+            }
+        }
+        state.targetCheckMs = getMSTime();
+    }
+
+    if (state.target == WorldPosition())
+        return false;
+
+    // Keep the step destination stable until it is reached or the target changed.
+    if (state.step == WorldPosition() || bot->GetExactDist(state.step) < 5.0f)
+    {
+        float const step = 50.0f;
+        float const dx = state.target.GetPositionX() - bot->GetPositionX();
+        float const dy = state.target.GetPositionY() - bot->GetPositionY();
+        float const dz = state.target.GetPositionZ() - bot->GetPositionZ();
+        float const len = std::sqrt(dx * dx + dy * dy + dz * dz);
+        if (len > 0.01f)
+        {
+            float const f = std::min(1.0f, step / len);
+            state.step = WorldPosition(bot->GetMapId(), bot->GetPositionX() + dx * f,
+                                       bot->GetPositionY() + dy * f, bot->GetPositionZ() + dz * f);
+        }
+    }
+
+    if (state.step == WorldPosition())
+        return false;
+
+    // Swimming issues a direct move anyway; use combat priority so the escape is not
+    // overridden by the current combat movement.
+    MovementPriority const priority = bot->IsInCombat() ? MovementPriority::MOVEMENT_COMBAT
+                                                        : MovementPriority::MOVEMENT_NORMAL;
+    return MoveTo(bot->GetMapId(), state.step.GetPositionX(), state.step.GetPositionY(), state.step.GetPositionZ(),
+                  false, false, false, true, priority);
+}
+
+bool MoveOutOfDarkWaterAction::isUseful()
+{
+    return !botAI->IsInVehicle() && botAI->IsInDarkWater();
+}
+
 bool MoveRandomAction::Execute(Event /*event*/)
 {
     float distance = sPlayerbotAIConfig.TooCloseDistance + urand(10, 30);

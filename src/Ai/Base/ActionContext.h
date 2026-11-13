@@ -88,6 +88,7 @@ public:
         creators["choose travel target"] = &ActionContext::choose_travel_target;
         creators["move to travel target"] = &ActionContext::move_to_travel_target;
         creators["move out of collision"] = &ActionContext::move_out_of_collision;
+        creators["move out of dark water"] = &ActionContext::move_out_of_dark_water;
         creators["move random"] = &ActionContext::move_random;
         creators["attack"] = &ActionContext::melee;
         creators["melee"] = &ActionContext::melee;
@@ -302,6 +303,7 @@ private:
     static Action* choose_travel_target(PlayerbotAI* botAI) { return new ChooseTravelTargetAction(botAI); }
     static Action* move_to_travel_target(PlayerbotAI* botAI) { return new MoveToTravelTargetAction(botAI); }
     static Action* move_out_of_collision(PlayerbotAI* botAI) { return new MoveOutOfCollisionAction(botAI); }
+    static Action* move_out_of_dark_water(PlayerbotAI* botAI) { return new MoveOutOfDarkWaterAction(botAI); }
     static Action* move_random(PlayerbotAI* botAI) { return new MoveRandomAction(botAI); }
     static Action* check_values(PlayerbotAI* botAI) { return new CheckValuesAction(botAI); }
     static Action* greet(PlayerbotAI* botAI) { return new GreetAction(botAI); }
