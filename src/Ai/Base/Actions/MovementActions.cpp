@@ -2772,9 +2772,10 @@ bool MoveOutOfDarkWaterAction::Execute(Event /*event*/)
     PlayerbotAI::WaterEscapeState& state = botAI->waterEscape;
     bool const hasTarget = state.target != WorldPosition();
     uint32 const sinceCheck = GetMSTimeDiffToNow(state.targetCheckMs);
-    // A failed search retries after 2s; a chosen target is kept for 8s so movement stays on
-    // one heading instead of being rewritten on every scan.
-    if ((!hasTarget && sinceCheck > 2000) || (hasTarget && sinceCheck > 8000))
+    // A failed search retries after 10s (each attempt scans up to 96 liquid samples); a
+    // chosen target is kept for 8s so movement stays on one heading instead of being
+    // rewritten on every scan.
+    if ((!hasTarget && sinceCheck > 10000) || (hasTarget && sinceCheck > 8000))
     {
         WorldPosition const previous = state.target;
         WorldPosition const next = botAI->FindDarkWaterEscapeTarget();
