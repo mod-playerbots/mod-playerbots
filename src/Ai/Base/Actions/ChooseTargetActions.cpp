@@ -150,7 +150,7 @@ bool AttackAnythingAction::isUseful()
 
     // RPG_DO_QUEST picks its own targets; only its POI fallback relies on grinding for credit.
     if (auto const* doQuest = std::get_if<NewRpgInfo::DoQuest>(&botAI->rpgInfo.data))
-        if (!doQuest->poiFallback)
+        if (!doQuest->poiFallback && botAI->HasStrategy("new rpg", BOT_STATE_NON_COMBAT))
             return false;
 
     Unit* target = GetTarget();
