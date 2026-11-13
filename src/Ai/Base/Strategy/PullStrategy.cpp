@@ -15,6 +15,7 @@
 
 #include "PullStrategy.h"
 #include "AiObjectContext.h"
+#include "ObjectMgr.h"
 #include "PassiveMultiplier.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -102,12 +103,7 @@ std::string PullStrategy::GetSpellName() const
     {
         case ITEM_SUBCLASS_WEAPON_THROWN:
             return "throw";
-        case ITEM_SUBCLASS_WEAPON_GUN:
-            return "shoot gun";
-        case ITEM_SUBCLASS_WEAPON_BOW:
-            return "shoot bow";
-        case ITEM_SUBCLASS_WEAPON_CROSSBOW:
-            return "shoot crossbow";
+        // Bows, guns and crossbows all use Shoot (3018): no player spell is named "shoot gun" etc.
         default:
             return spellName;
     }
@@ -132,6 +128,39 @@ std::string PullStrategy::GetPreActionName() const
     return preAction;
 }
 
+namespace
+{
+// "Requires No Ammo" (Thori'dal, the Stars' Fury): the core unloads ammo and lets the shot through.
+constexpr uint32 SPELL_REQUIRES_NO_AMMO = 46699;
+
+// The ammo checks of Spell::CheckItems: a bow, gun or crossbow shoots only with loaded ammo of its
+// kind that the bot still holds, unless the bot has "Requires No Ammo".
+bool HasAmmoFor(Player* bot, Item const* weapon)
+{
+    uint32 neededAmmo;
+    switch (weapon->GetTemplate()->SubClass)
+    {
+        case ITEM_SUBCLASS_WEAPON_BOW:
+        case ITEM_SUBCLASS_WEAPON_CROSSBOW:
+            neededAmmo = ITEM_SUBCLASS_ARROW;
+            break;
+        case ITEM_SUBCLASS_WEAPON_GUN:
+            neededAmmo = ITEM_SUBCLASS_BULLET;
+            break;
+        default:
+            return true;  // thrown weapons and wands use no ammo
+    }
+
+    if (bot->HasAura(SPELL_REQUIRES_NO_AMMO))
+        return true;
+
+    uint32 const ammoId = bot->GetUInt32Value(PLAYER_AMMO_ID);
+    ItemTemplate const* ammo = ammoId ? sObjectMgr->GetItemTemplate(ammoId) : nullptr;
+    return ammo && ammo->Class == ITEM_CLASS_PROJECTILE && ammo->SubClass == neededAmmo &&
+           bot->HasItemCount(ammoId, 1);
+}
+}
+
 bool PullStrategy::CanDoPullAction(Unit* target)
 {
     Player* bot = botAI->GetBot();
@@ -145,6 +174,13 @@ bool PullStrategy::CanDoPullAction(Unit* target)
         GetPullActionName() == "shoot" && !bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
     {
         return false;
+    }
+
+    if (GetPullActionName() == "shoot")
+    {
+        Item const* weapon = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
+        if (weapon && !HasAmmoFor(bot, weapon))
+            return false;
     }
 
     std::string const spellName = GetSpellName();
