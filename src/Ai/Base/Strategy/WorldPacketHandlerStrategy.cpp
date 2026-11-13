@@ -71,6 +71,10 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 
     // loot roll
     triggers.push_back(new TriggerNode("very often", { NextAction("loot roll", relevance) }));
+
+    // Dark water (fatigue) is lethal in every strategy: leave it before anything else.
+    triggers.push_back(
+        new TriggerNode("dark water", { NextAction("move out of dark water", 95.0f) }));
 }
 
 WorldPacketHandlerStrategy::WorldPacketHandlerStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI)

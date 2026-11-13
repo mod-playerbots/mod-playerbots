@@ -832,6 +832,14 @@ public:
     bool IsActive() override;
 };
 
+class DarkWaterTrigger : public Trigger
+{
+public:
+    DarkWaterTrigger(PlayerbotAI* botAI) : Trigger(botAI, "dark water", 1) {}
+
+    bool IsActive() override;
+};
+
 class StayTimeTrigger : public Trigger
 {
 public:

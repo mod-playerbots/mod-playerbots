@@ -26,6 +26,7 @@
 #include "LastSpellCastValue.h"
 #include "LogLevelAction.h"
 #include "LootObjectStack.h"
+#include "Map.h"
 #include "MapMgr.h"
 #include "MotionMaster.h"
 #include "MoveSplineInit.h"
@@ -57,6 +58,7 @@
 #include "Vehicle.h"
 #include "WsgRouteState.h"
 #include <algorithm>
+#include <limits>
 #include <cmath>
 #include <map>
 #include <mutex>
@@ -6239,6 +6241,71 @@ int32 PlayerbotAI::GetNearGroupMemberCount(float dis)
         }
     }
     return count;
+}
+
+bool PlayerbotAI::IsInDarkWater()
+{
+    if (!bot->IsInWorld() || !bot->IsAlive() || bot->IsInFlight() || bot->GetTransport() || bot->GetVehicle())
+        return false;
+
+    if (waterEscape.waterCheckMs && GetMSTimeDiffToNow(waterEscape.waterCheckMs) < 1000)
+        return waterEscape.inDarkWater;
+
+    // Query the map directly: the bot's cached liquid state can be stale right after a
+    // teleport. The fatigue bar only drains in authored dark water, not in deep water.
+    LiquidData const liquid = bot->GetMap()->GetLiquidData(bot->GetPhaseMask(), bot->GetPositionX(),
+                                                           bot->GetPositionY(), bot->GetPositionZ(),
+                                                           bot->GetCollisionHeight(), {});
+    waterEscape.inDarkWater = (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER) != 0;
+    waterEscape.waterCheckMs = getMSTime();
+    if (!waterEscape.inDarkWater)
+    {
+        waterEscape.target = WorldPosition();
+        waterEscape.step = WorldPosition();
+    }
+    return waterEscape.inDarkWater;
+}
+
+WorldPosition PlayerbotAI::FindDarkWaterEscapeTarget()
+{
+    // The way out is the nearest point that is not dark water: regular water or land. Sample
+    // rings around the bot so the escape is a short swim the ordinary move path can cover.
+    float const rings[] = {40.0f, 80.0f, 120.0f, 160.0f, 200.0f, 240.0f};
+    uint32 const directions = 16;
+    for (float radius : rings)
+    {
+        WorldPosition best{};
+        float bestDist = std::numeric_limits<float>::max();
+        for (uint32 i = 0; i < directions; ++i)
+        {
+            float const angle = float(i) * 2.0f * float(M_PI) / float(directions);
+            float const x = bot->GetPositionX() + std::cos(angle) * radius;
+            float const y = bot->GetPositionY() + std::sin(angle) * radius;
+
+            LiquidData const liquid = bot->GetMap()->GetLiquidData(bot->GetPhaseMask(), x, y, bot->GetPositionZ(),
+                                                                   bot->GetCollisionHeight(), {});
+            if (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER)
+                continue;
+
+            float const groundZ = bot->GetMap()->GetHeight(x, y, MAX_HEIGHT);
+            float const waterZ = bot->GetMap()->GetWaterLevel(x, y);
+            if (groundZ == INVALID_HEIGHT && waterZ == INVALID_HEIGHT)
+                continue;
+            float const z = std::max(groundZ, waterZ);
+            if (z == INVALID_HEIGHT)
+                continue;
+            WorldPosition const candidate(bot->GetMapId(), x, y, z);
+            float const d = bot->GetExactDist(candidate);
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = candidate;
+            }
+        }
+        if (best != WorldPosition())
+            return best;
+    }
+    return WorldPosition{};
 }
 
 bool PlayerbotAI::CanMove()
