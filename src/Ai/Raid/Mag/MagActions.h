@@ -52,6 +52,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class MagtheridonSelectTargetForHoldAction : public Action
+{
+public:
+    MagtheridonSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : Action(botAI, "magtheridon select target for hold") {}
+    bool Execute(Event event) override;
+};
+
 class MagtheridonWarlockCcBurningAbyssalAction : public Action
 {
 public:
