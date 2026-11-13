@@ -460,6 +460,8 @@ void AssignAddTanks(Player* bot);
 bool SwapTanksOnStacks(Player* bot, uint32 aura, uint32 stacks);
 void SwapFankrissTanks(Player* bot);
 void SwapHuhuranTanks(Player* bot);
+// False on bosses converted to standard assist, where the assigned-target value and its multipliers stand aside.
+bool UsesAssignedTarget(Player* bot);
 
 // The Prophet Skeram
 
@@ -470,6 +472,12 @@ Player* GetMindControlledMember(Player* bot);
 // Battleguard Sartura
 
 Creature* GetWhirlwindInRange(Player* bot);
+
+// Fankriss the Unyielding
+
+Creature* FindFankrissKillTarget(Player* bot);
+// The worm (or, failing that, hatchling) AssignAddTanks gave this tank.
+Creature* FindFankrissOwnedSpawn(Player* bot);
 
 // Princess Huhuran
 

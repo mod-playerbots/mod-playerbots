@@ -95,12 +95,16 @@ float Aq40ControlTauntingMultiplier::GetValueInEncounter(Action* action)
 
 float Aq40TanksDisableTankAssistMultiplier::GetValueInEncounter(Action* action)
 {
-    return PlayerbotAI::IsTank(bot) && dynamic_cast<TankAssistAction*>(action) ? 0.0f : 1.0f;
+    if (!PlayerbotAI::IsTank(bot) || !dynamic_cast<TankAssistAction*>(action))
+        return 1.0f;
+    // On a standard-assist boss only the boss's tank stays out of tank assist, so it never leaves the boss for an
+    // add; the off-tanks use it to grab adds loose on the raid.
+    return UsesAssignedTarget(bot) || GetTankFor(bot, GetBoss(bot)) == bot ? 0.0f : 1.0f;
 }
 
 float Aq40DisableAutoTargetMultiplier::GetValueInEncounter(Action* action)
 {
-    if (IsOwnAction(action))
+    if (IsOwnAction(action) || !UsesAssignedTarget(bot))
         return 1.0f;
     bool const petAttack = action->getName() == "pet attack";
     if (!IsTargetPicker(action) && !petAttack)
@@ -118,7 +122,7 @@ float Aq40DisableAutoTargetMultiplier::GetValueInEncounter(Action* action)
 
 float Aq40AllowedDamageMultiplier::GetValueInEncounter(Action* action)
 {
-    if (IsOwnAction(action) || !IsHostileTarget(bot, action))
+    if (IsOwnAction(action) || !UsesAssignedTarget(bot) || !IsHostileTarget(bot, action))
         return 1.0f;
     Unit* target = action->GetTarget();
     if (!IsAllowedDamage(bot, target))
@@ -128,7 +132,7 @@ float Aq40AllowedDamageMultiplier::GetValueInEncounter(Action* action)
 
 float Aq40DisableAoeMultiplier::GetValueInEncounter(Action* action)
 {
-    if (IsOwnAction(action) || PlayerbotAI::IsTank(bot))
+    if (IsOwnAction(action) || PlayerbotAI::IsTank(bot) || !UsesAssignedTarget(bot))
         return 1.0f;
     // Healing also generates area threat. Only harmful actions belong in the damage hold.
     bool areaThreat = action->getThreatType() == Action::ActionThreatType::Aoe;

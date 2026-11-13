@@ -148,6 +148,36 @@ public:
     bool Execute(Event event) override;
 };
 
+class FankrissTheUnyieldingMarkKillTargetAction : public Action
+{
+public:
+    FankrissTheUnyieldingMarkKillTargetAction(PlayerbotAI* botAI)
+        : Action(botAI, "fankriss the unyielding mark kill target")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class FankrissTheUnyieldingMainTankAttackBossAction : public AttackAction
+{
+public:
+    FankrissTheUnyieldingMainTankAttackBossAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "fankriss the unyielding main tank attack boss")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class FankrissTheUnyieldingTanksPickUpSpawnsAction : public AttackAction
+{
+public:
+    FankrissTheUnyieldingTanksPickUpSpawnsAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "fankriss the unyielding tanks pick up spawns")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
 // Viscidus
 
 class ViscidusCastFrostSpellsAction : public Action, public Aq40ActionTag

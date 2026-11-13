@@ -48,8 +48,12 @@ public:
 
         // Fankriss the Unyielding
         creators["fankriss the unyielding swap tanks"] = &RaidAq40ActionContext::fankriss_the_unyielding_swap_tanks;
-        creators["fankriss the unyielding assign dps priority"] =
-            &RaidAq40ActionContext::fankriss_the_unyielding_assign_dps_priority;
+        creators["fankriss the unyielding mark kill target"] =
+            &RaidAq40ActionContext::fankriss_the_unyielding_mark_kill_target;
+        creators["fankriss the unyielding main tank attack boss"] =
+            &RaidAq40ActionContext::fankriss_the_unyielding_main_tank_attack_boss;
+        creators["fankriss the unyielding tanks pick up spawns"] =
+            &RaidAq40ActionContext::fankriss_the_unyielding_tanks_pick_up_spawns;
 
         // Viscidus
         creators["viscidus escape toxin clouds"] = &RaidAq40ActionContext::viscidus_escape_toxin_clouds;
@@ -196,9 +200,17 @@ private:
     {
         return new FankrissTheUnyieldingSwapTanksAction(botAI);
     }
-    static Action* fankriss_the_unyielding_assign_dps_priority(PlayerbotAI* botAI)
+    static Action* fankriss_the_unyielding_mark_kill_target(PlayerbotAI* botAI)
     {
-        return new Aq40AttackAssignedTargetAction(botAI, "fankriss the unyielding assign dps priority");
+        return new FankrissTheUnyieldingMarkKillTargetAction(botAI);
+    }
+    static Action* fankriss_the_unyielding_main_tank_attack_boss(PlayerbotAI* botAI)
+    {
+        return new FankrissTheUnyieldingMainTankAttackBossAction(botAI);
+    }
+    static Action* fankriss_the_unyielding_tanks_pick_up_spawns(PlayerbotAI* botAI)
+    {
+        return new FankrissTheUnyieldingTanksPickUpSpawnsAction(botAI);
     }
     static Action* viscidus_escape_toxin_clouds(PlayerbotAI* botAI)
     {

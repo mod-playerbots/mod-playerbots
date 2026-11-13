@@ -18,6 +18,7 @@ and out of combat. To check a bot, whisper it `co ?` and look for `aq40`.
 | **Square** (Twin Emperors) | A second **warlock** bot | Tanks Vek'lor on the south side. Walks to its waiting spot by itself. |
 | **Moon** (C'Thun) | A **tank** bot | Walks in alone and pulls the Eye of C'Thun. |
 | **Skull** (Bug Trio) | Kri, Yauj or Vem | That bug is killed next, after the Brood adds. |
+| **Skull** (Fankriss) | A worm, hatchling or Fankriss | Bots set it themselves. Put it on another unit to kill that one first. |
 
 Moon means different things in the two fights: on a warlock it matters only in the Twin Emperors room, on a tank only
 in C'Thun's room (and only once the Twin Emperors are dead). Moving the mark from the warlock to the tank after the
@@ -122,7 +123,7 @@ The marks must be set by the raid leader or an assistant.
 ## Other bosses
 
 These bosses are handled automatically too. They have had less full-raid testing than the two above. No raid marks
-are needed except Skull on the Bug Trio.
+are needed. Skull changes the kill order on the Bug Trio and Fankriss.
 
 - **Trash (Anubisath Defenders):** each Defender reflects two spell schools for its whole fight (Shadow + Frost or
   Fire + Arcane). Casters don't cast those schools at it.
@@ -136,7 +137,11 @@ are needed except Skull on the Bug Trio.
   - Tanks keep the three bugs at least 18 yd apart without dragging them away from their healers.
 - **Battleguard Sartura:** her guards die first. While she or a guard is whirlwinding, bots stop attacking it and keep
   18 yd away.
-- **Fankriss the Unyielding:** his spawned worms die first. Tanks swap at 3 Mortal Wound stacks.
+- **Fankriss the Unyielding:**
+  - Off-tanks pick up the worms and hatchlings; the main tank stays on Fankriss. Tanks swap at 3 Mortal Wound stacks,
+    and the new main tank hands its worms to the other tanks.
+  - The bots put **Skull** on a worm as soon as a tank has it, and on Fankriss when no worm is tanked. Damage dealers
+    attack the skull without waiting for the tank to reach melee. A worm keeps the skull until it dies.
 - **Viscidus:**
   - Casters freeze him with frost spells (rank 1 Frostbolt for the most hits, Frost Shock, Icy Touch, Ice Lance).
   - Once he's frozen, melee move in to shatter him. Globs die first.

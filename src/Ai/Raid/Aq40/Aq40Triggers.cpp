@@ -54,7 +54,7 @@ bool Aq40AssignedTargetTrigger::IsActiveInEncounter()
 
 bool Aq40NoAssignedTargetTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsHeal(bot) || !IsFreeToAct() || GetAssignedTarget(botAI))
+    if (PlayerbotAI::IsHeal(bot) || !IsFreeToAct() || !UsesAssignedTarget(bot) || GetAssignedTarget(botAI))
         return false;
     return bot->GetVictim() || (bot->GetPet() && bot->GetPet()->GetVictim());
 }
@@ -103,6 +103,25 @@ bool BugTrioBossesTooCloseTrigger::IsActiveInEncounter()
 // Battleguard Sartura
 
 bool BattleguardSarturaWhirlwindNearbyTrigger::IsActiveInEncounter() { return GetWhirlwindInRange(bot) != nullptr; }
+
+// Fankriss the Unyielding
+
+bool FankrissTheUnyieldingBossShouldBeTankedTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+    Creature* boss = GetBoss(bot);
+    return boss && GetTankFor(bot, boss) == bot &&
+           (AI_VALUE(Unit*, "current target") != boss || boss->GetVictim() != bot);
+}
+
+bool FankrissTheUnyieldingSpawnShouldBeTankedTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+    Creature* spawn = FindFankrissOwnedSpawn(bot);
+    return spawn && (AI_VALUE(Unit*, "current target") != spawn || spawn->GetVictim() != bot);
+}
 
 // Viscidus
 

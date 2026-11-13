@@ -220,11 +220,6 @@ Unit* GetSarturaTarget(Player* bot)
     return GetTankOrKillTarget(bot, {Id(Aq40Npcs::NPC_SARTURA_ROYAL_GUARD), Id(Aq40Npcs::NPC_SARTURA)});
 }
 
-Unit* GetFankrissTarget(Player* bot)
-{
-    return GetTankOrKillTarget(bot, {Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS), Id(Aq40Npcs::NPC_FANKRISS)});
-}
-
 Unit* GetViscidusTarget(Player* bot)
 {
     return GetTankOrKillTarget(bot, {Id(Aq40Npcs::NPC_GLOB_OF_VISCIDUS), Id(Aq40Npcs::NPC_VISCIDUS)});
@@ -805,8 +800,6 @@ Unit* ComputeAssignedTarget(PlayerbotAI* botAI)
             return GetBugTrioTarget(bot);
         case Aq40Encounter::Sartura:
             return GetSarturaTarget(bot);
-        case Aq40Encounter::Fankriss:
-            return GetFankrissTarget(bot);
         case Aq40Encounter::Viscidus:
             return GetViscidusTarget(bot);
         case Aq40Encounter::Huhuran:
@@ -950,6 +943,13 @@ bool SwapTanksOnStacks(Player* bot, uint32 aura, uint32 stacks)
             Aq40InstanceState& state = Aq40State(bot->GetInstanceId());
             state.owners[boss->GetGUID()] = tank->GetGUID();
             state.mainTank = tank->GetGUID();
+            // The new main tank hands its adds back; AssignAddTanks gives them to the off-tanks on its next pass.
+            // Otherwise an owned worm outscores the boss in GetOwnedTarget and pulls the main tank off Fankriss.
+            for (auto it = state.owners.begin(); it != state.owners.end();)
+                if (it->second == tank->GetGUID() && it->first != boss->GetGUID())
+                    it = state.owners.erase(it);
+                else
+                    ++it;
             return true;
         }
     return false;
@@ -958,6 +958,39 @@ bool SwapTanksOnStacks(Player* bot, uint32 aura, uint32 stacks)
 void SwapFankrissTanks(Player* bot)
 {
     SwapTanksOnStacks(bot, Id(Aq40Spells::SPELL_MORTAL_WOUND), FANKRISS_SWAP_STACKS);
+}
+
+bool UsesAssignedTarget(Player* bot) { return !IsInEncounter(bot, Aq40Encounter::Fankriss); }
+
+// Fankriss the Unyielding
+
+Creature* FindFankrissKillTarget(Player* bot)
+{
+    // A worm becomes the kill target once any tank has it, so damage never waits on the tank reaching melee.
+    for (Creature* worm : GetUnits(bot, Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS)))
+        if (Unit* victim = worm->GetVictim())
+            if (Player* tank = victim->ToPlayer(); tank && GetMember(bot, tank->GetGUID()) && PlayerbotAI::IsTank(tank))
+                return worm;
+    std::vector<Creature*> const boss = GetUnits(bot, Id(Aq40Npcs::NPC_FANKRISS));
+    return boss.empty() ? nullptr : boss.front();
+}
+
+Creature* FindFankrissOwnedSpawn(Player* bot)
+{
+    // Worms hit far harder than hatchlings, so an off-tank holding both keeps its worm.
+    Creature* selected = nullptr;
+    for (Creature* unit : GetUnits(bot))
+    {
+        uint32 const entry = unit->GetEntry();
+        if ((entry != Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS) && entry != Id(Aq40Npcs::NPC_VEKNISS_HATCHLING)) ||
+            GetTankFor(bot, unit) != bot || !Attackable(bot, unit))
+            continue;
+        if (entry == Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS))
+            return unit;
+        if (!selected)
+            selected = unit;
+    }
+    return selected;
 }
 
 void SwapHuhuranTanks(Player* bot) { SwapTanksOnStacks(bot, Id(Aq40Spells::SPELL_ACID_SPIT), HUHURAN_SWAP_STACKS); }

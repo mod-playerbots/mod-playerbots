@@ -188,6 +188,34 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// Fankriss the Unyielding
+
+class FankrissTheUnyieldingBossShouldBeTankedTrigger : public Aq40EncounterTrigger
+{
+public:
+    FankrissTheUnyieldingBossShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : Aq40EncounterTrigger(botAI, "fankriss the unyielding boss should be tanked",
+                               Aq40Helpers::Aq40Encounter::Fankriss)
+    {
+    }
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class FankrissTheUnyieldingSpawnShouldBeTankedTrigger : public Aq40EncounterTrigger
+{
+public:
+    FankrissTheUnyieldingSpawnShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : Aq40EncounterTrigger(botAI, "fankriss the unyielding spawn should be tanked",
+                               Aq40Helpers::Aq40Encounter::Fankriss)
+    {
+    }
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Viscidus
 
 class ViscidusShouldBeFrozenTrigger : public Aq40EncounterTrigger

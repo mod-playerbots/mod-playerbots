@@ -69,8 +69,13 @@ void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Fankriss the Unyielding
     triggers.push_back(new TriggerNode("fankriss the unyielding should swap tanks",
                                        {NextAction("fankriss the unyielding swap tanks", ACTION_EMERGENCY + 10)}));
-    triggers.push_back(new TriggerNode("fankriss the unyielding should assign dps priority",
-                                       {NextAction("fankriss the unyielding assign dps priority", ACTION_RAID + 1)}));
+    triggers.push_back(
+        new TriggerNode("fankriss the unyielding should mark kill target",
+                        {NextAction("fankriss the unyielding mark kill target", ACTION_EMERGENCY + 10)}));
+    triggers.push_back(new TriggerNode("fankriss the unyielding boss should be tanked",
+                                       {NextAction("fankriss the unyielding main tank attack boss", ACTION_RAID + 1)}));
+    triggers.push_back(new TriggerNode("fankriss the unyielding spawn should be tanked",
+                                       {NextAction("fankriss the unyielding tanks pick up spawns", ACTION_RAID + 1)}));
 
     // Viscidus
     triggers.push_back(new TriggerNode("viscidus toxin cloud nearby",
@@ -252,7 +257,8 @@ void RaidAq40Strategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 void RaidAq40Strategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
 {
     Player* bot = botAI->GetBot();
-    if (type != TargetValueExclusionType::Dps || !EncounterHelpers::IsEncounterInProgress(bot, AQ40_MAP_ID))
+    if (type != TargetValueExclusionType::Dps || !EncounterHelpers::IsEncounterInProgress(bot, AQ40_MAP_ID) ||
+        !UsesAssignedTarget(bot))
         return;
     // Target selection can ask for exclusions several times per tick; reuse them within the tick.
     uint32 const now = getMSTime();

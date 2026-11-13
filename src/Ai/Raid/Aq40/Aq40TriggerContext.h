@@ -50,8 +50,12 @@ public:
         // Fankriss the Unyielding
         creators["fankriss the unyielding should swap tanks"] =
             &RaidAq40TriggerContext::fankriss_the_unyielding_should_swap_tanks;
-        creators["fankriss the unyielding should assign dps priority"] =
-            &RaidAq40TriggerContext::fankriss_the_unyielding_should_assign_dps_priority;
+        creators["fankriss the unyielding should mark kill target"] =
+            &RaidAq40TriggerContext::fankriss_the_unyielding_should_mark_kill_target;
+        creators["fankriss the unyielding boss should be tanked"] =
+            &RaidAq40TriggerContext::fankriss_the_unyielding_boss_should_be_tanked;
+        creators["fankriss the unyielding spawn should be tanked"] =
+            &RaidAq40TriggerContext::fankriss_the_unyielding_spawn_should_be_tanked;
 
         // Viscidus
         creators["viscidus toxin cloud nearby"] = &RaidAq40TriggerContext::viscidus_toxin_cloud_nearby;
@@ -206,10 +210,18 @@ private:
         return new Aq40TrackerTrigger(botAI, "fankriss the unyielding should swap tanks",
                                       Aq40Helpers::Aq40Encounter::Fankriss);
     }
-    static Trigger* fankriss_the_unyielding_should_assign_dps_priority(PlayerbotAI* botAI)
+    static Trigger* fankriss_the_unyielding_should_mark_kill_target(PlayerbotAI* botAI)
     {
-        return new Aq40AssignedTargetTrigger(botAI, "fankriss the unyielding should assign dps priority",
-                                             Aq40Helpers::Aq40Encounter::Fankriss);
+        return new Aq40TrackerTrigger(botAI, "fankriss the unyielding should mark kill target",
+                                      Aq40Helpers::Aq40Encounter::Fankriss);
+    }
+    static Trigger* fankriss_the_unyielding_boss_should_be_tanked(PlayerbotAI* botAI)
+    {
+        return new FankrissTheUnyieldingBossShouldBeTankedTrigger(botAI);
+    }
+    static Trigger* fankriss_the_unyielding_spawn_should_be_tanked(PlayerbotAI* botAI)
+    {
+        return new FankrissTheUnyieldingSpawnShouldBeTankedTrigger(botAI);
     }
     static Trigger* viscidus_toxin_cloud_nearby(PlayerbotAI* botAI)
     {

@@ -23,7 +23,10 @@ bool Aq40ResetEncounterStatesAction::Execute(Event /*event*/)
 {
     BotCache(botAI) = Aq40BotCache();
     if (IsMechanicTrackerBot(bot, AQ40_MAP_ID))
+    {
         Aq40ResetInstance(bot->GetInstanceId());
+        ClearStrategyTargetIcon(bot, SKULL_ICON, {Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS), Id(Aq40Npcs::NPC_FANKRISS)});
+    }
     return false;
 }
 
@@ -161,6 +164,41 @@ bool FankrissTheUnyieldingSwapTanksAction::Execute(Event /*event*/)
 {
     SwapFankrissTanks(bot);
     return false;
+}
+
+bool FankrissTheUnyieldingMarkKillTargetAction::Execute(Event /*event*/)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+    // A living skull off Fankriss stays until it dies: the raid finishes one worm before the next, and a player's
+    // skull on any other unit wins.
+    if (Creature* marked = bot->GetMap()->GetCreature(group->GetTargetIcon(SKULL_ICON));
+        marked && marked->IsAlive() && marked->GetEntry() != Id(Aq40Npcs::NPC_FANKRISS))
+        return false;
+    return MarkTargetWithSkull(bot, FindFankrissKillTarget(bot));
+}
+
+bool FankrissTheUnyieldingMainTankAttackBossAction::Execute(Event /*event*/)
+{
+    Creature* boss = GetBoss(bot);
+    if (!boss)
+        return false;
+    if (AI_VALUE(Unit*, "current target") != boss || bot->GetVictim() != boss)
+        return Attack(boss);
+    std::string const taunt = TauntSpell(bot);
+    return !taunt.empty() && TryCast(botAI, taunt, boss);
+}
+
+bool FankrissTheUnyieldingTanksPickUpSpawnsAction::Execute(Event /*event*/)
+{
+    Creature* spawn = FindFankrissOwnedSpawn(bot);
+    if (!spawn)
+        return false;
+    if (AI_VALUE(Unit*, "current target") != spawn || bot->GetVictim() != spawn)
+        return Attack(spawn);
+    std::string const taunt = TauntSpell(bot);
+    return !taunt.empty() && TryCast(botAI, taunt, spawn);
 }
 
 // Viscidus
