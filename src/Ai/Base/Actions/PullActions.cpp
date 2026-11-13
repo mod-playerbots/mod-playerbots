@@ -78,7 +78,7 @@ bool PullRequestAction::Execute(Event event)
 
     if (!strategy->CanDoPullAction(target))
     {
-        std::string const actionName = strategy->GetPullActionName();
+        std::string const actionName = strategy->GetPullActionNameFor(target);
         std::string const text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "pull_action_unavailable_error",
             "Can't perform pull action '%action_name'",

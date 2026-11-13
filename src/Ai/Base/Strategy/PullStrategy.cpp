@@ -84,6 +84,17 @@ std::string PullStrategy::GetPullActionName() const
     return action;
 }
 
+// Class strategies pick their pull for the stored target, and RequestPull() stores it only after the checks.
+std::string PullStrategy::GetPullActionNameFor(Unit* target)
+{
+    Value<ObjectGuid>* const storedTarget = botAI->GetAiObjectContext()->GetValue<ObjectGuid>("pull strategy target");
+    ObjectGuid const previousTarget = storedTarget->Get();
+    SetTarget(target);
+    std::string const actionName = GetPullActionName();
+    storedTarget->Set(previousTarget);
+    return actionName;
+}
+
 std::string PullStrategy::GetSpellName() const
 {
     Player* bot = botAI->GetBot();
@@ -170,13 +181,15 @@ bool PullStrategy::CanDoPullAction(Unit* target)
     if (!target->IsInWorld() || target->GetMapId() != bot->GetMapId())
         return false;
 
+    std::string const actionName = GetPullActionNameFor(target);
+
     if (bot->getClass() != CLASS_DRUID && bot->getClass() != CLASS_PALADIN &&
-        GetPullActionName() == "shoot" && !bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
+        actionName == "shoot" && !bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
     {
         return false;
     }
 
-    if (GetPullActionName() == "shoot")
+    if (actionName == "shoot")
     {
         Item const* weapon = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
         if (weapon && !HasAmmoFor(bot, weapon))
