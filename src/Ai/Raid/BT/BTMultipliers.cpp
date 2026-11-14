@@ -58,7 +58,8 @@ bool IsKillingSpree(Player* bot, Action* action)
 } // end anonymous namespace (Shared)
 
 // Held for each boss's first 5% (excluding Shade of Akama and Illidan), and also through Supremus's
-// kite phase and between Reliquary essences. See below for Illidan's rules.
+// kite phase and between Reliquary essences. See below for Illidan's rules. In all cases, a boss
+// not on a threat list means hold (it probably means the bot was just battle rezzed).
 float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDpsCooldownAction(bot, action))
@@ -74,7 +75,7 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
         {
             Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
             if (!illidan)
-                return 1.0f;
+                return 0.0f;
 
             // At 62%, Bloodlust and all cooldowns are permanently freed.
             if (illidan->GetHealthPct() <= ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT)
@@ -94,7 +95,7 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
         case BtBosses::DATA_RELIQUARY_OF_SOULS:
         {
             if (!GetBtBoss(bot, BtBosses::DATA_RELIQUARY_OF_SOULS))
-                return 1.0f;
+                return 0.0f;
 
             Unit* essence = nullptr;
             for (std::string_view name : {
@@ -119,10 +120,7 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
         case BtBosses::DATA_SUPREMUS:
         {
             Unit* supremus = GetBtBoss(bot, BtBosses::DATA_SUPREMUS);
-            if (!supremus)
-                return 1.0f;
-
-            return IsSupremusKitePhase(supremus) ||
+            return !supremus || IsSupremusKitePhase(supremus) ||
                 supremus->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
         }
         case BtBosses::DATA_HIGH_WARLORD_NAJENTUS:
@@ -132,7 +130,7 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
         case BtBosses::DATA_ILLIDARI_COUNCIL:
         {
             Unit* boss = GetBtBoss(bot, static_cast<BtBosses>(*bossId));
-            return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+            return !boss || boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
         }
         default:
             return 1.0f;
