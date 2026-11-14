@@ -1616,6 +1616,55 @@ bool MovementAction::Move(float angle, float distance)
     return MoveTo(bot->GetMapId(), x, y, z);
 }
 
+bool MovementAction::GetRandomPointInCone(Position const& origin, float orientation, float halfArc, float minDistance,
+                                          float maxDistance, Position& out, float maxBelow, float maxAbove,
+                                          uint8 attempts)
+{
+    constexpr float maxEndOffset = 2.0f;
+    constexpr float eyeHeight = 2.0f;
+
+    float const originX = origin.GetPositionX();
+    float const originY = origin.GetPositionY();
+    float const originZ = origin.GetPositionZ();
+    float originGroundZ = originZ;
+    bot->UpdateGroundPositionZ(originX, originY, originGroundZ);
+
+    for (uint8 i = 0; i < attempts; ++i)
+    {
+        float const angle = Position::NormalizeOrientation(orientation + frand(-halfArc, halfArc));
+        float const distance = frand(minDistance, maxDistance);
+        float const x = originX + distance * std::cos(angle);
+        float const y = originY + distance * std::sin(angle);
+        float z = originZ;
+        bot->UpdateGroundPositionZ(x, y, z);
+
+        float const dz = z - originGroundZ;
+        if (dz < -maxBelow || dz > maxAbove)
+            continue;
+
+        if (!bot->GetMap()->isInLineOfSight(originX, originY, originZ + eyeHeight, x, y, z + eyeHeight,
+                                            bot->GetPhaseMask(), LINEOFSIGHT_ALL_CHECKS,
+                                            VMAP::ModelIgnoreFlags::Nothing))
+            continue;
+
+        PathGenerator path(bot);
+        path.CalculatePath(originX, originY, originZ, x, y, z, false);
+        PathType const type = path.GetPathType();
+        if (!(type & PATHFIND_NORMAL) ||
+            (type & (PATHFIND_NOT_USING_PATH | PATHFIND_NOPATH | PATHFIND_SHORT | PATHFIND_INCOMPLETE)))
+            continue;
+
+        G3D::Vector3 const& end = path.GetActualEndPosition();
+        if (std::hypot(end.x - x, end.y - y, end.z - z) > maxEndOffset)
+            continue;
+
+        out.Relocate(x, y, z);
+        return true;
+    }
+
+    return false;
+}
+
 bool MovementAction::MoveInside(uint32 mapId, float x, float y, float z, float distance, MovementPriority priority)
 {
     if (bot->GetDistance2d(x, y) <= distance)

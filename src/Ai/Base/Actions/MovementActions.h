@@ -59,6 +59,9 @@ protected:
     bool MoveAway(Unit* target, float distance = sPlayerbotAIConfig.FleeDistance, bool backwards = false);
     bool MoveFromGroup(float distance);
     bool Move(float angle, float distance);
+    bool GetRandomPointInCone(Position const& origin, float orientation, float halfArc, float minDistance,
+                              float maxDistance, Position& out, float maxBelow = 3.0f, float maxAbove = 3.0f,
+                              uint8 attempts = 8);
     bool MoveInside(uint32 mapId, float x, float y, float z, float distance = sPlayerbotAIConfig.FollowDistance,
                     MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
     void CreateWp(Player* wpOwner, float x, float y, float z, float o, uint32 entry, bool important = false);
