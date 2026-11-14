@@ -41,7 +41,8 @@ public:
         creators["bwl nefarian rear flank"] = &RaidBwlActionContext::bwl_nefarian_rear_flank;
         creators["bwl nefarian kill corrupted totem"] = &RaidBwlActionContext::bwl_nefarian_kill_corrupted_totem;
 
-        creators["bwl death talon wyrmguard tank move away"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_tank_move_away;
+        creators["bwl death talon wyrmguard take"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_take;
+        creators["bwl death talon wyrmguard tank position"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_tank_position;
         creators["bwl death talon wyrmguard ranged move away"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_ranged_move_away;
     }
 
@@ -64,7 +65,8 @@ private:
     static Action* bwl_use_hourglass_sand(PlayerbotAI* botAI) { return new BwlUseHourglassSandAction(botAI); }
     static Action* bwl_nefarian_rear_flank(PlayerbotAI* botAI) { return new BossRearFlankAction(botAI, "nefarian"); }
     static Action* bwl_nefarian_kill_corrupted_totem(PlayerbotAI* botAI) { return new BwlNefarianKillCorruptedTotemAction(botAI); }
-    static Action* bwl_death_talon_wyrmguard_tank_move_away(PlayerbotAI* botAI) { return new BwlDeathTalonWyrmguardTankMoveAwayAction(botAI); }
+    static Action* bwl_death_talon_wyrmguard_take(PlayerbotAI* botAI) { return new BwlDeathTalonWyrmguardTakeAction(botAI); }
+    static Action* bwl_death_talon_wyrmguard_tank_position(PlayerbotAI* botAI) { return new BwlDeathTalonWyrmguardTankPositionAction(botAI); }
     static Action* bwl_death_talon_wyrmguard_ranged_move_away(PlayerbotAI* botAI) { return new BwlDeathTalonWyrmguardRangedMoveAwayAction(botAI); }
 };
 
