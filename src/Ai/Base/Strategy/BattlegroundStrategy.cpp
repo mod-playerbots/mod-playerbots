@@ -17,6 +17,22 @@
 
 namespace
 {
+// A bot told to follow its player drops the battleground movement. "check flag" still runs beside a flag or
+// banner, where in WSG and EY it may act on a flag up to 25 yd away.
+class FollowMasterMultiplier : public Multiplier
+{
+public:
+    FollowMasterMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "bg follow master") {}
+
+    float GetValue(Action* action) override
+    {
+        if (!BGTactics::IsFollowingMaster(botAI) || !dynamic_cast<BGTactics*>(action))
+            return 1.0f;
+
+        return action->getName() == "check flag" && BGTactics::IsAtBgFlag(botAI) ? 1.0f : 0.0f;
+    }
+};
+
 class WarsongTacticsMultiplier : public Multiplier
 {
 public:
@@ -56,7 +72,29 @@ public:
 
 void WarsongStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    multipliers.push_back(new FollowMasterMultiplier(botAI));
     multipliers.push_back(new WarsongTacticsMultiplier(botAI));
+}
+
+// The battleground strategies are generic, so each one reaches both the combat and the non-combat engine once.
+void AlteracStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
+{
+    multipliers.push_back(new FollowMasterMultiplier(botAI));
+}
+
+void ArathiStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
+{
+    multipliers.push_back(new FollowMasterMultiplier(botAI));
+}
+
+void EyeStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
+{
+    multipliers.push_back(new FollowMasterMultiplier(botAI));
+}
+
+void IsleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
+{
+    multipliers.push_back(new FollowMasterMultiplier(botAI));
 }
 
 void BGStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
