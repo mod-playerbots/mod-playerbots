@@ -144,6 +144,9 @@ Value<Unit*>* CastCycloneCcAction::GetTargetValue() { return context->GetValue<U
 
 bool CastTyphoonAction::isUseful()
 {
+    if (!CastKnockbackSpellAction::isUseful())
+        return false;
+
     bool facingTarget = AI_VALUE2(bool, "facing", "current target");
     bool targetClose  = ServerFacade::instance().IsDistanceLessOrEqualThan(
         AI_VALUE2(float, "distance", GetTargetName()), 15.f);

@@ -22,6 +22,9 @@ public:
         creators["tempest keep stuck falling"] =
             &RaidTempestKeepTriggerContext::tempest_keep_stuck_falling;
 
+        creators["tempest keep class roles should be assigned"] =
+            &RaidTempestKeepTriggerContext::tempest_keep_class_roles_should_be_assigned;
+
         // Trash
         creators["crimson hand centurion casts arcane flurry"] =
             &RaidTempestKeepTriggerContext::crimson_hand_centurion_casts_arcane_flurry;
@@ -137,6 +140,10 @@ private:
     static Trigger* tempest_keep_stuck_falling(PlayerbotAI* botAI)
     {
         return new TempestKeepStuckFallingTrigger(botAI);
+    }
+    static Trigger* tempest_keep_class_roles_should_be_assigned(PlayerbotAI* botAI)
+    {
+        return new TempestKeepClassRolesShouldBeAssignedTrigger(botAI);
     }
 
     // Trash

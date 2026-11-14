@@ -58,6 +58,11 @@ bool TempestKeepClearStaleFallingFlagAction::Execute(Event /*event*/)
     return true;
 }
 
+bool TempestKeepAssignClassRolesAction::Execute(Event /*event*/)
+{
+    return UpdateTkClassRoles(botAI);
+}
+
 bool TempestKeepTankPositionAction::MoveToTankPosition(
     Unit* target, Position const& position, float tolerance, bool shouldAttack)
 {
@@ -953,6 +958,13 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event /*event
             return true;
     }
 
+    if (bot->GetPowerPct(POWER_MANA) < CAPERNIAN_LIFE_TAP_MANA_PCT &&
+        bot->GetHealthPct() > CAPERNIAN_LIFE_TAP_HEALTH_PCT &&
+        botAI->CanCastSpell("life tap", bot) && botAI->CastSpell("life tap", bot))
+    {
+        return true;
+    }
+
     return botAI->CanCastSpell(searingPain, capernian) &&
         botAI->CastSpell(searingPain, capernian);
 }
@@ -1099,10 +1111,10 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
     if (!kaelthas)
         return false;
 
-    uint32 const phase = GetKaelthasTkPhase(kaelthas);
-    if (phase == PHASE_NONE)
-        return false;
+    // Select a target without attacking while the DPS hold is active.
+    bool const isDpsHeld = IsKaelthasAdvisorDpsHoldActive(botAI, kaelthas);
 
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
     bool const isPhase3 = phase == PHASE_ALL_ADVISORS;
     bool const isActiveCapernianTank = isPhase3 && IsCapernianTank(bot);
 
@@ -1161,7 +1173,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
         return false;
 
     if (AI_VALUE(Unit*, "current target") != target)
-        return Attack(target);
+        return isDpsHeld ? SelectTarget(botAI, target) : Attack(target);
 
     if (target != telonicus || telonicus->GetVictim() == bot)
         return false;
@@ -1213,18 +1225,18 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
     if (!kaelthas)
         return false;
 
-    std::optional<uint32>& waitStart = TkState(kaelthas->GetInstanceId()).advisorDpsWaitTimer;
+    std::optional<uint32>& holdStart = TkState(kaelthas->GetInstanceId()).advisorDpsHoldTimer;
 
     if (advisorAtFullHp)
     {
-        waitStart = ADVISOR_DPS_WAIT_NOT_STARTED;
+        holdStart = ADVISOR_DPS_HOLD_NOT_STARTED;
         return false;
     }
 
-    if (!waitStart || *waitStart != ADVISOR_DPS_WAIT_NOT_STARTED)
+    if (!holdStart || *holdStart != ADVISOR_DPS_HOLD_NOT_STARTED)
         return false;
 
-    waitStart = getMSTime();
+    holdStart = getMSTime();
     return true;
 }
 
@@ -1310,16 +1322,13 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
 
     if (!target)
     {
-        if (!skippedForAxe)
+        bool const isOnAxe = isMeleeDps && axe && AI_VALUE(Unit*, "current target") == axe;
+        if (!skippedForAxe && !isOnAxe)
             return didAvoidDevastation;
 
         // If every weapon still standing is inside the axe's reach, then melee should hold and
         // attack nothing rather than end up in Whirlwind range.
-        bot->AttackStop();
-        bot->InterruptSpell(CURRENT_MELEE_SPELL);
-        bot->CastStop();
-        context->GetValue<Unit*>("current target")->Set(nullptr);
-        bot->SetSelection(ObjectGuid());
+        StandDown(botAI);
         return true;
     }
 
@@ -1344,15 +1353,10 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastation
             result = MoveAway(axe, safeDistance - currentDistance);
     }
 
+    // Just in case melee ends up on the axe despite the priority list leaving them off. The
+    // priority loop then picks the next weapon.
     if (isMeleeDps && AI_VALUE(Unit*, "current target") == axe)
-    {
-        // Just in case melee ends up on the axe despite the priority list leaving them off
-        bot->AttackStop();
-        bot->InterruptSpell(CURRENT_MELEE_SPELL);
-        bot->CastStop();
-        context->GetValue<Unit*>("current target")->Set(nullptr);
-        bot->SetSelection(ObjectGuid());
-    }
+        StandDown(botAI);
 
     return result;
 }
@@ -2202,4 +2206,9 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     return MoveTo(
         TK_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
         MovementPriority::MOVEMENT_FORCED, false, false);
+}
+
+bool KaelthasSunstriderAnnounceClassRolesAction::Execute(Event /*event*/)
+{
+    return IsMechanicTrackerBot(bot, TK_MAP_ID) && UpdateKaelthasClassRoleAnnouncement(botAI);
 }

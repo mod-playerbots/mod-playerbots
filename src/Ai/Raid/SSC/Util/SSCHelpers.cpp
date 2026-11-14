@@ -12,6 +12,7 @@
 #include "RtiTargetValue.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 #include <algorithm>
 #include <cmath>
 #include <list>
@@ -137,74 +138,6 @@ bool IsDryGround(Player* bot, float x, float y)
 
     constexpr float clearance = 0.5f;
     return liquid.Level <= INVALID_HEIGHT || ground > liquid.Level - clearance;
-}
-
-bool GetPathStepTowardUnit(
-    Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY)
-{
-    if (!target)
-        return false;
-
-    return GetPathStepTowardPoint(
-        bot, target->GetPosition(), stopDistance, PATH_STEP_DISTANCE, stepX, stepY);
-}
-
-bool GetPathStepTowardPoint(
-    Player* bot, Position const& destination, float stopDistance, float stepDistance,
-    float& stepX, float& stepY)
-{
-    if (bot->GetExactDist(destination) < stopDistance)
-        return false;
-
-    PathGenerator path(bot);
-    path.CalculatePath(
-        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
-    if (!(path.GetPathType() & (PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_SHORTCUT)))
-        return false;
-
-    Movement::PointsArray const& points = path.GetPath();
-    if (points.size() < 2)
-        return false;
-
-    G3D::Vector3 const targetPos(
-        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
-
-    float remaining = stepDistance;
-    for (std::size_t i = 1; i < points.size(); ++i)
-    {
-        G3D::Vector3 const& from = points[i - 1];
-        G3D::Vector3 const& to = points[i];
-
-        float const segment = (to - from).length();
-        if (segment <= 0.0f)
-            continue;
-
-        float const toDist = (to - targetPos).length();
-        float ratio = 1.0f;
-
-        if (toDist < stopDistance)
-        {
-            float const fromDist = (from - targetPos).length();
-            if (fromDist <= stopDistance)
-                break;
-
-            ratio = (fromDist - stopDistance) / (fromDist - toDist);
-        }
-
-        if (segment * ratio >= remaining)
-            ratio = remaining / segment;
-
-        remaining -= segment * ratio;
-
-        G3D::Vector3 const step = from + (to - from) * ratio;
-        stepX = step.x;
-        stepY = step.y;
-
-        if (remaining <= 0.0f || ratio < 1.0f)
-            return true;
-    }
-
-    return remaining < stepDistance;
 }
 
 bool GetRangedArcAngle(Player* bot, float arcCenter, float arcSpan, float& angle)
@@ -351,13 +284,13 @@ HydrossDpsHoldWindow GetHydrossDpsHoldWindow(Unit* hydross)
         frostPhase ? state.hydrossFrostMarkMaxedTime : state.hydrossNatureMarkMaxedTime;
 
     uint32 const now = getMSTime();
-    constexpr uint32 handOverWaitMs = 1 * IN_MILLISECONDS;
-    constexpr uint32 phaseStartWaitMs = 5 * IN_MILLISECONDS;
+    constexpr uint32 handOverHoldMs = 1 * IN_MILLISECONDS;
+    constexpr uint32 phaseStartHoldMs = 5 * IN_MILLISECONDS;
 
-    if (markMaxedTime && getMSTimeDiff(*markMaxedTime, now) >= handOverWaitMs)
+    if (markMaxedTime && getMSTimeDiff(*markMaxedTime, now) >= handOverHoldMs)
         return HydrossDpsHoldWindow::BeforePhaseChange;
 
-    if (!phaseStartTime || getMSTimeDiff(*phaseStartTime, now) < phaseStartWaitMs)
+    if (!phaseStartTime || getMSTimeDiff(*phaseStartTime, now) < phaseStartHoldMs)
     {
         return HydrossDpsHoldWindow::AfterPhaseChange;
     }
@@ -678,30 +611,28 @@ Creature* GetLeotherasDemonOrShadow(PlayerbotAI* botAI)
     return nullptr;
 }
 
+bool UpdateSscClassRoles(PlayerbotAI* botAI)
+{
+    SscInstanceState& state = SscState(botAI->GetBot()->GetInstanceId());
+    return UpdateClassRoleAssignments(botAI, SSC_MAP_ID, {
+        { LEOTHERAS_WARLOCK_TANK_ROLE, state.leotherasWarlockTank },
+    });
+}
+
+bool UpdateLeotherasClassRoleAnnouncement(PlayerbotAI* botAI)
+{
+    SscInstanceState& state = SscState(botAI->GetBot()->GetInstanceId());
+    return UpdateClassRoleAnnouncement(
+        botAI, Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), LEOTHERAS_SPAWN_POSITION,
+        LEOTHERAS_CLASS_ROLE_ANNOUNCE_DISTANCE, LEOTHERAS_CLASS_ROLE_REARM_DISTANCE, {
+            { LEOTHERAS_WARLOCK_TANK_ROLE, state.leotherasWarlockTank },
+        });
+}
+
 Player* GetLeotherasWarlockTank(Player* bot)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
-
-    Player* fallbackWarlock = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK ||
-            member->GetMapId() != SSC_MAP_ID)
-        {
-            continue;
-        }
-
-        if (group->IsAssistant(member->GetGUID()))
-            return member;
-
-        if (!fallbackWarlock && GET_PLAYERBOT_AI(member))
-            fallbackWarlock = member;
-    }
-
-    return fallbackWarlock;
+    SscInstanceState const* state = FindSscState(bot->GetInstanceId());
+    return state ? GetClassRolePlayer(bot, state->leotherasWarlockTank) : nullptr;
 }
 
 bool IsLeotherasWarlockTank(Player* bot)
@@ -709,7 +640,8 @@ bool IsLeotherasWarlockTank(Player* bot)
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    return GetLeotherasWarlockTank(bot) == bot;
+    SscInstanceState const* state = FindSscState(bot->GetInstanceId());
+    return state && IsClassRolePlayer(bot, state->leotherasWarlockTank);
 }
 
 bool IsLeotherasChannelingWhirlwind(Unit* leotheras)
@@ -804,7 +736,7 @@ bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
         if (!whirlwindEnd || now < *whirlwindEnd)
             return false;
 
-        return now - *whirlwindEnd < LEOTHERAS_WHIRLWIND_DPS_WAIT_MS;
+        return now - *whirlwindEnd < LEOTHERAS_WHIRLWIND_DPS_HOLD_MS;
     };
 
     if (IsLeotherasHumanoidPhase(botAI))
@@ -813,10 +745,8 @@ bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
             return false;
 
         std::optional<uint32> const& start = state.leotherasHumanoidPhaseStartTime;
-        if (!start || getMSTimeDiff(*start, now) < LEOTHERAS_HUMANOID_DPS_WAIT_MS)
-        {
+        if (!start || getMSTimeDiff(*start, now) < LEOTHERAS_HUMANOID_DPS_HOLD_MS)
             return true;
-        }
 
         return isJustAfterWhirlwind();
     }
@@ -833,7 +763,7 @@ bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
         if (!start)
             return true;
 
-        return getMSTimeDiff(*start, now) < LEOTHERAS_DEMON_DPS_WAIT_MS;
+        return getMSTimeDiff(*start, now) < LEOTHERAS_DEMON_DPS_HOLD_MS;
     }
 
     if (IsLeotherasFinalPhase(botAI))
@@ -842,10 +772,8 @@ bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
             return false;
 
         std::optional<uint32> const& start = state.leotherasFinalPhaseStartTime;
-        if (!start || getMSTimeDiff(*start, now) < LEOTHERAS_FINAL_DPS_WAIT_MS)
-        {
+        if (!start || getMSTimeDiff(*start, now) < LEOTHERAS_FINAL_DPS_HOLD_MS)
             return true;
-        }
 
         return isJustAfterWhirlwind();
     }
@@ -867,13 +795,11 @@ bool HasInnerDemon(Player* bot)
 Creature* GetPersonalInnerDemon(PlayerbotAI* botAI)
 {
     ObjectGuid const botGuid = botAI->GetBot()->GetGUID();
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    auto const& targets = context->GetValue<GuidVector>("possible targets no los")->RefGet();
-
     Creature* innerDemon = nullptr;
-    for (ObjectGuid const& guid : targets)
+    for (ObjectGuid const& targetGuid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->RefGet())
     {
-        Creature* creature = botAI->GetCreature(guid);
+        Creature* creature = botAI->GetCreature(targetGuid);
         if (creature && creature->GetEntry() == Id(SscNpcs::NPC_INNER_DEMON) &&
             creature->GetSummonerGUID() == botGuid)
         {
@@ -934,14 +860,13 @@ Player* GetCouncilTank(Player* bot, int8 assistTankIndex)
 Unit* GetAssignedCouncilMember(PlayerbotAI* botAI)
 {
     Player* tank = botAI->GetBot();
-    AiObjectContext* context = botAI->GetAiObjectContext();
     for (KarathressCouncilAssignment const& assignment : KARATHRESS_COUNCIL)
     {
         bool const assigned = assignment.assistTankIndex < 0 ?
             PlayerbotAI::IsMainTank(tank) :
             PlayerbotAI::IsAssistTankOfIndex(tank, assignment.assistTankIndex, false);
         if (assigned)
-            return AI_VALUE2(Unit*, "find target", assignment.name);
+            return FindThreatTarget(tank, assignment.name);
     }
 
     return nullptr;
@@ -952,10 +877,9 @@ Unit* GetAssignedCouncilMember(PlayerbotAI* botAI)
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget)
 {
     Player* bot = botAI->GetBot();
-    AiObjectContext* context = botAI->GetAiObjectContext();
     for (KarathressCouncilAssignment const& assignment : KARATHRESS_COUNCIL)
     {
-        Unit* member = AI_VALUE2(Unit*, "find target", assignment.name);
+        Unit* member = FindThreatTarget(bot, assignment.name);
         if (!member || member == ownTarget || member->GetVictim() != bot)
             continue;
 
@@ -970,11 +894,10 @@ bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget)
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
 {
     Player* bot = botAI->GetBot();
-    AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* ownMember = GetAssignedCouncilMember(botAI);
     for (KarathressCouncilAssignment const& assignment : KARATHRESS_COUNCIL)
     {
-        Unit* member = AI_VALUE2(Unit*, "find target", assignment.name);
+        Unit* member = FindThreatTarget(bot, assignment.name);
         if (member && member != ownMember && bot->GetDistance(member) < range)
             return true;
     }
@@ -985,8 +908,7 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* sharkkis = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
+    Unit* sharkkis = FindThreatTarget(bot, "fathom-guard sharkkis");
     if (sharkkis && sharkkis->GetVictim() != bot)
         return sharkkis;
 
@@ -1011,6 +933,35 @@ Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)
         return sharkkis;
 
     return heldPet;
+}
+
+bool IsKarathressBlessingHoldActive(Player* bot)
+{
+    if (PlayerbotAI::IsHeal(bot) || !PlayerbotAI::IsMelee(bot))
+        return false;
+
+    if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    Unit* karathress = FindThreatTarget(bot, "fathom-lord karathress");
+    if (!karathress || karathress->GetHealthPct() > KARATHRESS_BLESSING_HOLD_HEALTH_PCT)
+        return false;
+
+    return FindThreatTarget(bot, "fathom-guard caribdis");
+}
+
+bool IsKarathressStartDpsHoldActive(Player* bot)
+{
+    if (PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* karathress = FindThreatTarget(bot, "fathom-lord karathress");
+    if (!karathress)
+        return false;
+
+    std::optional<uint32> const& holdStart =
+        SscState(karathress->GetInstanceId()).karathressDpsHoldTimer;
+    return !holdStart || getMSTimeDiff(*holdStart, getMSTime()) < KARATHRESS_DPS_HOLD_MS;
 }
 
 Unit* GetSharkkisPet(Player* bot)
@@ -1235,7 +1186,7 @@ std::vector<GameObject*> GetUsableVashjGenerators(Map* map)
 
 float GetVashjGroundZ(Map* map, uint32 phaseMask, float x, float y)
 {
-    constexpr float centreZ = 43.0f;
+    constexpr float centerZ = 43.0f;
     constexpr float rimZ = 41.1f;
     constexpr float stairRun = 33.15f;
     constexpr float stairDrop = 18.9f;
@@ -1245,7 +1196,7 @@ float GetVashjGroundZ(Map* map, uint32 phaseMask, float x, float y)
         return INVALID_HEIGHT;
 
     float const slopeZ = distance <= VASHJ_DAIS_APOTHEM ?
-        centreZ - (centreZ - rimZ) * distance / VASHJ_DAIS_APOTHEM :
+        centerZ - (centerZ - rimZ) * distance / VASHJ_DAIS_APOTHEM :
         rimZ - (distance - VASHJ_DAIS_APOTHEM) / stairRun * stairDrop;
 
     constexpr float searchAbove = 2.0f;
@@ -2734,6 +2685,13 @@ SscInstanceState& SscState(uint32 instanceId)
     return sscStates[instanceId];
 }
 
+SscInstanceState* FindSscState(uint32 instanceId)
+{
+    std::lock_guard lock(sscStateMutex);
+    auto it = sscStates.find(instanceId);
+    return it != sscStates.end() ? &it->second : nullptr;
+}
+
 bool SscResetInstance(uint32 instanceId)
 {
     std::lock_guard lock(sscStateMutex);
@@ -2741,17 +2699,20 @@ bool SscResetInstance(uint32 instanceId)
     if (it == sscStates.end())
         return false;
 
-    SscInstanceState const& state = it->second;
+    SscInstanceState& state = it->second;
     bool const wasSet =
         state.hydrossFrostPhaseStartTime || state.hydrossNaturePhaseStartTime ||
         state.hydrossFrostMarkMaxedTime || state.hydrossNatureMarkMaxedTime ||
         state.lurkerGuardianTankAssignments || state.leotherasHumanoidPhaseStartTime ||
         state.leotherasWhirlwindEndTime || state.leotherasDemonPhaseStartTime ||
-        state.leotherasFinalPhaseStartTime || state.karathressDpsWaitTimer ||
+        state.leotherasFinalPhaseStartTime || state.karathressDpsHoldTimer ||
         state.vashjGroundingShaman || state.vashjStationHolders || state.vashjTaintedCoreLooter ||
         state.vashjCorePassingChain;
 
-    sscStates.erase(it);
+    // Not erased: the class roles outlive encounters, see ClassRoleAssignment.
+    SscInstanceState kept;
+    kept.leotherasWarlockTank = state.leotherasWarlockTank;
+    state = std::move(kept);
     return wasSet;
 }
 
