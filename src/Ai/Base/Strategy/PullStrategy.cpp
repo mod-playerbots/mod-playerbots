@@ -114,7 +114,6 @@ std::string PullStrategy::GetSpellName() const
     {
         case ITEM_SUBCLASS_WEAPON_THROWN:
             return "throw";
-        // Bows, guns and crossbows all use Shoot (3018): no player spell is named "shoot gun" etc.
         default:
             return spellName;
     }
@@ -141,11 +140,8 @@ std::string PullStrategy::GetPreActionName() const
 
 namespace
 {
-// "Requires No Ammo" (Thori'dal, the Stars' Fury): the core unloads ammo and lets the shot through.
 constexpr uint32 SPELL_REQUIRES_NO_AMMO = 46699;
 
-// The ammo checks of Spell::CheckItems: a bow, gun or crossbow shoots only with loaded ammo of its
-// kind that the bot still holds, unless the bot has "Requires No Ammo".
 bool HasAmmoFor(Player* bot, Item const* weapon)
 {
     uint32 neededAmmo;

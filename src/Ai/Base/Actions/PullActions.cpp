@@ -23,7 +23,6 @@
 
 namespace
 {
-// Aim inside the range: the range check is 3D, so aiming at the edge can stop the bot just outside it.
 constexpr float PULL_RANGE_MARGIN = 3.0f;
 
 float GetPullReachDistance(Player* bot, Unit* target, PullStrategy const* strategy)
