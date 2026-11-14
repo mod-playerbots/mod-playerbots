@@ -123,6 +123,7 @@ enum class Aq40Spells : uint32
     SPELL_VISCIDUS_FREEZE = 25937,
     SPELL_INVIS_SELF = 25905,
     SPELL_FROSTBOLT_RANK_1 = 116,
+    SPELL_CLEANSING_TOTEM = 8170,
 
     // Princess Huhuran
     SPELL_FRENZY = 26051,
@@ -196,6 +197,26 @@ inline constexpr float VISCIDUS_RAMP_Z = -40.0f;
 inline constexpr float VISCIDUS_RAMP_Y = 985.0f;
 inline constexpr float VISCIDUS_RING_OFFSET = 18.0f;
 inline constexpr float VISCIDUS_RING_TOLERANCE = 6.0f;
+// Angle step (rad) when sliding a ring slot off a Toxin cloud; ~4 yd at ring radius.
+inline constexpr float VISCIDUS_SPOT_SEARCH_STEP = 0.15f;
+// Cloud handling follows Lady Vashj's Toxic Spores (SSCHelpers.h). A bot this close to a cloud counts as in it.
+inline constexpr float TOXIN_HAZARD_RADIUS = TOXIN_RADIUS + TOXIN_MARGIN;
+// Melee on the boss this close to a cloud move only with the melee toxin action, so reach-melee cannot walk them
+// back through a cloud to get to him.
+inline constexpr float TOXIN_MELEE_CONTROL_RADIUS = TOXIN_HAZARD_RADIUS + 2.5f;
+// Melee spots sit this far inside melee range.
+inline constexpr float TOXIN_MELEE_RANGE_INSET = 1.0f;
+// Tank breakout search: rings of spots around the tank; a yard walked through a cloud costs this many yards, and a
+// spot is held this long before it is picked again.
+inline constexpr uint8 TOXIN_TANK_SEARCH_DIRECTIONS = 24;
+inline constexpr uint8 TOXIN_TANK_SEARCH_RINGS = 7;
+inline constexpr float TOXIN_TANK_SEARCH_RING_SPACING = 5.0f;
+inline constexpr float TOXIN_TANK_CLOUD_YARD_COST = 3.0f;
+inline constexpr uint8 TOXIN_TANK_PATH_CHECKS = 6;
+inline constexpr uint32 TOXIN_TANK_COMMIT_MS = 12 * IN_MILLISECONDS;
+// Frost Oil (item 3829): a weapon enchant that procs Frostbolt (spell 205) on hit.
+inline constexpr uint32 ENCHANT_FROST_OIL = 26;
+inline constexpr uint32 FROST_OIL_DURATION_MS = 30 * MINUTE * IN_MILLISECONDS;
 inline Position const VISCIDUS_ROOM_CENTER = {-7992.36f, 908.19f, -52.62f};
 
 // Princess Huhuran
@@ -488,7 +509,28 @@ Player* GetWyvernStungTank(Player* bot);
 // Viscidus
 
 Position ViscidusRing(Player* player, Creature* boss);
+// Melee fighting him: all of them while he is frozen, melee with a frost proc otherwise.
+bool IsViscidusRingMelee(PlayerbotAI* botAI);
+bool IsNearToxin(Player* player, Position const& spot, float radius);
+// The tank keeps clouds this far away, so the boss's center and the melee on the tank's side stand clear too.
+float ToxinTankAvoidRadius(Creature* boss);
+bool FindViscidusTankClearSpot(Player* bot, Creature* boss, Position& spot);
+// A step to the nearest melee spot on the target's edge that is clear of clouds; false when already on one, or when
+// every spot is covered (the melee then stay back).
+bool GetViscidusMeleeStepClearOfToxin(Player* bot, Unit* target, float& stepX, float& stepY, float& stepZ);
+bool GetStepOutOfNearestToxin(Player* bot, float& stepX, float& stepY, float& stepZ);
 bool ViscidusShouldBeFrozen(Player* bot);
+// A weapon enchant whose on-hit proc deals frost damage: Frost Oil, Frostbrand Weapon, Icy Weapon.
+bool HasFrostWeaponProc(Player* bot);
+// Melee damage dealers whose swings cannot add to the freeze hold the ring until he is frozen, instead of standing
+// in the Toxin at his feet.
+bool ViscidusMeleeWaitsForFreeze(PlayerbotAI* botAI);
+// Melee that should get Frost Oil from the raid cheat.
+bool ViscidusMeleeNeedsFrostOil(PlayerbotAI* botAI);
+// Poison Bolt Volley's DoT is a poison; a Cleansing Totem strips it from the shaman's party every 3 s, so shamans keep
+// one down for the fight. A Mana Tide Totem in the water slot is left alone.
+bool HasViscidusWaterTotem(Player* bot);
+bool ViscidusShamanNeedsCleansingTotem(Player* bot);
 
 // Twin Emperors
 
@@ -560,7 +602,6 @@ bool GetCthunMeleeBurnGoal(PlayerbotAI* botAI, Position& goal);
 bool GetCthunSpotGoal(PlayerbotAI* botAI, Position& goal);
 bool GetCthunStackGoal(PlayerbotAI* botAI, Position& goal);
 bool GetTrioTankGoal(PlayerbotAI* botAI, Position& goal);
-bool GetViscidusShatterGoal(PlayerbotAI* botAI, Position& goal);
 bool GetHuhuranSoakGoal(PlayerbotAI* botAI, Position& goal);
 bool GetHuhuranSpreadGoal(PlayerbotAI* botAI, Position& goal);
 bool GetViscidusRingGoal(PlayerbotAI* botAI, Position& goal);

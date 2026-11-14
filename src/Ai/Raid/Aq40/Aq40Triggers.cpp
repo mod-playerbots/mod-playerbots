@@ -132,7 +132,7 @@ bool ViscidusShouldBeFrozenTrigger::IsActiveInEncounter()
 
 bool ViscidusIsFrozenTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsHeal(bot) || !IsFreeToAct())
+    if (PlayerbotAI::IsHeal(bot) || PlayerbotAI::IsRanged(bot) || !IsFreeToAct())
         return false;
     Unit* target = GetAssignedTarget(botAI);
     return target && target->HasAura(Id(Aq40Spells::SPELL_VISCIDUS_FREEZE)) && bot->IsWithinMeleeRange(target) &&
@@ -145,10 +145,18 @@ bool ViscidusToxinCloudNearbyTrigger::IsActiveInEncounter()
     return GetToxinEscapeGoal(botAI, goal);
 }
 
-bool ViscidusFrozenOutOfMeleeRangeTrigger::IsActiveInEncounter()
+bool ViscidusTankInToxinCloudsTrigger::IsActiveInEncounter()
 {
-    Position goal;
-    return IsFreeToAct() && GetViscidusShatterGoal(botAI, goal);
+    Creature* boss = GetBoss(bot);
+    return boss && boss->GetVictim() == bot && IsNearToxin(bot, bot->GetPosition(), ToxinTankAvoidRadius(boss));
+}
+
+bool ViscidusMeleeNearToxinCloudsTrigger::IsActiveInEncounter()
+{
+    if (!IsViscidusRingMelee(botAI) || !IsNearToxin(bot, bot->GetPosition(), TOXIN_MELEE_CONTROL_RADIUS))
+        return false;
+    Unit* target = GetAssignedTarget(botAI);
+    return !target || !bot->IsWithinMeleeRange(target) || IsNearToxin(bot, bot->GetPosition(), TOXIN_HAZARD_RADIUS);
 }
 
 bool ViscidusRangedShouldHoldRingTrigger::IsActiveInEncounter()
@@ -156,6 +164,10 @@ bool ViscidusRangedShouldHoldRingTrigger::IsActiveInEncounter()
     Position goal;
     return IsFreeToAct() && GetViscidusRingGoal(botAI, goal);
 }
+
+bool ViscidusMeleeNeedsFrostOilTrigger::IsActiveInEncounter() { return ViscidusMeleeNeedsFrostOil(botAI); }
+
+bool ViscidusShamanNeedsCleansingTotemTrigger::IsActiveInEncounter() { return ViscidusShamanNeedsCleansingTotem(bot); }
 
 // Princess Huhuran
 

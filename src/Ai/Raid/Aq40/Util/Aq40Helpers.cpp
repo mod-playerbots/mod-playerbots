@@ -6,6 +6,7 @@
 
 #include "Aq40Helpers.h"
 #include "AiFactory.h"
+#include "DBCStores.h"
 #include "EncounterHelpers.h"
 #include "InstanceScript.h"
 #include "LastMovementValue.h"
@@ -18,8 +19,10 @@
 #include "SpellAuras.h"
 #include "SpellMgr.h"
 #include "Timer.h"
+#include "TotemsShamanStrategy.h"
 #include <algorithm>
 #include <cmath>
+#include <iterator>
 #include <limits>
 #include <list>
 #include <mutex>
@@ -1212,18 +1215,57 @@ Player* GetWyvernStungTank(Player* bot)
 
 // Viscidus
 
+namespace
+{
+
+// The spot on a circle around the boss nearest to the given angle that keeps clear of every Toxin cloud. Clouds land on
+// the raid and never despawn, so the circle fills up; a spot inside one has the move-to-spot step and the cloud escape
+// pull the bot back and forth all fight. When no spot is fully clear, take the one farthest from any cloud.
+Position ViscidusClearSpot(Player* player, Creature* boss, float radius, float angle, bool avoidRamp)
+{
+    std::vector<Creature*> const clouds = GetUnits(player, Id(Aq40Npcs::NPC_TOXIC_SLIME));
+    auto clearance = [&clouds](Position const& spot)
+    {
+        float nearest = std::numeric_limits<float>::max();
+        for (Creature* cloud : clouds)
+            nearest = std::min(nearest, cloud->GetExactDist2d(&spot));
+        return nearest;
+    };
+    Position best = Around(boss, radius, angle);
+    float bestClearance = -1.0f;
+    for (float turn = 0.0f; turn <= float(M_PI); turn += VISCIDUS_SPOT_SEARCH_STEP)
+    {
+        for (float side : {1.0f, -1.0f})
+        {
+            Position candidate = Around(boss, radius, angle + side * turn);
+            if (avoidRamp && candidate.GetPositionY() > VISCIDUS_RAMP_Y)
+                continue;
+            float candidateClearance = clearance(candidate);
+            if (candidateClearance >= TOXIN_HAZARD_RADIUS)
+                return candidate;
+            if (candidateClearance > bestClearance)
+            {
+                best = candidate;
+                bestClearance = candidateClearance;
+            }
+            if (turn == 0.0f)
+                break;
+        }
+    }
+    return best;
+}
+
+}  // namespace
+
 Position ViscidusRing(Player* player, Creature* boss)
 {
     float ring = boss->GetCombatReach() + VISCIDUS_RING_OFFSET;
-    Position slot = Around(boss, ring, boss->GetAngle(player));
+    float angle = boss->GetAngle(player);
     // The boss is usually held near the entrance, so the slot behind a ramp-bound bot is up the ramp. Fan those bots
     // out on the room-center side of the boss instead.
-    if (slot.GetPositionY() > VISCIDUS_RAMP_Y || player->GetPositionZ() > VISCIDUS_RAMP_Z)
-    {
-        float spread = (float(player->GetGUID().GetCounter() % 5) - 2.0f) * 0.35f;
-        slot = Around(boss, ring, boss->GetAngle(&VISCIDUS_ROOM_CENTER) + spread);
-    }
-    return slot;
+    if (Around(boss, ring, angle).GetPositionY() > VISCIDUS_RAMP_Y || player->GetPositionZ() > VISCIDUS_RAMP_Z)
+        angle = boss->GetAngle(&VISCIDUS_ROOM_CENTER) + (float(player->GetGUID().GetCounter() % 5) - 2.0f) * 0.35f;
+    return ViscidusClearSpot(player, boss, ring, angle, true);
 }
 
 bool ViscidusShouldBeFrozen(Player* bot)
@@ -1233,6 +1275,233 @@ bool ViscidusShouldBeFrozen(Player* bot)
     Creature* boss = GetBoss(bot);
     return boss && GetUnits(bot, Id(Aq40Npcs::NPC_GLOB_OF_VISCIDUS)).empty() &&
            !boss->HasAura(Id(Aq40Spells::SPELL_VISCIDUS_FREEZE)) && !boss->HasAura(Id(Aq40Spells::SPELL_INVIS_SELF));
+}
+
+bool IsNearToxin(Player* player, Position const& spot, float radius)
+{
+    for (Creature* cloud : GetUnits(player, Id(Aq40Npcs::NPC_TOXIC_SLIME)))
+        if (cloud->GetExactDist2d(&spot) < radius)
+            return true;
+    return false;
+}
+
+float ToxinTankAvoidRadius(Creature* boss) { return TOXIN_HAZARD_RADIUS + boss->GetCombatReach(); }
+
+namespace
+{
+
+float SegmentLengthInCircle(Position const& from, Position const& to, Position const& center, float radius)
+{
+    float const dx = to.GetPositionX() - from.GetPositionX();
+    float const dy = to.GetPositionY() - from.GetPositionY();
+    float const fx = from.GetPositionX() - center.GetPositionX();
+    float const fy = from.GetPositionY() - center.GetPositionY();
+    float const a = dx * dx + dy * dy;
+    if (a < 0.0001f)
+        return 0.0f;
+    float const b = 2.0f * (fx * dx + fy * dy);
+    float const c = fx * fx + fy * fy - radius * radius;
+    float const discriminant = b * b - 4.0f * a * c;
+    if (discriminant <= 0.0f)
+        return 0.0f;
+    float const root = std::sqrt(discriminant);
+    float const t0 = std::clamp((-b - root) / (2.0f * a), 0.0f, 1.0f);
+    float const t1 = std::clamp((-b + root) / (2.0f * a), 0.0f, 1.0f);
+    return (t1 - t0) * std::sqrt(a);
+}
+
+}  // namespace
+
+bool FindViscidusTankClearSpot(Player* bot, Creature* boss, Position& spot)
+{
+    std::vector<Creature*> const clouds = GetUnits(bot, Id(Aq40Npcs::NPC_TOXIC_SLIME));
+    Position const from = bot->GetPosition();
+    // Fully clear for the boss first; if the room is too full for that, at least clear for the tank.
+    for (float clearRadius : {ToxinTankAvoidRadius(boss), TOXIN_HAZARD_RADIUS})
+    {
+        std::vector<std::pair<float, Position>> candidates;
+        for (uint8 ring = 1; ring <= TOXIN_TANK_SEARCH_RINGS; ++ring)
+        {
+            float const radius = TOXIN_TANK_SEARCH_RING_SPACING * ring;
+            for (uint8 i = 0; i < TOXIN_TANK_SEARCH_DIRECTIONS; ++i)
+            {
+                float const angle = 2.0f * static_cast<float>(M_PI) * i / TOXIN_TANK_SEARCH_DIRECTIONS;
+                Position const candidate(from.GetPositionX() + std::cos(angle) * radius,
+                                         from.GetPositionY() + std::sin(angle) * radius, from.GetPositionZ());
+                if (candidate.GetPositionY() > VISCIDUS_RAMP_Y || IsNearToxin(bot, candidate, clearRadius))
+                    continue;
+                float inClouds = 0.0f;
+                for (Creature* cloud : clouds)
+                    inClouds += SegmentLengthInCircle(from, candidate, cloud->GetPosition(), TOXIN_RADIUS);
+                candidates.emplace_back(radius + TOXIN_TANK_CLOUD_YARD_COST * inClouds, candidate);
+            }
+        }
+        std::sort(candidates.begin(), candidates.end(), [](auto const& a, auto const& b) { return a.first < b.first; });
+        uint8 checked = 0;
+        for (auto const& [cost, candidate] : candidates)
+        {
+            if (++checked > TOXIN_TANK_PATH_CHECKS)
+                break;
+            PathGenerator path(bot);
+            if (path.CalculatePath(candidate.GetPositionX(), candidate.GetPositionY(), candidate.GetPositionZ()) &&
+                path.GetPathType() == PATHFIND_NORMAL)
+            {
+                spot = candidate;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool GetViscidusMeleeStepClearOfToxin(Player* bot, Unit* target, float& stepX, float& stepY, float& stepZ)
+{
+    if (!target || (bot->IsWithinMeleeRange(target) && !IsNearToxin(bot, bot->GetPosition(), TOXIN_HAZARD_RADIUS)))
+        return false;
+    float const meleeRange = bot->GetMeleeRange(target);
+    float const ringRadius = meleeRange - TOXIN_MELEE_RANGE_INSET;
+    std::vector<Creature*> nearby;
+    for (Creature* cloud : GetUnits(bot, Id(Aq40Npcs::NPC_TOXIC_SLIME)))
+        if (cloud->GetExactDist2d(target) < meleeRange + TOXIN_HAZARD_RADIUS)
+            nearby.push_back(cloud);
+    auto isClear = [&nearby](float x, float y)
+    {
+        return std::none_of(nearby.begin(), nearby.end(),
+                            [x, y](Creature* cloud) { return cloud->GetExactDist2d(x, y) < TOXIN_HAZARD_RADIUS; });
+    };
+    float const botAngle = target->GetAngle(bot);
+    constexpr uint8 samplesPerSide = 36;
+    constexpr float sampleAngle = static_cast<float>(M_PI) / samplesPerSide;
+    for (uint8 i = 0; i <= samplesPerSide; ++i)
+    {
+        for (int8 side = 1; side >= -1; side -= 2)
+        {
+            if ((i == 0 || i == samplesPerSide) && side < 0)
+                continue;
+            float const angle = botAngle + side * sampleAngle * i;
+            float const x = target->GetPositionX() + std::cos(angle) * ringRadius;
+            float const y = target->GetPositionY() + std::sin(angle) * ringRadius;
+            if (!isClear(x, y))
+                continue;
+            constexpr float arrivalDistance = 0.5f;
+            if (bot->GetExactDist2d(x, y) <= arrivalDistance)
+                return false;
+            if (EncounterHelpers::CanTakeStepTowards(bot, x, y, PATH_STEP_DISTANCE, stepX, stepY, stepZ))
+                return true;
+        }
+    }
+    return false;
+}
+
+bool GetStepOutOfNearestToxin(Player* bot, float& stepX, float& stepY, float& stepZ)
+{
+    std::vector<Creature*> const clouds = GetUnits(bot, Id(Aq40Npcs::NPC_TOXIC_SLIME));
+    auto const nearest = std::min_element(clouds.begin(), clouds.end(), [bot](Creature* a, Creature* b)
+                                          { return bot->GetExactDist2dSq(a) < bot->GetExactDist2dSq(b); });
+    if (nearest == clouds.end())
+        return false;
+    Creature* cloud = *nearest;
+    float const botAngle = bot->GetExactDist2d(cloud) > 0.1f ? cloud->GetAngle(bot) : bot->GetOrientation();
+    constexpr uint8 samplesPerSide = 36;
+    constexpr float sampleAngle = static_cast<float>(M_PI) / samplesPerSide;
+    for (uint8 i = 0; i <= samplesPerSide; ++i)
+    {
+        for (int8 side = 1; side >= -1; side -= 2)
+        {
+            if ((i == 0 || i == samplesPerSide) && side < 0)
+                continue;
+            float const angle = botAngle + side * sampleAngle * i;
+            float const x = cloud->GetPositionX() + std::cos(angle) * TOXIN_HAZARD_RADIUS;
+            float const y = cloud->GetPositionY() + std::sin(angle) * TOXIN_HAZARD_RADIUS;
+            if (EncounterHelpers::CanTakeStepTowards(bot, x, y, PATH_STEP_DISTANCE, stepX, stepY, stepZ))
+                return true;
+        }
+    }
+    return false;
+}
+
+bool HasFrostWeaponProc(Player* bot)
+{
+    for (uint8 slot : {EQUIPMENT_SLOT_MAINHAND, EQUIPMENT_SLOT_OFFHAND})
+    {
+        Item* weapon = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+        if (!weapon)
+            continue;
+        for (EnchantmentSlot enchantSlot : {PERM_ENCHANTMENT_SLOT, TEMP_ENCHANTMENT_SLOT})
+        {
+            SpellItemEnchantmentEntry const* enchant =
+                sSpellItemEnchantmentStore.LookupEntry(weapon->GetEnchantmentId(enchantSlot));
+            if (!enchant)
+                continue;
+            for (uint8 i = 0; i < MAX_SPELL_ITEM_ENCHANTMENT_EFFECTS; ++i)
+            {
+                if (enchant->type[i] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
+                    continue;
+                SpellInfo const* proc = sSpellMgr->GetSpellInfo(enchant->spellid[i]);
+                if (proc && (proc->GetSchoolMask() & SPELL_SCHOOL_MASK_FROST))
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool ViscidusMeleeWaitsForFreeze(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    if (!FormationPrelude(bot, Aq40Encounter::Viscidus) || PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot) ||
+        PlayerbotAI::IsRanged(bot) || HasFrostWeaponProc(bot))
+        return false;
+    Creature* boss = GetBoss(bot);
+    if (boss->HasAura(Id(Aq40Spells::SPELL_VISCIDUS_FREEZE)))
+        return false;  // Frozen: everyone moves in to shatter.
+    // Globs are fair game for everyone.
+    Unit* target = GetAssignedTarget(botAI);
+    return !target || target == boss;
+}
+
+bool IsViscidusRingMelee(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    if (!FormationPrelude(bot, Aq40Encounter::Viscidus) || PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot) ||
+        PlayerbotAI::IsRanged(bot))
+        return false;
+    Creature* boss = GetBoss(bot);
+    // Globs are fought with the normal melee movement.
+    if (GetAssignedTarget(botAI) != boss)
+        return false;
+    return boss->HasAura(Id(Aq40Spells::SPELL_VISCIDUS_FREEZE)) || HasFrostWeaponProc(bot);
+}
+
+bool HasViscidusWaterTotem(Player* bot)
+{
+    constexpr float totemRange = 30.0f;
+    Creature* totem = bot->GetMap()->GetCreature(bot->m_SummonSlot[SUMMON_SLOT_TOTEM_WATER]);
+    if (!totem || totem->GetDistance(bot) > totemRange)
+        return false;
+    uint32 const spell = totem->GetUInt32Value(UNIT_CREATED_BY_SPELL);
+    return spell == Id(Aq40Spells::SPELL_CLEANSING_TOTEM) ||
+           std::find(std::begin(MANA_TIDE_TOTEM), std::end(MANA_TIDE_TOTEM), spell) != std::end(MANA_TIDE_TOTEM);
+}
+
+bool ViscidusShamanNeedsCleansingTotem(Player* bot)
+{
+    uint32 const cleansing = Id(Aq40Spells::SPELL_CLEANSING_TOTEM);
+    if (bot->getClass() != CLASS_SHAMAN || !bot->HasSpell(cleansing))
+        return false;
+    // Call of the Elements drops whatever the bar's water slot holds, so the bar must hold Cleansing too.
+    ActionButton const* water = bot->GetActionButton(TOTEM_BAR_SLOT_WATER);
+    if (!water || water->GetType() != ACTION_BUTTON_SPELL || water->GetAction() != cleansing)
+        return true;
+    return !HasViscidusWaterTotem(bot);
+}
+
+bool ViscidusMeleeNeedsFrostOil(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    return botAI->HasCheat(BotCheatMask::raid) && IsInEncounter(bot, Aq40Encounter::Viscidus) &&
+           !PlayerbotAI::IsHeal(bot) && !PlayerbotAI::IsRanged(bot) &&
+           bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND) && !HasFrostWeaponProc(bot);
 }
 
 // Twin Emperors
@@ -1915,9 +2184,14 @@ bool GetToxinEscapeGoal(PlayerbotAI* botAI, Position& goal)
     Player* bot = botAI->GetBot();
     if (!IsInEncounter(bot, Aq40Encounter::Viscidus))
         return false;
+    // Melee on the boss move around clouds with their own action, and his tank drags him clear.
+    if (IsViscidusRingMelee(botAI))
+        return false;
+    if (Creature* boss = GetBoss(bot); boss && boss->GetVictim() == bot)
+        return false;
     // Clouds never despawn and stack up wherever the raid stands. Escape along the sum of every nearby cloud's push,
     // leaning toward the bot's ring slot, instead of stepping straight off the nearest one.
-    constexpr float hazard = TOXIN_RADIUS + TOXIN_MARGIN;
+    constexpr float hazard = TOXIN_HAZARD_RADIUS;
     constexpr float awareness = hazard + 4.0f;
     float pushX = 0.0f;
     float pushY = 0.0f;
@@ -2416,18 +2690,6 @@ bool GetTrioTankGoal(PlayerbotAI* botAI, Position& goal)
     return false;
 }
 
-bool GetViscidusShatterGoal(PlayerbotAI* botAI, Position& goal)
-{
-    Player* bot = botAI->GetBot();
-    if (!FormationPrelude(bot, Aq40Encounter::Viscidus) || PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot))
-        return false;
-    Creature* boss = GetBoss(bot);
-    if (!boss->HasAura(Id(Aq40Spells::SPELL_VISCIDUS_FREEZE)))
-        return false;
-    goal = boss->GetPosition();
-    return !bot->IsWithinMeleeRange(boss);
-}
-
 bool GetHuhuranSoakGoal(PlayerbotAI* botAI, Position& goal)
 {
     Player* bot = botAI->GetBot();
@@ -2499,11 +2761,9 @@ bool GetViscidusRingGoal(PlayerbotAI* botAI, Position& goal)
 {
     Player* bot = botAI->GetBot();
     if (!FormationPrelude(bot, Aq40Encounter::Viscidus) || PlayerbotAI::IsTank(bot) ||
-        !(PlayerbotAI::IsHeal(bot) || PlayerbotAI::IsRanged(bot)))
+        !(PlayerbotAI::IsHeal(bot) || PlayerbotAI::IsRanged(bot) || ViscidusMeleeWaitsForFreeze(botAI)))
         return false;
     Creature* boss = GetBoss(bot);
-    if (!PlayerbotAI::IsHeal(bot) && boss->HasAura(Id(Aq40Spells::SPELL_VISCIDUS_FREEZE)))
-        return false;  // The shatter goal owns the frozen window.
     if (!PlayerbotAI::IsHeal(bot))
         if (Unit* target = GetAssignedTarget(botAI); target && target != boss)
             return false;

@@ -201,12 +201,40 @@ public:
     bool Execute(Event event) override;
 };
 
-class ViscidusMeleeMoveInToShatterAction : public MovementAction, public Aq40ActionTag
+class ViscidusTankDragClearOfToxinAction : public MovementAction, public Aq40ActionTag
 {
 public:
-    ViscidusMeleeMoveInToShatterAction(PlayerbotAI* botAI) : MovementAction(botAI, "viscidus melee move in to shatter")
+    ViscidusTankDragClearOfToxinAction(PlayerbotAI* botAI) : MovementAction(botAI, "viscidus tank drag clear of toxin")
     {
     }
+    bool Execute(Event event) override;
+
+private:
+    Position _spot;
+    bool _hasSpot = false;
+    uint32 _spotTime = 0;
+};
+
+class ViscidusMeleeMoveAroundToxinAction : public MovementAction, public Aq40ActionTag
+{
+public:
+    ViscidusMeleeMoveAroundToxinAction(PlayerbotAI* botAI) : MovementAction(botAI, "viscidus melee move around toxin")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
+class ViscidusDropCleansingTotemAction : public Action, public Aq40ActionTag
+{
+public:
+    ViscidusDropCleansingTotemAction(PlayerbotAI* botAI) : Action(botAI, "viscidus drop cleansing totem") {}
+    bool Execute(Event event) override;
+};
+
+class ViscidusApplyFrostOilAction : public Action, public Aq40ActionTag
+{
+public:
+    ViscidusApplyFrostOilAction(PlayerbotAI* botAI) : Action(botAI, "viscidus apply frost oil") {}
     bool Execute(Event event) override;
 };
 

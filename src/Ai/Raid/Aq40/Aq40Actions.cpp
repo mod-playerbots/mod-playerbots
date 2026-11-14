@@ -11,6 +11,7 @@
 #include "ObjectMgr.h"
 #include "Playerbots.h"
 #include "Timer.h"
+#include "TotemsShamanStrategy.h"
 #include <cmath>
 #include <vector>
 
@@ -233,6 +234,33 @@ bool ViscidusMeleeShatterAction::Execute(Event /*event*/)
     return starting && bot->Attack(target, true);
 }
 
+bool ViscidusDropCleansingTotemAction::Execute(Event /*event*/)
+{
+    uint32 const cleansing = Id(Aq40Spells::SPELL_CLEANSING_TOTEM);
+    bool changed = false;
+    ActionButton const* water = bot->GetActionButton(TOTEM_BAR_SLOT_WATER);
+    if (!water || water->GetType() != ACTION_BUTTON_SPELL || water->GetAction() != cleansing)
+    {
+        bot->addActionButton(TOTEM_BAR_SLOT_WATER, cleansing, ACTION_BUTTON_SPELL);
+        changed = true;
+    }
+    if (!HasViscidusWaterTotem(bot) && botAI->CanCastSpell(cleansing, bot) && botAI->CastSpell(cleansing, bot))
+        return true;
+    return changed;
+}
+
+bool ViscidusApplyFrostOilAction::Execute(Event /*event*/)
+{
+    // Raid cheat: melee arrive with Frost Oil, so their swings help freeze him instead of waiting on the ring.
+    Item* weapon = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    if (!weapon || !ViscidusMeleeNeedsFrostOil(botAI))
+        return false;
+    bot->ApplyEnchantment(weapon, TEMP_ENCHANTMENT_SLOT, false);
+    weapon->SetEnchantment(TEMP_ENCHANTMENT_SLOT, ENCHANT_FROST_OIL, FROST_OIL_DURATION_MS, 0, bot->GetGUID());
+    bot->ApplyEnchantment(weapon, TEMP_ENCHANTMENT_SLOT, true);
+    return true;
+}
+
 bool ViscidusEscapeToxinCloudsAction::Execute(Event /*event*/)
 {
     Position spot;
@@ -246,22 +274,66 @@ bool ViscidusEscapeToxinCloudsAction::Execute(Event /*event*/)
                   MovementPriority::MOVEMENT_FORCED);
 }
 
-bool ViscidusMeleeMoveInToShatterAction::Execute(Event /*event*/)
+bool ViscidusTankDragClearOfToxinAction::Execute(Event /*event*/)
 {
     Creature* boss = GetBoss(bot);
-    Position spot;
-    if (!boss || !GetViscidusShatterGoal(botAI, spot))
+    if (!boss || boss->GetVictim() != bot)
+    {
+        _hasSpot = false;
+        return false;
+    }
+    // Hold the chosen spot so the tank does not turn back and forth; re-pick on arrival, after the hold, or when a new
+    // cloud lands on it.
+    constexpr float arrivalDistance = 1.5f;
+    if (_hasSpot &&
+        (getMSTimeDiff(_spotTime, getMSTime()) > TOXIN_TANK_COMMIT_MS ||
+         bot->GetExactDist2d(_spot) <= arrivalDistance || IsNearToxin(bot, _spot, ToxinTankAvoidRadius(boss))))
+        _hasSpot = false;
+    if (!_hasSpot)
+    {
+        if (!FindViscidusTankClearSpot(bot, boss, _spot))
+            return false;
+        _hasSpot = true;
+        _spotTime = getMSTime();
+    }
+    float stepX;
+    float stepY;
+    if (!GetPathStepTowardPoint(bot, _spot, 0.0f, PATH_STEP_DISTANCE, stepX, stepY))
+    {
+        _hasSpot = false;
+        return false;
+    }
+    // Back away so he stays in front of the tank.
+    bool const backwards = (stepX - bot->GetPositionX()) * (boss->GetPositionX() - bot->GetPositionX()) +
+                               (stepY - bot->GetPositionY()) * (boss->GetPositionY() - bot->GetPositionY()) <
+                           0.0f;
+    return MoveTo(AQ40_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_FORCED, true, backwards);
+}
+
+// Melee stay in reach at the nearest angle that no cloud covers. If every angle is covered, they stay back; if they
+// are standing in a cloud, they walk straight out of the nearest one.
+bool ViscidusMeleeMoveAroundToxinAction::Execute(Event /*event*/)
+{
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
         return false;
     float stepX;
     float stepY;
-    if (!GetPathStepTowardUnit(bot, boss, boss->GetCombatReach(), PATH_STEP_DISTANCE, stepX, stepY))
+    float stepZ;
+    Unit* target = GetAssignedTarget(botAI);
+    if (target && target->IsAlive() && GetViscidusMeleeStepClearOfToxin(bot, target, stepX, stepY, stepZ))
+        return MoveTo(AQ40_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
+    if (!IsNearToxin(bot, bot->GetPosition(), TOXIN_HAZARD_RADIUS) ||
+        !GetStepOutOfNearestToxin(bot, stepX, stepY, stepZ))
         return false;
-    return MoveTo(AQ40_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-                  MovementPriority::MOVEMENT_COMBAT, true, false);
+    return MoveTo(AQ40_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
 }
 
 bool ViscidusPositionRangedOnRingAction::Execute(Event /*event*/)
 {
+    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_COMBAT))
+        return false;
     Position spot;
     if (!GetViscidusRingGoal(botAI, spot))
         return false;

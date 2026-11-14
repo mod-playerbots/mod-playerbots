@@ -61,9 +61,13 @@ public:
         creators["viscidus toxin cloud nearby"] = &RaidAq40TriggerContext::viscidus_toxin_cloud_nearby;
         creators["viscidus should be frozen"] = &RaidAq40TriggerContext::viscidus_should_be_frozen;
         creators["viscidus is frozen"] = &RaidAq40TriggerContext::viscidus_is_frozen;
-        creators["viscidus frozen out of melee range"] = &RaidAq40TriggerContext::viscidus_frozen_out_of_melee_range;
+        creators["viscidus tank in toxin clouds"] = &RaidAq40TriggerContext::viscidus_tank_in_toxin_clouds;
+        creators["viscidus melee near toxin clouds"] = &RaidAq40TriggerContext::viscidus_melee_near_toxin_clouds;
         creators["viscidus ranged should hold ring"] = &RaidAq40TriggerContext::viscidus_ranged_should_hold_ring;
         creators["viscidus should assign dps priority"] = &RaidAq40TriggerContext::viscidus_should_assign_dps_priority;
+        creators["viscidus melee needs frost oil"] = &RaidAq40TriggerContext::viscidus_melee_needs_frost_oil;
+        creators["viscidus shaman needs cleansing totem"] =
+            &RaidAq40TriggerContext::viscidus_shaman_needs_cleansing_totem;
 
         // Princess Huhuran
         creators["princess huhuran should assign soakers"] =
@@ -229,13 +233,25 @@ private:
     }
     static Trigger* viscidus_should_be_frozen(PlayerbotAI* botAI) { return new ViscidusShouldBeFrozenTrigger(botAI); }
     static Trigger* viscidus_is_frozen(PlayerbotAI* botAI) { return new ViscidusIsFrozenTrigger(botAI); }
-    static Trigger* viscidus_frozen_out_of_melee_range(PlayerbotAI* botAI)
+    static Trigger* viscidus_tank_in_toxin_clouds(PlayerbotAI* botAI)
     {
-        return new ViscidusFrozenOutOfMeleeRangeTrigger(botAI);
+        return new ViscidusTankInToxinCloudsTrigger(botAI);
+    }
+    static Trigger* viscidus_melee_near_toxin_clouds(PlayerbotAI* botAI)
+    {
+        return new ViscidusMeleeNearToxinCloudsTrigger(botAI);
     }
     static Trigger* viscidus_ranged_should_hold_ring(PlayerbotAI* botAI)
     {
         return new ViscidusRangedShouldHoldRingTrigger(botAI);
+    }
+    static Trigger* viscidus_shaman_needs_cleansing_totem(PlayerbotAI* botAI)
+    {
+        return new ViscidusShamanNeedsCleansingTotemTrigger(botAI);
+    }
+    static Trigger* viscidus_melee_needs_frost_oil(PlayerbotAI* botAI)
+    {
+        return new ViscidusMeleeNeedsFrostOilTrigger(botAI);
     }
     static Trigger* viscidus_should_assign_dps_priority(PlayerbotAI* botAI)
     {

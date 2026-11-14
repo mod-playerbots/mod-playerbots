@@ -187,6 +187,30 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class ViscidusMeleeControlToxinAvoidanceMultiplier : public Aq40EncounterMultiplier
+{
+public:
+    ViscidusMeleeControlToxinAvoidanceMultiplier(PlayerbotAI* botAI)
+        : Aq40EncounterMultiplier(botAI, "viscidus melee control toxin avoidance", Aq40Helpers::Aq40Encounter::Viscidus)
+    {
+    }
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class ViscidusKeepCleansingTotemMultiplier : public Aq40EncounterMultiplier
+{
+public:
+    ViscidusKeepCleansingTotemMultiplier(PlayerbotAI* botAI)
+        : Aq40EncounterMultiplier(botAI, "viscidus keep cleansing totem", Aq40Helpers::Aq40Encounter::Viscidus)
+    {
+    }
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class ViscidusFrostOnlyMultiplier : public Aq40EncounterMultiplier
 {
 public:

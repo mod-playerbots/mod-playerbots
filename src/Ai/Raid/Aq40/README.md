@@ -144,8 +144,13 @@ are needed. Skull changes the kill order on the Bug Trio and Fankriss.
     attack the skull without waiting for the tank to reach melee. A worm keeps the skull until it dies.
 - **Viscidus:**
   - Casters freeze him with frost spells (rank 1 Frostbolt for the most hits, Frost Shock, Icy Touch, Ice Lance).
-  - Once he's frozen, melee move in to shatter him. Globs die first.
-  - Everyone avoids the Toxin clouds. Ranged and healers keep a ring around him, off the entrance ramp.
+  - Melee without a frost weapon proc (Frost Oil, Frostbrand, Icy Weapon) wait on the ring with the ranged; with
+    the raid cheat on, melee get Frost Oil and fight him from the start.
+  - Once he's frozen, melee move in to shatter him while ranged keep hitting him from the ring. Globs die first.
+  - Toxin clouds never despawn, so they are handled like Lady Vashj's Toxic Spores. The tank drags him to a patch
+    clear of clouds. Melee fight from the nearest clear spot on his edge, and stay back if there is none. Ranged and
+    healers keep a ring around him, off the entrance ramp, on slots clear of clouds.
+  - Shamans keep a Cleansing Totem down to strip the Poison Bolt Volley poison from their party.
 - **Princess Huhuran:**
   - Tanks swap at 5 Acid Spit stacks.
   - Hunters use Tranquilizing Shot on Frenzy.

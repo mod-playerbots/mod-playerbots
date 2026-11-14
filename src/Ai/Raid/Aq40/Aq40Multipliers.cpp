@@ -16,6 +16,7 @@
 #include "MoveSpline.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
+#include "ShamanActions.h"
 #include <cmath>
 
 using namespace Aq40Helpers;
@@ -224,10 +225,35 @@ float ViscidusControlMovementMultiplier::GetValueInEncounter(Action* action)
     if (!dynamic_cast<ReachTargetAction*>(action) && !dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action) && !IsRepositionAction(bot, action))
         return 1.0f;
+    // Melee waiting for the freeze stay off him even once settled on the ring; reach-target would walk them back in.
+    if (ViscidusMeleeWaitsForFreeze(botAI))
+        return 0.0f;
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
     Position spot;
-    return GetViscidusShatterGoal(botAI, spot) || GetViscidusRingGoal(botAI, spot) ? 0.0f : 1.0f;
+    return GetViscidusRingGoal(botAI, spot) ? 0.0f : 1.0f;
+}
+
+// Near a cloud, melee on the boss move only with the melee toxin action.
+float ViscidusMeleeControlToxinAvoidanceMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<MovementAction*>(action) && !dynamic_cast<CastReachTargetSpellAction*>(action))
+        return 1.0f;
+    if (IsOwnAction(action) || IsTargetPicker(action))
+        return 1.0f;
+    if (!IsViscidusRingMelee(botAI))
+        return 1.0f;
+    return IsNearToxin(bot, bot->GetPosition(), TOXIN_MELEE_CONTROL_RADIUS) ? 0.0f : 1.0f;
+}
+
+// The shaman's own water totem choice would replace the Cleansing Totem as soon as it lands; Mana Tide stays allowed.
+float ViscidusKeepCleansingTotemMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<CastHealingStreamTotemAction*>(action) && !dynamic_cast<CastManaSpringTotemAction*>(action) &&
+        !dynamic_cast<CastFireResistanceTotemAction*>(action) && !dynamic_cast<SetHealingStreamTotemAction*>(action) &&
+        !dynamic_cast<SetManaSpringTotemAction*>(action) && !dynamic_cast<SetFireResistanceTotemAction*>(action))
+        return 1.0f;
+    return bot->HasSpell(Id(Aq40Spells::SPELL_CLEANSING_TOTEM)) ? 0.0f : 1.0f;
 }
 
 float ViscidusFrostOnlyMultiplier::GetValueInEncounter(Action* action)
@@ -237,14 +263,15 @@ float ViscidusFrostOnlyMultiplier::GetValueInEncounter(Action* action)
     Unit* target = action->GetTarget();
     if (target->GetEntry() != Id(Aq40Npcs::NPC_VISCIDUS))
         return 1.0f;
-    SpellInfo const* spell = ActionSpell(botAI, action);
+    // Frozen, every direct hit of any school counts toward the shatter, so nothing is held back.
     if (target->HasAura(Id(Aq40Spells::SPELL_VISCIDUS_FREEZE)))
-    {
-        std::string const name = action->getName();
-        bool shoot = name == "shoot" || name == "shoot bow" || name == "shoot gun" || name == "shoot crossbow";
-        return (spell && spell->CalcCastTime() > 0) || shoot ? 0.0f : 1.0f;
-    }
-    return spell && !(spell->GetSchoolMask() & SPELL_SCHOOL_MASK_FROST) && !PlayerbotAI::IsTank(bot) ? 0.0f : 1.0f;
+        return 1.0f;
+    SpellInfo const* spell = ActionSpell(botAI, action);
+    bool const frost = spell && (spell->GetSchoolMask() & SPELL_SCHOOL_MASK_FROST);
+    // Melee without a frost proc only get frost spells (Frost Shock, Icy Touch) until he is frozen: no swings.
+    if (ViscidusMeleeWaitsForFreeze(botAI))
+        return frost ? 1.0f : 0.0f;
+    return spell && !frost && !PlayerbotAI::IsTank(bot) ? 0.0f : 1.0f;
 }
 
 // Princess Huhuran

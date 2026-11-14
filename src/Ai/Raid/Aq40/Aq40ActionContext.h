@@ -59,9 +59,12 @@ public:
         creators["viscidus escape toxin clouds"] = &RaidAq40ActionContext::viscidus_escape_toxin_clouds;
         creators["viscidus cast frost spells"] = &RaidAq40ActionContext::viscidus_cast_frost_spells;
         creators["viscidus melee shatter"] = &RaidAq40ActionContext::viscidus_melee_shatter;
-        creators["viscidus melee move in to shatter"] = &RaidAq40ActionContext::viscidus_melee_move_in_to_shatter;
+        creators["viscidus tank drag clear of toxin"] = &RaidAq40ActionContext::viscidus_tank_drag_clear_of_toxin;
+        creators["viscidus melee move around toxin"] = &RaidAq40ActionContext::viscidus_melee_move_around_toxin;
         creators["viscidus position ranged on ring"] = &RaidAq40ActionContext::viscidus_position_ranged_on_ring;
         creators["viscidus assign dps priority"] = &RaidAq40ActionContext::viscidus_assign_dps_priority;
+        creators["viscidus apply frost oil"] = &RaidAq40ActionContext::viscidus_apply_frost_oil;
+        creators["viscidus drop cleansing totem"] = &RaidAq40ActionContext::viscidus_drop_cleansing_totem;
 
         // Princess Huhuran
         creators["princess huhuran assign poison bolt soakers"] =
@@ -218,14 +221,23 @@ private:
     }
     static Action* viscidus_cast_frost_spells(PlayerbotAI* botAI) { return new ViscidusCastFrostSpellsAction(botAI); }
     static Action* viscidus_melee_shatter(PlayerbotAI* botAI) { return new ViscidusMeleeShatterAction(botAI); }
-    static Action* viscidus_melee_move_in_to_shatter(PlayerbotAI* botAI)
+    static Action* viscidus_tank_drag_clear_of_toxin(PlayerbotAI* botAI)
     {
-        return new ViscidusMeleeMoveInToShatterAction(botAI);
+        return new ViscidusTankDragClearOfToxinAction(botAI);
+    }
+    static Action* viscidus_melee_move_around_toxin(PlayerbotAI* botAI)
+    {
+        return new ViscidusMeleeMoveAroundToxinAction(botAI);
     }
     static Action* viscidus_position_ranged_on_ring(PlayerbotAI* botAI)
     {
         return new ViscidusPositionRangedOnRingAction(botAI);
     }
+    static Action* viscidus_drop_cleansing_totem(PlayerbotAI* botAI)
+    {
+        return new ViscidusDropCleansingTotemAction(botAI);
+    }
+    static Action* viscidus_apply_frost_oil(PlayerbotAI* botAI) { return new ViscidusApplyFrostOilAction(botAI); }
     static Action* viscidus_assign_dps_priority(PlayerbotAI* botAI)
     {
         return new Aq40AttackAssignedTargetAction(botAI, "viscidus assign dps priority");

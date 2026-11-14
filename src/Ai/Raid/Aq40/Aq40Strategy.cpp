@@ -83,10 +83,16 @@ void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("viscidus should be frozen", {NextAction("viscidus cast frost spells", ACTION_RAID + 2)}));
     triggers.push_back(new TriggerNode("viscidus is frozen", {NextAction("viscidus melee shatter", ACTION_RAID + 2)}));
-    triggers.push_back(new TriggerNode("viscidus frozen out of melee range",
-                                       {NextAction("viscidus melee move in to shatter", ACTION_RAID + 3)}));
+    triggers.push_back(new TriggerNode("viscidus tank in toxin clouds",
+                                       {NextAction("viscidus tank drag clear of toxin", ACTION_EMERGENCY + 5)}));
+    triggers.push_back(new TriggerNode("viscidus melee near toxin clouds",
+                                       {NextAction("viscidus melee move around toxin", ACTION_EMERGENCY + 5)}));
     triggers.push_back(new TriggerNode("viscidus ranged should hold ring",
                                        {NextAction("viscidus position ranged on ring", ACTION_POSITION)}));
+    triggers.push_back(
+        new TriggerNode("viscidus melee needs frost oil", {NextAction("viscidus apply frost oil", ACTION_RAID + 5)}));
+    triggers.push_back(new TriggerNode("viscidus shaman needs cleansing totem",
+                                       {NextAction("viscidus drop cleansing totem", ACTION_RAID + 1)}));
     triggers.push_back(new TriggerNode("viscidus should assign dps priority",
                                        {NextAction("viscidus assign dps priority", ACTION_RAID + 1)}));
 
@@ -230,6 +236,8 @@ void RaidAq40Strategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Viscidus
     multipliers.push_back(new ViscidusControlMovementMultiplier(botAI));
     multipliers.push_back(new ViscidusFrostOnlyMultiplier(botAI));
+    multipliers.push_back(new ViscidusMeleeControlToxinAvoidanceMultiplier(botAI));
+    multipliers.push_back(new ViscidusKeepCleansingTotemMultiplier(botAI));
 
     // Princess Huhuran
     multipliers.push_back(new PrincessHuhuranControlMovementMultiplier(botAI));

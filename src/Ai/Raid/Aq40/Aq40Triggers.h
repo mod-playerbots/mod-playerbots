@@ -254,11 +254,23 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class ViscidusFrozenOutOfMeleeRangeTrigger : public Aq40EncounterTrigger
+class ViscidusTankInToxinCloudsTrigger : public Aq40EncounterTrigger
 {
 public:
-    ViscidusFrozenOutOfMeleeRangeTrigger(PlayerbotAI* botAI)
-        : Aq40EncounterTrigger(botAI, "viscidus frozen out of melee range", Aq40Helpers::Aq40Encounter::Viscidus)
+    ViscidusTankInToxinCloudsTrigger(PlayerbotAI* botAI)
+        : Aq40EncounterTrigger(botAI, "viscidus tank in toxin clouds", Aq40Helpers::Aq40Encounter::Viscidus)
+    {
+    }
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class ViscidusMeleeNearToxinCloudsTrigger : public Aq40EncounterTrigger
+{
+public:
+    ViscidusMeleeNearToxinCloudsTrigger(PlayerbotAI* botAI)
+        : Aq40EncounterTrigger(botAI, "viscidus melee near toxin clouds", Aq40Helpers::Aq40Encounter::Viscidus)
     {
     }
 
@@ -272,6 +284,30 @@ public:
     ViscidusRangedShouldHoldRingTrigger(PlayerbotAI* botAI)
         : Aq40EncounterTrigger(botAI, "viscidus ranged should hold ring", Aq40Helpers::Aq40Encounter::Viscidus,
                                Aq40Helpers::POSITION_INTERVAL_MS)
+    {
+    }
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class ViscidusShamanNeedsCleansingTotemTrigger : public Aq40EncounterTrigger
+{
+public:
+    ViscidusShamanNeedsCleansingTotemTrigger(PlayerbotAI* botAI)
+        : Aq40EncounterTrigger(botAI, "viscidus shaman needs cleansing totem", Aq40Helpers::Aq40Encounter::Viscidus)
+    {
+    }
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class ViscidusMeleeNeedsFrostOilTrigger : public Aq40EncounterTrigger
+{
+public:
+    ViscidusMeleeNeedsFrostOilTrigger(PlayerbotAI* botAI)
+        : Aq40EncounterTrigger(botAI, "viscidus melee needs frost oil", Aq40Helpers::Aq40Encounter::Viscidus)
     {
     }
 
