@@ -9,6 +9,11 @@
 #include "PaladinHelper.h"
 #include "Playerbots.h"
 
+HolyShieldTrigger::HolyShieldTrigger(PlayerbotAI* botAI)
+    : BuffTrigger(botAI, "holy shield", 1, false, false, ai::paladin::HOLY_SHIELD_REFRESH_MS)
+{
+}
+
 bool SealTrigger::IsActive()
 {
     Unit* target = GetTarget();
