@@ -325,7 +325,7 @@ private:
     static Action* power_infusion_on_party(PlayerbotAI* botAI) { return new CastPowerInfusionOnPartyAction(botAI); }
     static Action* binding_heal(PlayerbotAI* botAI) { return new CastBindingHealAction(botAI); }
     static Action* prayer_of_mending(PlayerbotAI* botAI) { return new CastPrayerOfMendingAction(botAI); }
-    static Action* pain_suppression_on_party(PlayerbotAI* botAI) { return new CastPainSuppressionProtectAction(botAI); }
+    static Action* pain_suppression_on_party(PlayerbotAI* botAI) { return new CastPainSuppressionOnPartyAction(botAI); }
     static Action* pain_suppression(PlayerbotAI* botAI) { return new CastPainSuppressionAction(botAI); }
     static Action* mass_dispel(PlayerbotAI* botAI) { return new CastMassDispelAction(botAI); }
     static Action* shadowfiend(PlayerbotAI* botAI) { return new CastShadowfiendAction(botAI); }
