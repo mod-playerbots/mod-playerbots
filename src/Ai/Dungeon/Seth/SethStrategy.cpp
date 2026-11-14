@@ -6,7 +6,6 @@
 
 #include "SethStrategy.h"
 #include "SethMultipliers.h"
-#include "SethTriggers.h"
 
 void TbcDungeonSethekkHallsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -40,7 +39,7 @@ void TbcDungeonSethekkHallsStrategy::InitTriggers(std::vector<TriggerNode*>& tri
 
 void TbcDungeonSethekkHallsStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    multipliers.push_back(new SethekkProphetSetTremorTotemMultiplier(botAI));
+    multipliers.push_back(new SethekkProphetKeepTremorTotemMultiplier(botAI));
     multipliers.push_back(new AnzuControlSpellCastingWithSpellBombMultiplier(botAI));
     multipliers.push_back(new TalonKingIkissDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new TalonKingIkissControlMovementMultiplier(botAI));

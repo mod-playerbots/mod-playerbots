@@ -9,6 +9,7 @@
 #include "Playerbots.h"
 #include "RampBossHelper.h"
 #include "RampShared.h"
+#include "ThreatHelpers.h"
 
 using namespace EncounterHelpers;
 using namespace RampShared;
@@ -17,15 +18,14 @@ using namespace RampShared;
 
 bool GargolmarHellfireWatchersAreActiveTrigger::IsActive()
 {
-    return  IsMechanicTrackerBot(bot, RAMP_MAP_ID) &&
-            AI_VALUE2(Unit*, "find target", "hellfire watcher");
+    return IsMechanicTrackerBot(bot, RAMP_MAP_ID) && FindThreatTarget(bot, "hellfire watcher");
 }
 
 // Omor the Unscarred
 
 bool OmorTreacheryAuraTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "omor the unscarred"))
+    if (!FindThreatTarget(bot, "omor the unscarred"))
         return false;
 
     if (!helper.HasTreacheryAura(bot))
@@ -36,7 +36,7 @@ bool OmorTreacheryAuraTrigger::IsActive()
 
 bool OmorTankHasTreacheryAuraTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "omor the unscarred"))
+    if (!FindThreatTarget(bot, "omor the unscarred"))
         return false;
 
     Player* tank = GetGroupMainTank(bot);
@@ -49,33 +49,30 @@ bool OmorTankHasTreacheryAuraTrigger::IsActive()
 
 bool OmorRangedSpreadTrigger::IsActive()
 {
-    return  PlayerbotAI::IsRanged(bot) &&
-            GetNearestPlayerInRadius(bot, OMOR_TREACHERY_AURA_SAFE_DISTANCE) &&
-            AI_VALUE2(Unit*, "find target", "omor the unscarred");
+    return PlayerbotAI::IsRanged(bot) &&
+           GetNearestPlayerInRadius(bot, OMOR_TREACHERY_AURA_SAFE_DISTANCE) &&
+           FindThreatTarget(bot, "omor the unscarred");
 }
 
 bool OmorFiendishHoundIsActiveTrigger::IsActive()
 {
-    return  IsMechanicTrackerBot(bot, RAMP_MAP_ID) &&
-            AI_VALUE2(Unit*, "find target", "fiendish hound");
+    return IsMechanicTrackerBot(bot, RAMP_MAP_ID) && FindThreatTarget(bot, "fiendish hound");
 }
 
 // Vazruden & Nazan
 
 bool VazrudenTankPositionBossTrigger::IsActive()
 {
-    Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
+    Unit* nazan = FindThreatTarget(bot, "nazan");
+    if (nazan && !nazan->IsFlying())
+        return false;
 
-    return
-        PlayerbotAI::IsMainTank(bot) &&
-        AI_VALUE2(Unit*, "find target", "vazruden") &&
-        (!nazan || nazan->IsFlying());
+    return PlayerbotAI::IsMainTank(bot) && FindThreatTarget(bot, "vazruden");
 }
 
 bool VazrudenBossIsActiveTrigger::IsActive()
 {
-    return  IsMechanicTrackerBot(bot, RAMP_MAP_ID) &&
-            AI_VALUE2(Unit*, "find target", "vazruden");
+    return IsMechanicTrackerBot(bot, RAMP_MAP_ID) && FindThreatTarget(bot, "vazruden");
 }
 
 bool NazanBossTremorTotemTrigger::IsActive()
@@ -83,8 +80,7 @@ bool NazanBossTremorTotemTrigger::IsActive()
     if (bot->getClass() != CLASS_SHAMAN)
         return false;
 
-    Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
-
+    Unit* nazan = FindThreatTarget(bot, "nazan");
     if (!nazan || nazan->IsFlying())
         return false;
 
@@ -100,8 +96,7 @@ bool NazanBossFireResistanceTotemTrigger::IsActive()
     if (bot->getClass() != CLASS_SHAMAN)
         return false;
 
-    Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
-
+    Unit* nazan = FindThreatTarget(bot, "nazan");
     if (!nazan || nazan->IsFlying())
         return false;
 
@@ -113,8 +108,7 @@ bool NazanBossFireResistanceAuraTrigger::IsActive()
     if (bot->getClass() != CLASS_PALADIN)
         return false;
 
-    Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan");
-
+    Unit* nazan = FindThreatTarget(bot, "nazan");
     if (!nazan || nazan->IsFlying())
         return false;
 

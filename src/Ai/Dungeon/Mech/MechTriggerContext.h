@@ -9,7 +9,6 @@
 
 #include "MechTriggers.h"
 #include "NamedObjectContext.h"
-#include "TriggerContext.h"
 
 class TbcDungeonMechanarTriggerContext : public NamedObjectContext<Trigger>
 {

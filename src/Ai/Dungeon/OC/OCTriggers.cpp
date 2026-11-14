@@ -5,16 +5,13 @@
  */
 
 #include "OCTriggers.h"
-#include "AiObject.h"
-#include "AiObjectContext.h"
 #include "Playerbots.h"
-#include "Unit.h"
+#include "ThreatHelpers.h"
 
 bool DrakosUnstableSphereTrigger::IsActive()
 {
     // Doesn't seem to be much point trying to get melee to dodge this,
     // they get hit anyway and it just causes a lot of running around and chaos
-    // if (PlayerbotAI::IsMelee(bot)) { return false; }
     if (PlayerbotAI::IsTank(bot)) { return false; }
 
     GuidVector targets = AI_VALUE(GuidVector, "nearest hostile npcs");
@@ -61,18 +58,13 @@ bool DrakeCombatTrigger::IsActive()
 
 bool VarosCloudstriderTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "varos cloudstrider");
-    if (!boss) { return false; }
-
-    return true;
+    return FindThreatTarget(bot, "varos cloudstrider");
 }
 
 bool UromArcaneExplosionTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "mage-lord urom");
-    if (!boss) { return false; }
-
-    return bool(boss->FindCurrentSpellBySpellId(SPELL_EMPOWERED_ARCANE_EXPLOSION));
+    Unit* boss = FindThreatTarget(bot, "mage-lord urom");
+    return boss && boss->FindCurrentSpellBySpellId(SPELL_EMPOWERED_ARCANE_EXPLOSION);
 }
 
 bool UromTimeBombTrigger::IsActive()

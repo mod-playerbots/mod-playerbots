@@ -8,11 +8,11 @@
 #include "LastSpellCastValue.h"
 #include "OCTriggers.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 bool AvoidUnstableSphereAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "drakos the interrogator");
-    if (!boss) { return false; }
+    if (!FindThreatTarget(bot, "drakos the interrogator")) { return false; }
 
     float radius = 12.0f;
     float extraDistance = 1.0f;
@@ -44,9 +44,7 @@ bool MountDrakeAction::Execute(Event /*event*/)
 {
     std::map<int32, int32> drakeAssignments;
     // Composition can be adjusted - both 3/1/1 and 2/2/1 are good default comps
-    // {Amber, Emerald, Ruby}
     std::vector<uint8> composition = {2, 2, 1};
-    // std::vector<uint8> composition = {3, 1, 1};
     int32 myIndex = botAI->GetGroupSlotIndex(bot);
 
     Player* master = botAI->GetMaster();
@@ -134,7 +132,7 @@ bool OccFlyDrakeAction::Execute(Event /*event*/)
     if (!vehicleBase || !masterVehicle) { return false; }
 
     MotionMaster* mm = vehicleBase->GetMotionMaster();
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ley-guardian eregos");
+    Unit* boss = FindThreatTarget(bot, "ley-guardian eregos");
     if (boss && !boss->HasAura(SPELL_PLANAR_SHIFT))
     {
         // Handle as boss encounter instead of formation flight
@@ -185,7 +183,6 @@ bool OccDrakeAttackAction::Execute(Event /*event*/)
             break;
         }
     }
-    // Check this again to see if a target was assigned
     if (!target) { return false; }
 
     switch (vehicleBase->GetEntry())
@@ -204,12 +201,11 @@ bool OccDrakeAttackAction::Execute(Event /*event*/)
 
 bool OccDrakeAttackAction::CastDrakeSpellAction(Unit* target, uint32 spellId, uint32 cooldown)
 {
-    if (botAI->CanCastVehicleSpell(spellId, target))
-        if (botAI->CastVehicleSpell(spellId, target))
-        {
-            vehicleBase->AddSpellCooldown(spellId, 0, cooldown);
-            return true;
-        }
+    if (botAI->CanCastVehicleSpell(spellId, target) && botAI->CastVehicleSpell(spellId, target))
+    {
+        vehicleBase->AddSpellCooldown(spellId, 0, cooldown);
+        return true;
+    }
     return false;
 }
 
@@ -228,7 +224,7 @@ bool OccDrakeAttackAction::AmberDrakeAction(Unit* target)
         !target->HasAura(SPELL_STOP_TIME) &&
         !vehicleBase->HasSpellCooldown(SPELL_STOP_TIME))
     {
-        return CastDrakeSpellAction(target, SPELL_STOP_TIME, 60000);
+        return CastDrakeSpellAction(target, SPELL_STOP_TIME, 60 * IN_MILLISECONDS);
     }
 
     if (!vehicleBase->FindCurrentSpellBySpellId(SPELL_TEMPORAL_RIFT))
@@ -242,8 +238,7 @@ bool OccDrakeAttackAction::AmberDrakeAction(Unit* target)
 bool OccDrakeAttackAction::EmeraldDrakeAction(Unit* target)
 {
     Aura* poisonStacks = target->GetAura(SPELL_LEECHING_POISON, vehicleBase->GetGUID());
-    if (!poisonStacks || (poisonStacks->GetStackAmount() < 3 ||
-                         poisonStacks->GetDuration() < 4000))
+    if (!poisonStacks || (poisonStacks->GetStackAmount() < 3 || poisonStacks->GetDuration() < 4000))
     {
         return CastDrakeSpellAction(target, SPELL_LEECHING_POISON, 0);
     }
@@ -327,22 +322,22 @@ bool OccDrakeAttackAction::RubyDrakeAction(Unit* target)
 
 bool AvoidArcaneExplosionAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "mage-lord urom");
-    if (!boss) { return false; }
+    if (!FindThreatTarget(bot, "mage-lord urom")) { return false; }
 
     Position const* closestPos = nullptr;
 
     for (auto& position : uromSafePositions)
     {
         if (!closestPos || bot->GetExactDist(position) < bot->GetExactDist(closestPos))
-            {
-                closestPos = &position;
-            }
+        {
+            closestPos = &position;
+        }
     }
 
     if (!closestPos) { return false; }
 
-    return MoveNear(bot->GetMapId(), closestPos->GetPositionX(), closestPos->GetPositionY(), closestPos->GetPositionZ(), 2.0f, MovementPriority::MOVEMENT_COMBAT);
+    return MoveNear(bot->GetMapId(), closestPos->GetPositionX(), closestPos->GetPositionY(),
+                    closestPos->GetPositionZ(), 2.0f, MovementPriority::MOVEMENT_COMBAT);
 }
 
 bool TimeBombSpreadAction::Execute(Event /*event*/)

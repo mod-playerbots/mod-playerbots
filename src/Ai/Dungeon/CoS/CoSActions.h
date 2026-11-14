@@ -7,12 +7,7 @@
 #ifndef PLAYERBOTS_COSACTIONS_H
 #define PLAYERBOTS_COSACTIONS_H
 
-#include "Action.h"
-#include "AttackAction.h"
-#include "CoSTriggers.h"
-#include "GenericSpellActions.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
+#include "MovementActions.h"
 
 class ExplodeGhoulSpreadAction : public MovementAction
 {

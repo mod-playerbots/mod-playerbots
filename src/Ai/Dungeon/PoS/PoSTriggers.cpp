@@ -5,23 +5,14 @@
  */
 
 #include "PoSTriggers.h"
-#include "AiObjectContext.h"
-#include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 bool IckAndKrickTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "Ick");
-    if (!boss)
-        return false;
-
-    return true;
+    return FindThreatTarget(bot, "ick");
 }
 
 bool TyrannusTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "scourgelord tyrannus");
-    if (!boss)
-        return false;
-
-    return true;
+    return FindThreatTarget(bot, "scourgelord tyrannus");
 }

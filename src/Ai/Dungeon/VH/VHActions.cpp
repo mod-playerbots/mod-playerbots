@@ -6,24 +6,25 @@
 
 #include "VHActions.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 #include "VHTriggers.h"
 
 bool AttackErekemAction::Execute(Event /*event*/)
 {
     // Focus boss first, adds after
-    Unit* boss = AI_VALUE2(Unit*, "find target", "erekem");
+    Unit* boss = FindThreatTarget(bot, "erekem");
     if (!boss) { return false; }
 
     if (AI_VALUE(Unit*, "current target") != boss)
-        {
-            return Attack(boss);
-        }
+    {
+        return Attack(boss);
+    }
     return false;
 }
 
 bool AttackIchorGlobuleAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ichoron");
+    Unit* boss = FindThreatTarget(bot, "ichoron");
     if (!boss) { return false; }
 
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
@@ -38,8 +39,6 @@ bool AttackIchorGlobuleAction::Execute(Event /*event*/)
         return false;
     }
 
-    // Target is not findable from threat table using AI_VALUE2(),
-    // therefore need to search manually for the unit name
     GuidVector targets = AI_VALUE(GuidVector, "possible targets");
 
     for (auto i = targets.begin(); i != targets.end(); ++i)
@@ -68,14 +67,10 @@ bool AttackIchorGlobuleAction::Execute(Event /*event*/)
 
 bool AttackVoidSentryAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "zuramat the obliterator");
+    Unit* boss = FindThreatTarget(bot, "zuramat the obliterator");
     if (!boss) { return false; }
 
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
-
-    // Target is not findable from threat table using AI_VALUE2(),
-    // therefore need to search manually for the unit name
-    // GuidVector targets = AI_VALUE(GuidVector, "possible targets no los");
     GuidVector targets = AI_VALUE(GuidVector, "possible targets no los");
 
     for (auto i = targets.begin(); i != targets.end(); ++i)

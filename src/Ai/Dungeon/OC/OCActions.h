@@ -8,12 +8,11 @@
 #define PLAYERBOTS_OCACTIONS_H
 
 #include "Action.h"
-#include "AttackAction.h"
-#include "GenericSpellActions.h"
-#include "PlayerbotAI.h"
+#include "MovementActions.h"
+#include "Position.h"
 #include "UseItemAction.h"
 
-const Position uromSafePositions[3] =
+Position const uromSafePositions[3] =
 {
     Position(1138.88f, 1052.22f, 508.36f),
     Position(1084.62f, 1079.71f, 508.36f),

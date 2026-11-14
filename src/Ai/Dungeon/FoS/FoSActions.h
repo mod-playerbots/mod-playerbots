@@ -7,13 +7,11 @@
 #ifndef PLAYERBOTS_FOSACTIONS_H
 #define PLAYERBOTS_FOSACTIONS_H
 
-#include "Action.h"
 #include "AttackAction.h"
-#include "FoSTriggers.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
+#include "MovementActions.h"
+#include "Position.h"
 
-const Position BRONJAHM_TANK_POSITION = Position(5297.920f, 2506.698f, 686.068f);
+Position const BRONJAHM_TANK_POSITION = Position(5297.920f, 2506.698f, 686.068f);
 
 class MoveFromBronjahmAction : public MovementAction
 {

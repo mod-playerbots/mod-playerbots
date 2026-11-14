@@ -8,6 +8,7 @@
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "SethShared.h"
+#include "ThreatHelpers.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -39,7 +40,7 @@ bool DarkweaverSythMarkElementalsAction::Execute(Event /*event*/)
 
     for (auto const& name : elementals)
     {
-        if (Unit* elemental = AI_VALUE2(Unit*, "find target", name))
+        if (Unit* elemental = FindThreatTarget(bot, name))
             return MarkTargetWithSkull(bot, elemental);
     }
 
@@ -48,7 +49,7 @@ bool DarkweaverSythMarkElementalsAction::Execute(Event /*event*/)
 
 bool AnzuAlternateMarksOnBossAction::Execute(Event /*event*/)
 {
-    Unit* anzu = AI_VALUE2(Unit*, "find target", "anzu");
+    Unit* anzu = FindThreatTarget(bot, "anzu");
     if (!anzu)
         return false;
 
@@ -92,7 +93,7 @@ bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event /*event*/)
 
 bool TalonKingIkissPositionTankNearPillarAction::Execute(Event /*event*/)
 {
-    Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
+    Unit* ikiss = FindThreatTarget(bot, "talon king ikiss");
     if (!ikiss)
         return false;
 
@@ -124,7 +125,7 @@ bool TalonKingIkissPositionTankNearPillarAction::Execute(Event /*event*/)
 
 bool TalonKingIkissRangedMoveNearTankAction::Execute(Event /*event*/)
 {
-    Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
+    Unit* ikiss = FindThreatTarget(bot, "talon king ikiss");
     if (!ikiss || !ikiss->GetVictim())
         return false;
 
@@ -183,7 +184,7 @@ bool TalonKingIkissLosArcaneExplosionAction::MoveToPillar(
 bool TalonKingIkissLosArcaneExplosionAction::MoveAroundPillar(
     Position const& pillarCenter, float distToPillar)
 {
-    Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
+    Unit* ikiss = FindThreatTarget(bot, "talon king ikiss");
     if (!ikiss)
         return false;
 
@@ -213,7 +214,7 @@ bool TalonKingIkissLosArcaneExplosionAction::MoveAroundPillar(
 
 bool TalonKingIkissMoveWithinLosAction::Execute(Event /*event*/)
 {
-    Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
+    Unit* ikiss = FindThreatTarget(bot, "talon king ikiss");
     if (!ikiss)
         return false;
 

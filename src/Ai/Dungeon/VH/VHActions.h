@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_VHACTIONS_H
 #define PLAYERBOTS_VHACTIONS_H
 
-#include "Action.h"
 #include "AttackAction.h"
 
 class AttackErekemAction : public AttackAction

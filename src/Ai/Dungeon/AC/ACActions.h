@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_ACACTIONS_H
 #define PLAYERBOTS_ACACTIONS_H
 
-#include "ACTriggers.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
 

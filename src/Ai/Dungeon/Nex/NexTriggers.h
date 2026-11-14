@@ -8,8 +8,6 @@
 #define PLAYERBOTS_NEXTRIGGERS_H
 
 #include "DungeonStrategyUtils.h"
-#include "GenericTriggers.h"
-#include "PlayerbotAIConfig.h"
 #include "Trigger.h"
 
 enum NexusIDs
@@ -19,7 +17,6 @@ enum NexusIDs
     NPC_HORDE_COMMANDER             = 27947,
     NPC_COMMANDER_STOUTBEARD        = 26796,
     NPC_COMMANDER_KOLURG            = 26798,
-    // SPELL_FRIGHTENING_SHOUT         = 19134,
     SPELL_WHIRLWIND                 = 38618,
 
     // Grand Magus Telestra
@@ -32,7 +29,6 @@ enum NexusIDs
     BUFF_RIFT_SHIELD                = 47748,
 
     // Ormorok the Tree Shaper
-    // NPC_CRYSTAL_SPIKE               = 27099,
     GO_CRYSTAL_SPIKE                = 188537,
 };
 

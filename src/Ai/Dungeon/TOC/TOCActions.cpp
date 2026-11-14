@@ -7,13 +7,15 @@
 #include "TOCActions.h"
 #include "AttackersValue.h"
 #include "CellImpl.h"
-#include "GenericSpellActions.h"
+#include "EquipAction.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "Group.h"
-#include "ObjectAccessor.h"
 #include "Playerbots.h"
+#include "Position.h"
 #include "SpellMgr.h"
+#include "TOCTriggers.h"
+#include "ThreatHelpers.h"
 #include "Timer.h"
 #include "Vehicle.h"
 #include <algorithm>
@@ -722,7 +724,7 @@ bool ToCMountAction::EnterVehicle(Unit* vehicleBase, bool moveIfFar)
 
 bool ToCEadricAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "eadric the pure");
+    Unit* boss = FindThreatTarget(bot, "eadric the pure");
     if (!boss)
         return false;
 

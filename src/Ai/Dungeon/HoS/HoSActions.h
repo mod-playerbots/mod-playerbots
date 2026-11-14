@@ -7,11 +7,8 @@
 #ifndef PLAYERBOTS_HOSACTIONS_H
 #define PLAYERBOTS_HOSACTIONS_H
 
-#include "Action.h"
 #include "AttackAction.h"
-#include "HoSTriggers.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
+#include "MovementActions.h"
 
 class ShatterSpreadAction : public MovementAction
 {

@@ -5,12 +5,12 @@
  */
 
 #include "UPTriggers.h"
-#include "AiObjectContext.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 bool SkadiFreezingCloudTrigger::IsActive()
 {
-    Unit* bossMount = AI_VALUE2(Unit*, "find target", "grauf");
+    Unit* bossMount = FindThreatTarget(bot, "grauf");
     if (!bossMount) { return false; }
 
     // Need to check two conditions here - the persistent ground effect doesn't
@@ -48,13 +48,13 @@ bool SkadiFreezingCloudTrigger::IsActive()
 
 bool SkadiWhirlwindTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "skadi the ruthless");
+    Unit* boss = FindThreatTarget(bot, "skadi the ruthless");
     return boss && boss->HasAura(SPELL_SKADI_WHIRLWIND);
 }
 
 bool YmironBaneTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "king ymiron");
+    Unit* boss = FindThreatTarget(bot, "king ymiron");
     if (!boss) { return false; }
 
     return boss->FindCurrentSpellBySpellId(SPELL_BANE) || boss->HasAura(SPELL_BANE);

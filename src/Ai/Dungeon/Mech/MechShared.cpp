@@ -14,6 +14,7 @@
 #include "MechTriggers.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 #include <algorithm>
 #include <cmath>
 #include <list>
@@ -260,7 +261,6 @@ namespace MechanarFlames
 
     Unit* GetSepethrea(Player* bot)
     {
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-        return botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "nethermancer sepethrea")->Get();
+        return FindThreatTarget(bot, "nethermancer sepethrea");
     }
 }
