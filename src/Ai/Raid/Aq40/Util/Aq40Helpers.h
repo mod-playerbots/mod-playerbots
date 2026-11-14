@@ -7,6 +7,9 @@
 #ifndef PLAYERBOTS_AQ40HELPERS_H
 #define PLAYERBOTS_AQ40HELPERS_H
 
+#include "Common.h"
+#include "ObjectGuid.h"
+#include "Position.h"
 #include <array>
 #include <cmath>
 #include <map>
@@ -14,10 +17,6 @@
 #include <string>
 #include <type_traits>
 #include <vector>
-
-#include "Common.h"
-#include "ObjectGuid.h"
-#include "Position.h"
 
 enum ReactStates : uint8;
 

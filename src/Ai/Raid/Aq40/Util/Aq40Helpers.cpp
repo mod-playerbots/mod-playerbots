@@ -5,16 +5,6 @@
  */
 
 #include "Aq40Helpers.h"
-
-#include <algorithm>
-#include <cmath>
-#include <iterator>
-#include <limits>
-#include <list>
-#include <mutex>
-#include <set>
-#include <unordered_map>
-
 #include "AiFactory.h"
 #include "DBCStores.h"
 #include "EncounterHelpers.h"
@@ -30,6 +20,14 @@
 #include "SpellMgr.h"
 #include "Timer.h"
 #include "TotemsShamanStrategy.h"
+#include <algorithm>
+#include <cmath>
+#include <iterator>
+#include <limits>
+#include <list>
+#include <mutex>
+#include <set>
+#include <unordered_map>
 
 namespace Aq40Helpers
 {

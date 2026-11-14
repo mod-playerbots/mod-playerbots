@@ -5,10 +5,6 @@
  */
 
 #include "Aq40Actions.h"
-
-#include <cmath>
-#include <vector>
-
 #include "Aq40Helpers.h"
 #include "EncounterHelpers.h"
 #include "MoveSpline.h"
@@ -16,6 +12,8 @@
 #include "Playerbots.h"
 #include "Timer.h"
 #include "TotemsShamanStrategy.h"
+#include <cmath>
+#include <vector>
 
 using namespace Aq40Helpers;
 using namespace EncounterHelpers;

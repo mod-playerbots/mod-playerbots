@@ -7,12 +7,11 @@
 #ifndef PLAYERBOTS_AQ40MULTIPLIERS_H
 #define PLAYERBOTS_AQ40MULTIPLIERS_H
 
-#include <optional>
-#include <string>
-
 #include "Aq40Helpers.h"
 #include "EncounterHelpers.h"
 #include "Multiplier.h"
+#include <optional>
+#include <string>
 
 // Shared
 

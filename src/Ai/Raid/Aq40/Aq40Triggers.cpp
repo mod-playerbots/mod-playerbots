@@ -5,7 +5,6 @@
  */
 
 #include "Aq40Triggers.h"
-
 #include "Aq40Helpers.h"
 #include "EncounterHelpers.h"
 #include "MoveSpline.h"

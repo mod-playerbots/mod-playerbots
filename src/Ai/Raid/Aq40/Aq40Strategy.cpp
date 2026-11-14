@@ -5,7 +5,6 @@
  */
 
 #include "Aq40Strategy.h"
-
 #include "Aq40Helpers.h"
 #include "Aq40Multipliers.h"
 #include "EncounterHelpers.h"
