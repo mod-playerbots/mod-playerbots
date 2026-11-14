@@ -665,7 +665,7 @@ public:
         for (auto& node : _nodes)
         {
             if (node->getName() == sameNode->getName()
-                && node->getPosition() == sameNode->getPosition())
+                && *node->getPosition() == *sameNode->getPosition())
                 return node;
         }
 
