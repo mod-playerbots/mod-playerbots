@@ -167,6 +167,9 @@ bool BlackTemplePositionBossAction::Execute(Event /*event*/)
 
 bool BlackTempleSpreadRangedAction::Execute(Event /*event*/)
 {
+    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_COMBAT)) // FleePosition()'s priority
+        return false;
+
     Player* nearestPlayer = GetNearestPlayerInRadius(bot, _distance);
     return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), _distance);
 }
@@ -863,9 +866,13 @@ bool ShadeOfAkamaAttackChannelersAndSorcerersAction::Execute(Event /*event*/)
 
 // Teron Gorefiend
 
-// Assume positions in arc at the edge of the balcony (farthest from Constructs)
+// Assume positions in arc at the edge of the balcony (farthest from Constructs).
 bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -906,8 +913,8 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        BT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        BT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false, priority,
+        true, false);
 }
 
 bool TeronGorefiendAvoidShadowOfDeathAction::Execute(Event /*event*/)
@@ -1080,6 +1087,10 @@ Unit* TeronGorefiendDestroyShadowyConstructsAction::GetLanceTarget(
 
 bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Position const& center = GetGurtoggBloodboilPosition(bot);
     if (IsInGurtoggRectangle(
             bot->GetPosition(), center, GURTOGG_TANK_POSITION, GURTOGG_RANGED_HALF_WIDTH,
@@ -1094,7 +1105,7 @@ bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
     bot->CastStop();
     return MoveTo(
         BT_MAP_ID, point.GetPositionX(), point.GetPositionY(), point.GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        false, false, priority, true, false);
 }
 
 bool GurtoggBloodboilMeleeMoveBehindAction::Execute(Event /*event*/)
@@ -1203,6 +1214,9 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::MoveToDistanceFromSuffer
 bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::RangedMoveAwayFromBoss(Unit* suffering)
 {
     if (bot->GetExactDist2d(suffering) >= SUFFERING_RANGED_DISTANCE)
+        return false;
+
+    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_COMBAT)) // FleePosition()'s priority
         return false;
 
     constexpr uint32 minInterval = 0;
@@ -1351,6 +1365,10 @@ bool MotherShahrazPositionRangedUnderStatueAction::Execute(Event /*event*/)
 
 bool MotherShahrazBreakFatalAttractionAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     std::vector<Player*> const attractedPlayers = GetAttractedPlayers();
     if (attractedPlayers.size() < 2)
         return false;
@@ -1385,8 +1403,7 @@ bool MotherShahrazBreakFatalAttractionAction::Execute(Event /*event*/)
                 bot, x, y, SHAHRAZ_FATAL_ATTRACTION_STEP_DISTANCE, stepX, stepY, stepZ))
         {
             return MoveTo(
-                BT_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
-                MovementPriority::MOVEMENT_FORCED, true, false);
+                BT_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
         }
     }
 
@@ -1672,6 +1689,10 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
     {
         if (!bot->IsWithinCombatRange(zerevor, SPELLSTEAL_RANGE))
         {
+            constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+            if (IsWaitingForLastMove(priority))
+                return false;
+
             float stepX;
             float stepY;
             if (GetPathStepTowardUnit(
@@ -1679,7 +1700,7 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
             {
                 return MoveTo(
                     BT_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-                    MovementPriority::MOVEMENT_FORCED, true, false);
+                    priority, true, false);
             }
         }
         else if (botAI->CanCastSpell(Id(BtSpells::SPELL_SPELLSTEAL), zerevor))
@@ -1740,12 +1761,16 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        BT_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-        priority, true, false);
+        BT_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority, true,
+        false);
 }
 
 bool IllidariCouncilPositionToInterruptMalandeAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Position destination;
     if (!FindMalandeInterruptPosition(botAI, GetIllidariCouncilMembers(bot), destination))
         return false;
@@ -1758,12 +1783,16 @@ bool IllidariCouncilPositionToInterruptMalandeAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority, true,
+        backwards);
 }
 
 bool IllidariCouncilNonTanksAvoidZerevorAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);
     Position destination;
     if (!FindZerevorAvoidPosition(bot, members.gathios, members.zerevor, destination))
@@ -1779,8 +1808,8 @@ bool IllidariCouncilNonTanksAvoidZerevorAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, backwards);
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority, true,
+        backwards);
 }
 
 bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)
@@ -2631,6 +2660,10 @@ bool IllidanStormrageCommandPetAttackAddAction::Execute(Event /*event*/)
 
 bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     int32 const index = GetIllidanGrateStackIndex(bot);
     if (index < 0)
         return false;
@@ -2642,7 +2675,7 @@ bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
 
     return MoveTo(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        false, false, false, false, priority, true, false);
 }
 
 bool IllidanStormrageClearDebuffWithImmunityAction::Execute(Event /*event*/)
@@ -2698,6 +2731,10 @@ bool IllidanStormrageStopAttackingAction::Execute(Event /*event*/)
 
 bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     if (HasParasiticShadowfiend(bot))
         return false;
 
@@ -2747,11 +2784,10 @@ bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)
 
     return MoveTo(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        false, false, false, false, priority, true, false);
 }
 
-bool IllidanStormrageSpreadRangedAction::FindDemonFormSlot(
-    Unit* illidan, Position& position)
+bool IllidanStormrageSpreadRangedAction::FindDemonFormSlot(Unit* illidan, Position& position)
 {
     DemonFormLayout const layout = GetDemonFormLayout(*illidan);
     if (PlayerbotAI::IsHeal(bot))
@@ -2813,6 +2849,10 @@ bool IllidanStormrageReachShadowDemonAction::Execute(Event /*event*/)
 
 bool IllidanStormrageMeleeStayAwayFromDemonFormAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return false;
@@ -2831,7 +2871,7 @@ bool IllidanStormrageMeleeStayAwayFromDemonFormAction::Execute(Event /*event*/)
 
     return MoveTo(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        false, false, false, false, priority, true, false);
 }
 
 bool IllidanStormrageWarlockTankHandleDemonFormAction::Execute(Event /*event*/)
