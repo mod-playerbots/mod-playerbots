@@ -84,7 +84,7 @@ bool HydrossTheUnstableStopAttackingAction::Execute(Event event)
         return SscStopAttackingAction::Execute(event);
 
     Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
-    return hydross && StopAttackingTarget(bot, *hydross);
+    return hydross && StopAttackingTarget(bot, hydross);
 }
 
 bool SscSelectTargetForHoldAction::isUseful()
@@ -1142,7 +1142,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
             if (AI_VALUE(Unit*, "current target") != karathress)
                 return false;
 
-            return StopAttackingTarget(bot, *karathress);
+            return StopAttackingTarget(bot, karathress);
         }
 
         target = karathress;
