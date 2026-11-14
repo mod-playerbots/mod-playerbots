@@ -2871,7 +2871,7 @@ bool GetViscidusRingGoal(PlayerbotAI* botAI, Position& goal)
     // The generic ring measures from the boss's center but aims at 28 yards plus his 10-yard reach, so nobody ever
     // settles. Measure and aim with the same reach, and keep the slot off the ramp.
     float ring = boss->GetCombatReach() + VISCIDUS_RING_OFFSET;
-    if (bot->GetPositionZ() <= VISCIDUS_RAMP_Z && std::abs(bot->GetDistance2d(boss) - ring) <= VISCIDUS_RING_TOLERANCE)
+    if (bot->GetPositionZ() <= VISCIDUS_RAMP_Z && std::abs(bot->GetExactDist2d(boss) - ring) <= VISCIDUS_RING_TOLERANCE)
         return false;
     goal = ViscidusRing(bot, boss);
     return true;
