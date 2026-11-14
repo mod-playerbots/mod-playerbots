@@ -90,7 +90,7 @@ private:
     bool SpecialEnchantFilter(uint32 enchantSpellId);
 
     void HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInfo const* spellInfo, float multiplier,
-                         bool canNextTrigger, bool procFlagsMatch, Milliseconds triggerCooldown, bool permanent);
+                         bool canNextTrigger, Milliseconds triggerCooldown, bool permanent);
     float AverageValue(SpellEffectInfo const& effectInfo, SpellInfo const* spellInfo);
 
 private:
