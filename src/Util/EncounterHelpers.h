@@ -20,6 +20,7 @@ class Creature;
 class Player;
 class PlayerbotAI;
 class Unit;
+enum ReactStates : uint8;
 
 namespace EncounterHelpers
 {
@@ -41,6 +42,13 @@ inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
 // banished, or else when the last Spellbinder dies, not when his Spellbinders are pulled). In any
 // case, the boss script must be consulted to determine viability.
 bool IsEncounterInProgress(Player* bot, uint32 mapId);
+// Encounters from the instance script. Boss ids follow DungeonEncounter.dbc's order, so they are
+// right only if the instance script numbers its bosses in that same order. Each returns false or
+// nullopt when the bot isn't on mapId.
+// One boss's state, unlike IsEncounterInProgress, which is true with any boss in progress on mapId.
+bool IsBossInProgress(Player* bot, uint32 mapId, uint32 bossId);
+// The lowest boss id that is IN_PROGRESS, if any.
+std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId);
 
 // Class Roles
 // A job given to one raid member of a class, such as a mage tank.
@@ -217,7 +225,7 @@ float GetDpsHoldValue(Player* bot, Action* action);
 
 // True if the bot's swing, auto shot, wand, or channel is aimed at the target. A channel on the
 // ground at enemies counts as aimed at any enemy.
-bool IsAttackingTarget(Player* bot, Unit const& target);
+bool IsAttackingTarget(Player* bot, Unit* target);
 // Stops the bot's swing, queued swing ability (e.g., Heroic Strike), auto shot or wand, and channel
 // aimed at any enemy, regardless of which one, so channeled heals continue. Returns true if
 // anything is stopped.
@@ -225,28 +233,49 @@ bool StopAttackingAndChanneling(Player* bot);
 // Stops only what is aimed at the target: the bot's swing, auto shot or wand, and channel on the
 // target enemy or on the ground at enemies, so channeled heals continue. Returns true if anything
 // is stopped.
-bool StopAttackingTarget(Player* bot, Unit const& target);
+bool StopAttackingTarget(Player* bot, Unit* target);
 // Calls StopAttackingAndChanneling and clears the current target.
 void StandDown(PlayerbotAI* botAI);
-// Activate the bot's combat engine and set its current target without attacking or sending a pet.
-// A multiplier is needed to keep the bot from attacking the target right after selection. Returns
-// false if the unit isn't a valid target, or is already the target of a bot in its combat engine.
-// Useful for holding dps upon a pull.
+// Like calling Attack, but without attacking or sending a pet. This switches the bot to its combat
+// engine and makes the unit its current target. Also calls StopAttackingTarget on the old target.
+// This can hold dps upon a pull, or switch targets without starting an attack. A multiplier is
+// needed to keep the bot from attacking the new target right after selection. Returns false if the
+// unit isn't a valid target, or is already the current target of a bot in its combat engine.
 bool SelectTarget(PlayerbotAI* botAI, Unit* target);
 
 // Commanding Pets
 
-// The pet Follow command a player gives (PetHandler.cpp, COMMAND_FOLLOW), with CastStop in place
-// of the same InterruptNonMeleeSpells(false), for every unit with pet controls: the pet,
-// controllable guardians, and charmed creatures. This does not change a pet's stance, so if the
-// purpose is to keep a pet from engaging at all, a separate call of pet->SetReactState() to
-// passive is needed. There is no helper for stance changes because a flag is needed to restore the
-// prior stance, and that is best handled in the specific raid actions.
+// Functionally, the pet Follow command a player gives (PetHandler.cpp, COMMAND_FOLLOW), for every
+// unit with pet controls: standard pets, controllable guardians, and charmed creatures. This does
+// not change a pet's stance, so a pet called back this way will attack again. To keep pets out of a
+// fight, use SetMinionStancesForHold, which also calls this.
 void CallBackPets(Player* bot);
 // The pet Attack command a player gives (PetHandler.cpp, COMMAND_ATTACK), for a pet, guardian, or
 // charmed creature. A cast in progress is not stopped, but unlike for players, CastStop can be
 // called from an action to interrupt a pet's pending cast. Returns true if a command was issued.
 bool CommandPetAttack(Creature* pet, Unit* target);
+// A pet or guardian set passive by a hold, and the stance to give back. A pet comes back with a
+// new GUID after it dies or is dismissed, so it is found by its pet number; a guardian has none
+// (0) and is found by GUID.
+struct SavedMinionStance
+{
+    ObjectGuid guid;
+    uint32 petNumber;
+    ReactStates reactState;
+};
+
+// True if the bot has a living pet or guardian with pet controls. Totems are in m_Controlled too,
+// so this, not m_Controlled.empty(), is the cheap first check for a pet trigger.
+bool HasControllableMinion(Player* bot);
+// True if a pet or guardian with pet controls is passive outside a hold, or not passive in one.
+bool IsMinionStanceWrongForHold(Player* bot, bool isHeld);
+// Keeps pets and guardians with pet controls out of a fight while a hold lasts. When held, calls
+// them back and sets them passive, saving each one's prior stance. When not held, restores the
+// saved stances and drops them from the list, except a pet that isn't summoned, which keeps its
+// entry until it returns. Returns true if a stance was set or restored. The raid action keeps
+// savedStances as a member; its reset calls this with isHeld false, then clears the list.
+bool SetMinionStancesForHold(
+    Player* bot, bool isHeld, std::vector<SavedMinionStance>& savedStances);
 
 // Miscellaneous
 
