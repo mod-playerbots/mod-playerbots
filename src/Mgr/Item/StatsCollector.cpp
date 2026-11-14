@@ -397,12 +397,53 @@ static bool UsesStrengthProcBuff(uint32 cls)
     return cls == CLASS_WARRIOR || cls == CLASS_PALADIN || cls == CLASS_DEATH_KNIGHT;
 }
 
+constexpr uint32 ScriptedProcClassMask(uint32 cls) { return cls >= 1 && cls <= 32 ? (1u << (cls - 1)) : 0; }
+
+// Fixed script-cast proc buffs: the DBC has TriggerSpell = 0 and the core script picks the
+// buff. Each row maps one proc spell to one buff, optionally narrowed by class and role; the
+// ICD is applied by CollectScriptedProcBuff and the multiplier encodes proc chance/uptime.
+// Add a row for similar items, not a new branch. Scripts that pick a buff from live state
+// (highest stat, per-class pools, stack-to-trigger) stay in SpecialSpellFilter below.
+struct ScriptedProcValue
+{
+    uint32 procSpellId;
+    uint32 buffSpellId;
+    uint32 classMask;       // 0 = any class
+    CollectorType role;     // 0 = any role
+    float multiplier;       // proc chance / uptime
+};
+
+constexpr ScriptedProcValue SCRIPTED_PROC_VALUES[] = {
+    // Idol of Mutilation: the core script (spell_druid.cpp) casts Agile (+200 agility) in
+    // cat form or Evasion (+200 dodge rating) in bear form; the proc chance is 70%.
+    {67353, 67355, ScriptedProcClassMask(CLASS_DRUID), CollectorType::MELEE_DMG, 0.7f},
+    {67353, 67354, ScriptedProcClassMask(CLASS_DRUID), CollectorType::MELEE_TANK, 0.7f},
+    // Shadowmourne: soul fragment stack heuristic and Chaos Bane's ~40% uptime.
+    {71903, 71905, 0, CollectorType(0), 1.0f},
+    {71903, 73422, 0, CollectorType(0), 0.4f},
+};
+
 void StatsCollector::CollectScriptedProcBuff(uint32 procSpellId, uint32 buffSpellId, float multiplier)
 {
     Milliseconds icd = 0ms;
     if (SpellProcEntry const* entry = sSpellMgr->GetSpellProcEntry(procSpellId))
         icd = entry->Cooldown;
     CollectSpellStats(buffSpellId, multiplier, icd);
+}
+
+bool StatsCollector::ApplyScriptedProcValues(uint32 spellId)
+{
+    bool applied = false;
+    for (ScriptedProcValue const& entry : SCRIPTED_PROC_VALUES)
+    {
+        if (entry.procSpellId != spellId || (entry.classMask && !(entry.classMask & ScriptedProcClassMask(cls_))) ||
+            (entry.role && !(type_ & entry.role)))
+            continue;
+
+        CollectScriptedProcBuff(entry.procSpellId, entry.buffSpellId, entry.multiplier);
+        applied = true;
+    }
+    return applied;
 }
 
 void StatsCollector::CollectStackTriggerProc(uint32 procSpellId, uint32 triggerSpellId)
@@ -426,6 +467,9 @@ void StatsCollector::CollectStackTriggerProc(uint32 procSpellId, uint32 triggerS
 
 bool StatsCollector::SpecialSpellFilter(uint32 spellId)
 {
+    if (ApplyScriptedProcValues(spellId))
+        return true;
+
     // trinket
     switch (spellId)
     {
@@ -550,11 +594,6 @@ bool StatsCollector::SpecialSpellFilter(uint32 spellId)
             if (type_ & CollectorType::SPELL_HEAL)
                 return true;
             break;
-        case 71903:  // Shadowmourne: soul fragment 71905 (+30 STR x10, resets at 10) -> chaos
-                     // bane 73422 (+270 STR 10 sec)
-            CollectScriptedProcBuff(71903, 71905);        // fragments: +30 STR x stack heuristic
-            CollectScriptedProcBuff(71903, 73422, 0.4f);  // chaos bane: ~40% uptime (10 sec per ~25 sec cycle)
-            return true;
         default:
             break;
     }
