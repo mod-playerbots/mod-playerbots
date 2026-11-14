@@ -88,4 +88,5 @@ void NewRpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void NewRpgStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new NewRpgQuestGiverMultiplier(botAI));
+    multipliers.push_back(new NewRpgDoQuestMultiplier(botAI));
 }
