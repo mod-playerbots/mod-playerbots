@@ -60,6 +60,8 @@ void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                                        {NextAction("bug trio assign dps priority", ACTION_RAID + 1)}));
 
     // Battleguard Sartura
+    triggers.push_back(new TriggerNode("battleguard sartura should mark kill target",
+                                       {NextAction("battleguard sartura mark kill target", ACTION_EMERGENCY + 10)}));
     triggers.push_back(
         new TriggerNode("battleguard sartura whirlwind nearby",
                         {NextAction("battleguard sartura move away from whirlwind", ACTION_EMERGENCY + 5)}));

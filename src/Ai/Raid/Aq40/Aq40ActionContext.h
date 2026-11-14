@@ -45,6 +45,7 @@ public:
             &RaidAq40ActionContext::battleguard_sartura_move_away_from_whirlwind;
         creators["battleguard sartura assign dps priority"] =
             &RaidAq40ActionContext::battleguard_sartura_assign_dps_priority;
+        creators["battleguard sartura mark kill target"] = &RaidAq40ActionContext::battleguard_sartura_mark_kill_target;
 
         // Fankriss the Unyielding
         creators["fankriss the unyielding swap tanks"] = &RaidAq40ActionContext::fankriss_the_unyielding_swap_tanks;
@@ -198,6 +199,10 @@ private:
     static Action* battleguard_sartura_assign_dps_priority(PlayerbotAI* botAI)
     {
         return new Aq40AttackAssignedTargetAction(botAI, "battleguard sartura assign dps priority");
+    }
+    static Action* battleguard_sartura_mark_kill_target(PlayerbotAI* botAI)
+    {
+        return new BattleguardSarturaMarkKillTargetAction(botAI);
     }
     static Action* fankriss_the_unyielding_swap_tanks(PlayerbotAI* botAI)
     {

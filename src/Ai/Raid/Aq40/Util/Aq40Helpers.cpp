@@ -144,8 +144,8 @@ Unit* PickKillTarget(Player* bot, std::vector<uint32> const& priorities)
                     selected = unit;
         bool needsTank = IsEncounterBoss(entry) && entry != Id(Aq40Npcs::NPC_EYE_OF_CTHUN) &&
                          entry != Id(Aq40Npcs::NPC_CTHUN) && entry != Id(Aq40Npcs::NPC_VISCIDUS);
-        needsTank = needsTank || entry == Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS) ||
-                    entry == Id(Aq40Npcs::NPC_SARTURA_ROYAL_GUARD) || entry == Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE);
+        needsTank =
+            needsTank || entry == Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS) || entry == Id(Aq40Npcs::NPC_GIANT_CLAW_TENTACLE);
         return needsTank && !IsHeld(bot, selected) ? nullptr : selected;
     }
     return nullptr;
@@ -220,7 +220,15 @@ Unit* GetBugTrioTarget(Player* bot)
 
 Unit* GetSarturaTarget(Player* bot)
 {
-    return GetTankOrKillTarget(bot, {Id(Aq40Npcs::NPC_SARTURA_ROYAL_GUARD), Id(Aq40Npcs::NPC_SARTURA)});
+    if (Unit* owned = PlayerbotAI::IsTank(bot) ? GetOwnedTarget(bot) : nullptr)
+        return owned;
+    // Every whirlwind wipes threat as it starts and ends, so a unit is rarely held after it. Only the opening waits
+    // for the tanks; the taunt trigger takes a loose unit back. Melee skip a whirlwinding skull for the next unit.
+    bool const opening = ElapsedSinceEncounterStart(bot) < SARTURA_OPENING_MS;
+    for (Creature* unit : GetSarturaKillOrder(bot))
+        if (IsAllowedDamage(bot, unit) && (!opening || IsHeld(bot, unit)))
+            return unit;
+    return nullptr;
 }
 
 Unit* GetViscidusTarget(Player* bot)
@@ -751,7 +759,8 @@ bool IsAllowedDamage(Player* bot, Unit* unit)
     if (!Attackable(bot, unit))
         return false;
     uint32 entry = unit->GetEntry();
-    if (HasTrueFulfillment(unit) || Whirling(unit))
+    // Melee would stand in the whirlwind; ranged keep damaging it from outside.
+    if (HasTrueFulfillment(unit) || (Whirling(unit) && !PlayerbotAI::IsRanged(bot)))
         return false;
     Aq40Encounter encounter = GetCurrentEncounter(bot);
     if (encounter == Aq40Encounter::Cthun)
@@ -1171,6 +1180,26 @@ Creature* GetWhirlwindInRange(Player* bot)
         if (Whirling(unit) && bot->GetDistance2d(unit) < WHIRLWIND_SAFE_DISTANCE)
             return unit;
     return nullptr;
+}
+
+std::vector<Creature*> GetSarturaKillOrder(Player* bot)
+{
+    // Guards by spawn id, so every bot and every pull agree on the order, then Sartura.
+    std::vector<Creature*> order = GetUnits(bot, Id(Aq40Npcs::NPC_SARTURA_ROYAL_GUARD));
+    std::sort(order.begin(), order.end(),
+              [](Creature* left, Creature* right) { return left->GetSpawnId() < right->GetSpawnId(); });
+    for (Creature* sartura : GetUnits(bot, Id(Aq40Npcs::NPC_SARTURA)))
+        order.push_back(sartura);
+    // Whoever set the skull, the marked unit dies first.
+    if (Group* group = bot->GetGroup())
+    {
+        ObjectGuid const skull = group->GetTargetIcon(SKULL_ICON);
+        auto marked =
+            std::find_if(order.begin(), order.end(), [&](Creature* unit) { return unit->GetGUID() == skull; });
+        if (marked != order.end())
+            std::rotate(order.begin(), marked, marked + 1);
+    }
+    return order;
 }
 
 // Princess Huhuran

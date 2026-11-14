@@ -139,6 +139,15 @@ public:
     bool Execute(Event event) override;
 };
 
+class BattleguardSarturaMarkKillTargetAction : public Action, public Aq40ActionTag
+{
+public:
+    BattleguardSarturaMarkKillTargetAction(PlayerbotAI* botAI) : Action(botAI, "battleguard sartura mark kill target")
+    {
+    }
+    bool Execute(Event event) override;
+};
+
 // Fankriss the Unyielding
 
 class FankrissTheUnyieldingSwapTanksAction : public Action, public Aq40ActionTag

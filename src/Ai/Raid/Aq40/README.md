@@ -18,6 +18,7 @@ and out of combat. To check a bot, whisper it `co ?` and look for `aq40`.
 | **Square** (Twin Emperors) | A second **warlock** bot | Tanks Vek'lor on the south side. Walks to its waiting spot by itself. |
 | **Moon** (C'Thun) | A **tank** bot | Walks in alone and pulls the Eye of C'Thun. |
 | **Skull** (Bug Trio) | Kri, Yauj or Vem | That bug is killed next, after the Brood adds. |
+| **Skull** (Sartura) | A Royal Guard or Sartura | Bots set it themselves. Move it to pick which one dies next. |
 | **Skull** (Fankriss) | A worm, hatchling or Fankriss | Bots set it themselves. Put it on another unit to kill that one first. |
 
 Moon means different things in the two fights: on a warlock it matters only in the Twin Emperors room, on a tank only
@@ -123,7 +124,7 @@ The marks must be set by the raid leader or an assistant.
 ## Other bosses
 
 These bosses are handled automatically too. They have had less full-raid testing than the two above. No raid marks
-are needed. Skull changes the kill order on the Bug Trio and Fankriss.
+are needed. Skull changes the kill order on the Bug Trio, Sartura and Fankriss.
 
 - **Trash (Anubisath Defenders):** each Defender reflects two spell schools for its whole fight (Shadow + Frost or
   Fire + Arcane). Casters don't cast those schools at it.
@@ -135,8 +136,13 @@ are needed. Skull changes the kill order on the Bug Trio and Fankriss.
 - **Bug Trio:**
   - Kill order is Yauj's brood adds, then Kri, Yauj, Vem. Put **Skull** on a bug to kill it next instead.
   - Tanks keep the three bugs at least 18 yd apart without dragging them away from their healers.
-- **Battleguard Sartura:** her guards die first. While she or a guard is whirlwinding, bots stop attacking it and keep
-  18 yd away.
+- **Battleguard Sartura:**
+  - Her guards die one at a time, always in the same order, then Sartura. The bots put **Skull** on the one to kill and
+    keep it there until it dies.
+  - Everyone keeps 18 yd from a whirlwinding guard or Sartura. Ranged keep damaging it; melee hit the next guard and
+    come back when it stops.
+  - Every whirlwind resets threat, so dps wait for the tanks only in the first 6 seconds. After that they keep hitting
+    the skull, and tanks taunt back whatever gets loose.
 - **Fankriss the Unyielding:**
   - Off-tanks pick up the worms and hatchlings; the main tank stays on Fankriss. Tanks swap at 3 Mortal Wound stacks,
     and the new main tank hands its worms to the other tanks.

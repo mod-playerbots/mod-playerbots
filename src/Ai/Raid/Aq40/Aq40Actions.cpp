@@ -26,7 +26,9 @@ bool Aq40ResetEncounterStatesAction::Execute(Event /*event*/)
     if (IsMechanicTrackerBot(bot, AQ40_MAP_ID))
     {
         Aq40ResetInstance(bot->GetInstanceId());
-        ClearStrategyTargetIcon(bot, SKULL_ICON, {Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS), Id(Aq40Npcs::NPC_FANKRISS)});
+        ClearStrategyTargetIcon(bot, SKULL_ICON,
+                                {Id(Aq40Npcs::NPC_SARTURA_ROYAL_GUARD), Id(Aq40Npcs::NPC_SARTURA),
+                                 Id(Aq40Npcs::NPC_SPAWN_OF_FANKRISS), Id(Aq40Npcs::NPC_FANKRISS)});
     }
     return false;
 }
@@ -153,10 +155,22 @@ bool BattleguardSarturaMoveAwayFromWhirlwindAction::Execute(Event /*event*/)
     Position step;
     if (!whirler || !GetEscapeStep(bot, Around(bot, WHIRLWIND_ESCAPE_STEP, whirler->GetAngle(bot)), {}, step))
         return false;
-    StopAttacking(bot);
+    // Ranged keep their target and resume on it once clear; the whirlwind chases anyone within 100 yd.
+    if (!PlayerbotAI::IsRanged(bot))
+        StopAttacking(bot);
     bot->CastStop();
     return MoveTo(AQ40_MAP_ID, step.GetPositionX(), step.GetPositionY(), step.GetPositionZ(), false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED);
+}
+
+bool BattleguardSarturaMarkKillTargetAction::Execute(Event /*event*/)
+{
+    Group* group = bot->GetGroup();
+    std::vector<Creature*> const order = GetSarturaKillOrder(bot);
+    // A living marked unit keeps the skull until it dies, so the raid finishes it before moving on.
+    if (!group || order.empty() || order.front()->GetGUID() == group->GetTargetIcon(SKULL_ICON))
+        return false;
+    return MarkTargetWithSkull(bot, order.front());
 }
 
 // Fankriss the Unyielding

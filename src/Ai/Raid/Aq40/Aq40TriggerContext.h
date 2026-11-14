@@ -46,6 +46,8 @@ public:
             &RaidAq40TriggerContext::battleguard_sartura_whirlwind_nearby;
         creators["battleguard sartura should assign dps priority"] =
             &RaidAq40TriggerContext::battleguard_sartura_should_assign_dps_priority;
+        creators["battleguard sartura should mark kill target"] =
+            &RaidAq40TriggerContext::battleguard_sartura_should_mark_kill_target;
 
         // Fankriss the Unyielding
         creators["fankriss the unyielding should swap tanks"] =
@@ -208,6 +210,11 @@ private:
     {
         return new Aq40AssignedTargetTrigger(botAI, "battleguard sartura should assign dps priority",
                                              Aq40Helpers::Aq40Encounter::Sartura);
+    }
+    static Trigger* battleguard_sartura_should_mark_kill_target(PlayerbotAI* botAI)
+    {
+        return new Aq40TrackerTrigger(botAI, "battleguard sartura should mark kill target",
+                                      Aq40Helpers::Aq40Encounter::Sartura);
     }
     static Trigger* fankriss_the_unyielding_should_swap_tanks(PlayerbotAI* botAI)
     {

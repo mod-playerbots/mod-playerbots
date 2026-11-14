@@ -187,6 +187,8 @@ inline constexpr float POISON_CLOUD_RADIUS = 12.0f;
 
 inline constexpr float WHIRLWIND_SAFE_DISTANCE = 18.0f;
 inline constexpr float WHIRLWIND_ESCAPE_STEP = 5.0f;
+// A guard's first whirlwind, the earliest threat wipe, comes 6 s after the pull at the soonest.
+inline constexpr uint32 SARTURA_OPENING_MS = 6000;
 
 // Viscidus: Toxin (25989) is a 5-yard persistent cloud that never despawns, so the room fills up.
 // The raid is pulled from a ramp that descends from the entrance (z -24) to the floor (z -45..-53).
@@ -493,6 +495,7 @@ Player* GetMindControlledMember(Player* bot);
 // Battleguard Sartura
 
 Creature* GetWhirlwindInRange(Player* bot);
+std::vector<Creature*> GetSarturaKillOrder(Player* bot);
 
 // Fankriss the Unyielding
 
