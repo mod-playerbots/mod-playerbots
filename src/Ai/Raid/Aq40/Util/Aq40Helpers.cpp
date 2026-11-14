@@ -265,6 +265,14 @@ Unit* GetTwinEmperorsTarget(Player* bot)
     return PlayerbotAI::IsTank(bot) ? GetOwnedTarget(bot) : PickKillTarget(bot, priorities);
 }
 
+static bool IsNearDirtMound(Player* bot, Unit* unit)
+{
+    for (Creature* mound : GetUnits(bot, Id(Aq40Npcs::NPC_DIRT_MOUND)))
+        if (mound->GetExactDist2d(unit) < DIRT_MOUND_RADIUS)
+            return true;
+    return false;
+}
+
 Unit* GetOuroTarget(Player* bot)
 {
     if (PlayerbotAI::IsTank(bot))
@@ -274,6 +282,15 @@ Unit* GetOuroTarget(Player* bot)
         // Backup tanks must keep building threat before the next Sand Blast.
         if (Creature* boss = GetBoss(bot); boss && IsAllowedDamage(bot, boss))
             return boss;
+    }
+    if (PlayerbotAI::IsMelee(bot))
+    {
+        // Scarabs spawn where the mounds stood, and a live mound's Quake would walk melee straight back out.
+        // Melee take the scarabs outside every mound and leave the rest to ranged.
+        for (Creature* scarab : GetUnits(bot, Id(Aq40Npcs::NPC_OURO_SCARAB)))
+            if (IsAllowedDamage(bot, scarab) && !IsNearDirtMound(bot, scarab))
+                return scarab;
+        return PickKillTarget(bot, {Id(Aq40Npcs::NPC_OURO)});
     }
     return PickKillTarget(bot, {Id(Aq40Npcs::NPC_OURO_SCARAB), Id(Aq40Npcs::NPC_OURO)});
 }
@@ -2274,11 +2291,53 @@ bool GetPoisonCloudEscapeGoal(PlayerbotAI* botAI, Position& goal)
                             [](Unit* unit) { return unit->GetEntry() == Id(Aq40Npcs::NPC_POISON_CLOUD); });
 }
 
+// A mound chases its target at run speed, so its target can never step clear. It leads the mound away from the
+// raid instead, and holds once nobody else is inside the Quake.
+static bool GetDirtMoundLeadGoal(Player* bot, Creature* mound, Position& goal)
+{
+    float pushX = 0.0f;
+    float pushY = 0.0f;
+    bool crowded = false;
+    for (Player* member : GetMembers(bot))
+    {
+        float distance = bot->GetExactDist2d(member);
+        if (member == bot || distance >= DIRT_MOUND_RADIUS)
+            continue;
+        crowded = true;
+        if (distance > 0.1f)
+        {
+            pushX += (bot->GetPositionX() - member->GetPositionX()) / distance;
+            pushY += (bot->GetPositionY() - member->GetPositionY()) / distance;
+        }
+    }
+    if (!crowded)
+        return false;
+    float angle = std::sqrt(pushX * pushX + pushY * pushY) > 0.01f ? std::atan2(pushY, pushX) : mound->GetAngle(bot);
+    goal = Around(bot, 5.0f, angle);
+    return true;
+}
+
 bool GetDirtMoundEscapeGoal(PlayerbotAI* botAI, Position& goal)
 {
-    return IsInEncounter(botAI->GetBot(), Aq40Encounter::Ouro) &&
-           EscapeUnitHazard(botAI, goal, DIRT_MOUND_RADIUS,
-                            [](Unit* unit) { return unit->GetEntry() == Id(Aq40Npcs::NPC_DIRT_MOUND); });
+    Player* bot = botAI->GetBot();
+    if (!IsInEncounter(bot, Aq40Encounter::Ouro))
+        return false;
+    // A tank holding Ouro or scarabs stays put; dragging them through the raid costs more than the Quake.
+    if (PlayerbotAI::IsTank(bot))
+        for (Creature* unit : GetUnits(bot))
+            if (unit->GetEntry() != Id(Aq40Npcs::NPC_DIRT_MOUND) && unit->GetVictim() == bot)
+                return false;
+    std::vector<Creature*> mounds = GetUnits(bot, Id(Aq40Npcs::NPC_DIRT_MOUND));
+    for (Creature* mound : mounds)
+        if (mound->GetVictim() == bot)
+            return GetDirtMoundLeadGoal(bot, mound, goal);
+    for (Creature* mound : mounds)
+        if (bot->GetDistance2d(mound) < DIRT_MOUND_RADIUS)
+        {
+            goal = Around(bot, 5.0f, mound->GetAngle(bot));
+            return true;
+        }
+    return false;
 }
 
 bool GetExplodingBugEscapeGoal(PlayerbotAI* botAI, Position& goal)

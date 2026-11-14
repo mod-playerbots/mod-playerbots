@@ -722,9 +722,9 @@ bool OuroMoveOutOfFrontalConeAction::Execute(Event /*event*/)
 {
     Position spot;
     Position step;
+    // Keep the target: dropping it sends the bot through target pick and reach again after every step.
     if (!GetOuroConeEscapeGoal(botAI, spot) || !GetEscapeStep(bot, spot, {}, step))
         return false;
-    StopAttacking(bot);
     bot->CastStop();
     return MoveTo(AQ40_MAP_ID, step.GetPositionX(), step.GetPositionY(), step.GetPositionZ(), false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED);
@@ -736,7 +736,6 @@ bool OuroAvoidDirtMoundAction::Execute(Event /*event*/)
     Position step;
     if (!GetDirtMoundEscapeGoal(botAI, spot) || !GetEscapeStep(bot, spot, {}, step))
         return false;
-    StopAttacking(bot);
     bot->CastStop();
     return MoveTo(AQ40_MAP_ID, step.GetPositionX(), step.GetPositionY(), step.GetPositionZ(), false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED);

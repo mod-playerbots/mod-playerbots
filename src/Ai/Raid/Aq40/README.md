@@ -164,7 +164,10 @@ are needed. Skull changes the kill order on the Bug Trio, Sartura and Fankriss.
   - Enough raid members stand close to soak each Poison Bolt Volley.
   - Damage cooldowns are saved for the last 30%.
 - **Ouro:**
-  - Everyone avoids his frontal cone and the dirt mounds. Scarabs die first.
+  - Everyone avoids his frontal cone and the dirt mounds, keeping their target while they step. Scarabs die first.
+  - The player a mound is chasing leads it away from the raid instead of fleeing it. A tank holding Ouro or scarabs
+    stands its ground.
+  - Melee skip scarabs still next to a mound; ranged kill those.
   - After Sand Blast wipes a tank's threat, the next tank takes him over, and backup tanks keep building threat.
 
 ## Known limitations
