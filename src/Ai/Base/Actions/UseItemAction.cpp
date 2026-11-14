@@ -611,7 +611,8 @@ bool UseStartQuestItem::Execute(Event /*event*/)
 
 bool UseStartQuestItem::isUseful()
 {
-    return !IsRealPlayer(botAI->GetMaster()) && !bot->InBattleground() && !bot->HasUnitState(UNIT_STATE_IN_FLIGHT);
+    return !bot->IsInCombat() && !IsRealPlayer(botAI->GetMaster()) && !bot->InBattleground() &&
+           !bot->HasUnitState(UNIT_STATE_IN_FLIGHT);
 }
 
 bool UseStartQuestItem::isPossible()
