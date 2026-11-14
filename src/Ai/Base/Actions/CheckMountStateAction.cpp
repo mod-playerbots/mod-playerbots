@@ -107,13 +107,9 @@ bool CheckMountStateAction::Execute(Event /*event*/)
         shouldMount = (distanceToTarget > mountDistance + combatReach);
     }
     else if (lootTarget.IsLootPossible(bot))
-    {
         shouldMount = (AI_VALUE2(float, "distance", "loot target") >= CalculateMountDistance());
-    }
     else
-    {
         shouldMount = true;
-    }
 
     // If should dismount, or master (if any) is no longer in travel form, yet bot still is, remove the shapeshifts
     if (shouldDismount ||
