@@ -2625,9 +2625,22 @@ bool GetTwinDpsGoal(PlayerbotAI* botAI, Position& goal)
     // old-platform fallback prevent a bot from ever acquiring a distant target.
     constexpr float rangedDistance = TWIN_BYSTANDER_DISTANCE + 6.0f;
     constexpr float pickupDistance = 20.0f;
-    constexpr float meleeDistance = 3.0f;
-    float distance = melee ? (IsHeld(bot, emperor) ? meleeDistance : pickupDistance) : rangedDistance;
     float inward = sides[side].GetAngle(&sides[1 - side]);
+    if (melee && IsHeld(bot, emperor))
+    {
+        float const minDistance = bot->GetCombatReach() + emperor->GetCombatReach() + 0.3f;
+        float const maxDistance = bot->GetMeleeRange(emperor) - 0.3f;
+        float const current = bot->GetExactDist2d(emperor);
+        if (current >= minDistance && current <= maxDistance && !emperor->HasInArc(static_cast<float>(M_PI), bot) &&
+            std::abs(bot->GetPositionZ() - emperor->GetPositionZ()) <= 3.0f)
+            return false;
+        float const behind = emperor->GetOrientation() + static_cast<float>(M_PI);
+        float const bearing = std::cos(AngleDelta(inward, behind)) > 0.0f ? inward : behind;
+        goal = Around(emperor, (minDistance + maxDistance) / 2.0f, bearing);
+        bot->UpdateAllowedPositionZ(goal.GetPositionX(), goal.GetPositionY(), goal.m_positionZ);
+        return true;
+    }
+    float distance = melee ? pickupDistance : rangedDistance;
     if (!melee)
     {
         uint32 slot = 0;
