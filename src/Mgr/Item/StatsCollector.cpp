@@ -407,10 +407,12 @@ constexpr uint32 ScriptedProcClassMask(uint32 cls) { return cls >= 1 && cls <= 3
 struct ScriptedProcValue
 {
     uint32 procSpellId;
-    uint32 buffSpellId;
+    uint32 buffSpellId;     // 0 = apply directStat/directValue below
     uint32 classMask;       // 0 = any class
     CollectorType role;     // 0 = any role
     float multiplier;       // proc chance / uptime
+    StatsType directStat = STATS_TYPE_MAX;
+    float directValue = 0.0f;
 };
 
 constexpr ScriptedProcValue SCRIPTED_PROC_VALUES[] = {
@@ -421,6 +423,8 @@ constexpr ScriptedProcValue SCRIPTED_PROC_VALUES[] = {
     // Shadowmourne: soul fragment stack heuristic and Chaos Bane's ~40% uptime.
     {71903, 71905, 0, CollectorType(0), 1.0f},
     {71903, 73422, 0, CollectorType(0), 0.4f},
+    // Val'anyr: 10% on heal -> absorb shield, approximated as +100 heal power.
+    {64415, 0, 0, CollectorType::SPELL_HEAL, 1.0f, STATS_TYPE_HEAL_POWER, 100.0f},
 };
 
 void StatsCollector::CollectScriptedProcBuff(uint32 procSpellId, uint32 buffSpellId, float multiplier)
@@ -440,7 +444,10 @@ bool StatsCollector::ApplyScriptedProcValues(uint32 spellId)
             (entry.role && !(type_ & entry.role)))
             continue;
 
-        CollectScriptedProcBuff(entry.procSpellId, entry.buffSpellId, entry.multiplier);
+        if (entry.buffSpellId)
+            CollectScriptedProcBuff(entry.procSpellId, entry.buffSpellId, entry.multiplier);
+        else
+            stats[entry.directStat] += entry.directValue * entry.multiplier;
         applied = true;
     }
     return applied;
