@@ -4,11 +4,10 @@
  * or (at your option) any later version.
  */
 
-#include "NearestAdsValue.h"
-#include "Playerbots.h"
+#include "ZGStrategy.h"
+#include "ZGMultipliers.h"
 
-bool NearestAddsValue::AcceptUnit(Unit* unit)
+void RaidZulGurubStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    Unit* target = AI_VALUE(Unit*, "current target");
-    return unit != target;
+    multipliers.push_back(new HakkarKeepPoisonousBloodMultiplier(botAI));
 }

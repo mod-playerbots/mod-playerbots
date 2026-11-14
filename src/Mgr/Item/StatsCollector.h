@@ -10,6 +10,9 @@
 #include "ItemTemplate.h"
 #include "SpellInfo.h"
 
+struct ScalingStatDistributionEntry;
+struct ScalingStatValuesEntry;
+
 enum StatsType : uint8
 {
     // Basic stats
@@ -43,9 +46,12 @@ enum StatsType : uint8
     // Stats for weapon dps
     STATS_TYPE_MELEE_DPS,
     STATS_TYPE_RANGED_DPS,
+    // Threat reduction in percent (+2% threat counts as -2) and resistance to all magic schools
+    STATS_TYPE_THREAT_REDUCTION,
+    STATS_TYPE_RESISTANCE,
     // Bonus for unrecognized stats
     STATS_TYPE_BONUS,
-    STATS_TYPE_MAX = 26
+    STATS_TYPE_MAX = 28
 };
 
 enum CollectorType : uint8
@@ -62,12 +68,12 @@ enum CollectorType : uint8
 class StatsCollector
 {
 public:
-    StatsCollector(CollectorType type, int32 cls = -1);
+    StatsCollector(CollectorType type, int32 cls = -1, int32 lvl = -1);
     StatsCollector(StatsCollector& stats) = default;
     void Reset();
     void CollectItemStats(ItemTemplate const* proto);
     void CollectSpellStats(uint32 spellId, float multiplier = 1.0f, Milliseconds spellCooldown = -1ms);
-    void CollectEnchantStats(SpellItemEnchantmentEntry const* enchant, uint32 default_enchant_amount = 0);
+    void CollectEnchantStats(SpellItemEnchantmentEntry const* enchant, uint32 default_enchant_amount = 0, uint32 weaponDelay = 0, bool isRanged = false);
     bool CanBeTriggeredByType(SpellInfo const* spellInfo, uint32 procFlags, bool strict = true);
     bool CheckSpellValidation(uint32 spellFamilyName, flag96 spelFalimyFlags, bool strict = true);
 
@@ -75,17 +81,22 @@ public:
     float stats[STATS_TYPE_MAX];
 
 private:
+    void CollectWeaponDamageStats(ItemTemplate const* proto, ScalingStatValuesEntry const* ssv);
+    void CollectItemStatValues(ItemTemplate const* proto, ScalingStatDistributionEntry const* ssd,
+                               ScalingStatValuesEntry const* ssv);
     void CollectByItemStatType(uint32 itemStatType, int32 val);
+    void CollectMagicResistance(uint32 schoolMask, float val);
     bool SpecialSpellFilter(uint32 spellId);
     bool SpecialEnchantFilter(uint32 enchantSpellId);
 
-    void HandleApplyAura(SpellEffectInfo const& effectInfo, float multiplier, bool canNextTrigger,
-                         Milliseconds triggerCooldown);
-    float AverageValue(SpellEffectInfo const& effectInfo);
+    void HandleApplyAura(SpellEffectInfo const& effectInfo, SpellInfo const* spellInfo, float multiplier,
+                         bool canNextTrigger, Milliseconds triggerCooldown, bool permanent);
+    float AverageValue(SpellEffectInfo const& effectInfo, SpellInfo const* spellInfo);
 
 private:
     CollectorType type_;
     uint32 cls_;
+    int32 lvl_;
 };
 
 #endif

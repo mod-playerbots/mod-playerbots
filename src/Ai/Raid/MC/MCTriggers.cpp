@@ -91,3 +91,12 @@ bool McCoreHoundMarkTrigger::IsActive()
 {
     return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "core hound");
 }
+
+bool McMajordomoDamageShieldTrigger::IsActive()
+{
+    if (PlayerbotAI::IsTank(bot) || !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING))
+        return false;
+
+    Unit* victim = bot->GetVictim();
+    return IsMajordomoAdd(victim) && victim->HasAura(SPELL_DAMAGE_SHIELD);
+}

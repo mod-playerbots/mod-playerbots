@@ -166,10 +166,12 @@ public:
     ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
 };
 
-class CastTyphoonAction : public CastSpellAction
+inline constexpr uint32 SPELL_GLYPH_OF_TYPHOON = 62135;
+
+class CastTyphoonAction : public CastKnockbackSpellAction
 {
 public:
-    CastTyphoonAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "typhoon") {}
+    CastTyphoonAction(PlayerbotAI* botAI) : CastKnockbackSpellAction(botAI, "typhoon", SPELL_GLYPH_OF_TYPHOON) {}
     ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
     bool isUseful() override;
 };
@@ -303,8 +305,8 @@ public:
 class CastWildGrowthOnPartyAction : public HealPartyMemberAction
 {
 public:
-    CastWildGrowthOnPartyAction(PlayerbotAI* ai)
-        : HealPartyMemberAction(ai, "wild growth", 15.0f, HealingManaEfficiency::VERY_HIGH)
+    CastWildGrowthOnPartyAction(PlayerbotAI* botAI)
+        : HealPartyMemberAction(botAI, "wild growth", 15.0f, HealingManaEfficiency::VERY_HIGH)
     {
     }
 };
@@ -312,8 +314,8 @@ public:
 class CastPartySwiftmendAction : public HealPartyMemberAction
 {
 public:
-    CastPartySwiftmendAction(PlayerbotAI* ai)
-        : HealPartyMemberAction(ai, "swiftmend", 15.0f, HealingManaEfficiency::MEDIUM)
+    CastPartySwiftmendAction(PlayerbotAI* botAI)
+        : HealPartyMemberAction(botAI, "swiftmend", 15.0f, HealingManaEfficiency::MEDIUM)
     {
     }
 };
@@ -321,40 +323,40 @@ public:
 class CastPartyNourishAction : public HealPartyMemberAction
 {
 public:
-    CastPartyNourishAction(PlayerbotAI* ai) : HealPartyMemberAction(ai, "nourish", 25.0f, HealingManaEfficiency::LOW) {}
+    CastPartyNourishAction(PlayerbotAI* botAI) : HealPartyMemberAction(botAI, "nourish", 25.0f, HealingManaEfficiency::LOW) {}
 };
 
 class CastDruidRemoveCurseOnPartyAction : public CurePartyMemberAction
 {
 public:
-    CastDruidRemoveCurseOnPartyAction(PlayerbotAI* ai) : CurePartyMemberAction(ai, "remove curse", DISPEL_CURSE) {}
+    CastDruidRemoveCurseOnPartyAction(PlayerbotAI* botAI) : CurePartyMemberAction(botAI, "remove curse", DISPEL_CURSE) {}
 };
 
 class CastInsectSwarmOnAttackerAction : public CastDebuffSpellOnAttackerAction
 {
 public:
-    CastInsectSwarmOnAttackerAction(PlayerbotAI* ai) : CastDebuffSpellOnAttackerAction(ai, "insect swarm", true, 0.0f) {}
+    CastInsectSwarmOnAttackerAction(PlayerbotAI* botAI) : CastDebuffSpellOnAttackerAction(botAI, "insect swarm", true, 0.0f) {}
     bool isUseful() override { return CastAuraSpellAction::isUseful(); }
 };
 
 class CastMoonfireOnAttackerAction : public CastDebuffSpellOnAttackerAction
 {
 public:
-    CastMoonfireOnAttackerAction(PlayerbotAI* ai) : CastDebuffSpellOnAttackerAction(ai, "moonfire", true, 0.0f) {}
+    CastMoonfireOnAttackerAction(PlayerbotAI* botAI) : CastDebuffSpellOnAttackerAction(botAI, "moonfire", true, 0.0f) {}
     bool isUseful() override { return CastAuraSpellAction::isUseful(); }
 };
 
 class CastEnrageAction : public CastBuffSpellAction
 {
 public:
-    CastEnrageAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "enrage") {}
+    CastEnrageAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "enrage") {}
 };
 
 class CastRejuvenationOnNotFullAction : public HealPartyMemberAction
 {
 public:
-    CastRejuvenationOnNotFullAction(PlayerbotAI* ai)
-        : HealPartyMemberAction(ai, "rejuvenation", 5.0f, HealingManaEfficiency::VERY_HIGH)
+    CastRejuvenationOnNotFullAction(PlayerbotAI* botAI)
+        : HealPartyMemberAction(botAI, "rejuvenation", 5.0f, HealingManaEfficiency::VERY_HIGH)
     {
     }
     bool isUseful() override;
@@ -367,35 +369,38 @@ public:
     CastForceOfNatureAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "force of nature") {}
 };
 
-// Base for blanket HoT actions. Provides GetBlanketTarget() as a member so
-// subclasses can use AI_VALUE and the standard context machinery.
-class CastBlanketHotAction : public CastSpellAction
+inline constexpr uint32 BLANKET_TARGET_CACHE_MS = 200;
+
+class BlanketHotTargetValue : public CalculatedValue<ObjectGuid>, public Qualified
 {
 public:
-    CastBlanketHotAction(PlayerbotAI* ai, std::string const& spell) : CastSpellAction(ai, spell)
-    {
-        range = botAI->GetRange("heal");
-    }
+    BlanketHotTargetValue(PlayerbotAI* botAI)
+        : CalculatedValue<ObjectGuid>(botAI, "blanket hot target", BLANKET_TARGET_CACHE_MS) {}
 
 protected:
-    Unit* GetBlanketTarget(std::string const& auraName);
+    ObjectGuid Calculate() override;
+};
+
+class CastBlanketHotAction : public CastHealingSpellAction
+{
+public:
+    CastBlanketHotAction(PlayerbotAI* botAI, std::string const& spell) : CastHealingSpellAction(botAI, spell) {}
+
+    Unit* GetTarget() override;
+    bool isUseful() override;
 };
 
 class CastRejuvenationBlanketAction : public CastBlanketHotAction
 {
 public:
-    CastRejuvenationBlanketAction(PlayerbotAI* ai) : CastBlanketHotAction(ai, "rejuvenation") {}
-    bool isUseful() override;
-    Unit* GetTarget() override;
+    CastRejuvenationBlanketAction(PlayerbotAI* botAI) : CastBlanketHotAction(botAI, "rejuvenation") {}
     std::string const getName() override { return "rejuvenation blanket"; }
 };
 
 class CastWildGrowthBlanketAction : public CastBlanketHotAction
 {
 public:
-    CastWildGrowthBlanketAction(PlayerbotAI* ai) : CastBlanketHotAction(ai, "wild growth") {}
-    bool isUseful() override;
-    Unit* GetTarget() override;
+    CastWildGrowthBlanketAction(PlayerbotAI* botAI) : CastBlanketHotAction(botAI, "wild growth") {}
     std::string const getName() override { return "wild growth blanket"; }
 };
 

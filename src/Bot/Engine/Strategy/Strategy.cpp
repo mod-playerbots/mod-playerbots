@@ -18,11 +18,10 @@ public:
         creators["attack anything"] = &attack_anything;
         creators["move random"] = &move_random;
         creators["move to loot"] = &move_to_loot;
-        creators["food"] = &food;
+        creators["eat"] = &eat;
         creators["drink"] = &drink;
         creators["mana potion"] = &mana_potion;
         creators["healing potion"] = &healing_potion;
-        creators["flee"] = &flee;
     }
 
 private:
@@ -86,10 +85,10 @@ private:
         );
     }
 
-    static ActionNode* food([[maybe_unused]] PlayerbotAI* botAI)
+    static ActionNode* eat([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "food",
+            "eat",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -121,17 +120,7 @@ private:
         return new ActionNode(
             "healing potion",
             /*P*/ {},
-            /*A*/ { NextAction("food") },
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* flee([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "flee",
-            /*P*/ {},
-            /*A*/ {},
+            /*A*/ { NextAction("eat") },
             /*C*/ {}
         );
     }

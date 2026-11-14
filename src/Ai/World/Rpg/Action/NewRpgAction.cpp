@@ -13,6 +13,7 @@
 #include "IVMapMgr.h"
 #include "MotionMaster.h"
 #include "MoveSpline.h"
+#include "NewRpgHelpers.h"
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
 #include "Object.h"
@@ -24,6 +25,7 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
+#include "Playerbots.h"
 #include "QuestDef.h"
 #include "Random.h"
 #include "SharedDefines.h"
@@ -164,6 +166,19 @@ bool TellRpgStatusAction::Execute(Event event)
         WhisperStatusChange(owner, "OUTDOOR_PVP");
         return true;
     }
+    else if (status == RPG_DO_GATHER)
+    {
+        if (!botAI->HasSkill(SKILL_HERBALISM) && !botAI->HasSkill(SKILL_MINING))
+        {
+            std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "rpg_gather_no_profession_error", "I have neither Herbalism nor Mining, so I can't gather.", {});
+            bot->Whisper(msg, LANG_UNIVERSAL, owner);
+            return false;
+        }
+        info.ChangeToDoGather();
+        WhisperStatusChange(owner, "DO_GATHER");
+        return true;
+    }
     else if (status == RPG_DO_QUEST)
     {
         if (!questId)
@@ -206,7 +221,7 @@ bool TellRpgStatusAction::Execute(Event event)
     std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
         "rpg_unknown_status_error",
         "Unknown rpg status. Options: idle, rest, wander random, wander npc, "
-        "go grind, go camp, do quest [<id>], travel flight, outdoor pvp.", {});
+        "go grind, go camp, do quest [<id>], travel flight, outdoor pvp, do gather.", {});
     bot->Whisper(msg, LANG_UNIVERSAL, owner);
     return false;
 }
@@ -239,7 +254,7 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
     {
         case RPG_IDLE:
             return RandomChangeStatus({RPG_GO_CAMP, RPG_GO_GRIND, RPG_WANDER_RANDOM, RPG_WANDER_NPC, RPG_DO_QUEST,
-                                       RPG_TRAVEL_FLIGHT, RPG_REST, RPG_OUTDOOR_PVP});
+                                       RPG_TRAVEL_FLIGHT, RPG_REST, RPG_OUTDOOR_PVP, RPG_DO_GATHER});
 
         case RPG_GO_GRIND:
         {
@@ -301,9 +316,11 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             auto& data = std::get<NewRpgInfo::TravelFlight>(info.data);
             if (data.inFlight && !bot->IsInFlight())
             {
-                // flight arrival
-                info.ChangeToIdle();
-                return true;
+                if (AI_VALUE(ObjectGuid, "new rpg quest giver").IsEmpty())
+                {
+                    info.ChangeToIdle();
+                    return true;
+                }
             }
             break;
         }
@@ -320,6 +337,16 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
         case RPG_OUTDOOR_PVP:
         {
             if (info.HasStatusPersisted(statusOutDoorPvPDuration))
+            {
+                info.ChangeToIdle();
+                return true;
+            }
+            break;
+        }
+        case RPG_DO_GATHER:
+        {
+            // DO_GATHER -> IDLE
+            if (info.HasStatusPersisted(statusDoGatherDuration))
             {
                 info.ChangeToIdle();
                 return true;
@@ -384,8 +411,19 @@ bool NewRpgWanderNpcAction::Execute(Event /*event*/)
     auto& data = *dataPtr;
     if (!data.npcOrGo)
     {
-        // No npc can be found, switch to IDLE
-        ObjectGuid npcOrGo = ChooseNpcOrGameObjectToInteract();
+        // Prefer a giver with something to accept or reward, else any nearby npc; none -> IDLE
+        ObjectGuid npcOrGo = NewRpgHelpers::FindQuestGiver(botAI);
+        if (npcOrGo.IsEmpty())
+        {
+            GuidVector possibleTargets = AI_VALUE(GuidVector, "possible new rpg targets");
+            if (!possibleTargets.empty())
+            {
+                uint32 idx = urand(0, possibleTargets.size() - 1);
+                WorldObject* object = ObjectAccessor::GetWorldObject(*bot, possibleTargets[idx]);
+                if (object && object->IsInWorld())
+                    npcOrGo = object->GetGUID();
+            }
+        }
         if (npcOrGo.IsEmpty())
         {
             info.ChangeToIdle();
@@ -404,6 +442,25 @@ bool NewRpgWanderNpcAction::Execute(Event /*event*/)
             data.lastReach = getMSTime();
             if (bot->CanInteractWithQuestGiver(object))
                 InteractWithNpcOrGameObjectForQuest(data.npcOrGo);
+
+            if (Creature* creature = object->ToCreature())
+            {
+                constexpr uint32 MIN_VENDOR_BALANCE = 1000;  // 10 silver
+
+                if (creature->HasNpcFlag(UNIT_NPC_FLAG_VENDOR) && AI_VALUE(bool, "can sell"))
+                {
+                    botAI->DoSpecificAction("sell", Event("sell", "vendor"), true);
+
+                    // Buying sorts the vendor list through the weight calculator; skip it for
+                    // bots without money for cheap consumables.
+                    if (bot->GetMoney() >= MIN_VENDOR_BALANCE)
+                        botAI->DoSpecificAction("buy", Event("buy", "vendor"), true);
+                }
+
+                if (creature->HasNpcFlag(UNIT_NPC_FLAG_REPAIR) && AI_VALUE(bool, "can repair"))
+                    botAI->DoSpecificAction("repair", Event("repair"), true);
+            }
+
             return true;
         }
 
@@ -552,7 +609,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             // may not be able to complete this quest, marked as abandoned
             /// @TODO: It may be better to make lowPriorityQuest a global set shared by all bots (or saved in db)
             botAI->lowPriorityQuest.insert(questId);
-            botAI->rpgStatistic.questAbandoned++;
+            botAI->RecordQuestAbandoned(questId, QuestAbandonReason::NoProgress);
             LOG_DEBUG("playerbots", "[New RPG] {} marked as abandoned quest {}", bot->GetName(), questId);
             botAI->rpgInfo.ChangeToIdle();
             return true;
@@ -580,7 +637,7 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
     {
         // if quest is completed, back to poi with -1 idx to reward
         BroadcastHelper::BroadcastQuestUpdateComplete(botAI, bot, quest);
-        botAI->rpgStatistic.questCompleted++;
+        botAI->RecordQuestCompleted(questId);
         std::vector<POIInfo> poiInfo;
         if (!GetQuestPOIPosAndObjectiveIdx(questId, poiInfo, true))
         {
@@ -627,7 +684,7 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
         // e.g. Can not reward quest to gameobjects
         /// @TODO: It may be better to make lowPriorityQuest a global set shared by all bots (or saved in db)
         botAI->lowPriorityQuest.insert(questId);
-        botAI->rpgStatistic.questAbandoned++;
+        botAI->RecordQuestAbandoned(questId, QuestAbandonReason::CannotTurnIn);
         LOG_DEBUG("playerbots", "[New RPG] {} marked as abandoned quest {}", bot->GetName(), questId);
         botAI->rpgInfo.ChangeToIdle();
         return true;
@@ -643,12 +700,19 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         return false;
 
     auto& data = *dataPtr;
+    if (!bot->IsInFlight() && SearchQuestGiverAndAcceptOrReward())
+        return true;
+
     if (bot->IsInFlight())
     {
         data.inFlight = true;
         ContinueCrossMapTaxi();
         return false;
     }
+
+    // after landing, stop here and let the status update switch to idle
+    if (data.inFlight)
+        return false;
 
     if (bot->GetDistance(data.flightMasterPos) > INTERACTION_DISTANCE)
         return MoveFarTo(data.flightMasterPos);

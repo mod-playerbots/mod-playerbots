@@ -20,8 +20,8 @@ public:
 
     float GetValue(Action* action) final
     {
-        return EncounterHelpers::IsEncounterInProgress(bot, MagHelpers::MAG_MAP_ID)
-            ? GetValueInEncounter(action) : 1.0f;
+        return EncounterHelpers::IsEncounterInProgress(bot, MagHelpers::MAG_MAP_ID) ?
+            GetValueInEncounter(action) : 1.0f;
     }
 
 protected:
@@ -43,6 +43,16 @@ class MagtheridonHoldDpsMultiplier : public MagtheridonEncounterMultiplier
 public:
     MagtheridonHoldDpsMultiplier(PlayerbotAI* botAI)
         : MagtheridonEncounterMultiplier(botAI, "magtheridon hold dps") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class MagtheridonKeepInCombatBeforeReleaseMultiplier : public MagtheridonEncounterMultiplier
+{
+public:
+    MagtheridonKeepInCombatBeforeReleaseMultiplier(PlayerbotAI* botAI)
+        : MagtheridonEncounterMultiplier(botAI, "magtheridon keep in combat before release") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

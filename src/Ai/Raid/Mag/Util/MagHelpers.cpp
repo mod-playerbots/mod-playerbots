@@ -12,17 +12,20 @@
 #include "Playerbots.h"
 #include <algorithm>
 #include <list>
+#include <mutex>
 
 using namespace EncounterHelpers;
 
 namespace MagHelpers
 {
 
-std::unordered_map<uint32, uint32> magDpsWaitTimer;
-std::unordered_map<uint32, uint32> blastNovaTimer;
-std::unordered_map<uint32, bool> lastBlastNovaState;
-std::unordered_set<uint32> ceilingCollapseApplied;
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, CubeInfo>> botToCubeAssignments;
+namespace
+{
+
+std::mutex magStateMutex;
+std::unordered_map<uint32, MagInstanceState> magStates;
+
+}
 
 std::vector<uint32> const MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
 
@@ -113,11 +116,35 @@ bool IsMagtheridonActive(Unit* magtheridon)
     return magtheridon && !magtheridon->HasAura(Id(MagSpells::SPELL_SHADOW_CAGE));
 }
 
+bool IsAnyChannelerAlive(Player* bot)
+{
+    for (uint32 const dbGuid : { SOUTH_CHANNELER_DB_GUID, WEST_CHANNELER_DB_GUID,
+        EAST_CHANNELER_DB_GUID, NORTHWEST_CHANNELER_DB_GUID, NORTHEAST_CHANNELER_DB_GUID })
+    {
+        if (GetChanneler(bot, dbGuid))
+            return true;
+    }
+
+    return false;
+}
+
+bool IsMagtheridonReleasePending(Player* bot, Unit* magtheridon)
+{
+    return magtheridon && !IsMagtheridonActive(magtheridon) && !IsAnyChannelerAlive(bot);
+}
+
+bool IsMagtheridonDpsHoldActive(Player* bot, Unit* magtheridon)
+{
+    if (!IsMagtheridonActive(magtheridon) || PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    std::optional<uint32> const& holdStart = MagState(magtheridon->GetInstanceId()).magDpsHoldTimer;
+    return !holdStart || getMSTimeDiff(*holdStart, getMSTime()) <= MAG_DPS_HOLD_MS;
+}
+
 bool IsCubeClicker(Player* bot)
 {
-    auto mapIt = botToCubeAssignments.find(bot->GetInstanceId());
-    return mapIt != botToCubeAssignments.end() &&
-        mapIt->second.find(bot->GetGUID()) != mapIt->second.end();
+    return MagState(bot->GetInstanceId()).botToCubeAssignments.contains(bot->GetGUID());
 }
 
 bool IsBlastNovaCasting(Unit* magtheridon)
@@ -127,7 +154,7 @@ bool IsBlastNovaCasting(Unit* magtheridon)
 
 bool IsCeilingCollapsed(Player* bot)
 {
-    return ceilingCollapseApplied.contains(bot->GetInstanceId());
+    return MagState(bot->GetInstanceId()).ceilingCollapseApplied;
 }
 
 std::vector<Position> FindDebrisPositions(Player* bot)
@@ -184,6 +211,29 @@ bool IsPositionInConflagration(std::vector<GameObject*> const& blazes, float x, 
 bool IsPositionInActiveConflagration(PlayerbotAI* botAI, float x, float y)
 {
     return IsPositionInConflagration(GetActiveConflagrations(botAI), x, y);
+}
+
+// Shared encounter state
+
+MagInstanceState& MagState(uint32 instanceId)
+{
+    std::lock_guard lock(magStateMutex);
+    return magStates[instanceId];
+}
+
+bool MagResetInstance(uint32 instanceId)
+{
+    std::lock_guard lock(magStateMutex);
+    auto it = magStates.find(instanceId);
+    if (it == magStates.end())
+        return false;
+
+    MagInstanceState const& state = it->second;
+    bool const wasSet = state.magDpsHoldTimer || state.blastNovaTimer || state.lastBlastNovaState ||
+        state.ceilingCollapseApplied || !state.botToCubeAssignments.empty();
+
+    magStates.erase(it);
+    return wasSet;
 }
 
 }

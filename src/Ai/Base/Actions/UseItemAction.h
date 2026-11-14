@@ -17,17 +17,19 @@ class Unit;
 class UseItemAction : public Action
 {
 public:
-    UseItemAction(PlayerbotAI* botAI, std::string const name = "use", bool selfOnly = false)
-        : Action(botAI, name), selfOnly(selfOnly)
+    UseItemAction(PlayerbotAI* botAI, std::string const name = "use", bool selfOnly = false,
+                  std::string const itemName = "")
+        : Action(botAI, name), itemName(itemName.empty() ? name : itemName), selfOnly(selfOnly)
     {
     }
 
     bool Execute(Event event) override;
     bool isPossible() override;
+    bool UseItemOnGameObject(Item* item, ObjectGuid go);
 
 protected:
+    std::string itemName;
     bool UseItemAuto(Item* item);
-    bool UseItemOnGameObject(Item* item, ObjectGuid go);
     bool UseItemOnItem(Item* item, Item* itemTarget);
     bool UseItem(Item* item, ObjectGuid go, Item* itemTarget, Unit* unitTarget = nullptr);
     bool UseGameObject(ObjectGuid guid);
@@ -84,10 +86,10 @@ public:
     bool isPossible() override;
 };
 
-class UseRandomQuestItem : public UseItemAction
+class UseStartQuestItem : public UseItemAction
 {
 public:
-    UseRandomQuestItem(PlayerbotAI* botAI) : UseItemAction(botAI, "random quest item", true) {}
+    UseStartQuestItem(PlayerbotAI* botAI) : UseItemAction(botAI, "start quest item", true) {}
 
     bool Execute(Event event) override;
     bool isUseful() override;

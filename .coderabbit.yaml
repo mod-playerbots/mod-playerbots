@@ -173,8 +173,6 @@ reviews:
           arbitrary decision; collect candidates and choose by the real criterion.
         - Anything a bot says in chat goes through GetBotTextOrDefault with an English
           fallback and a translation SQL update under data/sql/playerbots/updates/.
-        - Expensive or behavior-changing features are opt-in via playerbots.conf.dist; flag
-          shared-code changes that ship ungated alongside a gated feature.
 
         AI wiring (unregistered names compile but silently never run; check these first):
         - Every new action name is registered in src/Ai/Base/ActionContext.h (creators["name"])

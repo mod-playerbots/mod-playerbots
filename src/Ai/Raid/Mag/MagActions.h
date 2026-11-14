@@ -36,11 +36,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class MagtheridonMisdirectHellfireChannelersToMainTankAction : public Action
+class MagtheridonMisdirectChannelersToMainTankAction : public Action
 {
 public:
-    MagtheridonMisdirectHellfireChannelersToMainTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "magtheridon misdirect hellfire channelers to main tank") {}
+    MagtheridonMisdirectChannelersToMainTankAction(PlayerbotAI* botAI)
+        : Action(botAI, "magtheridon misdirect channelers to main tank") {}
     bool Execute(Event event) override;
 };
 
@@ -49,6 +49,14 @@ class MagtheridonAssignDpsPriorityAction : public AttackAction
 public:
     MagtheridonAssignDpsPriorityAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "magtheridon assign dps priority") {}
+    bool Execute(Event event) override;
+};
+
+class MagtheridonSelectTargetForHoldAction : public Action
+{
+public:
+    MagtheridonSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : Action(botAI, "magtheridon select target for hold") {}
     bool Execute(Event event) override;
 };
 

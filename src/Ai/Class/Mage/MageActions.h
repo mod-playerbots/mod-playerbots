@@ -303,11 +303,10 @@ public:
     CastFireBlastAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "fire blast") {}
 };
 
-class CastArcaneBlastAction : public CastBuffSpellAction
+class CastArcaneBlastAction : public CastSpellAction
 {
 public:
-    CastArcaneBlastAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "arcane blast") {}
-    std::string const GetTargetName() override { return "current target"; }
+    CastArcaneBlastAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "arcane blast") {}
 };
 
 class CastArcaneBarrageAction : public CastSpellAction
@@ -396,10 +395,13 @@ public:
     bool isUseful() override;
 };
 
-class CastBlastWaveAction : public CastSpellAction
+inline constexpr uint32 SPELL_GLYPH_OF_BLAST_WAVE = 62126;
+
+class CastBlastWaveAction : public CastKnockbackSpellAction
 {
 public:
-    CastBlastWaveAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "blast wave") {}
+    CastBlastWaveAction(PlayerbotAI* botAI) :
+        CastKnockbackSpellAction(botAI, "blast wave", SPELL_GLYPH_OF_BLAST_WAVE) {}
     ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
     bool isUseful() override;
 };

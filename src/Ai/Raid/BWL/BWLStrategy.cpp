@@ -46,6 +46,8 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("bwl flamegor not victim", {
         NextAction("bwl flamegor avoid breath", ACTION_MOVE + 4) }));
 
+    triggers.push_back(new TriggerNode("bwl chromaggus fire resistance", {
+        NextAction("bwl chromaggus fire resistance", ACTION_RAID) }));
     triggers.push_back(new TriggerNode("bwl affliction bronze", {
         NextAction("bwl use hourglass sand", ACTION_RAID) }));
 
@@ -53,6 +55,8 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("bwl nefarian rear flank", ACTION_MOVE + 4) }));
     triggers.push_back(new TriggerNode("bwl nefarian wild magic", {
         NextAction("ice block", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("bwl nefarian corrupted totem", {
+        NextAction("bwl nefarian kill corrupted totem", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("bwl death talon wyrmguard tank", {
         NextAction("bwl death talon wyrmguard tank move away", ACTION_RAID) }));
@@ -65,14 +69,29 @@ void RaidBwlStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new RazorgoreTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszBurningAdrenalineMultiplier(botAI));
+    multipliers.push_back(new NefarianCorruptedHealingMultiplier(botAI));
+    multipliers.push_back(new NefarianCorruptedTotemMultiplier(botAI));
 }
 
 void RaidBwlStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
 {
-    if (type != TargetValueExclusionType::Tank)
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    if (type == TargetValueExclusionType::DpsTarget || type == TargetValueExclusionType::DebuffTarget)
+    {
+        // Nefarian is not a target while Bone Constructs are in combat, so DPS clear them first. His tank stays on him.
+        Player* bot = botAI->GetBot();
+        if (!PlayerbotAI::IsTank(bot) && !PlayerbotAI::IsHeal(bot) &&
+            BlackwingLairHelpers::HasBoneConstructAttacker(botAI))
+        {
+            if (Unit* nefarian = AI_VALUE2(Unit*, "find target", "nefarian"))
+                exclusions.insert(nefarian->GetGUID());
+        }
+        return;
+    }
+
+    if (type != TargetValueExclusionType::TankTarget)
         return;
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
     if (Unit* broodlord = AI_VALUE2(Unit*, "find target", "broodlord lashlayer"))
     {
         Unit* bossVictim = broodlord->GetVictim();
@@ -104,5 +123,34 @@ void RaidBwlStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExc
                     exclusions.insert(guid);
             }
         }
+    }
+
+    if (Unit* nefarian = AI_VALUE2(Unit*, "find target", "nefarian"))
+    {
+        // The tank holding Nefarian ignores everything else, e.g. the Bone Constructs he raises at 20%.
+        // While no tank holds him (tank died), the main tank, or the first living assist tank, takes him.
+        Player* bot = botAI->GetBot();
+        Unit* bossVictim = nefarian->GetVictim();
+        Player* bossVictimPlayer = bossVictim ? bossVictim->ToPlayer() : nullptr;
+        bool holdsBoss = bossVictim == bot;
+        if (!holdsBoss && (!bossVictimPlayer || !PlayerbotAI::IsTank(bossVictimPlayer)))
+        {
+            Unit* mainTank = botAI->GetUnit(PlayerbotAI::GetMainTankGuid(bot->GetGroup()));
+            holdsBoss = mainTank && mainTank->IsAlive() ? PlayerbotAI::IsMainTank(bot)
+                                                        : PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+        }
+
+        if (holdsBoss)
+        {
+            for (ObjectGuid const guid : AI_VALUE(GuidVector, "attackers"))
+            {
+                if (guid != nefarian->GetGUID())
+                    exclusions.insert(guid);
+            }
+        }
+        // While a tank holds him, the other tanks stay on the constructs. Loose on the raid, any tank may take him.
+        else if (bossVictimPlayer && PlayerbotAI::IsTank(bossVictimPlayer) &&
+                 BlackwingLairHelpers::HasBoneConstructAttacker(botAI))
+            exclusions.insert(nefarian->GetGUID());
     }
 }

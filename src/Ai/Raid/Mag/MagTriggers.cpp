@@ -44,7 +44,7 @@ bool MagtheridonAssistTanksShouldTankChannelersTrigger::IsActiveInEncounter()
         PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
 }
 
-bool MagtheridonPullingWestAndEastChannelersTrigger::IsActiveInEncounter()
+bool MagtheridonHunterShouldMisdirectChannelersTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -55,9 +55,16 @@ bool MagtheridonPullingWestAndEastChannelersTrigger::IsActiveInEncounter()
     return GetChanneler(bot, WEST_CHANNELER_DB_GUID) || GetChanneler(bot, EAST_CHANNELER_DB_GUID);
 }
 
-bool MagtheridonDeterminingKillOrderTrigger::IsActiveInEncounter()
+bool MagtheridonShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
     return !PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "magtheridon");
+}
+
+bool MagtheridonDpsHoldIsActiveTrigger::IsActiveInEncounter()
+{
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    return magtheridon && IsMagtheridonDpsHoldActive(bot, magtheridon) &&
+        !IsAnyChannelerAlive(bot);
 }
 
 bool MagtheridonBurningAbyssalSpawnedTrigger::IsActiveInEncounter()
@@ -78,7 +85,7 @@ bool MagtheridonShouldBeTankedTrigger::IsActiveInEncounter()
     return magtheridon->GetVictim() == bot || PlayerbotAI::IsMainTank(bot);
 }
 
-bool MagtheridonShouldSpreadRangedTrigger::IsActiveInEncounter()
+bool MagtheridonRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -90,11 +97,12 @@ bool MagtheridonShouldSpreadRangedTrigger::IsActiveInEncounter()
     if (!IsCubeClicker(bot))
         return true;
 
-    auto timerIt = blastNovaTimer.find(magtheridon->GetInstanceId());
-    if (timerIt == blastNovaTimer.end())
+    std::optional<uint32> const& blastNovaTimer =
+        MagState(magtheridon->GetInstanceId()).blastNovaTimer;
+    if (!blastNovaTimer)
         return true;
 
-    return getMSTimeDiff(timerIt->second, getMSTime()) < BLAST_NOVA_INTERIM_MS;
+    return getMSTimeDiff(*blastNovaTimer, getMSTime()) < BLAST_NOVA_INTERIM_MS;
 }
 
 bool MagtheridonStandingInDebrisTrigger::IsActiveInEncounter()
