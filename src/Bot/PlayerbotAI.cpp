@@ -462,7 +462,7 @@ bool PlayerbotAI::UpdateAIReaction(uint32 elapsed, bool minimal, bool canControl
         if (reaction)
         {
             if (reaction->ShouldInterruptCast())
-                bot->InterruptNonMeleeSpells(true);
+                bot->CastStop();
 
             if (reaction->ShouldInterruptMovement())
                 bot->StopMoving();

@@ -119,11 +119,11 @@ protected:
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
-class KaelthasSunstriderWaitForDpsMultiplier : public TempestKeepEncounterMultiplier
+class KaelthasSunstriderHoldDpsMultiplier : public TempestKeepEncounterMultiplier
 {
 public:
-    KaelthasSunstriderWaitForDpsMultiplier(PlayerbotAI* botAI)
-        : TempestKeepEncounterMultiplier(botAI, "kael'thas sunstrider wait for dps") {}
+    KaelthasSunstriderHoldDpsMultiplier(PlayerbotAI* botAI)
+        : TempestKeepEncounterMultiplier(botAI, "kael'thas sunstrider hold dps") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -198,6 +198,16 @@ public:
     KaelthasSunstriderManageAutomaticTargetingMultiplier(PlayerbotAI* botAI)
         : TempestKeepEncounterMultiplier(
             botAI, "kael'thas sunstrider manage automatic targeting") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class KaelthasSunstriderKeepMeleeInCombatMultiplier : public TempestKeepEncounterMultiplier
+{
+public:
+    KaelthasSunstriderKeepMeleeInCombatMultiplier(PlayerbotAI* botAI)
+        : TempestKeepEncounterMultiplier(botAI, "kael'thas sunstrider keep melee in combat") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
