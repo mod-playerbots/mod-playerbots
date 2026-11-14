@@ -9,6 +9,7 @@
 
 #include "Aq40Helpers.h"
 #include "EncounterHelpers.h"
+#include "Player.h"
 #include "Trigger.h"
 #include <optional>
 #include <string>

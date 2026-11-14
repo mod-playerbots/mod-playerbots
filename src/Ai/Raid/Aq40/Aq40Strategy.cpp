@@ -267,7 +267,7 @@ void RaidAq40Strategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 void RaidAq40Strategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
 {
     Player* bot = botAI->GetBot();
-    if (type != TargetValueExclusionType::Dps || !EncounterHelpers::IsEncounterInProgress(bot, AQ40_MAP_ID) ||
+    if (type != TargetValueExclusionType::DpsTarget || !EncounterHelpers::IsEncounterInProgress(bot, AQ40_MAP_ID) ||
         !UsesAssignedTarget(bot))
         return;
     // Target selection can ask for exclusions several times per tick; reuse them within the tick.
