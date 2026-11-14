@@ -651,14 +651,6 @@ bool StatsCollector::SpecialSpellFilter(uint32 spellId)
             if (type_ & CollectorType::SPELL_HEAL)
                 return true;
             break;
-        case 71903:  // Shadowmourne
-            stats[STATS_TYPE_STRENGTH] += 200;
-            return true;
-        case 64415:  // Val'anyr, Hammer of Ancient Kings: 10% on heal -> Blessing of Ancient Kings (64411),
-                      // an absorb shield for 15% of the heal (scripted DUMMY, no DBC value); ~+100 heal power sustained
-            if (type_ & CollectorType::SPELL_HEAL)
-                stats[STATS_TYPE_HEAL_POWER] += 100;
-            return true;
         default:
             break;
     }
