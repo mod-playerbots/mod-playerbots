@@ -1426,6 +1426,30 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                 horizontalSpeed = 0.11f;
             verticalSpeed = -verticalSpeed;
 
+            // A client stops at a ceiling, a bot's spline has no collision. Keep the rise under the first model
+            // straight above the bot's head.
+            if (verticalSpeed > 0.0f)
+            {
+                constexpr float minRise = 0.3f;
+                float const botX = bot->GetPositionX();
+                float const botY = bot->GetPositionY();
+                float const headZ = bot->GetPositionZ() + bot->GetCollisionHeight();
+                float const rise = verticalSpeed * verticalSpeed / (2.0f * Movement::gravity);
+                float ceilingZ = headZ + rise;
+                float hitX, hitY, hitZ;
+                auto const& collision = bot->GetMap()->GetMapCollisionData();
+                if (collision.GetStaticTree().GetObjectHitPos(botX, botY, headZ, botX, botY, headZ + rise, hitX, hitY,
+                                                              hitZ, 0.0f))
+                    ceilingZ = std::min(ceilingZ, hitZ);
+
+                if (collision.GetDynamicTree().GetObjectHitPos(bot->GetPhaseMask(), botX, botY, headZ, botX, botY,
+                                                               headZ + rise, hitX, hitY, hitZ, 0.0f))
+                    ceilingZ = std::min(ceilingZ, hitZ);
+
+                if (ceilingZ < headZ + rise)
+                    verticalSpeed = std::sqrt(2.0f * Movement::gravity * std::max(ceilingZ - headZ, minRise));
+            }
+
             bot->CastStop();
             bot->StopMoving();
             bot->GetMotionMaster()->Clear();
