@@ -23,13 +23,16 @@
 
 namespace
 {
+// Aim inside the range: the range check is 3D, so aiming at the edge can stop the bot just outside it.
+constexpr float PULL_RANGE_MARGIN = 3.0f;
+
 float GetPullReachDistance(Player* bot, Unit* target, PullStrategy const* strategy)
 {
     if (!bot || !target || !strategy)
         return 0.0f;
 
     float const combatDistance = bot->GetCombatReach() + target->GetCombatReach();
-    return std::max(0.0f, strategy->GetRange() - combatDistance);
+    return std::max(0.0f, strategy->GetRange() - combatDistance - PULL_RANGE_MARGIN);
 }
 
 bool IsWithinPullRange(Player* bot, Unit* target, PullStrategy const* strategy)
@@ -75,7 +78,7 @@ bool PullRequestAction::Execute(Event event)
 
     if (!strategy->CanDoPullAction(target))
     {
-        std::string const actionName = strategy->GetPullActionName();
+        std::string const actionName = strategy->GetPullActionNameFor(target);
         std::string const text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "pull_action_unavailable_error",
             "Can't perform pull action '%action_name'",
@@ -237,9 +240,7 @@ void PullAction::InitPullAction()
 
     spell = spellName;
 
-    bool isShoot = (spellName == "shoot" || spellName == "shoot bow" ||
-                    spellName == "shoot gun" || spellName == "shoot crossbow" ||
-                    spellName == "throw");
+    bool isShoot = (spellName == "shoot" || spellName == "throw");
     range = botAI->GetRange(isShoot ? "shoot" : "spell");
 }
 
