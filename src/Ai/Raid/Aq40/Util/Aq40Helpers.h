@@ -36,19 +36,19 @@ constexpr uint32 Id(T value)
     return static_cast<uint32>(value);
 }
 
-// Values match the instance script's boss data ids.
+// Values match the instance script's boss data ids, which follow DungeonEncounter.dbc order.
 enum class Aq40Encounter : uint32
 {
-    None,
-    Skeram,
-    Trio,
-    Sartura,
-    Fankriss,
-    Viscidus,
-    Huhuran,
-    Twins,
-    Ouro,
-    Cthun
+    Skeram = 0,
+    Trio = 1,
+    Sartura = 2,
+    Fankriss = 3,
+    Viscidus = 4,
+    Huhuran = 5,
+    Twins = 6,
+    Ouro = 7,
+    Cthun = 8,
+    None = 0xFFFFFFFF
 };
 
 enum class Aq40Npcs : uint32
