@@ -205,10 +205,14 @@ bool FollowAction::Execute(Event /*event*/)
     }
     // end unified transport handling
 
+    Unit* followTarget = !target.empty() ? AI_VALUE(Unit*, target) : master;
+    if (botAI->airborne.DropDownTo(followTarget))
+        return true;
+
     bool moved = false;
     if (!target.empty())
     {
-        moved = Follow(AI_VALUE(Unit*, target));
+        moved = Follow(followTarget);
     }
     else
     {
