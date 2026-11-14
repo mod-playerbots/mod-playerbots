@@ -188,7 +188,7 @@ GuidVector PossibleNewRpgGameObjectsValue::Calculate()
     float const range = PossibleNewRpgTargetsValue::GetSearchRange(bot);
 
     std::list<GameObject*> targets;
-    AnyGameObjectInObjectRangeCheck u_check(bot, range);
+    AnyGameObjectInObjectRangeCheck u_check(bot, range, true);
     Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
     Cell::VisitObjects(bot, searcher, range);
 

@@ -148,6 +148,11 @@ bool AttackAnythingAction::isUseful()
     if (bot->IsInCombat())
         return false;
 
+    // RPG_DO_QUEST picks its own targets; only its POI fallback relies on grinding for credit.
+    if (auto const* doQuest = std::get_if<NewRpgInfo::DoQuest>(&botAI->rpgInfo.data))
+        if (!doQuest->poiFallback && botAI->HasStrategy("new rpg", BOT_STATE_NON_COMBAT))
+            return false;
+
     Unit* target = GetTarget();
     if (!target || !target->IsInWorld())  // Checks if the target is valid and in the world
         return false;
