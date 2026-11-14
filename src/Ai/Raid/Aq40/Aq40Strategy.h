@@ -7,8 +7,9 @@
 #ifndef PLAYERBOTS_AQ40STRATEGY_H
 #define PLAYERBOTS_AQ40STRATEGY_H
 
-#include "Strategy.h"
 #include <vector>
+
+#include "Strategy.h"
 
 class RaidAq40Strategy : public Strategy
 {

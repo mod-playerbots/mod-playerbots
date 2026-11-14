@@ -5,6 +5,7 @@
  */
 
 #include "Aq40Triggers.h"
+
 #include "Aq40Helpers.h"
 #include "EncounterHelpers.h"
 #include "MoveSpline.h"
@@ -125,10 +126,7 @@ bool FankrissTheUnyieldingSpawnShouldBeTankedTrigger::IsActiveInEncounter()
 
 // Viscidus
 
-bool ViscidusShouldBeFrozenTrigger::IsActiveInEncounter()
-{
-    return ViscidusShouldBeFrozen(bot) && IsFreeToAct();
-}
+bool ViscidusShouldBeFrozenTrigger::IsActiveInEncounter() { return ViscidusShouldBeFrozen(bot) && IsFreeToAct(); }
 
 bool ViscidusIsFrozenTrigger::IsActiveInEncounter()
 {

@@ -7,11 +7,12 @@
 #ifndef PLAYERBOTS_AQ40ACTIONS_H
 #define PLAYERBOTS_AQ40ACTIONS_H
 
+#include <string>
+
 #include "Action.h"
 #include "Aq40Helpers.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
-#include <string>
 
 // Shared
 

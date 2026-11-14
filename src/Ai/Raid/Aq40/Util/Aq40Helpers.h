@@ -7,9 +7,6 @@
 #ifndef PLAYERBOTS_AQ40HELPERS_H
 #define PLAYERBOTS_AQ40HELPERS_H
 
-#include "Common.h"
-#include "ObjectGuid.h"
-#include "Position.h"
 #include <array>
 #include <cmath>
 #include <map>
@@ -17,6 +14,12 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+
+#include "Common.h"
+#include "ObjectGuid.h"
+#include "Position.h"
+
+enum ReactStates : uint8;
 
 class Creature;
 class Player;
@@ -441,6 +444,8 @@ struct Aq40BotCache
     float waitAngle = 0.0f;
     uint32 spitAttemptTime = 0;
     uint32 exitAttemptTime = 0;
+    // The pet's stance before Twin Emperors made it passive; the core saves the stance with the pet.
+    std::optional<ReactStates> petReactBeforeTwins;
 };
 
 // General

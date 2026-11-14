@@ -5,6 +5,9 @@
  */
 
 #include "Aq40Multipliers.h"
+
+#include <cmath>
+
 #include "Aq40Actions.h"
 #include "Aq40Helpers.h"
 #include "ChooseTargetActions.h"
@@ -17,7 +20,6 @@
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
 #include "ShamanActions.h"
-#include <cmath>
 
 using namespace Aq40Helpers;
 using namespace EncounterHelpers;

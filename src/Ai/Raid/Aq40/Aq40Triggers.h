@@ -7,12 +7,13 @@
 #ifndef PLAYERBOTS_AQ40TRIGGERS_H
 #define PLAYERBOTS_AQ40TRIGGERS_H
 
+#include <optional>
+#include <string>
+
 #include "Aq40Helpers.h"
 #include "EncounterHelpers.h"
 #include "Player.h"
 #include "Trigger.h"
-#include <optional>
-#include <string>
 
 // Shared
 

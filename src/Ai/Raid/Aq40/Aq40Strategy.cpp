@@ -5,6 +5,7 @@
  */
 
 #include "Aq40Strategy.h"
+
 #include "Aq40Helpers.h"
 #include "Aq40Multipliers.h"
 #include "EncounterHelpers.h"
@@ -280,9 +281,12 @@ void RaidAq40Strategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueEx
         for (Creature* unit : GetUnits(bot))
             if (unit != target || !IsAllowedDamage(bot, unit))
                 _exclusions.insert(unit->GetGUID());
-        for (Player* player : GetMembers(bot))
-            if (HasTrueFulfillment(player))
-                _exclusions.insert(player->GetGUID());
+        // Not GetMembers: it drops mind-controlled members, the very ones to exclude.
+        if (Group* group = bot->GetGroup())
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+                if (Player* member = ref->GetSource())
+                    if (HasTrueFulfillment(member))
+                        _exclusions.insert(member->GetGUID());
     }
     exclusions.insert(_exclusions.begin(), _exclusions.end());
 }

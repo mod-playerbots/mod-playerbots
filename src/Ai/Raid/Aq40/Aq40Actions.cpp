@@ -5,6 +5,10 @@
  */
 
 #include "Aq40Actions.h"
+
+#include <cmath>
+#include <vector>
+
 #include "Aq40Helpers.h"
 #include "EncounterHelpers.h"
 #include "MoveSpline.h"
@@ -12,8 +16,6 @@
 #include "Playerbots.h"
 #include "Timer.h"
 #include "TotemsShamanStrategy.h"
-#include <cmath>
-#include <vector>
 
 using namespace Aq40Helpers;
 using namespace EncounterHelpers;
@@ -22,7 +24,17 @@ using namespace EncounterHelpers;
 
 bool Aq40ResetEncounterStatesAction::Execute(Event /*event*/)
 {
-    BotCache(botAI) = Aq40BotCache();
+    Aq40BotCache& cache = BotCache(botAI);
+    std::optional<ReactStates> petReact = cache.petReactBeforeTwins;
+    cache = Aq40BotCache();
+    if (petReact)
+    {
+        // Kept until a pet is out to take it back.
+        if (Pet* pet = bot->GetPet())
+            pet->SetReactState(*petReact);
+        else
+            cache.petReactBeforeTwins = petReact;
+    }
     if (IsMechanicTrackerBot(bot, AQ40_MAP_ID))
     {
         Aq40ResetInstance(bot->GetInstanceId());
@@ -481,6 +493,9 @@ bool TwinEmperorsWarlockSetPetPassiveAction::Execute(Event /*event*/)
     Pet* pet = bot->GetPet();
     if (!pet)
         return false;
+    std::optional<ReactStates>& previous = BotCache(botAI).petReactBeforeTwins;
+    if (!previous)
+        previous = pet->GetReactState();
     pet->AttackStop();
     pet->SetReactState(REACT_PASSIVE);
     pet->GetMotionMaster()->MoveFollow(bot, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);

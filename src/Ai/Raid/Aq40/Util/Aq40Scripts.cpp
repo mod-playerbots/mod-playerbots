@@ -16,7 +16,7 @@ using namespace Aq40Helpers;
 class TwinTeleportBotScript : public AllSpellScript
 {
 public:
-    TwinTeleportBotScript() : AllSpellScript("TwinTeleportBotScript") {}
+    TwinTeleportBotScript() : AllSpellScript("TwinTeleportBotScript", {ALLSPELLHOOK_ON_PREPARE}) {}
 
     void OnSpellPrepare(Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo) override
     {
@@ -38,7 +38,4 @@ public:
     }
 };
 
-void AddSC_Aq40BotScripts()
-{
-    new TwinTeleportBotScript();
-}
+void AddSC_Aq40BotScripts() { new TwinTeleportBotScript(); }

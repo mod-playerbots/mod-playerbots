@@ -7,12 +7,13 @@
 #ifndef PLAYERBOTS_AQ40VALUECONTEXT_H
 #define PLAYERBOTS_AQ40VALUECONTEXT_H
 
+#include <vector>
+
 #include "Aq40Helpers.h"
 #include "EncounterHelpers.h"
 #include "NamedObjectContext.h"
 #include "Playerbots.h"
 #include "Value.h"
-#include <vector>
 
 class Aq40BotCacheValue : public ManualSetValue<Aq40Helpers::Aq40BotCache&>
 {
