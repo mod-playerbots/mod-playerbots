@@ -145,8 +145,9 @@ public:
         float range = sPlayerbotAIConfig.FollowDistance;
         float angle = GetFollowAngle();
 
+        // In flight the spread is held: on a climb a re-rolled offset alone sets the bot's heading.
         time_t now = time(nullptr);
-        if (!lastChangeTime || now - lastChangeTime >= 3)
+        if (!master->IsFlying() && (!lastChangeTime || now - lastChangeTime >= 3))
         {
             lastChangeTime = now;
 
