@@ -216,7 +216,7 @@ void DefineMimiron(EncounterBuilder& e)
 
     // Eating or drinking stops the bot thinking for up to 18 s, so one that sits down near the fire
     // doesn't dodge it. Near fire only: a handover drink on clean ground is worth the mana.
-    e.Block("mimiron drink guard", Role::Any, MimironNearFire, 0, {"drink", "food"});
+    e.Block("mimiron drink guard", Role::Any, MimironNearFire, 0, {"drink", "eat"});
 
     // Every mover that aims at a unit rather than the floor. The bomb flee lets go just inside its clearance, so
     // any of these walks the bot back into the blast for the rest of the fuse.

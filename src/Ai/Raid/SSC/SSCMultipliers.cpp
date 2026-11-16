@@ -13,12 +13,12 @@
 #include "EncounterHelpers.h"
 #include "FishingAction.h"
 #include "FollowActions.h"
+#include "FoodActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "LootAction.h"
 #include "MageActions.h"
 #include "MoveSpline.h"
-#include "NonCombatActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
 #include "PriestActions.h"
@@ -27,6 +27,7 @@
 #include "SSCActions.h"
 #include "SSCHelpers.h"
 #include "ShamanActions.h"
+#include "ThreatHelpers.h"
 #include "ThreatManager.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
@@ -68,34 +69,6 @@ bool IsMeleeReachSpell(Player* bot, Action* action)
 {
     return dynamic_cast<CastReachTargetSpellAction*>(action) ||
         (bot->getClass() == CLASS_ROGUE && dynamic_cast<CastKillingSpreeAction*>(action));
-}
-
-bool IsDpsHoldCandidate(Player* bot, Action* action)
-{
-    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
-        return false;
-
-    if (!PlayerbotAI::IsTank(bot) && dynamic_cast<CastHealingSpellAction*>(action))
-        return false;
-
-    // AttackAction for healers is used only to keep them in their combat engines. Their damage,
-    // including from wanding, all comes from CastSpellAction.
-    return !dynamic_cast<AttackAction*>(action) || !PlayerbotAI::IsHeal(bot);
-}
-
-// Healing, buffs etc. go through a dps hold. Totems don't because some are offensive.
-float GetDpsHoldValue(Player* bot, Action* action)
-{
-    if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
-        return 0.0f;
-
-    bool const castOnRaidSpell = dynamic_cast<CastBuffSpellAction*>(action) ||
-        dynamic_cast<CastCureSpellAction*>(action) ||
-        dynamic_cast<CurePartyMemberAction*>(action) ||
-        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
-        dynamic_cast<CastProtectSpellAction*>(action);
-
-    return castOnRaidSpell ? 1.0f : 0.0f;
 }
 
 bool IsAnyVashjAddUntanked(PlayerbotAI* botAI)
@@ -214,7 +187,7 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
     // Karathress: Hold until Tidalvess, the first council member in the kill order, is under 95%.
     if (bossEntry == Id(SscNpcs::NPC_FATHOM_LORD_KARATHRESS))
     {
-        Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
+        Unit* tidalvess = FindThreatTarget(bot, "fathom-guard tidalvess");
         return tidalvess && tidalvess->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
     }
 
@@ -287,7 +260,7 @@ float HydrossTheUnstableDisableOffPhaseTankActionsMultiplier::GetValueInEncounte
         return 1.0f;
     }
 
-    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
     if (!hydross)
         return 1.0f;
 
@@ -310,14 +283,14 @@ float HydrossTheUnstableDisablePhaseTankAssistMultiplier::GetValueInEncounter(Ac
         return 1.0f;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "hydross the unstable"))
+    if (!FindThreatTarget(bot, "hydross the unstable"))
         return 1.0f;
 
     return IsHydrossPhaseTank(bot) ? 0.0f : 1.0f;
 }
 
 // Phase changes reset threat. Hold dps from 1s after Marks hit 100% until 5s post-phase change.
-float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action)
+float HydrossTheUnstableHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
@@ -325,17 +298,24 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action
     if (dynamic_cast<HydrossTheUnstablePositionAndSwapTanksAction*>(action))
         return 1.0f;
 
-    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-    if (!hydross || GetHydrossDpsHoldWindow(hydross) == HydrossDpsHoldWindow::None)
+    Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
+    if (!hydross)
         return 1.0f;
 
-    if (PlayerbotAI::IsTank(bot) &&
-        !(IsHydrossInFrostPhase(hydross) ? IsHydrossNatureTank(bot) : IsHydrossFrostTank(bot)))
-    {
-        return 1.0f;
-    }
+    // Each phase tank holds attacking for its entire offphase.
+    bool const isOffPhaseTank =
+        IsHydrossInFrostPhase(hydross) ? IsHydrossNatureTank(bot) : IsHydrossFrostTank(bot);
+    if (isOffPhaseTank)
+        return GetDpsHoldValue(bot, action);
 
-    return GetDpsHoldValue(bot, action);
+    if (GetHydrossDpsHoldWindow(hydross) == HydrossDpsHoldWindow::None)
+        return 1.0f;
+
+    // Add tanks stay off Hydross but keep tanking adds.
+    if (IsHydrossAddTank(bot))
+        return action->GetTarget() == hydross ? GetDpsHoldValue(bot, action) : 1.0f;
+
+    return PlayerbotAI::IsTank(bot) ? 1.0f : GetDpsHoldValue(bot, action);
 }
 
 // The Lurker Below
@@ -357,7 +337,7 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValueInEncounter(Action* act
     if (dynamic_cast<TheLurkerBelowRunAroundBehindBossAction*>(action))
         return 1.0f;
 
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    Unit* lurker = FindThreatTarget(bot, "the lurker below");
     return lurker && IsLurkerSpouting(lurker) ? 0.0f : 1.0f;
 }
 
@@ -372,7 +352,7 @@ float TheLurkerBelowMaintainPositionsMultiplier::GetValueInEncounter(Action* act
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "the lurker below") ? 0.0f : 1.0f;
+    return FindThreatTarget(bot, "the lurker below") ? 0.0f : 1.0f;
 }
 
 float TheLurkerBelowTanksFocusAssignedGuardianMultiplier::GetValueInEncounter(Action* action)
@@ -414,7 +394,7 @@ float TheLurkerBelowDisableKillingSpreeMultiplier::GetValueInEncounter(Action* a
     if (!dynamic_cast<CastKillingSpreeAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "the lurker below") ? 0.0f : 1.0f;
+    return FindThreatTarget(bot, "the lurker below") ? 0.0f : 1.0f;
 }
 
 float TheLurkerBelowMeleeWaitToSetBehindMultiplier::GetValueInEncounter(Action* action)
@@ -428,7 +408,7 @@ float TheLurkerBelowMeleeWaitToSetBehindMultiplier::GetValueInEncounter(Action* 
     if (!dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    Unit* lurker = FindThreatTarget(bot, "the lurker below");
     if (!lurker)
         return 1.0f;
 
@@ -455,7 +435,7 @@ float TheLurkerBelowMeleeDisableReachMultiplier::GetValueInEncounter(Action* act
     if (!dynamic_cast<ReachMeleeAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "the lurker below") ? 0.0f : 1.0f;
+    return FindThreatTarget(bot, "the lurker below") ? 0.0f : 1.0f;
 }
 
 // Leotheras the Blind
@@ -477,51 +457,93 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValueInEncounter(Action* act
     if (dynamic_cast<LeotherasTheBlindRunAwayFromWhirlwindAction*>(action))
         return 1.0f;
 
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    Unit* leotheras = FindThreatTarget(bot, "leotheras the blind");
     return leotheras && IsLeotherasChannelingWhirlwind(leotheras) ? 0.0f : 1.0f;
+}
+
+float LeotherasTheBlindControlTargetingMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    bool const isDropTarget = dynamic_cast<DropTargetAction*>(action);
+    if (!isDropTarget && !dynamic_cast<DpsAssistAction*>(action))
+        return 1.0f;
+
+    if (!FindThreatTarget(bot, "leotheras the blind"))
+        return 1.0f;
+
+    // There is no valid target during the brief transition into the final phase. Keep bots in
+    // the combat engine through the transition.
+    if (isDropTarget)
+        return 0.0f;
+
+    // No dps assist in situations in which there is more than one valid target.
+    return HasInnerDemon(bot) || IsLeotherasFinalPhase(botAI) ? 0.0f : 1.0f;
 }
 
 float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!PlayerbotAI::IsTank(bot) || HasInnerDemon(bot))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
+    if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
+    bool const isTankAssist = dynamic_cast<TankAssistAction*>(action);
+    bool const isTaunt = IsTauntAction(bot, action);
+    if (!isTankAssist && !isTaunt && !dynamic_cast<CastSpellAction*>(action))
         return 1.0f;
 
-    // Disable all spells from tanks if there is a Warlock tank. Instead, just auto-attack to build
-    // rage in case the tank gets an Inner Demon.
-    if (GetLeotherasDemon(botAI) && GetLeotherasWarlockTank(bot))
+    if (!FindThreatTarget(bot, "leotheras the blind"))
+        return 1.0f;
+
+    // The Shadow of Leotheras can be taunted, and it must stay on the Warlock tank if there is one.
+    if (isTaunt)
+        return IsLeotherasFinalPhase(botAI) && !GetLeotherasWarlockTank(bot) ? 1.0f : 0.0f;
+
+    // Tanks stay on their Inner Demons and, in the final phase, on the boss, so they do not target
+    // Demon Leo or Shadow Leo.
+    if (isTankAssist)
+        return HasInnerDemon(bot) || IsLeotherasFinalPhase(botAI) ? 0.0f : 1.0f;
+
+    // AoE threat spells can also hit Demon Leo and pull threat from the Warlock tank.
+    if (HasInnerDemon(bot))
+        return IsAoeThreatAction(bot, action) ? 0.0f : 1.0f;
+
+    // Disable all spells from tanks in demon phase if there is a Warlock tank, other than shifting
+    // into bear form. Allow auto attacks to build rage in case the tank gets an Inner Demon.
+    if (IsLeotherasDemonPhase(botAI) && GetLeotherasWarlockTank(bot))
     {
         return bot->getClass() == CLASS_DRUID &&
             (dynamic_cast<CastDireBearFormAction*>(action) ||
              dynamic_cast<CastBearFormAction*>(action)) ? 1.0f : 0.0f;
     }
 
-    if (bot->getClass() == CLASS_WARRIOR && dynamic_cast<CastVigilanceAction*>(action) &&
-        GetLeotherasDemonOrShadow(botAI))
+    // In all phases, also do not cast Vigilance on the Warlock tank.
+    if (bot->getClass() == CLASS_WARRIOR && dynamic_cast<CastVigilanceAction*>(action))
     {
         Player* warlockTank = GetLeotherasWarlockTank(bot);
-        if (warlockTank && action->GetTarget() == warlockTank)
-            return 0.0f;
+        return warlockTank && action->GetTarget() == warlockTank ? 0.0f : 1.0f;
     }
 
+    // If there is no Inner Demon, Berserk can be used in the final phase.
     if (bot->getClass() == CLASS_DRUID && dynamic_cast<CastBerserkAction*>(action))
-        return GetShadowOfLeotheras(botAI) ? 1.0f : 0.0f; // Save Berserk for Inner Demon pre-P3.
+        return IsLeotherasFinalPhase(botAI) ? 1.0f : 0.0f;
 
     return 1.0f;
 }
 
 float LeotherasTheBlindMeleeAvoidChaosBlastMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!PlayerbotAI::IsMelee(bot))
         return 1.0f;
 
-    if (!dynamic_cast<AttackAction*>(action) && !dynamic_cast<ReachTargetAction*>(action) &&
-        !dynamic_cast<CombatFormationMoveAction*>(action) && !IsMeleeReachSpell(bot, action))
+    if (!dynamic_cast<ReachTargetAction*>(action) && !IsMeleeReachSpell(bot, action) &&
+        !dynamic_cast<CombatFormationMoveAction*>(action))
     {
         return 1.0f;
     }
@@ -642,9 +664,7 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
     }
 
     // Exclude abilities with a target that isn't the bot or the Inner Demon, plus self heals.
-    return dynamic_cast<DpsAssistAction*>(action) ||
-        dynamic_cast<TankAssistAction*>(action) ||
-        dynamic_cast<CastSnareSpellAction*>(action) ||
+    return dynamic_cast<CastSnareSpellAction*>(action) ||
         dynamic_cast<CastHealingSpellAction*>(action) ||
         dynamic_cast<CastCureSpellAction*>(action) ||
         dynamic_cast<CurePartyMemberAction*>(action) ||
@@ -658,7 +678,7 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
         dynamic_cast<CastDebuffSpellOnMeleeAttackerAction*>(action) ? 0.0f : 1.0f;
 }
 
-float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
+float LeotherasTheBlindHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
@@ -666,7 +686,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (HasInnerDemon(bot))
         return 1.0f;
 
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    Unit* leotheras = FindThreatTarget(bot, "leotheras the blind");
     if (!leotheras || !IsLeotherasDpsHoldActive(botAI, leotheras))
         return 1.0f;
 
@@ -686,7 +706,7 @@ float LeotherasTheBlindDisableTankSoulshatterMultiplier::GetValueInEncounter(Act
     if (!dynamic_cast<CastSoulshatterAction*>(action))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
+    if (!FindThreatTarget(bot, "leotheras the blind"))
         return 1.0f;
 
     return GetLeotherasDemonOrShadow(botAI) && IsLeotherasWarlockTank(bot) ? 0.0f : 1.0f;
@@ -707,7 +727,7 @@ float FathomLordKarathressDisableTankActionsMultiplier::GetValueInEncounter(Acti
     if (!isStockMove && !IsAoeThreatAction(bot, action) && !IsAoeTauntAction(bot, action))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
+    if (!FindThreatTarget(bot, "fathom-lord karathress"))
         return 1.0f;
 
     if (isStockMove)
@@ -724,7 +744,7 @@ float FathomLordKarathressDisableAutoTargetMultiplier::GetValueInEncounter(Actio
     if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "fathom-lord karathress") ? 0.0f : 1.0f;
+    return FindThreatTarget(bot, "fathom-lord karathress") ? 0.0f : 1.0f;
 }
 
 float FathomLordKarathressDisableAoeMultiplier::GetValueInEncounter(Action* action)
@@ -739,27 +759,34 @@ float FathomLordKarathressDisableAoeMultiplier::GetValueInEncounter(Action* acti
     if (!castSpellAction || castSpellAction->getThreatType() != Action::ActionThreatType::Aoe)
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "fathom-lord karathress") ? 0.0f : 1.0f;
+    return FindThreatTarget(bot, "fathom-lord karathress") ? 0.0f : 1.0f;
 }
 
-float FathomLordKarathressWaitForDpsMultiplier::GetValueInEncounter(Action* action)
+float FathomLordKarathressStartHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!IsDpsHoldCandidate(bot, action))
+    if (!IsDpsHoldCandidate(bot, action) ||
+        dynamic_cast<FathomLordKarathressAssignDpsPriorityAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    // AttackAction keeps healers in their combat engines. A healer in melee range also swings, but
+    // the threat is negligible.
+    if (PlayerbotAI::IsHeal(bot) && dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    if (PlayerbotAI::IsTank(bot))
+    return IsKarathressStartDpsHoldActive(bot) ? GetDpsHoldValue(bot, action) : 1.0f;
+}
+
+float FathomLordKarathressBlessingHoldDpsMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!IsDpsHoldCandidate(bot, action) || !IsKarathressBlessingHoldActive(bot))
         return 1.0f;
 
-    Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
-    if (!karathress)
-        return 1.0f;
-
-    std::optional<uint32> const& waitStart =
-        SscState(karathress->GetInstanceId()).karathressDpsWaitTimer;
-    if (waitStart && getMSTimeDiff(*waitStart, getMSTime()) >= KARATHRESS_DPS_WAIT_MS)
-        return 1.0f;
-
-    return GetDpsHoldValue(bot, action);
+    // Totems target the bot itself, but fire totems can attack Karathress.
+    Unit* karathress = FindThreatTarget(bot, "fathom-lord karathress");
+    return action->GetTarget() == karathress || dynamic_cast<CastTotemAction*>(action) ?
+        GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action* action)
@@ -770,7 +797,7 @@ float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
+    if (!FindThreatTarget(bot, "fathom-lord karathress"))
         return 1.0f;
 
     if (dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action))
@@ -785,7 +812,7 @@ float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action
     if (!PlayerbotAI::IsHeal(bot))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "fathom-guard caribdis"))
+    if (!FindThreatTarget(bot, "fathom-guard caribdis"))
         return 1.0f;
 
     return PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) ? 0.0f : 1.0f;
@@ -804,7 +831,7 @@ float FathomLordKarathressNoCastingWhileLiftedMultiplier::GetValueInEncounter(Ac
     if (bot->movespline->Finalized())
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
+    if (!FindThreatTarget(bot, "fathom-lord karathress"))
         return 1.0f;
 
     float const floorZ = bot->GetMapHeight(
@@ -825,12 +852,12 @@ float FathomLordKarathressApproachingCaribdisMultiplier::GetValueInEncounter(Act
         return 1.0f;
     }
 
-    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+    Unit* caribdis = FindThreatTarget(bot, "fathom-guard caribdis");
     if (!caribdis)
         return 1.0f;
 
     if (ShouldAttackSpitfireTotem(bot, GetSpitfireTotem(botAI)) ||
-        AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess"))
+        FindThreatTarget(bot, "fathom-guard tidalvess"))
     {
         return 1.0f;
     }
@@ -852,7 +879,7 @@ float FathomLordKarathressDontDropOutOfSightTargetMultiplier::GetValueInEncounte
     if (target->IsAlive() && target->GetEntry() == Id(SscNpcs::NPC_SPITFIRE_TOTEM))
         return 0.0f;
 
-    return target == AI_VALUE2(Unit*, "find target", "fathom-guard caribdis") ? 0.0f : 1.0f;
+    return target == FindThreatTarget(bot, "fathom-guard caribdis") ? 0.0f : 1.0f;
 }
 
 // Morogrim Tidewalker
@@ -871,7 +898,7 @@ float MorogrimTidewalkerControlMovementMultiplier::GetValueInEncounter(Action* a
     if (PlayerbotAI::IsMelee(bot) && dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "morogrim tidewalker") ? 0.0f : 1.0f;
+    return FindThreatTarget(bot, "morogrim tidewalker") ? 0.0f : 1.0f;
 }
 
 float MorogrimTidewalkerStayStackedMultiplier::GetValueInEncounter(Action* action)
@@ -891,7 +918,7 @@ float MorogrimTidewalkerStayStackedMultiplier::GetValueInEncounter(Action* actio
     if (dynamic_cast<MorogrimTidewalkerStackRangedBehindBossAction*>(action))
         return 1.0f;
 
-    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+    Unit* tidewalker = FindThreatTarget(bot, "morogrim tidewalker");
     if (!tidewalker || tidewalker->GetHealthPct() > TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT)
         return 1.0f;
 
@@ -919,7 +946,7 @@ float LadyVashjSetGroundingTotemMultiplier::GetValueInEncounter(Action* action)
     if (GetVashjGroundingShaman(bot) != bot)
         return 1.0f;
 
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Unit* vashj = FindThreatTarget(bot, "lady vashj");
     if (!vashj)
         return 1.0f;
 
@@ -938,7 +965,7 @@ float LadyVashjMaintainPhase1RangedSpreadMultiplier::GetValueInEncounter(Action*
         return 1.0f;
     }
 
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Unit* vashj = FindThreatTarget(bot, "lady vashj");
     return vashj && GetLadyVashjPhase(vashj) == 1 ? 0.0f : 1.0f;
 }
 
@@ -954,7 +981,7 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValueInEncounter(Acti
     if (PlayerbotAI::IsRanged(bot))
         return HasVashjStaticCharge(bot) ? 0.0f : 1.0f;
 
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Unit* vashj = FindThreatTarget(bot, "lady vashj");
     return vashj && ShouldAvoidVashjStaticCharge(bot, vashj) ? 0.0f : 1.0f;
 }
 
@@ -968,7 +995,7 @@ float LadyVashjNoUnauthorizedLootingMultiplier::GetValueInEncounter(Action* acti
     if (!dynamic_cast<LootAction*>(action) && !dynamic_cast<OpenLootAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "lady vashj") ? 0.0f : 1.0f;
+    return FindThreatTarget(bot, "lady vashj") ? 0.0f : 1.0f;
 }
 
 float LadyVashjCoreHandlersPrioritizePositioningMultiplier::GetValueInEncounter(Action* action)
@@ -995,11 +1022,8 @@ float LadyVashjCoreHandlersPrioritizePositioningMultiplier::GetValueInEncounter(
         return 1.0f;
     }
 
-    if (Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-        !vashj || GetLadyVashjPhase(vashj) != 2)
-    {
+    if (Unit* vashj = FindThreatTarget(bot, "lady vashj"); !vashj || GetLadyVashjPhase(vashj) != 2)
         return 1.0f;
-    }
 
     if (HasTaintedCore(bot))
         return 0.0f;
@@ -1032,16 +1056,16 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
         return 1.0f;
     }
 
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Unit* vashj = FindThreatTarget(bot, "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 2)
         return 1.0f;
 
     if (isAlwaysBlocked)
         return 0.0f;
 
-    // Keep healers in their combat engines.
+    // A bot with no allowed target holds with none, and stays in its combat engine.
     if (isDropTarget)
-        return PlayerbotAI::IsHeal(bot) ? 0.0f : 1.0f;
+        return 0.0f;
 
     // Don't waste tank and dps mana on healing in their non-combat engines.
     if (isHealSpell)
@@ -1095,7 +1119,9 @@ float LadyVashjPhase3DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     bool const isHealerSpellReach =
         dynamic_cast<ReachSpellAction*>(action) && PlayerbotAI::IsHeal(bot);
 
-    if (!isAssistAction && !isDebuffOnAttacker && !isHealerSpellReach &&
+    bool const isDropTarget = dynamic_cast<DropTargetAction*>(action);
+
+    if (!isAssistAction && !isDebuffOnAttacker && !isHealerSpellReach && !isDropTarget &&
         !dynamic_cast<AvoidAoeAction*>(action) &&
         !dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action))
@@ -1103,12 +1129,13 @@ float LadyVashjPhase3DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
         return 1.0f;
     }
 
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Unit* vashj = FindThreatTarget(bot, "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 3)
         return 1.0f;
 
-    // Healers move in range to heal but not to attack.
-    if (isAssistAction || isHealerSpellReach)
+    // Healers move in range to heal but not to attack. A bot with no allowed target holds with
+    // none, and stays in its combat engine.
+    if (isAssistAction || isHealerSpellReach || isDropTarget)
         return 0.0f;
 
     if (isDebuffOnAttacker)
@@ -1138,7 +1165,7 @@ float LadyVashjSaveHandOfFreedomMultiplier::GetValueInEncounter(Action* action)
     if (!dynamic_cast<CastHandOfFreedomOnPartyAction*>(action))
         return 1.0f;
 
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Unit* vashj = FindThreatTarget(bot, "lady vashj");
     return vashj && GetLadyVashjPhase(vashj) == 3 ? 0.0f : 1.0f;
 }
 
@@ -1161,7 +1188,7 @@ float LadyVashjMeleeControlSporeAvoidanceMultiplier::GetValueInEncounter(Action*
         return 1.0f;
     }
 
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Unit* vashj = FindThreatTarget(bot, "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 3 || !IsVashjRingMelee(bot, vashj))
         return 1.0f;
 
@@ -1181,7 +1208,7 @@ float LadyVashjRangedDoNotReachThroughSporesMultiplier::GetValueInEncounter(Acti
     if (PlayerbotAI::IsHeal(bot) ? !isHealerReach : !isSpellReach)
         return 1.0f;
 
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Unit* vashj = FindThreatTarget(bot, "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 3)
         return 1.0f;
 

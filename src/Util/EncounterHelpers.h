@@ -13,19 +13,22 @@
 #include <functional>
 #include <initializer_list>
 #include <optional>
-#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
 class Action;
+class Creature;
 class Item;
 class Player;
 class PlayerbotAI;
 class Unit;
+enum ReactStates : uint8;
 
 namespace EncounterHelpers
 {
+
+// Constants
 
 // Cheap, rough proxies for how far along an encounter is. 95% HP means the boss and raid are
 // positioned, the tank has threat, and the fight proper has started, so it's time to use cooldowns.
@@ -33,104 +36,25 @@ namespace EncounterHelpers
 inline constexpr float BOSS_ENGAGED_HEALTH_PCT = 95.0f;
 inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
 
+// Instance Script Callers
+
+// InstanceScript::IsEncounterInProgress is a cheap check to use as an initial gate for triggers and
+// multipliers that should run only during a boss fight. This requires the boss to be scripted to
+// report IN_PROGRESS (all TBC raid bosses do). It is possible for a boss script to set IN_PROGRESS
+// upon an event other than the pull (e.g., Leotheras goes IN_PROGRESS when first hit, even while
+// banished, or else when the last Spellbinder dies, not when his Spellbinders are pulled). In any
+// case, the boss script must be consulted to determine viability.
 bool IsEncounterInProgress(Player* bot, uint32 mapId);
-bool CanTakeStepTowards(
-    Player* bot, float destinationX, float destinationY, float moveDist,
-    float& stepX, float& stepY, float& stepZ);
-bool GetStepToPosition(
-    Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
-    float& stepY, bool& backwards);
-bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
-bool MarkTargetWithSkull(Player* bot, Unit* target);
-bool MarkTargetWithSquare(Player* bot, Unit* target);
-bool MarkTargetWithStar(Player* bot, Unit* target);
-bool MarkTargetWithCircle(Player* bot, Unit* target);
-bool MarkTargetWithDiamond(Player* bot, Unit* target);
-bool MarkTargetWithTriangle(Player* bot, Unit* target);
-bool MarkTargetWithCross(Player* bot, Unit* target);
-bool MarkTargetWithMoon(Player* bot, Unit* target);
-bool ClearTargetIcon(Player* bot, uint8 iconId);
-bool ClearStrategyTargetIcon(Player* bot, uint8 iconId, std::initializer_list<uint32> entries);
-void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName);
-// Also points "rti target" at the unit, for a fight that keeps the focus on one creature
-void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName, Unit* target);
-bool IsMechanicTrackerBot(Player* bot, uint32 mapId);
-Player* GetGroupMainTank(Player* bot);
-Player* GetGroupAssistTank(Player* bot, uint8 index);
-// Feign death keeps a creature alive at 1 HP, so IsAlive() alone doesn't mean it's still up
-bool IsDownOrFeigning(Unit const* unit);
-Player* GetNearestPlayerInRadius(Player* bot, float radius);
-bool IsBotInFrontalCone(Player* bot, Unit* source, float coneAngle, float range);
-// Shortest sidestep out of the cone at the bot's current distance. coneAngle is the full arc width
-Position GetPositionOutsideFrontalCone(Player* bot, Unit* source, float coneAngle, float margin = M_PI / 12.0f);
-std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId);
-// One grid visit for several spells, e.g. both ids of a difficulty-mapped one. Results in visit order
-std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius,
-                                                std::initializer_list<uint32> spellIds);
+// Encounters from the instance script. Boss ids follow DungeonEncounter.dbc's order, so they are
+// right only if the instance script numbers its bosses in that same order. Each returns false or
+// nullopt when the bot isn't on mapId.
+// One boss's state, unlike IsEncounterInProgress, which is true with any boss in progress on mapId.
+bool IsBossInProgress(Player* bot, uint32 mapId, uint32 bossId);
+// The lowest boss id that is IN_PROGRESS, if any.
+std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId);
 
-// A hazard and the distance a bot has to keep from it
-using HazardCircle = std::pair<Position, float>;
-
-// Collision answers for one sweep grid, so a fallback sweep over the same rings skips the raycasts.
-// One per Execute: the answers only hold while the bot stands where it stood.
-struct HazardSweepCache
-{
-    float originX = 0.0f;
-    float originY = 0.0f;
-    float originZ = 0.0f;
-    float distanceStep = 0.0f;
-    float angleStep = 0.0f;
-    std::unordered_map<uint32, std::pair<bool, Position>> tested;
-};
-
-// Nearest spot at least clearRadius from every hazard, or Position() when nothing within maxRadius is.
-// Unlike FleePosition it isn't capped at Playerbots.FleeDistance, so it can clear a large blast.
-Position FindNearestPositionClearOfHazards(Player* bot, std::vector<Position> const& hazards, float clearRadius,
-                                           float maxRadius, float distanceStep = 2.0f,
-                                           float angleStep = static_cast<float>(M_PI) / 8.0f,
-                                           HazardSweepCache* cache = nullptr);
-Position FindNearestPositionClearOfHazards(Player* bot, std::vector<Position> const& hazards, float clearRadius,
-                                           float maxRadius, HazardSweepCache* cache);
-Position FindNearestPositionClearOfHazards(Player* bot, std::vector<HazardCircle> const& hazards, float maxRadius,
-                                           HazardSweepCache* cache);
-// preferNear picks the closest spot inside the first ring that has one. accept runs after the collision
-// check, which can hand back the bot's own spot at a wall, so a caller that must move checks travel there.
-Position FindNearestPositionClearOfHazards(Player* bot, std::vector<HazardCircle> const& hazards, float maxRadius,
-                                           float distanceStep = 2.0f,
-                                           float angleStep = static_cast<float>(M_PI) / 8.0f,
-                                           Position const* preferNear = nullptr,
-                                           std::function<bool(float, float)> const& accept = {},
-                                           HazardSweepCache* cache = nullptr);
-uint32 GetSelfImmunitySpell(Player* bot);
-bool IsDpsCooldownAction(Player* bot, Action* action);
-bool IsTauntAction(Player* bot, Action* action);
-bool IsAoeThreatAction(Player* bot, Action* action);
-void CommandPetAttack(PlayerbotAI* botAI, Unit* target);
-void StopPet(PlayerbotAI* botAI);
-
-// Snaps a point onto walkable ground and pulls it back to the first collision on the way there
-Position ValidateFloorPoint(Player* bot, Position const& point);
-// Same without the gameobject pass, for a point on or past a prop: walking bots never collide with one
-Position ValidateStaticFloorPoint(Player* bot, Position const& point);
-// false for a class without a taunt
-bool CastClassTaunt(PlayerbotAI* botAI, Unit* target);
-bool ClassTauntReady(PlayerbotAI* botAI);
-// The cooldown casting it now would start, talents and glyphs included
-int32 SpellCooldownMs(Player* bot, uint32 spellId);
-
-// Nitro Boosts, the engineering boot tinker
-inline constexpr uint32 NITRO_BOOSTS_ENCHANT = 3606;
-inline constexpr uint32 NITRO_BOOSTS_USE_SPELL = 55004;
-inline constexpr uint32 NITRO_BOOSTS_SPEED_SPELL = 54861;
-inline constexpr float NITRO_BOOSTS_SPEED_FACTOR = 2.5f;
-inline constexpr uint32 NITRO_BOOSTS_DURATION_MS = 5000;
-
-Item* GetNitroBoostBoots(Player* bot);
-// Boots on, off cooldown and usable now
-bool NitroBoostsReady(Player* bot);
-bool UseNitroBoosts(Player* bot);
-
-// Class roles: a job given to one raid member of a class, such as a mage tank.
+// Class Roles
+// A job given to one raid member of a class, such as a mage tank.
 
 // FindClassRoleChoice's general priority, declared lowest first: (1) an assistant (human or bot),
 // (2) a preferred-spec bot (if applicable), and (3) any other bot.
@@ -141,7 +65,6 @@ enum class ClassRoleChoiceReason : uint8
     PreferredSpecBot,
     Assistant,
 };
-
 struct ClassRoleChoice
 {
     ObjectGuid guid;
@@ -149,13 +72,11 @@ struct ClassRoleChoice
 
     bool operator==(ClassRoleChoice const&) const = default;
 };
-
 struct ClassRoleText
 {
     char const* name = nullptr;
     char const* defaultText = nullptr;
 };
-
 struct ClassRole
 {
     uint8 playerClass;
@@ -165,7 +86,6 @@ struct ClassRole
     ClassRoleText candidate;
     ClassRoleText preferredCandidate = {};
 };
-
 // Not cleared by the raids' instance resets, since clearing announcedChoice would make the
 // mechanic tracker repeat the announcement every second.
 struct ClassRoleAssignment
@@ -173,7 +93,6 @@ struct ClassRoleAssignment
     std::optional<ClassRoleChoice> choice;
     std::optional<ClassRoleChoice> announcedChoice;
 };
-
 struct ClassRoleSlot
 {
     ClassRole const& role;
@@ -200,6 +119,8 @@ Player* GetClassRolePlayer(Player* bot, ClassRoleAssignment const& assignment);
 ObjectGuid GetClassRolePlayerGuid(ClassRoleAssignment const& assignment);
 bool IsClassRolePlayer(Player* bot, ClassRoleAssignment const& assignment);
 
+// Locking Encounter States
+
 // Sets the field if it is empty. Returns true if it did.
 template <typename T, typename U>
 bool EmplaceIfUnset(std::optional<T>& field, U&& value)
@@ -210,7 +131,6 @@ bool EmplaceIfUnset(std::optional<T>& field, U&& value)
     field.emplace(std::forward<U>(value));
     return true;
 }
-
 // Clears the field. Returns true if it had a value.
 template <typename T>
 bool ResetIfSet(std::optional<T>& field)
@@ -219,6 +139,225 @@ bool ResetIfSet(std::optional<T>& field)
     field.reset();
     return wasSet;
 }
+
+// Raid Target Icons (RTI)
+
+// These marking functions do not allow the player to change the icon during the encounter.
+bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
+bool MarkTargetWithSkull(Player* bot, Unit* target);
+bool MarkTargetWithSquare(Player* bot, Unit* target);
+bool MarkTargetWithStar(Player* bot, Unit* target);
+bool MarkTargetWithCircle(Player* bot, Unit* target);
+bool MarkTargetWithDiamond(Player* bot, Unit* target);
+bool MarkTargetWithTriangle(Player* bot, Unit* target);
+bool MarkTargetWithCross(Player* bot, Unit* target);
+bool MarkTargetWithMoon(Player* bot, Unit* target);
+// For bots to set their RTI attack target to the specified icon.
+void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName);
+// Also points "rti target" at the unit, for a fight that keeps the focus on one creature
+void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName, Unit* target);
+// For clearing marks outside of combat and/or encounters so bots don't Leeroy on sight.
+bool ClearTargetIcon(Player* bot, uint8 iconId);
+// Clears the icon only if it is on one of the given entries (i.e., one marked by the strategy).
+// This leaves icons players have manually put on other mobs or players.
+bool ClearStrategyTargetIcon(Player* bot, uint8 iconId, std::initializer_list<uint32> entries);
+
+// Movement
+
+// For validating ground and collision in connection with issuing incremental movement. The caller
+// gives a destination and how far to travel towards it per tick. The helper projects that step,
+// checks whether the bot can actually take it, and returns where it lands. The returned stepZ is
+// snapped to the ground, so a MoveTo() using this helper should pass stepZ rather than the bot's Z.
+bool CanTakeStepTowards(
+    Player* bot, float destinationX, float destinationY, float moveDist, float& stepX, float& stepY,
+    float& stepZ);
+// One step along the bot's path to a point, stopping short of it by stopDistance. The step follows
+// the path corner-by-corner, rather than aiming at the far end of it, so a bot can move around an
+// obstacle between it and the point.
+bool GetPathStepTowardPoint(
+    Player* bot, Position const& destination, float stopDistance, float stepDistance, float& stepX,
+    float& stepY);
+// The same as GetPathStepTowardPoint, but toward a unit's position.
+bool GetPathStepTowardUnit(
+    Player* bot, Unit* target, float stopDistance, float stepDistance, float& stepX, float& stepY);
+// Calculate incremental movement to a position. No ground or collision is validated, unlike
+// CanTakeStepTowards(). The Z position passed for the MoveTo() action using this helper should
+// use the bot's Z, not the position's. Returns false once the bot is within arrivalDist.
+bool GetStepToPosition(
+    Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
+    float& stepY, bool& backwards);
+// Snaps a point onto walkable ground and pulls it back to the first collision on the way there
+Position ValidateFloorPoint(Player* bot, Position const& point);
+// Same without the gameobject pass, for a point on or past a prop: walking bots never collide with one
+Position ValidateStaticFloorPoint(Player* bot, Position const& point);
+// A hazard and the distance a bot has to keep from it
+using HazardCircle = std::pair<Position, float>;
+
+// Collision answers for one sweep grid, so a fallback sweep over the same rings skips the raycasts.
+// One per Execute: the answers only hold while the bot stands where it stood.
+struct HazardSweepCache
+{
+    float originX = 0.0f;
+    float originY = 0.0f;
+    float originZ = 0.0f;
+    float distanceStep = 0.0f;
+    float angleStep = 0.0f;
+    std::unordered_map<uint32, std::pair<bool, Position>> tested;
+};
+
+// Nearest spot at least clearRadius from every hazard, or Position() when nothing within maxRadius is.
+// Unlike FleePosition it isn't capped at Playerbots.FleeDistance, so it can clear a large blast.
+Position FindNearestPositionClearOfHazards(Player* bot, std::vector<Position> const& hazards, float clearRadius,
+                                           float maxRadius, float distanceStep = 2.0f,
+                                           float angleStep = static_cast<float>(M_PI) / 8.0f,
+                                           HazardSweepCache* cache = nullptr);
+
+Position FindNearestPositionClearOfHazards(Player* bot, std::vector<Position> const& hazards, float clearRadius,
+                                           float maxRadius, HazardSweepCache* cache);
+Position FindNearestPositionClearOfHazards(Player* bot, std::vector<HazardCircle> const& hazards, float maxRadius,
+                                           HazardSweepCache* cache);
+// preferNear picks the closest spot inside the first ring that has one. accept runs after the collision
+// check, which can hand back the bot's own spot at a wall, so a caller that must move checks travel there.
+Position FindNearestPositionClearOfHazards(Player* bot, std::vector<HazardCircle> const& hazards, float maxRadius,
+                                           float distanceStep = 2.0f,
+                                           float angleStep = static_cast<float>(M_PI) / 8.0f,
+                                           Position const* preferNear = nullptr,
+                                           std::function<bool(float, float)> const& accept = {},
+                                           HazardSweepCache* cache = nullptr);
+// Shortest sidestep out of the cone at the bot's current distance. coneAngle is the full arc width
+Position GetPositionOutsideFrontalCone(Player* bot, Unit* source, float coneAngle, float margin = M_PI / 12.0f);
+bool IsBotInFrontalCone(Player* bot, Unit* source, float coneAngle, float range);
+
+// Player Getters
+
+// Requires the main tank to be alive.
+Player* GetGroupMainTank(Player* bot);
+// Returns the alive assist tank of the specified index (0 = first, 1 = second, etc.)
+Player* GetGroupAssistTank(Player* bot, uint8 index);
+// Return the nearest alive player (human or bot) within the specified radius. Distance is
+// measured by GetExactDist2d(), which does not take into account either player's CombatReach
+// (i.e., their hitboxes), which are 1.5y for all races (or 1.95y with Bloodlust/Heroism active).
+Player* GetNearestPlayerInRadius(Player* bot, float radius);
+// Feign death keeps a creature alive at 1 HP, so IsAlive() alone doesn't mean it's still up
+bool IsDownOrFeigning(Unit const* unit);
+
+// Action Class Checks for Multipliers
+
+// Major dps cooldowns, including Bloodlust. Primarily for use when it is desirable for bots to save
+// cooldowns for particular phases (or for the pull, e.g., until BOSS_ENGAGED_HEALTH_PCT).
+bool IsDpsCooldownAction(Player* bot, Action* action);
+// Includes both single-target and AoE taunts.
+bool IsTauntAction(Player* bot, Action* action);
+// These abilities (e.g., Avenger's Shield) can be problematic on the pull for a council-type boss.
+// Covers tanks only.
+bool IsAoeThreatAction(Player* bot, Action* action);
+// Attacks and casts a dps hold covers: any AttackAction or CastSpellAction, except a non-tank's
+// heals.
+bool IsDpsHoldCandidate(Player* bot, Action* action);
+// Healing, buffs etc. go through a dps hold. Totems don't because some are offensive.
+float GetDpsHoldValue(Player* bot, Action* action);
+
+// Stopping Attacks and Spells
+
+// Except for SelectTarget, none of these helpers decides the bot's engine. In a fight, a bot leaves
+// its combat engine through drop target, which runs when its current target is missing or invalid.
+// - Hold and keep the target (StopAttackingAndChanneling or StopAttackingTarget): The hold lasts
+//   one tick, so a multiplier is needed to prevent the bot from attacking again. If the multiplier
+//   blocks every attack and spell, call StopAttackingAndChanneling. If it blocks attacks on only
+//   one unit, call StopAttackingTarget on that unit.
+// - Clear (StandDown): only if the bot has nothing to resume afterward. Drop target switches the
+//   bot to its non-combat engine on the next tick unless a multiplier zeroes it. In either engine,
+//   dps/tank assist will pick a target again unless a target exclusion or a multiplier prevents it.
+// In any case, a spell in flight still lands, a filling cast bar can't be stopped by an action, and
+// pets are not affected (CallBackPets would need to also be called).
+
+// True if the bot's swing, auto shot, wand, or channel is aimed at the target. A channel on the
+// ground at enemies counts as aimed at any enemy.
+bool IsAttackingTarget(Player* bot, Unit* target);
+// Stops the bot's swing, queued swing ability (e.g., Heroic Strike), auto shot or wand, and channel
+// aimed at any enemy, regardless of which one, so channeled heals continue. Returns true if
+// anything is stopped.
+bool StopAttackingAndChanneling(Player* bot);
+// Stops only what is aimed at the target: the bot's swing, auto shot or wand, and channel on the
+// target enemy or on the ground at enemies, so channeled heals continue. Returns true if anything
+// is stopped.
+bool StopAttackingTarget(Player* bot, Unit* target);
+// Calls StopAttackingAndChanneling and clears the current target.
+void StandDown(PlayerbotAI* botAI);
+// Like calling Attack, but without attacking or sending a pet. This switches the bot to its combat
+// engine and makes the unit its current target. Also calls StopAttackingTarget on the old target.
+// This can hold dps upon a pull, or switch targets without starting an attack. A multiplier is
+// needed to keep the bot from attacking the new target right after selection. Returns false if the
+// unit isn't a valid target, or is already the current target of a bot in its combat engine.
+bool SelectTarget(PlayerbotAI* botAI, Unit* target);
+
+// Commanding Pets
+
+// Functionally, the pet Follow command a player gives (PetHandler.cpp, COMMAND_FOLLOW), for every
+// unit with pet controls: standard pets, controllable guardians, and charmed creatures. This does
+// not change a pet's stance, so a pet called back this way will attack again. To keep pets out of a
+// fight, use SetMinionStancesForHold, which also calls this.
+void CallBackPets(Player* bot);
+// The pet Attack command a player gives (PetHandler.cpp, COMMAND_ATTACK), for a pet, guardian, or
+// charmed creature. A cast in progress is not stopped, but unlike for players, CastStop can be
+// called from an action to interrupt a pet's pending cast. Returns true if a command was issued.
+bool CommandPetAttack(Creature* pet, Unit* target);
+// A pet or guardian set passive by a hold, and the stance to give back. A pet comes back with a
+// new GUID after it dies or is dismissed, so it is found by its pet number; a guardian has none
+// (0) and is found by GUID.
+struct SavedMinionStance
+{
+    ObjectGuid guid;
+    uint32 petNumber;
+    ReactStates reactState;
+};
+
+// True if the bot has a living pet or guardian with pet controls. Totems are in m_Controlled too,
+// so this, not m_Controlled.empty(), is the cheap first check for a pet trigger.
+bool HasControllableMinion(Player* bot);
+// True if a pet or guardian with pet controls is passive outside a hold, or not passive in one.
+bool IsMinionStanceWrongForHold(Player* bot, bool isHeld);
+// Keeps pets and guardians with pet controls out of a fight while a hold lasts. When held, calls
+// them back and sets them passive, saving each one's prior stance. When not held, restores the
+// saved stances and drops them from the list, except a pet that isn't summoned, which keeps its
+// entry until it returns. Returns true if a stance was set or restored. The raid action keeps
+// savedStances as a member; its reset calls this with isHeld false, then clears the list.
+bool SetMinionStancesForHold(
+    Player* bot, bool isHeld, std::vector<SavedMinionStance>& savedStances);
+void CommandPetAttack(PlayerbotAI* botAI, Unit* target);
+void StopPet(PlayerbotAI* botAI);
+
+// Miscellaneous
+
+// True if this bot is the first living bot in the group on mapId, for giving one bot a job such as
+// managing shared containers or marking targets.
+bool IsMechanicTrackerBot(Player* bot, uint32 mapId);
+// Grid search for dynamic objects for methods to avoid dynobj-based AoE hazards.
+std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId);
+// One grid visit for several spells, e.g. both ids of a difficulty-mapped one. Results in visit order
+std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius,
+                                                std::initializer_list<uint32> spellIds);
+// Ice Block, Divine Shield, and/or Cloak of Shadows can be used to nullify or ignore several
+// dangerous boss mechanics.
+uint32 GetSelfImmunitySpell(Player* bot);
+
+// false for a class without a taunt
+bool CastClassTaunt(PlayerbotAI* botAI, Unit* target);
+bool ClassTauntReady(PlayerbotAI* botAI);
+// The cooldown casting it now would start, talents and glyphs included
+int32 SpellCooldownMs(Player* bot, uint32 spellId);
+
+// Nitro Boosts, the engineering boot tinker
+inline constexpr uint32 NITRO_BOOSTS_ENCHANT = 3606;
+inline constexpr uint32 NITRO_BOOSTS_USE_SPELL = 55004;
+inline constexpr uint32 NITRO_BOOSTS_SPEED_SPELL = 54861;
+inline constexpr float NITRO_BOOSTS_SPEED_FACTOR = 2.5f;
+inline constexpr uint32 NITRO_BOOSTS_DURATION_MS = 5000;
+
+Item* GetNitroBoostBoots(Player* bot);
+// Boots on, off cooldown and usable now
+bool NitroBoostsReady(Player* bot);
+bool UseNitroBoosts(Player* bot);
 
 }
 

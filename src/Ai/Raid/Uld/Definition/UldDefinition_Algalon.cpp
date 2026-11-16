@@ -154,7 +154,7 @@ void DefineAlgalon(EncounterBuilder& e)
     // The cover node spends these on the star about to die. The class nodes fire on a hurt raid, after it.
     e.Block("algalon explosion cover hold", Role::Any, AlgalonInPhaseOne, 0, {"divine sacrifice"});
     // Eating stops the bot thinking: one back from Reincarnation would sit down and eat through Big Bang.
-    e.Block("algalon food guard", Role::Any, AlgalonEngaged, 0, {"food", "drink"});
+    e.Block("algalon food guard", Role::Any, AlgalonEngaged, 0, {"eat", "drink"});
     // The aura slot is exclusive, so the paladin's own buff strategy would trade it back on the next GCD.
     e.Block("algalon shadow aura hold", Role::Any, AlgalonShadowAuraHeld, 0,
             {"devotion aura", "retribution aura", "concentration aura", "crusader aura", "sanctity aura",

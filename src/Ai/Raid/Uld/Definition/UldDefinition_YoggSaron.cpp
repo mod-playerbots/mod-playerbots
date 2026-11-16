@@ -232,7 +232,7 @@ void DefineYoggSaron(EncounterBuilder& e)
     e.Multiplier<YoggSaronHeldTargetCastMultiplier>(Family::Spell);
     e.Multiplier<YoggSaronPhase3AreaMultiplier>(Family::AnyAction);
 
-    e.Block("yogg-saron stack food guard multiplier", Role::Any, YoggSaronInsideRing, 0, {"food", "drink"});
+    e.Block("yogg-saron stack food guard multiplier", Role::Any, YoggSaronInsideRing, 0, {"eat", "drink"});
 
     // These buttons otherwise fire on "I am already low", which is after the nova. Melee only: the tank keeps its own
     // against the Guardians it holds and the back line against Dark Volley.
