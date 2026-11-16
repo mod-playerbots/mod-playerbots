@@ -23,7 +23,7 @@ bool UseItemAction::Execute(Event event)
 {
     std::string name = event.getParam();
     if (name.empty())
-        name = getName();
+        name = itemName;
 
     std::vector<Item*> items = AI_VALUE2(std::vector<Item*>, "inventory items", name);
     GuidVector gos = chat->parseGameobjects(name);
@@ -530,7 +530,7 @@ bool UseItemAction::SocketItem(Item* item, Item* gem, bool replace)
     return fits;
 }
 
-bool UseItemAction::isPossible() { return getName() == "use" || AI_VALUE2(uint32, "item count", getName()) > 0; }
+bool UseItemAction::isPossible() { return getName() == "use" || AI_VALUE2(uint32, "item count", itemName) > 0; }
 
 bool UseSpellItemAction::isUseful() { return AI_VALUE2(bool, "spell cast useful", getName()); }
 
@@ -611,7 +611,8 @@ bool UseStartQuestItem::Execute(Event /*event*/)
 
 bool UseStartQuestItem::isUseful()
 {
-    return !IsRealPlayer(botAI->GetMaster()) && !bot->InBattleground() && !bot->HasUnitState(UNIT_STATE_IN_FLIGHT);
+    return !bot->IsInCombat() && !IsRealPlayer(botAI->GetMaster()) && !bot->InBattleground() &&
+           !bot->HasUnitState(UNIT_STATE_IN_FLIGHT);
 }
 
 bool UseStartQuestItem::isPossible()
