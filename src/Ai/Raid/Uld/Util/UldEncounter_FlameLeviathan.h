@@ -44,7 +44,8 @@ enum UlduarFlameLeviathanIds
     NPC_FL_PYRITE_CONTAINER = 33189,   // grabbable crate, +25 energy to a demolisher
     NPC_FL_MECHANOLIFT = 33214,        // shot down with Anti-Air Rocket to drop a crate
 
-    // Life: four corner wards from 30 s in, each firing a wave every 29 s. The adds stay until killed only
+    // Life: four corner wards from 30 s in, each firing its first wave 1.6 s after spawning, then every 32.4 s.
+    // A wave is five lashers, plus a Ward of Life about one wave in six. The adds stay until killed only
     // with world DB update 2026_09_10_03 and core 4d4ae4f95; the first hull to hit one holds it.
     NPC_FL_FREYA_WARD_TARGET = 33366,  // reticle at the corner
     NPC_FL_FREYA_WARD = 33367,         // the summoner itself, parked 40 yd overhead

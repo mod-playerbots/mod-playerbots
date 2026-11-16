@@ -45,10 +45,12 @@ enum UlduarThorimIds
     // On Thorim, one stack per Lightning Charge: +15% damage and melee haste each.
     SPELL_THORIM_LIGHTNING_CHARGE_BUFF = 62279,
 
-    // Corridor smash, one side per 5s cast. Cancelled once the Colossus is engaged.
+    // Corridor smash, one side per 5s cast every 8s; the whole bunny row hits at once as the cast lands.
+    // Cancelled once the Colossus is engaged.
     SPELL_THORIM_RUNIC_SMASH_LEFT = 62057,
     SPELL_THORIM_RUNIC_SMASH_RIGHT = 62058,
-    // 2000 arcane back on every melee swing. Recast every 20s for 20s, so effectively always up.
+    // 2000 arcane back on every melee swing, 20s. First cast 6-15s (10-man) or 10-24s (25-man) after the
+    // engage, then every 45s, so it goes up once before he dies.
     SPELL_THORIM_RUNIC_BARRIER = 62338,
     // Only warning before Lightning Charge, which has no cast bar. SpellInfoCorrections sets its amplitude to
     // 5000ms, so it ticks once, 5s before the cone.
@@ -114,7 +116,8 @@ inline constexpr float ULDUAR_THORIM_BALCONY_BOX_MAX_Z = 450.0f;
 // Sight-capped target values stop at 100 yd and the Colossus is 131 yd from the top corridor waypoints.
 inline constexpr float ULDUAR_THORIM_COLOSSUS_SEARCH_RANGE = 150.0f;
 
-// 5s cast, 1s delay, 3.5s of wave travel, plus slack so the lane doesn't flip back while the last bunny fires.
+// From the last scan that saw the cast, so it outlasts the hit at cast end and the 3s gap before the next 8s
+// cast: the dodge stays armed the whole approach, keeping bots off the centre line both rows reach.
 inline constexpr uint32 ULDUAR_THORIM_RUNIC_SMASH_LATCH_MS = 10000;
 
 // Raid-wide sweeps run once per instance per interval, so no two bots disagree on the hot lane or the lit orb.
@@ -501,8 +504,8 @@ bool ThorimResolveGauntletIndex(PlayerbotAI* botAI, Player* bot, uint8& index);
 // first telegraph and once the Colossus is engaged, since JustEngagedWith cancels EVENT_RC_RUNIC_SMASH.
 bool ThorimPreferredGauntletLane(PlayerbotAI* botAI, bool& useLeftLane);
 
-// True only while a wave is still rolling, which is what separates the urgent dodge from the
-// standing lane preference.
+// True within ULDUAR_THORIM_RUNIC_SMASH_LATCH_MS of the last telegraph, which is what separates the urgent
+// dodge from the standing lane preference.
 bool ThorimRunicSmashImminent(PlayerbotAI* botAI);
 
 // Upper hallway
@@ -531,8 +534,9 @@ bool ThorimBalconyOpen(PlayerbotAI* botAI, Player* bot);
 // shoved past a point shouldn't turn back for it.
 uint8 ThorimAdvanceBalconyStep(Player* bot);
 
-// Barrier is always up, so non-tank melee back out on a health band and keep their target for ranged and
-// instant casts. The tick moves the band, the read only reports it.
+// Barrier goes up once and usually lasts until he dies, so stopping for it idles melee for the rest of the fight.
+// Non-tank melee back out on a health band instead and keep their target for ranged and instant casts. The
+// tick moves the band, the read only reports it.
 void ThorimTickBarrierBail(PlayerbotAI* botAI, Player* bot);
 bool ThorimBarrierBailLatched(PlayerbotAI* botAI, Player* bot);
 

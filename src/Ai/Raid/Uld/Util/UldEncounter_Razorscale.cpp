@@ -39,8 +39,6 @@ namespace
 
 struct RazorscaleInstanceState
 {
-    // Prevent harpoon spam
-    std::unordered_map<ObjectGuid, std::time_t> harpoonCooldowns;
     // Prevent role assignment spam, per bot
     std::unordered_map<ObjectGuid, std::time_t> lastRoleSwapTime;
 };
@@ -165,30 +163,11 @@ bool RazorscaleBossHelper::IsHarpoonReady(GameObject* harpoonGO)
     if (!harpoonGO)
         return false;
 
-    // A spent harpoon keeps standing there, flagged unselectable, until the controller rebuilds it.
+    // Flagged in the same call that fires it, and it stays there spent until her next take-off breaks it.
     if (harpoonGO->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
         return false;
 
-    auto const& harpoonCooldowns = razorscaleStates.For(harpoonGO->GetInstanceId()).harpoonCooldowns;
-    auto it = harpoonCooldowns.find(harpoonGO->GetGUID());
-    if (it != harpoonCooldowns.end())
-    {
-        time_t currentTime = std::time(nullptr);
-        time_t elapsedTime = currentTime - it->second;
-        if (elapsedTime < HARPOON_COOLDOWN_DURATION)
-            return false;
-    }
-
     return harpoonGO->GetGoState() == GO_STATE_READY;
-}
-
-void RazorscaleBossHelper::SetHarpoonOnCooldown(GameObject* harpoonGO)
-{
-    if (!harpoonGO)
-        return;
-
-    time_t currentTime = std::time(nullptr);
-    razorscaleStates.For(harpoonGO->GetInstanceId()).harpoonCooldowns[harpoonGO->GetGUID()] = currentTime;
 }
 
 GameObject* RazorscaleBossHelper::FindNearestHarpoon(float x, float y, float z) const

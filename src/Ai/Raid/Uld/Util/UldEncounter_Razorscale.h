@@ -89,9 +89,6 @@ public:
     static constexpr float FLAME_BREATH_CONE = static_cast<float>(M_PI) / 2.0f;
     static constexpr float FLAME_BREATH_RANGE = 40.0f;
 
-    // Harpoon cooldown (seconds)
-    static constexpr time_t HARPOON_COOLDOWN_DURATION = 5;
-
     static constexpr float HARPOON_SEARCH_RANGE = 200.0f;
     static constexpr std::size_t HARPOON_ENTRY_COUNT = 4;
 
@@ -129,7 +126,6 @@ public:
     static bool DevouringFlameBlocks(Player* bot, float x, float y);
 
     static bool IsHarpoonReady(GameObject* harpoonGO);
-    static void SetHarpoonOnCooldown(GameObject* harpoonGO);
     GameObject* FindNearestHarpoon(float x, float y, float z) const;
 
     static std::vector<HarpoonData> const& GetHarpoonData();
