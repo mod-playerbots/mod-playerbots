@@ -116,6 +116,32 @@ bool IsMagtheridonActive(Unit* magtheridon)
     return magtheridon && !magtheridon->HasAura(Id(MagSpells::SPELL_SHADOW_CAGE));
 }
 
+bool IsAnyChannelerAlive(Player* bot)
+{
+    for (uint32 const dbGuid : { SOUTH_CHANNELER_DB_GUID, WEST_CHANNELER_DB_GUID,
+        EAST_CHANNELER_DB_GUID, NORTHWEST_CHANNELER_DB_GUID, NORTHEAST_CHANNELER_DB_GUID })
+    {
+        if (GetChanneler(bot, dbGuid))
+            return true;
+    }
+
+    return false;
+}
+
+bool IsMagtheridonReleasePending(Player* bot, Unit* magtheridon)
+{
+    return magtheridon && !IsMagtheridonActive(magtheridon) && !IsAnyChannelerAlive(bot);
+}
+
+bool IsMagtheridonDpsHoldActive(Player* bot, Unit* magtheridon)
+{
+    if (!IsMagtheridonActive(magtheridon) || PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    std::optional<uint32> const& holdStart = MagState(magtheridon->GetInstanceId()).magDpsHoldTimer;
+    return !holdStart || getMSTimeDiff(*holdStart, getMSTime()) <= MAG_DPS_HOLD_MS;
+}
+
 bool IsCubeClicker(Player* bot)
 {
     return MagState(bot->GetInstanceId()).botToCubeAssignments.contains(bot->GetGUID());
@@ -203,7 +229,7 @@ bool MagResetInstance(uint32 instanceId)
         return false;
 
     MagInstanceState const& state = it->second;
-    bool const wasSet = state.magDpsWaitTimer || state.blastNovaTimer || state.lastBlastNovaState ||
+    bool const wasSet = state.magDpsHoldTimer || state.blastNovaTimer || state.lastBlastNovaState ||
         state.ceilingCollapseApplied || !state.botToCubeAssignments.empty();
 
     magStates.erase(it);
