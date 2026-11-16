@@ -12,6 +12,11 @@
 #include "Playerbots.h"
 #include "SharedDefines.h"
 
+CastHolyShieldAction::CastHolyShieldAction(PlayerbotAI* botAI)
+    : CastBuffSpellAction(botAI, "holy shield", false, ai::paladin::HOLY_SHIELD_REFRESH_MS)
+{
+}
+
 bool CastSealSpellAction::isUseful()
 {
     return AI_VALUE2(bool, "combat", "self target");
