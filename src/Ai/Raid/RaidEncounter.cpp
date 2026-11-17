@@ -139,34 +139,67 @@ namespace
         }
     }
 
-    // Actions live as long as the bot's AI and multipliers are rebuilt with every strategy change, so an
-    // Action* never goes stale inside one of these.
-    class CaresCache
+    // Which of one definition's multipliers care about each action, for one bot. Actions live as long as the
+    // bot's AI and multipliers are rebuilt with every strategy change, so a cached Action* never goes stale.
+    class CaresTable
     {
     public:
-        template <class Compute>
-        bool Get(Action* action, Compute&& compute)
-        {
-            auto const found = _cares.find(action);
-            if (found != _cares.end())
-                return found->second;
+        explicit CaresTable(std::vector<Rules::CaresSlot> slots) : _slots(std::move(slots)) {}
 
-            bool const result = compute();
-            _cares.emplace(action, result);
-            return result;
+        bool Cares(Action* action, std::size_t slot)
+        {
+            if (!_lastBits || action != _lastAction)
+            {
+                auto found = _bits.find(action);
+                if (found == _bits.end())
+                {
+                    uint64 const bits = Rules::CaresBits(_slots, ClassifyAction(action), action->getName());
+                    found = _bits.emplace(action, bits).first;
+                }
+
+                _lastAction = action;
+                _lastBits = &found->second;
+            }
+
+            return (*_lastBits >> slot) & 1;
         }
 
     private:
-        std::unordered_map<Action*, bool> _cares;
+        std::vector<Rules::CaresSlot> _slots;
+        std::unordered_map<Action*, uint64> _bits;
+        Action* _lastAction = nullptr;
+        uint64 const* _lastBits = nullptr;
     };
 
-    class EncounterRuleMultiplier : public Multiplier
+    // Bound to its definition's CaresTable by EncounterDefinition::AddMultipliers
+    class EncounterMultiplier : public Multiplier
+    {
+    public:
+        using Multiplier::Multiplier;
+
+        virtual Rules::CaresSlot Slot() const = 0;
+
+        void Bind(std::shared_ptr<CaresTable> table, std::size_t slot)
+        {
+            _table = std::move(table);
+            _slot = slot;
+        }
+
+    protected:
+        bool Cares(Action* action) { return _table->Cares(action, _slot); }
+
+    private:
+        std::shared_ptr<CaresTable> _table;
+        std::size_t _slot = 0;
+    };
+
+    class EncounterRuleMultiplier : public EncounterMultiplier
     {
     public:
         EncounterRuleMultiplier(PlayerbotAI* botAI, char const* name, std::shared_ptr<Rules::Rule const> rule,
                                 Rules::RoleMask roles, EncounterDefinition::Predicate predicate, EncounterGate gate,
                                 uint32 encounterId)
-            : Multiplier(botAI, name),
+            : EncounterMultiplier(botAI, name),
               _rule(std::move(rule)),
               _roles(roles),
               _predicate(predicate),
@@ -175,13 +208,14 @@ namespace
         {
         }
 
+        Rules::CaresSlot Slot() const override { return {_rule.get(), 0}; }
+
         float GetValue(Action* action) override
         {
             if (!action)
                 return 1.0f;
 
-            bool const cares = _cache.Get(
-                action, [&] { return Rules::RuleCares(*_rule, ClassifyAction(action), action->getName()); });
+            bool const cares = Cares(action);
 
             auto const hasRole = [&](Rules::RoleMask role) { return BotHasRole(botAI, role); };
             return Rules::Evaluate(
@@ -195,15 +229,14 @@ namespace
         EncounterDefinition::Predicate _predicate;
         EncounterGate _gate;
         uint32 _encounterId;
-        CaresCache _cache;
     };
 
-    class EncounterGatedMultiplier : public Multiplier
+    class EncounterGatedMultiplier : public EncounterMultiplier
     {
     public:
         EncounterGatedMultiplier(PlayerbotAI* botAI, Multiplier* inner, Rules::FamilyMask families, EncounterGate gate,
                                  uint32 encounterId)
-            : Multiplier(botAI, inner->getName()),
+            : EncounterMultiplier(botAI, inner->getName()),
               _inner(inner),
               _families(families),
               _gate(gate),
@@ -213,10 +246,11 @@ namespace
 
         ~EncounterGatedMultiplier() override { delete _inner; }
 
+        Rules::CaresSlot Slot() const override { return {nullptr, _families}; }
+
         float GetValue(Action* action) override
         {
-            if (!action || !_cache.Get(action, [&] { return (ClassifyAction(action) & _families) != 0; }) ||
-                !_gate(botAI, _encounterId))
+            if (!action || !Cares(action) || !_gate(botAI, _encounterId))
                 return 1.0f;
 
             return _inner->GetValue(action);
@@ -227,7 +261,6 @@ namespace
         Rules::FamilyMask _families;
         EncounterGate _gate;
         uint32 _encounterId;
-        CaresCache _cache;
     };
 }  // namespace
 
@@ -474,8 +507,26 @@ void EncounterDefinition::AddTriggerNodes(std::vector<TriggerNode*>& triggers) c
 
 void EncounterDefinition::AddMultipliers(PlayerbotAI* botAI, std::vector<Multiplier*>& multipliers) const
 {
+    // AddRule and HandWritten are the only creators, and both build an EncounterMultiplier
+    std::vector<EncounterMultiplier*> made;
+    made.reserve(_multipliers.size());
     for (MultiplierCreator const& make : _multipliers)
-        multipliers.push_back(make(botAI));
+        made.push_back(static_cast<EncounterMultiplier*>(make(botAI)));
+
+    // A table holds one bit per multiplier, so a definition past MAX_CARES_SLOTS gets another one
+    for (std::size_t first = 0; first < made.size(); first += Rules::MAX_CARES_SLOTS)
+    {
+        std::size_t const end = std::min(made.size(), first + Rules::MAX_CARES_SLOTS);
+        std::vector<Rules::CaresSlot> slots;
+        for (std::size_t i = first; i < end; ++i)
+            slots.push_back(made[i]->Slot());
+
+        auto const table = std::make_shared<CaresTable>(std::move(slots));
+        for (std::size_t i = first; i < end; ++i)
+            made[i]->Bind(table, i - first);
+    }
+
+    multipliers.insert(multipliers.end(), made.begin(), made.end());
 }
 
 void EncounterDefinition::OnTick(PlayerbotAI* botAI) const
