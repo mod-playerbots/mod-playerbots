@@ -8,6 +8,7 @@
 #define PLAYERBOTS_RAIDENCOUNTERRULES_H
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -141,6 +142,31 @@ inline bool RuleCares(Rule const& rule, FamilyMask action, std::string const& na
                          (action & rule.blockFamilies) || Listed(rule.blockNames, name);
 
     return blocked && !(action & rule.passFamilies) && !Listed(rule.passNames, name);
+}
+
+// One multiplier of a definition as far as what it cares about goes: a rule, or for a hand-written
+// multiplier (rule null) the families it sees.
+struct CaresSlot
+{
+    Rule const* rule = nullptr;
+    FamilyMask families = 0;
+};
+
+constexpr std::size_t MAX_CARES_SLOTS = 64;
+
+// Bit i: whether slots[i] cares about the action. Slots past MAX_CARES_SLOTS are left out.
+inline uint64_t CaresBits(std::vector<CaresSlot> const& slots, FamilyMask action, std::string const& name)
+{
+    uint64_t bits = 0;
+    std::size_t const count = std::min(slots.size(), MAX_CARES_SLOTS);
+    for (std::size_t i = 0; i < count; ++i)
+    {
+        CaresSlot const& slot = slots[i];
+        if (slot.rule ? RuleCares(*slot.rule, action, name) : (action & slot.families) != 0)
+            bits |= uint64_t(1) << i;
+    }
+
+    return bits;
 }
 
 // hasRole is asked one role at a time and only until one matches: IsMainTank walks the group.
