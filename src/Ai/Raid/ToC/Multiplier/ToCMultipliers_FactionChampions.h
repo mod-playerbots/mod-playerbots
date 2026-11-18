@@ -39,12 +39,7 @@ public:
     float GetValue(Action* action) override;
 
 private:
-    struct Facts
-    {
-        bool mainTankRedirect = false;
-    };
-
-    RaidActionCache<Facts> _facts;
+    RaidActionCache<bool> _mainTankRedirect;
 };
 
 class FactionChampionsAntiFearTotemGuardMultiplier : public RaidAntiFearTotemGuardMultiplier

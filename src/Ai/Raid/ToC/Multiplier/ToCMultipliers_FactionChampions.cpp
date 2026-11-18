@@ -68,14 +68,11 @@ float FactionChampionsThreatRedirectVetoMultiplier::GetValue(Action* action)
 {
     auto const classify = [action]
     {
-        Facts facts;
-        facts.mainTankRedirect = dynamic_cast<CastMisdirectionOnMainTankAction*>(action) ||
-                                 dynamic_cast<CastTricksOfTheTradeOnMainTankAction*>(action);
-        return facts;
+        return dynamic_cast<CastMisdirectionOnMainTankAction*>(action) ||
+               dynamic_cast<CastTricksOfTheTradeOnMainTankAction*>(action);
     };
 
-    Facts const& facts = _facts.Get(action, classify);
-    if (!facts.mainTankRedirect)
+    if (!_mainTankRedirect.Get(action, classify))
         return 1.0f;
 
     return ToCEncounterIsLive(botAI, ToCEncounter::FactionChampions) ? 0.0f : 1.0f;
