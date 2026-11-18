@@ -15,9 +15,8 @@
 
 class PlayerbotAI;
 
-// Who raises which resistance aura: one bot paladin per wanted school (fire, frost, shadow) and the
-// generic nature hunter for Aspect of the Wild. The caller says which schools it wants, and with none
-// the paladins go back to their own aura. Nothing resolves off the config's map.
+// One bot paladin per wanted school (fire, frost, shadow), the generic nature hunter for Aspect of the
+// Wild; with none wanted the paladins go back to their own aura. Nothing resolves off the config's map.
 
 enum class RaidResistSchool : uint8
 {
@@ -47,6 +46,9 @@ struct RaidResistAuraConfig
     // fire goes to a paladin with Aura Mastery when it can: the cooldown doubles only its caster's own
     // aura. Null for never.
     bool (*fireWantsMastery)(PlayerbotAI* botAI);
+    // Same for frost. Once a school stops wanting it, its holder is elected again from scratch, so the
+    // Aura Mastery paladin hands it back and returns to its own aura.
+    bool (*frostWantsMastery)(PlayerbotAI* botAI) = nullptr;
 };
 
 // The aura this bot should hold right now
@@ -59,6 +61,7 @@ char const* RaidResistAuraName(RaidResistSchool school);
 // application with the effects stripped, and HasAura by name walks effects.
 bool RaidResistAuraMissing(PlayerbotAI* botAI, RaidResistAuraConfig const& config);
 
+bool IsRaidResistPaladinHolding(PlayerbotAI* botAI, RaidResistAuraConfig const& config);
 bool IsRaidResistHunterHolding(PlayerbotAI* botAI, RaidResistAuraConfig const& config);
 
 // A paladin or hunter whose resistance duty isn't up yet. Register it under a name no encounter gate

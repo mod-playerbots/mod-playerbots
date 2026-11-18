@@ -132,12 +132,13 @@ struct ResistAuraState
     uint32 memoMs = 0;
     bool memoValid = false;  // 0 is a real getMSTime value
     uint8 wanted = 0;
-    bool fireWithMastery = false;
+    // schools whose holder should have Aura Mastery
+    uint8 withMastery = 0;
 
     bool elected = false;
     uint32 electMs = 0;
     uint8 electedFor = 0;
-    bool electedWithMastery = false;
+    uint8 electedWithMastery = 0;
     std::array<ObjectGuid, PALADIN_SCHOOL_COUNT> holder;
 };
 
@@ -209,7 +210,7 @@ void Elect(Player* bot, uint32 mapId, ResistAuraState& state, uint32 now)
     state.elected = true;
     state.electMs = now;
     state.electedFor = state.wanted;
-    state.electedWithMastery = state.fireWithMastery;
+    state.electedWithMastery = state.withMastery;
 
     std::array<ObjectGuid, PALADIN_SCHOOL_COUNT> next{};
     if (!(state.wanted & PALADIN_MASK))
@@ -228,12 +229,23 @@ void Elect(Player* bot, uint32 mapId, ResistAuraState& state, uint32 now)
     };
 
     auto const wantsMastery = [&](RaidResistSchool school)
-    { return state.fireWithMastery && school == RaidResistSchool::Fire; };
-    // a kept fire holder without Aura Mastery gives way to a free paladin with it
-    auto const masteryFree = [&](size_t keeper)
+    { return (state.withMastery & RaidResistBit(school)) != 0; };
+    // Lower first: Aura Mastery when wanted, its own strategy that school, its aura duplicated, the cost
+    auto const rank = [&](RaidResistSchool school, size_t i)
+    {
+        Paladin const& paladin = paladins[i];
+        return std::make_tuple(wantsMastery(school) && !paladin.mastery ? 1 : 0,
+                               paladin.strategy == ResistStrategyOf(school) ? 0 : 1,
+                               AuraDuplicated(paladins, used, i) ? 0 : 1, AuraCost(paladin.strategy));
+    };
+
+    // A kept holder gives way to a free paladin ranked lower, mid-fight too, or a wipe's pick sticks for
+    // whole pulls. Only toward the cheaper aura, so the two don't swap back.
+    auto const lowerFree = [&](size_t keeper, RaidResistSchool school)
     {
         for (size_t i = 0; i < paladins.size(); ++i)
-            if (i != keeper && paladins[i].mastery && paladins[i].knows[SchoolIndex(RaidResistSchool::Fire)])
+            if (i != keeper && !used[i] && paladins[i].knows[SchoolIndex(school)] &&
+                rank(school, i) < rank(school, keeper))
                 return true;
 
         return false;
@@ -249,7 +261,7 @@ void Elect(Player* bot, uint32 mapId, ResistAuraState& state, uint32 now)
         for (size_t i = 0; i < paladins.size(); ++i)
         {
             if (!used[i] && paladins[i].knows[index] && paladins[i].player->GetGUID() == state.holder[index] &&
-                (!wantsMastery(school) || paladins[i].mastery || !masteryFree(i)))
+                !lowerFree(i, school))
             {
                 next[index] = state.holder[index];
                 used[i] = true;
@@ -264,14 +276,8 @@ void Elect(Player* bot, uint32 mapId, ResistAuraState& state, uint32 now)
         if (!open(school) || !next[index].IsEmpty())
             continue;
 
-        auto const rank = [&](size_t i)
-        {
-            Paladin const& paladin = paladins[i];
-            return std::make_tuple(wantsMastery(school) && !paladin.mastery ? 1 : 0,
-                                   paladin.strategy == ResistStrategyOf(school) ? 0 : 1,
-                                   AuraDuplicated(paladins, used, i) ? 0 : 1, AuraCost(paladin.strategy),
-                                   paladin.player->GetGUID());
-        };
+        auto const ranked = [&](size_t i)
+        { return std::tuple_cat(rank(school, i), std::make_tuple(paladins[i].player->GetGUID())); };
 
         size_t best = paladins.size();
         for (size_t i = 0; i < paladins.size(); ++i)
@@ -279,7 +285,7 @@ void Elect(Player* bot, uint32 mapId, ResistAuraState& state, uint32 now)
             if (used[i] || !paladins[i].knows[index])
                 continue;
 
-            if (best == paladins.size() || rank(i) < rank(best))
+            if (best == paladins.size() || ranked(i) < ranked(best))
                 best = i;
         }
 
@@ -309,10 +315,20 @@ ResistAuraState const* ReadResist(PlayerbotAI* botAI, RaidResistAuraConfig const
     state.memoMs = now;
     state.memoValid = true;
     state.wanted = config.wantedSchools(botAI, state.wanted);
-    state.fireWithMastery =
-        (state.wanted & RAID_RESIST_FIRE) && config.fireWantsMastery && config.fireWantsMastery(botAI);
+    uint8 withMastery = 0;
+    if ((state.wanted & RAID_RESIST_FIRE) && config.fireWantsMastery && config.fireWantsMastery(botAI))
+        withMastery |= RAID_RESIST_FIRE;
+    if ((state.wanted & RAID_RESIST_FROST) && config.frostWantsMastery && config.frostWantsMastery(botAI))
+        withMastery |= RAID_RESIST_FROST;
 
-    if (!state.elected || state.wanted != state.electedFor || state.fireWithMastery != state.electedWithMastery ||
+    // Kept, the Aura Mastery paladin would hold the school on past the window that wanted it
+    uint8 const released = static_cast<uint8>(state.withMastery & ~withMastery);
+    for (RaidResistSchool school : PALADIN_SCHOOLS)
+        if (released & RaidResistBit(school))
+            state.holder[SchoolIndex(school)].Clear();
+
+    state.withMastery = withMastery;
+    if (!state.elected || state.wanted != state.electedFor || state.withMastery != state.electedWithMastery ||
         getMSTimeDiff(state.electMs, now) >= ELECT_INTERVAL_MS)
         Elect(bot, config.mapId, state, now);
 
@@ -378,6 +394,12 @@ bool RaidResistAuraMissing(PlayerbotAI* botAI, RaidResistAuraConfig const& confi
         return !botAI->HasAura("aspect of the wild", bot);
 
     return !bot->GetAuraOfRankedSpell(RankOneAura(duty), bot->GetGUID());
+}
+
+bool IsRaidResistPaladinHolding(PlayerbotAI* botAI, RaidResistAuraConfig const& config)
+{
+    RaidResistSchool const duty = GetRaidResistDuty(botAI, config);
+    return duty != RaidResistSchool::None && duty != RaidResistSchool::Nature;
 }
 
 bool IsRaidResistHunterHolding(PlayerbotAI* botAI, RaidResistAuraConfig const& config)
