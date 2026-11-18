@@ -128,14 +128,6 @@ float TwinValkyrRedirectGuardMultiplier::GetValue(Action* action)
     return ToCEncounterIsLive(botAI, ToCEncounter::TwinValkyr) ? 0.0f : 1.0f;
 }
 
-void AddToCTwinValkyrMultipliers(PlayerbotAI* botAI, std::vector<Multiplier*>& multipliers)
-{
-    multipliers.push_back(new TwinValkyrControlTankMovementMultiplier(botAI));
-    multipliers.push_back(new TwinValkyrTauntGuardMultiplier(botAI));
-    multipliers.push_back(new TwinValkyrInterruptHoldMultiplier(botAI));
-    multipliers.push_back(new TwinValkyrRedirectGuardMultiplier(botAI));
-}
-
 // A DPS bot's cooldowns stack with lust. Healers hold only Power Infusion, a rule of the encounter's,
 // and tanks nothing.
 RaidBurstWindow ToCTwinValkyrBurstWindow(PlayerbotAI* botAI)

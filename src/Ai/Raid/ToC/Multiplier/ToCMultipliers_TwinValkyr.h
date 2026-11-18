@@ -7,8 +7,6 @@
 #ifndef PLAYERBOTS_RAID_TOCMULTIPLIERS_TWINVALKYR_H
 #define PLAYERBOTS_RAID_TOCMULTIPLIERS_TWINVALKYR_H
 
-#include <vector>
-
 #include "Multiplier.h"
 #include "RaidBurstWindow.h"
 #include "RaidCombatHelpers.h"
@@ -64,8 +62,6 @@ private:
     // Whether the action is one of the class redirects, fixed by its type
     RaidActionCache<bool> _redirects;
 };
-
-void AddToCTwinValkyrMultipliers(PlayerbotAI* botAI, std::vector<Multiplier*>& multipliers);
 
 RaidBurstWindow ToCTwinValkyrBurstWindow(PlayerbotAI* botAI);
 

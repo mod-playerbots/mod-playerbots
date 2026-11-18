@@ -8,7 +8,6 @@
 #define PLAYERBOTS_RAID_TOCMULTIPLIERS_ANUBARAK_H
 
 #include <unordered_map>
-#include <vector>
 
 #include "Multiplier.h"
 #include "RaidBurstWindow.h"
@@ -127,8 +126,6 @@ public:
 private:
     std::unordered_map<Action*, bool> _heals;
 };
-
-void AddToCAnubarakMultipliers(PlayerbotAI* botAI, std::vector<Multiplier*>& multipliers);
 
 RaidBurstWindow ToCAnubarakBurstWindow(PlayerbotAI* botAI);
 

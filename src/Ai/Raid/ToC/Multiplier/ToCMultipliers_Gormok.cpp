@@ -38,7 +38,7 @@ bool StaysFree(std::string const& name)
     // The beasts' own movers stay, the carrier walk included: on heroic a carrier can still have a
     // worm or Icehowl's charge to dodge
     ToCEncounter encounter = ToCEncounter::None;
-    return ToCEncounterOfTrigger(name, encounter) && encounter == ToCEncounter::NorthrendBeasts;
+    return ToCEncounterOfName(name, encounter) && encounter == ToCEncounter::NorthrendBeasts;
 }
 }  // namespace
 
@@ -65,9 +65,4 @@ float GormokSnoboldCarrierMultiplier::GetValue(Action* action)
         return 0.0f;
 
     return facts.staysFree ? 1.0f : 0.0f;
-}
-
-void AddToCGormokMultipliers(PlayerbotAI* botAI, std::vector<Multiplier*>& multipliers)
-{
-    multipliers.push_back(new GormokSnoboldCarrierMultiplier(botAI));
 }

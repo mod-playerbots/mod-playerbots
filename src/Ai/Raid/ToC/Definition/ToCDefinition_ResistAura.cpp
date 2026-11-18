@@ -7,6 +7,8 @@
 #include "ToCDefinitions.h"
 
 #include "PlayerbotAI.h"
+#include "RaidResistAura.h"
+#include "Strategy.h"
 #include "ToCEncounterGate.h"
 #include "ToCHelpers_ResistAura.h"
 
@@ -18,6 +20,16 @@ namespace
 {
 void DefineResistAura(EncounterBuilder& e)
 {
+    // Above the staging walk: the aura is instant, and the walk holds the tick while in flight
+    e.Node(
+        "toc resistance aura",
+        [](PlayerbotAI* botAI) -> Trigger*
+        { return new RaidResistAuraTrigger(botAI, "toc resistance aura", TOC_RESIST_AURA); },
+        "toc raise resistance aura",
+        [](PlayerbotAI* botAI) -> Action*
+        { return new RaidRaiseResistAuraAction(botAI, "toc raise resistance aura", TOC_RESIST_AURA); },
+        ACTION_RAID + 1);
+
     // The aura slot is exclusive, so the paladin's own buff strategy trades it back on the next GCD. The
     // resistance auras are on the list too: the raise action casts outside the queue.
     e.Block("toc resistance aura hold", Role::Any, IsToCResistPaladinHolding, 0,

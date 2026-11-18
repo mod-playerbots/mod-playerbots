@@ -8,11 +8,9 @@
 #define PLAYERBOTS_RAID_TOCENCOUNTERGATE_H
 
 #include <string>
-#include <vector>
 
 #include "Define.h"
 #include "RaidEncounter.h"
-#include "Trigger.h"
 
 class PlayerbotAI;
 
@@ -73,35 +71,11 @@ ToCEncounter ToCLiveEncounter(PlayerbotAI* botAI);
 // static_cast<uint32>(ToCEncounter::X).
 bool ToCGateOpen(PlayerbotAI* botAI, uint32 encounterId);
 
-// Always open: for a raid-wide stem whose rule predicates do their own gating. Its definition takes
-// static_cast<uint32>(ToCEncounter::None).
+// Always open: for a raid-wide stem whose triggers and rule predicates do their own gating. Its
+// definition takes static_cast<uint32>(ToCEncounter::None).
 bool ToCRaidWideGateOpen(PlayerbotAI* botAI, uint32 encounterId);
 
-// False for a name with no encounter prefix, which then stays ungated.
-bool ToCEncounterOfTrigger(std::string const& triggerName, ToCEncounter& encounter);
-
-// Wraps where the context builds each trigger, so no stem trigger class needs editing.
-class ToCGatedTrigger : public Trigger
-{
-public:
-    ToCGatedTrigger(PlayerbotAI* botAI, Trigger* inner, ToCEncounter encounter);
-    ~ToCGatedTrigger() override;
-
-    Event Check() override;
-    bool IsActive() override;
-    bool IsBuffTrigger() override;
-    bool IsDebuffTrigger() override;
-    std::vector<NextAction> getHandlers() override;
-    void Reset() override;
-    Unit* GetTarget() override;
-    Value<Unit*>* GetTargetValue() override;
-    std::string const GetTargetName() override;
-    void ExternalEvent(std::string const param, Player* owner = nullptr) override;
-    void ExternalEvent(WorldPacket& packet, Player* owner = nullptr) override;
-
-private:
-    Trigger* _inner;
-    ToCEncounter _encounter;
-};
+// The encounter whose prefix leads a trigger or action name. False for a name with none.
+bool ToCEncounterOfName(std::string const& name, ToCEncounter& encounter);
 
 #endif

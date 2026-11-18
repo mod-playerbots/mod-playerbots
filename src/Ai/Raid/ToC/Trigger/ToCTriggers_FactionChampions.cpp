@@ -9,7 +9,6 @@
 #include "ToCHelpers_FactionChampionsDefence.h"
 #include "Playerbots.h"
 #include "RaidDirectTargeting.h"
-#include "Strategy.h"
 
 using namespace TrialOfTheCrusaderHelpers;
 
@@ -31,19 +30,4 @@ bool FactionChampionsPetAutocastTrigger::IsActive()
 {
     bool enable = false;
     return FactionChampionsPetAutocastToggle(botAI, enable) != 0;
-}
-
-void AddToCFactionChampionsTriggerNodes(std::vector<TriggerNode*>& triggers)
-{
-    triggers.push_back(new TriggerNode("faction champions anti fear", {
-        NextAction("faction champions anti fear", ACTION_RAID + 3) }));
-
-    triggers.push_back(new TriggerNode("faction champions should focus", {
-        NextAction("faction champions focus priority", ACTION_RAID + 2) }));
-
-    triggers.push_back(new TriggerNode("faction champions kill target healing", {
-        NextAction("faction champions counterspell kill target", ACTION_INTERRUPT + 3) }));
-
-    triggers.push_back(new TriggerNode("faction champions pet autocast", {
-        NextAction("faction champions pet autocast", ACTION_RAID + 6) }));
 }

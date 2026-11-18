@@ -11,9 +11,12 @@
 #include "Map.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
+#include "Strategy.h"
+#include "ToCActions_Anubarak.h"
 #include "ToCEncounterGate.h"
 #include "ToCHelpers_Anubarak.h"
 #include "ToCMultipliers_Anubarak.h"
+#include "ToCTriggers_Anubarak.h"
 
 using namespace TrialOfTheCrusaderHelpers;
 
@@ -122,6 +125,87 @@ bool AnubarakKiteSprintKept(PlayerbotAI* botAI)
 
 void DefineAnubarak(EncounterBuilder& e)
 {
+    e.Node<AnubarakKiterNeedsImmunityTrigger, AnubarakKiterImmunityAction>(ACTION_EMERGENCY + 9);
+
+    // Ahead of the kite, so a kiter marked in a patch frees itself before it walks out at 20% speed
+    e.Node<AnubarakKiterNeedsFreedomTrigger, AnubarakFreeKiterAction>(ACTION_EMERGENCY + 8.5f);
+    e.Node<AnubarakPursuedBySpikeTrigger, AnubarakKiteSpikeToPermafrostAction>(ACTION_EMERGENCY + 8);
+    e.Node<AnubarakKiterNeedsProtectionTrigger, AnubarakProtectKiterAction>(ACTION_EMERGENCY + 7);
+    e.Node<AnubarakSpikeNearbyTrigger, AnubarakAvoidSpikeAction>(ACTION_EMERGENCY + 6);
+    e.Node<AnubarakOnPermafrostTrigger, AnubarakLeavePermafrostAction>(ACTION_EMERGENCY + 5);
+
+    // Over the class Lay on Hands and Pain Suppression, which go to whoever is lowest
+    e.Node<AnubarakTankNeedsRescueTrigger, AnubarakTankRescueAction>(ACTION_EMERGENCY + 4);
+    e.Node<AnubarakBurrowerCastingShadowStrikeTrigger, AnubarakInterruptShadowStrikeAction>(ACTION_EMERGENCY + 3);
+
+    // The first tick lands 3 s after Penetrating Cold, and the swarm keeps a non-tank under it
+    e.Node<AnubarakColdSelfSaveTrigger, AnubarakColdSelfSaveAction>(ACTION_EMERGENCY + 2);
+
+    // Instant and castable on the move, so over the stand walks and the swarm heals
+    e.Node<AnubarakLustDueTrigger, AnubarakLustAction>(ACTION_EMERGENCY + 1);
+
+    // Off the GCD, ahead of the battle res and every heal that won't cast from Cat Form
+    e.Node<AnubarakKiteCatDropTrigger, AnubarakKiteCatDropAction>(ACTION_RAID + 7.5f);
+    e.Node<AnubarakSideTankDeadTrigger, AnubarakBattleResSideTankAction>(ACTION_RAID + 7);
+    e.Node(
+        AnubarakSideTankNeedsDefensiveTrigger::Name,
+        [](PlayerbotAI* botAI) -> Trigger* { return new AnubarakSideTankNeedsDefensiveTrigger(botAI); },
+        "anubarak side tank defensive",
+        [](PlayerbotAI* botAI) -> Action*
+        { return new AnubarakTankDefensiveAction(botAI, "anubarak side tank defensive", true); },
+        ACTION_RAID + 6.5f);
+    e.Node<AnubarakLeechingSwarmOnTankTrigger, AnubarakTankDefensiveAction>(ACTION_RAID + 6);
+    e.Node<AnubarakGripFrostSphereTrigger, AnubarakGripFrostSphereAction>(ACTION_RAID + 5.5f);
+    e.Node<AnubarakRangedShouldSeedPermafrostTrigger, AnubarakDestroyFrostSphereAction>(ACTION_RAID + 5);
+
+    // Above every other walk of a DPS, side tank or healer bot that can be the escort
+    e.Node<AnubarakHopEscortTrigger, AnubarakHopEscortAction>(ACTION_RAID + 4.5f);
+
+    // Under the escort, over the target pick: a side tank taunts only within 30 yd
+    e.Node<AnubarakBurrowerLeadTrigger, AnubarakBurrowerLeadAction>(ACTION_RAID + 4.4f);
+
+    // Under the lead, over the target pick: every hit adds a minute of Acid-Drenched Mandibles
+    e.Node<AnubarakScarabKiteTrigger, AnubarakKiteScarabAction>(ACTION_RAID + 4.3f);
+
+    // Off the GCD, ahead of the next swing the buff would carry onto the burrower
+    e.Node<AnubarakCleaveBuffNearBurrowerTrigger, AnubarakDropCleaveBuffAction>(ACTION_RAID + 4.2f);
+    e.Node<AnubarakDpsTargetTrigger, AnubarakDpsTargetAction>(ACTION_RAID + 4);
+
+    // Under the target pick, so a new focus is taken before the walk to the old one's stand
+    e.Node<AnubarakMeleeBurrowerStandTrigger, AnubarakMeleeBurrowerStandAction>(ACTION_RAID + 3.8f);
+    e.Node<AnubarakBurrowerNeedsAssistTankTrigger, AnubarakAssistTankHoldBurrowerAction>(ACTION_RAID + 3);
+    e.Node<AnubarakScarabOnRaidTrigger, AnubarakTankPickUpScarabAction>(ACTION_RAID + 2);
+
+    // Under the hold and pickup, over the class rotation's own area spells
+    e.Node<AnubarakSideTankAreaThreatTrigger, AnubarakSideTankAreaThreatAction>(ACTION_RAID + 2.5f);
+    e.Node<AnubarakSideTankReadyTrigger, AnubarakSideTankReadyAction>(ACTION_RAID + 1.5f);
+    e.Node<AnubarakRaidGathersTrigger, AnubarakGatherAction>(ACTION_RAID + 0.5f);
+    e.Node<AnubarakHealerStandTrigger, AnubarakHealerStandAction>(ACTION_RAID + 0.45f);
+    e.Node<AnubarakRangedStandTrigger, AnubarakRangedStandAction>(ACTION_RAID + 0.45f);
+    e.Node<AnubarakDemonicCircleDueTrigger, AnubarakDemonicCircleAction>(ACTION_RAID + 0.4f);
+
+    // Under every walk, over the class rotation
+    e.Node<AnubarakHealingStreamDueTrigger>("healing stream totem", ACTION_RAID - 0.5f);
+    e.Node<AnubarakManaTopUpTrigger, AnubarakTopUpManaAction>(ACTION_RAID - 1);
+    e.Node<AnubarakLightJudgeDueTrigger, AnubarakJudgeLightAction>(ACTION_HIGH + 5);
+    e.Node<AnubarakEngagedByMainTankTrigger, AnubarakMainTankHoldBossAction>(ACTION_RAID + 1);
+    e.Node<AnubarakRedirectThreatTrigger, AnubarakRedirectThreatAction>(ACTION_RAID + 1.2f);
+    e.Node<AnubarakPenetratingColdOnRaidTrigger, AnubarakHealPenetratingColdAction>(ACTION_MEDIUM_HEAL + 5);
+
+    // Off the GCD, so ahead of the rescue heals it covers
+    e.Node<AnubarakAuraMasteryDueTrigger, AnubarakAuraMasteryAction>(ACTION_CRITICAL_HEAL + 13);
+
+    // Heroic phase 3: the urgent tiers above every class heal, the top-offs under the mana tools
+    e.Node<AnubarakSwarmHealUrgentTrigger, AnubarakSwarmHealAction>(ACTION_CRITICAL_HEAL + 12);
+    e.Node<AnubarakSwarmHealTrigger, AnubarakSwarmHealAction>(ACTION_MEDIUM_HEAL + 0.75f);
+
+    // Above the medium heals. Divine Plea waits until no tank or carrier is low
+    e.Node<AnubarakDivinePleaTrigger>("divine plea", ACTION_MEDIUM_HEAL + 6);
+    e.Node<AnubarakInnervateHealerTrigger, AnubarakInnervateHealerAction>(ACTION_MEDIUM_HEAL + 6);
+
+    e.Multiplier<AnubarakControlTankMovementMultiplier>(Family::AnyMovement);
+    e.Multiplier<AnubarakProtectSpikeKiteMultiplier>(Family::AnyMovement | Family::Spell);
+
     e.OwnTargeting("anubarak dps target guard", Role::Any, AnubarakDpsTargetOwned, Family::DpsAssist);
     e.OwnTargeting("anubarak pickup tank target guard", Role::Any, AnubarakPickupTankHolds,
                    Family::DpsAssist | Family::TankAssist);

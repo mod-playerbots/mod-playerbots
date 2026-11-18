@@ -7,8 +7,6 @@
 #ifndef PLAYERBOTS_RAID_TOCMULTIPLIERS_ICEHOWL_H
 #define PLAYERBOTS_RAID_TOCMULTIPLIERS_ICEHOWL_H
 
-#include <vector>
-
 #include "Multiplier.h"
 #include "RaidCombatHelpers.h"
 
@@ -32,7 +30,5 @@ public:
     IcehowlBreathSpreadGuardMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "icehowl breath spread guard") {}
     float GetValue(Action* action) override;
 };
-
-void AddToCIcehowlMultipliers(PlayerbotAI* botAI, std::vector<Multiplier*>& multipliers);
 
 #endif

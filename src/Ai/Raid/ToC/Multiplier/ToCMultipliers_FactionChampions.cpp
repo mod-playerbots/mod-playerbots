@@ -154,15 +154,6 @@ float FactionChampionsLateInterruptMultiplier::GetValue(Action* action)
     return spell && spell->GetCastTimeRemaining() > LATE_INTERRUPT_MS ? 0.0f : 1.0f;
 }
 
-void AddToCFactionChampionsMultipliers(PlayerbotAI* botAI, std::vector<Multiplier*>& multipliers)
-{
-    multipliers.push_back(new FactionChampionsLateInterruptMultiplier(botAI));
-    multipliers.push_back(new FactionChampionsSuppressAoeMultiplier(botAI));
-    multipliers.push_back(new FactionChampionsThreatRedirectVetoMultiplier(botAI));
-    multipliers.push_back(new FactionChampionsAntiFearTotemGuardMultiplier(botAI));
-    multipliers.push_back(new FactionChampionsCcGuardMultiplier(botAI));
-}
-
 // Lust and every cooldown go at the pull, each early kill makes the rest easier
 RaidBurstWindow ToCFactionChampionsBurstWindow(PlayerbotAI* /*botAI*/)
 {

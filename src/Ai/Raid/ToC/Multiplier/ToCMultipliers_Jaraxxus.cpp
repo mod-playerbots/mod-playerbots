@@ -111,14 +111,6 @@ float JaraxxusThreatCapMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-void AddToCJaraxxusMultipliers(PlayerbotAI* botAI, std::vector<Multiplier*>& multipliers)
-{
-    multipliers.push_back(new JaraxxusControlTankMovementMultiplier(botAI));
-    multipliers.push_back(new JaraxxusTauntGuardMultiplier(botAI));
-    multipliers.push_back(new JaraxxusKissCastHoldMultiplier(botAI));
-    multipliers.push_back(new JaraxxusAvoidAoeGuardMultiplier(botAI));
-}
-
 // Lust at the pull: he never enrages, and the heroic portal at 20 s still falls inside it.
 RaidBurstWindow ToCJaraxxusBurstWindow(PlayerbotAI* /*botAI*/)
 {

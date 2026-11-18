@@ -66,9 +66,3 @@ float IcehowlBreathSpreadGuardMultiplier::GetValue(Action* action)
 
     return HasIcehowlBreathSlot(botAI) ? 0.0f : 1.0f;
 }
-
-void AddToCIcehowlMultipliers(PlayerbotAI* botAI, std::vector<Multiplier*>& multipliers)
-{
-    multipliers.push_back(new IcehowlChargeGuardMultiplier(botAI));
-    multipliers.push_back(new IcehowlBreathSpreadGuardMultiplier(botAI));
-}

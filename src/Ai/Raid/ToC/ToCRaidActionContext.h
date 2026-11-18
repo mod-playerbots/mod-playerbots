@@ -7,38 +7,24 @@
 #ifndef PLAYERBOTS_RAID_TOCRAIDACTIONCONTEXT_H
 #define PLAYERBOTS_RAID_TOCRAIDACTIONCONTEXT_H
 
-#include "Log.h"
 #include "NamedObjectContext.h"
-#include "ToCRaidActions.h"
+#include "ToCActions_FactionChampionsDefence.h"
+#include "ToCDefinitions.h"
 
-// Boss stems register their actions in their own contexts, this one only merges them.
 class RaidTrialOfTheCrusaderActionContext : public NamedObjectContext<Action>
 {
 public:
     RaidTrialOfTheCrusaderActionContext()
     {
-        Absorb(ToCGormokActionContext());
-        Absorb(ToCJormungarsActionContext());
-        Absorb(ToCIcehowlActionContext());
-        Absorb(ToCNorthrendBeastsActionContext());
-        Absorb(ToCJaraxxusActionContext());
-        Absorb(ToCAnubarakActionContext());
-        Absorb(ToCFactionChampionsActionContext());
-        Absorb(ToCFactionChampionsDefenceActionContext());
-        Absorb(ToCFactionChampionsBallActionContext());
-        Absorb(ToCTwinValkyrActionContext());
-        Absorb(ToCStagingActionContext());
-        Absorb(ToCResistAuraActionContext());
-        Absorb(ToCOpenerActionContext());
+        for (EncounterDefinition const* encounter : ToCEncounterDefinitions())
+            encounter->RegisterActions(creators);
+
+        // its node rides the chat command's "pull" trigger, which no row can register
+        creators["faction champions chain request"] = &RaidTrialOfTheCrusaderActionContext::chain_request;
     }
 
 private:
-    void Absorb(NamedObjectContext<Action> const& stem)
-    {
-        for (auto const& [name, creator] : stem.creators)
-            if (!creators.emplace(name, creator).second)
-                LOG_ERROR("playerbots", "ToC action context: duplicate creator '{}'", name);
-    }
+    static Action* chain_request(PlayerbotAI* botAI) { return new FactionChampionsChainRequestAction(botAI); }
 };
 
 #endif

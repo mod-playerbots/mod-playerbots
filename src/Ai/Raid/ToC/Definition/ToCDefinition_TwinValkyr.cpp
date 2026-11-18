@@ -9,8 +9,12 @@
 #include "PlayerbotAI.h"
 #include "RaidCombatHelpers.h"
 #include "RaidDefensive.h"
+#include "Strategy.h"
+#include "ToCActions_TwinValkyr.h"
 #include "ToCEncounterGate.h"
 #include "ToCHelpers_TwinValkyr.h"
+#include "ToCMultipliers_TwinValkyr.h"
+#include "ToCTriggers_TwinValkyr.h"
 
 using namespace TrialOfTheCrusaderHelpers;
 
@@ -40,6 +44,27 @@ bool TwinValkyrTankTargetOwned(PlayerbotAI* botAI)
 
 void DefineTwinValkyr(EncounterBuilder& e)
 {
+    e.Node<TwinValkyrPactInterruptDutyTrigger, TwinValkyrInterruptPactAction>(ACTION_EMERGENCY + 8);
+    e.Node<TwinValkyrVortexRequiresEssenceTrigger, TwinValkyrSwapEssenceForVortexAction>(ACTION_EMERGENCY + 7);
+
+    // a Touch ticks only on the touched bot, and an essence of the Touch's colour absorbs it all
+    e.Node<TwinValkyrTouchedRequiresEssenceTrigger, TwinValkyrSwapEssenceForTouchAction>(ACTION_EMERGENCY + 6);
+    e.Node<TwinValkyrVortexRaidCoverTrigger, TwinValkyrCastVortexRaidCoverAction>(ACTION_EMERGENCY + 5);
+    e.Node<TwinValkyrVortexDefensiveTrigger, TwinValkyrCastVortexDefensiveAction>(ACTION_EMERGENCY + 4);
+    e.Node<TwinValkyrOrbIncomingTrigger, TwinValkyrDodgeOrbAction>(ACTION_EMERGENCY + 3);
+    e.Node<TwinValkyrNextPortalDueTrigger, TwinValkyrWalkToNextPortalAction>(ACTION_EMERGENCY + 2);
+    e.Node<TwinValkyrNeedsBaseEssenceTrigger, TwinValkyrTakeBaseEssenceAction>(ACTION_RAID + 5);
+    e.Node<TwinValkyrEngagedByMainTankTrigger, TwinValkyrMainTankHoldLightTwinAction>(ACTION_RAID + 4);
+    e.Node<TwinValkyrDarkbaneNeedsAssistTankTrigger, TwinValkyrAssistTankHoldDarkTwinAction>(ACTION_RAID + 3);
+    e.Node<TwinValkyrRedirectThreatTrigger, TwinValkyrRedirectThreatAction>(ACTION_RAID + 2);
+    e.Node<TwinValkyrDoorStandTrigger, TwinValkyrMoveToDoorStandAction>(ACTION_RAID + 1);
+    e.Node<TwinValkyrDpsTargetTrigger, TwinValkyrFocusTwinAction>(ACTION_RAID);
+
+    e.Multiplier<TwinValkyrControlTankMovementMultiplier>(Family::AnyMovement);
+    e.Multiplier<TwinValkyrTauntGuardMultiplier>(Family::Spell);
+    e.Multiplier<TwinValkyrInterruptHoldMultiplier>(Family::AnyAction);
+    e.Multiplier<TwinValkyrRedirectGuardMultiplier>(Family::AnyMovement | Family::Spell);
+
     e.OwnTargeting("twin valkyr dps target guard", Role::Any, TwinValkyrDpsTargetOwned, Family::DpsAssist);
     e.OwnTargeting("twin valkyr tank target guard", Role::Any, TwinValkyrTankTargetOwned, Family::TankAssist);
 

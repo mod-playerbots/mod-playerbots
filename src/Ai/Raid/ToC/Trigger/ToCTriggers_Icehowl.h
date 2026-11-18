@@ -7,97 +7,52 @@
 #ifndef PLAYERBOTS_RAID_TOCTRIGGERS_ICEHOWL_H
 #define PLAYERBOTS_RAID_TOCTRIGGERS_ICEHOWL_H
 
-#include <vector>
-
-#include "NamedObjectContext.h"
 #include "ToCTriggers_NorthrendBeasts.h"
 #include "Trigger.h"
 
 class IcehowlTankDutyTrigger : public Trigger
 {
 public:
-    IcehowlTankDutyTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "icehowl tank duty") {}
+    static constexpr char const* Name = "icehowl tank duty";
+
+    IcehowlTankDutyTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name) {}
     bool IsActive() override;
 };
 
 class IcehowlChargeIncomingTrigger : public Trigger
 {
 public:
-    IcehowlChargeIncomingTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "icehowl charge incoming") {}
+    static constexpr char const* Name = "icehowl charge incoming";
+
+    IcehowlChargeIncomingTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name) {}
     bool IsActive() override;
 };
 
 class IcehowlFrothingRageTrigger : public Trigger
 {
 public:
-    IcehowlFrothingRageTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "icehowl frothing rage") {}
+    static constexpr char const* Name = "icehowl frothing rage";
+
+    IcehowlFrothingRageTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name) {}
     bool IsActive() override;
 };
 
 class IcehowlBreathSpreadTrigger : public Trigger
 {
 public:
-    IcehowlBreathSpreadTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "icehowl breath spread") {}
+    static constexpr char const* Name = "icehowl breath spread";
+
+    IcehowlBreathSpreadTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name) {}
     bool IsActive() override;
 };
 
 class IcehowlDazeNitroTrigger : public Trigger
 {
 public:
-    IcehowlDazeNitroTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "icehowl daze nitro") {}
+    static constexpr char const* Name = "icehowl daze nitro";
+
+    IcehowlDazeNitroTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name) {}
     bool IsActive() override;
 };
-
-class ToCIcehowlTriggerContext : public NamedObjectContext<Trigger>
-{
-public:
-    ToCIcehowlTriggerContext() : NamedObjectContext<Trigger>()
-    {
-        creators["icehowl daze nitro"] =
-            &ToCIcehowlTriggerContext::icehowl_daze_nitro;
-        creators["icehowl tank duty"] =
-            &ToCIcehowlTriggerContext::icehowl_tank_duty;
-        creators["icehowl charge incoming"] =
-            &ToCIcehowlTriggerContext::icehowl_charge_incoming;
-        creators["icehowl frothing rage"] =
-            &ToCIcehowlTriggerContext::icehowl_frothing_rage;
-        creators["icehowl breath spread"] =
-            &ToCIcehowlTriggerContext::icehowl_breath_spread;
-        creators["icehowl dps target"] =
-            &ToCIcehowlTriggerContext::icehowl_dps_target;
-    }
-
-private:
-    static Trigger* icehowl_tank_duty(PlayerbotAI* botAI) {
-        return new IcehowlTankDutyTrigger(botAI);
-    }
-
-    static Trigger* icehowl_charge_incoming(PlayerbotAI* botAI) {
-        return new IcehowlChargeIncomingTrigger(botAI);
-    }
-
-    static Trigger* icehowl_frothing_rage(PlayerbotAI* botAI) {
-        return new IcehowlFrothingRageTrigger(botAI);
-    }
-
-    static Trigger* icehowl_breath_spread(PlayerbotAI* botAI) {
-        return new IcehowlBreathSpreadTrigger(botAI);
-    }
-
-    static Trigger* icehowl_daze_nitro(PlayerbotAI* botAI) {
-        return new IcehowlDazeNitroTrigger(botAI);
-    }
-
-    static Trigger* icehowl_dps_target(PlayerbotAI* botAI) {
-        return new NorthrendBeastsDpsTargetTrigger(botAI, "icehowl dps target", NorthrendBeastsStem::Icehowl);
-    }
-};
-
-void AddToCIcehowlTriggerNodes(std::vector<TriggerNode*>& triggers);
 
 #endif

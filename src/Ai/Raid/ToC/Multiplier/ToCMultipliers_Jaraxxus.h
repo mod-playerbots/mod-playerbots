@@ -7,8 +7,6 @@
 #ifndef PLAYERBOTS_RAID_TOCMULTIPLIERS_JARAXXUS_H
 #define PLAYERBOTS_RAID_TOCMULTIPLIERS_JARAXXUS_H
 
-#include <vector>
-
 #include "Multiplier.h"
 #include "RaidBurstWindow.h"
 #include "RaidSplash.h"
@@ -58,8 +56,6 @@ public:
 private:
     RaidSplashCache _splash;
 };
-
-void AddToCJaraxxusMultipliers(PlayerbotAI* botAI, std::vector<Multiplier*>& multipliers);
 
 RaidBurstWindow ToCJaraxxusBurstWindow(PlayerbotAI* botAI);
 

@@ -311,12 +311,6 @@ float AnubarakSideTankAreaGuardMultiplier::GetValue(Action* action)
                : 0.0f;
 }
 
-void AddToCAnubarakMultipliers(PlayerbotAI* botAI, std::vector<Multiplier*>& multipliers)
-{
-    multipliers.push_back(new AnubarakControlTankMovementMultiplier(botAI));
-    multipliers.push_back(new AnubarakProtectSpikeKiteMultiplier(botAI));
-}
-
 float AnubarakSwarmHealMultiplier::GetValue(Action* action)
 {
     if (!action)

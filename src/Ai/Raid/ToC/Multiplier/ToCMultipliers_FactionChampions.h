@@ -7,8 +7,6 @@
 #ifndef PLAYERBOTS_RAID_TOCMULTIPLIERS_FACTIONCHAMPIONS_H
 #define PLAYERBOTS_RAID_TOCMULTIPLIERS_FACTIONCHAMPIONS_H
 
-#include <vector>
-
 #include "Multiplier.h"
 #include "RaidAntiFear.h"
 #include "RaidBurstWindow.h"
@@ -92,8 +90,6 @@ private:
 
     RaidActionCache<Facts> _facts;
 };
-
-void AddToCFactionChampionsMultipliers(PlayerbotAI* botAI, std::vector<Multiplier*>& multipliers);
 
 RaidBurstWindow ToCFactionChampionsBurstWindow(PlayerbotAI* botAI);
 

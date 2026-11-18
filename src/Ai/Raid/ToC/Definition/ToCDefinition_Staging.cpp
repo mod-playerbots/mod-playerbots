@@ -7,8 +7,11 @@
 #include "ToCDefinitions.h"
 
 #include "PlayerbotAI.h"
+#include "Strategy.h"
+#include "ToCActions_Staging.h"
 #include "ToCEncounterGate.h"
 #include "ToCHelpers_Staging.h"
+#include "ToCTriggers_Staging.h"
 
 using namespace TrialOfTheCrusaderHelpers;
 
@@ -19,6 +22,9 @@ namespace
 {
 void DefineStaging(EncounterBuilder& e)
 {
+    // the walk holds the tick while in flight, the stand gives it back once parked
+    e.Node<ToCStagingStandTrigger, ToCMoveToStagingStandAction>(ACTION_RAID);
+
     // follow and stay walk a parked bot back to its player. out of combat tank and dps assist pull on a
     // skull, and Anub'arak turns attackable once anyone is inside 80 yd
     e.Block("toc staging hold", Role::Any, IsToCStagingHeld,

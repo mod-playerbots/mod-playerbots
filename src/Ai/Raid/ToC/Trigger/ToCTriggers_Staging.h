@@ -7,31 +7,16 @@
 #ifndef PLAYERBOTS_RAID_TOCTRIGGERS_STAGING_H
 #define PLAYERBOTS_RAID_TOCTRIGGERS_STAGING_H
 
-#include <vector>
-
-#include "NamedObjectContext.h"
 #include "Trigger.h"
 
-// No encounter prefix, so the gate never wraps it: the window is its own gate
+// Raid-wide, so its gate never closes: the window is its own gate
 class ToCStagingStandTrigger : public Trigger
 {
 public:
-    ToCStagingStandTrigger(PlayerbotAI* botAI) : Trigger(botAI, "toc staging stand") {}
+    static constexpr char const* Name = "toc staging stand";
+
+    ToCStagingStandTrigger(PlayerbotAI* botAI) : Trigger(botAI, Name) {}
     bool IsActive() override;
 };
-
-class ToCStagingTriggerContext : public NamedObjectContext<Trigger>
-{
-public:
-    ToCStagingTriggerContext() : NamedObjectContext<Trigger>()
-    {
-        creators["toc staging stand"] = &ToCStagingTriggerContext::toc_staging_stand;
-    }
-
-private:
-    static Trigger* toc_staging_stand(PlayerbotAI* botAI) { return new ToCStagingStandTrigger(botAI); }
-};
-
-void AddToCStagingTriggerNodes(std::vector<TriggerNode*>& triggers);
 
 #endif

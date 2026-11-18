@@ -44,7 +44,7 @@ bool StaysFree(std::string const& name)
 
     // The reposition walk itself, and on heroic Gormok's walks and Icehowl's charge dodge
     ToCEncounter encounter = ToCEncounter::None;
-    return ToCEncounterOfTrigger(name, encounter) && encounter == ToCEncounter::NorthrendBeasts;
+    return ToCEncounterOfName(name, encounter) && encounter == ToCEncounter::NorthrendBeasts;
 }
 }  // namespace
 
@@ -105,11 +105,4 @@ float NorthrendWormsRedirectGuardMultiplier::GetValue(Action* action)
         return 1.0f;
 
     return (GetBeastsStageMask(botAI) & BEASTS_STAGE_WORMS) ? 0.0f : 1.0f;
-}
-
-void AddToCJormungarsMultipliers(PlayerbotAI* botAI, std::vector<Multiplier*>& multipliers)
-{
-    multipliers.push_back(new NorthrendWormsMoveGuardMultiplier(botAI));
-    multipliers.push_back(new NorthrendWormsBileReachGuardMultiplier(botAI));
-    multipliers.push_back(new NorthrendWormsRedirectGuardMultiplier(botAI));
 }

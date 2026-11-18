@@ -115,12 +115,3 @@ float FactionChampionsGripGuardMultiplier::GetValue(Action* action)
     // GetTarget last, it scans every attacker
     return FactionChampionsGripGuarded(botAI, action->GetTarget()) ? 0.0f : 1.0f;
 }
-
-void AddToCFactionChampionsDefenceMultipliers(PlayerbotAI* botAI, std::vector<Multiplier*>& multipliers)
-{
-    multipliers.push_back(new FactionChampionsGripGuardMultiplier(botAI));
-    multipliers.push_back(new FactionChampionsAoeGuardMultiplier(botAI));
-    multipliers.push_back(new FactionChampionsPhysicalSwitchGuardMultiplier(botAI));
-    multipliers.push_back(new FactionChampionsDispelGuardMultiplier(botAI));
-    multipliers.push_back(new FactionChampionsPurgeGuardMultiplier(botAI));
-}

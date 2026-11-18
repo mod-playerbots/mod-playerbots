@@ -14,7 +14,6 @@
 #include "RaidDirectTargeting.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
-#include "Strategy.h"
 #include "Unit.h"
 
 using namespace TrialOfTheCrusaderHelpers;
@@ -137,47 +136,4 @@ bool TwinValkyrDpsTargetTrigger::IsActive()
 
     Unit* twin = GetTwinDpsTarget(botAI);
     return twin && (AI_VALUE(Unit*, "current target") != twin || RaidPetOffPick(botAI, twin));
-}
-
-void AddToCTwinValkyrTriggerNodes(std::vector<TriggerNode*>& triggers)
-{
-    triggers.push_back(new TriggerNode("twin valkyr pact interrupt duty", {
-        NextAction("twin valkyr interrupt pact", ACTION_EMERGENCY + 8) }));
-
-    triggers.push_back(new TriggerNode("twin valkyr vortex requires essence", {
-        NextAction("twin valkyr swap essence for vortex", ACTION_EMERGENCY + 7) }));
-
-    // a Touch ticks only on the touched bot, and an essence of the Touch's colour absorbs it all
-    triggers.push_back(new TriggerNode("twin valkyr touched requires essence", {
-        NextAction("twin valkyr swap essence for touch", ACTION_EMERGENCY + 6) }));
-
-    triggers.push_back(new TriggerNode("twin valkyr vortex raid cover", {
-        NextAction("twin valkyr cast vortex raid cover", ACTION_EMERGENCY + 5) }));
-
-    triggers.push_back(new TriggerNode("twin valkyr vortex defensive", {
-        NextAction("twin valkyr cast vortex defensive", ACTION_EMERGENCY + 4) }));
-
-    triggers.push_back(new TriggerNode("twin valkyr orb incoming", {
-        NextAction("twin valkyr dodge orb", ACTION_EMERGENCY + 3) }));
-
-    triggers.push_back(new TriggerNode("twin valkyr next portal due", {
-        NextAction("twin valkyr walk to next portal", ACTION_EMERGENCY + 2) }));
-
-    triggers.push_back(new TriggerNode("twin valkyr needs base essence", {
-        NextAction("twin valkyr take base essence", ACTION_RAID + 5) }));
-
-    triggers.push_back(new TriggerNode("twin valkyr engaged by main tank", {
-        NextAction("twin valkyr main tank hold light twin", ACTION_RAID + 4) }));
-
-    triggers.push_back(new TriggerNode("twin valkyr darkbane needs assist tank", {
-        NextAction("twin valkyr assist tank hold dark twin", ACTION_RAID + 3) }));
-
-    triggers.push_back(new TriggerNode("twin valkyr redirect threat", {
-        NextAction("twin valkyr redirect threat", ACTION_RAID + 2) }));
-
-    triggers.push_back(new TriggerNode("twin valkyr door stand", {
-        NextAction("twin valkyr move to door stand", ACTION_RAID + 1) }));
-
-    triggers.push_back(new TriggerNode("twin valkyr dps target", {
-        NextAction("twin valkyr focus twin", ACTION_RAID) }));
 }

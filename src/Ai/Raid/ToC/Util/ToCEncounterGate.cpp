@@ -280,11 +280,11 @@ bool ToCGateOpen(PlayerbotAI* botAI, uint32 encounterId)
 
 bool ToCRaidWideGateOpen(PlayerbotAI* /*botAI*/, uint32 /*encounterId*/) { return true; }
 
-bool ToCEncounterOfTrigger(std::string const& triggerName, ToCEncounter& encounter)
+bool ToCEncounterOfName(std::string const& name, ToCEncounter& encounter)
 {
     for (EncounterPrefix const& entry : ENCOUNTER_PREFIXES)
     {
-        if (triggerName.rfind(entry.prefix, 0) == 0)
+        if (name.rfind(entry.prefix, 0) == 0)
         {
             encounter = entry.encounter;
             return true;
@@ -292,64 +292,4 @@ bool ToCEncounterOfTrigger(std::string const& triggerName, ToCEncounter& encount
     }
 
     return false;
-}
-
-// Interval copied off the inner trigger: the engine calls needCheck on the wrapper, and the default
-// of 1 would run a throttled trigger every tick.
-ToCGatedTrigger::ToCGatedTrigger(PlayerbotAI* botAI, Trigger* inner, ToCEncounter encounter)
-    : Trigger(botAI, inner ? inner->getName() : "trigger", inner ? inner->getCheckInterval() : 1),
-      _inner(inner),
-      _encounter(encounter)
-{
-}
-
-ToCGatedTrigger::~ToCGatedTrigger() { delete _inner; }
-
-Event ToCGatedTrigger::Check()
-{
-    if (!_inner || !ToCEncounterGateOpen(botAI, _encounter))
-        return Event();
-
-    return _inner->Check();
-}
-
-bool ToCGatedTrigger::IsActive() { return _inner && ToCEncounterGateOpen(botAI, _encounter) && _inner->IsActive(); }
-
-bool ToCGatedTrigger::IsBuffTrigger() { return _inner && _inner->IsBuffTrigger(); }
-
-bool ToCGatedTrigger::IsDebuffTrigger() { return _inner && _inner->IsDebuffTrigger(); }
-
-std::vector<NextAction> ToCGatedTrigger::getHandlers()
-{
-    return _inner ? _inner->getHandlers() : std::vector<NextAction>();
-}
-
-void ToCGatedTrigger::Reset()
-{
-    if (_inner)
-        _inner->Reset();
-}
-
-Unit* ToCGatedTrigger::GetTarget() { return _inner ? _inner->GetTarget() : Trigger::GetTarget(); }
-
-Value<Unit*>* ToCGatedTrigger::GetTargetValue()
-{
-    return _inner ? _inner->GetTargetValue() : Trigger::GetTargetValue();
-}
-
-std::string const ToCGatedTrigger::GetTargetName()
-{
-    return _inner ? _inner->GetTargetName() : Trigger::GetTargetName();
-}
-
-void ToCGatedTrigger::ExternalEvent(std::string const param, Player* owner)
-{
-    if (_inner)
-        _inner->ExternalEvent(param, owner);
-}
-
-void ToCGatedTrigger::ExternalEvent(WorldPacket& packet, Player* owner)
-{
-    if (_inner)
-        _inner->ExternalEvent(packet, owner);
 }

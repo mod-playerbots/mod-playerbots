@@ -9,7 +9,6 @@
 #include "ToCHelpers_NorthrendBeasts.h"
 #include "Playerbots.h"
 #include "RaidDirectTargeting.h"
-#include "Strategy.h"
 
 using namespace TrialOfTheCrusaderHelpers;
 
@@ -61,38 +60,4 @@ bool GormokStompRangeTrigger::IsActive()
 bool GormokFireBombIncomingTrigger::IsActive()
 {
     return IsInFireBombImpact(botAI);
-}
-
-void AddToCGormokTriggerNodes(std::vector<TriggerNode*>& triggers)
-{
-    triggers.push_back(new TriggerNode("gormok tank duty", {
-        NextAction("gormok tank hold boss", ACTION_RAID + 1) }));
-
-    triggers.push_back(new TriggerNode("gormok swap tank duty", {
-        NextAction("gormok swap tank hold", ACTION_RAID + 1) }));
-
-    triggers.push_back(new TriggerNode("gormok dps target", {
-        NextAction("gormok dps target", ACTION_RAID + 2) }));
-
-    triggers.push_back(new TriggerNode("gormok snobolled", {
-        NextAction("gormok bring snobold to melee", ACTION_RAID + 3) }));
-
-    triggers.push_back(new TriggerNode("gormok stomp range", {
-        NextAction("gormok leave stomp range", ACTION_RAID + 3) }));
-
-    triggers.push_back(new TriggerNode("gormok tank swap needed", {
-        NextAction("gormok tank swap taunt", ACTION_RAID + 5) }));
-
-    triggers.push_back(new TriggerNode("gormok tank defensive", {
-        NextAction("gormok tank defensive", ACTION_RAID + 6) }));
-
-    triggers.push_back(new TriggerNode("gormok impale reset", {
-        NextAction("gormok hand of protection", ACTION_RAID + 5) }));
-
-    // Off the global cooldown, and the hand pacifies the tank till it goes
-    triggers.push_back(new TriggerNode("gormok cancel hand of protection", {
-        NextAction("gormok cancel hand of protection", ACTION_EMERGENCY + 1) }));
-
-    triggers.push_back(new TriggerNode("gormok fire bomb incoming", {
-        NextAction("gormok dodge fire bomb", ACTION_EMERGENCY + 2) }));
 }

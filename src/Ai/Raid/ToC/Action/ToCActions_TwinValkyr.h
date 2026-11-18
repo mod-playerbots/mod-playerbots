@@ -10,7 +10,6 @@
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
-#include "NamedObjectContext.h"
 #include "RaidDirectTargeting.h"
 #include "RaidRedirectThreat.h"
 #include "ToCActions_Shared.h"
@@ -19,8 +18,9 @@
 class TwinValkyrInterruptPactAction : public Action
 {
 public:
-    TwinValkyrInterruptPactAction(
-        PlayerbotAI* botAI, std::string const name = "twin valkyr interrupt pact") : Action(botAI, name) {}
+    static constexpr char const* Name = "twin valkyr interrupt pact";
+
+    TwinValkyrInterruptPactAction(PlayerbotAI* botAI) : Action(botAI, Name) {}
     bool Execute(Event event) override;
 };
 
@@ -44,32 +44,36 @@ private:
 class TwinValkyrSwapEssenceForTouchAction : public TwinValkyrEssenceActionBase
 {
 public:
-    TwinValkyrSwapEssenceForTouchAction(
-        PlayerbotAI* botAI, std::string const name = "twin valkyr swap essence for touch")
-        : TwinValkyrEssenceActionBase(botAI, name, TrialOfTheCrusaderHelpers::TwinEssenceReason::Touch) {}
+    static constexpr char const* Name = "twin valkyr swap essence for touch";
+
+    TwinValkyrSwapEssenceForTouchAction(PlayerbotAI* botAI)
+        : TwinValkyrEssenceActionBase(botAI, Name, TrialOfTheCrusaderHelpers::TwinEssenceReason::Touch) {}
 };
 
 class TwinValkyrSwapEssenceForVortexAction : public TwinValkyrEssenceActionBase
 {
 public:
-    TwinValkyrSwapEssenceForVortexAction(
-        PlayerbotAI* botAI, std::string const name = "twin valkyr swap essence for vortex")
-        : TwinValkyrEssenceActionBase(botAI, name, TrialOfTheCrusaderHelpers::TwinEssenceReason::Vortex) {}
+    static constexpr char const* Name = "twin valkyr swap essence for vortex";
+
+    TwinValkyrSwapEssenceForVortexAction(PlayerbotAI* botAI)
+        : TwinValkyrEssenceActionBase(botAI, Name, TrialOfTheCrusaderHelpers::TwinEssenceReason::Vortex) {}
 };
 
 class TwinValkyrTakeBaseEssenceAction : public TwinValkyrEssenceActionBase
 {
 public:
-    TwinValkyrTakeBaseEssenceAction(
-        PlayerbotAI* botAI, std::string const name = "twin valkyr take base essence")
-        : TwinValkyrEssenceActionBase(botAI, name, TrialOfTheCrusaderHelpers::TwinEssenceReason::Base) {}
+    static constexpr char const* Name = "twin valkyr take base essence";
+
+    TwinValkyrTakeBaseEssenceAction(PlayerbotAI* botAI)
+        : TwinValkyrEssenceActionBase(botAI, Name, TrialOfTheCrusaderHelpers::TwinEssenceReason::Base) {}
 };
 
 class TwinValkyrWalkToNextPortalAction : public MovementAction
 {
 public:
-    TwinValkyrWalkToNextPortalAction(
-        PlayerbotAI* botAI, std::string const name = "twin valkyr walk to next portal") : MovementAction(botAI, name) {}
+    static constexpr char const* Name = "twin valkyr walk to next portal";
+
+    TwinValkyrWalkToNextPortalAction(PlayerbotAI* botAI) : MovementAction(botAI, Name) {}
     bool Execute(Event event) override;
 
 private:
@@ -79,24 +83,27 @@ private:
 class TwinValkyrCastVortexRaidCoverAction : public Action
 {
 public:
-    TwinValkyrCastVortexRaidCoverAction(
-        PlayerbotAI* botAI, std::string const name = "twin valkyr cast vortex raid cover") : Action(botAI, name) {}
+    static constexpr char const* Name = "twin valkyr cast vortex raid cover";
+
+    TwinValkyrCastVortexRaidCoverAction(PlayerbotAI* botAI) : Action(botAI, Name) {}
     bool Execute(Event event) override;
 };
 
 class TwinValkyrCastVortexDefensiveAction : public Action
 {
 public:
-    TwinValkyrCastVortexDefensiveAction(
-        PlayerbotAI* botAI, std::string const name = "twin valkyr cast vortex defensive") : Action(botAI, name) {}
+    static constexpr char const* Name = "twin valkyr cast vortex defensive";
+
+    TwinValkyrCastVortexDefensiveAction(PlayerbotAI* botAI) : Action(botAI, Name) {}
     bool Execute(Event event) override;
 };
 
 class TwinValkyrMoveToDoorStandAction : public MovementAction
 {
 public:
-    TwinValkyrMoveToDoorStandAction(
-        PlayerbotAI* botAI, std::string const name = "twin valkyr move to door stand") : MovementAction(botAI, name) {}
+    static constexpr char const* Name = "twin valkyr move to door stand";
+
+    TwinValkyrMoveToDoorStandAction(PlayerbotAI* botAI) : MovementAction(botAI, Name) {}
     bool Execute(Event event) override;
 
 private:
@@ -106,8 +113,9 @@ private:
 class TwinValkyrDodgeOrbAction : public MovementAction
 {
 public:
-    TwinValkyrDodgeOrbAction(
-        PlayerbotAI* botAI, std::string const name = "twin valkyr dodge orb") : MovementAction(botAI, name) {}
+    static constexpr char const* Name = "twin valkyr dodge orb";
+
+    TwinValkyrDodgeOrbAction(PlayerbotAI* botAI) : MovementAction(botAI, Name) {}
     bool Execute(Event event) override;
 
 private:
@@ -139,27 +147,27 @@ private:
 class TwinValkyrMainTankHoldLightTwinAction : public TwinValkyrTankHoldAction
 {
 public:
-    TwinValkyrMainTankHoldLightTwinAction(
-        PlayerbotAI* botAI, std::string const name = "twin valkyr main tank hold light twin")
-        : TwinValkyrTankHoldAction(botAI, name) {}
+    static constexpr char const* Name = "twin valkyr main tank hold light twin";
+
+    TwinValkyrMainTankHoldLightTwinAction(PlayerbotAI* botAI) : TwinValkyrTankHoldAction(botAI, Name) {}
     bool Execute(Event event) override;
 };
 
 class TwinValkyrAssistTankHoldDarkTwinAction : public TwinValkyrTankHoldAction
 {
 public:
-    TwinValkyrAssistTankHoldDarkTwinAction(
-        PlayerbotAI* botAI, std::string const name = "twin valkyr assist tank hold dark twin")
-        : TwinValkyrTankHoldAction(botAI, name) {}
+    static constexpr char const* Name = "twin valkyr assist tank hold dark twin";
+
+    TwinValkyrAssistTankHoldDarkTwinAction(PlayerbotAI* botAI) : TwinValkyrTankHoldAction(botAI, Name) {}
     bool Execute(Event event) override;
 };
 
 class TwinValkyrRedirectThreatAction : public RaidRedirectThreatAction
 {
 public:
-    TwinValkyrRedirectThreatAction(
-        PlayerbotAI* botAI, std::string const name = "twin valkyr redirect threat")
-        : RaidRedirectThreatAction(botAI, name) {}
+    static constexpr char const* Name = "twin valkyr redirect threat";
+
+    TwinValkyrRedirectThreatAction(PlayerbotAI* botAI) : RaidRedirectThreatAction(botAI, Name) {}
 
 protected:
     Player* GetRedirectTank() override;
@@ -169,96 +177,10 @@ protected:
 class TwinValkyrFocusTwinAction : public RaidDirectAttackAction
 {
 public:
-    TwinValkyrFocusTwinAction(
-        PlayerbotAI* botAI, std::string const name = "twin valkyr focus twin") : RaidDirectAttackAction(botAI, name) {}
+    static constexpr char const* Name = "twin valkyr focus twin";
+
+    TwinValkyrFocusTwinAction(PlayerbotAI* botAI) : RaidDirectAttackAction(botAI, Name) {}
     bool Execute(Event event) override;
-};
-
-class ToCTwinValkyrActionContext : public NamedObjectContext<Action>
-{
-public:
-    ToCTwinValkyrActionContext()
-    {
-        creators["twin valkyr interrupt pact"] =
-            &ToCTwinValkyrActionContext::twin_valkyr_interrupt_pact;
-        creators["twin valkyr swap essence for touch"] =
-            &ToCTwinValkyrActionContext::twin_valkyr_swap_essence_for_touch;
-        creators["twin valkyr swap essence for vortex"] =
-            &ToCTwinValkyrActionContext::twin_valkyr_swap_essence_for_vortex;
-        creators["twin valkyr cast vortex raid cover"] =
-            &ToCTwinValkyrActionContext::twin_valkyr_cast_vortex_raid_cover;
-        creators["twin valkyr cast vortex defensive"] =
-            &ToCTwinValkyrActionContext::twin_valkyr_cast_vortex_defensive;
-        creators["twin valkyr dodge orb"] =
-            &ToCTwinValkyrActionContext::twin_valkyr_dodge_orb;
-        creators["twin valkyr walk to next portal"] =
-            &ToCTwinValkyrActionContext::twin_valkyr_walk_to_next_portal;
-        creators["twin valkyr take base essence"] =
-            &ToCTwinValkyrActionContext::twin_valkyr_take_base_essence;
-        creators["twin valkyr main tank hold light twin"] =
-            &ToCTwinValkyrActionContext::twin_valkyr_main_tank_hold_light_twin;
-        creators["twin valkyr assist tank hold dark twin"] =
-            &ToCTwinValkyrActionContext::twin_valkyr_assist_tank_hold_dark_twin;
-        creators["twin valkyr redirect threat"] =
-            &ToCTwinValkyrActionContext::twin_valkyr_redirect_threat;
-        creators["twin valkyr move to door stand"] =
-            &ToCTwinValkyrActionContext::twin_valkyr_move_to_door_stand;
-        creators["twin valkyr focus twin"] =
-            &ToCTwinValkyrActionContext::twin_valkyr_focus_twin;
-    }
-
-private:
-    static Action* twin_valkyr_interrupt_pact(PlayerbotAI* botAI) {
-        return new TwinValkyrInterruptPactAction(botAI);
-    }
-
-    static Action* twin_valkyr_swap_essence_for_touch(PlayerbotAI* botAI) {
-        return new TwinValkyrSwapEssenceForTouchAction(botAI);
-    }
-
-    static Action* twin_valkyr_swap_essence_for_vortex(PlayerbotAI* botAI) {
-        return new TwinValkyrSwapEssenceForVortexAction(botAI);
-    }
-
-    static Action* twin_valkyr_dodge_orb(PlayerbotAI* botAI) {
-        return new TwinValkyrDodgeOrbAction(botAI);
-    }
-
-    static Action* twin_valkyr_cast_vortex_raid_cover(PlayerbotAI* botAI) {
-        return new TwinValkyrCastVortexRaidCoverAction(botAI);
-    }
-
-    static Action* twin_valkyr_cast_vortex_defensive(PlayerbotAI* botAI) {
-        return new TwinValkyrCastVortexDefensiveAction(botAI);
-    }
-
-    static Action* twin_valkyr_walk_to_next_portal(PlayerbotAI* botAI) {
-        return new TwinValkyrWalkToNextPortalAction(botAI);
-    }
-
-    static Action* twin_valkyr_take_base_essence(PlayerbotAI* botAI) {
-        return new TwinValkyrTakeBaseEssenceAction(botAI);
-    }
-
-    static Action* twin_valkyr_main_tank_hold_light_twin(PlayerbotAI* botAI) {
-        return new TwinValkyrMainTankHoldLightTwinAction(botAI);
-    }
-
-    static Action* twin_valkyr_assist_tank_hold_dark_twin(PlayerbotAI* botAI) {
-        return new TwinValkyrAssistTankHoldDarkTwinAction(botAI);
-    }
-
-    static Action* twin_valkyr_redirect_threat(PlayerbotAI* botAI) {
-        return new TwinValkyrRedirectThreatAction(botAI);
-    }
-
-    static Action* twin_valkyr_move_to_door_stand(PlayerbotAI* botAI) {
-        return new TwinValkyrMoveToDoorStandAction(botAI);
-    }
-
-    static Action* twin_valkyr_focus_twin(PlayerbotAI* botAI) {
-        return new TwinValkyrFocusTwinAction(botAI);
-    }
 };
 
 #endif

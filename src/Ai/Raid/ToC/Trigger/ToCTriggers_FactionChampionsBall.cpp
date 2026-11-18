@@ -8,7 +8,6 @@
 
 #include "Playerbots.h"
 #include "RaidDirectTargeting.h"
-#include "Strategy.h"
 #include "ToCHelpers_FactionChampions.h"
 #include "ToCHelpers_FactionChampionsBall.h"
 #include "ToCHelpers_FactionChampionsDefence.h"
@@ -93,43 +92,3 @@ bool FactionChampionsEscapeTrigger::IsActive()
 }
 
 bool FactionChampionsDemonicCircleTrigger::IsActive() { return FactionChampionsCircleDue(botAI); }
-
-void AddToCFactionChampionsBallTriggerNodes(std::vector<TriggerNode*>& triggers)
-{
-    triggers.push_back(new TriggerNode("faction champions opener", {
-        NextAction("faction champions opener", ACTION_RAID + 4.4f) }));
-
-    // instants, cast before the Nitro run they free up
-    triggers.push_back(new TriggerNode("faction champions escape", {
-        NextAction("faction champions escape", ACTION_RAID + 2.6f) }));
-
-    triggers.push_back(new TriggerNode("faction champions chased", {
-        NextAction("faction champions chased", ACTION_RAID + 2.5f) }));
-
-    // over the kite, which takes every tick of its walk; under Nitro, whose faster boost would cancel it out
-    triggers.push_back(new TriggerNode("faction champions speed boost", {
-        NextAction("faction champions speed boost", ACTION_RAID + 2.48f) }));
-
-    // an instant, so the kite's walk goes on after it
-    triggers.push_back(new TriggerNode("faction champions chains of ice", {
-        NextAction("faction champions chains of ice", ACTION_RAID + 2.47f) }));
-
-    triggers.push_back(new TriggerNode("faction champions kite", {
-        NextAction("faction champions kite", ACTION_RAID + 2.45f) }));
-
-    triggers.push_back(new TriggerNode("faction champions ice reach", {
-        NextAction("faction champions ice reach", ACTION_RAID + 2.44f) }));
-
-    triggers.push_back(new TriggerNode("faction champions step off", {
-        NextAction("faction champions step off", ACTION_RAID + 2.4f) }));
-
-    triggers.push_back(new TriggerNode("faction champions ice target", {
-        NextAction("faction champions ice target", ACTION_RAID + 2) }));
-
-    triggers.push_back(new TriggerNode("faction champions cyclone stand", {
-        NextAction("faction champions cyclone stand", ACTION_RAID + 1.9f) }));
-
-    // pre-pull, above the staging walk, which returns false once parked
-    triggers.push_back(new TriggerNode("faction champions demonic circle", {
-        NextAction("faction champions demonic circle", ACTION_RAID + 1) }));
-}

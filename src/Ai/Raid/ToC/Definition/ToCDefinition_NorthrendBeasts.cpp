@@ -10,6 +10,7 @@
 #include "ToCEncounterGate.h"
 #include "ToCHelpers_Jormungars.h"
 #include "ToCHelpers_NorthrendBeasts.h"
+#include "ToCMultipliers_NorthrendBeasts.h"
 
 using namespace TrialOfTheCrusaderHelpers;
 
@@ -31,6 +32,9 @@ bool WormEngaged(PlayerbotAI* botAI) { return (GetBeastsStageMask(botAI) & BEAST
 
 void DefineNorthrendBeasts(EncounterBuilder& e)
 {
+    e.Multiplier<NorthrendBeastsControlTankMovementMultiplier>(Family::AnyMovement);
+    e.Multiplier<NorthrendBeastsTauntGuardMultiplier>(Family::Spell);
+
     e.OwnTargeting("northrend beasts dps target guard", Role::Any, BeastsDpsTargetOwned, Family::DpsAssist);
     // a tank with no beast up for its duty keeps tank assist, the only target source it has then
     e.OwnTargeting("northrend beasts tank target guard", Role::Any, BeastsTankTargetOwned, Family::TankAssist);
