@@ -861,6 +861,9 @@ bool AnubarakSwarmHealAction::Execute(Event /*event*/)
     if (!pick.target)
         return false;
 
+    if (pick.floor)
+        return CastAnubarakSwarmFloor(botAI);
+
     if (pick.rescue && CastAnubarakColdRescue(botAI, pick.target))
         return true;
 

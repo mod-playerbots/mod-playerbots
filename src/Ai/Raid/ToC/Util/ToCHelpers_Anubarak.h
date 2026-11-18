@@ -558,16 +558,20 @@ enum class AnubarakHealDuty : uint8
 };
 
 // Heroic phase 3's heal. urgent: itself at risk, then its duty's carrier or tank. rescue: a carrier at risk.
-// hot: that HoT and nothing bigger. A tank or carrier another heal already heads for ranks behind one with none.
+// floor: itself near the swarm's minimum tick. hot: that HoT and nothing bigger. A tank or carrier another
+// heal already heads for ranks behind one with none.
 struct AnubarakSwarmHealPick
 {
     Player* target = nullptr;
     bool urgent = false;
     bool rescue = false;
+    bool floor = false;
     bool hot = false;
 };
 // A `hot` pick's HoT, false once none is due
 bool CastAnubarakSwarmHot(PlayerbotAI* botAI, Player* member);
+// A `floor` pick's heal on itself, false once none is due
+bool CastAnubarakSwarmFloor(PlayerbotAI* botAI);
 AnubarakSwarmHealPick GetAnubarakSwarmHealPick(PlayerbotAI* botAI);
 // A non-tank without Penetrating Cold, the healer itself too: healing it only feeds the swarm
 bool AnubarakSwarmHealWasted(Player* target);
@@ -645,8 +649,8 @@ bool AnubarakGathers(PlayerbotAI* botAI);
 // with the tank patches 40+ yd apart. Heroic from his 35% in a phase 1, a stand behind the tank patches instead.
 bool GetAnubarakHealerStand(Player* bot, Position& out);
 bool AnubarakHealerStandApplies(PlayerbotAI* botAI);
-// Heroic, from his 35% in a phase 1 and in phase 3: a tank under 50%, so the healer heals where it stands
-// instead of walking to its stand
+// Heroic, from his 35% in a phase 1 and in phase 3: a tank under 50%, or the healer itself near the swarm's
+// minimum tick, so it heals where it stands instead of walking to its stand
 bool AnubarakHealerStandWaits(Player* bot);
 // Heroic phase 3: a ranged DPS bot's stand behind the tank patches, after the healers', within 28 yd of him and
 // heal reach of every healer stand. False with no stand left, and on sphere or battle res duty.

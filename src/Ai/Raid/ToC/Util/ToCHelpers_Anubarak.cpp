@@ -161,6 +161,8 @@ constexpr float ANUBARAK_SWARM_COLD_HEALER_TANK_PCT = 35.0f;
 constexpr int32 ANUBARAK_SWARM_MIN_DRAIN = 250;
 // Four of those ticks plus some margin, so a HoT's first tick 3 s later still lands
 constexpr uint32 ANUBARAK_SWARM_HOT_HP = 1200;
+// Three ticks: a HoT's first tick comes too late from here, so a healer this low takes a direct heal
+constexpr uint32 ANUBARAK_SWARM_FLOOR_HP = 750;
 // A direct heal on a carrier at risk has to land this long before its next tick
 constexpr int32 ANUBARAK_COLD_RESCUE_MARGIN_MS = 300;
 // Aura Mastery goes on a Penetrating Cold round this fresh, so its 6 s cover the round's first two ticks
@@ -6950,6 +6952,30 @@ bool CastAnubarakSwarmHot(PlayerbotAI* botAI, Player* member)
     return hot && botAI->CastSpell(hot, member);
 }
 
+// Health plus the shields that take the swarm, which is Nature
+static int64 SwarmHealthLeft(Player* member)
+{
+    int64 left = member->GetHealth();
+    for (AuraEffect const* shield : member->GetAuraEffectsByType(SPELL_AURA_SCHOOL_ABSORB))
+        if (shield->GetMiscValue() & SPELL_SCHOOL_MASK_NATURE)
+            left += std::max(0, shield->GetAmount());
+
+    return left;
+}
+
+// A healer bot the swarm's minimum tick kills in four ticks with no HoT on it, or in three with one.
+// It heals itself then: the others are on the tanks and carriers, and their HoT often lands too late
+static bool SwarmFloor(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    if (!bot->IsAlive() || !PlayerbotAI::IsHeal(bot) || !AnubarakSwarmHealing(botAI))
+        return false;
+
+    int64 const left = SwarmHealthLeft(bot);
+    return left < ANUBARAK_SWARM_HOT_HP &&
+           (left < ANUBARAK_SWARM_FLOOR_HP || bot->GetAuraEffectsByType(SPELL_AURA_PERIODIC_HEAL).empty());
+}
+
 // Living Penetrating Cold carriers in group order
 static std::vector<ObjectGuid> const& ColdCarriers(Player* bot, AnubarakState const& state)
 {
@@ -7399,6 +7425,8 @@ static std::vector<ObjectGuid> const& SwarmHealable(Player* bot, AnubarakState c
     });
 }
 
+static char const* SwarmFloorHeal(PlayerbotAI* botAI);
+
 AnubarakSwarmHealPick GetAnubarakSwarmHealPick(PlayerbotAI* botAI)
 {
     AnubarakSwarmHealPick pick;
@@ -7478,6 +7506,11 @@ AnubarakSwarmHealPick GetAnubarakSwarmHealPick(PlayerbotAI* botAI)
 
     if (ColdTickDeadly(NextColdTick(bot)))
         take(bot, true);
+    else if (SwarmFloorHeal(botAI))
+    {
+        take(bot, false);
+        pick.floor = true;
+    }
     else if (DutyOf(*state, bot->GetGUID()) == AnubarakHealDuty::Cold)
     {
         auto const assigned = state->coldOf.find(bot->GetGUID());
@@ -7599,6 +7632,49 @@ bool CastAnubarakColdRescue(PlayerbotAI* botAI, Player* member)
     }
 
     return CastAnubarakColdCarrierCover(botAI, member);
+}
+
+// Its shield first, since an absorb feeds him nothing, then its own HoT while that still ticks in time,
+// then an instant, then the fastest heal that lands before the swarm's minimum ticks run it out
+static char const* SwarmFloorHeal(PlayerbotAI* botAI)
+{
+    if (!botAI || !SwarmFloor(botAI))
+        return nullptr;
+
+    Player* bot = botAI->GetBot();
+    int64 const left = SwarmHealthLeft(bot);
+    if (!bot->HasAura(SPELL_WEAKENED_SOUL) && botAI->CanCastSpell("power word: shield", bot))
+        return "power word: shield";
+
+    if (left >= ANUBARAK_SWARM_FLOOR_HP)
+        for (char const* hot : SWARM_HOTS)
+            if (botAI->CanCastSpell(hot, bot))
+                return hot;
+
+    for (char const* instant : COLD_RESCUE_INSTANTS)
+        if (botAI->CanCastSpell(instant, bot))
+            return instant;
+
+    if (bot->HasAuraState(AURA_STATE_SWIFTMEND) && botAI->CanCastSpell("swiftmend", bot))
+        return "swiftmend";
+
+    int64 const leftMs = left / ANUBARAK_SWARM_MIN_DRAIN * IN_MILLISECONDS;
+    for (char const* heal : COLD_RESCUE_HEALS)
+    {
+        uint32 const spellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", heal)->Get();
+        SpellInfo const* info = spellId ? sSpellMgr->GetSpellInfo(spellId) : nullptr;
+        if (info && static_cast<int64>(info->CalcCastTime(bot)) + ANUBARAK_COLD_RESCUE_MARGIN_MS < leftMs &&
+            botAI->CanCastSpell(heal, bot))
+            return heal;
+    }
+
+    return nullptr;
+}
+
+bool CastAnubarakSwarmFloor(PlayerbotAI* botAI)
+{
+    char const* heal = SwarmFloorHeal(botAI);
+    return heal && botAI->CastSpell(heal, botAI->GetBot());
 }
 
 bool AnubarakAuraMasteryDue(PlayerbotAI* botAI)
@@ -8925,7 +9001,7 @@ bool AnubarakHealerStandWaits(Player* bot)
 {
     Creature* boss = nullptr;
     AnubarakState const* state = bot ? BehindWindow(bot, boss) : nullptr;
-    return state && AnyTankLow(bot, *state);
+    return state && (AnyTankLow(bot, *state) || SwarmFloorHeal(GET_PLAYERBOT_AI(bot)));
 }
 
 // Heroic, from his 35% in a phase 1 and in phase 3: this healer's stand behind the tank patches once every
