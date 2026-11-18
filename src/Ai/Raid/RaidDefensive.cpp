@@ -185,8 +185,8 @@ uint32 CoverSpellId(Player* member, CoverSpec const& spec)
     return memberAI ? memberAI->GetAiObjectContext()->GetValue<uint32>("spell id", spec.name)->Get() : 0;
 }
 
-// Could cast the cover from where it stands, its own cast check aside: a healer mid heal fails
-// CanCastSpell, and the pinned-cast break gets it out of that inside the window
+// Could cast the cover from where it stands, skipping CanCastSpell: a healer mid heal fails it, and the
+// encounter can still break that heal inside the window
 bool CoverReady(Player* member, CoverSpec const& spec, RaidPredictedHit const& hit,
                 std::vector<Player*> const& members)
 {
