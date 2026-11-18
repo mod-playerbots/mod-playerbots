@@ -627,6 +627,25 @@ Position ValidateStaticFloorPoint(Player* bot, Position const& point)
     return Position(x, y, z);
 }
 
+bool SegmentCrossesCircle(Position const& from, Position const& to, HazardCircle const& circle)
+{
+    float const ax = from.GetPositionX();
+    float const ay = from.GetPositionY();
+    float const dx = to.GetPositionX() - ax;
+    float const dy = to.GetPositionY() - ay;
+    float const cx = circle.first.GetPositionX() - ax;
+    float const cy = circle.first.GetPositionY() - ay;
+
+    float const lengthSq = dx * dx + dy * dy;
+    float t = 0.0f;
+    if (lengthSq > 0.0f)
+        t = std::clamp((cx * dx + cy * dy) / lengthSq, 0.0f, 1.0f);
+
+    float const px = t * dx - cx;
+    float const py = t * dy - cy;
+    return px * px + py * py < circle.second * circle.second;
+}
+
 Position FindNearestPositionClearOfHazards(Player* bot, std::vector<HazardCircle> const& hazards, float maxRadius,
                                            float distanceStep, float angleStep, Position const* preferNear,
                                            std::function<bool(float, float)> const& accept, HazardSweepCache* cache)

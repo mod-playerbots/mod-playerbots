@@ -193,6 +193,10 @@ Position ValidateStaticFloorPoint(Player* bot, Position const& point);
 // A hazard and the distance a bot has to keep from it
 using HazardCircle = std::pair<Position, float>;
 
+// Some point of the 2D segment, ends included, lies strictly inside the circle. The sweep below only
+// clears the spot itself, so an accept callback uses this to turn down a walk that crosses a hazard.
+bool SegmentCrossesCircle(Position const& from, Position const& to, HazardCircle const& circle);
+
 // Collision answers for one sweep grid, so a fallback sweep over the same rings skips the raycasts.
 // One per Execute: the answers only hold while the bot stands where it stood.
 struct HazardSweepCache
