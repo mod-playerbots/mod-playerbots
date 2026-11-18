@@ -7,13 +7,17 @@
 #ifndef PLAYERBOTS_RAIDDEFENSIVE_H
 #define PLAYERBOTS_RAIDDEFENSIVE_H
 
+#include <string>
+#include <vector>
+
 #include "Define.h"
 #include "SharedDefines.h"
 
+class Player;
 class PlayerbotAI;
 
-// Personal buttons spent ahead of a hit the encounter sees coming. The encounter says when the hit lands
-// and what it does, this says what the bot answers it with. Nothing resolves off the scope's map.
+// Raid cooldowns and personal buttons for a hit the encounter sees coming: it says when and how hard, this
+// says who answers with what. Nothing resolves off the scope's map.
 
 struct RaidDefensiveScope
 {
@@ -36,13 +40,50 @@ struct RaidPredictedHit
     // hit gets one
     bool keepVictim = false;
     SpellSchoolMask school = SPELL_SCHOOL_MASK_NONE;
+    // a raid boss's level, for its resistance roll
     uint8 casterLevel = 83;
+    // members who mustn't channel, null for nobody
+    bool (*noChannel)(Player*) = nullptr;
 };
 
+enum class RaidCover : uint8
+{
+    None,
+    AuraMastery,
+    DivineSacrifice,
+    AntiMagicZone,
+    DivineHymn,
+    Tranquility,
+};
+
+// A cover goes up from this long before the first damage until this long after it: Aura Mastery and
+// Divine Guardian last 6 s, so either one cast in the window still runs past a 5 s hit's last tick.
+inline constexpr uint32 RAID_COVER_WINDOW_LEAD_MS = 1500;
+inline constexpr uint32 RAID_COVER_WINDOW_LATE_MS = 1000;
+// Covers are dealt once the hit would leave this many members under the floor
+inline constexpr uint32 RAID_COVER_MIN_UNDER = 3;
 // What a member should still have left after the hit, of its max health
 inline constexpr float RAID_DEFENSIVE_FLOOR_PCT = 25.0f;
 // A personal button goes up from this long before the first damage
 inline constexpr uint32 RAID_PERSONAL_LEAD_MS = 1000;
+
+// The raid cooldown this bot casts now, None otherwise, from a deal latched for the hit and cast inside its
+// window. Null with no hit coming drops the deal.
+RaidCover GetRaidCover(PlayerbotAI* botAI, RaidDefensiveScope const& scope, RaidPredictedHit const* hit);
+// The bot's own rank of it, 0 when it doesn't know it
+uint32 RaidCoverSpellId(PlayerbotAI* botAI, RaidCover cover);
+bool IsRaidCoverChannel(RaidCover cover);
+// After a cast went out: Divine Sacrifice comes off again once Divine Guardian is up, since under a hit
+// on everyone its 30% redirect drains the paladin.
+void FinishRaidCover(PlayerbotAI* botAI, RaidCover cover);
+
+// The paladin is talented into Divine Guardian, so its Divine Sacrifice cuts damage to the whole raid
+bool RaidHasDivineGuardian(Player* paladin);
+
+// Before the first damage: the class nodes for the raid cooldowns are held over this, so none goes out
+// early or twice.
+bool RaidHitLeadIn(RaidPredictedHit const& hit);
+std::vector<std::string> RaidCoverClassNodes();
 
 struct RaidPersonalPick
 {
@@ -52,12 +93,8 @@ struct RaidPersonalPick
     explicit operator bool() const { return spellId || consumable; }
 };
 
-// The bot's own answer to a hit that would leave it under the floor, from RAID_PERSONAL_LEAD_MS before
-// the first damage: NextMagicDefensive's row for what is left of the hit (NextPhysicalDefensive's, then
-// Evasion, Deterrence or Pain Suppression, for a physical one), and on a lethal one with no row
-// Dispersion, the class immunity, then a healthstone at 70% or under. A non-tank paladin on a measured
-// hit takes Divine Shield first, a mage on a focus hit Ice Block, the GCD or a cast in progress
-// notwithstanding. Nothing while one runs or while it channels Divine Hymn or Tranquility.
+// The bot's own button for a hit that would leave it under the floor, from RAID_PERSONAL_LEAD_MS out: its
+// class defensive row, else on a lethal hit an immunity or a healthstone.
 RaidPersonalPick GetRaidPersonalDefensive(PlayerbotAI* botAI, RaidDefensiveScope const& scope,
                                           RaidPredictedHit const* hit);
 
