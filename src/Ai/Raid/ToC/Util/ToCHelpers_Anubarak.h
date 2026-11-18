@@ -369,7 +369,6 @@ Creature* GetAnubarak(Player* bot);
 bool AnubarakEngaged(PlayerbotAI* botAI);
 // None while not engaged. A read 5 s after the last one starts a new pull, which clears every latch.
 AnubarakPhase GetAnubarakPhase(PlayerbotAI* botAI);
-bool AnubarakSubmerged(PlayerbotAI* botAI);
 bool AnubarakLeechingSwarmActive(PlayerbotAI* botAI);
 // Heroic phase 3, where a heal on a healthy non-tank goes back to him through Leeching Swarm
 bool AnubarakSwarmHealing(PlayerbotAI* botAI);
@@ -504,9 +503,6 @@ AnubarakBurrowerPick GetAnubarakBurrowerPick(PlayerbotAI* botAI);
 // A selectable burrower is on this ranged DPS or healer bot and its owner has a usable side tank, the nearest
 // when several. Not for a tank, a marked bot, escort, sphere or battle res duty, or while the raid gathers.
 bool GetAnubarakBurrowerLead(PlayerbotAI* botAI, AnubarakBurrowerLead& out);
-// The bot's DPS side's latched focus, else either side's: a low burrower, or a settled one on Permafrost or too
-// fresh to submerge, since one under 80% off it comes back full. Off Permafrost first, then lowest health.
-Creature* GetAnubarakFocusBurrower(Player* bot);
 // This DPS bot's target by priority: skull, nearby scarabs and burrowers, him in the push, its side's focus,
 // leftover scarabs, the other side's focus, him. Skips a capped pick. Null off the pull, non-DPS or sphere duty.
 Unit* GetAnubarakDpsTarget(PlayerbotAI* botAI);

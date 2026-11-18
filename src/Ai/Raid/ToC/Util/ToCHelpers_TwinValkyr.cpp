@@ -1002,11 +1002,6 @@ bool HasDarkEssence(Unit* unit)
     return unit && unit->HasAura(sSpellMgr->GetSpellIdForDifficulty(SPELL_DARK_ESSENCE, unit));
 }
 
-bool HasAnyEssence(Unit* unit)
-{
-    return HasLightEssence(unit) || HasDarkEssence(unit);
-}
-
 bool HasLightTouch(Unit* unit)
 {
     return unit && unit->HasAura(sSpellMgr->GetSpellIdForDifficulty(SPELL_LIGHT_TOUCH, unit));
@@ -1015,12 +1010,6 @@ bool HasLightTouch(Unit* unit)
 bool HasDarkTouch(Unit* unit)
 {
     return unit && unit->HasAura(sSpellMgr->GetSpellIdForDifficulty(SPELL_DARK_TOUCH, unit));
-}
-
-TwinColour ActiveVortexColour(PlayerbotAI* botAI)
-{
-    TwinValkyrState const* state = ReadTwins(botAI);
-    return state ? state->vortex : TwinColour::None;
 }
 
 Unit* GetTwinCastingPact(PlayerbotAI* botAI)

@@ -4750,8 +4750,6 @@ AnubarakPhase GetAnubarakPhase(PlayerbotAI* botAI)
     return state ? state->phaseValue : AnubarakPhase::None;
 }
 
-bool AnubarakSubmerged(PlayerbotAI* botAI) { return GetAnubarakPhase(botAI) == AnubarakPhase::Submerged; }
-
 bool AnubarakLeechingSwarmActive(PlayerbotAI* botAI) { return GetAnubarakPhase(botAI) == AnubarakPhase::Swarm; }
 
 bool AnubarakSwarmHealing(PlayerbotAI* botAI)
@@ -6416,20 +6414,6 @@ bool AnubarakSideTankAreaAllowed(PlayerbotAI* botAI, std::string const& spellNam
     // One burrower is enough here: Heart Strike on a lone one is still the side tank's best threat
     return JudgeHits(SideAoeCastHits(botAI, *spell, spellId, aimed ? aimed : bot, centre, units),
                      AnubarakSideTankBossCapped(bot), false) == SideAoeVerdict::Pass;
-}
-
-Creature* GetAnubarakFocusBurrower(Player* bot)
-{
-    AnubarakState* state = bot ? ReadPhase(GET_PLAYERBOT_AI(bot)) : nullptr;
-    if (!state)
-        return nullptr;
-
-    Creature* const focus[2] = {SideFocus(bot, *state, 0), SideFocus(bot, *state, 1)};
-    int8 const side = IsToCDpsBot(bot) ? DpsSide(bot, *state) : -1;
-    if (side >= 0)
-        return focus[side];
-
-    return focus[0] ? focus[0] : focus[1];
 }
 
 bool AnubarakBurrowerNear(Player* bot, Position const& at, float range, bool waiting)

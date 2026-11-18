@@ -109,13 +109,6 @@ bool FactionChampionsIced(PlayerbotAI* botAI, Unit* champion);
 // Heroic, and the champion's PvP trinket is off cooldown
 bool FactionChampionsTrinketReady(Unit* champion);
 
-// Fears, stuns, confuses or freezes (a frost root or stun), itself or one trigger down: the champion
-// trinkets out of it
-bool FactionChampionsSpellPopsTrinket(uint32 spellId);
-
-// Live, and a champion healer is still up
-bool FactionChampionsHealerLeft(PlayerbotAI* botAI);
-
 // While live: where the champions landed, and the middle of the pack, which follows it wherever it walks:
 // those within 20 yd of the last centre, the kill target left out
 bool FactionChampionsPack(PlayerbotAI* botAI, Position& anchor, Position& centre);
@@ -129,9 +122,6 @@ bool FactionChampionsKillTargetOut(PlayerbotAI* botAI);
 
 // A champion 20+ yd off the pack centre, not iced, whose victim isn't a tank
 bool FactionChampionsIsEscapee(PlayerbotAI* botAI, Unit* champion);
-
-// How long the encounter has been live, 0 when it isn't
-uint32 FactionChampionsLiveMs(PlayerbotAI* botAI);
 
 // Live, and a champion that fears is still up: warlock, disc or shadow priest, warrior.
 bool FactionChampionsFearWindowActive(PlayerbotAI* botAI);

@@ -103,14 +103,12 @@ TwinColour EssenceOf(Unit* unit);
 
 bool HasLightEssence(Unit* unit);
 bool HasDarkEssence(Unit* unit);
-bool HasAnyEssence(Unit* unit);
 
 // Heroic Touch of Light / Touch of Darkness
 bool HasLightTouch(Unit* unit);
 bool HasDarkTouch(Unit* unit);
 
 // From cast start to channel end
-TwinColour ActiveVortexColour(PlayerbotAI* botAI);
 Unit* GetTwinCastingPact(PlayerbotAI* botAI);
 Unit* GetShieldedTwin(PlayerbotAI* botAI);
 

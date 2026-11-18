@@ -62,7 +62,6 @@ ToCStagingBoss GetToCStagedArrival(PlayerbotAI* botAI);
 // That, while the bot is alive, out of combat and in the arrival's room together with its master,
 // else the group leader
 ToCStagingBoss GetToCStagingBoss(PlayerbotAI* botAI);
-ToCEncounter ToCStagingEncounter(PlayerbotAI* botAI);
 
 struct ToCStagingRead
 {

@@ -1451,45 +1451,9 @@ bool FactionChampionsTrinketReady(Unit* champion)
     return map && map->IsHeroic() && !creature->HasSpellCooldown(SPELL_PVP_TRINKET);
 }
 
-bool FactionChampionsSpellPopsTrinket(uint32 spellId)
-{
-    SpellInfo const* info = spellId ? sSpellMgr->GetSpellInfo(spellId) : nullptr;
-    if (!info)
-        return false;
-
-    auto const pops = [](SpellInfo const* spell)
-    {
-        bool const frost = spell->GetSchoolMask() & SPELL_SCHOOL_MASK_FROST;
-        return spell->HasAura(SPELL_AURA_MOD_FEAR) || spell->HasAura(SPELL_AURA_MOD_STUN) ||
-               spell->HasAura(SPELL_AURA_MOD_CONFUSE) || (frost && spell->HasAura(SPELL_AURA_MOD_ROOT));
-    };
-
-    if (pops(info))
-        return true;
-
-    // Intimidation's stun sits one trigger down
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (SpellInfo const* triggered = sSpellMgr->GetSpellInfo(info->Effects[i].TriggerSpell))
-            if (pops(triggered))
-                return true;
-
-    return false;
-}
-
 bool FactionChampionsFocusBot(PlayerbotAI* botAI)
 {
     return botAI && !PlayerbotAI::IsHeal(botAI->GetBot()) && FactionChampionsIceDutyOf(botAI->GetBot()).IsEmpty();
-}
-
-bool FactionChampionsHealerLeft(PlayerbotAI* botAI)
-{
-    if (!ToCEncounterIsLive(botAI, ToCEncounter::FactionChampions))
-        return false;
-
-    FactionChampionsState* state = Refresh(botAI);
-    return state && state->live &&
-           std::any_of(state->champions.begin(), state->champions.end(),
-                       [](Champion const& champion) { return champion.healer; });
 }
 
 bool FactionChampionsPack(PlayerbotAI* botAI, Position& anchor, Position& centre)
@@ -1543,15 +1507,6 @@ bool FactionChampionsIsEscapee(PlayerbotAI* botAI, Unit* champion)
 {
     Champion const* found = LiveChampion(botAI, champion);
     return found && found->escapee;
-}
-
-uint32 FactionChampionsLiveMs(PlayerbotAI* botAI)
-{
-    if (!ToCEncounterIsLive(botAI, ToCEncounter::FactionChampions))
-        return 0;
-
-    FactionChampionsState* state = Refresh(botAI);
-    return state && state->live ? getMSTimeDiff(state->liveSinceMs, getMSTime()) : 0;
 }
 
 bool FactionChampionsFearWindowActive(PlayerbotAI* botAI)
