@@ -909,8 +909,11 @@ int32 HunterIndex(Player* bot, JormungarsState const& state)
         }
     });
 
-    auto const found = std::find(hunters.begin(), hunters.end(), bot->GetGUID());
-    return found == hunters.end() ? -1 : static_cast<int32>(std::distance(hunters.begin(), found));
+    for (size_t i = 0; i < hunters.size(); ++i)
+        if (hunters[i] == bot->GetGUID())
+            return static_cast<int32>(i);
+
+    return -1;
 }
 
 WormRead const* FindWorm(JormungarsState const& state, ObjectGuid const& guid)
