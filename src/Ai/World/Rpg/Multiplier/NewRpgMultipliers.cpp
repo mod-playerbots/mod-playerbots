@@ -30,3 +30,12 @@ float NewRpgQuestGiverMultiplier::GetValue(Action* action)
     // tick instead. SearchQuestGiverAndAcceptOrReward gives up on a giver after a minute, which empties the value.
     return AI_VALUE(ObjectGuid, "new rpg quest giver").IsEmpty() ? 1.0f : 0.0f;
 }
+
+float NewRpgDoQuestMultiplier::GetValue(Action* action)
+{
+    if (!action || action->getName() != "attack anything")
+        return 1.0f;
+
+    auto const* doQuest = std::get_if<NewRpgInfo::DoQuest>(&botAI->rpgInfo.data);
+    return doQuest && !doQuest->poiFallback ? 0.0f : 1.0f;
+}
