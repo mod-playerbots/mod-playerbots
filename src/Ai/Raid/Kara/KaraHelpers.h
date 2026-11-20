@@ -199,7 +199,7 @@ inline constexpr float MANA_WARP_PACKS_RADIUS = 60.0f;
 inline Position const MANA_WARP_PACKS_CENTER = { -11326.0f, -1781.0f, 179.8f };
 
 bool IsNearManaWarpPacks(Player* bot);
-float GetManaWarpStunReach(Player* bot);
+float GetManaWarpStunReach(PlayerbotAI* botAI);
 Unit* GetManaWarpToStun(PlayerbotAI* botAI);
 void ClaimManaWarpForWarStomp(Unit* warp);
 Unit* GetManaWarpToStunNext(PlayerbotAI* botAI);
@@ -666,6 +666,7 @@ std::optional<Position> FindNightbaneStackPosition(
 std::vector<Position> GetCharredEarths(PlayerbotAI* botAI);
 bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const& charredEarths);
 bool IsOnNightbaneRangedSide(Position const& position, Unit& nightbane);
+bool IsInNightbaneRangedSight(Player& bot, Position const& from, Position const& to);
 std::optional<Position> FindNightbaneRangedPosition(
     Player& bot, Unit& nightbane, Position const& from, std::vector<Position> const& charredEarths,
     NightbaneRangedTier tier);

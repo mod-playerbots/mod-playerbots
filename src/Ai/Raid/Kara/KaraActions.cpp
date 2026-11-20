@@ -186,7 +186,7 @@ bool ManaWarpStandByToStunAction::Execute(Event /*event*/)
     if (!warp)
         return false;
 
-    float const reach = GetManaWarpStunReach(bot);
+    float const reach = GetManaWarpStunReach(botAI);
     if (bot->GetExactDist(warp) <= reach)
         return true;
 
@@ -526,7 +526,8 @@ bool BigBadWolfRedHoodUseEscapeAbilityAction::Execute(Event /*event*/)
     if (bot->getClass() == CLASS_HUNTER &&
         !bot->HasSpellCooldown(Id(KaraSpells::SPELL_FEIGN_DEATH)))
     {
-        return botAI->CanCastSpell("feign death", bot) && botAI->CastSpell("feign death", bot);
+        return botAI->CanCastSpell(Id(KaraSpells::SPELL_FEIGN_DEATH), bot) &&
+            botAI->CastSpell(Id(KaraSpells::SPELL_FEIGN_DEATH), bot);
     }
 
     // I'm not sure what the exact issue is, but with BBW's reach (4.5 yd) and speed (8.5 yd/s),
@@ -1668,11 +1669,16 @@ bool PrinceMalchezaarMoveClearOfHazardsAction::Execute(Event /*event*/)
 
     Unit* malchezaar = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
     std::vector<Position> const infernals = GetLandedInfernals(botAI);
-    if (_destination && !IsClearOfMalchezaarHazards(bot, malchezaar, infernals, *_destination))
+    // A newly landed Infernal could be on the way to the destination, so search again.
+    if (_destination && (infernals.size() != _searchedInfernalCount ||
+        !IsClearOfMalchezaarHazards(bot, malchezaar, infernals, *_destination)))
+    {
         _destination.reset();
+    }
 
     if (!_destination)
     {
+        _searchedInfernalCount = infernals.size();
         _destination = FindMalchezaarClearPosition(botAI, malchezaar, infernals);
         if (!_destination)
             return false;
@@ -2044,13 +2050,15 @@ bool NightbaneManageTimersAndTrackersAction::UpdateMeleePosition(
 // Ranged start each ground phase clockwise from Nightbane (his right side if he is properly
 // positioned by the tank), up against the parapet. This generally leaves enough room for ranged to
 // move laterally toward the dome to escape the first Charred Earth while keeping LoS. If there are
-// no safe positions at range that are within LoS, ranged will step forward.
+// no safe positions at range that are within LoS, ranged will step forward. A position that loses
+// LoS to Nightbane (if, for example, a human tank moves him) is replaced like one in Charred Earth.
 bool NightbaneManageTimersAndTrackersAction::UpdateRangedPosition(
     KaraInstanceState& state, Unit& nightbane, std::vector<Position> const& charredEarths)
 {
     std::optional<Position>& position = state.nightbaneRangedPosition;
-    bool const isClear = position && IsClearOfCharredEarth(*position, charredEarths);
-    if (isClear && IsOnNightbaneRangedSide(*position, nightbane))
+    bool const isUsable = position && IsClearOfCharredEarth(*position, charredEarths) &&
+        IsInNightbaneRangedSight(*bot, *position, nightbane.GetPosition());
+    if (isUsable && IsOnNightbaneRangedSide(*position, nightbane))
     {
         constexpr float tolerance = 0.5f;
         float const bossDist = nightbane.GetExactDist2d(*position);
@@ -2075,7 +2083,7 @@ bool NightbaneManageTimersAndTrackersAction::UpdateRangedPosition(
             *bot, nightbane, from, charredEarths, NightbaneRangedTier::Band);
     }
 
-    if (!next && position && !isClear)
+    if (!next && position && !isUsable)
     {
         next = FindNightbaneRangedPosition(
             *bot, nightbane, from, charredEarths, NightbaneRangedTier::Forward);

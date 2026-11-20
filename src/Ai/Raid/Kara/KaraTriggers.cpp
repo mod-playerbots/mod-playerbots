@@ -249,10 +249,9 @@ bool ShadeOfAranRangedInBlizzardTrigger::IsActiveInEncounter()
 
 bool ShadeOfAranFlameWreathActiveTrigger::IsActiveInEncounter()
 {
+    // Do not check for Aran here. A bot that does not find Aran (most likely due to being battle
+    // rezzed between the 5s zone combat pulses) still needs to stop moving for Flame Wreath.
     Unit* aran = GetEncounterBoss();
-    if (!aran)
-        return false;
-
     if (!IsFlameWreathInProgress(botAI, aran))
         return false;
 

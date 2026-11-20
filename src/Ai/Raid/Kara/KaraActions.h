@@ -475,6 +475,7 @@ public:
 
 private:
     std::optional<Position> _destination;
+    size_t _searchedInfernalCount = 0;
 };
 
 class PrinceMalchezaarTankPositionBossAction : public AttackAction

@@ -366,14 +366,16 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Actio
         return 1.0f;
     }
 
+    // Do not check for Aran here. A bot that does not find Aran (most likely due to being battle
+    // rezzed between the 5s zone combat pulses) still needs to stop moving for Flame Wreath.
     Unit* aran = GetEncounterBoss();
-    if (!aran || !IsFlameWreathInProgress(botAI, aran))
+    if (!IsFlameWreathInProgress(botAI, aran))
         return 1.0f;
 
-    bool const isReachToAttack =
-        dynamic_cast<ReachMeleeAction*>(action) || dynamic_cast<ReachSpellAction*>(action);
+    if (!dynamic_cast<ReachTargetAction*>(action))
+        return 0.0f;
 
-    return isReachToAttack && CanReachTargetDuringFlameWreath(botAI, aran) ? 1.0f : 0.0f;
+    return CanReachTargetDuringFlameWreath(botAI, aran) ? 1.0f : 0.0f;
 }
 
 // Netherspite

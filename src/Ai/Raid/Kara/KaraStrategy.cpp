@@ -6,6 +6,7 @@
 
 #include "KaraStrategy.h"
 #include "AiObjectContext.h"
+#include "EncounterHelpers.h"
 #include "KaraHelpers.h"
 #include "KaraMultipliers.h"
 #include "Playerbots.h"
@@ -213,11 +214,12 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
 
 void AppendNightbaneFlightPhaseExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    Unit* nightbane =
-        KaraHelpers::GetKaraBoss(botAI->GetBot(), KaraHelpers::KaraBosses::DATA_NIGHTBANE);
-    if (!nightbane)
+    Player* bot = botAI->GetBot();
+    uint32 const nightbaneId = KaraHelpers::Id(KaraHelpers::KaraBosses::DATA_NIGHTBANE);
+    if (!EncounterHelpers::IsBossInProgress(bot, KaraHelpers::KARA_MAP_ID, nightbaneId))
         return;
 
+    Unit* nightbane = KaraHelpers::GetKaraBoss(bot, KaraHelpers::KaraBosses::DATA_NIGHTBANE);
     if (KaraHelpers::IsNightbaneFlying(nightbane))
         exclusions.insert(nightbane->GetGUID());
 
@@ -241,8 +243,12 @@ void AppendNightbaneFlightPhaseExclusions(PlayerbotAI* botAI, GuidSet& exclusion
 // DPS him at all.
 void AppendAttumenUnmountedNonTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    Unit* attumen = KaraHelpers::GetKaraBoss(
-        botAI->GetBot(), KaraHelpers::KaraBosses::DATA_ATTUMEN);
+    Player* bot = botAI->GetBot();
+    uint32 const attumenId = KaraHelpers::Id(KaraHelpers::KaraBosses::DATA_ATTUMEN);
+    if (!EncounterHelpers::IsBossInProgress(bot, KaraHelpers::KARA_MAP_ID, attumenId))
+        return;
+
+    Unit* attumen = KaraHelpers::GetKaraBoss(bot, KaraHelpers::KaraBosses::DATA_ATTUMEN);
     if (!attumen || attumen->GetEntry() ==
             KaraHelpers::Id(KaraHelpers::KaraNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED))
     {
@@ -255,7 +261,7 @@ void AppendAttumenUnmountedNonTankExclusions(PlayerbotAI* botAI, GuidSet& exclus
 void RaidKarazhanStrategy::AppendTargetExclusions(
     GuidSet& exclusions, TargetValueExclusionType type)
 {
-    if (botAI->GetBot()->GetMapId() != KaraHelpers::KARA_MAP_ID)
+    if (!EncounterHelpers::IsEncounterInProgress(botAI->GetBot(), KaraHelpers::KARA_MAP_ID))
         return;
 
     AppendNightbaneFlightPhaseExclusions(botAI, exclusions);

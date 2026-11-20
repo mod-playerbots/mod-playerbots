@@ -173,8 +173,16 @@ bool IsNearManaWarpPacks(Player* bot)
     return bot->GetExactDist(MANA_WARP_PACKS_CENTER) <= MANA_WARP_PACKS_RADIUS;
 }
 
-float GetManaWarpStunReach(Player* bot)
+float GetManaWarpStunReach(PlayerbotAI* botAI)
 {
+    Player* bot = botAI->GetBot();
+    // Concussion Blow, Shockwave, and Shadowfury are talents, so make sure Warriors and Warlocks
+    // without those talents never standby to stun with them.
+    auto const hasSpell = [botAI](char const* spell)
+    {
+        return botAI->GetAiObjectContext()->GetValue<uint32>("spell id", spell)->Get() != 0;
+    };
+
     float reach = 0.0f;
     switch (bot->getClass())
     {
@@ -191,12 +199,20 @@ float GetManaWarpStunReach(Player* bot)
             reach = HAMMER_OF_JUSTICE_REACH;
             break;
         case CLASS_ROGUE:
-        case CLASS_WARRIOR:
             reach = MELEE_STUN_REACH;
             break;
-        case CLASS_WARLOCK:
-            reach = SHADOWFURY_REACH;
+        case CLASS_WARRIOR:
+        {
+            if (hasSpell("concussion blow") || hasSpell("shockwave"))
+                reach = MELEE_STUN_REACH;
             break;
+        }
+        case CLASS_WARLOCK:
+        {
+            if (hasSpell("shadowfury"))
+                reach = SHADOWFURY_REACH;
+            break;
+        }
         default:
             break;
     }
@@ -213,8 +229,11 @@ float GetManaWarpStunReach(Player* bot)
 Unit* GetManaWarpToStun(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    float const reach = GetManaWarpStunReach(bot);
-    if (reach <= 0.0f || !IsNearManaWarpPacks(bot))
+    if (!IsNearManaWarpPacks(bot))
+        return nullptr;
+
+    float const reach = GetManaWarpStunReach(botAI);
+    if (reach <= 0.0f)
         return nullptr;
 
     AiObjectContext* context = botAI->GetAiObjectContext();
@@ -249,8 +268,8 @@ void ClaimManaWarpForWarStomp(Unit* warp)
 Unit* GetManaWarpToStunNext(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    if (GetManaWarpStunReach(bot) <= 0.0f || !IsNearManaWarpPacks(bot) ||
-        PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot))
+    if (!IsNearManaWarpPacks(bot) || PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot) ||
+        GetManaWarpStunReach(botAI) <= 0.0f)
     {
         return nullptr;
     }
@@ -560,8 +579,8 @@ bool IsFlameWreathInProgress(PlayerbotAI* botAI, Unit* aran)
         aran->GetDynObject(Id(KaraSpells::SPELL_FLAME_WREATH_AURA));
 }
 
-// The only movement allowed during Flame Wreath is a stuck bot moving to its target, and only if
-// the movement does not come close to crossing any ring.
+// The only movement allowed during Flame Wreath is a stuck bot moving to its target (for a healer,
+// the party member to heal), and only if the movement does not come close to crossing any ring.
 bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran)
 {
     Player* bot = botAI->GetBot();
@@ -569,7 +588,8 @@ bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran)
         return false;
 
     AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* target = context->GetValue<Unit*>("current target")->Get();
+    Unit* target = context->GetValue<Unit*>(
+        PlayerbotAI::IsHeal(bot) ? "party member to heal" : "current target")->Get();
     if (!target)
         return false;
 
@@ -1447,20 +1467,6 @@ std::optional<Position> FindMalchezaarTankPosition(
 
 // Nightbane
 
-namespace
-{
-
-bool IsInNightbaneRangedSight(Player& bot, Position const& from, Position const& to)
-{
-    float const eyeHeight = bot.GetCollisionHeight();
-    return bot.GetMap()->isInLineOfSight(
-        from.GetPositionX(), from.GetPositionY(), from.GetPositionZ() + eyeHeight,
-        to.GetPositionX(), to.GetPositionY(), to.GetPositionZ() + eyeHeight,
-        bot.GetPhaseMask(), LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing);
-}
-
-} // end anonymous namespace (Nightbane)
-
 float GetTerraceAngle(Position const& position)
 {
     float const angle = std::atan2(
@@ -1547,6 +1553,15 @@ bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const
 bool IsOnNightbaneRangedSide(Position const& position, Unit& nightbane)
 {
     return GetTerraceAngle(position) < GetTerraceAngle(nightbane);
+}
+
+bool IsInNightbaneRangedSight(Player& bot, Position const& from, Position const& to)
+{
+    float const eyeHeight = bot.GetCollisionHeight();
+    return bot.GetMap()->isInLineOfSight(
+        from.GetPositionX(), from.GetPositionY(), from.GetPositionZ() + eyeHeight,
+        to.GetPositionX(), to.GetPositionY(), to.GetPositionZ() + eyeHeight,
+        bot.GetPhaseMask(), LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing);
 }
 
 std::optional<Position> FindNightbaneRangedPosition(
