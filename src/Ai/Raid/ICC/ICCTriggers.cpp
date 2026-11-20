@@ -1099,3 +1099,45 @@ bool IccLichKingSpiritBombTrigger::IsActive()
 {
     return IccLichKingSpiritBombAction::IsBombThreatActive(botAI, bot);
 }
+
+//
+// Tank swaps
+//
+
+bool IccLichKingSoulReaperSwapTrigger::IsActive()
+{
+    // Only the tank actually holding the boss swaps; the other tank pulls it.
+    if (!PlayerbotAI::IsTank(bot) || bot->GetMapId() != 631)
+        return false;
+
+    Unit* lk = AI_VALUE2(Unit*, "find target", "the lich king");
+    if (!lk || !lk->IsAlive() || !lk->IsInCombat())
+        return false;
+
+    // Only the current victim stacks Soul Reaper.
+    if (lk->GetVictim() != bot)
+        return false;
+
+    if (Aura* aura = bot->GetAura(SPELL_LK_SOUL_REAPER_BUFF))
+        return aura->GetStackAmount() >= LK_SOUL_REAPER_SWAP_STACKS;
+
+    return false;
+}
+
+bool IccFestergutBloatSwapTrigger::IsActive()
+{
+    if (!PlayerbotAI::IsTank(bot) || bot->GetMapId() != 631)
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "festergut");
+    if (!boss || !boss->IsAlive() || !boss->IsInCombat())
+        return false;
+
+    if (boss->GetVictim() != bot)
+        return false;
+
+    if (Aura* aura = bot->GetAura(SPELL_FESTERGUT_GASTRIC_BLOAT))
+        return aura->GetStackAmount() >= FESTERGUT_BLOAT_SWAP_STACKS;
+
+    return false;
+}

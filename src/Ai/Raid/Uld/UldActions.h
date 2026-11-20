@@ -505,4 +505,53 @@ public:
     bool Execute(Event event) override;
 };
 
+//
+// XT-002 Deconstructor
+//
+
+// Searing Light / Gravity Bomb: get away from the rest of the raid.
+class Xt002MoveAwayBombAction : public MovementAction
+{
+public:
+    Xt002MoveAwayBombAction(PlayerbotAI* botAI) : MovementAction(botAI, "xt-002 move away bomb") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+// Exposed heart: double damage taken and the damage carries over to the boss,
+// so every dps swaps to it while it is up.
+class Xt002AttackHeartAction : public AttackAction
+{
+public:
+    Xt002AttackHeartAction(PlayerbotAI* botAI) : AttackAction(botAI, "xt-002 attack heart") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+//
+// Algalon the Observer
+//
+
+// Big Bang: get inside the nearest black hole before the 8s cast completes.
+class AlgalonEnterBlackHoleAction : public MovementAction
+{
+public:
+    AlgalonEnterBlackHoleAction(PlayerbotAI* botAI) : MovementAction(botAI, "algalon enter black hole") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+// Living Constellation: kill the add, it barrages the raid.
+class AlgalonAttackConstellationAction : public AttackAction
+{
+public:
+    AlgalonAttackConstellationAction(PlayerbotAI* botAI) : AttackAction(botAI, "algalon attack constellation") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
 #endif

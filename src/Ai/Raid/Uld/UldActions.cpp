@@ -3033,3 +3033,147 @@ bool YoggSaronPhase3PositioningAction::Execute(Event /*event*/)
 
     return false;
 }
+
+//
+// XT-002 Deconstructor
+//
+
+bool Xt002MoveAwayBombAction::Execute(Event /*event*/)
+{
+    // Find the closest group member and put distance between us.
+    Player* nearest = nullptr;
+    float minDist = 99999.0f;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+            if (!member || member == bot || !member->IsAlive())
+                continue;
+
+            float const dist = bot->GetDistance(member);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                nearest = member;
+            }
+        }
+    }
+
+    // Already isolated enough: Searing Light has a 10y radius, Gravity Bomb 12y.
+    if (!nearest || minDist >= 20.0f)
+        return false;
+
+    return MoveAway(nearest, 20.0f);
+}
+
+bool Xt002MoveAwayBombAction::isUseful()
+{
+    return bot->HasAura(SPELL_SEARING_LIGHT) || bot->HasAura(SPELL_GRAVITY_BOMB);
+}
+
+bool Xt002AttackHeartAction::Execute(Event /*event*/)
+{
+    Unit* heart = nullptr;
+    for (uint32 entry : {NPC_XT002_HEART, NPC_XT002_HEART_HEROIC})
+    {
+        if (Unit* found = bot->FindNearestCreature(entry, 100.0f))
+        {
+            if (found->IsAlive())
+            {
+                heart = found;
+                break;
+            }
+        }
+    }
+
+    if (!heart)
+        return false;
+
+    if (Group* group = bot->GetGroup())
+    {
+        ObjectGuid currentSkull = group->GetTargetIcon(7);
+        if (currentSkull.IsEmpty() || currentSkull != heart->GetGUID())
+            group->SetTargetIcon(7, bot->GetGUID(), heart->GetGUID());
+    }
+
+    return Attack(heart);
+}
+
+bool Xt002AttackHeartAction::isUseful()
+{
+    // Tanks keep the boss and the Pummelers, healers keep healing.
+    if (PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+    if (!boss || !boss->IsAlive() || !boss->IsInCombat())
+        return false;
+
+    for (uint32 entry : {NPC_XT002_HEART, NPC_XT002_HEART_HEROIC})
+    {
+        if (Unit* heart = bot->FindNearestCreature(entry, 100.0f))
+            if (heart->IsAlive())
+                return true;
+    }
+
+    return false;
+}
+
+//
+// Algalon the Observer
+//
+
+bool AlgalonEnterBlackHoleAction::Execute(Event /*event*/)
+{
+    // Get inside the closest black hole; the portal is the only safe spot.
+    Unit* hole = bot->FindNearestCreature(NPC_BLACK_HOLE, 120.0f);
+    if (!hole || !hole->IsAlive())
+        return false;
+
+    return MoveNear(hole, 1.5f);
+}
+
+bool AlgalonEnterBlackHoleAction::isUseful()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "algalon the observer");
+    if (!boss || !boss->IsAlive() || !boss->IsInCombat())
+        return false;
+
+    if (!boss->HasUnitState(UNIT_STATE_CASTING) || !boss->FindCurrentSpellBySpellId(SPELL_ALGALON_BIG_BANG))
+        return false;
+
+    // Nothing to do if there is no hole up (should not happen during the cast).
+    return bot->FindNearestCreature(NPC_BLACK_HOLE, 120.0f) != nullptr;
+}
+
+bool AlgalonAttackConstellationAction::Execute(Event /*event*/)
+{
+    Unit* add = bot->FindNearestCreature(NPC_LIVING_CONSTELLATION, 100.0f);
+    if (!add || !add->IsAlive())
+        return false;
+
+    if (Group* group = bot->GetGroup())
+    {
+        ObjectGuid currentSkull = group->GetTargetIcon(7);
+        if (currentSkull.IsEmpty() || currentSkull != add->GetGUID())
+            group->SetTargetIcon(7, bot->GetGUID(), add->GetGUID());
+    }
+
+    return Attack(add);
+}
+
+bool AlgalonAttackConstellationAction::isUseful()
+{
+    // Tanks stay on the boss (phase punches), healers heal.
+    if (PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "algalon the observer");
+    if (!boss || !boss->IsAlive() || !boss->IsInCombat())
+        return false;
+
+    Unit* add = bot->FindNearestCreature(NPC_LIVING_CONSTELLATION, 100.0f);
+    return add && add->IsAlive();
+}

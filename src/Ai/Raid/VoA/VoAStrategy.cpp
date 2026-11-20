@@ -6,8 +6,11 @@
 
 #include "VoAStrategy.h"
 #include "Action.h"
+#include "AiObjectContext.h"
+#include "Playerbots.h"
 #include "Strategy.h"
 #include "Trigger.h"
+#include "VoATriggers.h"
 #include "vector"
 
 void RaidVoAStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -42,4 +45,52 @@ void RaidVoAStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "koralon fire resistance trigger",
         { NextAction("koralon fire resistance action", ACTION_RAID) }));
+
+    //
+    // Toravon the Ice Watcher
+    //
+    // Ice orbs are a DPS job. The tank must keep the boss still: chasing an
+    // orb turns the boss and its breath/cleave sweeps the raid. The action
+    // itself refuses tanks, and AppendTargetExclusions removes orbs from the
+    // tank target value so the tank never even walks toward them.
+    triggers.push_back(new TriggerNode(
+        "voa toravon frozen orb",
+        { NextAction("voa toravon frozen orb action", ACTION_RAID + 2) }));
+
+    // Frozen Mallet stacks on the tank: swap at 3 (generic tank swap action).
+    triggers.push_back(new TriggerNode(
+        "voa toravon tank swap",
+        { NextAction("tank swap", ACTION_EMERGENCY) }));
+}
+
+void RaidVoAStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
+{
+    if (type != TargetValueExclusionType::TankTarget)
+        return;
+
+    // Called for every tank target-value recalculation: bail out with the
+    // cheapest check first.
+    if (botAI->GetBot()->GetMapId() != 624)
+        return;
+
+    // Strategies have no AI_VALUE macro (no action context), so read the
+    // values through the context directly.
+    AiObjectContext* context = botAI->GetAiObjectContext();
+
+    // Only during the Toravon fight.
+    Unit* boss = context->GetValue<Unit*>("find target", "toravon the ice watcher")->Get();
+    if (!boss || !boss->IsAlive() || !boss->IsInCombat())
+        return;
+
+    // Remove every live ice orb from the tank's candidate targets.
+    for (ObjectGuid const guid : context->GetValue<GuidVector>("nearest hostile npcs")->Get())
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive())
+            continue;
+
+        uint32 entry = unit->GetEntry();
+        if (entry == NPC_FROZEN_ORB_10 || entry == NPC_FROZEN_ORB_25)
+            exclusions.insert(guid);
+    }
 }

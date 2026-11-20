@@ -106,9 +106,28 @@ float IccAddsDbsMultiplier::GetValue(Action* action)
 // Gunship
 float IccGunshipMultiplier::GetValue(Action* action)
 {
-    // Detect gunship encounter via hostile enemy captain nearby
-    Unit* saurfang = bot->FindNearestCreature(NPC_HIGH_OVERLORD_SAURFANG, 200.0f);
-    Unit* muradin = bot->FindNearestCreature(NPC_MURADIN_BRONZEBEARD, 200.0f);
+    // Detect gunship encounter via hostile enemy captain nearby.
+    // The captains spawn under several entries depending on difficulty and
+    // side, so a single hardcoded entry would silently miss half the modes.
+    // Known entries (creature table, map 631): Saurfang 37187 / 32315 / 36939,
+    // Muradin 36948 / 37200 / 38607.
+    static constexpr uint32 saurfangEntries[] = {37187, 32315, 36939};
+    static constexpr uint32 muradinEntries[] = {36948, 37200, 38607};
+
+    Unit* saurfang = nullptr;
+    for (uint32 entry : saurfangEntries)
+    {
+        if ((saurfang = bot->FindNearestCreature(entry, 200.0f)))
+            break;
+    }
+
+    Unit* muradin = nullptr;
+    for (uint32 entry : muradinEntries)
+    {
+        if ((muradin = bot->FindNearestCreature(entry, 200.0f)))
+            break;
+    }
+
     bool const inGunship = (saurfang && saurfang->IsAlive() && saurfang->IsHostileTo(bot)) ||
                            (muradin && muradin->IsAlive() && muradin->IsHostileTo(bot));
     if (!inGunship)

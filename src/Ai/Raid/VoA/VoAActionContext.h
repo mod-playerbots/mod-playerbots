@@ -24,6 +24,7 @@ public:
         creators["emalon fall from floor action"] = &RaidVoAActionContext::emalon_fall_from_floor_action;
         creators["emalon nature resistance action"] = &RaidVoAActionContext::emalon_nature_resistance_action;
         creators["koralon fire resistance action"] = &RaidVoAActionContext::koralon_fire_resistance_action;
+        creators["voa toravon frozen orb action"] = &RaidVoAActionContext::voa_toravon_frozen_orb_action;
     }
 
 private:
@@ -33,6 +34,7 @@ private:
     static Action* emalon_fall_from_floor_action(PlayerbotAI* botAI) { return new EmalonFallFromFloorAction(botAI); }
     static Action* emalon_nature_resistance_action(PlayerbotAI* botAI) { return new BossNatureResistanceAction(botAI, "emalon the storm watcher"); }
     static Action* koralon_fire_resistance_action(PlayerbotAI* botAI) { return new BossFireResistanceAction(botAI, "koralon the flame watcher"); }
+    static Action* voa_toravon_frozen_orb_action(PlayerbotAI* botAI) { return new VoAToravonFrozenOrbAction(botAI); }
 };
 
 #endif

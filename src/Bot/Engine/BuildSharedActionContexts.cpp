@@ -21,6 +21,7 @@
 #include "OSActionContext.h"
 #include "OnyActionContext.h"
 #include "RSActionContext.h"
+#include "RaidTocActionContext.h"
 #include "SSCActionContext.h"
 #include "TKActionContext.h"
 #include "TbcDungeonActionContext.h"
@@ -75,5 +76,7 @@ void AiObjectContext::BuildSharedActionContexts(
     actionContexts.Add(new WotlkDungeonCoSActionContext());
     actionContexts.Add(new WotlkDungeonFoSActionContext());
     actionContexts.Add(new WotlkDungeonPoSActionContext());
+    actionContexts.Add(new WotlkDungeonHoRActionContext());
     actionContexts.Add(new WotlkDungeonToCActionContext());
+    actionContexts.Add(new RaidTocActionContext());
 }

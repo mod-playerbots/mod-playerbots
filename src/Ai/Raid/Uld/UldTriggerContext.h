@@ -41,6 +41,13 @@ public:
         creators["auriaya fall from floor trigger"] = &RaidUlduarTriggerContext::auriaya_fall_from_floor_trigger;
         creators["hodir biting cold"] = &RaidUlduarTriggerContext::hodir_biting_cold;
         creators["hodir near snowpacked icicle"] = &RaidUlduarTriggerContext::hodir_near_snowpacked_icicle;
+        creators["xt-002 bomb debuff"] = &RaidUlduarTriggerContext::xt_002_bomb_debuff;
+        creators["xt-002 tantrum"] = &RaidUlduarTriggerContext::xt_002_tantrum;
+        creators["xt-002 exposed heart"] = &RaidUlduarTriggerContext::xt_002_exposed_heart;
+        creators["algalon big bang"] = &RaidUlduarTriggerContext::algalon_big_bang;
+        creators["algalon constellation"] = &RaidUlduarTriggerContext::algalon_constellation;
+        creators["razorscale tank swap"] = &RaidUlduarTriggerContext::razorscale_tank_swap;
+        creators["algalon tank swap"] = &RaidUlduarTriggerContext::algalon_tank_swap;
         creators["hodir frost resistance trigger"] = &RaidUlduarTriggerContext::hodir_frost_resistance_trigger;
         creators["freya near nature bomb"] = &RaidUlduarTriggerContext::freya_near_nature_bomb;
         creators["freya fire resistance trigger"] = &RaidUlduarTriggerContext::freya_fire_resistance_trigger;
@@ -113,6 +120,13 @@ private:
     static Trigger* auriaya_fall_from_floor_trigger(PlayerbotAI* botAI) { return new AuriayaFallFromFloorTrigger(botAI); }
     static Trigger* hodir_biting_cold(PlayerbotAI* botAI) { return new HodirBitingColdTrigger(botAI); }
     static Trigger* hodir_near_snowpacked_icicle(PlayerbotAI* botAI) { return new HodirNearSnowpackedIcicleTrigger(botAI); }
+    static Trigger* xt_002_bomb_debuff(PlayerbotAI* botAI) { return new Xt002BombDebuffTrigger(botAI); }
+    static Trigger* xt_002_tantrum(PlayerbotAI* botAI) { return new Xt002TantrumTrigger(botAI); }
+    static Trigger* xt_002_exposed_heart(PlayerbotAI* botAI) { return new Xt002ExposedHeartTrigger(botAI); }
+    static Trigger* algalon_big_bang(PlayerbotAI* botAI) { return new AlgalonBigBangTrigger(botAI); }
+    static Trigger* algalon_constellation(PlayerbotAI* botAI) { return new AlgalonConstellationTrigger(botAI); }
+    static Trigger* razorscale_tank_swap(PlayerbotAI* botAI) { return new RazorscaleTankSwapTrigger(botAI); }
+    static Trigger* algalon_tank_swap(PlayerbotAI* botAI) { return new AlgalonTankSwapTrigger(botAI); }
     static Trigger* hodir_frost_resistance_trigger(PlayerbotAI* botAI) { return new BossFrostResistanceTrigger(botAI, "hodir"); }
     static Trigger* freya_near_nature_bomb(PlayerbotAI* botAI) { return new FreyaNearNatureBombTrigger(botAI); }
     static Trigger* freya_fire_resistance_trigger(PlayerbotAI* botAI) { return new BossFireResistanceTrigger(botAI, "freya"); }

@@ -64,6 +64,7 @@
 #include "ShareQuestAction.h"
 #include "StayActions.h"
 #include "SuggestWhatToDoAction.h"
+#include "TankSwapAction.h"
 #include "TravelAction.h"
 #include "UseItemAction.h"
 #include "VehicleActions.h"
@@ -134,6 +135,7 @@ public:
         creators["move from group"] = &ActionContext::move_from_group;
         creators["runaway"] = &ActionContext::runaway;
         creators["stay"] = &ActionContext::stay;
+        creators["tank swap"] = &ActionContext::tank_swap;
         creators["sit"] = &ActionContext::sit;
         creators["aggressive target"] = &ActionContext::aggressive_target;
         creators["attack anything"] = &ActionContext::attack_anything;
@@ -350,6 +352,7 @@ private:
     static Action* attack_least_hp_target(PlayerbotAI* botAI) { return new AttackLeastHpTargetAction(botAI); }
     static Action* attack_enemy_player(PlayerbotAI* botAI) { return new AttackEnemyPlayerAction(botAI); }
     static Action* stay(PlayerbotAI* botAI) { return new StayAction(botAI); }
+    static Action* tank_swap(PlayerbotAI* botAI) { return new TankSwapAction(botAI); }
     static Action* sit(PlayerbotAI* botAI) { return new SitAction(botAI); }
     static Action* runaway(PlayerbotAI* botAI) { return new RunAwayAction(botAI); }
     static Action* follow(PlayerbotAI* botAI) { return new FollowAction(botAI); }

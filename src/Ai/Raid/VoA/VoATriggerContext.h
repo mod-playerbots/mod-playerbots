@@ -22,6 +22,8 @@ public:
         creators["emalon fall from floor trigger"] = &RaidVoATriggerContext::emalon_fall_from_floor_trigger;
         creators["emalon nature resistance trigger"] = &RaidVoATriggerContext::emalon_nature_resistance_trigger;
         creators["koralon fire resistance trigger"] = &RaidVoATriggerContext::koralon_fire_resistance_trigger;
+        creators["voa toravon frozen orb"] = &RaidVoATriggerContext::voa_toravon_frozen_orb;
+        creators["voa toravon tank swap"] = &RaidVoATriggerContext::voa_toravon_tank_swap;
     }
 
 private:
@@ -31,6 +33,8 @@ private:
     static Trigger* emalon_fall_from_floor_trigger(PlayerbotAI* botAI) { return new EmalonFallFromFloorTrigger(botAI); }
     static Trigger* emalon_nature_resistance_trigger(PlayerbotAI* botAI) { return new BossNatureResistanceTrigger(botAI, "emalon the storm watcher"); }
     static Trigger* koralon_fire_resistance_trigger(PlayerbotAI* botAI) { return new BossFireResistanceTrigger(botAI, "koralon the flame watcher"); }
+    static Trigger* voa_toravon_frozen_orb(PlayerbotAI* botAI) { return new VoAToravonFrozenOrbTrigger(botAI); }
+    static Trigger* voa_toravon_tank_swap(PlayerbotAI* botAI) { return new VoAToravonTankSwapTrigger(botAI); }
 };
 
 #endif

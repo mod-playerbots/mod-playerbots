@@ -2145,3 +2145,66 @@ bool YoggSaronPhase3PositioningTrigger::IsActive()
 
     return false;
 }
+
+//
+// XT-002 Deconstructor
+//
+
+bool Xt002BombDebuffTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+    if (!boss || !boss->IsAlive() || !boss->IsInCombat())
+        return false;
+
+    // Searing Light and Gravity Bomb both demand leaving the raid.
+    return bot->HasAura(SPELL_SEARING_LIGHT) || bot->HasAura(SPELL_GRAVITY_BOMB);
+}
+
+bool Xt002TantrumTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+    if (!boss || !boss->IsAlive() || !boss->IsInCombat())
+        return false;
+
+    return boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_TYMPANIC_TANTRUM);
+}
+
+bool Xt002ExposedHeartTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "xt-002 deconstructor");
+    if (!boss || !boss->IsAlive() || !boss->IsInCombat())
+        return false;
+
+    // The heart is only attackable while it is exposed.
+    for (uint32 entry : {NPC_XT002_HEART, NPC_XT002_HEART_HEROIC})
+    {
+        if (Unit* heart = bot->FindNearestCreature(entry, 100.0f))
+            if (heart->IsAlive() && heart->IsWithinLOSInMap(bot))
+                return true;
+    }
+
+    return false;
+}
+
+//
+// Algalon the Observer
+//
+
+bool AlgalonBigBangTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "algalon the observer");
+    if (!boss || !boss->IsAlive() || !boss->IsInCombat())
+        return false;
+
+    // 8 second cast: everyone has to be inside a black hole when it lands.
+    return boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_ALGALON_BIG_BANG);
+}
+
+bool AlgalonConstellationTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "algalon the observer");
+    if (!boss || !boss->IsAlive() || !boss->IsInCombat())
+        return false;
+
+    return bot->FindNearestCreature(NPC_LIVING_CONSTELLATION, 100.0f) != nullptr;
+}

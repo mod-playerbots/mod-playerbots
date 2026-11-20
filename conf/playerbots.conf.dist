@@ -2327,10 +2327,10 @@ Playerbots.RandomClassSpecIndex.3.5 = 5
 #
 
 # as pve
-Playerbots.RandomClassSpecProb.4.0 = 40
+Playerbots.RandomClassSpecProb.4.0 = 90
 Playerbots.RandomClassSpecIndex.4.0 = 0
 # combat pve
-Playerbots.RandomClassSpecProb.4.1 = 60
+Playerbots.RandomClassSpecProb.4.1 = 10
 Playerbots.RandomClassSpecIndex.4.1 = 1
 # subtlety pve (note: subtlety strategies are not yet implemented)
 Playerbots.RandomClassSpecProb.4.2 = 0

@@ -185,6 +185,82 @@ public:
 };
 
 //
+// XT-002 Deconstructor
+//
+// Searing Light / Gravity Bomb: the debuffed player has to leave the raid or
+// everyone nearby eats the damage (the gravity bomb also pulls them in).
+class Xt002BombDebuffTrigger : public Trigger
+{
+public:
+    Xt002BombDebuffTrigger(PlayerbotAI* botAI) : Trigger(botAI, "xt-002 bomb debuff", 1) {}
+    bool IsActive() override;
+};
+
+// Tympanic Tantrum: 80% of max health spread over 8 seconds raid-wide.
+class Xt002TantrumTrigger : public Trigger
+{
+public:
+    Xt002TantrumTrigger(PlayerbotAI* botAI) : Trigger(botAI, "xt-002 tantrum", 1) {}
+    bool IsActive() override;
+};
+
+// The heart is exposed (75/50/25%): it takes double damage and the damage is
+// carried over to the boss, so it is the best possible dps target.
+class Xt002ExposedHeartTrigger : public Trigger
+{
+public:
+    Xt002ExposedHeartTrigger(PlayerbotAI* botAI) : Trigger(botAI, "xt-002 exposed heart", 1) {}
+    bool IsActive() override;
+};
+
+//
+// Algalon the Observer
+//
+
+// Big Bang (8s cast): anybody not inside a black hole when the cast finishes is
+// killed. Everyone has to jump into the nearest one.
+class AlgalonBigBangTrigger : public Trigger
+{
+public:
+    AlgalonBigBangTrigger(PlayerbotAI* botAI) : Trigger(botAI, "algalon big bang", 1) {}
+    bool IsActive() override;
+};
+
+// Living Constellations are the only adds; unchecked they barrage the raid.
+class AlgalonConstellationTrigger : public Trigger
+{
+public:
+    AlgalonConstellationTrigger(PlayerbotAI* botAI) : Trigger(botAI, "algalon constellation", 1) {}
+    bool IsActive() override;
+};
+
+//
+// Tank swaps
+//
+
+// Razorscale: Fuse Armor (64821) stacks on the tank, swap at 3 before the
+// 5-stack stun.
+class RazorscaleTankSwapTrigger : public TankSwapTriggerBase
+{
+public:
+    RazorscaleTankSwapTrigger(PlayerbotAI* botAI)
+        : TankSwapTriggerBase(botAI, "razorscale tank swap", 64821, 3, "razorscale")
+    {
+    }
+};
+
+// Algalon: Phase Punch (64412) teleports the tank away at 4 stacks, so swap at
+// 3 to stay ahead of it.
+class AlgalonTankSwapTrigger : public TankSwapTriggerBase
+{
+public:
+    AlgalonTankSwapTrigger(PlayerbotAI* botAI)
+        : TankSwapTriggerBase(botAI, "algalon tank swap", 64412, 3, "algalon the observer")
+    {
+    }
+};
+
+//
 // Freya
 //
 class FreyaNearNatureBombTrigger : public Trigger
