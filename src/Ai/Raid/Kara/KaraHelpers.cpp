@@ -36,7 +36,7 @@ namespace
 
 std::mutex karaStateMutex;
 std::unordered_map<uint32, KaraInstanceState> karaStates;
-// Per instance: Mana Warp -> War Stomp claim expiry. Kept out of KaraInstanceState, which the reset
+// Per instance: Mana Warp -> War Stomp claim time. Kept out of KaraInstanceState, which the reset
 // erases during trash; claims expire on their own.
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>> manaWarpWarStompClaims;
 
@@ -136,17 +136,8 @@ bool IsManaWarpClaimedForWarStomp(Unit* warp)
         return false;
 
     auto const claimIt = instanceIt->second.find(warp->GetGUID());
-    if (claimIt == instanceIt->second.end())
-        return false;
-
-    if (claimIt->second > getMSTime())
-        return true;
-
-    instanceIt->second.erase(claimIt);
-    if (instanceIt->second.empty())
-        manaWarpWarStompClaims.erase(instanceIt);
-
-    return false;
+    return claimIt != instanceIt->second.end() &&
+        getMSTimeDiff(claimIt->second, getMSTime()) < WAR_STOMP_CLAIM_MS;
 }
 
 // First attempt to stun between 10% and 15% HP because if the mob is stunned at 10%, it will not
@@ -258,11 +249,21 @@ Unit* GetManaWarpToStun(PlayerbotAI* botAI)
     return nullptr;
 }
 
+// Expired claims, in every instance, are purged here.
 void ClaimManaWarpForWarStomp(Unit* warp)
 {
+    uint32 const now = getMSTime();
     std::lock_guard lock(karaStateMutex);
-    manaWarpWarStompClaims[warp->GetInstanceId()][warp->GetGUID()] =
-        getMSTime() + WAR_STOMP_CLAIM_MS;
+    std::erase_if(manaWarpWarStompClaims, [now](auto& instanceClaims)
+    {
+        std::erase_if(instanceClaims.second, [now](auto const& claim)
+        {
+            return getMSTimeDiff(claim.second, now) >= WAR_STOMP_CLAIM_MS;
+        });
+        return instanceClaims.second.empty();
+    });
+
+    manaWarpWarStompClaims[warp->GetInstanceId()][warp->GetGUID()] = now;
 }
 
 Unit* GetManaWarpToStunNext(PlayerbotAI* botAI)
@@ -930,6 +931,8 @@ void YellNetherspiteBeamHandover(Player* leaving, Player* blocking, NetherspiteB
             YellNetherspiteBeamText(
                 blocking, "netherspite_beam_blocking_blue",
                 "%player is moving to block the blue beam!");
+            break;
+        default:
             break;
     }
 }

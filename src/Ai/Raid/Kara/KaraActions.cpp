@@ -1041,7 +1041,7 @@ bool NetherspiteMoveToBanishSlotAction::Execute(Event /*event*/)
         return false;
 
     Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
-    if (!netherspite)
+    if (!netherspite || !IsBanishPhase(netherspite))
         return false;
 
     KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());

@@ -108,6 +108,14 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
                 if (boss)
                     break;
             }
+
+            // For Wizard of Oz, Dorothee's HP is used for the initial cooldown hold.
+            static constexpr std::array ozActors = { "roar", "strawman", "tinhead", "the crone" };
+            for (char const* name : ozActors)
+            {
+                if (!boss && FindThreatTarget(bot, name))
+                    return 1.0f;
+            }
             break;
         }
         case KaraBosses::DATA_CURATOR:
@@ -133,7 +141,7 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
     }
 
     // If the boss cannot be found but the encounter is in progress, it is probably because the bot
-    // was rezzed and zone combat hasn't reapplied, so block cooldowns.
+    // was battle rezzed and zone combat hasn't reapplied, so block cooldowns.
     if (!boss)
         return 0.0f;
 
@@ -171,8 +179,9 @@ float KarazhanDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* 
 
 // Trash
 
-// Some stun abilities are used in standard rotations. Every stunner should save them for the mana
-// warps at the right time. Block all stuns used by the stun action just for belt-and-suspenders.
+// Block all stuns used by the stun action for as long as a Mana Warp is among the attackers. Some
+// of these are not currently part of standard rotations but are included anyway in case they are
+// eventually added to class strategies.
 float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT || !IsNearManaWarpPacks(bot))
@@ -211,10 +220,17 @@ float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
             break;
     }
 
-    if (isStun)
-        return 0.0f;
+    if (!isStun && (bot->getRace() != RACE_TAUREN || !dynamic_cast<CastWarStompAction*>(action)))
+        return 1.0f;
 
-    return bot->getRace() == RACE_TAUREN && dynamic_cast<CastWarStompAction*>(action) ? 0.0f : 1.0f;
+    uint32 const manaWarpEntry = Id(KaraNpcs::NPC_MANA_WARP);
+    for (ObjectGuid const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
+    {
+        if (guid.GetEntry() == manaWarpEntry)
+            return 0.0f;
+    }
+
+    return 1.0f;
 }
 
 // Attumen the Huntsman
