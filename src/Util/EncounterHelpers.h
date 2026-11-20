@@ -9,6 +9,7 @@
 
 #include "Common.h"
 #include "ObjectGuid.h"
+#include "Player.h"
 #include "Position.h"
 #include <initializer_list>
 #include <optional>
@@ -17,7 +18,6 @@
 
 class Action;
 class Creature;
-class Player;
 class PlayerbotAI;
 class Unit;
 enum ReactStates : uint8;
@@ -42,11 +42,14 @@ inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
 // banished, or else when the last Spellbinder dies, not when his Spellbinders are pulled). In any
 // case, the boss script must be consulted to determine viability.
 bool IsEncounterInProgress(Player* bot, uint32 mapId);
+
 // Encounters from the instance script. Boss ids follow DungeonEncounter.dbc's order, so they are
 // right only if the instance script numbers its bosses in that same order. Each returns false or
-// nullopt when the bot isn't on mapId.
+// nullopt when the bot (or object) isn't on mapId.
+
 // One boss's state, unlike IsEncounterInProgress, which is true with any boss in progress on mapId.
-bool IsBossInProgress(Player* bot, uint32 mapId, uint32 bossId);
+// It takes any object, so script hooks can gate on a creature.
+bool IsBossInProgress(WorldObject* object, uint32 mapId, uint32 bossId);
 // The lowest boss id that is IN_PROGRESS, if any.
 std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId);
 
@@ -166,21 +169,23 @@ bool ClearStrategyTargetIcon(Player* bot, uint8 iconId, std::initializer_list<ui
 bool CanTakeStepTowards(
     Player* bot, float destinationX, float destinationY, float moveDist, float& stepX, float& stepY,
     float& stepZ);
-// One step along the bot's path to a point, stopping short of it by stopDistance. The step follows
-// the path corner-by-corner, rather than aiming at the far end of it, so a bot can move around an
-// obstacle between it and the point.
-bool GetPathStepTowardPoint(
-    Player* bot, Position const& destination, float stopDistance, float stepDistance, float& stepX,
-    float& stepY);
-// The same as GetPathStepTowardPoint, but toward a unit's position.
-bool GetPathStepTowardUnit(
-    Player* bot, Unit* target, float stopDistance, float stepDistance, float& stepX, float& stepY);
 // Calculate incremental movement to a position. No ground or collision is validated, unlike
 // CanTakeStepTowards(). The Z position passed for the MoveTo() action using this helper should
 // use the bot's Z, not the position's. Returns false once the bot is within arrivalDist.
 bool GetStepToPosition(
     Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
     float& stepY, bool& backwards);
+// One step along the bot's path to a point, stopping short of it by stopDistance - 0.1 yd. The step
+// follows the path corner-by-corner, rather than aiming at the far end of it, so a bot can move
+// around an obstacle between it and the point. Measured in 3D. A 2D distance is never longer, so a
+// caller testing arrival in 2D at the same distance sees the bot arrive no later than this does. A
+// caller that keeps a bot at least stopDistance AWAY in 2D needs a margin for height changes.
+bool GetPathStepTowardPoint(
+    Player* bot, Position const& destination, float stopDistance, float stepDistance, float& stepX,
+    float& stepY);
+// The same as GetPathStepTowardPoint, but toward a unit's position.
+bool GetPathStepTowardUnit(
+    Player* bot, Unit* target, float stopDistance, float stepDistance, float& stepX, float& stepY);
 
 // Player Getters
 

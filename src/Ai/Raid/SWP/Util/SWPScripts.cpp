@@ -4,6 +4,7 @@
  * or (at your option) any later version.
  */
 
+#include "EncounterHelpers.h"
 #include "InstanceScript.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
@@ -20,6 +21,7 @@
 #include <list>
 #include <vector>
 
+using namespace EncounterHelpers;
 using namespace SwpHelpers;
 
 namespace
@@ -62,6 +64,16 @@ bool IsCastingOrChanneling(Player* player)
         player->GetCurrentSpell(CURRENT_CHANNELED_SPELL));
 }
 
+// The bot's AI, if the player is a living Sunwell bot mid-cast or channel; otherwise nullptr.
+PlayerbotAI* GetCastingSunwellBotAI(Player* player)
+{
+    if (!player || !player->IsAlive() || !IsCastingOrChanneling(player))
+        return nullptr;
+
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+    return botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT) ? botAI : nullptr;
+}
+
 Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
 {
     if (!spell || !caster)
@@ -71,9 +83,6 @@ Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
         return unitTarget->ToPlayer();
 
     std::list<TargetInfo> const& targets = *spell->GetUniqueTargetInfo();
-    if (targets.empty())
-        return nullptr;
-
     for (TargetInfo const& targetInfo : targets)
     {
         if (Player* target = ObjectAccessor::GetPlayer(*caster, targetInfo.targetGUID))
@@ -114,14 +123,8 @@ void RequestInterruptForBotsNeedingFelmystMovement(Creature* felmyst)
     for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
     {
         Player* player = it->GetSource();
-        if (!player || !player->IsAlive() || !IsCastingOrChanneling(player))
-            continue;
-
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-        if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-            continue;
-
-        if (IsFelmystMoveDueForBot(player, botAI, felmyst))
+        PlayerbotAI* botAI = GetCastingSunwellBotAI(player);
+        if (botAI && IsFelmystMoveDueForBot(player, botAI, felmyst))
             botAI->RequestSpellInterrupt();
     }
 }
@@ -135,27 +138,14 @@ void RequestInterruptForBotsWithFelmystEncapsulate(Creature* felmyst)
     for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
     {
         Player* player = it->GetSource();
-        if (!player || !player->IsAlive() || !IsCastingOrChanneling(player))
-            continue;
-
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-        if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+        PlayerbotAI* botAI = GetCastingSunwellBotAI(player);
+        if (!botAI)
             continue;
 
         Player* encapsulateTarget = GetFelmystEncapsulateTarget(player);
         if (ShouldMoveAwayFromFelmystEncapsulateTarget(player, felmyst, encapsulateTarget))
             botAI->RequestSpellInterrupt();
     }
-}
-
-void RequestInterruptForEredarTwinsBot(Player* player)
-{
-    if (!player || !player->IsAlive() || !IsCastingOrChanneling(player))
-        return;
-
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-    if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-        botAI->RequestSpellInterrupt();
 }
 
 // The Conflagration target moves away from the raid, and a bot that pulls aggro on Alythess
@@ -167,7 +157,11 @@ void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
 
     ObjectGuid const conflagTargetGuid = GetEredarTwinsConflagrationTargetGuid(alythess, nullptr);
     if (!conflagTargetGuid.IsEmpty())
-        RequestInterruptForEredarTwinsBot(ObjectAccessor::GetPlayer(*alythess, conflagTargetGuid));
+    {
+        Player* conflagTarget = ObjectAccessor::GetPlayer(*alythess, conflagTargetGuid);
+        if (PlayerbotAI* botAI = GetCastingSunwellBotAI(conflagTarget))
+            botAI->RequestSpellInterrupt();
+    }
 
     Unit* victim = alythess->GetVictim();
     Player* player = victim ? victim->ToPlayer() : nullptr;
@@ -176,8 +170,9 @@ void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
 
     Position const aside = GetEredarTwinsStepAsidePosition(
         alythess, player->GetPositionZ() > EREDAR_TWINS_BALCONY_Z);
-    if (player->GetExactDist2d(aside) > EREDAR_TWINS_STEP_ASIDE_ARRIVAL_DISTANCE)
-        RequestInterruptForEredarTwinsBot(player);
+    PlayerbotAI* botAI = GetCastingSunwellBotAI(player);
+    if (botAI && player->GetExactDist2d(aside) > EREDAR_TWINS_STEP_ASIDE_ARRIVAL_DISTANCE)
+        botAI->RequestSpellInterrupt();
 }
 
 // A bot in a long cast can't move until it ends, so a new void zone (about to summon a fiend) stops
@@ -191,14 +186,8 @@ void RequestInterruptForBotsNearNewMuruVoidZone(Creature* voidZone)
     for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
     {
         Player* player = it->GetSource();
-        if (!player || !player->IsAlive() || !IsCastingOrChanneling(player) ||
-            player->GetExactDist(voidZone) >= DARK_FIEND_CLEARANCE)
-        {
-            continue;
-        }
-
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-        if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+        PlayerbotAI* botAI = GetCastingSunwellBotAI(player);
+        if (botAI && player->GetExactDist(voidZone) < DARK_FIEND_CLEARANCE)
             botAI->RequestSpellInterrupt();
     }
 }
@@ -211,19 +200,59 @@ void RequestInterruptForMuruDarkFiendVictim(Creature* darkFiend)
 
     Unit* victimUnit = darkFiend->GetVictim();
     Player* victim = victimUnit ? victimUnit->ToPlayer() : nullptr;
-    if (!victim || !victim->IsAlive() || !IsCastingOrChanneling(victim) ||
-        victim->GetExactDist(darkFiend) >= DARK_FIEND_CLEARANCE)
-    {
+    PlayerbotAI* botAI = GetCastingSunwellBotAI(victim);
+    if (!botAI || victim->GetExactDist(darkFiend) >= DARK_FIEND_CLEARANCE)
         return;
-    }
 
     InstanceScript* instance = darkFiend->GetInstanceScript();
     Creature* muru = instance ? instance->GetCreature(Id(SwpBosses::DATA_MURU)) : nullptr;
     if (IsMuruPhaseActive(muru))
         return;
 
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(victim);
-    if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+    botAI->RequestSpellInterrupt();
+}
+
+void RecordKiljaedenArmageddonTarget(Creature* armageddonTarget)
+{
+    uint32 const instanceId = armageddonTarget->GetInstanceId();
+    KiljaedenEncounterState const* state = FindKiljaedenState(instanceId);
+    if (state && state->trackedArmageddonTargets.contains(armageddonTarget->GetGUID()))
+        return;
+
+    bool hasSunwellStrategy = false;
+    std::vector<PlayerbotAI*> botsToInterrupt;
+    Map::PlayerList const& players = armageddonTarget->GetMap()->GetPlayers();
+    for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+    {
+        Player* player = it->GetSource();
+        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+            botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+        {
+            hasSunwellStrategy = true;
+
+            if (!player->IsAlive() || !IsCastingOrChanneling(player) ||
+                HasKiljaedenDragonAura(player))
+            {
+                continue;
+            }
+
+            if (armageddonTarget->GetExactDist2d(player) > ARMAGEDDON_CLEARANCE)
+                continue;
+
+            botsToInterrupt.push_back(botAI);
+        }
+    }
+
+    if (!hasSunwellStrategy)
+        return;
+
+    KiljaedenState(instanceId).trackedArmageddonTargets.insert(armageddonTarget->GetGUID());
+
+    AddKiljaedenArmageddon(
+        instanceId, armageddonTarget->GetPosition(), ARMAGEDDON_HAZARD_DURATION_MS,
+        ARMAGEDDON_CLEARANCE);
+
+    for (PlayerbotAI* botAI : botsToInterrupt)
         botAI->RequestSpellInterrupt();
 }
 
@@ -237,27 +266,25 @@ public:
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
+        uint32 const spellId = spellInfo->Id;
+        if (spellId != Id(SwpSpells::SPELL_SPECTRAL_BLAST_PORTAL) &&
+            spellId != Id(SwpSpells::SPELL_TELEPORT_SPECTRAL))
+        {
+            return;
+        }
+
         Player* player = caster ? caster->ToPlayer() : nullptr;
-        if (!player)
+        if (!player || !IsBossInProgress(player, SWP_MAP_ID, Id(SwpBosses::DATA_KALECGOS)))
             return;
 
-        switch (spellInfo->Id)
-        {
-            case Id(SwpSpells::SPELL_SPECTRAL_BLAST_PORTAL):
-            {
-                if (PlayerbotAI* botAI = FindFirstSunwellCombatBotInGroup(player))
-                    RecordSpectralBlastTarget(player, botAI);
-                break;
-            }
-            case Id(SwpSpells::SPELL_TELEPORT_SPECTRAL):
-            {
-                if (FindFirstSunwellCombatBotInGroup(player))
-                    RecordSpectralRealmEnter(player);
-                break;
-            }
-            default:
-                break;
-        }
+        PlayerbotAI* botAI = FindFirstSunwellCombatBotInGroup(player);
+        if (!botAI)
+            return;
+
+        if (spellId == Id(SwpSpells::SPELL_SPECTRAL_BLAST_PORTAL))
+            RecordSpectralBlastTarget(player, botAI);
+        else
+            RecordSpectralRealmEnter(player);
     }
 };
 
@@ -268,49 +295,50 @@ public:
 
     void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
     {
-        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_ENCAPSULATE))
-            return;
-
-        if (Player* target = GetFirstPlayerSpellTarget(spell, caster))
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_ENCAPSULATE) ||
+            !IsBossInProgress(caster, SWP_MAP_ID, Id(SwpBosses::DATA_FELMYST)))
         {
-            if (!FindFirstSunwellCombatBotInGroup(target))
-                return;
-
-            RecordFelmystIncomingEncapsulateTarget(target);
+            return;
         }
+
+        Player* target = GetFirstPlayerSpellTarget(spell, caster);
+        if (FindFirstSunwellCombatBotInGroup(target))
+            RecordFelmystIncomingEncapsulateTarget(target);
     }
 
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_SUMMON_DEMONIC_VAPOR))
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_SUMMON_DEMONIC_VAPOR) ||
+            !IsBossInProgress(caster, SWP_MAP_ID, Id(SwpBosses::DATA_FELMYST)))
+        {
             return;
+        }
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
         if (FindFirstSunwellCombatBotInGroup(target))
             RecordFelmystDemonicVaporSummon(target);
 
-        if (!IsCastingOrChanneling(target))
-            return;
-
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
-        if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+        if (PlayerbotAI* botAI = GetCastingSunwellBotAI(target))
             botAI->RequestSpellInterrupt();
     }
 };
 
-// A mage mid-cast when a Fury Mage gains Spell Fury stops the cast to steal it.
 // Records a completed Conflagration cast, so its target holds position while the missile flies.
-class EredarTwinsSpellListenerScript : public AllSpellScript
+class EredarTwinsConflagrationSpellListenerScript : public AllSpellScript
 {
 public:
-    EredarTwinsSpellListenerScript() : AllSpellScript("EredarTwinsSpellListenerScript") {}
+    EredarTwinsConflagrationSpellListenerScript()
+        : AllSpellScript("EredarTwinsConflagrationSpellListenerScript") {}
 
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_CONFLAGRATION))
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_CONFLAGRATION) ||
+            !IsBossInProgress(caster, SWP_MAP_ID, Id(SwpBosses::DATA_EREDAR_TWINS)))
+        {
             return;
+        }
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
         if (target && FindFirstSunwellCombatBotInGroup(target))
@@ -318,6 +346,7 @@ public:
     }
 };
 
+// A mage mid-cast when a Fury Mage gains Spell Fury stops the cast to steal it.
 class MuruSpellFurySpellListenerScript : public AllSpellScript
 {
 public:
@@ -326,24 +355,23 @@ public:
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_SPELL_FURY))
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_SPELL_FURY) ||
+            !IsBossInProgress(caster, SWP_MAP_ID, Id(SwpBosses::DATA_MURU)))
+        {
             return;
+        }
 
         uint32 const spellsteal = Id(SwpSpells::SPELL_SPELLSTEAL);
         Map::PlayerList const& players = caster->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
             Player* player = it->GetSource();
-            if (!player || !player->IsAlive() || player->getClass() != CLASS_MAGE ||
-                !player->IsWithinCombatRange(caster, RANGED_ABILITY_REACH) ||
-                !IsCastingOrChanneling(player))
+            PlayerbotAI* botAI = GetCastingSunwellBotAI(player);
+            if (!botAI || player->getClass() != CLASS_MAGE ||
+                !player->IsWithinCombatRange(caster, RANGED_ABILITY_REACH))
             {
                 continue;
             }
-
-            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-            if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-                continue;
 
             if (!player->HasSpell(spellsteal) || player->HasSpellCooldown(spellsteal) ||
                 player->HasAura(Id(SwpSpells::SPELL_SPELL_FURY)))
@@ -365,30 +393,27 @@ public:
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS) ||
+            !IsBossInProgress(caster, SWP_MAP_ID, Id(SwpBosses::DATA_KILJAEDEN)))
+        {
             return;
+        }
 
         Map::PlayerList const& players = caster->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
             Player* player = it->GetSource();
-            if (!player || !player->IsAlive() || !IsCastingOrChanneling(player) ||
-                HasKiljaedenDragonAura(player))
-            {
-                continue;
-            }
-
-            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-            if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+            PlayerbotAI* botAI = GetCastingSunwellBotAI(player);
+            if (botAI && !HasKiljaedenDragonAura(player))
                 botAI->RequestSpellInterrupt();
         }
     }
 };
 
-class SunwellBossUpdateScript : public AllCreatureScript
+class SunwellCreatureUpdateScript : public AllCreatureScript
 {
 public:
-    SunwellBossUpdateScript() : AllCreatureScript("SunwellBossUpdateScript") {}
+    SunwellCreatureUpdateScript() : AllCreatureScript("SunwellCreatureUpdateScript") {}
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
@@ -399,84 +424,43 @@ public:
         {
             case Id(SwpNpcs::NPC_FELMYST):
             {
-                RequestInterruptForBotsNeedingFelmystMovement(creature);
-                RequestInterruptForBotsWithFelmystEncapsulate(creature);
+                if (IsBossInProgress(creature, SWP_MAP_ID, Id(SwpBosses::DATA_FELMYST)))
+                {
+                    RequestInterruptForBotsNeedingFelmystMovement(creature);
+                    RequestInterruptForBotsWithFelmystEncapsulate(creature);
+                }
                 break;
             }
             case Id(SwpNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
             {
-                RequestInterruptForEredarTwinsAlythessTargets(creature);
+                if (IsBossInProgress(creature, SWP_MAP_ID, Id(SwpBosses::DATA_EREDAR_TWINS)))
+                    RequestInterruptForEredarTwinsAlythessTargets(creature);
                 break;
             }
             case Id(SwpNpcs::NPC_DARKNESS):
             {
-                RequestInterruptForBotsNearNewMuruVoidZone(creature);
+                if (IsBossInProgress(creature, SWP_MAP_ID, Id(SwpBosses::DATA_MURU)))
+                    RequestInterruptForBotsNearNewMuruVoidZone(creature);
                 break;
             }
             case Id(SwpNpcs::NPC_DARK_FIEND):
             {
-                RequestInterruptForMuruDarkFiendVictim(creature);
+                if (IsBossInProgress(creature, SWP_MAP_ID, Id(SwpBosses::DATA_MURU)))
+                    RequestInterruptForMuruDarkFiendVictim(creature);
+                break;
+            }
+            case Id(SwpNpcs::NPC_ARMAGEDDON_TARGET):
+            {
+                if (IsBossInProgress(creature, SWP_MAP_ID, Id(SwpBosses::DATA_KILJAEDEN)))
+                    RecordKiljaedenArmageddonTarget(creature);
                 break;
             }
             default:
                 break;
         }
     }
-};
 
-class KiljaedenArmageddonTargetCreatureScript : public AllCreatureScript
-{
-public:
-    KiljaedenArmageddonTargetCreatureScript()
-        : AllCreatureScript("KiljaedenArmageddonTargetCreatureScript") {}
-
-    void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
-    {
-        if (!creature || creature->GetEntry() != Id(SwpNpcs::NPC_ARMAGEDDON_TARGET))
-            return;
-
-        KiljaedenEncounterState const* state = FindKiljaedenState(creature->GetInstanceId());
-        if (state && state->trackedArmageddonTargets.contains(creature->GetGUID()))
-            return;
-
-        bool hasSunwellStrategy = false;
-        std::vector<PlayerbotAI*> botsToInterrupt;
-        Map::PlayerList const& players = creature->GetMap()->GetPlayers();
-        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
-        {
-            Player* player = it->GetSource();
-            if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-                botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-            {
-                hasSunwellStrategy = true;
-
-                if (!player->IsAlive() || !IsCastingOrChanneling(player) ||
-                    HasKiljaedenDragonAura(player))
-                {
-                    continue;
-                }
-
-                if (creature->GetExactDist2d(player) > ARMAGEDDON_SAFE_DISTANCE)
-                    continue;
-
-                botsToInterrupt.push_back(botAI);
-            }
-        }
-
-        if (!hasSunwellStrategy)
-            return;
-
-        KiljaedenState(
-            creature->GetInstanceId()).trackedArmageddonTargets.insert(creature->GetGUID());
-
-        AddKiljaedenArmageddon(
-            creature->GetInstanceId(), creature->GetPosition(),
-            ARMAGEDDON_HAZARD_DURATION_MS, ARMAGEDDON_SAFE_DISTANCE);
-
-        for (PlayerbotAI* botAI : botsToInterrupt)
-            botAI->RequestSpellInterrupt();
-    }
-
+    // Ungated: cleanup runs whatever the encounter state.
     void OnCreatureRemoveWorld(Creature* creature) override
     {
         if (!creature || creature->GetEntry() != Id(SwpNpcs::NPC_ARMAGEDDON_TARGET))
@@ -492,10 +476,9 @@ void AddSC_SunwellBotScripts()
     // AllSpellScript
     new KalecgosPortalSpellListenerScript();
     new FelmystSpellListenerScript();
-    new EredarTwinsSpellListenerScript();
+    new EredarTwinsConflagrationSpellListenerScript();
     new MuruSpellFurySpellListenerScript();
     new KiljaedenDarknessSpellListenerScript();
     // AllCreatureScript
-    new SunwellBossUpdateScript();
-    new KiljaedenArmageddonTargetCreatureScript();
+    new SunwellCreatureUpdateScript();
 }

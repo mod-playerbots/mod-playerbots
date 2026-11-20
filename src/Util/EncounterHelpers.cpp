@@ -57,12 +57,12 @@ bool IsEncounterInProgress(Player* bot, uint32 mapId)
     return instance && instance->IsEncounterInProgress();
 }
 
-bool IsBossInProgress(Player* bot, uint32 mapId, uint32 bossId)
+bool IsBossInProgress(WorldObject* object, uint32 mapId, uint32 bossId)
 {
-    if (bot->GetMapId() != mapId)
+    if (!object || object->GetMapId() != mapId)
         return false;
 
-    InstanceScript* instance = bot->GetInstanceScript();
+    InstanceScript* instance = object->GetInstanceScript();
     return instance && instance->GetBossState(bossId) == IN_PROGRESS;
 }
 
@@ -454,77 +454,6 @@ bool CanTakeStepTowards(
     return true;
 }
 
-bool GetPathStepTowardPoint(
-    Player* bot, Position const& destination, float stopDistance, float stepDistance,
-    float& stepX, float& stepY)
-{
-    if (bot->GetExactDist(destination) < stopDistance)
-        return false;
-
-    PathGenerator path(bot);
-    path.CalculatePath(
-        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
-    if (!(path.GetPathType() & (PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_SHORTCUT)))
-        return false;
-
-    Movement::PointsArray const& points = path.GetPath();
-    if (points.size() < 2)
-        return false;
-
-    G3D::Vector3 const targetPos(
-        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
-
-    float remaining = stepDistance;
-    for (std::size_t i = 1; i < points.size(); ++i)
-    {
-        G3D::Vector3 const& from = points[i - 1];
-        G3D::Vector3 const& to = points[i];
-
-        float const segment = (to - from).length();
-        if (segment <= 0.0f)
-            continue;
-
-        float const toDist = (to - targetPos).length();
-        float ratio = 1.0f;
-
-        if (toDist < stopDistance)
-        {
-            float const fromDist = (from - targetPos).length();
-            if (fromDist <= stopDistance)
-                break;
-
-            float const a = segment * segment;
-            float const b = (from - targetPos).dot(to - from);
-            float const c = fromDist * fromDist - stopDistance * stopDistance;
-            ratio = (-b - std::sqrt(std::max(0.0f, b * b - a * c))) / a;
-        }
-
-        if (segment * ratio >= remaining)
-            ratio = remaining / segment;
-
-        remaining -= segment * ratio;
-
-        G3D::Vector3 const step = from + (to - from) * ratio;
-        stepX = step.x;
-        stepY = step.y;
-
-        if (remaining <= 0.0f || ratio < 1.0f)
-            return true;
-    }
-
-    return remaining < stepDistance;
-}
-
-bool GetPathStepTowardUnit(
-    Player* bot, Unit* target, float stopDistance, float stepDistance, float& stepX, float& stepY)
-{
-    if (!target)
-        return false;
-
-    return GetPathStepTowardPoint(
-        bot, target->GetPosition(), stopDistance, stepDistance, stepX, stepY);
-}
-
 bool GetStepToPosition(
     Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
     float& stepY, bool& backwards)
@@ -567,6 +496,83 @@ bool GetStepToPosition(
     stepY = botY + toPosY * ratio;
 
     return true;
+}
+
+bool GetPathStepTowardPoint(
+    Player* bot, Position const& destination, float stopDistance, float stepDistance,
+    float& stepX, float& stepY)
+{
+    if (bot->GetExactDist(destination) < stopDistance)
+        return false;
+
+    // Steps end a little inside stopDistance. If a step ended exactly on it, float rounding would
+    // decide a caller's arrival test at the same distance, and a bot that failed it would be stuck
+    // due to having not arrived but having no step left to take it closer.
+    constexpr float stopMargin = 0.1f;
+    float const aimDistance = std::max(0.0f, stopDistance - stopMargin);
+
+    PathGenerator path(bot);
+    path.CalculatePath(
+        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
+    if (!(path.GetPathType() & (PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_SHORTCUT)))
+        return false;
+
+    Movement::PointsArray const& points = path.GetPath();
+    if (points.size() < 2)
+        return false;
+
+    G3D::Vector3 const targetPos(
+        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
+
+    float remaining = stepDistance;
+    for (std::size_t i = 1; i < points.size(); ++i)
+    {
+        G3D::Vector3 const& from = points[i - 1];
+        G3D::Vector3 const& to = points[i];
+
+        float const segment = (to - from).length();
+        if (segment <= 0.0f)
+            continue;
+
+        float const toDist = (to - targetPos).length();
+        float ratio = 1.0f;
+
+        if (toDist < aimDistance)
+        {
+            float const fromDist = (from - targetPos).length();
+            if (fromDist <= aimDistance)
+                break;
+
+            float const a = segment * segment;
+            float const b = (from - targetPos).dot(to - from);
+            float const c = fromDist * fromDist - aimDistance * aimDistance;
+            ratio = (-b - std::sqrt(std::max(0.0f, b * b - a * c))) / a;
+        }
+
+        if (segment * ratio >= remaining)
+            ratio = remaining / segment;
+
+        remaining -= segment * ratio;
+
+        G3D::Vector3 const step = from + (to - from) * ratio;
+        stepX = step.x;
+        stepY = step.y;
+
+        if (remaining <= 0.0f || ratio < 1.0f)
+            return true;
+    }
+
+    return remaining < stepDistance;
+}
+
+bool GetPathStepTowardUnit(
+    Player* bot, Unit* target, float stopDistance, float stepDistance, float& stepX, float& stepY)
+{
+    if (!target)
+        return false;
+
+    return GetPathStepTowardPoint(
+        bot, target->GetPosition(), stopDistance, stepDistance, stepX, stepY);
 }
 
 // Player Getters
@@ -642,7 +648,7 @@ Player* GetNearestPlayerInRadius(Player* bot, float radius)
     Player* nearestPlayer = nullptr;
     float nearestDistance = radius;
 
-    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || member == bot)
