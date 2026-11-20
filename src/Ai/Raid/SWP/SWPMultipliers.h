@@ -413,6 +413,17 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class KiljaedenHoldDpsAtStartMultiplier : public SunwellEncounterMultiplier
+{
+public:
+    KiljaedenHoldDpsAtStartMultiplier(PlayerbotAI* botAI)
+        : SunwellEncounterMultiplier(
+            botAI, "kil'jaeden hold dps at start", SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class KiljaedenControlMovementAndTargetingMultiplier : public SunwellEncounterMultiplier
 {
 public:

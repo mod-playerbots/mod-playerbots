@@ -11,6 +11,7 @@
 #include "Position.h"
 #include "SWPShared.h"
 #include <array>
+#include <optional>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -52,6 +53,9 @@ inline constexpr float KILJAEDEN_PHASE3_HP_THRESHOLD = 85.0f;
 inline constexpr float KILJAEDEN_PHASE4_HP_THRESHOLD = 55.0f;
 inline constexpr float KILJAEDEN_PHASE5_HP_THRESHOLD = 25.0f;
 
+// After Kil'jaeden becomes attackable, every bot but the main tank holds DPS on him this long.
+inline constexpr uint32 KILJAEDEN_DPS_HOLD_MS = 5 * IN_MILLISECONDS;
+
 inline constexpr uint32 HAND_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 DRAGON_ORB_CACHE_INTERVAL_MS = 200;
 
@@ -62,7 +66,7 @@ inline constexpr float KILJAEDEN_ORB_USER_ANNOUNCE_Z = 40.0f;
 // Beyond this 2D distance the announcement is forgotten, so a raid that returns hears it again.
 inline constexpr float KILJAEDEN_ORB_USER_REARM_DISTANCE = 150.0f;
 
-// Knockback (47115) hits everyone within 9y of his center (3D, no combat reach) every second.
+// Knockback (47115) hits everyone within 9 yd of KJ's center (3D, no combat reach) every second.
 inline constexpr float KILJAEDEN_KNOCKBACK_RADIUS = 9.0f;
 // Bots go round him on this ring when a straight line would pass through the Knockback.
 inline constexpr float KILJAEDEN_KNOCKBACK_CLEARANCE = KILJAEDEN_KNOCKBACK_RADIUS + 1.5f;
@@ -73,7 +77,7 @@ inline constexpr float KILJAEDEN_ROUTE_LEAD_ANGLE = 0.3f;
 
 inline constexpr float HAND_SEARCH_RADIUS = 80.0f;
 // Hammer of Justice is a single-target spell that counts both combat reaches so its actual range is
-// its tooltip range of 10y + 1.5y (player) + 2.5y (Hand) = 14y. Holding a little inside that
+// its tooltip range of 10 yd + 1.5 (player) + 2.5 (Hand) = 14 yd. Holding a little inside that
 // threshold leaves room for the Hand to shift between the range check and the cast landing.
 inline constexpr float HAND_HOLY_PALADIN_STANDOFF = 12.0f;
 // Timing between stuns for bots to coordinate them. A gate based purely on UNIT_STATE_STUNNED
@@ -96,7 +100,8 @@ inline constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
 // Only up to two ranged bots may share a slot when an Armageddon forces a reshuffle.
 inline constexpr uint8 KILJAEDEN_MAX_BOTS_PER_RANGED_SLOT = 2;
 inline constexpr uint32 ARMAGEDDON_HAZARD_DURATION_MS = 10 * IN_MILLISECONDS;
-inline constexpr float ARMAGEDDON_SAFE_DISTANCE = 11.0f;
+inline constexpr float ARMAGEDDON_HAZARD_RADIUS = 9.0f; // no combat reaches added
+inline constexpr float ARMAGEDDON_CLEARANCE = ARMAGEDDON_HAZARD_RADIUS + 2.0f;
 
 inline constexpr float KILJAEDEN_REFLECTION_SEARCH_RADIUS = 100.0f;
 inline constexpr float DRAGON_ORB_SEARCH_RADIUS = 200.0f;
@@ -106,7 +111,7 @@ inline constexpr float DRAGON_ORB_IN_USE_HOLD_DISTANCE = 15.0f;
 inline constexpr int32 SHIELD_OF_THE_BLUE_CAST_WINDOW_MS = 4500;
 // How far bots with Fire Bloom stay away from the Darkness stack until the Shield cast window.
 inline constexpr float FIRE_BLOOM_STANDOFF = 15.0f;
-// Breath: Haste and Breath: Revitalize are 13y cones on allies, so the dragon stops a little
+// Breath: Haste and Breath: Revitalize are 13 yd cones on allies, so the dragon stops a little
 // under half that from its target and looks for a cluster of roughly the same to cover at once.
 inline constexpr float KILJAEDEN_DRAGON_BREATH_STANDOFF = 6.0f;
 inline constexpr float KILJAEDEN_DRAGON_STANDOFF_TOLERANCE = 1.0f;
@@ -114,12 +119,12 @@ inline constexpr float KILJAEDEN_DRAGON_CLUSTER_RADIUS = 6.0f;
 inline constexpr uint8 KILJAEDEN_DRAGON_MIN_CLUSTER_SIZE = 3;
 
 inline Position const SUNWELL_CENTER_POSITION =       { 1698.450f, 628.030f, 28.199f };
-inline Position const KILJAEDEN_TANK_POSITION =       { 1704.729f, 634.891f, 27.787f };
-inline Position const KILJAEDEN_S_MELEE_POSITION =    { 1688.102f, 629.810f, 27.848f };
-inline Position const KILJAEDEN_E_MELEE_POSITION =    { 1701.138f, 617.880f, 27.838f };
+inline Position const KILJAEDEN_TANK_POSITION =       { 1705.876f, 636.145f, 27.836f };
+inline Position const KILJAEDEN_S_MELEE_POSITION =    { 1684.160f, 630.488f, 27.215f };
+inline Position const KILJAEDEN_E_MELEE_POSITION =    { 1702.162f, 614.013f, 27.516f };
 inline Position const KILJAEDEN_DARKNESS_POSITION =   { 1706.417f, 636.323f, 27.849f };
-// Melee with Fire Bloom wait here so that their group isn't splashed, and melee go here when
-// Armageddons fall on both melee positions.
+// Melee with Fire Bloom wait here so that their group isn't splashed, and melee also go here when
+// Armageddons target both melee positions.
 inline Position const KILJAEDEN_MELEE_BACK_POSITION = { 1687.648f, 616.227f, 27.447f };
 
 GuidVector FindKiljaedenHandGuids(Player* bot);
@@ -135,6 +140,9 @@ void EnsureKiljaedenRangedAssignments(Player* bot);
 void EnsureKiljaedenRangedArmageddonAssignments(Player* bot);
 bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
 int32 GetKiljaedenDarknessTimeLeftMs(Unit* kiljaeden);
+bool IsKiljaedenStartDpsHoldActive(PlayerbotAI* botAI);
+bool IsLineThroughKiljaedenKnockback(Position const& from, Position const& to);
+bool IsMeleeBlockedByKiljaedenKnockback(Position const& from, Position const& target);
 bool GetKiljaedenStepToPosition(
     Player* bot, Position const& destination, float arrivalDist, float& stepX, float& stepY);
 Position GetKiljaedenFireBloomWaitPosition(Player* bot);
@@ -163,6 +171,7 @@ struct KiljaedenEncounterState
     std::unordered_set<ObjectGuid> trackedArmageddonTargets;
     uint32 rangedAssignmentRebuildMs = 0;
     uint32 rangedArmageddonRebuildMs = 0;
+    std::optional<uint32> dpsHoldStartMs;
 };
 
 KiljaedenEncounterState& KiljaedenState(uint32 instanceId);

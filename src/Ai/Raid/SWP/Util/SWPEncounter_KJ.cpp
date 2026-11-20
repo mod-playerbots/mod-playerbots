@@ -105,30 +105,13 @@ bool ShouldRebuildKiljaedenAssignments(uint32& lastRebuildMs, uint32 intervalMs)
 
 // A point on the ring round Kil'jaeden to aim for when the straight line to the destination would
 // pass through his Knockback: a little past the bot's tangent to the ring, on the side nearer the
-// destination. A line whose nearest point to him is either end needs no detour, so a bot moving
-// away from him, or onto a position inside the ring (the tank's), goes straight.
+// destination.
 bool TryGetKiljaedenDetourPoint(Player* bot, Position const& destination, Position& detourPoint)
 {
+    if (!IsLineThroughKiljaedenKnockback(*bot, destination))
+        return false;
+
     Position const& center = SUNWELL_CENTER_POSITION;
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const deltaX = destination.GetPositionX() - botX;
-    float const deltaY = destination.GetPositionY() - botY;
-    float const lengthSq = deltaX * deltaX + deltaY * deltaY;
-    if (lengthSq <= 0.0f)
-        return false;
-
-    float const t = ((center.GetPositionX() - botX) * deltaX +
-        (center.GetPositionY() - botY) * deltaY) / lengthSq;
-    if (t <= 0.0f || t >= 1.0f)
-        return false;
-
-    if (center.GetExactDist2d(botX + deltaX * t, botY + deltaY * t) >=
-        KILJAEDEN_ROUTE_LINE_CLEARANCE)
-    {
-        return false;
-    }
-
     float const radius = KILJAEDEN_KNOCKBACK_CLEARANCE;
     float const botDistance = std::max(bot->GetExactDist2d(center), radius);
     float const botAngle = center.GetAngle(bot);
@@ -596,6 +579,51 @@ int32 GetKiljaedenDarknessTimeLeftMs(Unit* kiljaeden)
         timeLeftMs += darkness->GetSpellInfo()->GetDuration();
 
     return timeLeftMs;
+}
+
+bool IsKiljaedenStartDpsHoldActive(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    if (PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    KiljaedenEncounterState const* state = FindKiljaedenState(bot->GetInstanceId());
+    if (state && state->dpsHoldStartMs)
+        return getMSTimeDiff(*state->dpsHoldStartMs, getMSTime()) < KILJAEDEN_DPS_HOLD_MS;
+
+    // He is found once he engages the raid, which is when he becomes attackable.
+    return GetSwpBoss(bot, SwpBosses::DATA_KILJAEDEN) != nullptr;
+}
+
+// Whether a straight line from one point to another passes too close to Kil'jaeden's center. A line
+// whose nearest point to him is either end doesn't, so a bot moving away from him, or onto a
+// position on the ring, goes straight.
+bool IsLineThroughKiljaedenKnockback(Position const& from, Position const& to)
+{
+    Position const& center = SUNWELL_CENTER_POSITION;
+    float const fromX = from.GetPositionX();
+    float const fromY = from.GetPositionY();
+    float const deltaX = to.GetPositionX() - fromX;
+    float const deltaY = to.GetPositionY() - fromY;
+    float const lengthSq = deltaX * deltaX + deltaY * deltaY;
+    if (lengthSq <= 0.0f)
+        return false;
+
+    float const t = ((center.GetPositionX() - fromX) * deltaX +
+        (center.GetPositionY() - fromY) * deltaY) / lengthSq;
+    if (t <= 0.0f || t >= 1.0f)
+        return false;
+
+    return center.GetExactDist2d(fromX + deltaX * t, fromY + deltaY * t) <
+        KILJAEDEN_ROUTE_LINE_CLEARANCE;
+}
+
+// Whether meleeing a unit means entering Kil'jaeden's Knockback: the unit stands inside the ring
+// the route keeps clear, or the straight line to it crosses the Knockback.
+bool IsMeleeBlockedByKiljaedenKnockback(Position const& from, Position const& target)
+{
+    return SUNWELL_CENTER_POSITION.GetExactDist2d(target) < KILJAEDEN_ROUTE_LINE_CLEARANCE ||
+        IsLineThroughKiljaedenKnockback(from, target);
 }
 
 // One step toward the destination, going round Kil'jaeden's Knockback when the straight line would

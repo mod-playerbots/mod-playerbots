@@ -167,6 +167,24 @@ bool KiljaedenControlHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
     }
 }
 
+bool KiljaedenStartDpsHoldTimerAction::Execute(Event /*event*/)
+{
+    return EmplaceIfUnset(KiljaedenState(bot->GetInstanceId()).dpsHoldStartMs, getMSTime());
+}
+
+bool KiljaedenSelectTargetForHoldAction::isUseful()
+{
+    return botAI->GetState() == BOT_STATE_NON_COMBAT;
+}
+
+bool KiljaedenSelectTargetForHoldAction::Execute(Event /*event*/)
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return SelectTarget(botAI, AI_VALUE(Unit*, "dps target"));
+
+    return SelectTarget(botAI, AI_VALUE(Unit*, "tank target"));
+}
+
 bool KiljaedenPositionAndMoveTanksAction::Execute(Event /*event*/)
 {
     if (!PlayerbotAI::IsMainTank(bot))
@@ -177,8 +195,13 @@ bool KiljaedenPositionAndMoveTanksAction::Execute(Event /*event*/)
                 Id(SwpNpcs::NPC_SINISTER_REFLECTION), KILJAEDEN_REFLECTION_SEARCH_RADIUS))
         {
             // Once Reflections are aggressive, tank assist can take over.
-            return reflection->GetReactState() == REACT_PASSIVE &&
-                PickUpSinisterReflections(reflection);
+            if (reflection->GetReactState() == REACT_PASSIVE &&
+                PickUpSinisterReflections(reflection))
+            {
+                return true;
+            }
+
+            return MoveAroundKiljaedenToReflection();
         }
     }
 
@@ -207,6 +230,9 @@ bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* re
             botAI->CastSpell(spell, reflection);
     };
 
+    // A charge goes straight to the Reflection, into KJ's Knockback if he is in the way.
+    bool const canCharge = !IsLineThroughKiljaedenKnockback(*bot, *reflection);
+
     switch (bot->getClass())
     {
         case CLASS_DEATH_KNIGHT:
@@ -216,7 +242,7 @@ bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* re
         }
         case CLASS_DRUID:
         {
-            return castSpell("feral charge - bear", CHARGE_REACH) ||
+            return (canCharge && castSpell("feral charge - bear", CHARGE_REACH)) ||
                 castSpell("challenging roar", TAUNT_SHOUT_RADIUS);
         }
         case CLASS_PALADIN:
@@ -226,12 +252,34 @@ bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* re
         }
         case CLASS_WARRIOR:
         {
-            return castSpell("charge", CHARGE_REACH) ||
+            return (canCharge && castSpell("charge", CHARGE_REACH)) ||
                 castSpell("challenging shout", TAUNT_SHOUT_RADIUS);
         }
         default:
             return false;
     }
+}
+
+// The stock move to a target goes straight, so an off-tank whose Reflection is across Kil'jaeden
+// goes round him on the ring until the straight line clears, then the stock move takes over.
+bool KiljaedenPositionAndMoveTanksAction::MoveAroundKiljaedenToReflection()
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || target->GetEntry() != Id(SwpNpcs::NPC_SINISTER_REFLECTION) ||
+        !IsLineThroughKiljaedenKnockback(*bot, *target))
+    {
+        return false;
+    }
+
+    constexpr float arrivalDist = 0.0f;
+    float moveX;
+    float moveY;
+    if (!GetKiljaedenStepToPosition(bot, *target, arrivalDist, moveX, moveY))
+        return false;
+
+    return MoveTo(
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::Execute(Event /*event*/)

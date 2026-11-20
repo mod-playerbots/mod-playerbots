@@ -568,13 +568,8 @@ bool TryGetBrutallusLaneTraversalPosition(
     float const stepRatio = stepDistance / (2.0f * radius);
     float const clampedStepRatio = std::clamp(stepRatio, 0.0f, 1.0f);
     float const stepAngle = 2.0f * std::asin(clampedStepRatio);
-    float nextAngle = targetAngle;
-
-    if (std::fabs(remainingAngle) > stepAngle)
-    {
-        nextAngle = Position::NormalizeOrientation(
-            currentAngle + std::copysign(stepAngle, remainingAngle));
-    }
+    float const nextAngle = Position::NormalizeOrientation(
+        currentAngle + std::clamp(remainingAngle, -stepAngle, stepAngle));
 
     position = GetBrutallusPositionAtAngle(bot, *brutallus, nextAngle, radius);
     return true;

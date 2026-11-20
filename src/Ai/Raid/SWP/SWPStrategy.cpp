@@ -8,6 +8,7 @@
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "SWPEncounter_Felmyst.h"
+#include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPMultipliers.h"
@@ -239,6 +240,12 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
           NextAction("kil'jaeden mark hand of the deceiver", ACTION_RAID + 1),
           NextAction("kil'jaeden move holy paladin into stun range", ACTION_RAID) }));
 
+    triggers.push_back(new TriggerNode("kil'jaeden should hold dps at start",
+        { NextAction("kil'jaeden start dps hold timer", ACTION_EMERGENCY + 8) }));
+
+    triggers.push_back(new TriggerNode("kil'jaeden dps hold is active",
+        { NextAction("kil'jaeden select target for hold", ACTION_RAID) }));
+
     triggers.push_back(new TriggerNode("kil'jaeden should be tanked",
         { NextAction("kil'jaeden position and move tanks", ACTION_RAID) }));
 
@@ -315,6 +322,7 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Kil'jaeden <The Deceiver>
     multipliers.push_back(new KiljaedenSingleTargetHandsMultiplier(botAI));
+    multipliers.push_back(new KiljaedenHoldDpsAtStartMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlMovementAndTargetingMultiplier(botAI));
     multipliers.push_back(new KiljaedenPrioritizeDarknessProtectionMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlDragonMultiplier(botAI));
@@ -432,6 +440,28 @@ void AppendKiljaedenShieldOrbExclusions(
     }
 }
 
+// Melee and Demo Locks in Metamorphosis do not attack Reflections inside Kil'jaeden's Knockback
+// radius, or if reaching them would require crossing his Knockback radius.
+void AppendKiljaedenReflectionExclusions(
+    PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
+{
+    Player* bot = botAI->GetBot();
+    bool const isMetamorphosis = bot->getClass() == CLASS_WARLOCK &&
+        bot->HasAura(Id(SwpSpells::SPELL_METAMORPHOSIS));
+    if (!isMetamorphosis && (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot)))
+        return;
+
+    for (auto const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
+    {
+        Unit* attacker = botAI->GetUnit(guid);
+        if (attacker && attacker->GetEntry() == Id(SwpNpcs::NPC_SINISTER_REFLECTION) &&
+            IsMeleeBlockedByKiljaedenKnockback(*bot, *attacker))
+        {
+            exclusions.insert(guid);
+        }
+    }
+}
+
 } // end anonymous namespace
 
 void RaidSwpStrategy::AppendTargetExclusions(
@@ -452,4 +482,5 @@ void RaidSwpStrategy::AppendTargetExclusions(
     AppendMuruDarkFiendExclusions(botAI, context, exclusions);
     AppendMuruTankExclusions(botAI, context, exclusions);
     AppendKiljaedenShieldOrbExclusions(botAI, context, exclusions);
+    AppendKiljaedenReflectionExclusions(botAI, context, exclusions);
 }

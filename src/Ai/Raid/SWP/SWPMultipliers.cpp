@@ -795,10 +795,33 @@ float KiljaedenSingleTargetHandsMultiplier::GetValueInEncounter(Action* action)
     return FindThreatTarget(bot, "hand of the deceiver") ? 0.0f : 1.0f;
 }
 
+// Only Kil'jaeden is held, so Volatile Felfire Fiends still left from the Hands are killed.
+float KiljaedenHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!IsDpsHoldCandidate(bot, action) || !IsKiljaedenStartDpsHoldActive(botAI))
+        return 1.0f;
+
+    Unit* kiljaeden = GetEncounterBoss();
+    if (!kiljaeden || (action->GetTarget() != kiljaeden &&
+        AI_VALUE(Unit*, "current target") != kiljaeden))
+    {
+        return 1.0f;
+    }
+
+    return GetDpsHoldValue(bot, action);
+}
+
 float KiljaedenControlMovementAndTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
+
+    // Charges go straight to their target, into KJ's Knockback if he is in the way.
+    if (dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        Unit* target = action->GetTarget();
+        return target && IsLineThroughKiljaedenKnockback(*bot, *target) ? 0.0f : 1.0f;
+    }
 
     return dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<CombatFormationMoveAction*>(action) ||

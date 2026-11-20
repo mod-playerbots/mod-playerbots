@@ -297,13 +297,13 @@ bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
         _throughPosition = nullptr;
     }
 
-    while (!_throughPosition && _routePointIndex + 1 < _route.size() &&
-        bot->GetExactDist2d(_route[_routePointIndex]) <= FELMYST_ROUTE_POINT_ARRIVAL_DISTANCE)
+    while (!_throughPosition && _routePointIndex + 1 < _route->size() &&
+        bot->GetExactDist2d((*_route)[_routePointIndex]) <= FELMYST_ROUTE_POINT_ARRIVAL_DISTANCE)
     {
         ++_routePointIndex;
     }
 
-    Position const& target = _throughPosition ? *_throughPosition : _route[_routePointIndex];
+    Position const& target = _throughPosition ? *_throughPosition : (*_route)[_routePointIndex];
 
     // The route is not turned aside for patches, heads, or the crate; it passes clear of all three.
     float stepX;
@@ -333,7 +333,7 @@ void FelmystKiteDemonicVaporAction::StartRoute(Unit* felmyst, ObjectGuid const& 
     uint8 const demonicVaporCount = state ? state->demonicVaporCount : 0;
 
     _demonicVaporGuid = demonicVaporGuid;
-    _route = GetFelmystDemonicVaporRoute(end, demonicVaporCount);
+    _route = &GetFelmystDemonicVaporRoute(end, demonicVaporCount);
     _routePointIndex = 0;
     _throughPosition = demonicVaporCount >= 2 &&
         state->firstDemonicVaporTargetGuid == bot->GetGUID() ?
@@ -342,11 +342,11 @@ void FelmystKiteDemonicVaporAction::StartRoute(Unit* felmyst, ObjectGuid const& 
 
 bool FelmystKiteDemonicVaporAction::ResetRouteProgress()
 {
-    if (_demonicVaporGuid.IsEmpty() && _route.empty() && !_routePointIndex && !_throughPosition)
+    if (_demonicVaporGuid.IsEmpty() && !_route && !_routePointIndex && !_throughPosition)
         return false;
 
     _demonicVaporGuid = ObjectGuid::Empty;
-    _route = {};
+    _route = nullptr;
     _routePointIndex = 0;
     _throughPosition = nullptr;
     return true;

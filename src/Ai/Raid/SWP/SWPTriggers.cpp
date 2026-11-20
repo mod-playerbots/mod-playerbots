@@ -755,6 +755,21 @@ bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActiveInEncounter()
     return FindThreatTarget(bot, "hand of the deceiver");
 }
 
+// The tracker starts the hold's clock once Kil'jaeden is attackable (he engages the raid then).
+bool KiljaedenShouldHoldDpsAtStartTrigger::IsActiveInEncounter()
+{
+    KiljaedenEncounterState const* state = FindKiljaedenState(bot->GetInstanceId());
+    if (state && state->dpsHoldStartMs)
+        return false;
+
+    return GetEncounterBoss() && IsMechanicTrackerBot(bot, SWP_MAP_ID);
+}
+
+bool KiljaedenDpsHoldIsActiveTrigger::IsActiveInEncounter()
+{
+    return IsKiljaedenStartDpsHoldActive(botAI);
+}
+
 bool KiljaedenShouldBeTankedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -800,9 +815,19 @@ bool KiljaedenRangedShouldSpreadInTwoArcsTrigger::IsActiveInEncounter()
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    // Allow Demo Locks to AoE the Reflections
-    if (bot->getClass() == CLASS_WARLOCK && bot->HasAura(Id(SwpSpells::SPELL_METAMORPHOSIS)))
-        return !FindThreatTarget(bot, "sinister reflection");
+    // Allow Demo Locks to AoE the Reflections they can reach without entering the Knockback
+    if (bot->getClass() != CLASS_WARLOCK || !bot->HasAura(Id(SwpSpells::SPELL_METAMORPHOSIS)))
+        return true;
+
+    for (ObjectGuid const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->GetEntry() == Id(SwpNpcs::NPC_SINISTER_REFLECTION) &&
+            !IsMeleeBlockedByKiljaedenKnockback(*bot, *unit))
+        {
+            return false;
+        }
+    }
 
     return true;
 }

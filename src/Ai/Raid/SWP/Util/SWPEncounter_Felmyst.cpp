@@ -831,7 +831,7 @@ Position const& GetFelmystGroupPosition(FelmystAirEnd end, uint8 demonicVaporCou
     return positions[std::min<size_t>(demonicVaporCount, positions.size() - 1)];
 }
 
-std::span<Position const> GetFelmystDemonicVaporRoute(FelmystAirEnd end, uint8 demonicVaporCount)
+std::vector<Position> const& GetFelmystDemonicVaporRoute(FelmystAirEnd end, uint8 demonicVaporCount)
 {
     bool const second = demonicVaporCount >= 2;
     if (end == FelmystAirEnd::West)
@@ -896,9 +896,9 @@ bool IsFelmystEarlyMoveDue(Player* bot, Unit* felmyst)
     return GetMSTimeDiffToNow(state->touchdownMs) + leadMs >= FELMYST_TAKEOFF_AFTER_TOUCHDOWN_MS;
 }
 
-// One step toward the destination, or at 30, 60, or 90 degrees to either side of it. A landing
-// point too close to a hazard or inside refusedLane is refused but may be crossed (PatchesOnly
-// when that is all that refuses the direct step); one blocked or too close to the crate never is.
+// One step toward the destination, or at 30, 60, or 90° to either side of it. A landing point too
+// close to a hazard or inside refusedLane is refused but may be crossed (PatchesOnly when that is
+// all that refuses the direct step); one blocked or too close to the crate never is.
 FelmystAirStep TryGetFelmystAirStep(
     Player* bot, Position const& destination, std::vector<Creature*> const& hazards,
     float hazardClearance, FogLane refusedLane, float& stepX, float& stepY)

@@ -228,6 +228,12 @@ public:
         creators["kil'jaeden move holy paladin into stun range"] =
             &RaidSwpActionContext::kiljaeden_move_holy_paladin_into_stun_range;
 
+        creators["kil'jaeden start dps hold timer"] =
+            &RaidSwpActionContext::kiljaeden_start_dps_hold_timer;
+
+        creators["kil'jaeden select target for hold"] =
+            &RaidSwpActionContext::kiljaeden_select_target_for_hold;
+
         creators["kil'jaeden position and move tanks"] =
             &RaidSwpActionContext::kiljaeden_position_and_move_tanks;
 
@@ -559,6 +565,14 @@ private:
     static Action* kiljaeden_move_holy_paladin_into_stun_range(PlayerbotAI* botAI)
     {
         return new KiljaedenMoveHolyPaladinIntoStunRangeAction(botAI);
+    }
+    static Action* kiljaeden_start_dps_hold_timer(PlayerbotAI* botAI)
+    {
+        return new KiljaedenStartDpsHoldTimerAction(botAI);
+    }
+    static Action* kiljaeden_select_target_for_hold(PlayerbotAI* botAI)
+    {
+        return new KiljaedenSelectTargetForHoldAction(botAI);
     }
     static Action* kiljaeden_position_and_move_tanks(PlayerbotAI* botAI)
     {

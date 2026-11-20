@@ -16,7 +16,6 @@
 #include "SWPShared.h"
 #include <limits>
 #include <optional>
-#include <span>
 #include <string>
 #include <vector>
 
@@ -339,7 +338,7 @@ public:
 
 private:
     ObjectGuid _demonicVaporGuid;
-    std::span<Position const> _route;
+    std::vector<Position> const* _route = nullptr;
     size_t _routePointIndex = 0;
     // G1, which the first vapor's target passes through if the second vapor picks it again
     Position const* _throughPosition = nullptr;
@@ -688,6 +687,23 @@ public:
     bool Execute(Event event) override;
 };
 
+class KiljaedenStartDpsHoldTimerAction : public Action
+{
+public:
+    KiljaedenStartDpsHoldTimerAction(PlayerbotAI* botAI)
+        : Action(botAI, "kil'jaeden start dps hold timer") {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenSelectTargetForHoldAction : public Action
+{
+public:
+    KiljaedenSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : Action(botAI, "kil'jaeden select target for hold") {}
+    bool isUseful() override;
+    bool Execute(Event event) override;
+};
+
 class KiljaedenPositionAndMoveTanksAction : public AttackAction
 {
 public:
@@ -697,6 +713,7 @@ public:
 
 private:
     bool PickUpSinisterReflections(Creature* reflection);
+    bool MoveAroundKiljaedenToReflection();
 };
 
 class KiljaedenPositionMeleeAndAvoidArmageddonsAction : public MovementAction

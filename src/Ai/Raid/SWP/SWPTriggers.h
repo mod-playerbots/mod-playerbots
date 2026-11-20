@@ -784,6 +784,28 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class KiljaedenShouldHoldDpsAtStartTrigger : public SunwellEncounterTrigger
+{
+public:
+    KiljaedenShouldHoldDpsAtStartTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "kil'jaeden should hold dps at start", SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class KiljaedenDpsHoldIsActiveTrigger : public SunwellEncounterTrigger
+{
+public:
+    KiljaedenDpsHoldIsActiveTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "kil'jaeden dps hold is active", SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class KiljaedenShouldBeTankedTrigger : public SunwellEncounterTrigger
 {
 public:

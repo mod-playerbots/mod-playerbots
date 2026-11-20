@@ -213,6 +213,12 @@ public:
         creators["kil'jaeden hands of the deceiver are active"] =
             &RaidSwpTriggerContext::kiljaeden_hands_of_the_deceiver_are_active;
 
+        creators["kil'jaeden should hold dps at start"] =
+            &RaidSwpTriggerContext::kiljaeden_should_hold_dps_at_start;
+
+        creators["kil'jaeden dps hold is active"] =
+            &RaidSwpTriggerContext::kiljaeden_dps_hold_is_active;
+
         creators["kil'jaeden should be tanked"] =
             &RaidSwpTriggerContext::kiljaeden_should_be_tanked;
 
@@ -519,6 +525,14 @@ private:
     static Trigger* kiljaeden_hands_of_the_deceiver_are_active(PlayerbotAI* botAI)
     {
         return new KiljaedenHandsOfTheDeceiverAreActiveTrigger(botAI);
+    }
+    static Trigger* kiljaeden_should_hold_dps_at_start(PlayerbotAI* botAI)
+    {
+        return new KiljaedenShouldHoldDpsAtStartTrigger(botAI);
+    }
+    static Trigger* kiljaeden_dps_hold_is_active(PlayerbotAI* botAI)
+    {
+        return new KiljaedenDpsHoldIsActiveTrigger(botAI);
     }
     static Trigger* kiljaeden_should_be_tanked(PlayerbotAI* botAI)
     {

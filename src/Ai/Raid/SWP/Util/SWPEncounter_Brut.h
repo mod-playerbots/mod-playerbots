@@ -47,21 +47,21 @@ inline constexpr uint8 METEOR_SLASH_SWAP_STACKS = 3;
 // Main tank placement. Whatever the pull was, the main tank draws Brutallus onto the anchor
 // position, and then stands in at BRUTALLUS_TANK_POSITION_RADIUS on the bearing below.
 inline constexpr float BRUTALLUS_ANCHOR_TOLERANCE = 4.0f;
-// World angle from Brutallus to the main tank (-52 degrees). Within the tolerance of it, the
-// whole layout is on floor and no position is at the crate, wherever on the anchor he stands.
+// World angle from Brutallus to the main tank (-52°). Within the tolerance of it, the whole layout
+// is on floor and no position is at the crate, wherever on the anchor he stands.
 inline constexpr float BRUTALLUS_MAIN_TANK_BEARING = -52.0f * M_PI / 180.0f;
 inline constexpr float BRUTALLUS_MAIN_TANK_BEARING_TOLERANCE = 10.0f * M_PI / 180.0f;
-// Brutallus stops 20y from the center of his victim, so a tank this far past the anchor draws
+// Brutallus stops 20 yd from the center of his victim, so a tank this far past the anchor draws
 // him onto it.
 inline constexpr float BRUTALLUS_DRAG_DISTANCE = 20.5f;
 // Before drawing Brutallus, the main tank lines up on the far side of him from the anchor,
 // close enough that he does not follow.
 inline constexpr float BRUTALLUS_TANK_LINE_UP_RADIUS = 17.0f;
 inline constexpr float BRUTALLUS_TANK_LINE_UP_ANGLE = 12.0f * M_PI / 180.0f;
-// Brutallus backs away from a victim within 9.75y of his center.
+// Brutallus backs away from a victim within 9.75 yd of his center.
 inline constexpr float BRUTALLUS_TANK_MIN_RADIUS = 12.0f;
 // The main tank steps forwards only within this angle of Brutallus, and backwards only within
-// this angle of straight away from him, so he is never behind the tank (more than 90 degrees).
+// this angle of straight away from him, so he is never behind the tank (more than 90°).
 inline constexpr float BRUTALLUS_TANK_STEER_ANGLE = M_PI / 3.0f;
 // The navmesh treats most of the crate as floor, so the main tank's steps keep this far from
 // its center.
@@ -104,11 +104,11 @@ inline constexpr float BRUTALLUS_INNER_LANE_RADIUS =
 inline constexpr float BRUTALLUS_OUTER_LANE_RADIUS =
     BRUTALLUS_NORMAL_RANGED_RADIUS + BRUTALLUS_LANE_OFFSET;
 inline constexpr float BRUTALLUS_BURN_PAD_RADIUS = BRUTALLUS_NORMAL_RANGED_RADIUS;
-// Burn moves count a position as reached within 1y but step to within this distance of it. A step
-// that stopped at 1y would end right on the line on level ground and could leave the bot stuck.
+// Burn moves count a position as reached within 1 yd but step to within this distance of it. A step
+// that stopped at 1 yd would end right on the line on level ground and could leave the bot stuck.
 inline constexpr float BRUTALLUS_BURN_STEP_STOP_DISTANCE = 0.5f;
 
-// Where Brutallus is held: open floor 19y from his spawn, with room for the layout on all sides.
+// Where Brutallus is held: open floor 19 yd from his spawn, with room for the layout on all sides.
 inline Position const BRUTALLUS_ANCHOR_POSITION = { 1472.0f, 594.0f, 22.4f };
 inline Position const BRUTALLUS_CRATE_POSITION =  { 1482.8f, 591.4f, 23.4f };
 
