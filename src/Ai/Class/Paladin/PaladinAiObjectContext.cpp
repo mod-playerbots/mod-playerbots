@@ -115,6 +115,8 @@ public:
         creators["judgement of light"] = &PaladinTriggerFactoryInternal::judgement_of_light;
         creators["seal"] = &PaladinTriggerFactoryInternal::seal;
         creators["art of war"] = &PaladinTriggerFactoryInternal::art_of_war;
+        creators["holy wrath undead aoe"] = &PaladinTriggerFactoryInternal::holy_wrath_undead_aoe;
+        creators["holy shield sudden drop"] = &PaladinTriggerFactoryInternal::holy_shield_sudden_drop;
         creators["crusader aura"] = &PaladinTriggerFactoryInternal::crusader_aura;
         creators["retribution aura"] = &PaladinTriggerFactoryInternal::retribution_aura;
         creators["devotion aura"] = &PaladinTriggerFactoryInternal::devotion_aura;
@@ -167,6 +169,8 @@ private:
     static Trigger* seal(PlayerbotAI* botAI) { return new SealTrigger(botAI); }
     static Trigger* art_of_war(PlayerbotAI* botAI) { return new ArtOfWarTrigger(botAI); }
     static Trigger* crusader_aura(PlayerbotAI* botAI) { return new CrusaderAuraTrigger(botAI); }
+    static Trigger* holy_wrath_undead_aoe(PlayerbotAI* botAI) { return new HolyWrathUndeadAoeTrigger(botAI); }
+    static Trigger* holy_shield_sudden_drop(PlayerbotAI* botAI) { return new HolyShieldSuddenDropTrigger(botAI); }
     static Trigger* retribution_aura(PlayerbotAI* botAI) { return new RetributionAuraTrigger(botAI); }
     static Trigger* devotion_aura(PlayerbotAI* botAI) { return new DevotionAuraTrigger(botAI); }
     static Trigger* sanctity_aura(PlayerbotAI* botAI) { return new SanctityAuraTrigger(botAI); }

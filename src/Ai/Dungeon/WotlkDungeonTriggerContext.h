@@ -14,6 +14,7 @@
 #include "FoSTriggerContext.h"
 #include "GDTriggerContext.h"
 #include "HoLTriggerContext.h"
+#include "HoRTriggerContext.h"
 #include "HoSTriggerContext.h"
 #include "NexTriggerContext.h"
 #include "OCTriggerContext.h"

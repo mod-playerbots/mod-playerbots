@@ -80,6 +80,9 @@ public:
         creators["icc lich king winter"] = &RaidIccTriggerContext::icc_lich_king_winter;
         creators["icc lich king adds"] = &RaidIccTriggerContext::icc_lich_king_adds;
         creators["icc lich king spirit bomb"] = &RaidIccTriggerContext::icc_lich_king_spirit_bomb;
+        creators["icc lich king soul reaper swap"] = &RaidIccTriggerContext::icc_lich_king_soul_reaper_swap;
+        creators["icc festergut bloat swap"] = &RaidIccTriggerContext::icc_festergut_bloat_swap;
+        creators["icc putricide plague swap"] = &RaidIccTriggerContext::icc_putricide_plague_swap;
     }
 
 private:
@@ -148,6 +151,9 @@ private:
     static Trigger* icc_lich_king_winter(PlayerbotAI* botAI) { return new IccLichKingWinterTrigger(botAI); }
     static Trigger* icc_lich_king_adds(PlayerbotAI* botAI) { return new IccLichKingAddsTrigger(botAI); }
     static Trigger* icc_lich_king_spirit_bomb(PlayerbotAI* botAI) { return new IccLichKingSpiritBombTrigger(botAI); }
+    static Trigger* icc_lich_king_soul_reaper_swap(PlayerbotAI* botAI) { return new IccLichKingSoulReaperSwapTrigger(botAI); }
+    static Trigger* icc_festergut_bloat_swap(PlayerbotAI* botAI) { return new IccFestergutBloatSwapTrigger(botAI); }
+    static Trigger* icc_putricide_plague_swap(PlayerbotAI* botAI) { return new IccPutricidePlagueSwapTrigger(botAI); }
 
 };
 

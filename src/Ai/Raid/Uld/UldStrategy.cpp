@@ -134,6 +134,56 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("hodir frost resistance action", ACTION_RAID) }));
 
     //
+    // XT-002 Deconstructor
+    //
+    // Bomb debuffs: leave the raid, otherwise the explosion hits everyone
+    // nearby (gravity bomb also yanks them in).
+    triggers.push_back(new TriggerNode(
+        "xt-002 bomb debuff",
+        { NextAction("xt-002 move away bomb", ACTION_EMERGENCY) }));
+
+    // Tympanic Tantrum: 80% of max health over 8 seconds. Everyone pops a
+    // personal defensive, healers (handled by their own strategies) raid heal.
+    triggers.push_back(new TriggerNode(
+        "xt-002 tantrum",
+        {
+            NextAction("shield wall", ACTION_EMERGENCY),
+            NextAction("icebound fortitude", ACTION_EMERGENCY),
+            NextAction("barkskin", ACTION_EMERGENCY),
+            NextAction("deterrence", ACTION_EMERGENCY),
+            NextAction("divine protection", ACTION_EMERGENCY),
+        }));
+
+    // Exposed heart (75/50/25%): double damage, carried over to the boss.
+    triggers.push_back(new TriggerNode(
+        "xt-002 exposed heart",
+        { NextAction("xt-002 attack heart", ACTION_RAID + 3) }));
+
+    //
+    // Algalon the Observer
+    //
+    // Big Bang: 8s cast, everyone must be inside a black hole or they die.
+    // Highest priority - nothing else matters during the cast.
+    triggers.push_back(new TriggerNode(
+        "algalon big bang",
+        { NextAction("algalon enter black hole", ACTION_EMERGENCY + 5) }));
+
+    // Living Constellations barrage the raid, they have to be killed.
+    triggers.push_back(new TriggerNode(
+        "algalon constellation",
+        { NextAction("algalon attack constellation", ACTION_RAID + 3) }));
+
+    // Tank swaps: Razorscale Fuse Armor (3), Algalon Phase Punch (3, before the
+    // 4-stack teleport).
+    triggers.push_back(new TriggerNode(
+        "razorscale tank swap",
+        { NextAction("tank swap", ACTION_EMERGENCY) }));
+
+    triggers.push_back(new TriggerNode(
+        "algalon tank swap",
+        { NextAction("tank swap", ACTION_EMERGENCY) }));
+
+    //
     // Freya
     //
     triggers.push_back(new TriggerNode(

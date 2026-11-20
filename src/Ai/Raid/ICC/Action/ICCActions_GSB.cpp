@@ -545,6 +545,15 @@ bool IccGunshipRocketJumpAction::Execute(Event /*event*/)
 
     // Non-tank rocket jump logic
 
+    // DPS and healers may only cross after the main tank is already on the
+    // enemy ship: jumping first means landing next to the captain and dying.
+    if (!botOnEnemyShip && !IsMainTankOnEnemyShip(side))
+        return false;
+
+    // Never leave the friendly ship without a healer.
+    if (!botOnEnemyShip && PlayerbotAI::IsHeal(bot) && IsOnlyHealerOnFriendlyShip(side))
+        return false;
+
     if (cannonsHaveBelowZero && mageAlive)
     {
         UpdateBossSkullIcon(boss, SKULL_ICON_INDEX);
@@ -784,7 +793,10 @@ bool IccGunshipRocketJumpAction::IsMainTankOnEnemyShip(GunshipSide side) const
     if (!group)
         return false;
 
-    uint32 const captainEntry = (side == GunshipSide::ALLY) ? NPC_HIGH_OVERLORD_SAURFANG : NPC_MURADIN_BRONZEBEARD;
+    // The captains spawn under several entries depending on difficulty and
+    // side; the single base constant would miss most modes.
+    static constexpr uint32 saurfangEntries[] = {37187, 32315, 36939};
+    static constexpr uint32 muradinEntries[] = {36948, 37200, 38607};
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -793,10 +805,48 @@ bool IccGunshipRocketJumpAction::IsMainTankOnEnemyShip(GunshipSide side) const
             continue;
         if (!PlayerbotAI::IsMainTank(member))
             continue;
-        Unit* captain = member->FindNearestCreature(captainEntry, 15.0f);
-        return captain != nullptr;
+
+        if (side == GunshipSide::ALLY)
+        {
+            for (uint32 entry : saurfangEntries)
+                if (member->FindNearestCreature(entry, 15.0f))
+                    return true;
+        }
+        else
+        {
+            for (uint32 entry : muradinEntries)
+                if (member->FindNearestCreature(entry, 15.0f))
+                    return true;
+        }
+
+        return false;
     }
     return false;
+}
+
+bool IccGunshipRocketJumpAction::IsOnlyHealerOnFriendlyShip(GunshipSide side) const
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    // Count the healers still standing on our own ship (i.e. not next to the
+    // enemy captain). If this bot is the last one, it has to stay.
+    Position const& waitPos = (side == GunshipSide::ALLY) ? ICC_GUNSHIP_ROCKET_JUMP_ALLY2 : ICC_GUNSHIP_ROCKET_JUMP_HORDE2;
+    float const friendlyThreshold = 40.0f;
+
+    uint32 healersHere = 0;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !PlayerbotAI::IsHeal(member))
+            continue;
+
+        if (member->GetExactDist2d(waitPos) <= friendlyThreshold)
+            ++healersHere;
+    }
+
+    return healersHere <= 1;
 }
 
 bool IccGunshipRocketJumpAction::AnyNonTankAwayFromFriendly(GunshipSide side) const

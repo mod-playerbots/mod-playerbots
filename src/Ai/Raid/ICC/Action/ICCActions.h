@@ -267,6 +267,7 @@ private:
     bool CleanupSkullIcon(uint8 skullIconIndex);
     bool UpdateBossSkullIcon(Unit* boss, uint8 skullIconIndex);
     bool IsMainTankOnEnemyShip(GunshipSide side) const;
+    bool IsOnlyHealerOnFriendlyShip(GunshipSide side) const;
     bool AnyNonTankAwayFromFriendly(GunshipSide side) const;
     Unit* FindNearestFriendlyCannon(GunshipSide side) const;
 };

@@ -180,6 +180,18 @@ public:
     bool isPossible() override { return true; }
 };
 
+// Apply Deadly Poison to main hand. Previously only off-hand Deadly existed (UseDeadlyPoisonAction),
+// this class serves the "MH Deadly + OH Instant" poison setup.
+class UseDeadlyPoisonOnMainHandAction : public UseItemAction
+{
+public:
+    UseDeadlyPoisonOnMainHandAction(PlayerbotAI* botAI)
+        : UseItemAction(botAI, "deadly poison main hand") {}
+
+    bool Execute(Event event) override;
+    bool isPossible() override { return true; }
+};
+
 class FanOfKnivesAction : public CastMeleeSpellAction
 {
 public:

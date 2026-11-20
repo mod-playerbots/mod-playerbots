@@ -64,6 +64,28 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 {
     GenericRogueStrategy::InitTriggers(triggers);
 
+    // ---------------------------------------------------------------
+    // Rotation (opening and steady-state priority)
+    //
+    // Opening: Stealth -> Garrote -> Hunger for Blood -> Slice and Dice -> Mutilate -> Envenom
+    // Steady: Mutilate -> Envenom (>=4 CP), Cold Blood before the first Envenom
+    // Refresh: HBF expiring and target not bleeding -> low-CP Rupture -> refresh HBF
+    //
+    // Ordered high to low priority; each tick only the highest-priority ready action runs.
+    // ---------------------------------------------------------------
+
+    // [1] Highest: HBF expiring + target not bleeding -> Rupture (apply a bleed)
+    //     Must come before HBF, otherwise the bot loops trying to cast it with no bleed.
+    triggers.push_back(
+        new TriggerNode(
+            "rupture for hunger",
+            {
+                NextAction("rupture", ACTION_HIGH + 10)
+            }
+        )
+    );
+
+    // [2] Garrote opener (stealthed + enough energy)
     triggers.push_back(
         new TriggerNode(
             "high energy available",
@@ -74,15 +96,7 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         )
     );
 
-    triggers.push_back(
-        new TriggerNode(
-            "high energy available",
-            {
-                NextAction("mutilate", ACTION_NORMAL + 3)
-            }
-        )
-    );
-
+    // [3] Hunger for Blood: triggers when absent or within 8s remaining (duration handled in trigger)
     triggers.push_back(
         new TriggerNode(
             "hunger for blood",
@@ -92,6 +106,7 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         )
     );
 
+    // [4] Slice and Dice: maintain the buff
     triggers.push_back(
         new TriggerNode(
             "slice and dice",
@@ -101,6 +116,8 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         )
     );
 
+    // [5] 4 CP: Cold Blood first (only if off CD), then Envenom.
+    //     3-minute CD naturally means it is not used on every Envenom, matching "before the first Envenom".
     triggers.push_back(
         new TriggerNode(
             "combo points 4 available",
@@ -111,6 +128,7 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         )
     );
 
+    // [6] Execute on low-HP target
     triggers.push_back(
         new TriggerNode(
             "target with combo points almost dead",
@@ -120,11 +138,22 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         )
     );
 
+    // [7] Expose Armor
     triggers.push_back(
         new TriggerNode(
             "expose armor",
             {
                 NextAction("expose armor", ACTION_HIGH + 3),
+            }
+        )
+    );
+
+    // [8] Filler: Mutilate to build combo points
+    triggers.push_back(
+        new TriggerNode(
+            "high energy available",
+            {
+                NextAction("mutilate", ACTION_NORMAL + 3)
             }
         )
     );

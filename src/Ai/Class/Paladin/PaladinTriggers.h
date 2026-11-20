@@ -204,6 +204,31 @@ public:
     AvengingWrathTrigger(PlayerbotAI* botAI) : BoostTrigger(botAI, "avenging wrath") {}
 };
 
+// Divine Shield is only worth it for holy paladins (they can keep healing
+// through it) and only when health suddenly collapses (60%+ of max health in
+// one hit). Protection and retribution paladins lose all attacks while
+// immune, and a tank must never bubble because it drops aggro control.
+class HolyShieldSuddenDropTrigger : public Trigger
+{
+public:
+    HolyShieldSuddenDropTrigger(PlayerbotAI* botAI) : Trigger(botAI, "holy shield sudden drop", 1) {}
+    bool IsActive() override;
+
+private:
+    uint8 lastHealthPct = 100;
+};
+
+// Holy Wrath is doubled against undead and demons. The ICC dungeons are packed
+// with them, so use it whenever enough of those mobs are stacked within its
+// 15 yard radius. Only worth casting on undead/demon packs - against other
+// creature types the damage is negligible for the GCD.
+class HolyWrathUndeadAoeTrigger : public Trigger
+{
+public:
+    HolyWrathUndeadAoeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "holy wrath undead aoe", 1) {}
+    bool IsActive() override;
+};
+
 class BlessingNeededTrigger : public Trigger
 {
 public:

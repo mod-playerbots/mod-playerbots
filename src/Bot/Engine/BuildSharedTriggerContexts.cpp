@@ -24,6 +24,7 @@
 #include "SSCTriggerContext.h"
 #include "TKTriggerContext.h"
 #include "TbcDungeonTriggerContext.h"
+#include "RaidTocTriggerContext.h"
 #include "TriggerContext.h"
 #include "UldTriggerContext.h"
 #include "VoATriggerContext.h"
@@ -77,5 +78,7 @@ void AiObjectContext::BuildSharedTriggerContexts(
     triggerContexts.Add(new WotlkDungeonCoSTriggerContext());
     triggerContexts.Add(new WotlkDungeonFoSTriggerContext());
     triggerContexts.Add(new WotlkDungeonPoSTriggerContext());
+    triggerContexts.Add(new WotlkDungeonHoRTriggerContext());
     triggerContexts.Add(new WotlkDungeonToCTriggerContext());
+    triggerContexts.Add(new RaidTocTriggerContext());
 }

@@ -50,7 +50,8 @@ void GenericRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "main hand weapon no enchant",
             {
-                NextAction("use instant poison on main hand", ACTION_HIGH + 6)
+                // Main-hand Deadly: stacks Deadly Poison from attack count
+                NextAction("use deadly poison on main hand", ACTION_HIGH + 6)
             }
         )
     );
@@ -58,7 +59,8 @@ void GenericRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "off hand weapon no enchant",
             {
-                NextAction("use deadly poison on off hand", ACTION_HIGH + 5.5f)
+                // Off-hand Instant: direct-damage poison
+                NextAction("use instant poison on off hand", ACTION_HIGH + 5.5f)
             }
         )
     );
