@@ -6,10 +6,12 @@
 
 #include "SWPActions.h"
 #include "EncounterHelpers.h"
+#include "LastMovementValue.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPShared.h"
+#include "ThreatHelpers.h"
 #include <cmath>
 #include <map>
 #include <string>
@@ -19,57 +21,126 @@ using namespace EncounterHelpers;
 
 bool KalecgosAnnounceBossHealthAction::Execute(Event /*event*/)
 {
-    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
-    if (!kalecgos)
+    KalecgosCall const call = GetDueKalecgosCall(bot);
+    if (call == KalecgosCall::None)
         return false;
 
-    KalecgosEncounterState* foundState = FindKalecgosState(bot->GetInstanceId());
-    if (!foundState)
+    Unit* boss = GetKalecgosSideBoss(bot);
+    if (!boss)
         return false;
 
-    KalecgosEncounterState& state = *foundState;
+    KalecgosEncounterState& state = KalecgosState(bot->GetInstanceId());
+    bool const isRealmSide = IsInSpectralRealm(bot);
+    std::string const bossName = isRealmSide ? "Sathrovarr" : "Kalecgos";
+    std::string const otherName = isRealmSide ? "Kalecgos" : "Sathrovarr";
+    PlayerbotTextMgr& textMgr = PlayerbotTextMgr::instance();
     std::string text;
 
-    if (!IsInSpectralRealm(bot))
+    switch (call)
     {
-        if (state.surfaceHealthAnnounced)
+        case KalecgosCall::FirstUnder:
+        {
+            state.healthCall = KalecgosHealthCall::FirstUnder;
+            state.firstLowBoss = isRealmSide ? KalecgosBoss::Sathrovarr : KalecgosBoss::Kalecgos;
+            text = textMgr.GetBotTextOrDefault(
+                "kalecgos_health_call_first_under", "%boss is at 15% health!",
+                std::map<std::string, std::string>{ { "%boss", bossName } });
+            break;
+        }
+        case KalecgosCall::OtherHealth:
+        {
+            // The hold is decided on the rounded health, so the call never says 20% with no hold.
+            long const healthPct = std::lround(boss->GetHealthPct());
+            std::map<std::string, std::string> const placeholders = {
+                { "%boss", bossName },
+                { "%health", std::to_string(healthPct) },
+                { "%low", otherName },
+            };
+
+            if (healthPct >= KALECGOS_HEALTH_GAP_HOLD_PCT)
+            {
+                state.healthCall = KalecgosHealthCall::GapHold;
+                text = textMgr.GetBotTextOrDefault(
+                    "kalecgos_health_call_hold",
+                    "%boss is at %health%. Stop attacking %low until %boss reaches 15%!",
+                    placeholders);
+            }
+            else
+            {
+                state.healthCall = KalecgosHealthCall::Together;
+                text = textMgr.GetBotTextOrDefault(
+                    "kalecgos_health_call_together",
+                    "%boss is at %health%. Keep attacking both together!", placeholders);
+            }
+            break;
+        }
+        case KalecgosCall::GapHoldRelease:
+        {
+            state.healthCall = KalecgosHealthCall::Together;
+            text = textMgr.GetBotTextOrDefault(
+                "kalecgos_health_call_release", "%boss has reached 15%. Attack %low again!",
+                std::map<std::string, std::string>{ { "%boss", bossName }, { "%low", otherName } });
+            break;
+        }
+        case KalecgosCall::EndHold:
+        {
+            state.endHoldCalled = true;
+            text = textMgr.GetBotTextOrDefault(
+                "kalecgos_end_hold",
+                "Kalecgos is at 5%. Stop attacking him until Sathrovarr is banished!", {});
+            break;
+        }
+        case KalecgosCall::SathrovarrBanished:
+        {
+            state.sathrovarrBanishCalled = true;
+            text = textMgr.GetBotTextOrDefault(
+                "kalecgos_sathrovarr_banished", "Sathrovarr is banished. Finish Kalecgos!", {});
+            break;
+        }
+        default:
             return false;
-
-        state.surfaceHealthAnnounced = true;
-
-        text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "kalecgos_below_twenty_percent_health",
-            "Kalecgos's health is at 20%!",
-            {});
     }
-    else
-    {
-        if (state.spectralHealthAnnounced)
-            return false;
 
-        Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor");
-        if (!sathrovarr)
-            return false;
+    botAI->SayToRaid(text);
+    return true;
+}
 
-        state.spectralHealthAnnounced = true;
+bool KalecgosUpdateRaidAssignmentsAction::Execute(Event /*event*/)
+{
+    return UpdateKalecgosEncounterState(bot);
+}
 
-        std::string const sathrovarrHealth = std::to_string(
-            static_cast<uint32>(sathrovarr->GetHealthPct()));
+bool KalecgosStopAttackingForHoldAction::Execute(Event /*event*/)
+{
+    return StopAttackingAndChanneling(bot);
+}
 
-        text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "sathrovarr_health_when_kalecgos_below_twenty_percent_health",
-            "Sathrovarr's health is at %sathrovarrHealth%! "
-            "Don't forget that we need to defeat them at about the same time!",
-            std::map<std::string, std::string>{
-                {"%sathrovarrHealth", sathrovarrHealth}});
-    }
+bool KalecgosSelectTargetForHoldAction::isUseful()
+{
+    return botAI->GetState() == BOT_STATE_NON_COMBAT;
+}
 
-    return botAI->SayToRaid(text);
+bool KalecgosSelectTargetForHoldAction::Execute(Event /*event*/)
+{
+    return SelectTarget(botAI, AI_VALUE(Unit*, "dps target"));
+}
+
+bool KalecgosSetPetStanceAction::Execute(Event /*event*/)
+{
+    bool const isHeld = GetKalecgosDpsHoldWindow(bot) != KalecgosDpsHold::None;
+    return SetMinionStancesForHold(bot, isHeld, _previousReactStates);
+}
+
+bool KalecgosSetPetStanceAction::ResetPetStance()
+{
+    bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
+    _previousReactStates.clear();
+    return restored;
 }
 
 bool KalecgosSurfaceTankPositionDragonAction::Execute(Event event)
 {
-    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    Unit* kalecgos = GetSwpBoss(bot, SwpBosses::DATA_KALECGOS);
     if (!kalecgos)
         return false;
 
@@ -91,10 +162,10 @@ bool KalecgosSurfaceTankPositionDragonAction::Execute(Event event)
             MovementPriority::MOVEMENT_COMBAT, true, backwards);
     }
 
-    if (GetKalecgosDesignatedTank(bot) == bot && kalecgos->GetVictim() != bot)
-        return botAI->DoSpecificAction("taunt spell", event, true);
+    if (GetKalecgosDesignatedTank(bot) != bot || kalecgos->GetVictim() == bot)
+        return false;
 
-    return false;
+    return botAI->DoSpecificAction("taunt spell", event, true);
 }
 
 // FYI, there is a (Blizzlike) delay of 1s after a player clicks a rift before the next can click.
@@ -110,6 +181,10 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 
     if (rift->IsAtInteractDistance(*bot, rift->GetInteractionDistance()))
     {
+        // A use fails while exhausted, but still blocks the rift for everyone for 1s.
+        if (IsExhausted(bot))
+            return false;
+
         rift->Use(bot);
         return true;
     }
@@ -126,7 +201,7 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 
 bool KalecgosEnterSpectralRiftAction::ShouldTankEnter()
 {
-    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    Unit* kalecgos = GetSwpBoss(bot, SwpBosses::DATA_KALECGOS);
     if (!kalecgos)
         return false;
 
@@ -137,10 +212,7 @@ bool KalecgosEnterSpectralRiftAction::ShouldTankEnter()
         return false;
 
     Position const& position = KALECGOS_TANK_POSITION;
-    if (surfaceTank->GetExactDist2d(position) > 3.0f || kalecgos->GetVictim() != surfaceTank)
-        return false;
-
-    return true;
+    return surfaceTank->GetExactDist2d(position) <= 3.0f && kalecgos->GetVictim() == surfaceTank;
 }
 
 bool KalecgosSpreadRangedAction::Execute(Event /*event*/)
@@ -175,7 +247,7 @@ bool KalecgosSpreadRangedAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
-    if (Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos"))
+    if (Unit* kalecgos = GetSwpBoss(bot, SwpBosses::DATA_KALECGOS))
     {
         constexpr float safeDistFromDragon = 20.0f;
         constexpr uint32 minInterval = 0;
@@ -183,17 +255,16 @@ bool KalecgosSpreadRangedAction::Execute(Event /*event*/)
             return FleePosition(kalecgos->GetPosition(), safeDistFromDragon, minInterval);
     }
 
-    constexpr float safeDistFromPlayer = 6.0f;
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, KALECGOS_RANGED_SPREAD_CLEARANCE);
     if (!nearestPlayer)
         return false;
 
-    return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
+    return FleePosition(nearestPlayer->GetPosition(), KALECGOS_RANGED_SPREAD_CLEARANCE);
 }
 
 bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
 {
-    Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor");
+    Unit* sathrovarr = FindThreatTarget(bot, "sathrovarr the corruptor");
     if (!sathrovarr)
         return false;
 
@@ -219,6 +290,37 @@ bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
 
 bool KalecgosReturnToSpectralRealmGroundAction::Execute(Event /*event*/)
 {
+    // Temporary, to find what lifts bots off the realm floor (which is flat and meshed).
+    Unit* currentTarget = AI_VALUE(Unit*, "current target");
+    LastMovement const& lastMovement = AI_VALUE(LastMovement&, "last movement");
+    LOG_INFO(
+        "playerbots",
+        "Kalecgos realm gravity: {} at ({:.1f}, {:.1f}, {:.1f}), engine {}, target {}, motion {}, "
+        "last move to ({:.1f}, {:.1f}, {:.1f})",
+        bot->GetName(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+        static_cast<uint32>(botAI->GetState()), currentTarget ? currentTarget->GetName() : "none",
+        static_cast<uint32>(bot->GetMotionMaster()->GetCurrentMovementGeneratorType()),
+        lastMovement.lastMoveToX, lastMovement.lastMoveToY, lastMovement.lastMoveToZ);
+
+    // Temporary: whether a spline is running and where to, the motion slots, and time in the realm.
+    MotionMaster* motionMaster = bot->GetMotionMaster();
+    float splineX = 0.0f;
+    float splineY = 0.0f;
+    float splineZ = 0.0f;
+    bool const isSplineRunning = motionMaster->GetDestination(splineX, splineY, splineZ);
+    Aura const* realm = bot->GetAura(Id(SwpSpells::SPELL_SPECTRAL_REALM));
+    int32 const msInRealm = realm ? realm->GetMaxDuration() - realm->GetDuration() : -1;
+    KalecgosEncounterState const* state = FindKalecgosState(bot->GetInstanceId());
+    bool const isBlasted = state && state->blastedPlayerGuid == bot->GetGUID();
+    LOG_INFO(
+        "playerbots",
+        "Kalecgos realm gravity: {} spline running {} to ({:.1f}, {:.1f}, {:.1f}), slots {} "
+        "(active {}, controlled {}), {} ms in realm, blasted by current rift {}",
+        bot->GetName(), isSplineRunning, splineX, splineY, splineZ, motionMaster->size(),
+        static_cast<uint32>(motionMaster->GetMotionSlotType(MOTION_SLOT_ACTIVE)),
+        static_cast<uint32>(motionMaster->GetMotionSlotType(MOTION_SLOT_CONTROLLED)), msInRealm,
+        isBlasted);
+
     bot->NearTeleportTo(
         bot->GetPositionX(), bot->GetPositionY(), SPECTRAL_REALM_Z, bot->GetOrientation());
 

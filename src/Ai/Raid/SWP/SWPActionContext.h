@@ -22,9 +22,15 @@ public:
         creators["sunwell remove aura"] =
             &RaidSwpActionContext::sunwell_remove_aura;
 
+        creators["sunwell assign class roles"] =
+            &RaidSwpActionContext::sunwell_assign_class_roles;
+
         // Trash
-        creators["volatile fiend keep enemy away from group"] =
-            &RaidSwpActionContext::volatile_fiend_keep_enemy_away_from_group;
+        creators["volatile fiend intercept"] =
+            &RaidSwpActionContext::volatile_fiend_intercept;
+
+        creators["volatile fiend move away"] =
+            &RaidSwpActionContext::volatile_fiend_move_away;
 
         creators["apocalypse guard attack with holy magic"] =
             &RaidSwpActionContext::apocalypse_guard_attack_with_holy_magic;
@@ -53,6 +59,18 @@ public:
 
         creators["kalecgos return to spectral realm ground"] =
             &RaidSwpActionContext::kalecgos_return_to_spectral_realm_ground;
+
+        creators["kalecgos update raid assignments"] =
+            &RaidSwpActionContext::kalecgos_update_raid_assignments;
+
+        creators["kalecgos stop attacking for hold"] =
+            &RaidSwpActionContext::kalecgos_stop_attacking_for_hold;
+
+        creators["kalecgos select target for hold"] =
+            &RaidSwpActionContext::kalecgos_select_target_for_hold;
+
+        creators["kalecgos set pet stance"] =
+            &RaidSwpActionContext::kalecgos_set_pet_stance;
 
         // Brutallus
         creators["brutallus misdirect to main tank"] =
@@ -92,6 +110,12 @@ public:
         creators["felmyst mass dispel gas nova"] =
             &RaidSwpActionContext::felmyst_mass_dispel_gas_nova;
 
+        creators["felmyst move into mass dispel reach"] =
+            &RaidSwpActionContext::felmyst_move_into_mass_dispel_reach;
+
+        creators["felmyst move to air group position"] =
+            &RaidSwpActionContext::felmyst_move_to_air_group_position;
+
         creators["felmyst avoid demonic vapor"] =
             &RaidSwpActionContext::felmyst_avoid_demonic_vapor;
 
@@ -110,12 +134,18 @@ public:
         creators["felmyst manage landing dps timer"] =
             &RaidSwpActionContext::felmyst_manage_landing_dps_timer;
 
-        // Eredar Twins
-        creators["eredar twins melee jump from balcony"] =
-            &RaidSwpActionContext::eredar_twins_melee_jump_from_balcony;
+        creators["felmyst stop attacking for landing"] =
+            &RaidSwpActionContext::felmyst_stop_attacking_for_landing;
 
-        creators["eredar twins announce alythess tank"] =
-            &RaidSwpActionContext::eredar_twins_announce_alythess_tank;
+        creators["felmyst select target for hold"] =
+            &RaidSwpActionContext::felmyst_select_target_for_hold;
+
+        // Eredar Twins
+        creators["eredar twins jump from balcony"] =
+            &RaidSwpActionContext::eredar_twins_jump_from_balcony;
+
+        creators["eredar twins announce class roles"] =
+            &RaidSwpActionContext::eredar_twins_announce_class_roles;
 
         creators["eredar twins misdirect to tanks"] =
             &RaidSwpActionContext::eredar_twins_misdirect_to_tanks;
@@ -129,14 +159,20 @@ public:
         creators["eredar twins ranged stack at balcony edge"] =
             &RaidSwpActionContext::eredar_twins_ranged_stack_at_balcony_edge;
 
-        creators["eredar twins stack in room center"] =
-            &RaidSwpActionContext::eredar_twins_stack_in_room_center;
+        creators["eredar twins stack behind alythess"] =
+            &RaidSwpActionContext::eredar_twins_stack_behind_alythess;
+
+        creators["eredar twins step aside from stack"] =
+            &RaidSwpActionContext::eredar_twins_step_aside_from_stack;
 
         creators["eredar twins remove flame sear"] =
             &RaidSwpActionContext::eredar_twins_remove_flame_sear;
 
         creators["eredar twins dps prioritize sacrolash"] =
             &RaidSwpActionContext::eredar_twins_dps_prioritize_sacrolash;
+
+        creators["eredar twins set pet stance"] =
+            &RaidSwpActionContext::eredar_twins_set_pet_stance;
 
         creators["eredar twins conflagration target move from group"] =
             &RaidSwpActionContext::eredar_twins_conflagration_target_move_from_group;
@@ -184,8 +220,8 @@ public:
         creators["m'uru void spawn cast shadow bolt volley"] =
             &RaidSwpActionContext::muru_void_spawn_cast_shadow_bolt_volley;
 
-        creators["m'uru keep distance from dark fiends"] =
-            &RaidSwpActionContext::muru_keep_distance_from_dark_fiends;
+        creators["m'uru move clear of void zones and fiends"] =
+            &RaidSwpActionContext::muru_move_clear_of_void_zones_and_fiends;
 
         creators["m'uru escape the singularity"] =
             &RaidSwpActionContext::muru_escape_the_singularity;
@@ -234,15 +270,23 @@ private:
     {
         return new SunwellResetEncounterStatesAction(botAI);
     }
+    static Action* sunwell_assign_class_roles(PlayerbotAI* botAI)
+    {
+        return new SunwellAssignClassRolesAction(botAI);
+    }
     static Action* sunwell_remove_aura(PlayerbotAI* botAI)
     {
         return new SunwellRemoveAuraAction(botAI);
     }
 
     // Trash
-    static Action* volatile_fiend_keep_enemy_away_from_group(PlayerbotAI* botAI)
+    static Action* volatile_fiend_intercept(PlayerbotAI* botAI)
     {
-        return new VolatileFiendKeepEnemyAwayFromGroupAction(botAI);
+        return new VolatileFiendInterceptAction(botAI);
+    }
+    static Action* volatile_fiend_move_away(PlayerbotAI* botAI)
+    {
+        return new VolatileFiendMoveAwayAction(botAI);
     }
     static Action* apocalypse_guard_attack_with_holy_magic(PlayerbotAI* botAI)
     {
@@ -253,7 +297,7 @@ private:
     static Action* kalecgos_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
         return new SunwellMisdirectToMainTankAction(
-            botAI, "kalecgos misdirect to main tank", "kalecgos");
+            botAI, "kalecgos misdirect to main tank", SwpHelpers::SwpBosses::DATA_KALECGOS);
     }
     static Action* kalecgos_announce_boss_health(PlayerbotAI* botAI)
     {
@@ -284,12 +328,28 @@ private:
     {
         return new KalecgosReturnToSpectralRealmGroundAction(botAI);
     }
+    static Action* kalecgos_update_raid_assignments(PlayerbotAI* botAI)
+    {
+        return new KalecgosUpdateRaidAssignmentsAction(botAI);
+    }
+    static Action* kalecgos_stop_attacking_for_hold(PlayerbotAI* botAI)
+    {
+        return new KalecgosStopAttackingForHoldAction(botAI);
+    }
+    static Action* kalecgos_select_target_for_hold(PlayerbotAI* botAI)
+    {
+        return new KalecgosSelectTargetForHoldAction(botAI);
+    }
+    static Action* kalecgos_set_pet_stance(PlayerbotAI* botAI)
+    {
+        return new KalecgosSetPetStanceAction(botAI);
+    }
 
     // Brutallus
     static Action* brutallus_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
         return new SunwellMisdirectToMainTankAction(
-            botAI, "brutallus misdirect to main tank", "brutallus");
+            botAI, "brutallus misdirect to main tank", SwpHelpers::SwpBosses::DATA_BRUTALLUS);
     }
     static Action* brutallus_tanks_position_and_swap(PlayerbotAI* botAI)
     {
@@ -312,7 +372,7 @@ private:
     static Action* felmyst_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
         return new SunwellMisdirectToMainTankAction(
-            botAI, "felmyst misdirect to main tank", "felmyst");
+            botAI, "felmyst misdirect to main tank", SwpHelpers::SwpBosses::DATA_FELMYST);
     }
     static Action* felmyst_main_tank_position_boss_on_ground(PlayerbotAI* botAI)
     {
@@ -338,6 +398,14 @@ private:
     {
         return new FelmystMassDispelGasNovaAction(botAI);
     }
+    static Action* felmyst_move_into_mass_dispel_reach(PlayerbotAI* botAI)
+    {
+        return new FelmystMoveIntoMassDispelReachAction(botAI);
+    }
+    static Action* felmyst_move_to_air_group_position(PlayerbotAI* botAI)
+    {
+        return new FelmystMoveToAirGroupPositionAction(botAI);
+    }
     static Action* felmyst_avoid_demonic_vapor(PlayerbotAI* botAI)
     {
         return new FelmystAvoidDemonicVaporAction(botAI);
@@ -362,15 +430,23 @@ private:
     {
         return new FelmystManageLandingDpsTimerAction(botAI);
     }
+    static Action* felmyst_stop_attacking_for_landing(PlayerbotAI* botAI)
+    {
+        return new FelmystStopAttackingForLandingAction(botAI);
+    }
+    static Action* felmyst_select_target_for_hold(PlayerbotAI* botAI)
+    {
+        return new FelmystSelectTargetForHoldAction(botAI);
+    }
 
     // Eredar Twins
-    static Action* eredar_twins_melee_jump_from_balcony(PlayerbotAI* botAI)
+    static Action* eredar_twins_jump_from_balcony(PlayerbotAI* botAI)
     {
-        return new EredarTwinsMeleeJumpFromBalconyAction(botAI);
+        return new EredarTwinsJumpFromBalconyAction(botAI);
     }
-    static Action* eredar_twins_announce_alythess_tank(PlayerbotAI* botAI)
+    static Action* eredar_twins_announce_class_roles(PlayerbotAI* botAI)
     {
-        return new EredarTwinsAnnounceAlythessTankAction(botAI);
+        return new EredarTwinsAnnounceClassRolesAction(botAI);
     }
     static Action* eredar_twins_misdirect_to_tanks(PlayerbotAI* botAI)
     {
@@ -388,9 +464,13 @@ private:
     {
         return new EredarTwinsRangedStackAtBalconyEdgeAction(botAI);
     }
-    static Action* eredar_twins_stack_in_room_center(PlayerbotAI* botAI)
+    static Action* eredar_twins_stack_behind_alythess(PlayerbotAI* botAI)
     {
-        return new EredarTwinsStackInRoomCenterAction(botAI);
+        return new EredarTwinsStackBehindAlythessAction(botAI);
+    }
+    static Action* eredar_twins_step_aside_from_stack(PlayerbotAI* botAI)
+    {
+        return new EredarTwinsStepAsideFromStackAction(botAI);
     }
     static Action* eredar_twins_remove_flame_sear(PlayerbotAI* botAI)
     {
@@ -400,6 +480,10 @@ private:
     static Action* eredar_twins_dps_prioritize_sacrolash(PlayerbotAI* botAI)
     {
         return new EredarTwinsDpsPrioritizeSacrolashAction(botAI);
+    }
+    static Action* eredar_twins_set_pet_stance(PlayerbotAI* botAI)
+    {
+        return new EredarTwinsSetPetStanceAction(botAI);
     }
     static Action* eredar_twins_conflagration_target_move_from_group(PlayerbotAI* botAI)
     {
@@ -463,9 +547,9 @@ private:
     {
         return new MuruVoidSpawnCastShadowBoltVolleyAction(botAI);
     }
-    static Action* muru_keep_distance_from_dark_fiends(PlayerbotAI* botAI)
+    static Action* muru_move_clear_of_void_zones_and_fiends(PlayerbotAI* botAI)
     {
-        return new MuruKeepDistanceFromDarkFiendsAction(botAI);
+        return new MuruMoveClearOfVoidZonesAndFiendsAction(botAI);
     }
     static Action* muru_escape_the_singularity(PlayerbotAI* botAI)
     {

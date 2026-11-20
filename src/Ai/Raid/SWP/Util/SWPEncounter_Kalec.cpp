@@ -5,40 +5,43 @@
  */
 
 #include "SWPEncounter_Kalec.h"
+#include "EncounterHelpers.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
+#include "SWPInstanceState.h"
+#include "ThreatHelpers.h"
 #include <algorithm>
 #include <map>
-#include <mutex>
 #include <string>
 #include <vector>
 
 namespace SwpHelpers
 {
 
-// Note: Kalecgos's CombatReach is 10.5f, and Sathrovarr's CombatReach is 4.0f (4.5f in PR 28010).
+// Note: Kalecgos's CombatReach is 10.5f, and Sathrovarr's CombatReach is 4.5f.
 // Note: Kalecgos remains on player threat lists for the duration of the encounter, even for
 // players in the Spectral Realm and after he turns friendly after Sathrovarr is killed.
 
 namespace
 {
 
-std::mutex kalecgosStateMutex;
-std::unordered_map<uint32, KalecgosEncounterState> kalecgosStates;
-
-void ClearExpiredActiveRift(KalecgosEncounterState& state, uint32 now)
+bool IsActiveRiftOpen(KalecgosEncounterState const& state)
 {
-    if (!state.activeRiftOpenedMs)
-        return;
+    return state.activeRiftOpenedMs &&
+        getMSTimeDiff(state.activeRiftOpenedMs, getMSTime()) <= SPECTRAL_RIFT_ACTIVE_WINDOW_MS;
+}
 
-    if (getMSTimeDiff(state.activeRiftOpenedMs, now) <= SPECTRAL_RIFT_ACTIVE_WINDOW_MS)
-        return;
+bool ClearExpiredActiveRift(KalecgosEncounterState& state)
+{
+    if (!state.activeRiftOpenedMs || IsActiveRiftOpen(state))
+        return false;
 
     state.activeRiftOpenedMs = 0;
     state.activeRiftGroup = KALECGOS_INVALID_GROUP;
     state.blastedPlayerGuid = ObjectGuid::Empty;
     state.activeRiftOutgoingTankGuid = ObjectGuid::Empty;
+    return true;
 }
 
 uint8 GetAssignedGroup(KalecgosEncounterState const& state, ObjectGuid playerGuid)
@@ -47,32 +50,38 @@ uint8 GetAssignedGroup(KalecgosEncounterState const& state, ObjectGuid playerGui
     return assignment != state.playerToGroup.end() ? assignment->second : KALECGOS_INVALID_GROUP;
 }
 
+// For the spell listener, which can't wait for the tracker's next update.
 KalecgosEncounterState& GetPreparedEncounterState(Player* player)
 {
-    KalecgosEncounterState& state = KalecgosState(player->GetInstanceId());
-    if (!state.encounterStartMs)
-        state.encounterStartMs = getMSTime();
-
-    ClearExpiredActiveRift(state, getMSTime());
-    EnsureKalecgosRaidAssignments(player);
-    return state;
+    UpdateKalecgosEncounterState(player);
+    return KalecgosState(player->GetInstanceId());
 }
 
-bool CanReachPortalBeforeExpiry(Player* bot)
+// Exhaustion must end before what is left of the rift's life, not its whole life.
+bool CanReachPortalBeforeExpiry(Player* player, KalecgosEncounterState const& state)
 {
-    Aura* exhaustion = bot->GetAura(Id(SwpSpells::SPELL_SPECTRAL_EXHAUSTION));
+    Aura const* exhaustion = player->GetAura(Id(SwpSpells::SPELL_SPECTRAL_EXHAUSTION));
     if (!exhaustion)
         return true;
 
-    return exhaustion->GetDuration() <= SPECTRAL_RIFT_ENTRY_WINDOW_MS;
+    uint32 const riftAgeMs = state.activeRiftOpenedMs ?
+        getMSTimeDiff(state.activeRiftOpenedMs, getMSTime()) : 0;
+    int32 const riftRemainingMs = static_cast<int32>(SPECTRAL_RIFT_ACTIVE_WINDOW_MS) -
+        static_cast<int32>(riftAgeMs) - SPECTRAL_RIFT_ENTRY_MARGIN_MS;
+    return exhaustion->GetDuration() <= riftRemainingMs;
 }
 
-bool IsPortalEligibleCandidate(Player* bot)
+bool IsPortalCandidate(Player* player)
 {
-    if (!bot->IsAlive() || bot->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(bot))
+    if (!player->IsAlive() || player->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(player))
         return false;
 
-    return !IsInSpectralRealm(bot) && CanReachPortalBeforeExpiry(bot);
+    return !IsInSpectralRealm(player);
+}
+
+bool IsPortalEligibleCandidate(Player* player, KalecgosEncounterState const& state)
+{
+    return IsPortalCandidate(player) && CanReachPortalBeforeExpiry(player, state);
 }
 
 void AnnounceTankTransition(
@@ -287,13 +296,7 @@ Player* GetSurfaceTankAfterCurrentHandOff(Group* group, KalecgosEncounterState c
 Player* GetKalecgosCurrentVictimTank(
     Player* player, Group* group, KalecgosEncounterState const& state)
 {
-    Unit* kalecgos = nullptr;
-
-    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player))
-    {
-        AiObjectContext* context = botAI->GetAiObjectContext();
-        kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
-    }
+    Unit* kalecgos = GetSwpBoss(player, SwpBosses::DATA_KALECGOS);
 
     constexpr float searchRadius = 200.0f;
     if (!kalecgos)
@@ -407,7 +410,8 @@ bool GroupHasEligibleEntrant(Group* group, KalecgosEncounterState const& state, 
         if (!member || GetAssignedGroup(state, member->GetGUID()) != groupIndex)
             continue;
 
-        if (IsPortalEligibleCandidate(member) && state.blastedPlayerGuid != member->GetGUID())
+        if (IsPortalEligibleCandidate(member, state) &&
+            state.blastedPlayerGuid != member->GetGUID())
             return true;
     }
 
@@ -443,7 +447,7 @@ uint8 ResolveActivePortalGroup(Group* group, KalecgosEncounterState const& state
 void AssignPlayerToGroup(
     KalecgosEncounterState& state, std::array<size_t, KALECGOS_GROUP_COUNT>& groupSizes,
     std::array<bool, KALECGOS_GROUP_COUNT>& groupHasDecurser,
-    Player* member, uint8 groupIndex)
+    std::array<bool, KALECGOS_GROUP_COUNT>& groupHasHealer, Player* member, uint8 groupIndex)
 {
     if (!member || groupIndex >= KALECGOS_GROUP_COUNT)
         return;
@@ -453,6 +457,9 @@ void AssignPlayerToGroup(
 
     if (GET_PLAYERBOT_AI(member))
         groupHasDecurser[groupIndex] = groupHasDecurser[groupIndex] || IsKalecgosDecurser(member);
+
+    // Resto shamans and druids are placed as decursers, so they count here too.
+    groupHasHealer[groupIndex] = groupHasHealer[groupIndex] || PlayerbotAI::IsHeal(member);
 }
 
 uint8 GetLeastFilledGroup(
@@ -514,11 +521,11 @@ bool IsKalecgosDecurser(Player* bot)
     return botAI->HasStrategy("cure", BOT_STATE_COMBAT);
 }
 
-void EnsureKalecgosRaidAssignments(Player* player)
+bool EnsureKalecgosRaidAssignments(Player* player)
 {
     Group* group = player->GetGroup();
     if (!group)
-        return;
+        return false;
 
     KalecgosEncounterState& state = KalecgosState(player->GetInstanceId());
     std::vector<Player*> botMembers;
@@ -550,7 +557,7 @@ void EnsureKalecgosRaidAssignments(Player* player)
     }
 
     if (!needsRebuild)
-        return;
+        return false;
 
     state.playerToGroup.clear();
     state.tankAssignmentGuids = expectedTankAssignmentGuids;
@@ -570,6 +577,7 @@ void EnsureKalecgosRaidAssignments(Player* player)
 
     std::array<size_t, KALECGOS_GROUP_COUNT> groupSizes = { 0, 0, 0, 0 };
     std::array<bool, KALECGOS_GROUP_COUNT> groupHasDecurser = { false, false, false, false };
+    std::array<bool, KALECGOS_GROUP_COUNT> groupHasHealer = { false, false, false, false };
 
     std::vector<Player*> decursers;
     std::vector<Player*> healers;
@@ -597,27 +605,51 @@ void EnsureKalecgosRaidAssignments(Player* player)
     for (Player* decurser : decursers)
     {
         uint8 groupIndex = GetLeastFilledGroup(groupSizes, &groupHasDecurser, true);
-        AssignPlayerToGroup(state, groupSizes, groupHasDecurser, decurser, groupIndex);
+        AssignPlayerToGroup(
+            state, groupSizes, groupHasDecurser, groupHasHealer, decurser, groupIndex);
     }
 
     for (Player* healer : healers)
+    {
+        uint8 groupIndex = GetLeastFilledGroup(groupSizes, &groupHasHealer, true);
         AssignPlayerToGroup(
-            state, groupSizes, groupHasDecurser, healer, GetLeastFilledGroup(groupSizes));
+            state, groupSizes, groupHasDecurser, groupHasHealer, healer, groupIndex);
+    }
 
     for (Player* ranged : rangedDps)
+    {
         AssignPlayerToGroup(
-            state, groupSizes, groupHasDecurser, ranged, GetLeastFilledGroup(groupSizes));
+            state, groupSizes, groupHasDecurser, groupHasHealer, ranged,
+            GetLeastFilledGroup(groupSizes));
+    }
 
     for (Player* melee : meleeDps)
+    {
         AssignPlayerToGroup(
-            state, groupSizes, groupHasDecurser, melee, GetLeastFilledGroup(groupSizes));
+            state, groupSizes, groupHasDecurser, groupHasHealer, melee,
+            GetLeastFilledGroup(groupSizes));
+    }
 
     for (Player* other : others)
+    {
         AssignPlayerToGroup(
-            state, groupSizes, groupHasDecurser, other, GetLeastFilledGroup(groupSizes));
+            state, groupSizes, groupHasDecurser, groupHasHealer, other,
+            GetLeastFilledGroup(groupSizes));
+    }
 
     if (state.activeRiftGroup == KALECGOS_INVALID_GROUP)
         state.activeRiftGroup = ResolveActivePortalGroup(group, state);
+
+    return true;
+}
+
+bool UpdateKalecgosEncounterState(Player* player)
+{
+    KalecgosEncounterState& state = KalecgosState(player->GetInstanceId());
+    bool const isStarted = EncounterHelpers::EmplaceIfUnset(state.encounterStartMs, getMSTime());
+    bool const isRiftCleared = ClearExpiredActiveRift(state);
+    bool const isRebuilt = EnsureKalecgosRaidAssignments(player);
+    return isStarted || isRiftCleared || isRebuilt;
 }
 
 // Read-only companion to GetKalecgosDesignatedTank below.
@@ -640,8 +672,8 @@ Player* GetKalecgosDesignatedTank(Player* player)
     if (!group)
         return nullptr;
 
-    KalecgosEncounterState& state = GetPreparedEncounterState(player);
-    Player* const tank = ResolveKalecgosDesignatedTank(player, group, state);
+    KalecgosEncounterState& state = KalecgosState(player->GetInstanceId());
+    Player* tank = ResolveKalecgosDesignatedTank(player, group, state);
 
     if (!ResolveSurfaceTank(group, state.currentTankGuid))
         state.currentTankGuid = tank ? tank->GetGUID() : ObjectGuid::Empty;
@@ -657,32 +689,41 @@ ObjectGuid FindKalecgosSpectralRiftGuid(Player* bot)
     return rift ? rift->GetGUID() : ObjectGuid::Empty;
 }
 
+// Reads only, so a multiplier may call it. An expired rift not yet cleared counts as closed.
 bool ShouldEnterKalecgosPortal(Player* bot)
 {
-    if (!IsPortalEligibleCandidate(bot))
+    if (!IsPortalCandidate(bot))
         return false;
 
-    KalecgosEncounterState& state = GetPreparedEncounterState(bot);
-    if (!state.activeRiftOpenedMs)
+    KalecgosEncounterState const* state = FindKalecgosState(bot->GetInstanceId());
+    if (!state || !IsActiveRiftOpen(*state) || !CanReachPortalBeforeExpiry(bot, *state))
         return false;
 
-    if (HasKalecgosTankAssignment(state.tankAssignmentGuids, bot->GetGUID()))
+    if (HasKalecgosTankAssignment(state->tankAssignmentGuids, bot->GetGUID()))
     {
+        if (state->sathrovarrBanishCalled)
+            return false;
+
         Group* group = bot->GetGroup();
         if (!group)
             return false;
 
-        return ResolveSurfaceTank(group, state.activeRiftOutgoingTankGuid) == bot &&
-            state.blastedPlayerGuid != bot->GetGUID();
+        return ResolveSurfaceTank(group, state->activeRiftOutgoingTankGuid) == bot &&
+            state->blastedPlayerGuid != bot->GetGUID();
     }
 
-    if (state.activeRiftGroup == KALECGOS_INVALID_GROUP ||
-        GetAssignedGroup(state, bot->GetGUID()) != state.activeRiftGroup)
+    if (state->activeRiftGroup == KALECGOS_INVALID_GROUP ||
+        GetAssignedGroup(*state, bot->GetGUID()) != state->activeRiftGroup)
     {
         return false;
     }
 
-    return state.blastedPlayerGuid != bot->GetGUID();
+    // Once Sathrovarr is banished, only healers go down, so a blasted player isn't left alone with
+    // Curse of Boundless Agony.
+    if (state->sathrovarrBanishCalled && !PlayerbotAI::IsHeal(bot))
+        return false;
+
+    return state->blastedPlayerGuid != bot->GetGUID();
 }
 
 void RecordSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI)
@@ -767,25 +808,98 @@ void RecordSpectralRealmEnter(Player* player)
     }
 }
 
+Unit* GetKalecgosSideBoss(Player* bot)
+{
+    if (IsInSpectralRealm(bot))
+        return FindThreatTarget(bot, "sathrovarr the corruptor");
+
+    return GetSwpBoss(bot, SwpBosses::DATA_KALECGOS);
+}
+
+KalecgosCall GetDueKalecgosCall(Player* bot)
+{
+    Unit* boss = GetKalecgosSideBoss(bot);
+    if (!boss)
+        return KalecgosCall::None;
+
+    KalecgosEncounterState const* state = FindKalecgosState(bot->GetInstanceId());
+    bool const isRealmSide = IsInSpectralRealm(bot);
+    KalecgosBoss const sideBoss = isRealmSide ? KalecgosBoss::Sathrovarr : KalecgosBoss::Kalecgos;
+    bool const isOtherSide = state && state->firstLowBoss && *state->firstLowBoss != sideBoss;
+    float const healthPct = boss->GetHealthPct();
+
+    switch (state ? state->healthCall : KalecgosHealthCall::None)
+    {
+        case KalecgosHealthCall::None:
+            if (healthPct < KALECGOS_HEALTH_CALL_PCT)
+                return KalecgosCall::FirstUnder;
+            break;
+        case KalecgosHealthCall::FirstUnder:
+            if (isOtherSide)
+                return KalecgosCall::OtherHealth;
+            break;
+        case KalecgosHealthCall::GapHold:
+            if (isOtherSide && healthPct < KALECGOS_HEALTH_CALL_PCT)
+                return KalecgosCall::GapHoldRelease;
+            break;
+        default:
+            break;
+    }
+
+    if (state && state->sathrovarrBanishCalled)
+        return KalecgosCall::None;
+
+    if (isRealmSide)
+    {
+        return boss->HasAura(Id(SwpSpells::SPELL_KALECGOS_BANISH)) ?
+            KalecgosCall::SathrovarrBanished : KalecgosCall::None;
+    }
+
+    bool const isEndHoldCalled = state && state->endHoldCalled;
+    return !isEndHoldCalled && healthPct < KALECGOS_END_HOLD_PCT ?
+        KalecgosCall::EndHold : KalecgosCall::None;
+}
+
+// Each side of the realms has one enemy, so a held side holds everything.
+KalecgosDpsHold GetKalecgosDpsHoldWindow(Player* bot)
+{
+    KalecgosEncounterState const* state = FindKalecgosState(bot->GetInstanceId());
+    if (!state)
+        return KalecgosDpsHold::None;
+
+    bool const isRealmSide = IsInSpectralRealm(bot);
+    if (state->healthCall == KalecgosHealthCall::GapHold && state->firstLowBoss &&
+        (*state->firstLowBoss == KalecgosBoss::Sathrovarr) == isRealmSide)
+    {
+        return KalecgosDpsHold::HealthGap;
+    }
+
+    if (!isRealmSide && state->endHoldCalled && !state->sathrovarrBanishCalled)
+        return KalecgosDpsHold::End;
+
+    return KalecgosDpsHold::None;
+}
+
+KalecgosDpsHold GetKalecgosDpsHold(Player* bot)
+{
+    return PlayerbotAI::IsTank(bot) ? KalecgosDpsHold::None : GetKalecgosDpsHoldWindow(bot);
+}
+
 // Shared encounter state
 
 KalecgosEncounterState& KalecgosState(uint32 instanceId)
 {
-    std::lock_guard lock(kalecgosStateMutex);
-    return kalecgosStates[instanceId];
+    std::optional<KalecgosEncounterState>& state = SwpState(instanceId).kalecgos;
+    if (!state)
+        state.emplace();
+
+    return *state;
 }
 
 KalecgosEncounterState* FindKalecgosState(uint32 instanceId)
 {
-    std::lock_guard lock(kalecgosStateMutex);
-    auto it = kalecgosStates.find(instanceId);
-    return it != kalecgosStates.end() ? &it->second : nullptr;
-}
-
-bool KalecgosResetInstance(uint32 instanceId)
-{
-    std::lock_guard lock(kalecgosStateMutex);
-    return kalecgosStates.erase(instanceId) > 0;
+    SwpInstanceState* state = FindSwpState(instanceId);
+    return state && state->kalecgos ? &*state->kalecgos : nullptr;
 }
 
 }

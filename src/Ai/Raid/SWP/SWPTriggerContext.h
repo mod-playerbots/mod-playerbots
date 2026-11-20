@@ -21,6 +21,9 @@ public:
 
         creators["sunwell aura to remove"] = &RaidSwpTriggerContext::sunwell_aura_to_remove;
 
+        creators["sunwell class roles should be assigned"] =
+            &RaidSwpTriggerContext::sunwell_class_roles_should_be_assigned;
+
         // Trash
         creators["volatile fiend self destructs when near"] =
             &RaidSwpTriggerContext::volatile_fiend_self_destructs_when_near;
@@ -52,6 +55,15 @@ public:
 
         creators["kalecgos bots don't observe gravity"] =
             &RaidSwpTriggerContext::kalecgos_bots_dont_observe_gravity;
+
+        creators["kalecgos should manage raid assignments"] =
+            &RaidSwpTriggerContext::kalecgos_should_manage_raid_assignments;
+
+        creators["kalecgos dps hold is active"] =
+            &RaidSwpTriggerContext::kalecgos_dps_hold_is_active;
+
+        creators["kalecgos should manage pet aggression"] =
+            &RaidSwpTriggerContext::kalecgos_should_manage_pet_aggression;
 
         // Brutallus
         creators["brutallus hunter should misdirect"] =
@@ -90,6 +102,11 @@ public:
         creators["felmyst player has gas nova"] =
             &RaidSwpTriggerContext::felmyst_player_has_gas_nova;
 
+        creators["felmyst takeoff is near"] = &RaidSwpTriggerContext::felmyst_takeoff_is_near;
+
+        creators["felmyst air phase has started"] =
+            &RaidSwpTriggerContext::felmyst_air_phase_has_started;
+
         creators["felmyst should avoid demonic vapor trails"] =
             &RaidSwpTriggerContext::felmyst_should_avoid_demonic_vapor_trails;
 
@@ -108,33 +125,39 @@ public:
         creators["felmyst should hold dps while landing"] =
             &RaidSwpTriggerContext::felmyst_should_hold_dps_while_landing;
 
-        // Eredar Twins
-        creators["eredar twins melee is at balcony"] =
-            &RaidSwpTriggerContext::eredar_twins_melee_is_at_balcony;
+        creators["felmyst landing dps hold is active"] =
+            &RaidSwpTriggerContext::felmyst_landing_dps_hold_is_active;
 
-        creators["eredar twins should announce alythess tank"] =
-            &RaidSwpTriggerContext::eredar_twins_should_announce_alythess_tank;
+        // Eredar Twins
+        creators["eredar twins should leave balcony"] =
+            &RaidSwpTriggerContext::eredar_twins_should_leave_balcony;
 
         creators["eredar twins hunter should misdirect"] =
             &RaidSwpTriggerContext::eredar_twins_hunter_should_misdirect;
 
-        creators["eredar twins sacrolash requires two tanks"] =
-            &RaidSwpTriggerContext::eredar_twins_sacrolash_requires_two_tanks;
+        creators["eredar twins sacrolash should be tanked"] =
+            &RaidSwpTriggerContext::eredar_twins_sacrolash_should_be_tanked;
 
-        creators["eredar twins alythess casts blaze on tank"] =
-            &RaidSwpTriggerContext::eredar_twins_alythess_casts_blaze_on_tank;
+        creators["eredar twins alythess should be tanked"] =
+            &RaidSwpTriggerContext::eredar_twins_alythess_should_be_tanked;
 
-        creators["eredar twins ranged needs los"] =
-            &RaidSwpTriggerContext::eredar_twins_ranged_needs_los;
+        creators["eredar twins ranged should stack on balcony"] =
+            &RaidSwpTriggerContext::eredar_twins_ranged_should_stack_on_balcony;
 
         creators["eredar twins only alythess remains"] =
             &RaidSwpTriggerContext::eredar_twins_only_alythess_remains;
+
+        creators["eredar twins alythess targets non-tank"] =
+            &RaidSwpTriggerContext::eredar_twins_alythess_targets_non_tank;
 
         creators["eredar twins too many flame touched stacks"] =
             &RaidSwpTriggerContext::eredar_twins_too_many_flame_touched_stacks;
 
         creators["eredar twins should focus dps"] =
             &RaidSwpTriggerContext::eredar_twins_should_focus_dps;
+
+        creators["eredar twins should manage pet aggression"] =
+            &RaidSwpTriggerContext::eredar_twins_should_manage_pet_aggression;
 
         creators["eredar twins active conflagration target"] =
             &RaidSwpTriggerContext::eredar_twins_active_conflagration_target;
@@ -143,11 +166,11 @@ public:
             &RaidSwpTriggerContext::eredar_twins_sacrolash_victim_has_conflagration;
 
         // M'uru
-        creators["m'uru hunter should misdirect new enemy"] =
-            &RaidSwpTriggerContext::muru_hunter_should_misdirect_new_enemy;
+        creators["m'uru hunter should misdirect"] =
+            &RaidSwpTriggerContext::muru_hunter_should_misdirect;
 
-        creators["m'uru transformed into entropius"] =
-            &RaidSwpTriggerContext::muru_transformed_into_entropius;
+        creators["m'uru entropius should be tanked"] =
+            &RaidSwpTriggerContext::muru_entropius_should_be_tanked;
 
         creators["m'uru ranged should stack or spread"] =
             &RaidSwpTriggerContext::muru_ranged_should_stack_or_spread;
@@ -155,15 +178,15 @@ public:
         creators["m'uru should assign dps priority"] =
             &RaidSwpTriggerContext::muru_should_assign_dps_priority;
 
-        creators["m'uru m'uru void sentinel should be tanked"] =
+        creators["m'uru void sentinel should be tanked"] =
             &RaidSwpTriggerContext::muru_void_sentinel_should_be_tanked;
 
-        creators["m'uru adds spawn at entrance"] =
-            &RaidSwpTriggerContext::muru_adds_spawn_at_entrance;
+        creators["m'uru entrance should be guarded"] =
+            &RaidSwpTriggerContext::muru_entrance_should_be_guarded;
 
         creators["m'uru dark fiends spawned"] = &RaidSwpTriggerContext::muru_dark_fiends_spawned;
 
-        creators["m'uru darkness is coming"] = &RaidSwpTriggerContext::muru_darkness_is_coming;
+        creators["m'uru darkness is active"] = &RaidSwpTriggerContext::muru_darkness_is_active;
 
         creators["m'uru berserker has flurry"] =
             &RaidSwpTriggerContext::muru_berserker_has_flurry;
@@ -180,21 +203,19 @@ public:
         creators["m'uru warlock has enslaved void spawn"] =
             &RaidSwpTriggerContext::muru_warlock_has_enslaved_void_spawn;
 
-        creators["m'uru entropius summons void zones"] =
-            &RaidSwpTriggerContext::muru_entropius_summons_void_zones;
+        creators["m'uru void zone is near"] = &RaidSwpTriggerContext::muru_void_zone_is_near;
+
+        creators["m'uru dark fiend is near"] = &RaidSwpTriggerContext::muru_dark_fiend_is_near;
 
         creators["m'uru the singularity is near"] =
             &RaidSwpTriggerContext::muru_the_singularity_is_near;
 
         // Kil'jaeden <The Deceiver>
-        creators["kil'jaeden should coordinate orb use"] =
-            &RaidSwpTriggerContext::kiljaeden_should_coordinate_orb_use;
-
         creators["kil'jaeden hands of the deceiver are active"] =
             &RaidSwpTriggerContext::kiljaeden_hands_of_the_deceiver_are_active;
 
-        creators["kil'jaeden tanks should hold boss and reflections"] =
-            &RaidSwpTriggerContext::kiljaeden_tanks_should_hold_boss_and_reflections;
+        creators["kil'jaeden should be tanked"] =
+            &RaidSwpTriggerContext::kiljaeden_should_be_tanked;
 
         creators["kil'jaeden melee should split into two groups"] =
             &RaidSwpTriggerContext::kiljaeden_melee_should_split_into_two_groups;
@@ -205,8 +226,8 @@ public:
         creators["kil'jaeden fire bloom on immunity class"] =
             &RaidSwpTriggerContext::kiljaeden_fire_bloom_on_immunity_class;
 
-        creators["kil'jaeden says: Chaos! Destruction! Oblivion!"] =
-            &RaidSwpTriggerContext::kiljaeden_says_chaos_destruction_oblivion;
+        creators["kil'jaeden casts darkness of a thousand souls"] =
+            &RaidSwpTriggerContext::kiljaeden_casts_darkness_of_a_thousand_souls;
 
         creators["kil'jaeden dragon orb is active"] =
             &RaidSwpTriggerContext::kiljaeden_dragon_orb_is_active;
@@ -223,6 +244,10 @@ private:
     static Trigger* sunwell_no_encounter_in_progress(PlayerbotAI* botAI)
     {
         return new SunwellNoEncounterInProgressTrigger(botAI);
+    }
+    static Trigger* sunwell_class_roles_should_be_assigned(PlayerbotAI* botAI)
+    {
+        return new SunwellClassRolesShouldBeAssignedTrigger(botAI);
     }
     static Trigger* sunwell_aura_to_remove(PlayerbotAI* botAI)
     {
@@ -243,7 +268,7 @@ private:
     static Trigger* kalecgos_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new SunwellHunterShouldMisdirectTrigger(
-            botAI, "kalecgos hunter should misdirect", "kalecgos");
+            botAI, "kalecgos hunter should misdirect", SwpHelpers::SwpBosses::DATA_KALECGOS);
     }
     static Trigger* kalecgos_should_communicate_boss_health(PlayerbotAI* botAI)
     {
@@ -273,12 +298,24 @@ private:
     {
         return new KalecgosBotsDontObserveGravityTrigger(botAI);
     }
+    static Trigger* kalecgos_should_manage_raid_assignments(PlayerbotAI* botAI)
+    {
+        return new KalecgosShouldManageRaidAssignmentsTrigger(botAI);
+    }
+    static Trigger* kalecgos_dps_hold_is_active(PlayerbotAI* botAI)
+    {
+        return new KalecgosDpsHoldIsActiveTrigger(botAI);
+    }
+    static Trigger* kalecgos_should_manage_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new KalecgosShouldManagePetAggressionTrigger(botAI);
+    }
 
     // Brutallus
     static Trigger* brutallus_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new SunwellHunterShouldMisdirectTrigger(
-            botAI, "brutallus hunter should misdirect", "brutallus");
+            botAI, "brutallus hunter should misdirect", SwpHelpers::SwpBosses::DATA_BRUTALLUS);
     }
     static Trigger* brutallus_requires_two_tanks(PlayerbotAI* botAI)
     {
@@ -326,6 +363,14 @@ private:
     {
         return new FelmystPlayerHasGasNovaTrigger(botAI);
     }
+    static Trigger* felmyst_takeoff_is_near(PlayerbotAI* botAI)
+    {
+        return new FelmystTakeoffIsNearTrigger(botAI);
+    }
+    static Trigger* felmyst_air_phase_has_started(PlayerbotAI* botAI)
+    {
+        return new FelmystAirPhaseHasStartedTrigger(botAI);
+    }
     static Trigger* felmyst_should_avoid_demonic_vapor_trails(PlayerbotAI* botAI)
     {
         return new FelmystShouldAvoidDemonicVaporTrailsTrigger(botAI);
@@ -350,36 +395,39 @@ private:
     {
         return new FelmystShouldHoldDpsWhileLandingTrigger(botAI);
     }
+    static Trigger* felmyst_landing_dps_hold_is_active(PlayerbotAI* botAI)
+    {
+        return new FelmystLandingDpsHoldIsActiveTrigger(botAI);
+    }
 
     // Eredar Twins
-    static Trigger* eredar_twins_melee_is_at_balcony(PlayerbotAI* botAI)
+    static Trigger* eredar_twins_should_leave_balcony(PlayerbotAI* botAI)
     {
-        return new EredarTwinsMeleeIsAtBalconyTrigger(botAI);
-    }
-    static Trigger* eredar_twins_should_announce_alythess_tank(PlayerbotAI* botAI)
-    {
-        return new EredarTwinsShouldAnnounceAlythessTankTrigger(botAI);
+        return new EredarTwinsShouldLeaveBalconyTrigger(botAI);
     }
     static Trigger* eredar_twins_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new SunwellHunterShouldMisdirectTrigger(
-            botAI, "eredar twins hunter should misdirect", "grand warlock alythess");
+        return new EredarTwinsHunterShouldMisdirectTrigger(botAI);
     }
-    static Trigger* eredar_twins_sacrolash_requires_two_tanks(PlayerbotAI* botAI)
+    static Trigger* eredar_twins_sacrolash_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new EredarTwinsSacrolashRequiresTwoTanksTrigger(botAI);
+        return new EredarTwinsSacrolashShouldBeTankedTrigger(botAI);
     }
-    static Trigger* eredar_twins_alythess_casts_blaze_on_tank(PlayerbotAI* botAI)
+    static Trigger* eredar_twins_alythess_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new EredarTwinsAlythessCastsBlazeOnTankTrigger(botAI);
+        return new EredarTwinsAlythessShouldBeTankedTrigger(botAI);
     }
-    static Trigger* eredar_twins_ranged_needs_los(PlayerbotAI* botAI)
+    static Trigger* eredar_twins_ranged_should_stack_on_balcony(PlayerbotAI* botAI)
     {
-        return new EredarTwinsRangedNeedsLosTrigger(botAI);
+        return new EredarTwinsRangedShouldStackOnBalconyTrigger(botAI);
     }
     static Trigger* eredar_twins_only_alythess_remains(PlayerbotAI* botAI)
     {
         return new EredarTwinsOnlyAlythessRemainsTrigger(botAI);
+    }
+    static Trigger* eredar_twins_alythess_targets_non_tank(PlayerbotAI* botAI)
+    {
+        return new EredarTwinsAlythessTargetsNonTankTrigger(botAI);
     }
     static Trigger* eredar_twins_too_many_flame_touched_stacks(PlayerbotAI* botAI)
     {
@@ -388,6 +436,10 @@ private:
     static Trigger* eredar_twins_should_focus_dps(PlayerbotAI* botAI)
     {
         return new EredarTwinsShouldFocusDpsTrigger(botAI);
+    }
+    static Trigger* eredar_twins_should_manage_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new EredarTwinsShouldManagePetAggressionTrigger(botAI);
     }
     static Trigger* eredar_twins_active_conflagration_target(PlayerbotAI* botAI)
     {
@@ -399,13 +451,13 @@ private:
     }
 
     // M'uru
-    static Trigger* muru_hunter_should_misdirect_new_enemy(PlayerbotAI* botAI)
+    static Trigger* muru_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new MuruHunterShouldMisdirectNewEnemyTrigger(botAI);
+        return new MuruHunterShouldMisdirectTrigger(botAI);
     }
-    static Trigger* muru_transformed_into_entropius(PlayerbotAI* botAI)
+    static Trigger* muru_entropius_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new MuruTransformedIntoEntropiusTrigger(botAI);
+        return new MuruEntropiusShouldBeTankedTrigger(botAI);
     }
     static Trigger* muru_ranged_should_stack_or_spread(PlayerbotAI* botAI)
     {
@@ -419,17 +471,17 @@ private:
     {
         return new MuruVoidSentinelShouldBeTankedTrigger(botAI);
     }
-    static Trigger* muru_adds_spawn_at_entrance(PlayerbotAI* botAI)
+    static Trigger* muru_entrance_should_be_guarded(PlayerbotAI* botAI)
     {
-        return new MuruAddsSpawnAtEntranceTrigger(botAI);
+        return new MuruEntranceShouldBeGuardedTrigger(botAI);
     }
     static Trigger* muru_dark_fiends_spawned(PlayerbotAI* botAI)
     {
         return new MuruDarkFiendsSpawnedTrigger(botAI);
     }
-    static Trigger* muru_darkness_is_coming(PlayerbotAI* botAI)
+    static Trigger* muru_darkness_is_active(PlayerbotAI* botAI)
     {
-        return new MuruDarknessIsComingTrigger(botAI);
+        return new MuruDarknessIsActiveTrigger(botAI);
     }
     static Trigger* muru_berserker_has_flurry(PlayerbotAI* botAI)
     {
@@ -451,9 +503,13 @@ private:
     {
         return new MuruWarlockHasEnslavedVoidSpawnTrigger(botAI);
     }
-    static Trigger* muru_entropius_summons_void_zones(PlayerbotAI* botAI)
+    static Trigger* muru_void_zone_is_near(PlayerbotAI* botAI)
     {
-        return new MuruEntropiusSummonsVoidZonesTrigger(botAI);
+        return new MuruVoidZoneIsNearTrigger(botAI);
+    }
+    static Trigger* muru_dark_fiend_is_near(PlayerbotAI* botAI)
+    {
+        return new MuruDarkFiendIsNearTrigger(botAI);
     }
     static Trigger* muru_the_singularity_is_near(PlayerbotAI* botAI)
     {
@@ -461,17 +517,13 @@ private:
     }
 
     // Kil'jaeden <The Deceiver>
-    static Trigger* kiljaeden_should_coordinate_orb_use(PlayerbotAI* botAI)
-    {
-        return new KiljaedenShouldCoordinateOrbUseTrigger(botAI);
-    }
     static Trigger* kiljaeden_hands_of_the_deceiver_are_active(PlayerbotAI* botAI)
     {
         return new KiljaedenHandsOfTheDeceiverAreActiveTrigger(botAI);
     }
-    static Trigger* kiljaeden_tanks_should_hold_boss_and_reflections(PlayerbotAI* botAI)
+    static Trigger* kiljaeden_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new KiljaedenTanksShouldHoldBossAndReflectionsTrigger(botAI);
+        return new KiljaedenShouldBeTankedTrigger(botAI);
     }
     static Trigger* kiljaeden_melee_should_split_into_two_groups(PlayerbotAI* botAI)
     {
@@ -485,9 +537,9 @@ private:
     {
         return new KiljaedenFireBloomOnImmunityClassTrigger(botAI);
     }
-    static Trigger* kiljaeden_says_chaos_destruction_oblivion(PlayerbotAI* botAI)
+    static Trigger* kiljaeden_casts_darkness_of_a_thousand_souls(PlayerbotAI* botAI)
     {
-        return new KiljaedenSaysChaosDestructionOblivionTrigger(botAI);
+        return new KiljaedenCastsDarknessOfAThousandSoulsTrigger(botAI);
     }
     static Trigger* kiljaeden_dragon_orb_is_active(PlayerbotAI* botAI)
     {

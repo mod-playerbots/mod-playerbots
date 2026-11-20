@@ -33,6 +33,21 @@ protected:
     }
 };
 
+class EredarTwinsThreatHoldsValue : public CalculatedValue<SwpHelpers::EredarTwinsThreatHolds>
+{
+public:
+    EredarTwinsThreatHoldsValue(PlayerbotAI* botAI)
+        : CalculatedValue<SwpHelpers::EredarTwinsThreatHolds>(
+              botAI, "eredar twins threat holds",
+              SwpHelpers::EREDAR_TWINS_THREAT_HOLDS_CACHE_INTERVAL_MS) {}
+
+protected:
+    SwpHelpers::EredarTwinsThreatHolds Calculate() override
+    {
+        return SwpHelpers::FindEredarTwinsThreatHolds(bot);
+    }
+};
+
 class MuruEncounterTargetsValue : public CalculatedValue<SwpHelpers::MuruEncounterGuids>
 {
 public:
@@ -92,7 +107,7 @@ public:
               botAI, "swp volatile fiend", SwpHelpers::VOLATILE_FIEND_CACHE_INTERVAL_MS) {}
 
 protected:
-    ObjectGuid Calculate() override { return SwpHelpers::FindSwpVolatileFiendGuid(bot); }
+    ObjectGuid Calculate() override { return SwpHelpers::FindSwpVolatileFiendGuid(botAI); }
 };
 
 class KalecgosSpectralRiftValue : public CalculatedValue<ObjectGuid>
@@ -146,6 +161,7 @@ public:
     {
         creators["felmyst demonic vapors"] = &RaidSwpValueContext::felmyst_demonic_vapors;
         creators["eredar twins blaze"] = &RaidSwpValueContext::eredar_twins_blaze;
+        creators["eredar twins threat holds"] = &RaidSwpValueContext::eredar_twins_threat_holds;
         creators["muru encounter targets"] = &RaidSwpValueContext::muru_encounter_targets;
         creators["muru void zones"] = &RaidSwpValueContext::muru_void_zones;
         creators["muru dark fiends"] = &RaidSwpValueContext::muru_dark_fiends;
@@ -164,6 +180,10 @@ private:
     static UntypedValue* eredar_twins_blaze(PlayerbotAI* botAI)
     {
         return new EredarTwinsBlazePositionsValue(botAI);
+    }
+    static UntypedValue* eredar_twins_threat_holds(PlayerbotAI* botAI)
+    {
+        return new EredarTwinsThreatHoldsValue(botAI);
     }
     static UntypedValue* muru_encounter_targets(PlayerbotAI* botAI)
     {

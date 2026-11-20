@@ -5,12 +5,16 @@
  */
 
 #include "SWPEncounter_Brut.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include "SWPInstanceState.h"
 #include "SWPShared.h"
 #include <algorithm>
+#include <array>
 #include <cmath>
-#include <mutex>
 #include <vector>
+
+using namespace EncounterHelpers;
 
 namespace SwpHelpers
 {
@@ -19,9 +23,6 @@ namespace SwpHelpers
 
 namespace
 {
-
-std::mutex brutallusStateMutex;
-std::unordered_map<uint32, BrutallusEncounterState> brutallusStates;
 
 bool IsBurnPadActive(BrutallusEncounterState const& state, ObjectGuid ownerGuid)
 {
@@ -252,21 +253,75 @@ float GetTankAngle(Unit* brutallus, Player* tank, float fallbackAngle)
         tank->GetPositionX() - brutallus->GetPositionX()));
 }
 
-float GetDefaultMainTankAngle(Unit* brutallus)
+// The signed difference between two world angles, from -pi to pi.
+float GetAngleOffset(float angle, float reference)
 {
-    if (!brutallus)
-        return 0.0f;
+    float offset = Position::NormalizeOrientation(angle - reference);
+    if (offset > static_cast<float>(M_PI))
+        offset -= 2.0f * static_cast<float>(M_PI);
 
-    return Position::NormalizeOrientation(std::atan2(
-        BRUTALLUS_MAIN_TANK_POSITION.GetPositionY() - brutallus->GetPositionY(),
-        BRUTALLUS_MAIN_TANK_POSITION.GetPositionX() - brutallus->GetPositionX()));
+    return offset;
+}
+
+// Where the main tank stands once Brutallus is on the anchor: on its own bearing from him if
+// that is within tolerance of BRUTALLUS_MAIN_TANK_BEARING, otherwise on the nearer limit.
+Position GetMainTankStandInPosition(Player* bot, Unit& brutallus)
+{
+    float const offset = std::clamp(
+        GetAngleOffset(brutallus.GetAbsoluteAngle(bot), BRUTALLUS_MAIN_TANK_BEARING),
+        -BRUTALLUS_MAIN_TANK_BEARING_TOLERANCE, BRUTALLUS_MAIN_TANK_BEARING_TOLERANCE);
+
+    return GetBrutallusPositionAtAngle(
+        bot, brutallus, BRUTALLUS_MAIN_TANK_BEARING + offset, BRUTALLUS_TANK_POSITION_RADIUS);
+}
+
+// If the straight line from the bot to the destination passes inside the crate's clearance,
+// the destination becomes a point just outside it, on the side of the crate the line passes.
+void RouteAroundCrate(Player* bot, Position& destination)
+{
+    Position const& crate = BRUTALLUS_CRATE_POSITION;
+    if (crate.GetExactDist2d(destination) < BRUTALLUS_CRATE_CLEARANCE)
+        return;
+
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const lineX = destination.GetPositionX() - botX;
+    float const lineY = destination.GetPositionY() - botY;
+    float const lineLength = std::hypot(lineX, lineY);
+    if (lineLength < 0.1f)
+        return;
+
+    float const along = std::clamp(
+        ((crate.GetPositionX() - botX) * lineX + (crate.GetPositionY() - botY) * lineY) /
+        (lineLength * lineLength), 0.0f, 1.0f);
+
+    float const nearestX = botX + lineX * along;
+    float const nearestY = botY + lineY * along;
+    float const nearestDist = crate.GetExactDist2d(nearestX, nearestY);
+    if (nearestDist >= BRUTALLUS_CRATE_CLEARANCE)
+        return;
+
+    // A line through the crate's center has no side, so take the line's left.
+    float sideX = -lineY / lineLength;
+    float sideY = lineX / lineLength;
+    if (nearestDist > 0.1f)
+    {
+        sideX = (nearestX - crate.GetPositionX()) / nearestDist;
+        sideY = (nearestY - crate.GetPositionY()) / nearestDist;
+    }
+
+    constexpr float waypointMargin = 1.5f;
+    float const waypointDist = BRUTALLUS_CRATE_CLEARANCE + waypointMargin;
+    destination.Relocate(
+        crate.GetPositionX() + sideX * waypointDist, crate.GetPositionY() + sideY * waypointDist,
+        destination.GetPositionZ());
 }
 
 } // end anonymous namespace
 
 float GetBrutallusMainTankAngle(Unit* brutallus, Player* mainTank)
 {
-    return GetTankAngle(brutallus, mainTank, GetDefaultMainTankAngle(brutallus));
+    return GetTankAngle(brutallus, mainTank, BRUTALLUS_MAIN_TANK_BEARING);
 }
 
 float GetBrutallusAssistTankAngle(Unit* brutallus, Player* assistTank, float mainTankAngle)
@@ -275,11 +330,141 @@ float GetBrutallusAssistTankAngle(Unit* brutallus, Player* assistTank, float mai
         mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET));
 }
 
-Position GetBrutallusPositionAtAngle(Player* bot, Unit const& brutallus, float angle, float radius)
+Position GetBrutallusPositionAtAngle(Player* bot, Unit& brutallus, float angle, float radius)
 {
     float const x = brutallus.GetPositionX() + std::cos(angle) * radius;
     float const y = brutallus.GetPositionY() + std::sin(angle) * radius;
     return Position(x, y, bot->GetPositionZ());
+}
+
+// Where the main tank is heading while it places Brutallus. With him off the anchor, it first
+// lines up on the far side of him from the anchor, then backs out past the anchor so that he
+// follows onto it. With him on the anchor, it stands in.
+Position GetBrutallusMainTankDestination(Player* bot, Unit& brutallus)
+{
+    Position const& anchor = BRUTALLUS_ANCHOR_POSITION;
+    Position destination;
+
+    if (brutallus.GetExactDist2d(anchor) > BRUTALLUS_ANCHOR_TOLERANCE)
+    {
+        float const anchorAngle = brutallus.GetAbsoluteAngle(anchor);
+        float const lineUpOffset = GetAngleOffset(brutallus.GetAbsoluteAngle(bot), anchorAngle);
+        if (std::fabs(lineUpOffset) > BRUTALLUS_TANK_LINE_UP_ANGLE)
+        {
+            destination = GetBrutallusPositionAtAngle(
+                bot, brutallus, anchorAngle, BRUTALLUS_TANK_LINE_UP_RADIUS);
+        }
+        else
+        {
+            destination.Relocate(
+                anchor.GetPositionX() + std::cos(anchorAngle) * BRUTALLUS_DRAG_DISTANCE,
+                anchor.GetPositionY() + std::sin(anchorAngle) * BRUTALLUS_DRAG_DISTANCE,
+                bot->GetPositionZ());
+        }
+    }
+    else
+        destination = GetMainTankStandInPosition(bot, brutallus);
+
+    RouteAroundCrate(bot, destination);
+    return destination;
+}
+
+// One step of the main tank toward its destination that keeps Brutallus in front of it. A step
+// sideways to him is replaced by a diagonal: in toward him while there is room, otherwise out.
+// A step that is blocked or ends at the crate is refused, never shortened, and the headings to
+// either side are tried in its place.
+bool GetBrutallusMainTankStep(
+    Player* bot, Unit* brutallus, Position const& destination, float& stepX, float& stepY,
+    float& stepZ, bool& backwards)
+{
+    if (!brutallus)
+        return false;
+
+    float const distance = bot->GetExactDist2d(destination);
+    float const brutallusDist = bot->GetExactDist2d(brutallus);
+    float const brutallusAngle = bot->GetAbsoluteAngle(brutallus);
+
+    // Headings are measured from the line to Brutallus: 0 is straight at him.
+    float const heading = GetAngleOffset(bot->GetAbsoluteAngle(destination), brutallusAngle);
+    float const awayLimit = static_cast<float>(M_PI) - BRUTALLUS_TANK_STEER_ANGLE;
+    float steer = std::fabs(heading);
+    if (brutallusDist <= BRUTALLUS_TANK_MIN_RADIUS)
+    {
+        // Too close to go further in, so out on the diagonal, on the destination's side.
+        steer = std::max(steer, awayLimit);
+    }
+    else if (steer > BRUTALLUS_TANK_STEER_ANGLE && steer < awayLimit)
+    {
+        constexpr float roomToStepIn = 3.0f;
+        steer = brutallusDist > BRUTALLUS_TANK_MIN_RADIUS + roomToStepIn ?
+            BRUTALLUS_TANK_STEER_ANGLE : awayLimit;
+    }
+
+    if (heading < 0.0f)
+        steer = -steer;
+
+    constexpr float degreeToRadian = M_PI / 180.0f;
+    static constexpr std::array turns = {
+        0.0f,
+        20.0f * degreeToRadian,
+        -20.0f * degreeToRadian,
+        40.0f * degreeToRadian,
+        -40.0f * degreeToRadian,
+        60.0f * degreeToRadian,
+        -60.0f * degreeToRadian,
+        80.0f * degreeToRadian,
+        -80.0f * degreeToRadian,
+    };
+
+    // Slack for float error, so a heading right on a limit is not lost.
+    constexpr float angleSlack = 0.01f;
+
+    for (float turn : turns)
+    {
+        float const candidate = GetAngleOffset(steer + turn, 0.0f);
+        float const candidateSize = std::fabs(candidate);
+
+        bool forwards;
+        if (candidateSize <= BRUTALLUS_TANK_STEER_ANGLE + angleSlack)
+            forwards = true;
+        else if (candidateSize >= awayLimit - angleSlack)
+            forwards = false;
+        else
+            continue;
+
+        if (forwards && brutallusDist <= BRUTALLUS_TANK_MIN_RADIUS)
+            continue;
+
+        float const stepDistance = std::min(
+            forwards ? PATH_STEP_DISTANCE : PATH_BACKWARD_STEP_DISTANCE, distance);
+
+        float const angle = brutallusAngle + candidate;
+        float const x = bot->GetPositionX() + std::cos(angle) * stepDistance;
+        float const y = bot->GetPositionY() + std::sin(angle) * stepDistance;
+
+        if (BRUTALLUS_CRATE_POSITION.GetExactDist2d(x, y) < BRUTALLUS_CRATE_CLEARANCE ||
+            !CanTakeStepTowards(bot, x, y, stepDistance, stepX, stepY, stepZ))
+        {
+            continue;
+        }
+
+        backwards = !forwards;
+        return true;
+    }
+
+    return false;
+}
+
+bool IsBrutallusMainTankInPlace(Player* bot, Unit* brutallus)
+{
+    if (!brutallus ||
+        brutallus->GetExactDist2d(BRUTALLUS_ANCHOR_POSITION) > BRUTALLUS_ANCHOR_TOLERANCE)
+    {
+        return false;
+    }
+
+    return bot->GetExactDist2d(GetMainTankStandInPosition(bot, *brutallus)) <=
+        BRUTALLUS_TANK_ARRIVAL_DISTANCE;
 }
 
 bool TryGetBrutallusAssignedPositionIndex(Player* bot, uint8& positionIndex)
@@ -413,21 +598,17 @@ bool HasBrutallusBurn(Player* bot)
 
 BrutallusEncounterState& BrutallusState(uint32 instanceId)
 {
-    std::lock_guard lock(brutallusStateMutex);
-    return brutallusStates[instanceId];
+    std::optional<BrutallusEncounterState>& state = SwpState(instanceId).brutallus;
+    if (!state)
+        state.emplace();
+
+    return *state;
 }
 
 BrutallusEncounterState* FindBrutallusState(uint32 instanceId)
 {
-    std::lock_guard lock(brutallusStateMutex);
-    auto it = brutallusStates.find(instanceId);
-    return it != brutallusStates.end() ? &it->second : nullptr;
-}
-
-bool BrutallusResetInstance(uint32 instanceId)
-{
-    std::lock_guard lock(brutallusStateMutex);
-    return brutallusStates.erase(instanceId) > 0;
+    SwpInstanceState* state = FindSwpState(instanceId);
+    return state && state->brutallus ? &*state->brutallus : nullptr;
 }
 
 }

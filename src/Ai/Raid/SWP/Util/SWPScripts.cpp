@@ -4,6 +4,7 @@
  * or (at your option) any later version.
  */
 
+#include "InstanceScript.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "Player.h"
@@ -12,8 +13,10 @@
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
+#include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPShared.h"
+#include "SWPTriggers.h"
 #include <list>
 #include <vector>
 
@@ -80,12 +83,34 @@ Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
     return nullptr;
 }
 
-void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit)
+// Each test is the one the move's trigger uses: the fog move, the group move (the early move
+// included), and the sidestep.
+bool IsFelmystMoveDueForBot(Player* player, PlayerbotAI* botAI, Creature* felmyst)
 {
-    if (!contextUnit)
+    FogOfCorruptionState fogState;
+    if (TryGetActiveFogOfCorruptionState(player, felmyst, fogState))
+        return true;
+
+    Position groupPosition;
+    if ((IsFelmystAirGroupMoveActive(player, felmyst) || HasFelmystEarlyMoveStarted(botAI) ||
+         IsFelmystEarlyMoveDue(player, felmyst)) &&
+        TryGetFelmystAirGroupPosition(felmyst, groupPosition) &&
+        player->GetExactDist2d(groupPosition) > FELMYST_GROUP_ARRIVAL_DISTANCE)
+    {
+        return true;
+    }
+
+    return felmyst->IsFlying() && !GetFelmystOwnDemonicVapor(player) &&
+        IsNearFelmystDemonicVaporHazard(player);
+}
+
+void RequestInterruptForBotsNeedingFelmystMovement(Creature* felmyst)
+{
+    // No state before the bots' triggers first see the encounter in progress
+    if (!felmyst || !FindFelmystState(felmyst->GetInstanceId()))
         return;
 
-    Map::PlayerList const& players = contextUnit->GetMap()->GetPlayers();
+    Map::PlayerList const& players = felmyst->GetMap()->GetPlayers();
     for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
     {
         Player* player = it->GetSource();
@@ -96,19 +121,8 @@ void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit)
         if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
             continue;
 
-        Unit* felmyst = PAI_VALUE2(Unit*, "find target", "felmyst");
-        if (!felmyst || !felmyst->IsFlying())
-            continue;
-
-        FogOfCorruptionState fogState;
-        if (!TryGetActiveFogOfCorruptionState(player, felmyst, fogState))
-            continue;
-
-        Position ignored;
-        if (!TryGetFelmystFogCrossingDestination(player, fogState.lane, ignored))
-            continue;
-
-        botAI->RequestSpellInterrupt();
+        if (IsFelmystMoveDueForBot(player, botAI, felmyst))
+            botAI->RequestSpellInterrupt();
     }
 }
 
@@ -134,28 +148,80 @@ void RequestInterruptForBotsWithFelmystEncapsulate(Creature* felmyst)
     }
 }
 
+void RequestInterruptForEredarTwinsBot(Player* player)
+{
+    if (!player || !player->IsAlive() || !IsCastingOrChanneling(player))
+        return;
+
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+    if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+        botAI->RequestSpellInterrupt();
+}
+
+// The Conflagration target moves away from the raid, and a bot that pulls aggro on Alythess
+// steps aside from its stack.
 void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
 {
     if (!alythess)
         return;
 
-    Map::PlayerList const& players = alythess->GetMap()->GetPlayers();
+    ObjectGuid const conflagTargetGuid = GetEredarTwinsConflagrationTargetGuid(alythess, nullptr);
+    if (!conflagTargetGuid.IsEmpty())
+        RequestInterruptForEredarTwinsBot(ObjectAccessor::GetPlayer(*alythess, conflagTargetGuid));
+
+    Unit* victim = alythess->GetVictim();
+    Player* player = victim ? victim->ToPlayer() : nullptr;
+    if (!IsHoldingAlythessAggro(player, alythess))
+        return;
+
+    Position const aside = GetEredarTwinsStepAsidePosition(
+        alythess, player->GetPositionZ() > EREDAR_TWINS_BALCONY_Z);
+    if (player->GetExactDist2d(aside) > EREDAR_TWINS_STEP_ASIDE_ARRIVAL_DISTANCE)
+        RequestInterruptForEredarTwinsBot(player);
+}
+
+// A bot in a long cast can't move until it ends, so a new void zone (about to summon a fiend) stops
+// the casts of bots within the fiend's clearance.
+void RequestInterruptForBotsNearNewMuruVoidZone(Creature* voidZone)
+{
+    if (!voidZone->HasAura(Id(SwpSpells::SPELL_VOID_ZONE_VISUAL)))
+        return;
+
+    Map::PlayerList const& players = voidZone->GetMap()->GetPlayers();
     for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
     {
         Player* player = it->GetSource();
-        if (!player || !player->IsAlive() || !IsCastingOrChanneling(player))
+        if (!player || !player->IsAlive() || !IsCastingOrChanneling(player) ||
+            player->GetExactDist(voidZone) >= DARK_FIEND_CLEARANCE)
+        {
             continue;
+        }
 
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-        if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-            continue;
-
-        if (GetEredarTwinsConflagrationTarget(player) == player ||
-            (GetEredarTwinsBlazeTarget(player) == player && PlayerbotAI::IsRanged(player)))
-        {
+        if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
             botAI->RequestSpellInterrupt();
-        }
     }
+}
+
+// In phase 2, where bots keep clear of fiends, a fiend's victim in a long cast stops it to move.
+void RequestInterruptForMuruDarkFiendVictim(Creature* darkFiend)
+{
+    Unit* victimUnit = darkFiend->GetVictim();
+    Player* victim = victimUnit ? victimUnit->ToPlayer() : nullptr;
+    if (!victim || !victim->IsAlive() || !IsCastingOrChanneling(victim) ||
+        victim->GetExactDist(darkFiend) >= DARK_FIEND_CLEARANCE)
+    {
+        return;
+    }
+
+    InstanceScript* instance = darkFiend->GetInstanceScript();
+    Creature* muru = instance ? instance->GetCreature(Id(SwpBosses::DATA_MURU)) : nullptr;
+    if (IsMuruPhaseActive(muru))
+        return;
+
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(victim);
+    if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+        botAI->RequestSpellInterrupt();
 }
 
 } // end anonymous namespace
@@ -218,6 +284,9 @@ public:
             return;
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
+        if (FindFirstSunwellCombatBotInGroup(target))
+            RecordFelmystDemonicVaporSummon(target);
+
         if (!IsCastingOrChanneling(target))
             return;
 
@@ -227,48 +296,60 @@ public:
     }
 };
 
+// A mage mid-cast when a Fury Mage gains Spell Fury stops the cast to steal it.
+// Records a completed Conflagration cast, so its target holds position while the missile flies.
 class EredarTwinsSpellListenerScript : public AllSpellScript
 {
 public:
     EredarTwinsSpellListenerScript() : AllSpellScript("EredarTwinsSpellListenerScript") {}
 
-    void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
-    {
-        if (!caster || (spellInfo->Id != Id(SwpSpells::SPELL_CONFLAGRATION) &&
-            spellInfo->Id != Id(SwpSpells::SPELL_BLAZE)))
-        {
-            return;
-        }
-
-        Player* target = GetFirstPlayerSpellTarget(spell, caster);
-        if (!target || !FindFirstSunwellCombatBotInGroup(target))
-            return;
-
-        if (spellInfo->Id == Id(SwpSpells::SPELL_CONFLAGRATION))
-            RecordIncomingEredarTwinsConflagrationTarget(target);
-        else
-            RecordEredarTwinsBlazeTarget(target);
-    }
-};
-
-class MuruVoidZoneSpellListenerScript : public AllSpellScript
-{
-public:
-    MuruVoidZoneSpellListenerScript() : AllSpellScript("MuruVoidZoneSpellListenerScript") {}
-
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_ENTROPIUS_DARKNESS))
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_CONFLAGRATION))
             return;
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
-        if (!IsCastingOrChanneling(target))
+        if (target && FindFirstSunwellCombatBotInGroup(target))
+            RecordEredarTwinsConflagrationImpact(target);
+    }
+};
+
+class MuruSpellFurySpellListenerScript : public AllSpellScript
+{
+public:
+    MuruSpellFurySpellListenerScript() : AllSpellScript("MuruSpellFurySpellListenerScript") {}
+
+    void OnSpellCast(
+        Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    {
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_SPELL_FURY))
             return;
 
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
-        if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+        uint32 const spellsteal = Id(SwpSpells::SPELL_SPELLSTEAL);
+        Map::PlayerList const& players = caster->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+        {
+            Player* player = it->GetSource();
+            if (!player || !player->IsAlive() || player->getClass() != CLASS_MAGE ||
+                !player->IsWithinCombatRange(caster, RANGED_ABILITY_REACH) ||
+                !IsCastingOrChanneling(player))
+            {
+                continue;
+            }
+
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+            if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+                continue;
+
+            if (!player->HasSpell(spellsteal) || player->HasSpellCooldown(spellsteal) ||
+                player->HasAura(Id(SwpSpells::SPELL_SPELL_FURY)))
+            {
+                continue;
+            }
+
             botAI->RequestSpellInterrupt();
+        }
     }
 };
 
@@ -315,13 +396,23 @@ public:
         {
             case Id(SwpNpcs::NPC_FELMYST):
             {
-                RequestInterruptForBotsNeedingFelmystFogMovement(creature);
+                RequestInterruptForBotsNeedingFelmystMovement(creature);
                 RequestInterruptForBotsWithFelmystEncapsulate(creature);
                 break;
             }
             case Id(SwpNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
             {
                 RequestInterruptForEredarTwinsAlythessTargets(creature);
+                break;
+            }
+            case Id(SwpNpcs::NPC_DARKNESS):
+            {
+                RequestInterruptForBotsNearNewMuruVoidZone(creature);
+                break;
+            }
+            case Id(SwpNpcs::NPC_DARK_FIEND):
+            {
+                RequestInterruptForMuruDarkFiendVictim(creature);
                 break;
             }
             default:
@@ -399,7 +490,7 @@ void AddSC_SunwellBotScripts()
     new KalecgosPortalSpellListenerScript();
     new FelmystSpellListenerScript();
     new EredarTwinsSpellListenerScript();
-    new MuruVoidZoneSpellListenerScript();
+    new MuruSpellFurySpellListenerScript();
     new KiljaedenDarknessSpellListenerScript();
     // AllCreatureScript
     new SunwellBossUpdateScript();
