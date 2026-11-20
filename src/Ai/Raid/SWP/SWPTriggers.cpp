@@ -819,7 +819,7 @@ bool KiljaedenFireBloomOnImmunityClassTrigger::IsActiveInEncounter()
     if (!bot->HasAura(Id(SwpSpells::SPELL_FIRE_BLOOM)))
         return false;
 
-    // Cloak of Shadows has a short cooldown; Ice Block and Divine Shield are saved for phase 4.
+    // Cloak of Shadows has a short CD. Not Ice Block or Divine Shield, so save them for phase 4+
     if (botClass == CLASS_ROGUE)
         return true;
 

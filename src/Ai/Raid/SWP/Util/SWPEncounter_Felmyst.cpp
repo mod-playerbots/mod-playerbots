@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cmath>
 #include <list>
+#include <optional>
 
 using namespace EncounterHelpers;
 
@@ -354,133 +355,6 @@ void RecordFelmystDemonicVaporSummon(Player* target)
         state.firstDemonicVaporTargetGuid = target->GetGUID();
 }
 
-namespace
-{
-
-bool TryFindSpotPastFogThreshold(
-    Player* bot, FogLane lane, Position const& projectFrom, Position& destination)
-{
-    if (lane == FogLane::None)
-        return false;
-
-    uint8 const laneIndex = static_cast<uint8>(lane);
-    if (laneIndex >= FOG_SAFE_THRESHOLDS.size())
-        return false;
-
-    Position const bestProjection = ClosestPointOnSegment(
-        projectFrom, FOG_SAFE_THRESHOLDS[laneIndex].a, FOG_SAFE_THRESHOLDS[laneIndex].b);
-
-    FogSafeThreshold const& threshold = FOG_SAFE_THRESHOLDS[laneIndex];
-
-    float const perpX = threshold.safeSideIsNorth ?
-        -(threshold.b.GetPositionY() - threshold.a.GetPositionY()) :
-         (threshold.b.GetPositionY() - threshold.a.GetPositionY());
-    float const perpY = threshold.safeSideIsNorth ?
-        (threshold.b.GetPositionX() - threshold.a.GetPositionX()) :
-        -(threshold.b.GetPositionX() - threshold.a.GetPositionX());
-
-    float const segmentLength = std::hypot(perpX, perpY);
-    if (segmentLength <= 0.0f)
-        return false;
-
-    float const unitX = perpX / segmentLength;
-    float const unitY = perpY / segmentLength;
-
-    float const alongX = (threshold.b.GetPositionX() - threshold.a.GetPositionX()) / segmentLength;
-    float const alongY = (threshold.b.GetPositionY() - threshold.a.GetPositionY()) / segmentLength;
-
-    std::vector<Creature*> const hazards = GetDemonicVaporHazards(bot);
-    auto const isClearOfVapor = [&hazards](float x, float y)
-    {
-        for (Creature* hazard : hazards)
-        {
-            if (hazard && hazard->GetExactDist2d(x, y) < FOG_DESTINATION_VAPOR_CLEARANCE)
-                return false;
-        }
-
-        return true;
-    };
-
-    constexpr float minThresholdClearance = 3.0f;
-    constexpr float maxClearance = 30.0f;
-    constexpr float clearanceStep = 3.0f;
-    constexpr float maxLateralOffset = 20.0f;
-    constexpr float lateralStep = 5.0f;
-
-    struct FogCandidate
-    {
-        float x;
-        float y;
-        float distance;
-    };
-
-    std::vector<FogCandidate> candidates;
-    float const projectionAlong =
-        (bestProjection.GetPositionX() - threshold.a.GetPositionX()) * alongX +
-        (bestProjection.GetPositionY() - threshold.a.GetPositionY()) * alongY;
-
-    constexpr uint32 clearanceStepCount =
-        static_cast<uint32>((maxClearance - minThresholdClearance) / clearanceStep);
-    constexpr uint32 lateralStepCount =
-        static_cast<uint32>(2.0f * maxLateralOffset / lateralStep);
-
-    for (uint32 clearanceIndex = 0; clearanceIndex <= clearanceStepCount; ++clearanceIndex)
-    {
-        float const clearance =
-            minThresholdClearance + static_cast<float>(clearanceIndex) * clearanceStep;
-
-        for (uint32 lateralIndex = 0; lateralIndex <= lateralStepCount; ++lateralIndex)
-        {
-            float const lateral =
-                -maxLateralOffset + static_cast<float>(lateralIndex) * lateralStep;
-
-            float const along = projectionAlong + lateral;
-            if (along < 0.0f || along > segmentLength)
-                continue;
-
-            float const x = bestProjection.GetPositionX() + unitX * clearance + alongX * lateral;
-            float const y = bestProjection.GetPositionY() + unitY * clearance + alongY * lateral;
-            candidates.push_back({ x, y, projectFrom.GetExactDist2d(x, y) });
-        }
-    }
-
-    std::sort(candidates.begin(), candidates.end(),
-        [](FogCandidate const& first, FogCandidate const& second)
-        {
-            return first.distance < second.distance;
-        });
-
-    for (FogCandidate const& candidate : candidates)
-    {
-        if (!isClearOfVapor(candidate.x, candidate.y))
-            continue;
-
-        // No raycast clamp from the bot: it held bots at obstacles. The air step goes around.
-        float z = bot->GetMapWaterOrGroundLevel(candidate.x, candidate.y, bot->GetPositionZ());
-        if (z <= INVALID_HEIGHT)
-            z = bot->GetPositionZ();
-
-        destination = Position(candidate.x, candidate.y, z);
-        return true;
-    }
-
-    return false;
-}
-
-} // end anonymous namespace 2
-
-bool TryGetFelmystLandingApproachDestination(
-    Player* bot, FogLane lastCompletedLane, Unit* felmyst, Position& destination)
-{
-    if (!felmyst)
-        return false;
-
-    Position const projectFrom(
-        felmyst->GetPositionX(), felmyst->GetPositionY(), felmyst->GetPositionZ());
-
-    return TryFindSpotPastFogThreshold(bot, lastCompletedLane, projectFrom, destination);
-}
-
 Position const& GetFelmystMainTankGroundPosition(Player* bot)
 {
     Position const* bestPosition = &FELMYST_TANK_POSITIONS[0];
@@ -796,7 +670,117 @@ bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FogOfCorruptionState&
     return true;
 }
 
-} // end anonymous namespace
+bool TryFindSpotPastFogThreshold(
+    Player* bot, FogLane lane, Position const& projectFrom, Position& destination)
+{
+    if (lane == FogLane::None)
+        return false;
+
+    uint8 const laneIndex = static_cast<uint8>(lane);
+    if (laneIndex >= FOG_SAFE_THRESHOLDS.size())
+        return false;
+
+    Position const bestProjection = ClosestPointOnSegment(
+        projectFrom, FOG_SAFE_THRESHOLDS[laneIndex].a, FOG_SAFE_THRESHOLDS[laneIndex].b);
+
+    FogSafeThreshold const& threshold = FOG_SAFE_THRESHOLDS[laneIndex];
+
+    float const perpX = threshold.safeSideIsNorth ?
+        -(threshold.b.GetPositionY() - threshold.a.GetPositionY()) :
+         (threshold.b.GetPositionY() - threshold.a.GetPositionY());
+    float const perpY = threshold.safeSideIsNorth ?
+        (threshold.b.GetPositionX() - threshold.a.GetPositionX()) :
+        -(threshold.b.GetPositionX() - threshold.a.GetPositionX());
+
+    float const segmentLength = std::hypot(perpX, perpY);
+    if (segmentLength <= 0.0f)
+        return false;
+
+    float const unitX = perpX / segmentLength;
+    float const unitY = perpY / segmentLength;
+
+    float const alongX = (threshold.b.GetPositionX() - threshold.a.GetPositionX()) / segmentLength;
+    float const alongY = (threshold.b.GetPositionY() - threshold.a.GetPositionY()) / segmentLength;
+
+    std::vector<Creature*> const hazards = GetDemonicVaporHazards(bot);
+    auto const isClearOfVapor = [&hazards](float x, float y)
+    {
+        for (Creature* hazard : hazards)
+        {
+            if (hazard && hazard->GetExactDist2d(x, y) < FOG_DESTINATION_VAPOR_CLEARANCE)
+                return false;
+        }
+
+        return true;
+    };
+
+    constexpr float minThresholdClearance = 3.0f;
+    constexpr float maxClearance = 30.0f;
+    constexpr float clearanceStep = 3.0f;
+    constexpr float maxLateralOffset = 20.0f;
+    constexpr float lateralStep = 5.0f;
+
+    struct FogCandidate
+    {
+        float x;
+        float y;
+        float distance;
+    };
+
+    std::vector<FogCandidate> candidates;
+    float const projectionAlong =
+        (bestProjection.GetPositionX() - threshold.a.GetPositionX()) * alongX +
+        (bestProjection.GetPositionY() - threshold.a.GetPositionY()) * alongY;
+
+    constexpr uint32 clearanceStepCount =
+        static_cast<uint32>((maxClearance - minThresholdClearance) / clearanceStep);
+    constexpr uint32 lateralStepCount =
+        static_cast<uint32>(2.0f * maxLateralOffset / lateralStep);
+
+    for (uint32 clearanceIndex = 0; clearanceIndex <= clearanceStepCount; ++clearanceIndex)
+    {
+        float const clearance =
+            minThresholdClearance + static_cast<float>(clearanceIndex) * clearanceStep;
+
+        for (uint32 lateralIndex = 0; lateralIndex <= lateralStepCount; ++lateralIndex)
+        {
+            float const lateral =
+                -maxLateralOffset + static_cast<float>(lateralIndex) * lateralStep;
+
+            float const along = projectionAlong + lateral;
+            if (along < 0.0f || along > segmentLength)
+                continue;
+
+            float const x = bestProjection.GetPositionX() + unitX * clearance + alongX * lateral;
+            float const y = bestProjection.GetPositionY() + unitY * clearance + alongY * lateral;
+            candidates.push_back({ x, y, projectFrom.GetExactDist2d(x, y) });
+        }
+    }
+
+    std::sort(candidates.begin(), candidates.end(),
+        [](FogCandidate const& first, FogCandidate const& second)
+        {
+            return first.distance < second.distance;
+        });
+
+    for (FogCandidate const& candidate : candidates)
+    {
+        if (!isClearOfVapor(candidate.x, candidate.y))
+            continue;
+
+        // No raycast clamp from the bot: it held bots at obstacles. The air step goes around.
+        float z = bot->GetMapWaterOrGroundLevel(candidate.x, candidate.y, bot->GetPositionZ());
+        if (z <= INVALID_HEIGHT)
+            z = bot->GetPositionZ();
+
+        destination = Position(candidate.x, candidate.y, z);
+        return true;
+    }
+
+    return false;
+}
+
+} // end anonymous namespace (Fog of Corruption)
 
 // The only function that writes Felmyst's air-phase state, apart from the summon hook's count.
 void AdvanceFelmystEncounterState(Unit* felmyst)
@@ -1093,6 +1077,18 @@ bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst)
         return true;
 
     return !IsNearLandingPosition(destination);
+}
+
+bool TryGetFelmystLandingApproachDestination(
+    Player* bot, FogLane lastCompletedLane, Unit* felmyst, Position& destination)
+{
+    if (!felmyst)
+        return false;
+
+    Position const projectFrom(
+        felmyst->GetPositionX(), felmyst->GetPositionY(), felmyst->GetPositionZ());
+
+    return TryFindSpotPastFogThreshold(bot, lastCompletedLane, projectFrom, destination);
 }
 
 bool IsFelmystLandingDpsHoldActive(PlayerbotAI* botAI)

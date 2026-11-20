@@ -123,7 +123,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// Takes the target dps assist would take, without attacking it, for a bot in its non-combat engine.
 class KalecgosSelectTargetForHoldAction : public Action
 {
 public:
@@ -387,7 +386,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// Takes the target dps assist would take, without attacking it, for a bot in its non-combat engine.
 class FelmystSelectTargetForHoldAction : public Action
 {
 public:

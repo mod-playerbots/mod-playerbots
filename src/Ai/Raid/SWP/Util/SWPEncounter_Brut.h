@@ -110,7 +110,7 @@ inline constexpr float BRUTALLUS_BURN_STEP_STOP_DISTANCE = 0.5f;
 
 // Where Brutallus is held: open floor 19y from his spawn, with room for the layout on all sides.
 inline Position const BRUTALLUS_ANCHOR_POSITION = { 1472.0f, 594.0f, 22.4f };
-inline Position const BRUTALLUS_CRATE_POSITION = { 1482.8f, 591.4f, 23.4f };
+inline Position const BRUTALLUS_CRATE_POSITION =  { 1482.8f, 591.4f, 23.4f };
 
 float GetBrutallusMainTankAngle(Unit* brutallus, Player* mainTank);
 float GetBrutallusAssistTankAngle(Unit* brutallus, Player* assistTank, float mainTankAngle);
@@ -122,14 +122,14 @@ bool GetBrutallusMainTankStep(
 bool IsBrutallusMainTankInPlace(Player* bot, Unit* brutallus);
 bool TryGetBrutallusAssignedPositionIndex(Player* bot, uint8& positionIndex);
 bool TryGetBrutallusRangedPosition(
-    Player* bot, Unit* brutallus, Player* mainTank, Player* assistTank,
-    uint8 rangedIndex, float radius, Position& position);
+    Player* bot, Unit* brutallus, Player* mainTank, Player* assistTank, uint8 rangedIndex,
+    float radius, Position& position);
 bool TryGetBrutallusBurnPadPosition(
-    Player* bot, Unit* brutallus, Player* mainTank,
-    uint8 rangedIndex, float radius, Position& position);
+    Player* bot, Unit* brutallus, Player* mainTank, uint8 rangedIndex, float radius,
+    Position& position);
 bool TryGetBrutallusLaneTraversalPosition(
-    Player* bot, Unit* brutallus, float targetX, float targetY, float radius,
-    float currentX, float currentY, Position& position);
+    Player* bot, Unit* brutallus, float targetX, float targetY, float radius, float currentX,
+    float currentY, Position& position);
 bool ReleaseBrutallusBurnPad(Player* bot);
 bool HasBrutallusBurn(Player* bot);
 

@@ -194,7 +194,7 @@ bool KiljaedenPositionAndMoveTanksAction::Execute(Event /*event*/)
 }
 
 // When Reflections activate after 3s, they begin attack with SMART_ACTION_ATTACK_START, which sets
-// a random victim. Thus, the first hit after activation should immediately grab aggro.
+// a random victim. Thus, the first hit after activation immediately grabs aggro.
 bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* reflection)
 {
     if (AI_VALUE(Unit*, "current target") != reflection)
@@ -351,7 +351,8 @@ bool KiljaedenPositionRangedAndAvoidArmageddonsAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetRangedPosition(Position& position) const
+bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetRangedPosition(
+    Position& position) const
 {
     EnsureKiljaedenRangedAssignments(bot);
 
@@ -366,7 +367,8 @@ bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetRangedPosition(Posi
     return TryGetKiljaedenRangedSlotPosition(assignmentItr->second, position);
 }
 
-bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryAdjustRangedForArmageddon(Position& position)
+bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryAdjustRangedForArmageddon(
+    Position& position)
 {
     EnsureKiljaedenRangedArmageddonAssignments(bot);
     KiljaedenEncounterState const* state = FindKiljaedenState(bot->GetInstanceId());

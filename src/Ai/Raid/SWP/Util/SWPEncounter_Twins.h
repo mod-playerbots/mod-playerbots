@@ -110,17 +110,17 @@ inline constexpr uint8 ALYTHESS_TANK_FIRST_INDEX = 3;
 // The melee, the Sacrolash tanks, and a ranged bot Sacrolash chases land here while she lives.
 inline Position const EREDAR_TWINS_SACROLASH_LANDING_POSITION = { 1808.100f, 616.500f, 33.404f };
 // The Alythess tank lands here, and everyone in phase 2.
-inline Position const EREDAR_TWINS_ALYTHESS_LANDING_POSITION = { 1818.600f, 611.000f, 33.404f };
+inline Position const EREDAR_TWINS_ALYTHESS_LANDING_POSITION =  { 1818.600f, 611.000f, 33.404f };
 
 // Phase 1 positions (ranged up top, melee on Sacrolash).
 // Both Sacrolash tanks stand here. Her tank backs along the line from her spawn, so she ends
 // 4.5y short of it, 16.7y from Alythess, facing away: melee behind her (up to 4.75y) stay 12y
 // from Alythess, out of reach of their area attacks (8y plus her 2.5y reach).
-inline Position const SACROLASH_TANK_POSITION  =             { 1799.000f, 618.900f, 33.404f };
 inline constexpr float SACROLASH_TANK_ARRIVAL_DISTANCE = 1.0f;
+inline Position const SACROLASH_TANK_POSITION =               { 1799.000f, 618.900f, 33.404f };
 // The Sacrolash tanks wait here at the pull, on that line, until one of them holds her.
-inline Position const SACROLASH_TANK_PULL_POSITION =         { 1807.400f, 622.800f, 33.404f };
-inline Position const EREDAR_TWINS_P1_RANGED_POSITION =      { 1808.076f, 603.460f, 51.684f };
+inline Position const SACROLASH_TANK_PULL_POSITION =          { 1807.400f, 622.800f, 33.404f };
+inline Position const EREDAR_TWINS_P1_RANGED_POSITION =       { 1808.076f, 603.460f, 51.684f };
 // A ranged bot that pulls aggro on Alythess waits here, out of the stack, so Blaze doesn't hit the
 // ranged stack. The twins are in LoS from only ~10 yd of the balcony edge; this is its east end.
 inline Position const EREDAR_TWINS_P1_RANGED_ASIDE_POSITION = { 1813.000f, 602.000f, 51.610f };
@@ -129,20 +129,20 @@ inline Position const EREDAR_TWINS_BALCONY_CONFLAG_POSITION = { 1801.133f, 584.4
 
 // A bot (not the Alythess tank) holding Alythess waits here on the floor, where her Blazes land
 // away from everyone.
-inline Position const EREDAR_TWINS_FLOOR_ASIDE_POSITION =    { 1817.200f, 616.000f, 33.404f };
+inline Position const EREDAR_TWINS_FLOOR_ASIDE_POSITION = { 1817.200f, 616.000f, 33.404f };
 inline constexpr float EREDAR_TWINS_STEP_ASIDE_ARRIVAL_DISTANCE = 1.0f;
 
 // Phase 2: everybody but the Alythess tank in one stack, in her melee range on her far side from
 // Sacrolash, 4.8y from the nearest Alythess tank position, so a Shadow Nova on it reaches the tank.
-inline Position const EREDAR_TWINS_P2_STACK_POSITION =       { 1823.900f, 626.900f, 33.404f };
+inline constexpr float EREDAR_TWINS_P2_STACK_ARRIVAL_DISTANCE = 0.3f;
+inline Position const EREDAR_TWINS_P2_STACK_POSITION =      { 1823.900f, 626.900f, 33.404f };
 // Hunters' shots fail within their melee range of the target, 6.08y from Empowered Alythess's
 // center, so they stand just outside it, 1.8y from the stack and inside the Nova on it.
-inline Position const EREDAR_TWINS_P2_HUNTER_POSITION =      { 1825.430f, 627.790f, 33.404f };
-inline constexpr float EREDAR_TWINS_P2_STACK_ARRIVAL_DISTANCE = 0.3f;
+inline Position const EREDAR_TWINS_P2_HUNTER_POSITION =     { 1825.430f, 627.790f, 33.404f };
 // Phase 2 moves to the stack go round the Alythess tank positions, clear of the patches.
-inline Position const EREDAR_TWINS_P2_POSITION_0_WAYPOINT =  { 1816.300f, 639.800f, 33.404f };
-inline Position const EREDAR_TWINS_P2_STACK_WAYPOINT =       { 1828.800f, 628.400f, 33.404f };
-inline Position const EREDAR_TWINS_P2_POSITION_4_WAYPOINT =  { 1827.000f, 618.500f, 33.404f };
+inline Position const EREDAR_TWINS_P2_POSITION_0_WAYPOINT = { 1816.300f, 639.800f, 33.404f };
+inline Position const EREDAR_TWINS_P2_STACK_WAYPOINT =      { 1828.800f, 628.400f, 33.404f };
+inline Position const EREDAR_TWINS_P2_POSITION_4_WAYPOINT = { 1827.000f, 618.500f, 33.404f };
 inline constexpr float EREDAR_TWINS_WAYPOINT_ARRIVAL_DISTANCE = 1.0f;
 inline constexpr float EREDAR_TWINS_ROUTE_LEG_TOLERANCE = 0.5f;
 // A stray Blaze patch (from a human holding Alythess, or a victim that can't step aside) on a bot's
@@ -154,7 +154,7 @@ inline std::array const EREDAR_TWINS_P2_FALLBACK_POSITIONS = {
     Position{ 1821.700f, 616.900f, 33.404f },
     Position{ 1810.500f, 623.000f, 33.404f },
 };
-// Burn's 3y plus the 0.3y arrival and a margin.
+// Burn's 3 yd radius plus the 0.3 yd arrival and a margin.
 inline constexpr float EREDAR_TWINS_P2_BLAZE_CLEARANCE = BLAZE_HAZARD_RADIUS + 0.8f;
 
 // Each twin, if it is on the bot's threat list. Alythess also stands for the encounter boss, so
@@ -186,7 +186,6 @@ Player* GetSacrolashSecondTank(Player* bot, Unit* sacrolash);
 bool IsAlythessPullMisdirectHunter(Player* bot);
 // The first EREDAR_TWINS_DPS_HOLD_MS of Sacrolash's fight, which the tanks spend taking aggro.
 bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI);
-// For the "eredar twins threat holds" value.
 EredarTwinsThreatHolds FindEredarTwinsThreatHolds(Player* bot);
 std::vector<Position> FindEredarTwinsBlazePositions(Player* bot);
 bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position);

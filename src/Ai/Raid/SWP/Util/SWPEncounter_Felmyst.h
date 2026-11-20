@@ -183,7 +183,6 @@ inline std::array const FOG_LEFT_LANES = {
     Position{ 1469.923f, 703.239f, 50.086f, 4.747f },
     Position{ 1446.515f, 701.518f, 50.085f, 4.747f },
 };
-
 inline std::array const FOG_RIGHT_LANES = {
     Position{ 1492.820f, 515.668f, 50.083f, 1.449f },
     Position{ 1466.732f, 515.595f, 50.572f, 1.449f },
@@ -215,7 +214,6 @@ inline std::array const FELMYST_WEST_GROUP_POSITIONS = {
     Position{ 1480.0f, 634.0f, 22.3f },
     Position{ 1480.0f, 619.0f, 23.5f },
 };
-
 inline std::array const FELMYST_EAST_GROUP_POSITIONS = {
     Position{ 1473.0f, 582.0f, 22.6f },
     Position{ 1473.0f, 597.0f, 23.1f },
@@ -235,7 +233,6 @@ inline std::array const FELMYST_WEST_FIRST_VAPOR_ROUTE = {
     Position{ 1502.0f, 638.1f, 25.3f },
     Position{ 1483.4f, 621.5f, 23.8f },
 };
-
 inline std::array const FELMYST_WEST_SECOND_VAPOR_ROUTE = {
     Position{ 1475.1f, 638.9f, 21.7f },
     Position{ 1471.5f, 642.5f, 21.4f },
@@ -247,7 +244,6 @@ inline std::array const FELMYST_WEST_SECOND_VAPOR_ROUTE = {
     Position{ 1453.1f, 624.1f, 19.7f },
     Position{ 1465.6f, 602.4f, 23.0f },
 };
-
 inline std::array const FELMYST_EAST_FIRST_VAPOR_ROUTE = {
     Position{ 1477.9f, 577.1f, 23.3f },
     Position{ 1481.5f, 573.5f, 23.6f },
@@ -259,7 +255,6 @@ inline std::array const FELMYST_EAST_FIRST_VAPOR_ROUTE = {
     Position{ 1495.0f, 592.9f, 24.9f },
     Position{ 1476.4f, 609.5f, 23.9f },
 };
-
 inline std::array const FELMYST_EAST_SECOND_VAPOR_ROUTE = {
     Position{ 1468.1f, 592.1f, 22.4f },
     Position{ 1464.5f, 588.5f, 21.8f },
@@ -310,7 +305,8 @@ bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane);
 bool IsFelmystFogMovementSuppressed(Unit* felmyst);
 bool IsFelmystFogActiveForBot(Player* bot, Unit* felmyst);
 bool TryGetActiveFogOfCorruptionState(Player* bot, Unit* felmyst, FogOfCorruptionState& state);
-void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs = 3000);
+void RecordFelmystIncomingEncapsulateTarget(
+    Player* target, uint32 durationMs = 3 * IN_MILLISECONDS);
 Player* GetFelmystEncapsulateTarget(Player* bot);
 bool ShouldMoveAwayFromFelmystEncapsulateTarget(
     Player* bot, Unit* felmyst, Player* encapsulateTarget);

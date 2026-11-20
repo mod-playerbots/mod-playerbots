@@ -18,6 +18,7 @@
 #include <limits>
 #include <list>
 #include <map>
+#include <optional>
 #include <string>
 
 using namespace EncounterHelpers;

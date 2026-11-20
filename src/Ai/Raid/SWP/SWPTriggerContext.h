@@ -188,8 +188,7 @@ public:
 
         creators["m'uru darkness is active"] = &RaidSwpTriggerContext::muru_darkness_is_active;
 
-        creators["m'uru berserker has flurry"] =
-            &RaidSwpTriggerContext::muru_berserker_has_flurry;
+        creators["m'uru berserker has flurry"] = &RaidSwpTriggerContext::muru_berserker_has_flurry;
 
         creators["m'uru fury mage casting fel fireball"] =
             &RaidSwpTriggerContext::muru_fury_mage_casting_fel_fireball;

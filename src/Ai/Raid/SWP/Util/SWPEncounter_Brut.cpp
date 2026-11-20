@@ -10,8 +10,8 @@
 #include "SWPInstanceState.h"
 #include "SWPShared.h"
 #include <algorithm>
-#include <array>
 #include <cmath>
+#include <optional>
 #include <vector>
 
 using namespace EncounterHelpers;
@@ -491,8 +491,8 @@ bool TryGetBrutallusAssignedPositionIndex(Player* bot, uint8& positionIndex)
 }
 
 bool TryGetBrutallusRangedPosition(
-    Player* bot, Unit* brutallus, Player* mainTank, Player* assistTank,
-    uint8 rangedIndex, float radius, Position& position)
+    Player* bot, Unit* brutallus, Player* mainTank, Player* assistTank, uint8 rangedIndex,
+    float radius, Position& position)
 {
     if (!brutallus || rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
         return false;
@@ -517,8 +517,8 @@ bool TryGetBrutallusRangedPosition(
 }
 
 bool TryGetBrutallusBurnPadPosition(
-    Player* bot, Unit* brutallus, Player* mainTank,
-    uint8 rangedIndex, float radius, Position& position)
+    Player* bot, Unit* brutallus, Player* mainTank, uint8 rangedIndex, float radius,
+    Position& position)
 {
     if (!brutallus || rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
         return false;
@@ -548,8 +548,8 @@ bool TryGetBrutallusBurnPadPosition(
 }
 
 bool TryGetBrutallusLaneTraversalPosition(
-    Player* bot, Unit* brutallus, float targetX, float targetY, float radius,
-    float currentX, float currentY, Position& position)
+    Player* bot, Unit* brutallus, float targetX, float targetY, float radius, float currentX,
+    float currentY, Position& position)
 {
     if (!brutallus)
         return false;
