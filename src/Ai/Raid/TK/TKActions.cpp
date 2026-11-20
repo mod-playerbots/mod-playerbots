@@ -1493,6 +1493,13 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry
             false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
+    // OpenLootAction returns true for a bare stop without opening the loot.
+    if (bot->isMoving())
+    {
+        bot->StopMoving();
+        return false;
+    }
+
     OpenLootAction open(botAI);
     bool opened = open.Execute(Event());
     if (!opened)
