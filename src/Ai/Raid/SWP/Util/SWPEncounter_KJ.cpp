@@ -699,9 +699,9 @@ bool UpdateKiljaedenDragonOrbUser(PlayerbotAI* botAI)
     return true;
 }
 
-// Announces an unannounced orb user once the bot is within 2D KILJAEDEN_ORB_USER_ANNOUNCE_DISTANCE
-// of the controller's spawn, and forgets the announcement beyond KILJAEDEN_ORB_USER_REARM_DISTANCE.
-// The controller dies with Kil'jaeden, so nothing is announced after the kill.
+// Announces an unannounced orb user once the bot is within the announce distance and below the
+// announce Z coordinate, and forgets the announcement beyond the rearm distance. The controller
+// dies with Kil'jaeden, so nothing is announced after the kill.
 bool UpdateKiljaedenDragonOrbUserAnnouncement(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -710,8 +710,9 @@ bool UpdateKiljaedenDragonOrbUserAnnouncement(PlayerbotAI* botAI)
     if (distance > KILJAEDEN_ORB_USER_REARM_DISTANCE)
         return ResetIfSet(assignment.announcedChoice);
 
-    if (distance > KILJAEDEN_ORB_USER_ANNOUNCE_DISTANCE || !assignment.choice ||
-        assignment.choice == assignment.announcedChoice)
+    if (distance > KILJAEDEN_ORB_USER_ANNOUNCE_DISTANCE ||
+        bot->GetPositionZ() > KILJAEDEN_ORB_USER_ANNOUNCE_Z ||
+        !assignment.choice || assignment.choice == assignment.announcedChoice)
     {
         return false;
     }
@@ -766,7 +767,7 @@ bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId)
     dragon->AddSpellCooldown(spellId, 0, GetManualCastCooldown(spellId));
 
     // The engine records no global cooldown for a triggered cast, so hold the dragon's other
-    // abilities here. Without it, Haste and Revitalize go out on consecutive ticks.
+    // abilities here. Without it, Haste and Revitalize can cast on consecutive ticks.
     if (uint32 const globalCooldownMs = GetManualCastGlobalCooldown(spellId))
     {
         for (uint32 otherSpellId : KILJAEDEN_DRAGON_SPELLS)

@@ -55,9 +55,10 @@ inline constexpr float KILJAEDEN_PHASE5_HP_THRESHOLD = 25.0f;
 inline constexpr uint32 HAND_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 DRAGON_ORB_CACHE_INTERVAL_MS = 200;
 
-// The orb user is announced out of combat within this 2D distance of the controller's spawn,
-// which covers the Sunwell room (the orbs are 46-49y from it).
-inline constexpr float KILJAEDEN_ORB_USER_ANNOUNCE_DISTANCE = 60.0f;
+// The orb user is announced out of combat within this 2D distance of the controller's spawn.
+inline constexpr float KILJAEDEN_ORB_USER_ANNOUNCE_DISTANCE = 100.0f;
+// Since M'uru is above Kil'jaeden, a Z offset ensures announcement only after M'uru.
+inline constexpr float KILJAEDEN_ORB_USER_ANNOUNCE_Z = 40.0f;
 // Beyond this 2D distance the announcement is forgotten, so a raid that returns hears it again.
 inline constexpr float KILJAEDEN_ORB_USER_REARM_DISTANCE = 150.0f;
 

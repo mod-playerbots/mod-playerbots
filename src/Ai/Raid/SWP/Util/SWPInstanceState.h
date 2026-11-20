@@ -29,7 +29,7 @@ struct SwpInstanceState
     std::optional<KiljaedenEncounterState> kiljaeden;
     // Class roles survive SwpResetInstance (see ClassRoleAssignment).
     EncounterHelpers::ClassRoleAssignment alythessPaladinTank;
-    // Not a class role (any class can fly), but chosen, kept, and announced the same way.
+    // Not technically a class role (any class works), but chosen, kept, and announced the same way.
     EncounterHelpers::ClassRoleAssignment kiljaedenDragonOrbUser;
 };
 

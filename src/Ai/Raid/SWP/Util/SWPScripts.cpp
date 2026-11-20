@@ -184,7 +184,7 @@ void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
 // the casts of bots within the fiend's clearance.
 void RequestInterruptForBotsNearNewMuruVoidZone(Creature* voidZone)
 {
-    if (!voidZone->HasAura(Id(SwpSpells::SPELL_VOID_ZONE_VISUAL)))
+    if (!voidZone || !voidZone->HasAura(Id(SwpSpells::SPELL_VOID_ZONE_VISUAL)))
         return;
 
     Map::PlayerList const& players = voidZone->GetMap()->GetPlayers();
@@ -206,6 +206,9 @@ void RequestInterruptForBotsNearNewMuruVoidZone(Creature* voidZone)
 // In phase 2, where bots keep clear of fiends, a fiend's victim in a long cast stops it to move.
 void RequestInterruptForMuruDarkFiendVictim(Creature* darkFiend)
 {
+    if (!darkFiend)
+        return;
+
     Unit* victimUnit = darkFiend->GetVictim();
     Player* victim = victimUnit ? victimUnit->ToPlayer() : nullptr;
     if (!victim || !victim->IsAlive() || !IsCastingOrChanneling(victim) ||
@@ -280,7 +283,7 @@ public:
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (spellInfo->Id != Id(SwpSpells::SPELL_SUMMON_DEMONIC_VAPOR))
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_SUMMON_DEMONIC_VAPOR))
             return;
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
@@ -463,8 +466,8 @@ public:
         if (!hasSunwellStrategy)
             return;
 
-        KiljaedenState(creature->GetInstanceId()).trackedArmageddonTargets.insert(
-            creature->GetGUID());
+        KiljaedenState(
+            creature->GetInstanceId()).trackedArmageddonTargets.insert(creature->GetGUID());
 
         AddKiljaedenArmageddon(
             creature->GetInstanceId(), creature->GetPosition(),

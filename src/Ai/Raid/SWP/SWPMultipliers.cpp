@@ -797,6 +797,9 @@ float KiljaedenSingleTargetHandsMultiplier::GetValueInEncounter(Action* action)
 
 float KiljaedenControlMovementAndTargetingMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     return dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<CombatFormationMoveAction*>(action) ||
         IsRepositionAction(bot, action) ||
