@@ -242,6 +242,9 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
     if (itemProto->InventoryType == INVTYPE_NON_EQUIP)
         return ITEM_USAGE_NONE;
 
+    if (itemProto->Class == ITEM_CLASS_QUIVER)
+        return QueryItemUsageForQuiver(itemProto);
+
     Item* pItem = Item::CreateItem(itemProto->ItemId, 1, bot);
     if (!pItem)
         return ITEM_USAGE_NONE;
@@ -273,9 +276,6 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
             return ITEM_USAGE_NONE;  // Item is already equipped
         // If not equipped, continue processing
     }
-
-    if (itemProto->Class == ITEM_CLASS_QUIVER && bot->getClass() != CLASS_HUNTER)
-        return ITEM_USAGE_NONE;
 
     if (itemProto->Class == ITEM_CLASS_CONTAINER)
     {
@@ -380,15 +380,6 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
             // uint32 oldStatWeight = sRandomItemMgr.GetLiveStatWeight(bot, oldItemProto->ItemId);
             if (itemScore || oldScore)
                 shouldEquipInSlot = itemScore > oldScore * sPlayerbotAIConfig.EquipUpgradeThreshold;
-        }
-
-        // Bigger quiver
-        if (itemProto->Class == ITEM_CLASS_QUIVER)
-        {
-            if (!oldItem || oldItemProto->ContainerSlots < itemProto->ContainerSlots)
-                return ITEM_USAGE_EQUIP;
-            else
-                return ITEM_USAGE_NONE;
         }
 
         bool existingShouldEquip = true;
@@ -529,6 +520,60 @@ ParsedItemUsage ItemUsageValue::GetItemIdFromQualifier()
         parsed.itemId = atoi(qualifier.c_str());
     return parsed;
 }
+
+ItemUsage ItemUsageValue::QueryItemUsageForQuiver(ItemTemplate const* proto)
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return ITEM_USAGE_NONE;
+
+    Item* ranged = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
+    if (!ranged)
+        return ITEM_USAGE_NONE;
+
+    uint32 neededSubClass;
+    switch (ranged->GetTemplate()->SubClass)
+    {
+        case ITEM_SUBCLASS_WEAPON_BOW:
+        case ITEM_SUBCLASS_WEAPON_CROSSBOW:
+            neededSubClass = ITEM_SUBCLASS_QUIVER;
+            break;
+        case ITEM_SUBCLASS_WEAPON_GUN:
+            neededSubClass = ITEM_SUBCLASS_AMMO_POUCH;
+            break;
+        default:
+            return ITEM_USAGE_NONE;
+    }
+
+    if (proto->SubClass != neededSubClass)
+        return ITEM_USAGE_NONE;
+
+    Bag* quiver = GetEquippedQuiver(bot);
+    if (!quiver)
+    {
+        for (uint8 slot = INVENTORY_SLOT_BAG_START; slot < INVENTORY_SLOT_BAG_END; ++slot)
+            if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+                return ITEM_USAGE_EQUIP;
+
+        return ITEM_USAGE_NONE;
+    }
+
+    // The core only swaps if the old contents fit into the new bag
+    if (quiver->GetTemplate()->SubClass != neededSubClass)
+        return quiver->IsEmpty() ? ITEM_USAGE_EQUIP : ITEM_USAGE_NONE;
+
+    return quiver->GetBagSize() < proto->ContainerSlots ? ITEM_USAGE_EQUIP : ITEM_USAGE_NONE;
+}
+
+Bag* ItemUsageValue::GetEquippedQuiver(Player* bot)
+{
+    for (uint8 slot = INVENTORY_SLOT_BAG_START; slot < INVENTORY_SLOT_BAG_END; ++slot)
+        if (Bag* bag = bot->GetBagByPos(slot))
+            if (bag->GetTemplate()->Class == ITEM_CLASS_QUIVER)
+                return bag;
+
+    return nullptr;
+}
+
 // Return smaltest bag size equipped
 uint32 ItemUsageValue::GetSmallestBagSize()
 {
