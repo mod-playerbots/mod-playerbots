@@ -7,19 +7,22 @@
 #ifndef PLAYERBOTS_OPENITEMACTION_H
 #define PLAYERBOTS_OPENITEMACTION_H
 
-#include "Action.h"
+#include "UseItemAction.h"
 
 class Player;
 class Item;
 class Event;
 
-class OpenItemAction : public Action
+// Opens anything a player would "open": loot containers through the open-item opcode, and
+// open junk (clams and similar items whose on-use spell creates the loot) by using the item.
+class OpenItemAction : public UseItemAction
 {
 public:
-    OpenItemAction(PlayerbotAI* botAI) : Action(botAI, "open item") { }
+    OpenItemAction(PlayerbotAI* botAI) : UseItemAction(botAI, "open items", true) { }
 
     // The main function that is executed when the action is triggered
     bool Execute(Event event) override;
+    bool isPossible() override;
 
 private:
     // Performs the action of opening the item

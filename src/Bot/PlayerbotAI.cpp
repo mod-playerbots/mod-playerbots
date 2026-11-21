@@ -5702,6 +5702,45 @@ Item* PlayerbotAI::FindOpenableItem() const
         });
 }
 
+namespace
+{
+    // Items like clams are "opened" by using them: their on-use spell rolls the loot through
+    // SPELL_EFFECT_CREATE_RANDOM_ITEM. They are not ITEM_FLAG_HAS_LOOT containers, so the
+    // normal open-item opcode never sees them. Only a plain loot spell qualifies - no targets,
+    // focus, aura states or level conditions. StartQuest items are rejected separately because
+    // UseItemAuto would accept the quest instead of casting the loot spell.
+    bool IsCreateRandomItemSpell(uint32 spellId)
+    {
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (!spellInfo || spellInfo->Effects[0].Effect != SPELL_EFFECT_CREATE_RANDOM_ITEM)
+            return false;
+
+        return spellInfo->TargetCreatureType == 0 && spellInfo->RequiresSpellFocus == 0 &&
+               spellInfo->CasterAuraState == 0 && spellInfo->TargetAuraState == 0 && spellInfo->MaxLevel == 0 &&
+               spellInfo->BaseLevel == 0;
+    }
+}
+
+Item* PlayerbotAI::FindOpenJunkItem() const
+{
+    return FindItemInInventory(
+        [](ItemTemplate const* itemTemplate) -> bool
+        {
+            // Vanilla's only matches are the seven clam items, all Trade Goods/Other with
+            // ITEM_FLAG_PLAYERCAST. Misc/Junk is accepted for custom content parity.
+            bool const openJunkClass =
+                (itemTemplate->Class == ITEM_CLASS_TRADE_GOODS &&
+                 itemTemplate->SubClass == ITEM_SUBCLASS_TRADE_GOODS_OTHER) ||
+                (itemTemplate->Class == ITEM_CLASS_MISC && itemTemplate->SubClass == ITEM_SUBCLASS_JUNK);
+            if (!openJunkClass || !itemTemplate->HasFlag(ITEM_FLAG_PLAYERCAST) || itemTemplate->StartQuest != 0)
+                return false;
+
+            return itemTemplate->Spells[0].SpellId != 0 &&
+                   itemTemplate->Spells[0].SpellTrigger == ITEM_SPELLTRIGGER_ON_USE &&
+                   IsCreateRandomItemSpell(itemTemplate->Spells[0].SpellId);
+        });
+}
+
 Item* PlayerbotAI::FindLockedItem() const
 {
     return FindItemInInventory(
