@@ -132,3 +132,29 @@ float NefarianCorruptedTotemMultiplier::GetValue(Action* action)
     Unit* target = AI_VALUE(Unit*, "current target");
     return target && target->IsAlive() && IsCorruptedTotem(target) ? 0.0f : 1.0f;
 }
+
+float DeathTalonWyrmguardDpsHoldMultiplier::GetValue(Action* action)
+{
+    // A healer has to reach the combat engine, and only an attack takes it there.
+    if (PlayerbotAI::IsHeal(bot))
+        return 1.0f;
+
+    if (!dynamic_cast<AttackAction*>(action) &&
+        (!dynamic_cast<CastSpellAction*>(action) || dynamic_cast<CastHealingSpellAction*>(action)))
+        return 1.0f;
+
+    Unit const* target = action->GetTarget();
+    if (!IsDeathTalonWyrmguard(target) || !target->IsInCombat())
+        return 1.0f;
+
+    if (PlayerbotAI::IsTank(bot) && GetAssignedWyrmguard(botAI))
+        return 1.0f;
+
+    return IsWyrmguardHoldRunning(bot) && !AreWyrmguardsInPosition(bot, GetWyrmguardAttackers(botAI)) ? 0.0f : 1.0f;
+}
+
+float DeathTalonWyrmguardTankMultiplier::GetValue(Action* action)
+{
+    // Tank face walks away from the spot, and the walk back moves the Wyrmguard with it.
+    return dynamic_cast<TankFaceAction*>(action) && GetAssignedWyrmguard(botAI) ? 0.0f : 1.0f;
+}

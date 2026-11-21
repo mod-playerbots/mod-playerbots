@@ -41,7 +41,8 @@ public:
         creators["bwl nefarian wild magic"] = &RaidBwlTriggerContext::bwl_nefarian_wild_magic;
         creators["bwl nefarian corrupted totem"] = &RaidBwlTriggerContext::bwl_nefarian_corrupted_totem;
 
-        creators["bwl death talon wyrmguard tank"] = &RaidBwlTriggerContext::bwl_death_talon_wyrmguard_tank;
+        creators["bwl death talon wyrmguard take"] = &RaidBwlTriggerContext::bwl_death_talon_wyrmguard_take;
+        creators["bwl death talon wyrmguard tank position"] = &RaidBwlTriggerContext::bwl_death_talon_wyrmguard_tank_position;
         creators["bwl death talon wyrmguard ranged"] = &RaidBwlTriggerContext::bwl_death_talon_wyrmguard_ranged;
     }
 
@@ -64,7 +65,8 @@ private:
     static Trigger* bwl_nefarian_wild_magic(PlayerbotAI* botAI) { return new BwlNefarianWildMagicTrigger(botAI); }
     static Trigger* bwl_nefarian_positioning(PlayerbotAI* botAI) { return new BwlNefarianPositioningTrigger(botAI); }
     static Trigger* bwl_nefarian_corrupted_totem(PlayerbotAI* botAI) { return new BwlNefarianCorruptedTotemTrigger(botAI); }
-    static Trigger* bwl_death_talon_wyrmguard_tank(PlayerbotAI* botAI) { return new BwlDeathTalonWyrmguardTankTrigger(botAI); }
+    static Trigger* bwl_death_talon_wyrmguard_take(PlayerbotAI* botAI) { return new BwlDeathTalonWyrmguardTakeTrigger(botAI); }
+    static Trigger* bwl_death_talon_wyrmguard_tank_position(PlayerbotAI* botAI) { return new BwlDeathTalonWyrmguardTankPositionTrigger(botAI); }
     static Trigger* bwl_death_talon_wyrmguard_ranged(PlayerbotAI* botAI) { return new BwlDeathTalonWyrmguardRangedTrigger(botAI); }
 };
 
