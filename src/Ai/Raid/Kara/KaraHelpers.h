@@ -562,6 +562,8 @@ inline constexpr float MALCHEZAAR_TRAIL_DISTANCE = 6.0f;
 inline constexpr uint32 INFERNAL_MODEL_INVISIBLE = 11686;
 inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
 inline constexpr float MALCHEZAAR_SEARCH_DISTANCE = 60.0f;
+// Bounds the pathfinding cost of each position search.
+inline constexpr uint8 MALCHEZAAR_MAX_WALK_CHECKS = 64;
 // A smaller arrival distance than is typical, due to the small safety margins used for hazards for
 // this fight, which requires usage of an ever-shrinking safe playable space.
 inline constexpr float MALCHEZAAR_ARRIVAL_DISTANCE = 0.5f;

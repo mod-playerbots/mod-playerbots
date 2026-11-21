@@ -140,7 +140,7 @@ bool IsManaWarpClaimedForWarStomp(Unit* warp)
         getMSTimeDiff(claimIt->second, getMSTime()) < WAR_STOMP_CLAIM_MS;
 }
 
-// First attempt to stun between 10% and 15% HP because if the mob is stunned at 10%, it will not
+// First, attempt to stun between 10% and 15% HP because if the mob is stunned at 10%, it will not
 // cast Warp Breach. If that fails, then there is a second opportunity to stun while it is casting.
 bool IsManaWarpToStun(Player* bot, Unit* unit, float reach)
 {
@@ -167,11 +167,13 @@ bool IsNearManaWarpPacks(Player* bot)
 float GetManaWarpStunReach(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    // Concussion Blow, Shockwave, and Shadowfury are talents, so make sure Warriors and Warlocks
-    // without those talents never standby to stun with them.
-    auto const hasSpell = [botAI](char const* spell)
+    // A stun counts only if the bot knows it (some are talents) and it is off cooldown, so bots
+    // never stand by with a stun they cannot cast.
+    auto const isReady = [botAI, bot](char const* spell)
     {
-        return botAI->GetAiObjectContext()->GetValue<uint32>("spell id", spell)->Get() != 0;
+        uint32 const spellId =
+            botAI->GetAiObjectContext()->GetValue<uint32>("spell id", spell)->Get();
+        return spellId && !bot->HasSpellCooldown(spellId);
     };
 
     float reach = 0.0f;
@@ -179,28 +181,35 @@ float GetManaWarpStunReach(PlayerbotAI* botAI)
     {
         case CLASS_DRUID:
         {
-            if (bot->GetShapeshiftForm() == FORM_CAT || bot->GetShapeshiftForm() == FORM_BEAR ||
-                bot->GetShapeshiftForm() == FORM_DIREBEAR)
+            ShapeshiftForm const form = bot->GetShapeshiftForm();
+            if (((form == FORM_BEAR || form == FORM_DIREBEAR) && isReady("bash")) ||
+                (form == FORM_CAT && isReady("maim")))
             {
                 reach = MELEE_STUN_REACH;
             }
             break;
         }
         case CLASS_PALADIN:
-            reach = HAMMER_OF_JUSTICE_REACH;
+        {
+            if (isReady("hammer of justice"))
+                reach = HAMMER_OF_JUSTICE_REACH;
             break;
+        }
         case CLASS_ROGUE:
-            reach = MELEE_STUN_REACH;
+        {
+            if (isReady("kidney shot"))
+                reach = MELEE_STUN_REACH;
             break;
+        }
         case CLASS_WARRIOR:
         {
-            if (hasSpell("concussion blow") || hasSpell("shockwave"))
+            if (isReady("concussion blow") || isReady("shockwave"))
                 reach = MELEE_STUN_REACH;
             break;
         }
         case CLASS_WARLOCK:
         {
-            if (hasSpell("shadowfury"))
+            if (isReady("shadowfury"))
                 reach = SHADOWFURY_REACH;
             break;
         }
@@ -208,7 +217,7 @@ float GetManaWarpStunReach(PlayerbotAI* botAI)
             break;
     }
 
-    if (bot->getRace() == RACE_TAUREN)
+    if (bot->getRace() == RACE_TAUREN && isReady("war stomp"))
         reach = std::max(reach, WAR_STOMP_RADIUS);
 
     return reach;
@@ -1341,21 +1350,25 @@ std::optional<Position> FindPositionInRangeOfTarget(
             candidates.emplace_back(origin.GetExactDist2d(candidate), candidate);
     }
 
-    // Nearest first.
     std::stable_sort(candidates.begin(), candidates.end(), [](auto const& a, auto const& b)
     {
         return a.first < b.first;
     });
 
+    uint8 walkChecks = 0;
     for (bool const clearLine : { true, false })
     {
         for (auto const& [distance, candidate] : candidates)
         {
-            if ((!clearLine || IsLineClearOfInfernals(origin, candidate, infernals)) &&
-                CanWalkStraightTo(bot, candidate))
-            {
+            if (IsLineClearOfInfernals(origin, candidate, infernals) != clearLine)
+                continue;
+
+            if (walkChecks >= MALCHEZAAR_MAX_WALK_CHECKS)
+                return std::nullopt;
+
+            ++walkChecks;
+            if (CanWalkStraightTo(bot, candidate))
                 return candidate;
-            }
         }
     }
 
@@ -1373,7 +1386,6 @@ std::optional<Position> FindNearestMalchezaarSafePosition(
 {
     constexpr float ringStep = 2.0f;
     constexpr uint8 angleCount = 32;
-    constexpr uint8 maxWalkChecks = 64;
 
     int const ringCount = static_cast<int>(maxDistance / ringStep);
     uint8 walkChecks = 0;
@@ -1399,7 +1411,7 @@ std::optional<Position> FindNearestMalchezaarSafePosition(
                 if (!isGood || (clearLine && !IsLineClearOfInfernals(origin, candidate, infernals)))
                     continue;
 
-                if (walkChecks >= maxWalkChecks)
+                if (walkChecks >= MALCHEZAAR_MAX_WALK_CHECKS)
                     return std::nullopt;
 
                 ++walkChecks;

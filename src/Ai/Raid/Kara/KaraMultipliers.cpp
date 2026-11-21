@@ -23,6 +23,7 @@
 #include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
+#include "RogueFinishingActions.h"
 #include "ShamanActions.h"
 #include "ThreatHelpers.h"
 #include "WarlockActions.h"
@@ -202,6 +203,11 @@ float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
             isStun = dynamic_cast<CastHammerOfJusticeAction*>(action) ||
                 dynamic_cast<CastHammerOfJusticeOnEnemyHealerAction*>(action) ||
                 dynamic_cast<CastHammerOfJusticeSnareAction*>(action);
+            break;
+        }
+        case CLASS_ROGUE:
+        {
+            isStun = dynamic_cast<CastKidneyShotAction*>(action);
             break;
         }
         case CLASS_WARLOCK:
