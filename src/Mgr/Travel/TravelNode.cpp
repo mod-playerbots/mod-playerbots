@@ -2480,6 +2480,12 @@ std::vector<uint32> TravelNodeMap::FindTaxiPath(uint32 fromNode, uint32 toNode)
     return toNodeItr->second;
 }
 
+bool TravelNodeMap::HasTaxiPathFrom(uint32 fromNode) const
+{
+    auto const cacheItr = taxiPathCache.find(fromNode);
+    return cacheItr != taxiPathCache.end() && !cacheItr->second.empty();
+}
+
 void TravelNodeMap::BuildTaxiGraph()
 {
     taxiGraph.clear();

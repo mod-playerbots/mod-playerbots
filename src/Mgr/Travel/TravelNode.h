@@ -583,6 +583,7 @@ public:
     // Taxi graph (BFS-based path lookup between taxi nodes)
     void InitTaxiGraph();
     std::vector<uint32> FindTaxiPath(uint32 fromNode, uint32 toNode);
+    bool HasTaxiPathFrom(uint32 fromNode) const;
 
     std::shared_timed_mutex m_nMapMtx;
     std::unordered_map<ObjectGuid, std::unordered_map<uint32, TravelNode*>> teleportNodes;
