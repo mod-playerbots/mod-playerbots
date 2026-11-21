@@ -9,6 +9,9 @@
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
+#include "DruidBearActions.h"
+#include "DruidCatActions.h"
+#include "EncounterHelpers.h"
 #include "FollowActions.h"
 #include "HunterActions.h"
 #include "KaraActions.h"
@@ -20,15 +23,36 @@
 #include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
+#include "RogueFinishingActions.h"
 #include "ShamanActions.h"
+#include "ThreatHelpers.h"
+#include "WarlockActions.h"
 #include "WarriorActions.h"
-#include <ctime>
+#include "WipeAction.h"
+#include <array>
 
 using namespace KaraHelpers;
+using namespace EncounterHelpers;
 
 // Shared
 
-float KarazhanSetTremorTotemMultiplier::GetValue(Action* action)
+namespace
+{
+
+bool IsRepositionAction(Player* bot, Action* action)
+{
+    return (bot->getClass() == CLASS_HUNTER && dynamic_cast<CastDisengageAction*>(action)) ||
+        (bot->getClass() == CLASS_MAGE && dynamic_cast<CastBlinkBackAction*>(action));
+}
+
+bool IsKillingSpree(Player* bot, Action* action)
+{
+    return bot->getClass() == CLASS_ROGUE && dynamic_cast<CastKillingSpreeAction*>(action);
+}
+
+}
+
+float KarazhanKeepTremorTotemMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -44,15 +68,172 @@ float KarazhanSetTremorTotemMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
+    return IsKarazhanFearCasterActive(bot) ? 0.0f : 1.0f;
+}
+
+float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!IsDpsCooldownAction(bot, action))
+        return 1.0f;
+
+    bool const isBloodlust = bot->getClass() == CLASS_SHAMAN &&
+        (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action));
+
+    std::optional<uint32> const bossId = GetBossInProgress(bot, KARA_MAP_ID);
+    if (!bossId)
+        return 1.0f;
+
+    Unit* boss = nullptr;
+    switch (static_cast<KaraBosses>(*bossId))
+    {
+        case KaraBosses::DATA_ATTUMEN:
+            boss = FindThreatTarget(bot, "midnight");
+            break;
+        case KaraBosses::DATA_MOROES:
+            boss = GetKaraBoss(bot, KaraBosses::DATA_MOROES);
+            break;
+        case KaraBosses::DATA_MAIDEN:
+            boss = GetKaraBoss(bot, KaraBosses::DATA_MAIDEN);
+            break;
+        case KaraBosses::DATA_OPERA_PERFORMANCE:
+        {
+            static constexpr std::array operaLeads = {
+                "the big bad wolf",
+                "dorothee",
+                "romulo",
+                "julianne",
+            };
+            for (char const* name : operaLeads)
+            {
+                boss = GetOperaActor(bot, name);
+                if (boss)
+                    break;
+            }
+
+            // For Wizard of Oz, Dorothee's HP is used for the initial cooldown hold.
+            static constexpr std::array ozActors = { "roar", "strawman", "tinhead", "the crone" };
+            for (char const* name : ozActors)
+            {
+                if (!boss && FindThreatTarget(bot, name))
+                    return 1.0f;
+            }
+            break;
+        }
+        case KaraBosses::DATA_CURATOR:
+            boss = GetKaraBoss(bot, KaraBosses::DATA_CURATOR);
+            break;
+        case KaraBosses::DATA_TERESTIAN:
+            boss = GetKaraBoss(bot, KaraBosses::DATA_TERESTIAN);
+            break;
+        case KaraBosses::DATA_ARAN:
+            boss = GetKaraBoss(bot, KaraBosses::DATA_ARAN);
+            break;
+        case KaraBosses::DATA_NETHERSPITE:
+            boss = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
+            break;
+        case KaraBosses::DATA_MALCHEZAAR:
+            boss = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
+            break;
+        case KaraBosses::DATA_NIGHTBANE:
+            boss = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
+            break;
+        default:
+            return 1.0f;
+    }
+
+    // If the boss cannot be found but the encounter is in progress, it is probably because the bot
+    // was battle rezzed and zone combat hasn't reapplied, so block cooldowns.
+    if (!boss)
         return 0.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "spectral charger") ||
-        AI_VALUE2(Unit*, "find target", "the big bad wolf") ||
-        AI_VALUE2(Unit*, "find target", "roar"))
+    if (isBloodlust)
     {
+        if (boss->GetEntry() == Id(KaraNpcs::NPC_PRINCE_MALCHEZAAR))
+        {
+            constexpr float finalPhaseHealthPct = 30.0f;
+            return boss->GetHealthPct() > finalPhaseHealthPct ? 0.0f : 1.0f;
+        }
+
+        if (boss->GetEntry() == Id(KaraNpcs::NPC_THE_CURATOR))
+            return !boss->HasAura(Id(KaraSpells::SPELL_CURATOR_EVOCATION)) ? 0.0f : 1.0f;
+    }
+
+    if (boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return 0.0f;
+
+    if (boss->GetEntry() == Id(KaraNpcs::NPC_NIGHTBANE))
+        return IsNightbaneFlying(boss) ? 0.0f : 1.0f;
+
+    if (boss->GetEntry() == Id(KaraNpcs::NPC_NETHERSPITE))
+        return IsBanishPhase(boss) ? 0.0f : 1.0f;
+
+    return 1.0f;
+}
+
+float KarazhanDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<CombatFormationMoveAction*>(action))
+        return 1.0f;
+
+    return dynamic_cast<SetBehindTargetAction*>(action) ? 1.0f : 0.0f;
+}
+
+// Trash
+
+// Block all stuns used by the stun action for as long as a Mana Warp is among the attackers. Some
+// of these are not currently part of standard rotations but are included anyway in case they are
+// eventually added to class strategies.
+float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT || !IsNearManaWarpPacks(bot))
+        return 1.0f;
+
+    bool isStun = false;
+    switch (bot->getClass())
+    {
+        case CLASS_DRUID:
+        {
+            isStun = dynamic_cast<CastBashAction*>(action) ||
+                dynamic_cast<CastBashOnEnemyHealerAction*>(action) ||
+                dynamic_cast<CastMaimAction*>(action);
+            break;
+        }
+        case CLASS_PALADIN:
+        {
+            isStun = dynamic_cast<CastHammerOfJusticeAction*>(action) ||
+                dynamic_cast<CastHammerOfJusticeOnEnemyHealerAction*>(action) ||
+                dynamic_cast<CastHammerOfJusticeSnareAction*>(action);
+            break;
+        }
+        case CLASS_ROGUE:
+        {
+            isStun = dynamic_cast<CastKidneyShotAction*>(action);
+            break;
+        }
+        case CLASS_WARLOCK:
+        {
+            isStun = dynamic_cast<CastShadowfuryAction*>(action);
+            break;
+        }
+        case CLASS_WARRIOR:
+        {
+            isStun = dynamic_cast<CastConcussionBlowAction*>(action) ||
+                dynamic_cast<CastShockwaveAction*>(action) ||
+                dynamic_cast<CastShockwaveSnareAction*>(action);
+            break;
+        }
+        default:
+            break;
+    }
+
+    if (!isStun && (bot->getRace() != RACE_TAUREN || !dynamic_cast<CastWarStompAction*>(action)))
+        return 1.0f;
+
+    uint32 const manaWarpEntry = Id(KaraNpcs::NPC_MANA_WARP);
+    for (ObjectGuid const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
+    {
+        if (guid.GetEntry() == manaWarpEntry)
+            return 0.0f;
     }
 
     return 1.0f;
@@ -60,494 +241,462 @@ float KarazhanSetTremorTotemMultiplier::GetValue(Action* action)
 
 // Attumen the Huntsman
 
-float AttumenTheHuntsmanDisableAutomaticTargetingMultiplier::GetValue(Action* action)
+float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<TankAssistAction*>(action) &&
-        !dynamic_cast<DpsAssistAction*>(action))
+    // Include Blade Flurry because it's also used as a pure DPS cooldown, not just for AoE, so the
+    // target exclusion doesn't cover it entirely. Save it for phase 2.
+    if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action) &&
+        !(bot->getClass() == CLASS_ROGUE && dynamic_cast<CastBladeFlurryAction*>(action)))
     {
         return 1.0f;
     }
 
-    if (AI_VALUE2(Unit*, "find target", "midnight"))
-        return 0.0f;
-
-    return 1.0f;
+    // Mounted Attumen is the only valid target in phase 2, so standard targeting is fine.
+    Unit* midnight = FindThreatTarget(bot, "midnight");
+    return midnight && !IsAttumenMounted(midnight) ? 0.0f : 1.0f;
 }
 
-float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
+float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* action)
 {
-    if (PlayerbotAI::IsTank(bot))
-        return 1.0f;
-
     if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<AttumenTheHuntsmanHandlePhaseTwoAction*>(action))
+        dynamic_cast<AttumenTheHuntsmanStackBehindAction*>(action))
     {
         return 1.0f;
     }
 
-    if (!dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    if (!AI_VALUE2(Unit*, "find target", "midnight"))
+    if (!dynamic_cast<MovementAction*>(action) && !IsRepositionAction(bot, action))
         return 1.0f;
 
-    if (GetAttumenMounted(bot))
-        return 0.0f;
+    Unit* midnight = FindThreatTarget(bot, "midnight");
+    if (!midnight || !IsAttumenMounted(midnight))
+        return 1.0f;
 
-    return 1.0f;
+    Unit* attumen = GetMountedAttumen(bot);
+    if (attumen && attumen->GetVictim() == bot)
+        return 1.0f;
+
+    return PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot) ? 1.0f : 0.0f;
 }
 
-// Give the main tank 5 seconds to grab aggro when Attumen mounts Midnight
-float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
+float AttumenTheHuntsmanHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (dynamic_cast<CastHealingSpellAction*>(action))
+    if (!IsDpsHoldCandidate(bot, action) || dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    if (!dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<CastSpellAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    if (!AI_VALUE2(Unit*, "find target", "midnight"))
-        return 1.0f;
-
-    Unit* attumen = GetAttumenMounted(bot);
-    if (!attumen)
-        return 1.0f;
-
-    if (PlayerbotAI::IsMainTank(bot))
-        return 1.0f;
-
-    time_t const now = std::time(nullptr);
-    constexpr uint8 dpsWaitSeconds = 5;
-
-    auto it = attumenDpsWaitTimer.find(attumen->GetMap()->GetInstanceId());
-    if (it == attumenDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
-        return 0.0f;
-
-    return 1.0f;
+    return IsAttumenDpsHeld(bot) ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 // Maiden of Virtue
 
-float MaidenOfVirtueDisableCombatFormationMoveMultiplier::GetValue(Action* action)
-{
-    if (dynamic_cast<SetBehindTargetAction*>(action) ||
-        !dynamic_cast<CombatFormationMoveAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    if (AI_VALUE2(Unit*, "find target", "maiden of virtue"))
-        return 0.0f;
-
-    return 1.0f;
-}
-
-float MaidenOfVirtueSetGroundingTotemMultiplier::GetValue(Action* action)
+float MaidenOfVirtueKeepGroundingTotemMultiplier::GetValueInEncounter(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    if (!dynamic_cast<CastWrathOfAirTotemAction*>(action) &&
-        !dynamic_cast<CastNatureResistanceTotemAction*>(action) &&
-        !dynamic_cast<CastWindfuryTotemAction*>(action))
-    {
+    // Call of the Elements drops whatever air totem the totem bar holds.
+    return dynamic_cast<CastWrathOfAirTotemAction*>(action) ||
+        dynamic_cast<CastNatureResistanceTotemAction*>(action) ||
+        dynamic_cast<CastWindfuryTotemAction*>(action) ||
+        dynamic_cast<CastCallOfTheElementsAction*>(action) ? 0.0f : 1.0f;
+}
+
+// The Big Bad Wolf
+
+// Feign Death must be held through the entire 20s chase sequence to keep the boss away. Moving,
+// turning, or casting ends Feign Death, so a feigning Hood does nothing until Hood ends.
+float BigBadWolfRedHoodHunterStayDownMultiplier::GetValueInEncounter(Action* action)
+{
+    if (bot->getClass() != CLASS_HUNTER || !bot->HasAura(Id(KaraSpells::SPELL_FEIGN_DEATH)))
         return 1.0f;
-    }
 
-    if (AI_VALUE2(Unit*, "find target", "maiden of virtue"))
-        return 0.0f;
+    if (!IsLittleRedRidingHood(bot))
+        return 1.0f;
 
-    return 1.0f;
+    return dynamic_cast<WipeAction*>(action) ? 1.0f : 0.0f;
 }
 
 // The Curator
 
-float TheCuratorDisableTankAssistMultiplier::GetValue(Action* action)
+float TheCuratorDisableTankAssistMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<TankAssistAction*>(action))
-        return 1.0f;
-
-    if (AI_VALUE2(Unit*, "find target", "the curator"))
-        return 0.0f;
-
-    return 1.0f;
-}
-
-float TheCuratorDisableCombatFormationMoveMultiplier::GetValue(Action* action)
-{
-    if (dynamic_cast<SetBehindTargetAction*>(action) ||
-        !dynamic_cast<CombatFormationMoveAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    if (AI_VALUE2(Unit*, "find target", "the curator"))
-        return 0.0f;
-
-    return 1.0f;
-}
-
-// Save Bloodlust/Heroism for Evocation (100% increased damage)
-float TheCuratorDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
-{
-    if (bot->getClass() != CLASS_SHAMAN)
-        return 1.0f;
-
-    if (!dynamic_cast<CastBloodlustAction*>(action) &&
-        !dynamic_cast<CastHeroismAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
-    if (curator && !curator->HasAura(Id(KaraSpells::SPELL_CURATOR_EVOCATION)))
-        return 0.0f;
-
-    return 1.0f;
+    return dynamic_cast<TankAssistAction*>(action) ? 0.0f : 1.0f;
 }
 
 // Terestian Illhoof
 
-float TerestianIllhoofDontDotFiendishImpsMultiplier::GetValue(Action* action)
+float TerestianIllhoofDisableDotsOnFiendishImpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+    // Also the on-attacker DoTs, which pick their own target.
+    if (!dynamic_cast<CastDebuffSpellAction*>(action))
         return 1.0f;
 
-    Unit* imp = AI_VALUE2(Unit*, "find target", "fiendish imp");
-    if (imp && AI_VALUE(Unit*, "current target") == imp)
-        return 0.0f;
-
-     return 1.0f;
+    Unit* target = action->GetTarget();
+    return target && target->GetEntry() == Id(KaraNpcs::NPC_FIENDISH_IMP) ? 0.0f : 1.0f;
 }
 
 // Shade of Aran
 
-float ShadeOfAranArcaneExplosionRunAwayMultiplier::GetValue(Action* action)
+float ShadeOfAranArcaneExplosionDisableMovementMultiplier::GetValueInEncounter(Action* action)
 {
+    if (!dynamic_cast<MovementAction*>(action) && !IsRepositionAction(bot, action) &&
+        !IsKillingSpree(bot, action) && !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        return 1.0f;
+    }
+
     if (dynamic_cast<AttackAction*>(action) ||
         dynamic_cast<ShadeOfAranRunAwayFromArcaneExplosionAction*>(action))
     {
         return 1.0f;
     }
 
-    if (!dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
+    Unit* aran = GetEncounterBoss();
+    return aran && IsAranCastingArcaneExplosion(aran) ? 0.0f : 1.0f;
+}
+
+// Includes set behind, as he faces a random player with each cast.
+float ShadeOfAranDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<MovementAction*>(action))
+        return 1.0f;
+
+    bool const isReactiveMovement =
+        dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action);
+
+    return isReactiveMovement ? 0.0f : 1.0f;
+}
+
+// I will not move when Flame Wreath is cast or the raid blows up.
+float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<MovementAction*>(action) && !IsRepositionAction(bot, action) &&
+        !IsKillingSpree(bot, action))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<ShadeOfAranStopMovingAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    // Do not check for Aran here. A bot that does not find Aran (most likely due to being battle
+    // rezzed between the 5s zone combat pulses) still needs to stop moving for Flame Wreath.
+    Unit* aran = GetEncounterBoss();
+    if (!IsFlameWreathInProgress(botAI, aran))
+        return 1.0f;
+
+    if (!dynamic_cast<ReachTargetAction*>(action))
+        return 0.0f;
+
+    return CanReachTargetDuringFlameWreath(botAI, aran) ? 1.0f : 0.0f;
+}
+
+// Netherspite
+
+namespace
+{
+
+// Where a standard reach toward the target stops, worked out the way ReachCombatTo does it: range
+// plus both combat reaches from the target. The reach action doesn't expose that position, and the
+// void zone hold needs it before the reach runs.
+Position GetNetherspiteReachEndPosition(Unit& bot, Unit& target, float range)
+{
+    float const distance = bot.GetExactDist2d(target);
+    float const end = range + bot.GetCombatReach() + target.GetCombatReach();
+    if (distance <= end)
+        return bot.GetPosition();
+
+    float const fraction = end / distance;
+    return Position(
+        target.GetPositionX() + (bot.GetPositionX() - target.GetPositionX()) * fraction,
+        target.GetPositionY() + (bot.GetPositionY() - target.GetPositionY()) * fraction);
+}
+
+} // end anonymous namespace (Netherspite)
+
+// Positioning in and around the beams decides the outcome of the fight, and a tight formation is
+// kept during the Banish phase, so reactive and unpredictable movement is blocked.
+float NetherspiteDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
+{
+    bool const isReactiveMovement =
+        dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<AvoidAoeAction*>(action) ||
+        dynamic_cast<FleeAction*>(action) || dynamic_cast<FollowAction*>(action);
+    if (isReactiveMovement || IsKillingSpree(bot, action) || IsRepositionAction(bot, action))
+        return 0.0f;
+
+    if (!dynamic_cast<ReachTargetAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 1.0f;
     }
 
-    Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
-    if (!aran)
+    KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
+    if (!state || state->netherspiteBeams[Id(NetherspiteBeam::Red)].blocker == bot->GetGUID())
         return 1.0f;
 
-    if (IsAranCastingArcaneExplosion(aran))
+    // Active blue and green blockers and those up next are blocked from reaching targets. Their
+    // primary purpose is to keep blocking (or remain ready to block) a beam, so they need to
+    // maintain their position along the beam while also staying alive (i.e., out of void zones),
+    // which means the ability to DPS or heal might have to be sacrificed at times. The red blocker
+    // does not have this constraint since it does not avoid void zones.
+    if (IsNetherspiteBlockerOrNext(*state, bot->GetGUID()))
         return 0.0f;
 
-    return 1.0f;
+    // Other bots' reach and charge are blocked if they would go through a void zone, since the
+    // standard actions don't avoid them.
+    Unit* target = action->GetTarget();
+    if (!target)
+        return 1.0f;
+
+    // A void zone past where the move stops, between that point and the target, doesn't count.
+    float range = 0.0f; // Charges go all the way to the target.
+    if (dynamic_cast<ReachMeleeAction*>(action))
+        range = sPlayerbotAIConfig.MeleeDistance;
+    else if (dynamic_cast<ReachPartyMemberToHealAction*>(action))
+        range = botAI->GetRange("heal");
+    else if (dynamic_cast<ReachTargetAction*>(action))
+        range = botAI->GetRange("spell");
+
+    Position const end = GetNetherspiteReachEndPosition(*bot, *target, range);
+    return CrossesVoidZone(*state, bot->GetPosition(), end) ? 0.0f : 1.0f;
 }
 
-// I will not move when Flame Wreath is cast or the raid blows up
-float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
+float NetherspiteHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<ShadeOfAranStopMovingDuringFlameWreathAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    if (!dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
-        !dynamic_cast<CastKillingSpreeAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    if (!AI_VALUE2(Unit*, "find target", "shade of aran"))
+    if (!IsDpsHoldCandidate(bot, action) || dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    if (IsFlameWreathActive(bot))
-        return 0.0f;
-
-    return 1.0f;
-}
-
-// Netherspite
-
-float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
-{
-    bool const isReachTargetAction =
-        dynamic_cast<ReachTargetAction*>(action) ||
-        dynamic_cast<CastReachTargetSpellAction*>(action);
-
-    bool const isBlockedAction =
-        isReachTargetAction ||
-        dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<AvoidAoeAction*>(action) ||
-        dynamic_cast<CastKillingSpreeAction*>(action);
-
-    if (!isBlockedAction)
+    Unit* netherspite = GetEncounterBoss();
+    if (!netherspite || !IsNetherspiteDpsHeld(bot, netherspite))
         return 1.0f;
 
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
-    if (!netherspite || IsBanishPhase(netherspite))
-        return 1.0f;
-
-    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
-
-    if (bot == greenBlocker || bot == blueBlocker)
-        return 0.0f;
-
-    if (bot == redBlocker && !isReachTargetAction)
-        return 0.0f;
-
-    return 1.0f;
-}
-
-// Give tanks 5 seconds to get aggro during phase transitions
-float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
-{
-    if (dynamic_cast<CastHealingSpellAction*>(action))
-        return 1.0f;
-
-    if (!dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<CastSpellAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    if (PlayerbotAI::IsTank(bot))
-        return 1.0f;
-
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
-    if (!netherspite || IsBanishPhase(netherspite))
-        return 1.0f;
-
-    time_t const now = std::time(nullptr);
-    constexpr uint8 dpsWaitSeconds = 5;
-
-    auto it = netherspiteDpsWaitTimer.find(netherspite->GetMap()->GetInstanceId());
-    if (it == netherspiteDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
-        return 0.0f;
-
-     return 1.0f;
+    return GetDpsHoldValue(bot, action);
 }
 
 // Prince Malchezaar
 
-float PrinceMalchezaarEnfeebleMultiplier::GetValue(Action* action)
+float PrinceMalchezaarDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<PrinceMalchezaarEnfeebledBotAvoidHazardAction*>(action))
+    if (!dynamic_cast<AvoidAoeAction*>(action) && !dynamic_cast<FleeAction*>(action) &&
+        !dynamic_cast<CombatFormationMoveAction*>(action))
     {
         return 1.0f;
     }
 
-    if (!bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)))
+    if (!dynamic_cast<SetBehindTargetAction*>(action))
+        return 0.0f;
+
+    Unit* malchezaar = GetEncounterBoss();
+    if (!malchezaar)
         return 1.0f;
 
-    // Disable movement other than escaping Shadow Nova range
-    if (dynamic_cast<MovementAction*>(action) ||
-        dynamic_cast<CastReachTargetSpellAction*>(action))
-    {
-        return 0.0f;
-    }
-
-    // Disable some cooldowns that are used upon low/critical health
-    if (dynamic_cast<CastIceBlockAction*>(action) ||
-        dynamic_cast<CastManaShieldAction*>(action) ||
-        dynamic_cast<CastDivineShieldAction*>(action) ||
-        dynamic_cast<CastLayOnHandsAction*>(action) ||
-        dynamic_cast<CastCloakOfShadowsAction*>(action) ||
-        dynamic_cast<CastEvasionAction*>(action) ||
-        dynamic_cast<CastShamanisticRageAction*>(action) ||
-        dynamic_cast<CastBindingHealAction*>(action) ||
-        dynamic_cast<CastDesperatePrayerAction*>(action) ||
-        dynamic_cast<CastPainSuppressionAction*>(action) ||
-        dynamic_cast<CastDispersionAction*>(action) ||
-        dynamic_cast<CastEnragedRegenerationAction*>(action) ||
-        dynamic_cast<CastLastStandAction*>(action) ||
-        dynamic_cast<CastShieldWallAction*>(action) ||
-        dynamic_cast<CastSurvivalInstinctsAction*>(action) ||
-        dynamic_cast<CastDeterrenceAction*>(action) ||
-        dynamic_cast<CastIceboundFortitudeAction*>(action) ||
-        dynamic_cast<CastRuneTapAction*>(action) ||
-        dynamic_cast<CastVampiricBloodAction*>(action) ||
-        dynamic_cast<CastDeathStrikeAction*>(action) ||
-        dynamic_cast<CastDeathPactAction*>(action) ||
-        dynamic_cast<UseItemAction*>(action))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
+    return IsClearOfInfernals(*malchezaar, GetLandedInfernals(botAI), MALCHEZAAR_MELEE_CLEARANCE) ?
+        1.0f : 0.0f;
 }
 
-// Wait until Phase 3 to use Bloodlust/Heroism
-float PrinceMalchezaarDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+float PrinceMalchezaarEnfeebledBotFocusOnEscapeMultiplier::GetValueInEncounter(Action* action)
 {
-    if (bot->getClass() != CLASS_SHAMAN)
+    // Enfeeble's aura ends before Malchezaar's boss AI restores the player's health. Players update
+    // every world tick, but dungeon creatures only about every third tick, and after players within
+    // the same tick. So a bot can drop Enfeeble but still have 1 HP, and an aura check alone would
+    // end the hold too early. Of course, this has the side effect of enforcing the hold in the
+    // unlikely event that a bot legitimately has 1 HP.
+    if (!bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)) && bot->GetHealth() > 1)
         return 1.0f;
 
-    if (!dynamic_cast<CastBloodlustAction*>(action) &&
-        !dynamic_cast<CastHeroismAction*>(action))
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<PrinceMalchezaarEnfeebledBotRunToSafetyAction*>(action))
     {
         return 1.0f;
     }
 
-    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
-    if (malchezaar && malchezaar->GetHealthPct() > 30.0f)
+    // Disable movement other than escaping Shadow Nova range.
+    if (dynamic_cast<MovementAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action) || IsRepositionAction(bot, action))
+    {
         return 0.0f;
+    }
 
-    return 1.0f;
+    // Hold cooldowns used at low or critical health.
+    bool isHeld = false;
+    switch (bot->getClass())
+    {
+        case CLASS_MAGE:
+        {
+            isHeld = dynamic_cast<CastIceBlockAction*>(action) ||
+                dynamic_cast<CastManaShieldAction*>(action);
+            break;
+        }
+        case CLASS_PALADIN:
+        {
+            isHeld = dynamic_cast<CastDivineShieldAction*>(action) ||
+                dynamic_cast<CastLayOnHandsAction*>(action);
+            break;
+        }
+        case CLASS_ROGUE:
+        {
+            isHeld = dynamic_cast<CastCloakOfShadowsAction*>(action) ||
+                dynamic_cast<CastEvasionAction*>(action);
+            break;
+        }
+        case CLASS_SHAMAN:
+        {
+            isHeld = dynamic_cast<CastShamanisticRageAction*>(action);
+            break;
+        }
+        case CLASS_PRIEST:
+        {
+            isHeld = dynamic_cast<CastBindingHealAction*>(action) ||
+                dynamic_cast<CastDesperatePrayerAction*>(action) ||
+                dynamic_cast<CastPainSuppressionAction*>(action) ||
+                dynamic_cast<CastDispersionAction*>(action);
+            break;
+        }
+        case CLASS_WARRIOR:
+        {
+            isHeld = dynamic_cast<CastEnragedRegenerationAction*>(action) ||
+                dynamic_cast<CastLastStandAction*>(action) ||
+                dynamic_cast<CastShieldWallAction*>(action);
+            break;
+        }
+        case CLASS_DRUID:
+        {
+            isHeld = dynamic_cast<CastSurvivalInstinctsAction*>(action);
+            break;
+        }
+        case CLASS_HUNTER:
+        {
+            isHeld = dynamic_cast<CastDeterrenceAction*>(action);
+            break;
+        }
+        case CLASS_DEATH_KNIGHT:
+        {
+            isHeld = dynamic_cast<CastIceboundFortitudeAction*>(action) ||
+                dynamic_cast<CastRuneTapAction*>(action) ||
+                dynamic_cast<CastVampiricBloodAction*>(action) ||
+                dynamic_cast<CastDeathStrikeAction*>(action) ||
+                dynamic_cast<CastDeathPactAction*>(action);
+            break;
+        }
+        default:
+            break;
+    }
+
+    return isHeld || dynamic_cast<UseItemAction*>(action) ? 0.0f : 1.0f;
 }
 
 // Nightbane
 
-// Pets tend to run out of bounds and cause skeletons to spawn off the map
-// Pets also tend to pull adds from inside of the tower through the floor
-// This multiplier DOES NOT impact Hunter and Warlock pets
-// Hunter and Warlock pets are addressed in ControlPetAggressionAction
-float NightbaneDisablePetsMultiplier::GetValue(Action* action)
+// A unique multiplier to manage pet issues with Nightbane (see NightbaneSetPetStanceAction).
+float NightbaneDelaySummonsAndPetAttacksMultiplier::GetValueInEncounter(Action* action)
 {
-    bool const isTemporarySummonSpell =
-        dynamic_cast<CastForceOfNatureAction*>(action) ||
-        dynamic_cast<CastFeralSpiritAction*>(action) ||
-        dynamic_cast<CastFireElementalTotemAction*>(action) ||
-        dynamic_cast<CastFireElementalTotemMeleeAction*>(action) ||
-        dynamic_cast<CastSummonWaterElementalAction*>(action) ||
-        dynamic_cast<CastShadowfiendAction*>(action);
+    bool isFireElementalTotem = false;
+    bool isSummon = false;
+    switch (bot->getClass())
+    {
+        case CLASS_SHAMAN:
+        {
+            isFireElementalTotem = dynamic_cast<CastFireElementalTotemAction*>(action) ||
+                dynamic_cast<CastFireElementalTotemMeleeAction*>(action);
+            isSummon = isFireElementalTotem || dynamic_cast<CastFeralSpiritAction*>(action);
+            break;
+        }
+        case CLASS_PRIEST:
+            isSummon = dynamic_cast<CastShadowfiendAction*>(action);
+            break;
+        case CLASS_MAGE:
+            isSummon = dynamic_cast<CastSummonWaterElementalAction*>(action);
+            break;
+        case CLASS_DRUID:
+            isSummon = dynamic_cast<CastForceOfNatureAction*>(action);
+            break;
+        default:
+            break;
+    }
 
-    bool const isPetAttackAction = dynamic_cast<PetAttackAction*>(action);
-
-    if (!isTemporarySummonSpell && !isPetAttackAction)
+    if (!isSummon && !dynamic_cast<PetAttackAction*>(action))
         return 1.0f;
 
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetEncounterBoss();
     if (!nightbane)
         return 1.0f;
 
-    if (isTemporarySummonSpell)
+    if (!isSummon)
+        return IsNightbaneFlying(nightbane) ? 0.0f : 1.0f;
+
+    if (IsNightbaneDpsHeld(bot, nightbane))
         return 0.0f;
 
-    if (nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
-        return 1.0f;
-
-    if (isPetAttackAction)
-        return 0.0f;
-
-    return 1.0f;
+    // The Fire Elemental is the only summon that cannot be called back to the summoner, so it is
+    // held until the final ground phase.
+    return (!isFireElementalTotem ||
+        nightbane->GetHealthPct() <= NIGHTBANE_FINAL_PHASE_HEALTH_PCT) ? 1.0f : 0.0f;
 }
 
-// Give the main tank 8 seconds to get aggro during phase transitions
-float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
+float NightbaneHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (dynamic_cast<CastHealingSpellAction*>(action))
+    bool const isDropTarget = dynamic_cast<DropTargetAction*>(action);
+    if (!isDropTarget && !IsDpsHoldCandidate(bot, action))
         return 1.0f;
 
-    if (!dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<CastSpellAction*>(action))
+    Unit* nightbane = GetEncounterBoss();
+    if (!nightbane)
+        return 1.0f;
+
+    if (isDropTarget)
+        return IsNightbaneFlightPhaseActive(nightbane) ? 0.0f : 1.0f;
+
+    if (dynamic_cast<CastHealingSpellAction*>(action) || !IsNightbaneDpsHeld(bot, nightbane))
+        return 1.0f;
+
+    return action->GetTarget() == nightbane ? GetDpsHoldValue(bot, action) : 1.0f;
+}
+
+// Movement is highly controlled on Nightbane. The most important note is that during the ground
+// phase, melee targeting Nightbane (other than the tank) and ranged move only via raid actions.
+float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
+{
+    bool const isReposition = IsRepositionAction(bot, action);
+    bool const isReachTargetSpell = dynamic_cast<CastReachTargetSpellAction*>(action);
+    if (!dynamic_cast<MovementAction*>(action) && !isReachTargetSpell && !isReposition)
+        return 1.0f;
+
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<NightbaneRangedMoveFromCharredEarthAction*>(action) ||
+        dynamic_cast<NightbaneMeleeMoveFromCharredEarthAction*>(action) ||
+        dynamic_cast<NightbaneStackAwayFromRainOfBonesAction*>(action))
     {
         return 1.0f;
     }
 
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
-        return 1.0f;
-
-    if (PlayerbotAI::IsMainTank(bot))
-        return 1.0f;
-
-    time_t const now = std::time(nullptr);
-    constexpr uint8 dpsWaitSeconds = 8;
-
-    auto it = nightbaneDpsWaitTimer.find(nightbane->GetMap()->GetInstanceId());
-    if (it == nightbaneDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
+    bool const isSetBehind = dynamic_cast<SetBehindTargetAction*>(action);
+    if ((dynamic_cast<CombatFormationMoveAction*>(action) && !isSetBehind) ||
+        isReposition || dynamic_cast<FleeAction*>(action) || dynamic_cast<AvoidAoeAction*>(action))
+    {
         return 0.0f;
+    }
 
-    return 1.0f;
-}
-
-float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
-{
-    if (!dynamic_cast<AvoidAoeAction*>(action))
-        return 1.0f;
-
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
-        return 1.0f;
-
-    if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsMainTank(bot))
-        return 0.0f;
-
-    return 1.0f;
-}
-
-float NightbaneDisableMovementMultiplier::GetValue(Action* action)
-{
-    if (dynamic_cast<SetBehindTargetAction*>(action))
-        return 1.0f;
-
-    bool const isFollowAction = dynamic_cast<FollowAction*>(action);
-
-    bool const isReachAction =
-        dynamic_cast<ReachTargetAction*>(action) ||
-        dynamic_cast<CastReachTargetSpellAction*>(action);
-
-    bool const isBlockedMovement =
-        dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<FleeAction*>(action);
-
-    if (!isFollowAction && !isReachAction && !isBlockedMovement)
-        return 1.0f;
-
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetEncounterBoss();
     if (!nightbane)
         return 1.0f;
 
-    if (isBlockedMovement)
+    if (!IsNightbaneFlying(nightbane))
+        return HoldsNightbaneGroundPosition(botAI, *nightbane) ? 0.0f : 1.0f;
+
+    if (isReachTargetSpell || dynamic_cast<ReachTargetAction*>(action))
         return 0.0f;
 
-    if (nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
-        return 1.0f;
-
-    if (isReachAction)
-        return 0.0f;
-
-    // After 35s, Nightbane goes to land, and bots freely follow their master
-    time_t const now = std::time(nullptr);
-    constexpr uint8 flightPhaseDurationSeconds = 35;
-
-    auto const it = nightbaneFlightPhaseStartTimer.find(nightbane->GetMap()->GetInstanceId());
-    if (it == nightbaneFlightPhaseStartTimer.end() ||
-        (now - it->second) >= flightPhaseDurationSeconds)
-    {
-        return 1.0f;
-    }
-
-    if (isFollowAction)
-        return 0.0f;
+    if (isSetBehind || dynamic_cast<FollowAction*>(action))
+        return IsNightbaneFlightPhaseActive(nightbane) ? 0.0f : 1.0f;
 
     return 1.0f;
 }
