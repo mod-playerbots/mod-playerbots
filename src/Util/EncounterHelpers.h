@@ -276,6 +276,8 @@ bool IsMinionStanceWrongForHold(Player* bot, bool isHeld);
 // savedStances as a member; its reset calls this with isHeld false, then clears the list.
 bool SetMinionStancesForHold(
     Player* bot, bool isHeld, std::vector<SavedMinionStance>& savedStances);
+void CommandPetAttack(PlayerbotAI* botAI, Unit* target);
+void StopPet(PlayerbotAI* botAI);
 
 // Miscellaneous
 
