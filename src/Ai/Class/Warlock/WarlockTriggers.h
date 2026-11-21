@@ -131,6 +131,13 @@ public:
     HasHealthstoneTrigger(PlayerbotAI* botAI) : WarlockConjuredItemTrigger(botAI, "healthstone") {}
 };
 
+class RitualOfSoulsTrigger : public Trigger
+{
+public:
+    RitualOfSoulsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "group needs healthstones", 2) {}
+    bool IsActive() override;
+};
+
 class WrongPetTrigger : public Trigger
 {
 public:

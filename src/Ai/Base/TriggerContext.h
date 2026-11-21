@@ -21,6 +21,7 @@
 #include "PullTriggers.h"
 #include "PvpTriggers.h"
 #include "RangeTriggers.h"
+#include "RitualOfSoulsTriggers.h"
 #include "RpgTriggers.h"
 #include "RtiTriggers.h"
 #include "StuckTriggers.h"
@@ -252,6 +253,8 @@ public:
         creators["can use fishing bobber"] = &TriggerContext::can_use_fishing_bobber;
         creators["new pet"] = &TriggerContext::new_pet;
         creators["wait for attack safe distance"] = &TriggerContext::wait_for_attack_safe_distance;
+        creators["ritual of souls portal nearby"] = &TriggerContext::ritual_of_souls_portal_nearby;
+        creators["soulwell nearby"] = &TriggerContext::soulwell_nearby;
     }
 
 private:
@@ -468,6 +471,8 @@ private:
     static Trigger* can_use_fishing_bobber(PlayerbotAI* botAI) { return new CanUseFishingBobberTrigger(botAI); }
     static Trigger* new_pet(PlayerbotAI* botAI) { return new NewPetTrigger(botAI); }
     static Trigger* wait_for_attack_safe_distance(PlayerbotAI* botAI) { return new WaitForAttackSafeDistanceTrigger(botAI); }
+    static Trigger* ritual_of_souls_portal_nearby(PlayerbotAI* botAI) { return new RitualPortalNearbyTrigger(botAI); }
+    static Trigger* soulwell_nearby(PlayerbotAI* botAI) { return new SoulwellNearbyTrigger(botAI); }
 };
 
 #endif
