@@ -1,0 +1,5 @@
+# Regenerate with --out apps/quest_poi_z_baker/data; keep only the committed
+# SQL and manifest in git.
+quest_poi_z_report.csv
+quest_poi_z_candidates.json
+quest_poi_z_candidates.jsonl
