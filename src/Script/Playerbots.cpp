@@ -614,12 +614,14 @@ void AddPlayerbotsSelfBotAfkScripts();
 void AddSC_Aq40BotScripts();
 void AddSC_BlackTempleBotScripts();
 void AddSC_HyjalBotScripts();
+void AddSC_UlduarBotScripts();
 void AddSC_IcecrownBotScripts();
 void AddSC_MagtheridonBotScripts();
 void AddSC_RubySanctumBotScripts();
 void AddSC_SerpentshrineCavernBotScripts();
 void AddSC_TempestKeepBotScripts();
 void AddSC_randombot_level_mgr();
+void AddSC_RaidInstanceStateScripts();
 
 void AddPlayerbotsScripts()
 {
@@ -640,10 +642,12 @@ void AddPlayerbotsScripts()
     AddSC_Aq40BotScripts();
     AddSC_BlackTempleBotScripts();
     AddSC_HyjalBotScripts();
+    AddSC_UlduarBotScripts();
     AddSC_IcecrownBotScripts();
     AddSC_MagtheridonBotScripts();
     AddSC_RubySanctumBotScripts();
     AddSC_SerpentshrineCavernBotScripts();
     AddSC_TempestKeepBotScripts();
     AddSC_randombot_level_mgr();
+    AddSC_RaidInstanceStateScripts();
 }
