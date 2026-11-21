@@ -18,6 +18,8 @@ public:
     std::string const getName() override { return "zulgurub"; }
 
     void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
+    bool HasTargetExclusions() const override { return true; }
+    void AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) override;
 };
 
 #endif
