@@ -22,8 +22,22 @@ public:
     void Sell(FindItemVisitor* visitor);
     void Sell(Item* item, bool force = false);
 
+protected:
+    uint32 SellToVendor(bool quiet);
+
 private:
     uint32 GetQuestItemRequirement(uint32 itemId);
+
+    bool _quiet = false;
+    uint32 _soldCount = 0;
+};
+
+class SellVendorAction : public SellAction
+{
+public:
+    SellVendorAction(PlayerbotAI* botAI) : SellAction(botAI, "sell vendor") {}
+
+    bool Execute(Event event) override;
 };
 
 #endif
