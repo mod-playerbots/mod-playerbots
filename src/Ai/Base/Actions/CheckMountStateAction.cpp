@@ -20,7 +20,6 @@
 #include "SpellAuraEffects.h"
 
 static constexpr uint32 SPELL_COLD_WEATHER_FLYING = 54197;
-static constexpr float PARACHUTE_LAND_THRESHOLD = 15.0f;
 
 // Preferred mounts per bot, loaded once at startup by LoadPreferredMounts()
 std::unordered_map<uint32, PreferredMountCache> CheckMountStateAction::mountCache;
@@ -69,19 +68,8 @@ MountData CollectMountData(Player const* bot)
 
 bool CheckMountStateAction::Execute(Event /*event*/)
 {
-    // Forced flight dismount:
-    // Bots get stale flight movement flags after a forced dismount (e.g: Dalaran) because the post landing dismount cleanup
-    // needs MSG_MOVE_FALL_LAND (a client opcode) and client movement packets. The stale flags cause the bot to be stuck with
-    // the parachute, or even keep the bot hovering indefinitely and block MMAP routing.
-    // Note: Without MSG_MOVE_FALL_LAND, HandleFall doesn't trigger, meaning bots don't get fall damage in forced dismounts anyway,
-    // so the parachute usage here is more of an immersion feature.
-    if (bot->HasFeatherFallAura())
-    {
-        float floorZ = bot->GetMapHeight(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
-        if (floorZ != INVALID_HEIGHT && floorZ != VMAP_INVALID_HEIGHT_VALUE &&
-            bot->GetPositionZ() - floorZ <= PARACHUTE_LAND_THRESHOLD)
-            bot->RemoveAurasByType(SPELL_AURA_FEATHER_FALL);
-    }
+    // Bots get stale flight movement flags after a forced dismount (e.g: Dalaran): the client would clear them, and
+    // they keep the bot hovering and block MMAP routing.
     ClearStaleFlightFlags();
 
     // Determine if there are no attackers
@@ -276,29 +264,6 @@ void CheckMountStateAction::ClearStaleFlightFlags()
         if (!bot->IsRooted())
             bot->SendMovementFlagUpdate();
     }
-}
-
-void CheckMountStateAction::CompleteDismount(Player* bot)
-{
-    if (!bot || !bot->IsInWorld())
-        return;
-
-    float const x = bot->GetPositionX();
-    float const y = bot->GetPositionY();
-    float const startZ = bot->GetPositionZ();
-
-    float groundZ = startZ;
-    bot->UpdateAllowedPositionZ(x, y, groundZ);
-
-    bot->GetMotionMaster()->MoveFall();
-    MovementInfo fallInfo = bot->m_movementInfo;
-    // Need to set the start of the fall, otherwise the fall may start from too high of a Z and kill the bot.
-    bot->SetFallInformation(0, startZ);
-    fallInfo.pos.Relocate(x, y, groundZ);
-    bot->HandleFall(fallInfo);
-    // Re-anchor at the ground: Player::IsFalling() compares standing Z to this, so startZ reads as a fall.
-    bot->SetFallInformation(0, groundZ);
-    bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
 }
 
 bool CheckMountStateAction::TryForms(Player* master, int32 masterMountType, int32 masterSpeed) const
