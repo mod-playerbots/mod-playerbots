@@ -7,9 +7,8 @@
 #ifndef PLAYERBOTS_MGTTRIGGERCONTEXT_H
 #define PLAYERBOTS_MGTTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 #include "MgTTriggers.h"
-#include "TriggerContext.h"
 
 class TbcDungeonMagistersTerraceTriggerContext : public NamedObjectContext<Trigger>
 {

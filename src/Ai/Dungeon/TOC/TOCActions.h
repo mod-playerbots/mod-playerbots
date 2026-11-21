@@ -7,22 +7,10 @@
 #ifndef PLAYERBOTS_TOCACTIONS_H
 #define PLAYERBOTS_TOCACTIONS_H
 
-#include "Action.h"
 #include "AttackAction.h"
-#include "EquipAction.h"
-#include "Event.h"
-#include "ItemCountValue.h"
-#include "ItemUsageValue.h"
-#include "LastMovementValue.h"
 #include "MovementActions.h"
 #include "ObjectGuid.h"
-#include "PlayerbotAI.h"
-#include "PlayerbotAIConfig.h"
-#include "Playerbots.h"
-#include "ScriptedCreature.h"
-#include "SharedDefines.h"
-#include "StatsWeightCalculator.h"
-#include "TOCTriggers.h"
+#include "Position.h"
 
 class ToCLanceAction : public AttackAction
 {

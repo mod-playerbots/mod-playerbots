@@ -8,7 +8,6 @@
 #define PLAYERBOTS_UBTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
-#include "TriggerContext.h"
 #include "UBTriggers.h"
 
 class TbcDungeonUnderbogTriggerContext : public NamedObjectContext<Trigger>

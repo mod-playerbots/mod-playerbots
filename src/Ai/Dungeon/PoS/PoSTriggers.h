@@ -8,8 +8,6 @@
 #define PLAYERBOTS_POSTRIGGERS_H
 
 #include "DungeonStrategyUtils.h"
-#include "GenericTriggers.h"
-#include "PlayerbotAIConfig.h"
 #include "Trigger.h"
 
 enum PitOfSaronIDs

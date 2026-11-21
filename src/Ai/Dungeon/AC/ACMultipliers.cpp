@@ -12,6 +12,7 @@
 #include "MovementActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
+#include "ThreatHelpers.h"
 
 // Shirrak the Dead Watcher
 
@@ -27,7 +28,7 @@ float ShirrakFleeFocusFireMultiplier::GetValue(Action* action)
     if (!isMovementSpell && !dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "shirrak the dead watcher"))
+    if (!FindThreatTarget(bot, "shirrak the dead watcher"))
         return 1.0f;
 
     if (dynamic_cast<ShirrakFleeFocusFireAction*>(action))
