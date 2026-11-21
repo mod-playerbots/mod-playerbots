@@ -218,7 +218,11 @@ ItemUsage ItemUsageValue::Calculate()
             }
 
             if (isBest)
-                return CurrentStacks(proto) < 1 ? ITEM_USAGE_USE : ITEM_USAGE_KEEP;
+            {
+                // Keep at most one full stack for use; send surplus to the auction house.
+                constexpr float maxUseStacks = 1.0f;
+                return CurrentStacks(proto) <= maxUseStacks ? ITEM_USAGE_USE : ITEM_USAGE_AH;
+            }
         }
     }
 
