@@ -109,6 +109,8 @@ public:
 protected:
     bool DoIncompleteQuest(NewRpgInfo::DoQuest& data);
     bool DoCompletedQuest(NewRpgInfo::DoQuest& data);
+    // Nearest loaded/interactable quest-ender spawn; excludes enders that already failed on arrival.
+    bool SelectSpawnTurnInDestination(NewRpgInfo::DoQuest& data, uint32 questId);
 
     const uint32 poiStayTime = 5 * MINUTE * IN_MILLISECONDS;
 };
