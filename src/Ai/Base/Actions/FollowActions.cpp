@@ -20,6 +20,20 @@
 
 namespace
 {
+    // The master's heartbeat interval (0.5 s), which moves the formation point, plus one late bot AI tick (~0.25 s).
+    constexpr float FLYING_FOLLOW_PATH_SECONDS = 0.8f;
+
+    // A flying follow path at the bot's own speed ends about when the next heartbeat arrives, and each early end
+    // is a stop and a hover on every client. Paced to outlast the heartbeat, the next path replaces it in flight.
+    float GetFlyingFollowSpeed(Player* bot, Player* master, WorldLocation const& loc)
+    {
+        if (!master || !bot->IsFlying() || !master->IsFlying())
+            return 0.0f;
+
+        float const distance = bot->GetExactDist(loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ());
+        return std::min(std::max(distance / FLYING_FOLLOW_PATH_SECONDS, 1.0f), bot->GetSpeed(MOVE_FLIGHT));
+    }
+
     Transport* GetTransportForPosTolerant(Map* map, WorldObject* ref, uint32 phaseMask, float x, float y, float z)
     {
         if (!map || !ref)
@@ -218,7 +232,7 @@ bool FollowAction::Execute(Event /*event*/)
 
         MovementPriority priority = botAI->GetState() == BOT_STATE_COMBAT ? MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_NORMAL;
         moved = MoveTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), false, false, false,
-                       true, priority, true);
+                       true, priority, true, false, GetFlyingFollowSpeed(bot, master, loc));
     }
 
     // This section has been commented out because it was forcing the pet to

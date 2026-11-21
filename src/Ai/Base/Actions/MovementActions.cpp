@@ -167,7 +167,7 @@ bool MovementAction::MoveToLOS(WorldObject* target, bool ranged)
 }
 
 bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool /*idle*/, bool /*react*/, bool normal_only,
-                            bool exact_waypoint, MovementPriority priority, bool lessDelay, bool backwards)
+                            bool exact_waypoint, MovementPriority priority, bool lessDelay, bool backwards, float speed)
 {
     UpdateMovementState();
     if (!IsMovingAllowed())
@@ -221,8 +221,9 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool /*idle
 
             // bot->CastStop();
 
-            DoMovePoint(bot, x, y, z, generatePath, backwards);
-            float delay = IN_MILLISECONDS * MoveDelay(distance, backwards);
+            DoMovePoint(bot, x, y, z, generatePath, backwards, speed);
+            // A paced move is replaced as soon as its destination moves, so it holds no next move back.
+            float delay = speed > 0.0f ? 0.0f : IN_MILLISECONDS * MoveDelay(distance, backwards);
             if (lessDelay)
             {
                 delay -= botAI->GetReactDelay();
@@ -248,8 +249,9 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool /*idle
 
             // bot->CastStop();
 
-            DoMovePoint(bot, x, y, modifiedZ, generatePath, backwards);
-            float delay = IN_MILLISECONDS * MoveDelay(distance, backwards);
+            DoMovePoint(bot, x, y, modifiedZ, generatePath, backwards, speed);
+            // A paced move is replaced as soon as its destination moves, so it holds no next move back.
+            float delay = speed > 0.0f ? 0.0f : IN_MILLISECONDS * MoveDelay(distance, backwards);
             if (lessDelay)
             {
                 delay -= botAI->GetReactDelay();
@@ -1805,7 +1807,7 @@ const Movement::PointsArray MovementAction::SearchForBestPath(float x, float y, 
     return result;
 }
 
-void MovementAction::DoMovePoint(Unit* unit, float x, float y, float z, bool generatePath, bool backwards)
+void MovementAction::DoMovePoint(Unit* unit, float x, float y, float z, bool generatePath, bool backwards, float speed)
 {
     if (!unit)
         return;
@@ -1837,7 +1839,7 @@ void MovementAction::DoMovePoint(Unit* unit, float x, float y, float z, bool gen
             /*id*/ 0,
             /*coords*/ x, y, z,
             /*forcedMovement*/ FORCED_MOVEMENT_NONE,
-            /*speed*/ 0.f,
+            /*speed*/ speed,  // 0 => the unit's own speed
             /*orientation*/ 0.f,
             /*generatePath*/ generatePath,  // true => terrain path (2d mmap); false => straight spline (3d vmap)
             /*forceDestination*/ false);
