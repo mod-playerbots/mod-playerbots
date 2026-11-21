@@ -259,6 +259,15 @@ public:
     bool isUseful() override;
 };
 
+class MoveOutOfDarkWaterAction : public MovementAction
+{
+public:
+    MoveOutOfDarkWaterAction(PlayerbotAI* botAI) : MovementAction(botAI, "move out of dark water") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
 class MoveRandomAction : public MovementAction
 {
 public:
