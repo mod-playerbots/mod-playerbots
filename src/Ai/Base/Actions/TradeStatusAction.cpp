@@ -143,11 +143,11 @@ void TradeStatusAction::BeginTrade()
     WorldPacket p;
     bot->GetSession()->HandleBeginTradeOpcode(p);
 
-    ListItemsVisitor visitor;
+    CollectItemsVisitor visitor;
     IterateItems(&visitor);
 
     botAI->TellMaster("=== Inventory ===");
-    TellItems(visitor.items, visitor.soulbound);
+    TellItems(visitor.items);
 
     if (sRandomPlayerbotMgr.IsRandomBot(bot))
     {
