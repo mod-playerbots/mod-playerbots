@@ -39,6 +39,54 @@
 #include "Timer.h"
 #include "TravelMgr.h"
 #include "G3D/Vector2.h"
+#include <cmath>
+#include <cstring>
+#include <map>
+#include <mutex>
+#include <tuple>
+
+namespace
+{
+    // Destination cells are immutable, so remember the dark-water result per map/cell. This
+    // keeps the same liquid query from being repeated for every bot sharing the destination
+    // cache, which otherwise adds up to hundreds of collision-tree lookups per selection.
+    uint32 FloatBits(float value)
+    {
+        uint32 bits = 0;
+        static_assert(sizeof(bits) == sizeof(value));
+        std::memcpy(&bits, &value, sizeof(bits));
+        return bits;
+    }
+
+    bool IsDarkWaterCell(Map* map, uint32 phaseMask, float x, float y, float z, float collisionHeight)
+    {
+        // Cache key: map, phase, exact position and collision height. Destination cells store
+        // their centre verbatim, so repeated checks for the same destination hit the cache
+        // across bots; any different position or height is a different key and performs its
+        // own query, so a hit is by definition the same query the map returned before.
+        // Concurrent misses may repeat a query, but the result is identical.
+        static std::mutex cacheMutex;
+        static std::map<std::tuple<uint32, uint32, uint32, uint32, uint32, uint32>, bool> darkWaterCells;
+
+        auto const key = std::make_tuple(map->GetId(), phaseMask, FloatBits(x), FloatBits(y), FloatBits(z),
+                                         FloatBits(collisionHeight));
+
+        {
+            std::lock_guard<std::mutex> lock(cacheMutex);
+            auto const itr = darkWaterCells.find(key);
+            if (itr != darkWaterCells.end())
+                return itr->second;
+        }
+
+        LiquidData const liquid = map->GetLiquidData(phaseMask, x, y, z, collisionHeight, {});
+        bool const dark = (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER) != 0;
+        {
+            std::lock_guard<std::mutex> lock(cacheMutex);
+            darkWaterCells.emplace(key, dark);
+        }
+        return dark;
+    }
+}
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 {
@@ -805,7 +853,10 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
         hiRange /= 3;
         loRange /= 3;
     }
-    std::vector<WorldLocation> lo_prepared_locs, hi_prepared_locs;
+    // Same-zone candidates are preferred; same-map cross-zone candidates are the fallback, so a
+    // bot in a zone without grind positions (e.g. The Veiled Sea) heads for the nearest safe
+    // spot in a neighbouring zone instead of idling.
+    std::vector<WorldLocation> hiSameZone, loSameZone, hiCrossZone, loCrossZone;
 
     bool inCity = false;
     if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(bot->GetZoneId()))
@@ -819,37 +870,54 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
         if (bot->GetMapId() != loc.GetMapId())
             continue;
 
-        if (bot->GetExactDist(loc) > 2500.0f)
+        float dist = bot->GetExactDist(loc);
+        if (dist > loRange)
             continue;
 
-        if (!inCity && bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(), loc.GetPositionY(),
-                                                loc.GetPositionZ()) != bot->GetZoneId())
+        // Dark water drains the fatigue bar to death; such cells are never valid destinations.
+        if (IsDarkWaterCell(bot->GetMap(), bot->GetPhaseMask(), loc.GetPositionX(), loc.GetPositionY(),
+                            loc.GetPositionZ(), bot->GetCollisionHeight()))
             continue;
 
-        if (bot->GetExactDist(loc) < hiRange)
-        {
-            hi_prepared_locs.push_back(loc);
-        }
+        bool const sameZone = inCity || bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(),
+                                                                 loc.GetPositionY(),
+                                                                 loc.GetPositionZ()) == bot->GetZoneId();
 
-        if (bot->GetExactDist(loc) < loRange)
-        {
-            lo_prepared_locs.push_back(loc);
-        }
+        auto& hi = sameZone ? hiSameZone : hiCrossZone;
+        auto& lo = sameZone ? loSameZone : loCrossZone;
+
+        if (dist < hiRange)
+            hi.push_back(loc);
+
+        lo.push_back(loc);
     }
+
     WorldPosition dest{};
-    if (urand(1, 100) <= 50 && !hi_prepared_locs.empty())
+    if (urand(1, 100) <= 50 && !hiSameZone.empty())
     {
-        uint32 idx = urand(0, hi_prepared_locs.size() - 1);
-        dest = hi_prepared_locs[idx];
+        uint32 idx = urand(0, hiSameZone.size() - 1);
+        dest = hiSameZone[idx];
     }
-    else if (!lo_prepared_locs.empty())
+    else if (!loSameZone.empty())
     {
-        uint32 idx = urand(0, lo_prepared_locs.size() - 1);
-        dest = lo_prepared_locs[idx];
+        uint32 idx = urand(0, loSameZone.size() - 1);
+        dest = loSameZone[idx];
     }
-    LOG_DEBUG("playerbots", "[New RPG] Bot {} select random grind pos Map:{} X:{} Y:{} Z:{} ({}+{} available in {})",
+    else if (urand(1, 100) <= 50 && !hiCrossZone.empty())
+    {
+        uint32 idx = urand(0, hiCrossZone.size() - 1);
+        dest = hiCrossZone[idx];
+    }
+    else if (!loCrossZone.empty())
+    {
+        uint32 idx = urand(0, loCrossZone.size() - 1);
+        dest = loCrossZone[idx];
+    }
+    LOG_DEBUG("playerbots",
+              "[New RPG] Bot {} select random grind pos Map:{} X:{} Y:{} Z:{} ({}+{} same-zone, {}+{} cross-zone, {} cached)",
               bot->GetName(), dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(),
-              hi_prepared_locs.size(), lo_prepared_locs.size() - hi_prepared_locs.size(), locs.size());
+              hiSameZone.size(), loSameZone.size() - hiSameZone.size(), hiCrossZone.size(),
+              loCrossZone.size() - hiCrossZone.size(), locs.size());
     return dest;
 }
 
@@ -865,7 +933,8 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
             inCity = true;
     }
 
-    std::vector<WorldLocation> prepared_locs;
+    // Same-zone hubs preferred, same-map cross-zone hubs as fallback — see SelectRandomGrindPos.
+    std::vector<WorldLocation> sameZoneLocs, crossZoneLocs;
     for (auto& loc : locs)
     {
         if (bot->GetMapId() != loc.GetMapId())
@@ -878,21 +947,30 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
         if (bot->GetExactDist(loc) < 50.0f)
             continue;
 
-        if (!inCity && bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(), loc.GetPositionY(),
-                                                loc.GetPositionZ()) != bot->GetZoneId())
+        // Dark water drains the fatigue bar to death; never camp there.
+        if (IsDarkWaterCell(bot->GetMap(), bot->GetPhaseMask(), loc.GetPositionX(), loc.GetPositionY(),
+                            loc.GetPositionZ(), bot->GetCollisionHeight()))
             continue;
 
-        prepared_locs.push_back(loc);
+        bool const sameZone = inCity || bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(),
+                                                                 loc.GetPositionY(),
+                                                                 loc.GetPositionZ()) == bot->GetZoneId();
+        (sameZone ? sameZoneLocs : crossZoneLocs).push_back(loc);
     }
+
+    std::vector<WorldLocation>& prepared_locs =
+        !sameZoneLocs.empty() ? sameZoneLocs : crossZoneLocs;
+
     WorldPosition dest{};
     if (!prepared_locs.empty())
     {
         uint32 idx = urand(0, prepared_locs.size() - 1);
         dest = prepared_locs[idx];
     }
-    LOG_DEBUG("playerbots", "[New RPG] Bot {} select random inn keeper pos Map:{} X:{} Y:{} Z:{} ({} available in {})",
+    LOG_DEBUG("playerbots",
+              "[New RPG] Bot {} select random inn keeper pos Map:{} X:{} Y:{} Z:{} ({} same-zone, {} cross-zone, {} hubs)",
               bot->GetName(), dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(),
-              prepared_locs.size(), locs.size());
+              sameZoneLocs.size(), crossZoneLocs.size(), locs.size());
     return dest;
 }
 
