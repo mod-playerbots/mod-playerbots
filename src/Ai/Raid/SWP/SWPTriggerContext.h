@@ -225,8 +225,8 @@ public:
         creators["kil'jaeden melee should split into two groups"] =
             &RaidSwpTriggerContext::kiljaeden_melee_should_split_into_two_groups;
 
-        creators["kil'jaeden ranged should spread in two arcs"] =
-            &RaidSwpTriggerContext::kiljaeden_ranged_should_spread_in_two_arcs;
+        creators["kil'jaeden ranged should keep formation"] =
+            &RaidSwpTriggerContext::kiljaeden_ranged_should_keep_formation;
 
         creators["kil'jaeden fire bloom on immunity class"] =
             &RaidSwpTriggerContext::kiljaeden_fire_bloom_on_immunity_class;
@@ -542,9 +542,9 @@ private:
     {
         return new KiljaedenMeleeShouldSplitIntoTwoGroupsTrigger(botAI);
     }
-    static Trigger* kiljaeden_ranged_should_spread_in_two_arcs(PlayerbotAI* botAI)
+    static Trigger* kiljaeden_ranged_should_keep_formation(PlayerbotAI* botAI)
     {
-        return new KiljaedenRangedShouldSpreadInTwoArcsTrigger(botAI);
+        return new KiljaedenRangedShouldKeepFormationTrigger(botAI);
     }
     static Trigger* kiljaeden_fire_bloom_on_immunity_class(PlayerbotAI* botAI)
     {

@@ -829,12 +829,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KiljaedenRangedShouldSpreadInTwoArcsTrigger : public SunwellEncounterTrigger
+class KiljaedenRangedShouldKeepFormationTrigger : public SunwellEncounterTrigger
 {
 public:
-    KiljaedenRangedShouldSpreadInTwoArcsTrigger(PlayerbotAI* botAI)
+    KiljaedenRangedShouldKeepFormationTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "kil'jaeden ranged should spread in two arcs",
+            botAI, "kil'jaeden ranged should keep formation",
             SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:

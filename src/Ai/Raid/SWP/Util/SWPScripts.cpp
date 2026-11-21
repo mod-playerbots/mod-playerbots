@@ -274,7 +274,7 @@ public:
         }
 
         Player* player = caster ? caster->ToPlayer() : nullptr;
-        if (!player || !IsBossInProgress(player, SWP_MAP_ID, Id(SwpBosses::DATA_KALECGOS)))
+        if (!player)
             return;
 
         PlayerbotAI* botAI = FindFirstSunwellCombatBotInGroup(player);
@@ -295,11 +295,8 @@ public:
 
     void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
     {
-        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_ENCAPSULATE) ||
-            !IsBossInProgress(caster, SWP_MAP_ID, Id(SwpBosses::DATA_FELMYST)))
-        {
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_ENCAPSULATE))
             return;
-        }
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
         if (FindFirstSunwellCombatBotInGroup(target))
@@ -309,11 +306,8 @@ public:
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_SUMMON_DEMONIC_VAPOR) ||
-            !IsBossInProgress(caster, SWP_MAP_ID, Id(SwpBosses::DATA_FELMYST)))
-        {
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_SUMMON_DEMONIC_VAPOR))
             return;
-        }
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
         if (FindFirstSunwellCombatBotInGroup(target))
@@ -334,11 +328,8 @@ public:
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_CONFLAGRATION) ||
-            !IsBossInProgress(caster, SWP_MAP_ID, Id(SwpBosses::DATA_EREDAR_TWINS)))
-        {
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_CONFLAGRATION))
             return;
-        }
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
         if (target && FindFirstSunwellCombatBotInGroup(target))
@@ -355,11 +346,8 @@ public:
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_SPELL_FURY) ||
-            !IsBossInProgress(caster, SWP_MAP_ID, Id(SwpBosses::DATA_MURU)))
-        {
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_SPELL_FURY))
             return;
-        }
 
         uint32 const spellsteal = Id(SwpSpells::SPELL_SPELLSTEAL);
         Map::PlayerList const& players = caster->GetMap()->GetPlayers();
@@ -393,11 +381,8 @@ public:
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS) ||
-            !IsBossInProgress(caster, SWP_MAP_ID, Id(SwpBosses::DATA_KILJAEDEN)))
-        {
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
             return;
-        }
 
         Map::PlayerList const& players = caster->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)

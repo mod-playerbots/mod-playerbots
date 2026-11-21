@@ -252,11 +252,11 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kil'jaeden melee should split into two groups",
         { NextAction("kil'jaeden position melee and avoid armageddons", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden ranged should spread in two arcs",
+    triggers.push_back(new TriggerNode("kil'jaeden ranged should keep formation",
         { NextAction("kil'jaeden position ranged and avoid armageddons", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden fire bloom on immunity class",
-        { NextAction("kil'jaeden remove fire bloom", ACTION_EMERGENCY + 1) }));
+        { NextAction("kil'jaeden remove fire bloom", ACTION_EMERGENCY + 11) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden casts darkness of a thousand souls",
         { NextAction("kil'jaeden stack for shield of the blue", ACTION_EMERGENCY + 10) }));
@@ -426,39 +426,63 @@ void AppendMuruTankExclusions(
     }
 }
 
+// Shield Orbs fly out of melee reach. Ranged skip the ones they cannot hit from where they stand,
+// since they cannot leave their positions to reach them.
 void AppendKiljaedenShieldOrbExclusions(
     PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
-    if (!PlayerbotAI::IsMelee(botAI->GetBot()))
-        return;
+    Player* bot = botAI->GetBot();
+    bool const isMelee = PlayerbotAI::IsMelee(bot);
+    // The same test as the standard "enemy out of spell range" trigger
+    float const spellRange = botAI->GetRange("spell") + CONTACT_DISTANCE;
 
     for (auto const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (attacker && attacker->GetEntry() == Id(SwpNpcs::NPC_SHIELD_ORB))
+        if (!attacker || attacker->GetEntry() != Id(SwpNpcs::NPC_SHIELD_ORB))
+            continue;
+
+        if (isMelee || !bot->IsWithinCombatRange(attacker, spellRange))
             exclusions.insert(guid);
     }
 }
 
-// Melee and Demo Locks in Metamorphosis do not attack Reflections inside Kil'jaeden's Knockback
-// radius, or if reaching them would require crossing his Knockback radius.
+// Non-tanks do not attack Reflections they cannot hit from where they stand, since their position
+// actions would pull them straight back. Melee and Demo Locks in Metamorphosis (who may leave their
+// positions while Reflections are up) also skip Reflections inside Kil'jaeden's Knockback radius,
+// or if reaching them would require crossing it.
 void AppendKiljaedenReflectionExclusions(
     PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
     Player* bot = botAI->GetBot();
+    if (PlayerbotAI::IsTank(bot))
+        return;
+
     bool const isMetamorphosis = bot->getClass() == CLASS_WARLOCK &&
         bot->HasAura(Id(SwpSpells::SPELL_METAMORPHOSIS));
-    if (!isMetamorphosis && (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot)))
-        return;
+    bool const isMelee = PlayerbotAI::IsMelee(bot);
+    // The same test as the standard "enemy out of spell range" trigger
+    float const spellRange = botAI->GetRange("spell") + CONTACT_DISTANCE;
 
     for (auto const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (attacker && attacker->GetEntry() == Id(SwpNpcs::NPC_SINISTER_REFLECTION) &&
-            IsMeleeBlockedByKiljaedenKnockback(*bot, *attacker))
+        if (!attacker || attacker->GetEntry() != Id(SwpNpcs::NPC_SINISTER_REFLECTION))
+            continue;
+
+        bool isExcluded = false;
+        if (isMetamorphosis)
+            isExcluded = IsMeleeBlockedByKiljaedenKnockback(*bot, *attacker);
+        else if (isMelee)
         {
-            exclusions.insert(guid);
+            isExcluded = IsMeleeBlockedByKiljaedenKnockback(*bot, *attacker) ||
+                !bot->IsWithinMeleeRange(attacker);
         }
+        else
+            isExcluded = !bot->IsWithinCombatRange(attacker, spellRange);
+
+        if (isExcluded)
+            exclusions.insert(guid);
     }
 }
 

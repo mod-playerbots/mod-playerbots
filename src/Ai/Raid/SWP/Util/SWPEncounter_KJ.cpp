@@ -13,6 +13,7 @@
 #include "SWPShared.h"
 #include "Spell.h"
 #include "SpellInfo.h"
+#include "SpellMgr.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -54,17 +55,6 @@ bool HasAuraFromDragon(Player* member, uint32 spellId)
 {
     uint32 const auraSpellId = GetDragonAppliedAuraSpell(spellId);
     return auraSpellId && member && member->HasAura(auraSpellId);
-}
-
-float GetRangedSlotAngle(uint8 slotIndex)
-{
-    Position position;
-    if (!TryGetKiljaedenRangedSlotPosition(slotIndex, position))
-        return 0.0f;
-
-    return Position::NormalizeOrientation(std::atan2(
-        position.GetPositionY() - SUNWELL_CENTER_POSITION.GetPositionY(),
-        position.GetPositionX() - SUNWELL_CENTER_POSITION.GetPositionX()));
 }
 
 bool IsOutsideArmageddons(
@@ -265,29 +255,7 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
     if (slotIndex >= KILJAEDEN_TOTAL_RANGED_SLOT_COUNT)
         return false;
 
-    float radius = KILJAEDEN_OUTER_RANGED_RADIUS;
-    uint8 localSlotIndex = slotIndex;
-    uint8 slotCount = KILJAEDEN_OUTER_RANGED_SLOT_COUNT;
-
-    if (slotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT)
-    {
-        radius = KILJAEDEN_INNER_RANGED_RADIUS;
-        slotCount = KILJAEDEN_INNER_RANGED_SLOT_COUNT;
-    }
-    else
-    {
-        localSlotIndex -= KILJAEDEN_INNER_RANGED_SLOT_COUNT;
-    }
-
-    float const angleOffset = GetCenteredArcSlotAngleOffset(localSlotIndex, slotCount, M_PI);
-    float const angle = Position::NormalizeOrientation(
-        KILJAEDEN_RANGED_ARC_ORIENTATION + angleOffset);
-
-    Position const& center = SUNWELL_CENTER_POSITION;
-    float const positionX = center.GetPositionX() + std::cos(angle) * radius;
-    float const positionY = center.GetPositionY() + std::sin(angle) * radius;
-
-    position = Position{ positionX, positionY, center.GetPositionZ() };
+    position = KILJAEDEN_RANGED_POSITIONS[slotIndex];
     return true;
 }
 
@@ -392,8 +360,7 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
     struct CandidateSlotScore
     {
         uint8 slotIndex = 0;
-        bool sameRow = false;
-        float angleDistance = 0.0f;
+        float moveDistance = 0.0f;
         uint8 occupancy = 0;
         float armageddonDistance = 0.0f;
     };
@@ -454,17 +421,12 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
         });
 
     std::array<bool, KILJAEDEN_TOTAL_RANGED_SLOT_COUNT> safeSlots = {};
-    std::array<float, KILJAEDEN_TOTAL_RANGED_SLOT_COUNT> slotAngles = {};
     std::array<float, KILJAEDEN_TOTAL_RANGED_SLOT_COUNT> nearestArmageddonDistances = {};
 
     for (uint8 slotIndex = 0; slotIndex < KILJAEDEN_TOTAL_RANGED_SLOT_COUNT; ++slotIndex)
     {
-        Position slotPosition;
-        if (!TryGetKiljaedenRangedSlotPosition(slotIndex, slotPosition))
-            continue;
-
+        Position const& slotPosition = KILJAEDEN_RANGED_POSITIONS[slotIndex];
         safeSlots[slotIndex] = IsOutsideArmageddons(slotPosition, armageddons);
-        slotAngles[slotIndex] = GetRangedSlotAngle(slotIndex);
         nearestArmageddonDistances[slotIndex] =
             GetNearestArmageddonDistance(slotPosition, armageddons);
     }
@@ -478,16 +440,8 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
     {
         CandidateSlotScore score;
         score.slotIndex = candidateSlotIndex;
-        score.sameRow =
-            (candidateSlotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT) ==
-            (rangedBot.slotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT);
-
-        float angleDistance = Position::NormalizeOrientation(
-            slotAngles[candidateSlotIndex] - slotAngles[rangedBot.slotIndex]);
-        if (angleDistance > static_cast<float>(M_PI))
-            angleDistance -= 2.0f * static_cast<float>(M_PI);
-
-        score.angleDistance = std::fabs(angleDistance);
+        score.moveDistance = KILJAEDEN_RANGED_POSITIONS[rangedBot.slotIndex].GetExactDist2d(
+            KILJAEDEN_RANGED_POSITIONS[candidateSlotIndex]);
         score.occupancy = plannedOccupancy[candidateSlotIndex];
         score.armageddonDistance = nearestArmageddonDistances[candidateSlotIndex];
         return score;
@@ -499,11 +453,8 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
         if (!bestFound)
             return true;
 
-        if (candidate.sameRow != best.sameRow)
-            return candidate.sameRow;
-
-        if (candidate.angleDistance != best.angleDistance)
-            return candidate.angleDistance < best.angleDistance;
+        if (candidate.moveDistance != best.moveDistance)
+            return candidate.moveDistance < best.moveDistance;
 
         if (candidate.occupancy != best.occupancy)
             return candidate.occupancy < best.occupancy;
@@ -668,6 +619,32 @@ Position GetKiljaedenFireBloomWaitPosition(Player* bot)
     return Position(
         stack.GetPositionX() + std::cos(angle) * FIRE_BLOOM_STANDOFF,
         stack.GetPositionY() + std::sin(angle) * FIRE_BLOOM_STANDOFF, bot->GetPositionZ());
+}
+
+// Whether the bot clears Fire Bloom with its immunity (Cloak of Shadows, Ice Block, or Divine
+// Shield) as soon as the global cooldown allows, so it need not move away with it. Cloak of Shadows
+// has a short cooldown; Ice Block and Divine Shield are saved for phase 4. The global cooldown is
+// left out on purpose: all three spells are on it, and a bot that waits out the rest of it should
+// not set off for its Fire Bloom position meanwhile.
+bool CanClearKiljaedenFireBloomWithImmunity(Player* bot, Unit* kiljaeden)
+{
+    if (PlayerbotAI::IsTank(bot))
+        return false;
+
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    if (!spellId || !bot->HasSpell(spellId) || bot->HasSpellCooldown(spellId))
+        return false;
+
+    if (bot->getClass() != CLASS_ROGUE &&
+        (!kiljaeden || kiljaeden->GetHealthPct() >= KILJAEDEN_PHASE4_HP_THRESHOLD))
+    {
+        return false;
+    }
+
+    // Forbearance blocks Divine Shield, and Hypothermia Ice Block.
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    return spellInfo &&
+        !(spellInfo->ExcludeCasterAuraSpell && bot->HasAura(spellInfo->ExcludeCasterAuraSpell));
 }
 
 GuidVector FindKiljaedenDragonOrbGuids(Player* bot)

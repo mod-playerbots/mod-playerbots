@@ -800,7 +800,7 @@ bool KiljaedenMeleeShouldSplitIntoTwoGroupsTrigger::IsActiveInEncounter()
     return !IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
 
-bool KiljaedenRangedShouldSpreadInTwoArcsTrigger::IsActiveInEncounter()
+bool KiljaedenRangedShouldKeepFormationTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -834,22 +834,8 @@ bool KiljaedenRangedShouldSpreadInTwoArcsTrigger::IsActiveInEncounter()
 
 bool KiljaedenFireBloomOnImmunityClassTrigger::IsActiveInEncounter()
 {
-    uint8 const botClass = bot->getClass();
-    if (botClass != CLASS_ROGUE && botClass != CLASS_MAGE && botClass != CLASS_PALADIN)
-        return false;
-
-    if (PlayerbotAI::IsTank(bot))
-        return false;
-
-    if (!bot->HasAura(Id(SwpSpells::SPELL_FIRE_BLOOM)))
-        return false;
-
-    // Cloak of Shadows has a short CD. Not Ice Block or Divine Shield, so save them for phase 4+
-    if (botClass == CLASS_ROGUE)
-        return true;
-
-    Unit* kiljaeden = GetEncounterBoss();
-    return kiljaeden && kiljaeden->GetHealthPct() < KILJAEDEN_PHASE4_HP_THRESHOLD;
+    return bot->HasAura(Id(SwpSpells::SPELL_FIRE_BLOOM)) &&
+        CanClearKiljaedenFireBloomWithImmunity(bot, GetEncounterBoss());
 }
 
 bool KiljaedenCastsDarknessOfAThousandSoulsTrigger::IsActiveInEncounter()

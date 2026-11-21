@@ -813,6 +813,10 @@ float KiljaedenHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
 
 float KiljaedenControlMovementAndTargetingMultiplier::GetValueInEncounter(Action* action)
 {
+    // Killing Spree carries the rogue into KJ's Knockback.
+    if (IsKillingSpree(bot, action))
+        return 0.0f;
+
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
@@ -823,10 +827,31 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValueInEncounter(Action
         return target && IsLineThroughKiljaedenKnockback(*bot, *target) ? 0.0f : 1.0f;
     }
 
+    if (dynamic_cast<ReachTargetAction*>(action))
+        return IsReachHeld(action) ? 0.0f : 1.0f;
+
     return dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<CombatFormationMoveAction*>(action) ||
         IsRepositionAction(bot, action) ||
         (dynamic_cast<TankAssistAction*>(action) && PlayerbotAI::IsMainTank(bot)) ? 0.0f : 1.0f;
+}
+
+// Once Kil'jaeden is up, everyone but the tanks has a fixed position, and a reach goes straight to
+// its target, often through his Knockback. The Hands of the Deceiver phase has no positions.
+bool KiljaedenControlMovementAndTargetingMultiplier::IsReachHeld(Action* action)
+{
+    if (PlayerbotAI::IsTank(bot) || !GetEncounterBoss())
+        return false;
+
+    // Demo Locks in Metamorphosis leave their positions to melee Reflections.
+    if (bot->getClass() == CLASS_WARLOCK && bot->HasAura(Id(SwpSpells::SPELL_METAMORPHOSIS)) &&
+        dynamic_cast<ReachMeleeAction*>(action))
+    {
+        Unit* target = action->GetTarget();
+        return !target || target->GetEntry() != Id(SwpNpcs::NPC_SINISTER_REFLECTION);
+    }
+
+    return true;
 }
 
 float KiljaedenPrioritizeDarknessProtectionMultiplier::GetValueInEncounter(Action* action)

@@ -434,6 +434,9 @@ public:
 
 protected:
     float GetValueInEncounter(Action* action) override;
+
+private:
+    bool IsReachHeld(Action* action);
 };
 
 class KiljaedenPrioritizeDarknessProtectionMultiplier : public SunwellEncounterMultiplier

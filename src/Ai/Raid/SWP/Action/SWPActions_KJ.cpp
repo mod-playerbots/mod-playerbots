@@ -311,6 +311,8 @@ bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::TryGetMeleePosition(Positi
         return false;
 
     if (bot->HasAura(Id(SwpSpells::SPELL_FIRE_BLOOM)) &&
+        !CanClearKiljaedenFireBloomWithImmunity(
+            bot, GetSwpBoss(bot, SwpBosses::DATA_KILJAEDEN)) &&
         IsOutsideKiljaedenArmageddons(bot->GetInstanceId(), KILJAEDEN_MELEE_BACK_POSITION))
     {
         position = KILJAEDEN_MELEE_BACK_POSITION;
@@ -439,8 +441,11 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
         if (!kiljaeden)
             return false;
 
-        if (GetKiljaedenDarknessTimeLeftMs(kiljaeden) >= SHIELD_OF_THE_BLUE_CAST_WINDOW_MS)
+        if (!CanClearKiljaedenFireBloomWithImmunity(bot, kiljaeden) &&
+            GetKiljaedenDarknessTimeLeftMs(kiljaeden) >= SHIELD_OF_THE_BLUE_CAST_WINDOW_MS)
+        {
             destination = GetKiljaedenFireBloomWaitPosition(bot);
+        }
     }
 
     constexpr float arrivalDist = 1.0f;
@@ -450,9 +455,14 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
         return false;
 
     bot->CastStop();
-    return MoveTo(
+    bool const isMoving = MoveTo(
         SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_FORCED, true, false);
+
+    // A step is refused while the last one's wait runs, and the wait is set at the speed the step
+    // started with. A snare that ends mid-step (Flame Dart) leaves the bot standing for the rest of
+    // the wait, so the action keeps the tick: otherwise a cast can start then and hold the bot.
+    return isMoving || botAI->CanMove();
 }
 
 bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
