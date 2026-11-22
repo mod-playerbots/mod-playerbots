@@ -59,7 +59,10 @@ private:
     static Trigger* bwl_firemaw_not_victim(PlayerbotAI* botAI) { return new BwlBlackDrakeNotVictimTrigger(botAI, "firemaw"); }
     static Trigger* bwl_ebonroc_not_victim(PlayerbotAI* botAI) { return new BwlBlackDrakeNotVictimTrigger(botAI, "ebonroc"); }
     static Trigger* bwl_flamegor_fire_resistance_trigger(PlayerbotAI* botAI) { return new BossFireResistanceTrigger(botAI, "flamegor"); }
-    static Trigger* bwl_ebonroc_shadow_tank_swap(PlayerbotAI* botAI) { return new BwlEbonrocShadowTankSwapTrigger(botAI); }
+    static Trigger* bwl_ebonroc_shadow_tank_swap(PlayerbotAI* botAI)
+    {
+        return new BwlEbonrocShadowTankSwapTrigger(botAI);
+    }
     static Trigger* bwl_flamegor_not_victim(PlayerbotAI* botAI) { return new BwlBlackDrakeNotVictimTrigger(botAI, "flamegor"); }
     static Trigger* bwl_chromaggus_fire_resistance_trigger(PlayerbotAI* botAI) { return new BossFireResistanceTrigger(botAI, "chromaggus"); }
     static Trigger* bwl_affliction_bronze(PlayerbotAI* botAI) { return new BwlAfflictionBronzeTrigger(botAI); }

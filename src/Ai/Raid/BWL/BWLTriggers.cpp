@@ -92,7 +92,8 @@ bool BwlEbonrocShadowTankSwapTrigger::IsActive()
         return false;
 
     Unit* victim = ebonroc->GetVictim();
-    return victim && victim != bot && victim->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_SHADOW_OF_EBONROC));
+    return victim && victim != bot &&
+           victim->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_SHADOW_OF_EBONROC));
 }
 
 // Chromaggus
