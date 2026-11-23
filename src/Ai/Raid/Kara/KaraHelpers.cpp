@@ -245,14 +245,14 @@ Unit* GetManaWarpToStun(PlayerbotAI* botAI)
         return target;
     }
 
-    if (needsComboPoints)
-        return nullptr;
-
-    for (auto const& attackers : context->GetValue<GuidVector>("attackers")->RefGet())
+    if (!needsComboPoints)
     {
-        Unit* attacker = botAI->GetUnit(attackers);
-        if (IsManaWarpToStun(bot, attacker, reach))
-            return attacker;
+        for (auto const& attackers : context->GetValue<GuidVector>("attackers")->RefGet())
+        {
+            Unit* attacker = botAI->GetUnit(attackers);
+            if (IsManaWarpToStun(bot, attacker, reach))
+                return attacker;
+        }
     }
 
     return nullptr;
@@ -1046,8 +1046,9 @@ float FindNetherspiteBeamPositionDistance(
     float bestGap = std::numeric_limits<float>::max();
     auto const search = [&](float from)
     {
-        for (float distance = from; distance <= high; distance += searchStep)
+        for (uint32 i = 0; from + i * searchStep <= high; ++i)
         {
+            float const distance = from + i * searchStep;
             float const x = netherspite.GetPositionX() + dirX * distance;
             float const y = netherspite.GetPositionY() + dirY * distance;
             float const gap = std::abs(distance - preferred);
@@ -1159,11 +1160,13 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
         return std::nullopt;
     }
 
+    constexpr float minDistance = 1.0f;
     constexpr float maxDistance = 20.0f;
     constexpr float distanceStep = 0.5f;
     constexpr uint8 numAngles = 24;
-    for (float distance = 1.0f; distance <= maxDistance; distance += distanceStep)
+    for (uint8 step = 0; minDistance + step * distanceStep <= maxDistance; ++step)
     {
+        float const distance = minDistance + step * distanceStep;
         for (uint8 i = 0; i < numAngles; ++i)
         {
             float const angle = i * 2.0f * M_PI / numAngles;

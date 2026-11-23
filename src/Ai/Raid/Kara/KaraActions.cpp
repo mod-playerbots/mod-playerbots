@@ -1292,8 +1292,9 @@ std::optional<Position> NetherspiteManageTimersAndTrackersAction::ShiftNextPosit
     float const dirX = (portal.GetPositionX() - netherspite->GetPositionX()) / length;
     float const dirY = (portal.GetPositionY() - netherspite->GetPositionY()) / length;
     constexpr float shiftStep = 0.5f;
-    for (float shift = shiftStep; shift <= NETHERSPITE_NEXT_SHIFT_RANGE; shift += shiftStep)
+    for (uint8 i = 1; i * shiftStep <= NETHERSPITE_NEXT_SHIFT_RANGE; ++i)
     {
+        float const shift = i * shiftStep;
         for (float const direction : { -1.0f, 1.0f })
         {
             float const x = position.GetPositionX() + dirX * shift * direction;

@@ -658,7 +658,7 @@ float NightbaneHoldDpsMultiplier::GetValueInEncounter(Action* action)
     if (dynamic_cast<CastHealingSpellAction*>(action) || !IsNightbaneDpsHeld(bot, nightbane))
         return 1.0f;
 
-    return action->GetTarget() == nightbane ? GetDpsHoldValue(bot, action) : 1.0f;
+    return action && action->GetTarget() == nightbane ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 // Movement is highly controlled on Nightbane. The most important note is that during the ground
