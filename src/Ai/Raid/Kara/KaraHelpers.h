@@ -12,7 +12,6 @@
 #include "Position.h"
 #include <array>
 #include <cmath>
-#include <initializer_list>
 #include <optional>
 #include <string>
 #include <string_view>

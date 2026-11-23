@@ -17,6 +17,7 @@
 #include "Spell.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
+#include <initializer_list>
 #include <limits>
 #include <list>
 #include <map>

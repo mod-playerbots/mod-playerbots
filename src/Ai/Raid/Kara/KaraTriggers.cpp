@@ -12,6 +12,7 @@
 #include "RtiTargetValue.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
+#include <cmath>
 
 using namespace KaraHelpers;
 using namespace EncounterHelpers;
