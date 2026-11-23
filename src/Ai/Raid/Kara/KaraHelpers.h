@@ -35,6 +35,22 @@ constexpr uint32 Id(T value)
     return static_cast<uint32>(value);
 }
 
+// Boss ids from karazhan.h, matching DungeonEncounter.dbc's encounterIndex.
+enum class KaraBosses : uint32
+{
+    DATA_ATTUMEN           = 0,
+    DATA_MOROES            = 1,
+    DATA_MAIDEN            = 2,
+    DATA_OPERA_PERFORMANCE = 3,
+    DATA_CURATOR           = 4,
+    DATA_TERESTIAN         = 5,
+    DATA_ARAN              = 6,
+    DATA_NETHERSPITE       = 7,
+    // DATA_CHESS_EVENT    = 8, // No strategy
+    DATA_MALCHEZAAR        = 9,
+    DATA_NIGHTBANE         = 10,
+};
+
 enum class KaraSpells : uint32
 {
     // Trash
@@ -94,76 +110,61 @@ enum class KaraSpells : uint32
 enum class KaraNpcs : uint32
 {
     // Trash
-    NPC_MANA_WARP                   = 16530,
+    NPC_MANA_WARP                    = 16530,
 
     // Attumen the Huntsman
     NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED = 16152,
 
     // Moroes
-    NPC_LADY_KEIRA_BERRYBUCK        = 17007,
-    NPC_LADY_CATRIONA_VON_INDI      = 19872,
-    NPC_LORD_CRISPIN_FERENCE        = 19873,
-    NPC_BARON_RAFE_DREUGER          = 19874,
-    NPC_BARONESS_DOROTHEA_MILLSTIPE = 19875,
-    NPC_LORD_ROBIN_DARIS            = 19876,
+    NPC_LADY_KEIRA_BERRYBUCK         = 17007,
+    NPC_LADY_CATRIONA_VON_INDI       = 19872,
+    NPC_LORD_CRISPIN_FERENCE         = 19873,
+    NPC_BARON_RAFE_DREUGER           = 19874,
+    NPC_BARONESS_DOROTHEA_MILLSTIPE  = 19875,
+    NPC_LORD_ROBIN_DARIS             = 19876,
 
     // Romulo and Julianne
-    NPC_ROMULO                      = 17533,
-    NPC_JULIANNE                    = 17534,
+    NPC_ROMULO                       = 17533,
+    NPC_JULIANNE                     = 17534,
 
     // The Wizard of Oz
-    NPC_DOROTHEE                    = 17535,
-    NPC_STRAWMAN                    = 17543,
-    NPC_ROAR                        = 17546,
-    NPC_TINHEAD                     = 17547,
-    NPC_TITO                        = 17548,
+    NPC_DOROTHEE                     = 17535,
+    NPC_STRAWMAN                     = 17543,
+    NPC_ROAR                         = 17546,
+    NPC_TINHEAD                      = 17547,
+    NPC_TITO                         = 17548,
 
     // The Curator
-    NPC_THE_CURATOR                 = 15691,
+    NPC_THE_CURATOR                  = 15691,
 
     // Terestian Illhoof
-    NPC_TERESTIAN_ILLHOOF           = 15688,
-    NPC_KILREK                      = 17229,
-    NPC_DEMON_CHAINS                = 17248,
-    NPC_FIENDISH_IMP                = 17267,
+    NPC_TERESTIAN_ILLHOOF            = 15688,
+    NPC_KILREK                       = 17229,
+    NPC_DEMON_CHAINS                 = 17248,
+    NPC_FIENDISH_IMP                 = 17267,
 
     // Shade of Aran
-    NPC_CONJURED_ELEMENTAL          = 17167,
+    NPC_CONJURED_ELEMENTAL           = 17167,
 
     // Netherspite
-    NPC_NETHERSPITE                 = 15689,
-    NPC_VOID_ZONE                   = 16697,
-    NPC_GREEN_PORTAL                = 17367, // "Nether Portal - Serenity <Healing Portal>"
-    NPC_BLUE_PORTAL                 = 17368, // "Nether Portal - Dominance <Damage Portal>"
-    NPC_RED_PORTAL                  = 17369, // "Nether Portal - Perseverance <Tanking Portal>"
+    NPC_NETHERSPITE                  = 15689,
+    NPC_VOID_ZONE                    = 16697,
+    NPC_GREEN_PORTAL                 = 17367, // "Nether Portal - Serenity <Healing Portal>"
+    NPC_BLUE_PORTAL                  = 17368, // "Nether Portal - Dominance <Damage Portal>"
+    NPC_RED_PORTAL                   = 17369, // "Nether Portal - Perseverance <Tanking Portal>"
 
     // Prince Malchezaar
-    NPC_PRINCE_MALCHEZAAR           = 15690,
-    NPC_NETHERSPITE_INFERNAL        = 17646,
+    NPC_PRINCE_MALCHEZAAR            = 15690,
+    NPC_NETHERSPITE_INFERNAL         = 17646,
 
     // Nightbane
-    NPC_NIGHTBANE                   = 17225,
-    NPC_RESTLESS_SKELETON           = 17261,
+    NPC_NIGHTBANE                    = 17225,
+    NPC_RESTLESS_SKELETON            = 17261,
 };
 
 // Shared
-inline constexpr uint32 KARA_MAP_ID = 532;
 
-// DungeonEncounter.dbc encounterIndex, map 532
-enum class KaraBosses : uint32
-{
-    DATA_ATTUMEN                    = 0,
-    DATA_MOROES                     = 1,
-    DATA_MAIDEN                     = 2,
-    DATA_OPERA_PERFORMANCE          = 3,
-    DATA_CURATOR                    = 4,
-    DATA_TERESTIAN                  = 5,
-    DATA_ARAN                       = 6,
-    DATA_NETHERSPITE                = 7,
-    // DATA_CHESS_EVENT             = 8, // No strategy
-    DATA_MALCHEZAAR                 = 9,
-    DATA_NIGHTBANE                  = 10,
-};
+inline constexpr uint32 KARA_MAP_ID = 532;
 
 Unit* GetKaraBoss(Player* bot, KaraBosses boss);
 // Barnes spawns the Opera cast non-attackable, and the play's release clears the flag, so an
