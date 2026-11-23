@@ -113,10 +113,10 @@ inline constexpr float KILJAEDEN_DRAGON_CLUSTER_RADIUS = 6.0f;
 inline constexpr uint8 KILJAEDEN_DRAGON_MIN_CLUSTER_SIZE = 3;
 
 inline Position const SUNWELL_CENTER_POSITION =       { 1698.450f, 628.030f, 28.199f };
+// Also where the raid stacks for Shield of the Blue during Darkness of a Thousand Souls.
 inline Position const KILJAEDEN_TANK_POSITION =       { 1705.876f, 636.145f, 27.836f };
 inline Position const KILJAEDEN_S_MELEE_POSITION =    { 1684.160f, 630.488f, 27.215f };
 inline Position const KILJAEDEN_E_MELEE_POSITION =    { 1702.162f, 614.013f, 27.516f };
-inline Position const KILJAEDEN_DARKNESS_POSITION =   { 1706.417f, 636.323f, 27.849f };
 // Melee with Fire Bloom wait here so that their group isn't splashed, and melee also go here when
 // Armageddons target both melee positions.
 inline Position const KILJAEDEN_MELEE_BACK_POSITION = { 1687.648f, 616.227f, 27.447f };
@@ -124,25 +124,25 @@ inline Position const KILJAEDEN_MELEE_BACK_POSITION = { 1687.648f, 616.227f, 27.
 // Assigned in order, healers first: 0-6 healers, 7-8 an 8th and 9th healer, else ranged DPS.
 // 11.5 yd apart: Fire Bloom on one bot, or an Armageddon or Shadow Spike at one, spares the rest.
 inline std::array const KILJAEDEN_RANGED_POSITIONS = {
-    Position{ 1697.702f, 644.247f, 27.402f },
     Position{ 1714.670f, 628.720f, 27.326f },
-    Position{ 1708.668f, 647.713f, 28.458f },
+    Position{ 1697.702f, 644.247f, 27.402f },
     Position{ 1717.152f, 639.949f, 28.405f },
-    Position{ 1725.635f, 632.186f, 28.050f },
-    Position{ 1719.633f, 651.178f, 28.050f },
-    Position{ 1728.117f, 643.415f, 28.050f },
-    Position{ 1723.154f, 620.957f, 28.050f },
+    Position{ 1708.668f, 647.713f, 28.458f },
     Position{ 1700.184f, 655.477f, 28.050f },
-    Position{ 1720.672f, 609.728f, 28.050f },
-    Position{ 1689.218f, 652.011f, 28.050f },
-    Position{ 1734.119f, 624.422f, 28.050f },
-    Position{ 1702.665f, 666.706f, 28.050f },
+    Position{ 1719.633f, 651.178f, 28.050f },
     Position{ 1711.149f, 658.942f, 28.050f },
-    Position{ 1736.601f, 635.651f, 28.050f },
-    Position{ 1722.115f, 662.408f, 28.246f },
-    Position{ 1730.598f, 654.644f, 28.357f },
-    Position{ 1691.700f, 663.240f, 28.050f },
+    Position{ 1689.218f, 652.011f, 28.050f },
+    Position{ 1725.635f, 632.186f, 28.050f },
     Position{ 1678.253f, 648.546f, 28.050f },
+    Position{ 1723.154f, 620.957f, 28.050f },
+    Position{ 1691.700f, 663.240f, 28.050f },
+    Position{ 1736.601f, 635.651f, 28.050f },
+    Position{ 1728.117f, 643.415f, 28.050f },
+    Position{ 1702.665f, 666.706f, 28.050f },
+    Position{ 1730.598f, 654.644f, 28.357f },
+    Position{ 1722.115f, 662.408f, 28.246f },
+    Position{ 1734.119f, 624.422f, 28.050f },
+    Position{ 1720.672f, 609.728f, 28.050f },
 };
 inline constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
     std::tuple_size_v<decltype(KILJAEDEN_RANGED_POSITIONS)>;

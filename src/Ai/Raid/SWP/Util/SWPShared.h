@@ -26,6 +26,17 @@ constexpr uint32 Id(T value)
     return static_cast<uint32>(value);
 }
 
+// Boss ids from sunwell_plateau.h, matching DungeonEncounter.dbc's encounterIndex.
+enum class SwpBosses : uint32
+{
+    DATA_KALECGOS                   = 0,
+    DATA_BRUTALLUS                  = 1,
+    DATA_FELMYST                    = 2,
+    DATA_EREDAR_TWINS               = 3,
+    DATA_MURU                       = 4,
+    DATA_KILJAEDEN                  = 5,
+};
+
 enum class SwpSpells : uint32
 {
     // Trash - Apocalypse Guard
@@ -179,19 +190,6 @@ enum class SwpObjects : uint32
 
 inline constexpr uint32 SWP_MAP_ID = 580;
 
-// DungeonEncounter.dbc encounterIndex, map 580
-enum class SwpBosses : uint32
-{
-    DATA_KALECGOS                   = 0,
-    DATA_BRUTALLUS                  = 1,
-    DATA_FELMYST                    = 2,
-    DATA_EREDAR_TWINS               = 3,
-    DATA_MURU                       = 4,
-    DATA_KILJAEDEN                  = 5,
-};
-
-Unit* GetSwpBoss(Player* bot, SwpBosses boss);
-
 // Steps short enough to navigate poor terrain, matching the standard in EncounterHelpers.
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
@@ -215,6 +213,7 @@ inline constexpr float SELF_AOE_RACIAL_RADIUS = 8.0f;
 // Radius for Challenging Shout and Challenging Roar.
 inline constexpr float TAUNT_SHOUT_RADIUS = 10.0f;
 
+Unit* GetSwpBoss(Player* bot, SwpBosses boss);
 // Offset from the center of an arc for assigning positioning slots, filling outward and
 // alternating sides. Slot 0 is the center when the count is odd and straddles it when even.
 float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth);
@@ -244,7 +243,7 @@ bool GetTankPathStep(
 inline constexpr uint32 VOLATILE_FIEND_CACHE_INTERVAL_MS = 200;
 // A fiend's aggro radius against a level 70 player.
 inline constexpr float VOLATILE_FIEND_AGGRO_RADIUS = 21.0f;
-inline constexpr float VOLATILE_FIEND_SAFE_DISTANCE = VOLATILE_FIEND_AGGRO_RADIUS + 1.0f;
+inline constexpr float VOLATILE_FIEND_CLEARANCE = VOLATILE_FIEND_AGGRO_RADIUS + 1.0f;
 // Do not try to reach targets if within this distance of a fiend. The intent (and effect) is to
 // keep bots from approaching a fiend, since the raid moves forwards only through the gauntlet.
 inline constexpr float VOLATILE_FIEND_APPROACH_SUPPRESSION_RADIUS =

@@ -434,7 +434,7 @@ bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryAdjustRangedForArmaged
 
 bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
 {
-    Position destination = KILJAEDEN_DARKNESS_POSITION;
+    Position destination = KILJAEDEN_TANK_POSITION;
     if (bot->HasAura(Id(SwpSpells::SPELL_FIRE_BLOOM)))
     {
         Unit* kiljaeden = GetSwpBoss(bot, SwpBosses::DATA_KILJAEDEN);
@@ -589,7 +589,7 @@ bool KiljaedenDragonBuffAndProtectRaidAction::ExecuteDuringDarknessOfAThousandSo
         return false;
 
     constexpr float castReadyDistanceFromStack = 3.0f;
-    Position const& stackPosition = KILJAEDEN_DARKNESS_POSITION;
+    Position const& stackPosition = KILJAEDEN_TANK_POSITION;
     float const distanceToStack = dragon->GetExactDist2d(
         stackPosition.GetPositionX(), stackPosition.GetPositionY());
 

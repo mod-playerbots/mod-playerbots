@@ -173,11 +173,11 @@ bool VolatileFiendMoveAwayAction::Execute(Event /*event*/)
         return false;
 
     float const distance = bot->GetExactDist(fiend);
-    if (distance >= VOLATILE_FIEND_SAFE_DISTANCE)
+    if (distance >= VOLATILE_FIEND_CLEARANCE)
         return false;
 
     bot->CastStop();
-    return MoveAway(fiend, VOLATILE_FIEND_SAFE_DISTANCE - distance);
+    return MoveAway(fiend, VOLATILE_FIEND_CLEARANCE - distance);
 }
 
 // At low health, Infernal Defense is cast, granting immunity to all damage but holy.

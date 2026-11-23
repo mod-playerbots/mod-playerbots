@@ -276,242 +276,6 @@ Position ClosestPointOnSegment(Position const& p, Position const& segA, Position
         segA.GetPositionX() + t * abX, segA.GetPositionY() + t * abY, segA.GetPositionZ());
 }
 
-} // end anonymous namespace
-
-FelmystDemonicVaporGuids FindFelmystDemonicVaporGuids(Player* bot)
-{
-    FelmystDemonicVaporGuids guids;
-
-    auto const addGuids = [bot](uint32 entry, GuidVector& out)
-    {
-        std::list<Creature*> creatures;
-        bot->GetCreatureListWithEntryInGrid(creatures, entry, DEMONIC_VAPOR_SEARCH_RADIUS);
-        for (Creature* creature : creatures)
-        {
-            if (creature && creature->IsAlive())
-                out.push_back(creature->GetGUID());
-        }
-    };
-
-    addGuids(Id(SwpNpcs::NPC_DEMONIC_VAPOR), guids.heads);
-    addGuids(Id(SwpNpcs::NPC_DEMONIC_VAPOR_TRAIL), guids.trails);
-    return guids;
-}
-
-std::vector<Creature*> GetDemonicVaporHazards(Player* bot)
-{
-    FelmystDemonicVaporGuids const& guids = GetCachedDemonicVapors(bot);
-
-    std::vector<Creature*> hazards;
-    hazards.reserve(guids.heads.size() + guids.trails.size());
-
-    for (ObjectGuid const& guid : guids.heads)
-    {
-        Creature* head = GetLivingCreature(bot, guid);
-        if (head && head->GetSummonerGUID() != bot->GetGUID())
-            hazards.push_back(head);
-    }
-
-    for (ObjectGuid const& guid : guids.trails)
-    {
-        if (Creature* trail = GetLivingCreature(bot, guid))
-            hazards.push_back(trail);
-    }
-
-    return hazards;
-}
-
-// Any living head the bot summoned, which is the head chasing it.
-Creature* GetFelmystOwnDemonicVapor(Player* bot)
-{
-    for (ObjectGuid const& guid : GetCachedDemonicVapors(bot).heads)
-    {
-        Creature* head = GetLivingCreature(bot, guid);
-        if (head && head->GetSummonerGUID() == bot->GetGUID())
-            return head;
-    }
-
-    return nullptr;
-}
-
-bool IsNearFelmystDemonicVaporHazard(Player* bot)
-{
-    return IsNearDemonicVaporHazard(
-        bot->GetPositionX(), bot->GetPositionY(), GetDemonicVaporHazards(bot),
-        DEMONIC_VAPOR_CLEARANCE);
-}
-
-// Called by the summon hook for every vapor, before the head appears.
-void RecordFelmystDemonicVaporSummon(Player* target)
-{
-    if (!target)
-        return;
-
-    FelmystEncounterState& state = FelmystState(target->GetInstanceId());
-    if (state.demonicVaporCount < std::numeric_limits<uint8>::max())
-        ++state.demonicVaporCount;
-
-    if (state.demonicVaporCount == 1)
-        state.firstDemonicVaporTargetGuid = target->GetGUID();
-}
-
-Position const& GetFelmystMainTankGroundPosition(Player* bot)
-{
-    Position const* bestPosition = &FELMYST_TANK_POSITIONS[0];
-    float bestDistance = std::numeric_limits<float>::max();
-
-    for (Position const& position : FELMYST_TANK_POSITIONS)
-    {
-        float const distance = bot->GetExactDist2d(position);
-        if (distance < bestDistance)
-        {
-            bestDistance = distance;
-            bestPosition = &position;
-        }
-    }
-
-    return *bestPosition;
-}
-
-bool TryGetFelmystGroundStackPosition(
-    Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position)
-{
-    float destinationX = 0.0f;
-    float destinationY = 0.0f;
-
-    if (!TryGetGroundStackCenter(bot, felmyst, stack, destinationX, destinationY))
-        return false;
-
-    float destinationZ = bot->GetMapWaterOrGroundLevel(
-        destinationX, destinationY, bot->GetPositionZ());
-
-    if (destinationZ <= INVALID_HEIGHT)
-        destinationZ = bot->GetPositionZ();
-
-    // No raycast clamp from the bot: it froze bots behind a tree. The path step goes around.
-    position = Position{ destinationX, destinationY, destinationZ };
-    return true;
-}
-
-FelmystGroundStack GetClosestFelmystGroundStack(Player* bot, Unit* felmyst, Player* reference)
-{
-    if (!felmyst || !reference)
-        return FelmystGroundStack::None;
-
-    FelmystGroundStack bestStack = FelmystGroundStack::None;
-    float bestDistance = std::numeric_limits<float>::max();
-    for (FelmystGroundStack stack : {
-             FelmystGroundStack::Melee, FelmystGroundStack::Left, FelmystGroundStack::Right })
-    {
-        float stackX = 0.0f;
-        float stackY = 0.0f;
-        if (!TryGetGroundStackCenter(bot, felmyst, stack, stackX, stackY))
-            continue;
-
-        float const stackDistance = reference->GetExactDist2d(stackX, stackY);
-        if (stackDistance < bestDistance)
-        {
-            bestDistance = stackDistance;
-            bestStack = stack;
-        }
-    }
-
-    return bestStack;
-}
-
-float GetFelmystFrontAngle(Player* bot, Unit* felmyst)
-{
-    Position const& defaultTankPosition = GetFelmystMainTankGroundPosition(bot);
-    float frontX = defaultTankPosition.GetPositionX();
-    float frontY = defaultTankPosition.GetPositionY();
-
-    Player* mainTank = GetGroupMainTank(bot);
-    if (mainTank && mainTank->IsAlive() && mainTank->GetMapId() == felmyst->GetMapId())
-    {
-        frontX = mainTank->GetPositionX();
-        frontY = mainTank->GetPositionY();
-    }
-    else if (Unit* victim = felmyst->GetVictim())
-    {
-        frontX = victim->GetPositionX();
-        frontY = victim->GetPositionY();
-    }
-
-    return std::atan2(frontY - felmyst->GetPositionY(), frontX - felmyst->GetPositionX());
-}
-
-bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position)
-{
-    if (!felmyst || bot->GetMapId() != SWP_MAP_ID || !PlayerbotAI::IsRanged(bot))
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    bool const botIsHealer = PlayerbotAI::IsHeal(bot);
-    ObjectGuid const botGuid = bot->GetGUID();
-    uint32 stackIndex = 0;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member) ||
-            !PlayerbotAI::IsRanged(member))
-        {
-            continue;
-        }
-
-        if (PlayerbotAI::IsHeal(member) == botIsHealer && member->GetGUID() < botGuid)
-            ++stackIndex;
-    }
-
-    // Healers spread across all three stacks; ranged dps alternates between the two sides
-    FelmystGroundStack const stack = botIsHealer ?
-        static_cast<FelmystGroundStack>(stackIndex % 3) :
-        (stackIndex % 2 == 0 ? FelmystGroundStack::Left : FelmystGroundStack::Right);
-
-    return TryGetFelmystGroundStackPosition(bot, felmyst, stack, position);
-}
-
-bool IsFelmystRangedStackActive(Player* bot, Unit* felmyst)
-{
-    if (!felmyst || felmyst->IsFlying() || !PlayerbotAI::IsRanged(bot) ||
-        felmyst->GetVictim() == bot)
-    {
-        return false;
-    }
-
-    // On initial landing, let the MT get aggro before assuming positions
-    Player* mainTank = GetGroupMainTank(bot);
-    if (mainTank && felmyst->GetVictim() != mainTank &&
-        felmyst->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
-    {
-        return false;
-    }
-
-    // Priests may leave the stack to Mass Dispel Gas Nova beyond their reach.
-    if (bot->getClass() == CLASS_PRIEST && IsFelmystMassDispelReady(bot) &&
-        GetFelmystGasNovaDispelTarget(bot))
-    {
-        return false;
-    }
-
-    return !GetFelmystEncapsulateTarget(bot) && !DidEncapsulateOccurThisGroundPhase(bot);
-}
-
-bool IsFelmystLanding(Unit* felmyst)
-{
-    Position destination;
-    if (!TryGetFlightDestination(felmyst, destination))
-        return false;
-
-    return IsNearLandingPosition(destination);
-}
-
-namespace
-{
-
 // A pass is recognized by watching Felmyst's flight destination.
 void AdvanceFelmystFogPassTracker(Unit* felmyst, FogPassState& tracker)
 {
@@ -780,7 +544,238 @@ bool TryFindSpotPastFogThreshold(
     return false;
 }
 
-} // end anonymous namespace (Fog of Corruption)
+} // end anonymous namespace
+
+FelmystDemonicVaporGuids FindFelmystDemonicVaporGuids(Player* bot)
+{
+    FelmystDemonicVaporGuids guids;
+
+    auto const addGuids = [bot](uint32 entry, GuidVector& out)
+    {
+        std::list<Creature*> creatures;
+        bot->GetCreatureListWithEntryInGrid(creatures, entry, DEMONIC_VAPOR_SEARCH_RADIUS);
+        for (Creature* creature : creatures)
+        {
+            if (creature && creature->IsAlive())
+                out.push_back(creature->GetGUID());
+        }
+    };
+
+    addGuids(Id(SwpNpcs::NPC_DEMONIC_VAPOR), guids.heads);
+    addGuids(Id(SwpNpcs::NPC_DEMONIC_VAPOR_TRAIL), guids.trails);
+    return guids;
+}
+
+std::vector<Creature*> GetDemonicVaporHazards(Player* bot)
+{
+    FelmystDemonicVaporGuids const& guids = GetCachedDemonicVapors(bot);
+
+    std::vector<Creature*> hazards;
+    hazards.reserve(guids.heads.size() + guids.trails.size());
+
+    for (ObjectGuid const& guid : guids.heads)
+    {
+        Creature* head = GetLivingCreature(bot, guid);
+        if (head && head->GetSummonerGUID() != bot->GetGUID())
+            hazards.push_back(head);
+    }
+
+    for (ObjectGuid const& guid : guids.trails)
+    {
+        if (Creature* trail = GetLivingCreature(bot, guid))
+            hazards.push_back(trail);
+    }
+
+    return hazards;
+}
+
+// Any living head the bot summoned, which is the head chasing it.
+Creature* GetFelmystOwnDemonicVapor(Player* bot)
+{
+    for (ObjectGuid const& guid : GetCachedDemonicVapors(bot).heads)
+    {
+        Creature* head = GetLivingCreature(bot, guid);
+        if (head && head->GetSummonerGUID() == bot->GetGUID())
+            return head;
+    }
+
+    return nullptr;
+}
+
+bool IsNearFelmystDemonicVaporHazard(Player* bot)
+{
+    return IsNearDemonicVaporHazard(
+        bot->GetPositionX(), bot->GetPositionY(), GetDemonicVaporHazards(bot),
+        DEMONIC_VAPOR_CLEARANCE);
+}
+
+// Called by the summon hook for every vapor, before the head appears.
+void RecordFelmystDemonicVaporSummon(Player* target)
+{
+    if (!target)
+        return;
+
+    FelmystEncounterState& state = FelmystState(target->GetInstanceId());
+    if (state.demonicVaporCount < std::numeric_limits<uint8>::max())
+        ++state.demonicVaporCount;
+
+    if (state.demonicVaporCount == 1)
+        state.firstDemonicVaporTargetGuid = target->GetGUID();
+}
+
+Position const& GetFelmystMainTankGroundPosition(Player* bot)
+{
+    Position const* bestPosition = &FELMYST_TANK_POSITIONS[0];
+    float bestDistance = std::numeric_limits<float>::max();
+
+    for (Position const& position : FELMYST_TANK_POSITIONS)
+    {
+        float const distance = bot->GetExactDist2d(position);
+        if (distance < bestDistance)
+        {
+            bestDistance = distance;
+            bestPosition = &position;
+        }
+    }
+
+    return *bestPosition;
+}
+
+bool TryGetFelmystGroundStackPosition(
+    Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position)
+{
+    float destinationX = 0.0f;
+    float destinationY = 0.0f;
+
+    if (!TryGetGroundStackCenter(bot, felmyst, stack, destinationX, destinationY))
+        return false;
+
+    float destinationZ = bot->GetMapWaterOrGroundLevel(
+        destinationX, destinationY, bot->GetPositionZ());
+
+    if (destinationZ <= INVALID_HEIGHT)
+        destinationZ = bot->GetPositionZ();
+
+    // No raycast clamp from the bot: it froze bots behind a tree. The path step goes around.
+    position = Position{ destinationX, destinationY, destinationZ };
+    return true;
+}
+
+FelmystGroundStack GetClosestFelmystGroundStack(Player* bot, Unit* felmyst, Player* reference)
+{
+    if (!felmyst || !reference)
+        return FelmystGroundStack::None;
+
+    FelmystGroundStack bestStack = FelmystGroundStack::None;
+    float bestDistance = std::numeric_limits<float>::max();
+    for (FelmystGroundStack stack : {
+             FelmystGroundStack::Melee, FelmystGroundStack::Left, FelmystGroundStack::Right })
+    {
+        float stackX = 0.0f;
+        float stackY = 0.0f;
+        if (!TryGetGroundStackCenter(bot, felmyst, stack, stackX, stackY))
+            continue;
+
+        float const stackDistance = reference->GetExactDist2d(stackX, stackY);
+        if (stackDistance < bestDistance)
+        {
+            bestDistance = stackDistance;
+            bestStack = stack;
+        }
+    }
+
+    return bestStack;
+}
+
+float GetFelmystFrontAngle(Player* bot, Unit* felmyst)
+{
+    Position const& defaultTankPosition = GetFelmystMainTankGroundPosition(bot);
+    float frontX = defaultTankPosition.GetPositionX();
+    float frontY = defaultTankPosition.GetPositionY();
+
+    Player* mainTank = GetGroupMainTank(bot);
+    if (mainTank && mainTank->IsAlive() && mainTank->GetMapId() == felmyst->GetMapId())
+    {
+        frontX = mainTank->GetPositionX();
+        frontY = mainTank->GetPositionY();
+    }
+    else if (Unit* victim = felmyst->GetVictim())
+    {
+        frontX = victim->GetPositionX();
+        frontY = victim->GetPositionY();
+    }
+
+    return std::atan2(frontY - felmyst->GetPositionY(), frontX - felmyst->GetPositionX());
+}
+
+bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position)
+{
+    if (!felmyst || bot->GetMapId() != SWP_MAP_ID || !PlayerbotAI::IsRanged(bot))
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    bool const botIsHealer = PlayerbotAI::IsHeal(bot);
+    ObjectGuid const botGuid = bot->GetGUID();
+    uint32 stackIndex = 0;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsRanged(member))
+        {
+            continue;
+        }
+
+        if (PlayerbotAI::IsHeal(member) == botIsHealer && member->GetGUID() < botGuid)
+            ++stackIndex;
+    }
+
+    // Healers spread across all three stacks; ranged dps alternates between the two sides
+    FelmystGroundStack const stack = botIsHealer ?
+        static_cast<FelmystGroundStack>(stackIndex % 3) :
+        (stackIndex % 2 == 0 ? FelmystGroundStack::Left : FelmystGroundStack::Right);
+
+    return TryGetFelmystGroundStackPosition(bot, felmyst, stack, position);
+}
+
+bool IsFelmystRangedStackActive(Player* bot, Unit* felmyst)
+{
+    if (!felmyst || felmyst->IsFlying() || !PlayerbotAI::IsRanged(bot) ||
+        felmyst->GetVictim() == bot)
+    {
+        return false;
+    }
+
+    // On initial landing, let the MT get aggro before assuming positions
+    Player* mainTank = GetGroupMainTank(bot);
+    if (mainTank && felmyst->GetVictim() != mainTank &&
+        felmyst->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
+    {
+        return false;
+    }
+
+    // Priests may leave the stack to Mass Dispel Gas Nova beyond their reach.
+    if (bot->getClass() == CLASS_PRIEST && IsFelmystMassDispelReady(bot) &&
+        GetFelmystGasNovaDispelTarget(bot))
+    {
+        return false;
+    }
+
+    return !GetFelmystEncapsulateTarget(bot) && !DidEncapsulateOccurThisGroundPhase(bot);
+}
+
+bool IsFelmystLanding(Unit* felmyst)
+{
+    Position destination;
+    if (!TryGetFlightDestination(felmyst, destination))
+        return false;
+
+    return IsNearLandingPosition(destination);
+}
 
 // The only function that writes Felmyst's air-phase state, apart from the summon hook's count.
 void AdvanceFelmystEncounterState(Unit* felmyst)

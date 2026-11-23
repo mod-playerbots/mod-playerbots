@@ -24,7 +24,6 @@ class Unit;
 namespace SwpHelpers
 {
 
-// The twins whose threat cap the bot has reached; empty for a twin it may still attack.
 // A completed Conflagration cast whose missile hasn't landed yet.
 struct EredarTwinsConflagrationImpact
 {
@@ -32,6 +31,7 @@ struct EredarTwinsConflagrationImpact
     uint32 expireMs = 0;
 };
 
+// The twins whose threat cap the bot has reached; empty for a twin it may still attack.
 struct EredarTwinsThreatHolds
 {
     ObjectGuid sacrolash;

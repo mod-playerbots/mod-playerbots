@@ -597,7 +597,7 @@ bool GetKiljaedenStepToPosition(
 // bot, turned round the stack to just outside the Knockback ring when it would fall inside it.
 Position GetKiljaedenFireBloomWaitPosition(Player* bot)
 {
-    Position const& stack = KILJAEDEN_DARKNESS_POSITION;
+    Position const& stack = KILJAEDEN_TANK_POSITION;
     Position const& center = SUNWELL_CENTER_POSITION;
     float const stackDistance = stack.GetExactDist2d(center);
     float const towardCenter = stack.GetAngle(&center);

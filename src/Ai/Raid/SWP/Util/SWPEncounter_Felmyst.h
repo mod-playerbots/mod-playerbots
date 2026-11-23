@@ -266,6 +266,11 @@ inline std::vector<Position> const FELMYST_EAST_SECOND_VAPOR_ROUTE = {
     Position{ 1469.6f, 624.5f, 22.0f },
 };
 
+FelmystDemonicVaporGuids FindFelmystDemonicVaporGuids(Player* bot);
+std::vector<Creature*> GetDemonicVaporHazards(Player* bot);
+Creature* GetFelmystOwnDemonicVapor(Player* bot);
+bool IsNearFelmystDemonicVaporHazard(Player* bot);
+void RecordFelmystDemonicVaporSummon(Player* target);
 Position const& GetFelmystMainTankGroundPosition(Player* bot);
 bool TryGetFelmystGroundStackPosition(
     Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position);
@@ -274,11 +279,7 @@ float GetFelmystFrontAngle(Player* bot, Unit* felmyst);
 bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position);
 // The ranged stack rule, apart from the early move, which the stack trigger checks itself.
 bool IsFelmystRangedStackActive(Player* bot, Unit* felmyst);
-FelmystDemonicVaporGuids FindFelmystDemonicVaporGuids(Player* bot);
-Creature* GetFelmystOwnDemonicVapor(Player* bot);
-std::vector<Creature*> GetDemonicVaporHazards(Player* bot);
-bool IsNearFelmystDemonicVaporHazard(Player* bot);
-void RecordFelmystDemonicVaporSummon(Player* target);
+bool IsFelmystLanding(Unit* felmyst);
 void AdvanceFelmystEncounterState(Unit* felmyst);
 FelmystAirEnd GetNearestFelmystAirEnd(Unit* felmyst);
 Position const& GetFelmystGroupPosition(FelmystAirEnd end, uint8 demonicVaporCount);
@@ -294,16 +295,15 @@ bool TryGetFelmystSidestepPosition(
     Player* bot, std::vector<Creature*> const& hazards, Position& destination);
 bool IsFelmystClearOfFogLane(float positionX, float positionY, FogLane lane);
 Position GetFelmystFogStopPosition(Player* bot, FogLane lane);
+bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane);
+bool IsFelmystFogActiveForBot(Player* bot, Unit* felmyst);
+bool IsFelmystFogMovementSuppressed(Unit* felmyst);
+bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
 bool TryGetFelmystLandingApproachDestination(
     Player* bot, FogLane lastCompletedLane, Unit* felmyst, Position& destination);
-bool IsFelmystLanding(Unit* felmyst);
-bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
 // From the pull or the landing approach to FELMYST_GROUNDED_DPS_WAIT_MS after touchdown, for
 // everyone but the main tank.
 bool IsFelmystLandingDpsHoldActive(PlayerbotAI* botAI);
-bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane);
-bool IsFelmystFogMovementSuppressed(Unit* felmyst);
-bool IsFelmystFogActiveForBot(Player* bot, Unit* felmyst);
 bool TryGetActiveFogOfCorruptionState(Player* bot, Unit* felmyst, FogOfCorruptionState& state);
 void RecordFelmystIncomingEncapsulateTarget(
     Player* target, uint32 durationMs = 3 * IN_MILLISECONDS);
