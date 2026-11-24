@@ -1478,8 +1478,8 @@ std::optional<Position> FindMalchezaarClearPosition(
     Player* bot = botAI->GetBot();
     bool const isRanged = PlayerbotAI::IsRanged(bot);
     return FindNearestMalchezaarSafePosition(
-        bot, bot->GetPosition(), infernals, MALCHEZAAR_SEARCH_DISTANCE, true,
-        MALC_HELLFIRE_CLEARANCE, isRanged ? malchezaar : nullptr);
+        bot, bot->GetPosition(), infernals, MALCHEZAAR_SEARCH_RADIUS, true, MALC_HELLFIRE_CLEARANCE,
+        isRanged ? malchezaar : nullptr);
 }
 
 bool IsClearOfMalchezaarHazards(
@@ -1507,8 +1507,8 @@ std::optional<Position> FindMalchezaarTankPosition(
     for (float const candidateClearance : clearances)
     {
         std::optional<Position> const position = FindNearestMalchezaarSafePosition(
-            bot, bot->GetPosition(), infernals, MALCHEZAAR_SEARCH_DISTANCE, true,
-            candidateClearance, nullptr);
+            bot, bot->GetPosition(), infernals, MALCHEZAAR_SEARCH_RADIUS, true, candidateClearance,
+            nullptr);
 
         if (position)
         {

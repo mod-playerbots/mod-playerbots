@@ -1113,15 +1113,17 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
     EmplaceIfUnset(state.netherspitePortalPhaseTimer, getMSTime());
     state.netherspiteBanishSlots.clear();
 
-    constexpr float searchRadius = 150.0f;
     for (NetherspiteBeamData const& data : NETHERSPITE_BEAMS)
     {
         NetherspiteBeamState& beamState = state.netherspiteBeams[Id(data.beam)];
         if (beamState.portal)
             continue;
 
-        if (Unit* portal = bot->FindNearestCreature(Id(data.portal), searchRadius))
+        if (Unit* portal =
+                bot->FindNearestCreature(Id(data.portal), NETHERSPITE_BEAM_SEARCH_RADIUS))
+        {
             beamState.portal = portal->GetPosition();
+        }
     }
 
     if (!AreNetherspitePortalsKnown(state))
@@ -1580,9 +1582,9 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBanishSlots(
 
 void NetherspiteManageTimersAndTrackersAction::UpdateVoidZones(KaraInstanceState& state)
 {
-    constexpr float searchRadius = 150.0f;
     std::list<Creature*> creatures;
-    bot->GetCreatureListWithEntryInGrid(creatures, Id(KaraNpcs::NPC_VOID_ZONE), searchRadius);
+    bot->GetCreatureListWithEntryInGrid(
+        creatures, Id(KaraNpcs::NPC_VOID_ZONE), NETHERSPITE_BEAM_SEARCH_RADIUS);
 
     state.netherspiteVoidZones.clear();
     for (Creature* creature : creatures)
@@ -1625,10 +1627,9 @@ bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
     if (!_destination)
     {
         // How far a bot can run (7 yd/s) in the 7.5s from Enfeeble to Shadow Nova landing.
-        constexpr float searchDistance = 52.0f;
         _destination = FindNearestMalchezaarSafePosition(
-            bot, bot->GetPosition(), infernals, searchDistance, false, MALC_HELLFIRE_CLEARANCE,
-            canNovaHit ? malchezaar : nullptr);
+            bot, bot->GetPosition(), infernals, MALCHEZAAR_SEARCH_RADIUS, false,
+            MALC_HELLFIRE_CLEARANCE, canNovaHit ? malchezaar : nullptr);
 
         if (!_destination)
             return false;

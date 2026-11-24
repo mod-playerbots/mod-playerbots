@@ -467,6 +467,9 @@ inline constexpr std::array NETHERSPITE_BEAMS = {
     },
 };
 
+// Search radius for portals and void zones. The search is run from the tracker, so the distance is
+// large enough to generally capture the room.
+inline constexpr float NETHERSPITE_BEAM_SEARCH_RADIUS = 150.0f;
 // A player blocks a beam within 1.5 yd of the beam and more than 16.5 yd from Netherspite's center.
 // The script compares distances to the portal with combat reach subtracted, so Netherspite's reach
 // of 18 yd minus a player's 1.5 means the first 16.5 yd of the beam cannot be blocked.
@@ -592,7 +595,8 @@ inline constexpr float MALCHEZAAR_TRAIL_DISTANCE = 6.0f;
 inline constexpr uint32 INFERNAL_MODEL_INVISIBLE = 11686;
 // Around Malchezaar's spawn. Infernals land on targets within 69 yd of it.
 inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
-inline constexpr float MALCHEZAAR_SEARCH_DISTANCE = 60.0f;
+// Distance for finding safe positions.
+inline constexpr float MALCHEZAAR_SEARCH_RADIUS = 60.0f;
 // Bounds the pathfinding cost of each position search.
 inline constexpr uint8 MALCHEZAAR_MAX_WALK_CHECKS = 64;
 // A smaller arrival distance than is typical, due to the small safety margins used for hazards for
