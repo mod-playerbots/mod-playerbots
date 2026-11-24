@@ -1779,6 +1779,25 @@ uint32 PlayerbotFactory::InitTalentsTree(bool increment /*false*/, bool use_temp
         bot->SetCanDualWield(true);
     }
 
+    // Dual talent specialization: give bots both talent groups so they can swap
+    // specs like a player who paid for the second specialization. The second
+    // group gets the next spec template of the class; leftover points (only
+    // possible with LimitTalentsExpansion) fill the remaining trees.
+    if (bot->GetLevel() >= 40 && bot->GetSpecsCount() < MAX_TALENT_SPECS)
+    {
+        bot->SetSpecsCount(MAX_TALENT_SPECS);
+        bot->ActivateSpec(1);
+
+        uint32 secondTab = (specTab + 1) % 3;
+        InitTalentsByTemplate(secondTab);
+        if (bot->GetFreeTalentPoints())
+            InitTalents((secondTab + 1) % 3);
+        if (bot->GetFreeTalentPoints())
+            InitTalents((secondTab + 2) % 3);
+
+        bot->ActivateSpec(0);
+    }
+
     bot->SendTalentsInfoData(false);
     return sPlayerbotAIConfig.RandomClassSpecIndex[cls][specTab];
 }

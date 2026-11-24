@@ -1100,13 +1100,22 @@ float StatsWeightCalculator::ApplyPreferredSpecWeapons(ItemTemplate const* proto
                 if (slot == EQUIPMENT_SLOT_OFFHAND && delay <= 1500)
                     return boost;
             }
-            else  // Assassination or Subtlety: slow dagger MH, fast dagger OH.
+            else  // Assassination: prefer fast daggers on both hands.
             {
+                // Assassination gearing: prefer dual 1.4-speed fast daggers.
+                //  - Off-hand: fast dagger only (<=1.5s), strong preference (3x) - Deadly Poison stacks from hit count.
+                //  - Main-hand: mild preference for 1.4-1.5s fast daggers (1.5x); slow daggers neither boosted nor penalized,
+                //          a slow dagger with good stats can still win on base score - matches the "use whatever has better stats",
+                //          best-item-wins approach.
                 bool isDagger = (proto->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER);
-                if (slot == EQUIPMENT_SLOT_MAINHAND && isDagger && delay >= 1700)
-                    return boost;
-                if (slot == EQUIPMENT_SLOT_OFFHAND && isDagger && delay <= 1500)
-                    return boost;
+                if (!isDagger)
+                    return 1.0f;
+
+                if (slot == EQUIPMENT_SLOT_OFFHAND)
+                    return (delay <= 1500) ? boost : 1.0f;
+
+                if (slot == EQUIPMENT_SLOT_MAINHAND && delay <= 1500)
+                    return 1.0f + weight * 0.25f;  // 1.5x: prefer fast without overruling better-stat slow daggers
             }
             break;
 
