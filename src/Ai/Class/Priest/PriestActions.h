@@ -59,7 +59,14 @@ BUFF_PARTY_ACTION(CastPowerInfusionOnPartyAction, "power infusion");
 BUFF_ACTION(CastInnerFocusAction, "inner focus");
 // disc 2.4.3 talents
 BUFF_ACTION(CastPainSuppressionAction, "pain suppression");
-PROTECT_ACTION(CastPainSuppressionProtectAction, "pain suppression");
+class CastPainSuppressionOnPartyAction : public CastProtectSpellAction, public PartyMemberActionNameSupport
+{
+public:
+    CastPainSuppressionOnPartyAction(PlayerbotAI* botAI)
+        : CastProtectSpellAction(botAI, "pain suppression"), PartyMemberActionNameSupport("pain suppression") {}
+
+    std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
+};
 
 // holy
 HEAL_ACTION(CastLesserHealAction, "lesser heal");
