@@ -360,12 +360,12 @@ float ShadeOfAranArcaneExplosionDisableMovementMultiplier::GetValueInEncounter(A
     return aran && IsAranCastingArcaneExplosion(aran) ? 0.0f : 1.0f;
 }
 
-// Includes set behind, as he faces a random player with each cast.
 float ShadeOfAranDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
+    // Don't add the typical carveout for set behind. Aran faces a random player with each cast.
     bool const isReactiveMovement =
         dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<CombatFormationMoveAction*>(action);
@@ -377,7 +377,7 @@ float ShadeOfAranDisableReactiveMovementMultiplier::GetValueInEncounter(Action* 
 float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action) && !IsRepositionAction(bot, action) &&
-        !IsKillingSpree(bot, action))
+        !IsKillingSpree(bot, action) && !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 1.0f;
     }
@@ -398,6 +398,69 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Actio
         return 0.0f;
 
     return CanReachTargetDuringFlameWreath(botAI, aran) ? 1.0f : 0.0f;
+}
+
+namespace
+{
+
+// Hammer of Justice and Bash are left out: they interrupt by stunning, and Aran is immune to stuns.
+bool IsAranInterruptAction(Player* bot, Action* action)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT:
+            return dynamic_cast<CastMindFreezeAction*>(action) ||
+                dynamic_cast<CastMindFreezeOnEnemyHealerAction*>(action) ||
+                dynamic_cast<CastStrangulateAction*>(action);
+        case CLASS_HUNTER:
+            return dynamic_cast<CastSilencingShotAction*>(action);
+        case CLASS_MAGE:
+            return dynamic_cast<CastCounterspellAction*>(action) ||
+                dynamic_cast<CastCounterspellOnEnemyHealerAction*>(action);
+        case CLASS_PRIEST:
+            return dynamic_cast<CastSilenceAction*>(action) ||
+                dynamic_cast<CastSilenceOnEnemyHealerAction*>(action);
+        case CLASS_ROGUE:
+            return dynamic_cast<CastKickAction*>(action) ||
+                dynamic_cast<CastKickOnEnemyHealerAction*>(action);
+        case CLASS_SHAMAN:
+            return dynamic_cast<CastWindShearAction*>(action) ||
+                dynamic_cast<CastWindShearOnEnemyHealerAction*>(action);
+        case CLASS_WARLOCK:
+            return dynamic_cast<CastSpellLockAction*>(action);
+        case CLASS_WARRIOR:
+            return dynamic_cast<CastPummelAction*>(action) ||
+                dynamic_cast<CastPummelOnEnemyHealerAction*>(action) ||
+                dynamic_cast<CastShieldBashAction*>(action) ||
+                dynamic_cast<CastShieldBashOnEnemyHealerAction*>(action);
+        default:
+            return false;
+    }
+}
+
+} // end anonymous namespace (Shade of Aran)
+
+// Arcane Missiles is never interrupted. Fireball and Frostbolt are, near the end of the cast.
+float ShadeOfAranDelayInterruptsMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!IsAranInterruptAction(bot, action))
+        return 1.0f;
+
+    Unit* aran = GetEncounterBoss();
+    if (!aran || action->GetTarget() != aran)
+        return 1.0f;
+
+    if (aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_ARAN_ARCANE_MISSILES)))
+        return 0.0f;
+
+    for (KaraSpells const spell :
+         { KaraSpells::SPELL_ARAN_FIREBALL, KaraSpells::SPELL_ARAN_FROSTBOLT })
+    {
+        if (Spell* cast = aran->FindCurrentSpellBySpellId(Id(spell)))
+            return cast->GetCastTimeRemaining() > ARAN_INTERRUPT_CAST_REMAINING_MS ? 0.0f : 1.0f;
+    }
+
+    return 1.0f;
 }
 
 // Netherspite

@@ -212,6 +212,17 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class ShadeOfAranDelayInterruptsMultiplier : public KarazhanEncounterMultiplier
+{
+public:
+    ShadeOfAranDelayInterruptsMultiplier(PlayerbotAI* botAI)
+        : KarazhanEncounterMultiplier(
+            botAI, "shade of aran delay interrupts", KaraHelpers::KaraBosses::DATA_ARAN) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Netherspite
 
 class NetherspiteDisableReactiveMovementMultiplier : public KarazhanEncounterMultiplier

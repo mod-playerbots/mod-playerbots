@@ -73,13 +73,16 @@ enum class KaraSpells : uint32
 
     // Terestian Illhoof
     SPELL_BROKEN_PACT             = 30065, // on Terestian from Kil'rek's death to his return
-    SPELL_SACRIFICE               = 30115, // on the player until the Demon Chains die
+    SPELL_SACRIFICE               = 30115, // on the player until the Demon Chains are destroyed
 
     // Shade of Aran
     SPELL_FLAME_WREATH_CAST       = 30004,
     SPELL_FLAME_WREATH_AURA       = 29946,
-    SPELL_BLIZZARD                = 29951,
-    SPELL_ARCANE_EXPLOSION        = 29973,
+    SPELL_ARAN_BLIZZARD           = 29951,
+    SPELL_ARAN_ARCANE_EXPLOSION   = 29973,
+    SPELL_ARAN_FIREBALL           = 29953,
+    SPELL_ARAN_FROSTBOLT          = 29954,
+    SPELL_ARAN_ARCANE_MISSILES    = 29955,
 
     // Netherspite
     SPELL_RED_BEAM_DEBUFF         = 30421, // "Nether Portal - Perseverance" (player aura)
@@ -88,7 +91,7 @@ enum class KaraSpells : uint32
     SPELL_NETHER_EXHAUSTION_RED   = 38637,
     SPELL_NETHER_EXHAUSTION_GREEN = 38638,
     SPELL_NETHER_EXHAUSTION_BLUE  = 38639,
-    SPELL_NETHERSPITE_BANISHED    = 39833, // "Vortex Shade Black"
+    SPELL_VERTEX_SHADE_BLACK      = 39833, // on Netherspite during his banish phase
 
     // Prince Malchezaar
     SPELL_ENFEEBLE                = 30843,
@@ -179,12 +182,12 @@ bool IsKarazhanFearCasterActive(Player* bot);
 
 // A Mana Warp casts Warp Breach at 10% HP. A stun that is on then and lasts past the cast's first
 // retry (1.2s later) stops it for good, and so does a stun during its 1s cast. Interrupts do
-// nothing. So warps are stunned from 15%, and during the cast if that stun misses or ends too soon.
+// nothing. So warps are stunned from 20%, and during the cast if that stun misses or ends too soon.
 inline constexpr float MANA_WARP_WARP_BREACH_HEALTH_PCT = 10.0f;
-inline constexpr float MANA_WARP_STUN_HEALTH_PCT = 15.0f;
+inline constexpr float MANA_WARP_STUN_HEALTH_PCT = 20.0f;
 // At or below this, a DPS bot with a stun casts nothing else while targeting a Mana Warp, so its
-// global cooldown is free at 15%. Rogues and cat druids first build combo points.
-inline constexpr float MANA_WARP_STAND_BY_HEALTH_PCT = 25.0f;
+// global cooldown is free at 20%. Rogues and cat druids first build combo points.
+inline constexpr float MANA_WARP_STAND_BY_HEALTH_PCT = 30.0f;
 // War Stomp has a 0.5s cast; other stunners leave its warp alone until it lands.
 inline constexpr uint32 WAR_STOMP_CAST_MS = 500;
 inline constexpr uint32 WAR_STOMP_CLAIM_MS = WAR_STOMP_CAST_MS + 200;
@@ -325,6 +328,8 @@ Player* GetBigBadWolfTargetToProtect(Unit* wolf);
 // this much health below the other, the skull target is swapped to the higher health boss.
 inline constexpr uint32 ROMULO_AND_JULIANNE_HEALTH_GAP = 25000;
 
+bool IsJulianneDrinkingPoison(Unit* unit);
+
 // Wizard of Oz
 
 inline constexpr float SCORCH_RANGE = 30.0f;
@@ -348,7 +353,14 @@ inline Position const THE_CURATOR_TANK_POSITION = { -11139.463f, -1884.645f, 165
 
 // Terestian Illhoof
 
+// Around Terestian's spawn. Demon Chains appear under him, and Kil'rek is summoned beside him.
+inline constexpr float TERESTIAN_ADD_SEARCH_RADIUS = 100.0f;
+inline constexpr uint32 TERESTIAN_ADDS_CACHE_INTERVAL_MS = 200;
+
+inline Position const TERESTIAN_SPAWN_POSITION = { -11240.600f, -1704.270f, 179.320f };
+
 bool IsTerestianSacrificeActive(Player* bot);
+GuidVector FindTerestianAddGuids(Player* bot);
 
 // Shade of Aran
 
@@ -386,6 +398,8 @@ inline constexpr int32 ARAN_FLAME_WREATH_RING_DURATION_MS = 20 * IN_MILLISECONDS
 // No one moves this soon after the rings land, which also outlasts the ring value's cache.
 inline constexpr int32 ARAN_FLAME_WREATH_SETTLE_MS = 1000;
 inline constexpr uint32 ARAN_FLAME_WREATH_RING_CACHE_INTERVAL_MS = 500;
+// Fireball and Frostbolt (2s casts) are not interrupted before this much of the cast left.
+inline constexpr int32 ARAN_INTERRUPT_CAST_REMAINING_MS = 500;
 
 // Aran blinks here before each super spell. His Blizzard circles around it, so this is used to
 // calculate the Blizzard escape position.
@@ -395,7 +409,8 @@ bool IsAranCastingArcaneExplosion(Unit* aran);
 std::optional<Position> GetBlizzardEscapePosition(Player* bot);
 bool IsFlameWreathInProgress(PlayerbotAI* botAI, Unit* aran);
 bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran);
-GuidVector FindUnbanishedConjuredElementals(Player* bot);
+GuidVector FindConjuredElementalGuids(Player* bot);
+GuidVector GetUnbanishedConjuredElementals(Player* bot);
 
 // Netherspite
 
@@ -635,6 +650,8 @@ inline constexpr float CHARRED_EARTH_HAZARD_RADIUS = 11.5f; // 10 yd patch + 1.5
 inline constexpr float CHARRED_EARTH_CLEARANCE = CHARRED_EARTH_HAZARD_RADIUS + 0.5f;
 inline constexpr float CHARRED_EARTH_SEARCH_RADIUS = 80.0f;
 inline constexpr uint32 CHARRED_EARTH_CACHE_INTERVAL_MS = 200;
+// A bot can stop this far short of its position, so it must stay below the clearance's margin.
+inline constexpr float NIGHTBANE_ARRIVAL_DISTANCE = 0.1f;
 // Each Rain of Bones tick hits everyone within 6 yd of a random point up to 8 yd from its center
 // (no combat reach added), so the rain reaches 14 yd.
 inline constexpr float RAIN_OF_BONES_HAZARD_RADIUS = 14.0f;
@@ -645,13 +662,12 @@ inline constexpr int32 RAIN_OF_BONES_REACTION_MS = 1000;
 inline constexpr float NIGHTBANE_FINAL_PHASE_HEALTH_PCT = 20.0f;
 // The terrace is a ring around the dome. Terrace angles are measured around the dome, running
 // counterclockwise from the northwest end to the northeast end.
-inline constexpr float TERRACE_INNER_RADIUS = 36.0f; // the dome's wall is at 33.5-35.8 yd
 inline constexpr float TERRACE_OUTER_RADIUS = 51.0f;
 inline constexpr float TERRACE_ARC_RADIUS = 47.856f;
 inline constexpr float TERRACE_ARC_START = 0.2418f;
 inline constexpr float TERRACE_ARC_END = 4.9241f;
 // The floor runs from 35.8 to 49.4 yd from the dome center at every terrace angle (navmesh).
-inline constexpr float TERRACE_FLOOR_INNER_RADIUS = 35.8f;
+inline constexpr float TERRACE_FLOOR_INNER_RADIUS = 35.8f; // the dome's wall is at 33.5-35.8 yd
 inline constexpr float TERRACE_FLOOR_OUTER_RADIUS = 49.4f;
 // A lane around the dome, on the floor at every angle. The flight stack sits on it, and steps
 // around the terrace stay on it or further out. It is 10.5 yd in from the parapet, so skeletons
@@ -704,6 +720,8 @@ struct KaraInstanceState
 {
     std::optional<uint32> attumenDpsHoldTimer;
     EncounterHelpers::InstanceCreatureList moroesGuests;
+    EncounterHelpers::InstanceCreatureList terestianAdds;
+    EncounterHelpers::InstanceCreatureList aranElementals;
     std::optional<uint32> netherspitePortalPhaseTimer;
     std::array<NetherspiteBeamState, NETHERSPITE_BEAMS.size()> netherspiteBeams;
     std::vector<Position> netherspiteVoidZones;

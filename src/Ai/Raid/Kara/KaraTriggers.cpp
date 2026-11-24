@@ -180,6 +180,11 @@ bool RomuloAndJulianneShouldDieTogetherTrigger::IsActiveInEncounter()
     return GetOperaActor(bot, "romulo") && GetOperaActor(bot, "julianne");
 }
 
+bool JulianneDrinkingPoisonTrigger::IsActiveInEncounter()
+{
+    return IsJulianneDrinkingPoison(AI_VALUE(Unit*, "current target"));
+}
+
 // The Wizard of Oz
 
 bool WizardOfOzShouldPrioritizeTargetsTrigger::IsActiveInEncounter()
@@ -241,7 +246,7 @@ bool ShadeOfAranCastingArcaneExplosionTrigger::IsActiveInEncounter()
 // Ranged only. Blizzard moves around Aran in a band, and melee range is inside the minimum radius.
 bool ShadeOfAranRangedInBlizzardTrigger::IsActiveInEncounter()
 {
-    if (!bot->HasAura(Id(KaraSpells::SPELL_BLIZZARD)))
+    if (!bot->HasAura(Id(KaraSpells::SPELL_ARAN_BLIZZARD)))
         return false;
 
     // Return false for rooted bots (Chains of Ice) so they can at least keep casting.
@@ -266,8 +271,7 @@ bool ShadeOfAranShouldPrioritizeElementalsTrigger::IsActiveInEncounter()
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
 
-    GuidVector const& elementals =
-        context->GetValue<GuidVector>("shade of aran unbanished elementals")->RefGet();
+    GuidVector const elementals = GetUnbanishedConjuredElementals(bot);
     if (elementals.empty())
         return false;
 
@@ -288,7 +292,7 @@ bool ShadeOfAranRangedShouldMaintainDistanceTrigger::IsActiveInEncounter()
     if (!aran)
         return false;
 
-    if (bot->HasAura(Id(KaraSpells::SPELL_BLIZZARD)))
+    if (bot->HasAura(Id(KaraSpells::SPELL_ARAN_BLIZZARD)))
         return false;
 
     float const distance = bot->GetExactDist2d(aran);
@@ -302,7 +306,7 @@ bool ShadeOfAranRangedShouldMaintainDistanceTrigger::IsActiveInEncounter()
         return false;
 
     // If elementals are up, let ranged have freedom to reach them even if outside the band.
-    return context->GetValue<GuidVector>("shade of aran unbanished elementals")->RefGet().empty();
+    return GetUnbanishedConjuredElementals(bot).empty();
 }
 
 // Netherspite

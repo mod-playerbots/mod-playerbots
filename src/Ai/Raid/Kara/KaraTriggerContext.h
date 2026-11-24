@@ -79,6 +79,9 @@ public:
         creators["romulo and julianne should die together"] =
             &RaidKarazhanTriggerContext::romulo_and_julianne_should_die_together;
 
+        creators["julianne drinking poison"] =
+            &RaidKarazhanTriggerContext::julianne_drinking_poison;
+
         // The Wizard of Oz
         creators["wizard of oz should prioritize targets"] =
             &RaidKarazhanTriggerContext::wizard_of_oz_should_prioritize_targets;
@@ -266,6 +269,10 @@ private:
     static Trigger* romulo_and_julianne_should_die_together(PlayerbotAI* botAI)
     {
         return new RomuloAndJulianneShouldDieTogetherTrigger(botAI);
+    }
+    static Trigger* julianne_drinking_poison(PlayerbotAI* botAI)
+    {
+        return new JulianneDrinkingPoisonTrigger(botAI);
     }
 
     // The Wizard of Oz

@@ -257,6 +257,18 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class JulianneDrinkingPoisonTrigger : public KarazhanEncounterTrigger
+{
+public:
+    JulianneDrinkingPoisonTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(
+            botAI, "julianne drinking poison",
+            KaraHelpers::KaraBosses::DATA_OPERA_PERFORMANCE) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // The Wizard of Oz
 
 class WizardOfOzShouldPrioritizeTargetsTrigger : public KarazhanEncounterTrigger

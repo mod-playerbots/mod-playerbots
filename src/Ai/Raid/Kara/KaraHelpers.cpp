@@ -142,7 +142,7 @@ bool IsManaWarpClaimedForWarStomp(Unit* warp)
         getMSTimeDiff(claimIt->second, getMSTime()) < WAR_STOMP_CLAIM_MS;
 }
 
-// First, attempt to stun between 10% and 15% HP because if the mob is stunned at 10%, it will not
+// First, attempt to stun between 10% and 20% HP because if the mob is stunned at 10%, it will not
 // cast Warp Breach. If that fails, then there is a second opportunity to stun while it is casting.
 bool IsManaWarpToStun(Player* bot, Unit* unit, float reach)
 {
@@ -528,6 +528,16 @@ Player* GetBigBadWolfTargetToProtect(Unit* wolf)
     return target;
 }
 
+// Romulo and Julianne
+
+// Julianne's first fatal blow leaves her at 1 HP and still selectable through her 2s Drink Poison
+// cast and the 2.5s after it, until she fakes death. Damage on her in that window is wasted.
+bool IsJulianneDrinkingPoison(Unit* unit)
+{
+    return unit && unit->GetEntry() == Id(KaraNpcs::NPC_JULIANNE) && unit->GetHealth() == 1 &&
+        !unit->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
+}
+
 // Terestian Illhoof
 
 // Prerequisite to searching for Demon Chains, which exist only while a group member is sacrificed.
@@ -547,11 +557,19 @@ bool IsTerestianSacrificeActive(Player* bot)
     return false;
 }
 
+GuidVector FindTerestianAddGuids(Player* bot)
+{
+    return FindCreatureGuidsAround(
+        bot, TERESTIAN_SPAWN_POSITION, TERESTIAN_ADD_SEARCH_RADIUS,
+        { Id(KaraNpcs::NPC_DEMON_CHAINS), Id(KaraNpcs::NPC_KILREK) });
+}
+
 // Shade of Aran
 
 bool IsAranCastingArcaneExplosion(Unit* aran)
 {
-    return aran && aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_ARCANE_EXPLOSION));
+    return aran &&
+        aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_ARAN_ARCANE_EXPLOSION));
 }
 
 std::optional<Position> GetBlizzardEscapePosition(Player* bot)
@@ -566,7 +584,7 @@ std::optional<Position> GetBlizzardEscapePosition(Player* bot)
     for (WorldObject* object : objects)
     {
         DynamicObject const* patch = object->ToDynObject();
-        if (patch && patch->GetSpellId() == Id(KaraSpells::SPELL_BLIZZARD) &&
+        if (patch && patch->GetSpellId() == Id(KaraSpells::SPELL_ARAN_BLIZZARD) &&
             (!oldest || patch->GetDuration() < oldest->GetDuration()))
         {
             oldest = patch;
@@ -637,25 +655,32 @@ bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran)
     return true;
 }
 
-// There is no raid action to banish the Elementals. This condition exists in case a player does it.
-GuidVector FindUnbanishedConjuredElementals(Player* bot)
+GuidVector FindConjuredElementalGuids(Player* bot)
 {
-    std::list<Creature*> elementals;
-    bot->GetCreatureListWithEntryInGrid(
-        elementals, Id(KaraNpcs::NPC_CONJURED_ELEMENTAL), ARAN_ROOM_SEARCH_RADIUS);
+    return FindCreatureGuidsAround(
+        bot, ARAN_ROOM_CENTER, ARAN_ROOM_SEARCH_RADIUS, { Id(KaraNpcs::NPC_CONJURED_ELEMENTAL) });
+}
 
-    GuidVector guids;
-    for (Creature* elemental : elementals)
+// There is no raid action to banish the Elementals. This condition exists in case a player does it.
+GuidVector GetUnbanishedConjuredElementals(Player* bot)
+{
+    GuidVector const& guids = GetInstanceCreatureList(
+        KaraState(bot->GetInstanceId()).aranElementals, ARAN_ELEMENTALS_CACHE_INTERVAL_MS, bot,
+        FindConjuredElementalGuids);
+
+    GuidVector unbanished;
+    for (ObjectGuid const& guid : guids)
     {
+        Creature* elemental = ObjectAccessor::GetCreature(*bot, guid);
         if (elemental && elemental->IsAlive() &&
             !elemental->HasAura(Id(KaraSpells::SPELL_BANISH_RANK_1)) &&
             !elemental->HasAura(Id(KaraSpells::SPELL_BANISH_RANK_2)))
         {
-            guids.push_back(elemental->GetGUID());
+            unbanished.push_back(guid);
         }
     }
 
-    return guids;
+    return unbanished;
 }
 
 // Netherspite
@@ -798,7 +823,7 @@ bool GetFloorAt(Player* bot, float x, float y, float& outZ)
 
 bool IsBanishPhase(Unit* netherspite)
 {
-    return netherspite && netherspite->HasAura(Id(KaraSpells::SPELL_NETHERSPITE_BANISHED));
+    return netherspite && netherspite->HasAura(Id(KaraSpells::SPELL_VERTEX_SHADE_BLACK));
 }
 
 // A druid's power type changes to reflect its form, so a cat shifting out to offheal would count as
@@ -818,11 +843,8 @@ bool IsNetherspiteDpsHeld(Player* bot, Unit* netherspite)
     if (!netherspite)
         return false;
 
-    if (PlayerbotAI::IsTank(bot) ||
-        netherspite->HasAura(Id(KaraSpells::SPELL_NETHERSPITE_BANISHED)))
-    {
+    if (PlayerbotAI::IsTank(bot) || netherspite->HasAura(Id(KaraSpells::SPELL_VERTEX_SHADE_BLACK)))
         return false;
-    }
 
     KaraInstanceState const* state = FindKaraState(netherspite->GetInstanceId());
     if (!state || !state->netherspitePortalPhaseTimer)
@@ -1510,11 +1532,15 @@ float GetTerraceAngle(Position const& position)
 }
 
 // The destination, unless the straight line to it would pass through the dome, in which case this
-// is a step on an arc that moves to the destination.
+// is a step along an arc around the dome. The last step goes straight to the destination, because
+// one on the floor's inner edge can measure as inside the dome and would never be reached.
 Position GetTerraceWalkPosition(Position const& from, Position const& destination)
 {
-    if (GetDistanceToSegment2d(TERRACE_DOME_CENTER, from, destination) >= TERRACE_INNER_RADIUS)
+    if (GetDistanceToSegment2d(TERRACE_DOME_CENTER, from, destination) >=
+        TERRACE_FLOOR_INNER_RADIUS)
+    {
         return destination;
+    }
 
     constexpr float stepDist = 3.5f;
     float const radius =
@@ -1522,6 +1548,9 @@ Position GetTerraceWalkPosition(Position const& from, Position const& destinatio
     float const fromAngle = GetTerraceAngle(from);
     float const angleLeft = GetTerraceAngle(destination) - fromAngle;
     float const maxStepAngle = stepDist / radius;
+    if (std::abs(angleLeft) <= maxStepAngle)
+        return destination;
+
     float const angle = fromAngle + std::clamp(angleLeft, -maxStepAngle, maxStepAngle);
 
     return Position(

@@ -211,6 +211,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class JulianneLeaveCombatForFakeDeathAction : public Action
+{
+public:
+    JulianneLeaveCombatForFakeDeathAction(PlayerbotAI* botAI)
+        : Action(botAI, "julianne leave combat for fake death") {}
+    bool Execute(Event event) override;
+};
+
 // The Wizard of Oz
 
 class WizardOfOzMarkTargetAction : public Action

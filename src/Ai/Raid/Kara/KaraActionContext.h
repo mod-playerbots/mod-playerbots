@@ -84,6 +84,9 @@ public:
         creators["romulo and julianne skull higher health"] =
             &RaidKarazhanActionContext::romulo_and_julianne_skull_higher_health;
 
+        creators["julianne leave combat for fake death"] =
+            &RaidKarazhanActionContext::julianne_leave_combat_for_fake_death;
+
         // The Wizard of Oz
         creators["wizard of oz mark target"] =
             &RaidKarazhanActionContext::wizard_of_oz_mark_target;
@@ -283,6 +286,10 @@ private:
     static Action* romulo_and_julianne_skull_higher_health(PlayerbotAI* botAI)
     {
         return new RomuloAndJulianneSkullHigherHealthAction(botAI);
+    }
+    static Action* julianne_leave_combat_for_fake_death(PlayerbotAI* botAI)
+    {
+        return new JulianneLeaveCombatForFakeDeathAction(botAI);
     }
 
     // The Wizard of Oz

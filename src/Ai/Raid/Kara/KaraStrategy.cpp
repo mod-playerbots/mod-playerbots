@@ -79,6 +79,9 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("romulo and julianne should die together",
         { NextAction("romulo and julianne skull higher health", ACTION_RAID) }));
 
+    triggers.push_back(new TriggerNode("julianne drinking poison",
+        { NextAction("julianne leave combat for fake death", ACTION_RAID + 1) }));
+
     // The Wizard of Oz
     triggers.push_back(new TriggerNode("wizard of oz should prioritize targets",
         { NextAction("wizard of oz mark target", ACTION_RAID + 1) }));
@@ -203,6 +206,7 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new ShadeOfAranArcaneExplosionDisableMovementMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranDisableReactiveMovementMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranFlameWreathDisableMovementMultiplier(botAI));
+    multipliers.push_back(new ShadeOfAranDelayInterruptsMultiplier(botAI));
     multipliers.push_back(new NetherspiteDisableReactiveMovementMultiplier(botAI));
     multipliers.push_back(new NetherspiteHoldDpsMultiplier(botAI));
     multipliers.push_back(new PrinceMalchezaarDisableReactiveMovementMultiplier(botAI));
@@ -258,6 +262,13 @@ void AppendAttumenUnmountedNonTankExclusions(PlayerbotAI* botAI, GuidSet& exclus
     exclusions.insert(attumen->GetGUID());
 }
 
+void AppendJulianneDrinkingPoisonExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Unit* julianne = KaraHelpers::GetOperaActor(botAI->GetBot(), "julianne");
+    if (KaraHelpers::IsJulianneDrinkingPoison(julianne))
+        exclusions.insert(julianne->GetGUID());
+}
+
 void RaidKarazhanStrategy::AppendTargetExclusions(
     GuidSet& exclusions, TargetValueExclusionType type)
 {
@@ -265,6 +276,7 @@ void RaidKarazhanStrategy::AppendTargetExclusions(
         return;
 
     AppendNightbaneFlightPhaseExclusions(botAI, exclusions);
+    AppendJulianneDrinkingPoisonExclusions(botAI, exclusions);
 
     if (type != TargetValueExclusionType::TankTarget)
         AppendAttumenUnmountedNonTankExclusions(botAI, exclusions);
