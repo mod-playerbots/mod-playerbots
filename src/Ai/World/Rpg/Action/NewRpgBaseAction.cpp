@@ -1106,7 +1106,7 @@ bool NewRpgBaseAction::SelectRandomFlightTaxiNode(uint32& flightMasterEntry, Wor
         return false;
 
     std::vector<ScoredFlightRoute> scoredRoutes;
-    if (questAware && sPlayerbotAIConfig.QuestAwareTaxi)
+    if (questAware)
     {
         std::vector<QuestPoint> const questPoints = CollectQuestPoints(bot, botAI);
         if (!questPoints.empty())
