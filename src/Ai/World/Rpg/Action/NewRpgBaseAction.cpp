@@ -543,48 +543,6 @@ bool NewRpgBaseAction::OrganizeQuestLog()
         }
     }
 
-    if (!sPlayerbotAIConfig.CrossZoneQuests)
-    {
-        // Legacy: remove festival/class quests and quests in a different zone; clear the log when
-        // the two passes above did not free enough slots.
-        if (dropped >= 8)
-            return true;
-
-        const int64_t botZoneId = this->bot->GetZoneId();
-        for (uint16 i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
-        {
-            uint32 questId = bot->GetQuestSlotQuestId(i);
-            if (!questId)
-                continue;
-
-            Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
-            int32 const zoneOrSort = quest->GetZoneOrSort();
-            if (zoneOrSort < 0 || (zoneOrSort > 0 && zoneOrSort != botZoneId))
-            {
-                QuestDropReason const reason = zoneOrSort < 0 ? QuestDropReason::ClassOrHoliday
-                                                              : QuestDropReason::OtherZone;
-                dropSlot(i, quest, reason);
-                dropped++;
-            }
-        }
-
-        if (dropped >= 8)
-            return true;
-
-        // clear quests log
-        for (uint16 i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
-        {
-            uint32 questId = bot->GetQuestSlotQuestId(i);
-            if (!questId)
-                continue;
-
-            Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
-            dropSlot(i, quest, QuestDropReason::LogFull);
-        }
-
-        return true;
-    }
-
     // Cross-zone questing: quests from other zones are kept, so free slots only under pressure by
     // dropping the quest whose objective/turn-in is the furthest away. Class/sort quests
     // (ZoneOrSort < 0) are never dropped.
@@ -768,10 +726,6 @@ bool NewRpgBaseAction::AddQuestPoi(QuestPOI const& qPoi, std::vector<POIInfo>& p
 
     float const dz = std::max(bot->GetMap()->GetHeight(dx, dy, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(dx, dy));
     if (dz == INVALID_HEIGHT || dz == VMAP_INVALID_HEIGHT_VALUE)
-        return false;
-
-    if (!sPlayerbotAIConfig.CrossZoneQuests &&
-        bot->GetZoneId() != bot->GetMap()->GetZoneId(bot->GetPhaseMask(), dx, dy, dz))
         return false;
 
     poiInfo.push_back({{dx, dy}, qPoi.ObjectiveIndex});
