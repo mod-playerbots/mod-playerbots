@@ -5739,14 +5739,12 @@ Item* PlayerbotAI::FindStoneFor(Item* weapon) const
     if (item_template->Class != ITEM_CLASS_WEAPON)
         return nullptr;
 
-    // Ask the stone's own use spell: sharpening is bladed-only, Elemental Sharpening is
-    // all-melee, weightstones are blunt-only. Specialized stones come first; Elemental
-    // Sharpening stays the fallback for any melee weapon.
+    // The use spell's weapon mask decides fit; list is best-first.
     static const std::vector<uint32_t> uPrioritizedStoneIds = {
-        ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, DENSE_SHARPENING_STONE, SOLID_SHARPENING_STONE,
-        HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE, ROUGH_SHARPENING_STONE, ADAMANTITE_WEIGHTSTONE,
-        FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE, HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE,
-        ROUGH_WEIGHTSTONE, ELEMENTAL_SHARPENING_STONE};
+        ADAMANTITE_SHARPENING_STONE, ADAMANTITE_WEIGHTSTONE, FEL_SHARPENING_STONE,   FEL_WEIGHTSTONE,
+        ELEMENTAL_SHARPENING_STONE,  DENSE_SHARPENING_STONE, DENSE_WEIGHTSTONE,      SOLID_SHARPENING_STONE,
+        SOLID_WEIGHTSTONE,           HEAVY_SHARPENING_STONE, HEAVY_WEIGHTSTONE,      COARSE_SHARPENING_STONE,
+        COARSE_WEIGHTSTONE,          ROUGH_SHARPENING_STONE, ROUGH_WEIGHTSTONE};
 
     uint32 const subclassBit = 1u << item_template->SubClass;
     for (uint32_t stoneId : uPrioritizedStoneIds)
@@ -5790,7 +5788,6 @@ Item* PlayerbotAI::FindOilFor(Item* weapon) const
     if (!item_template)
         return nullptr;
 
-    // Weapons only: shields share subclass numbers with weapons.
     if (item_template->Class != ITEM_CLASS_WEAPON)
         return nullptr;
 
