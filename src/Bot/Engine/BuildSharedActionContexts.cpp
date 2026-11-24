@@ -31,6 +31,8 @@
 #include "WotlkDungeonActionContext.h"
 #include "ZAActionContext.h"
 
+#include "RaidTocActionContext.h"
+
 void AiObjectContext::BuildSharedActionContexts(
     SharedNamedObjectContextList<Action>& actionContexts)
 {
@@ -78,4 +80,5 @@ void AiObjectContext::BuildSharedActionContexts(
     actionContexts.Add(new WotlkDungeonFoSActionContext());
     actionContexts.Add(new WotlkDungeonPoSActionContext());
     actionContexts.Add(new WotlkDungeonToCActionContext());
+    actionContexts.Add(new RaidTocActionContext());
 }

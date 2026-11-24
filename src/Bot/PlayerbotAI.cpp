@@ -1753,7 +1753,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         "tbc-seth", "tbc-ub", "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk",
         "wotlk-eoe", "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hos", "wotlk-nex", "wotlk-occ",
         "wotlk-ok", "wotlk-os", "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh",
-        "zulaman", "zulgurub"
+        "zulaman", "zulgurub", "toc"
     };
 
     for (std::string const& strat : allInstanceStrategies)
@@ -1848,6 +1848,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         case 600:
             strategyName = "wotlk-dtk";  // Drak'Tharon Keep
+            break;
+        case 649:
+            strategyName = "toc";  // Trial of the Crusader (raid)
             break;
         case 601:
             strategyName = "wotlk-an";  // Azjol-Nerub

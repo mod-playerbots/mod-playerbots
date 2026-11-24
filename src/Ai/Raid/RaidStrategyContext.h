@@ -25,6 +25,7 @@
 #include "SSCStrategy.h"
 #include "Strategy.h"
 #include "TKStrategy.h"
+#include "RaidTocStrategy.h"
 #include "UldStrategy.h"
 #include "VoAStrategy.h"
 #include "ZAStrategy.h"
@@ -56,6 +57,7 @@ public:
         creators["onyxia"] = &RaidStrategyContext::onyxia;
         creators["icc"] = &RaidStrategyContext::icc;
         creators["rs"] = &RaidStrategyContext::rs;
+        creators["toc"] = &RaidStrategyContext::toc;
     }
 
 private:
@@ -80,6 +82,7 @@ private:
     static Strategy* ulduar(PlayerbotAI* botAI) { return new RaidUlduarStrategy(botAI); }
     static Strategy* icc(PlayerbotAI* botAI) { return new RaidIccStrategy(botAI); }
     static Strategy* rs(PlayerbotAI* botAI) { return new RaidRsStrategy(botAI); }
+    static Strategy* toc(PlayerbotAI* botAI) { return new RaidTocStrategy(botAI); }
 };
 
 #endif
