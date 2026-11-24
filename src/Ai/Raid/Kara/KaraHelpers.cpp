@@ -11,6 +11,7 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "Map.h"
+#include "ObjectAccessor.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "Random.h"
@@ -351,6 +352,14 @@ bool IsAttumenDpsHeld(Player* bot)
     return !(PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot));
 }
 
+// Moroes
+
+GuidVector FindMoroesGuestGuids(Player* bot)
+{
+    return FindCreatureGuidsAround(
+        bot, MOROES_SPAWN_POSITION, MOROES_GUEST_SEARCH_RADIUS, MOROES_GUESTS_IN_KILL_ORDER);
+}
+
 // Maiden of Virtue
 
 Player* GetNearestRepentantHealer(Player* bot, Unit* maiden)
@@ -583,7 +592,7 @@ bool IsFlameWreathInProgress(PlayerbotAI* botAI, Unit* aran)
     if (!aran)
     {
         return !botAI->GetAiObjectContext()
-            ->GetValue<std::vector<Position>>("shade of aran flame wreath rings")->Get().empty();
+            ->GetValue<std::vector<Position>>("shade of aran flame wreath rings")->RefGet().empty();
     }
 
     return aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_FLAME_WREATH_CAST)) ||
@@ -614,8 +623,8 @@ bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran)
     if (ring->GetDuration() > ARAN_FLAME_WREATH_RING_DURATION_MS - ARAN_FLAME_WREATH_SETTLE_MS)
         return false;
 
-    std::vector<Position> const rings =
-        context->GetValue<std::vector<Position>>("shade of aran flame wreath rings")->Get();
+    std::vector<Position> const& rings =
+        context->GetValue<std::vector<Position>>("shade of aran flame wreath rings")->RefGet();
     if (rings.empty())
         return false;
 
@@ -1242,26 +1251,31 @@ bool CanShadowNovaHitEnfeebled(Unit* malchezaar, Aura const& enfeeble)
         malchezaar->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_SHADOW_NOVA));
 }
 
-std::vector<Position> FindLandedInfernals(Player* bot)
+GuidVector FindInfernalGuids(Player* bot)
 {
-    std::vector<Position> infernals;
-    std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(KaraNpcs::NPC_NETHERSPITE_INFERNAL), INFERNAL_SEARCH_RADIUS);
+    return FindCreatureGuidsAround(
+        bot, MALCHEZAAR_SPAWN_POSITION, INFERNAL_SEARCH_RADIUS,
+        { Id(KaraNpcs::NPC_NETHERSPITE_INFERNAL) });
+}
 
-    for (Creature* creature : creatureList)
+std::vector<Position> GetLandedInfernals(Player* bot)
+{
+    GuidVector const& guids = GetInstanceCreatureList(
+        KaraState(bot->GetInstanceId()).malchezaarInfernals, INFERNALS_CACHE_INTERVAL_MS, bot,
+        FindInfernalGuids);
+
+    std::vector<Position> infernals;
+    for (ObjectGuid const& guid : guids)
     {
-        if (creature->IsAlive() && creature->GetDisplayId() != INFERNAL_MODEL_INVISIBLE)
-            infernals.push_back(creature->GetPosition());
+        Creature* infernal = ObjectAccessor::GetCreature(*bot, guid);
+        if (infernal && infernal->IsAlive() &&
+            infernal->GetDisplayId() != INFERNAL_MODEL_INVISIBLE)
+        {
+            infernals.push_back(infernal->GetPosition());
+        }
     }
 
     return infernals;
-}
-
-std::vector<Position> GetLandedInfernals(PlayerbotAI* botAI)
-{
-    return botAI->GetAiObjectContext()
-        ->GetValue<std::vector<Position>>("prince malchezaar landed infernals")->Get();
 }
 
 bool IsClearOfInfernals(
@@ -1552,10 +1566,10 @@ std::optional<Position> FindNightbaneStackPosition(
     return std::nullopt;
 }
 
-std::vector<Position> GetCharredEarths(PlayerbotAI* botAI)
+std::vector<Position> const& GetCharredEarths(PlayerbotAI* botAI)
 {
     return botAI->GetAiObjectContext()
-        ->GetValue<std::vector<Position>>("nightbane charred earths")->Get();
+        ->GetValue<std::vector<Position>>("nightbane charred earths")->RefGet();
 }
 
 bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const& charredEarths)

@@ -42,18 +42,6 @@ protected:
     GuidVector Calculate() override { return KaraHelpers::FindUnbanishedConjuredElementals(bot); }
 };
 
-class PrinceMalchezaarLandedInfernalsValue : public CalculatedValue<std::vector<Position>>
-{
-public:
-    PrinceMalchezaarLandedInfernalsValue(PlayerbotAI* botAI)
-        : CalculatedValue<std::vector<Position>>(
-              botAI, "prince malchezaar landed infernals",
-              KaraHelpers::LANDED_INFERNALS_CACHE_INTERVAL_MS) {}
-
-protected:
-    std::vector<Position> Calculate() override { return KaraHelpers::FindLandedInfernals(bot); }
-};
-
 class NightbaneCharredEarthsValue : public CalculatedValue<std::vector<Position>>
 {
 public:
@@ -81,9 +69,6 @@ public:
         creators["shade of aran unbanished elementals"] =
             &RaidKarazhanValueContext::shade_of_aran_unbanished_elementals;
 
-        creators["prince malchezaar landed infernals"] =
-            &RaidKarazhanValueContext::prince_malchezaar_landed_infernals;
-
         creators["nightbane charred earths"] = &RaidKarazhanValueContext::nightbane_charred_earths;
     }
 
@@ -92,17 +77,10 @@ private:
     {
         return new ShadeOfAranFlameWreathRingsValue(botAI);
     }
-
     static UntypedValue* shade_of_aran_unbanished_elementals(PlayerbotAI* botAI)
     {
         return new ShadeOfAranUnbanishedElementalsValue(botAI);
     }
-
-    static UntypedValue* prince_malchezaar_landed_infernals(PlayerbotAI* botAI)
-    {
-        return new PrinceMalchezaarLandedInfernalsValue(botAI);
-    }
-
     static UntypedValue* nightbane_charred_earths(PlayerbotAI* botAI)
     {
         return new NightbaneCharredEarthsValue(botAI);

@@ -226,8 +226,8 @@ void AppendNightbaneFlightPhaseExclusions(PlayerbotAI* botAI, GuidSet& exclusion
     // Somehow, skeletons can get out of bounds, and bots can chase them out of bounds as a result.
     // So we ensure only in-bounds skeletons are valid targets.
     uint32 const skeletonEntry = KaraHelpers::Id(KaraHelpers::KaraNpcs::NPC_RESTLESS_SKELETON);
-    GuidVector const targets =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
+    GuidVector const& targets =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet();
     for (ObjectGuid const& guid : targets)
     {
         if (guid.GetEntry() != skeletonEntry)

@@ -266,8 +266,8 @@ bool ShadeOfAranShouldPrioritizeElementalsTrigger::IsActiveInEncounter()
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
 
-    GuidVector const elementals =
-        context->GetValue<GuidVector>("shade of aran unbanished elementals")->Get();
+    GuidVector const& elementals =
+        context->GetValue<GuidVector>("shade of aran unbanished elementals")->RefGet();
     if (elementals.empty())
         return false;
 
@@ -302,7 +302,7 @@ bool ShadeOfAranRangedShouldMaintainDistanceTrigger::IsActiveInEncounter()
         return false;
 
     // If elementals are up, let ranged have freedom to reach them even if outside the band.
-    return context->GetValue<GuidVector>("shade of aran unbanished elementals")->Get().empty();
+    return context->GetValue<GuidVector>("shade of aran unbanished elementals")->RefGet().empty();
 }
 
 // Netherspite
@@ -415,7 +415,7 @@ bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActiveInEncounter()
 
     bool const canNovaHit = CanShadowNovaHitEnfeebled(malchezaar, *enfeeble);
     if ((canNovaHit && bot->GetExactDist(malchezaar) < MALC_SHADOW_NOVA_CLEARANCE) ||
-        !IsClearOfInfernals(*bot, GetLandedInfernals(botAI), MALC_HELLFIRE_CLEARANCE))
+        !IsClearOfInfernals(*bot, GetLandedInfernals(bot), MALC_HELLFIRE_CLEARANCE))
     {
         return true;
     }
@@ -435,7 +435,7 @@ bool PrinceMalchezaarNearHazardTrigger::IsActiveInEncounter()
     if (malchezaar && malchezaar->GetVictim() == bot && PlayerbotAI::IsTank(bot))
         return false;
 
-    if (!IsClearOfInfernals(*bot, GetLandedInfernals(botAI), MALC_HELLFIRE_CLEARANCE) ||
+    if (!IsClearOfInfernals(*bot, GetLandedInfernals(bot), MALC_HELLFIRE_CLEARANCE) ||
         (malchezaar && PlayerbotAI::IsRanged(bot) &&
          bot->GetExactDist(malchezaar) < MALC_SHADOW_NOVA_CLEARANCE))
     {

@@ -8,6 +8,7 @@
 #define PLAYERBOTS_KARAHELPERS_H
 
 #include "Common.h"
+#include "EncounterHelpers.h"
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
@@ -228,8 +229,22 @@ bool IsAttumenDpsHeld(Player* bot);
 
 // Moroes
 
-// Guests can't leave Moroes's room. He evades if one does.
+// Around Moroes's spawn. Guests can't leave his room; he evades if one does.
 inline constexpr float MOROES_GUEST_SEARCH_RADIUS = 100.0f;
+inline constexpr uint32 MOROES_GUEST_CACHE_INTERVAL_MS = 1000;
+
+inline Position const MOROES_SPAWN_POSITION = { -10982.700f, -1877.930f, 81.812f };
+
+inline std::vector<uint32> const MOROES_GUESTS_IN_KILL_ORDER = {
+    Id(KaraNpcs::NPC_BARONESS_DOROTHEA_MILLSTIPE),
+    Id(KaraNpcs::NPC_LADY_CATRIONA_VON_INDI),
+    Id(KaraNpcs::NPC_LADY_KEIRA_BERRYBUCK),
+    Id(KaraNpcs::NPC_BARON_RAFE_DREUGER),
+    Id(KaraNpcs::NPC_LORD_ROBIN_DARIS),
+    Id(KaraNpcs::NPC_LORD_CRISPIN_FERENCE),
+};
+
+GuidVector FindMoroesGuestGuids(Player* bot);
 
 // Maiden of Virtue
 
@@ -560,6 +575,7 @@ inline constexpr float MALCHEZAAR_MELEE_CLEARANCE =
 inline constexpr float MALCHEZAAR_TRAIL_DISTANCE = 6.0f;
 // The model an Infernal has until Infernal Rain lands on it.
 inline constexpr uint32 INFERNAL_MODEL_INVISIBLE = 11686;
+// Around Malchezaar's spawn. Infernals land on targets within 69 yd of it.
 inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
 inline constexpr float MALCHEZAAR_SEARCH_DISTANCE = 60.0f;
 // Bounds the pathfinding cost of each position search.
@@ -567,11 +583,13 @@ inline constexpr uint8 MALCHEZAAR_MAX_WALK_CHECKS = 64;
 // A smaller arrival distance than is typical, due to the small safety margins used for hazards for
 // this fight, which requires usage of an ever-shrinking safe playable space.
 inline constexpr float MALCHEZAAR_ARRIVAL_DISTANCE = 0.5f;
-inline constexpr uint32 LANDED_INFERNALS_CACHE_INTERVAL_MS = 200;
+inline constexpr uint32 INFERNALS_CACHE_INTERVAL_MS = 200;
+
+inline Position const MALCHEZAAR_SPAWN_POSITION = { -10962.200f, -2018.730f, 275.443f };
 
 bool CanShadowNovaHitEnfeebled(Unit* malchezaar, Aura const& enfeeble);
-std::vector<Position> FindLandedInfernals(Player* bot);
-std::vector<Position> GetLandedInfernals(PlayerbotAI* botAI);
+GuidVector FindInfernalGuids(Player* bot);
+std::vector<Position> GetLandedInfernals(Player* bot);
 bool IsClearOfInfernals(
     Position const& position, std::vector<Position> const& infernals, float clearance);
 bool IsLineClearOfInfernals(
@@ -665,7 +683,7 @@ float GetTerraceAngle(Position const& position);
 Position GetTerraceWalkPosition(Position const& from, Position const& destination);
 std::optional<Position> FindNightbaneStackPosition(
     float startAngle, std::vector<Position> const& charredEarths, Position const* rainCenter);
-std::vector<Position> GetCharredEarths(PlayerbotAI* botAI);
+std::vector<Position> const& GetCharredEarths(PlayerbotAI* botAI);
 bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const& charredEarths);
 bool IsOnNightbaneRangedSide(Position const& position, Unit& nightbane);
 bool IsInNightbaneRangedSight(Player& bot, Position const& from, Position const& to);
@@ -685,10 +703,12 @@ Position const* GetRainOfBonesCenter(Unit* nightbane);
 struct KaraInstanceState
 {
     std::optional<uint32> attumenDpsHoldTimer;
+    EncounterHelpers::InstanceCreatureList moroesGuests;
     std::optional<uint32> netherspitePortalPhaseTimer;
     std::array<NetherspiteBeamState, NETHERSPITE_BEAMS.size()> netherspiteBeams;
     std::vector<Position> netherspiteVoidZones;
     std::vector<NetherspiteBanishSlot> netherspiteBanishSlots;
+    EncounterHelpers::InstanceCreatureList malchezaarInfernals;
     std::optional<uint32> nightbaneDpsHoldTimer;
     std::optional<NightbaneFlightStage> nightbaneFlightStage;
     std::optional<Position> nightbaneFlightStackPosition;

@@ -352,23 +352,20 @@ bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event /*event*/)
 
 bool MoroesMarkTargetAction::Execute(Event /*event*/)
 {
-    // A guest zones in only on its own aggro, so it can be late onto threat lists. In kill order.
-    static std::vector<uint32> const guestEntries = {
-        Id(KaraNpcs::NPC_BARONESS_DOROTHEA_MILLSTIPE),
-        Id(KaraNpcs::NPC_LADY_CATRIONA_VON_INDI),
-        Id(KaraNpcs::NPC_LADY_KEIRA_BERRYBUCK),
-        Id(KaraNpcs::NPC_BARON_RAFE_DREUGER),
-        Id(KaraNpcs::NPC_LORD_ROBIN_DARIS),
-        Id(KaraNpcs::NPC_LORD_CRISPIN_FERENCE),
-    };
-    std::list<Creature*> guests;
-    bot->GetCreatureListWithEntryInGrid(guests, guestEntries, MOROES_GUEST_SEARCH_RADIUS);
+    // A guest zones in only on its own aggro, so it can be late onto threat lists.
+    GuidVector const& guests = GetInstanceCreatureList(
+        KaraState(bot->GetInstanceId()).moroesGuests, MOROES_GUEST_CACHE_INTERVAL_MS, bot,
+        FindMoroesGuestGuids);
 
-    for (uint32 entry : guestEntries)
+    for (uint32 entry : MOROES_GUESTS_IN_KILL_ORDER)
     {
-        for (Creature* guest : guests)
+        for (ObjectGuid const& guid : guests)
         {
-            if (guest->GetEntry() == entry && guest->IsAlive())
+            if (guid.GetEntry() != entry)
+                continue;
+
+            Creature* guest = ObjectAccessor::GetCreature(*bot, guid);
+            if (guest && guest->IsAlive())
                 return MarkTargetWithSkull(bot, guest);
         }
     }
@@ -828,8 +825,8 @@ bool ShadeOfAranStopMovingAction::Execute(Event /*event*/)
 
 bool ShadeOfAranMarkElementalAction::Execute(Event /*event*/)
 {
-    GuidVector const elementals =
-        context->GetValue<GuidVector>("shade of aran unbanished elementals")->Get();
+    GuidVector const& elementals =
+        context->GetValue<GuidVector>("shade of aran unbanished elementals")->RefGet();
     for (ObjectGuid const& guid : elementals)
     {
         Unit* elemental = botAI->GetUnit(guid);
@@ -1611,7 +1608,7 @@ bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
     // Once Shadow Nova's cast finishes, there is no longer any need to keep distance for it. The
     // enfeebled bot needs only to stay out of Hellfire.
     bool const canNovaHit = CanShadowNovaHitEnfeebled(malchezaar, *enfeeble);
-    std::vector<Position> const infernals = GetLandedInfernals(botAI);
+    std::vector<Position> const infernals = GetLandedInfernals(bot);
     if (_destination &&
         (!HasDestinationFor(enfeeble->GetApplyTime(), canNovaHit) ||
          !IsClearOfInfernals(*_destination, infernals, MALC_HELLFIRE_CLEARANCE) ||
@@ -1670,7 +1667,7 @@ bool PrinceMalchezaarMoveClearOfHazardsAction::Execute(Event /*event*/)
         return false;
 
     Unit* malchezaar = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
-    std::vector<Position> const infernals = GetLandedInfernals(botAI);
+    std::vector<Position> const infernals = GetLandedInfernals(bot);
     // A newly landed Infernal could be on the way to the destination, so search again.
     if (_destination && (infernals.size() != _searchedInfernalCount ||
         !IsClearOfMalchezaarHazards(bot, malchezaar, infernals, *_destination)))
@@ -1714,7 +1711,7 @@ bool PrinceMalchezaarTankPositionBossAction::Execute(Event /*event*/)
     if (malchezaar->GetVictim() != bot || !bot->IsWithinMeleeRange(malchezaar))
         return false;
 
-    std::vector<Position> const infernals = GetLandedInfernals(botAI);
+    std::vector<Position> const infernals = GetLandedInfernals(bot);
     if (IsClearOfInfernals(*malchezaar, infernals, MALCHEZAAR_MELEE_CLEARANCE))
     {
         ResetWalk();
@@ -1939,7 +1936,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         updated |= ResetIfSet(state.nightbaneFlightStackPosition);
         updated |= ResetIfSet(state.nightbaneRainOfBonesCenter);
         updated |= EmplaceIfUnset(state.nightbaneDpsHoldTimer, getMSTime());
-        std::vector<Position> const charredEarths = GetCharredEarths(botAI);
+        std::vector<Position> const& charredEarths = GetCharredEarths(botAI);
         updated |= UpdateMeleePosition(state, *nightbane, charredEarths);
         updated |= UpdateRangedPosition(state, *nightbane, charredEarths);
         return updated;
@@ -1989,7 +1986,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         return true;
     }
 
-    std::vector<Position> const charredEarths = GetCharredEarths(botAI);
+    std::vector<Position> const& charredEarths = GetCharredEarths(botAI);
 
     float const startAngle = state.nightbaneFlightStackPosition ?
         GetTerraceAngle(*state.nightbaneFlightStackPosition) : NIGHTBANE_FLIGHT_STACK_HOME_ANGLE;

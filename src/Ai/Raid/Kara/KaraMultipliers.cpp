@@ -499,7 +499,7 @@ float PrinceMalchezaarDisableReactiveMovementMultiplier::GetValueInEncounter(Act
     if (!malchezaar)
         return 1.0f;
 
-    return IsClearOfInfernals(*malchezaar, GetLandedInfernals(botAI), MALCHEZAAR_MELEE_CLEARANCE) ?
+    return IsClearOfInfernals(*malchezaar, GetLandedInfernals(bot), MALCHEZAAR_MELEE_CLEARANCE) ?
         1.0f : 0.0f;
 }
 
