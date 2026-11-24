@@ -48,6 +48,24 @@ enum UlduarIDs
     SPELL_FLASH_FREEZE = 61968,
     SPELL_BITING_COLD_PLAYER_AURA = 62039,
 
+    // XT-002 Deconstructor
+    NPC_XT002_HEART = 33329,
+    NPC_XT002_HEART_HEROIC = 33995,
+    NPC_XT002_SCRAPBOT = 33343,
+    NPC_XT002_BOOMBOT = 33346,
+    SPELL_SEARING_LIGHT = 63018,       // light bomb: sears nearby allies, run out
+    SPELL_GRAVITY_BOMB = 63024,        // gravity bomb: pulls allies in after 10s, run out
+    SPELL_TYMPANIC_TANTRUM = 62776,    // raid-wide 80% health damage over 8s
+
+    // Algalon the Observer
+    NPC_ALGALON = 32871,
+    NPC_ALGALON_HEROIC = 33070,
+    NPC_BLACK_HOLE = 32953,            // enter it to survive Big Bang
+    NPC_LIVING_CONSTELLATION = 33052,  // add, has to be killed
+    SPELL_ALGALON_BIG_BANG = 64443,    // 8s cast: everyone must be inside a black hole
+    SPELL_ALGALON_PHASE_PUNCH = 64412,
+    SPELL_ALGALON_QUANTUM_STRIKE = 64395,
+
     // Freya
     NPC_SNAPLASHER = 32916,
     NPC_STORM_LASHER = 32919,

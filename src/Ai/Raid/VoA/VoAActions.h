@@ -8,6 +8,7 @@
 #define PLAYERBOTS_VOAACTIONS_H
 
 #include "Action.h"
+#include "AttackAction.h"
 #include "Event.h"
 #include "MovementActions.h"
 #include "PlayerbotAI.h"
@@ -44,6 +45,21 @@ class EmalonFallFromFloorAction : public Action
 {
 public:
     EmalonFallFromFloorAction(PlayerbotAI* botAI) : Action(botAI, "emalon fall from floor action") {}
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+//
+// Toravon the Ice Watcher
+//
+
+// DPS/healer only: burn the ice orb and mark it with the skull so the whole
+// group focuses it. Tanks are handled by the tank target exclusion - they must
+// not move, or the boss turns and its breath sweeps the raid.
+class VoAToravonFrozenOrbAction : public AttackAction
+{
+public:
+    VoAToravonFrozenOrbAction(PlayerbotAI* botAI) : AttackAction(botAI, "voa toravon frozen orb action") {}
     bool Execute(Event event) override;
     bool isUseful() override;
 };

@@ -7,6 +7,7 @@
 #ifndef PLAYERBOTS_ICCTRIGGERS_H
 #define PLAYERBOTS_ICCTRIGGERS_H
 
+#include "GenericTriggers.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "Trigger.h"
@@ -251,6 +252,16 @@ enum SpellIdsICC
     SPELL_HARVEST_SOULS_LK_H2           = 74296,
     SPELL_HARVEST_SOULS_LK_H3           = 74297,
 };
+
+// Tank swap debuffs: stack count that forces the other tank to taunt.
+// Soul Reaper is swapped immediately (one application is already lethal on the
+// next melee), Festergut at 9 stacks, Putricide P3 at 3.
+inline constexpr uint32 SPELL_LK_SOUL_REAPER_BUFF    = 69410;
+inline constexpr uint8  LK_SOUL_REAPER_SWAP_STACKS   = 1;
+inline constexpr uint32 SPELL_FESTERGUT_GASTRIC_BLOAT = 72219;  // Festergut, swap at 9
+inline constexpr uint8  FESTERGUT_BLOAT_SWAP_STACKS  = 9;
+inline constexpr uint32 SPELL_PUTRICIDE_MUTATED_PLAGUE = 72451;  // P3, swap at 3
+inline constexpr uint8  PUTRICIDE_PLAGUE_SWAP_STACKS = 3;
 
 inline constexpr uint32 DEFILE_AURAS[]         = {72756, 74162, 74163, 74164};
 inline constexpr uint32 DEFILE_CAST_ID         = 72762;
@@ -669,6 +680,33 @@ class IccLichKingSpiritBombTrigger : public Trigger
 public:
     IccLichKingSpiritBombTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc lich king spirit bomb") {}
     bool IsActive() override;
+};
+
+// Tank swaps: the current tank has stacked the encounter debuff high enough
+// that the other tank has to pick the boss up.
+class IccLichKingSoulReaperSwapTrigger : public Trigger
+{
+public:
+    IccLichKingSoulReaperSwapTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc lich king soul reaper swap", 1) {}
+    bool IsActive() override;
+};
+
+class IccFestergutBloatSwapTrigger : public Trigger
+{
+public:
+    IccFestergutBloatSwapTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc festergut bloat swap", 1) {}
+    bool IsActive() override;
+};
+
+// Putricide phase 3: Mutated Plague stacks on the tank and damages the whole
+// raid exponentially, swap at 3.
+class IccPutricidePlagueSwapTrigger : public TankSwapTriggerBase
+{
+public:
+    IccPutricidePlagueSwapTrigger(PlayerbotAI* botAI)
+        : TankSwapTriggerBase(botAI, "icc putricide plague swap", 72451, 3, "professor putricide")
+    {
+    }
 };
 
 #endif

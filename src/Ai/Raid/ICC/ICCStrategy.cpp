@@ -180,6 +180,16 @@ void RaidIccStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("icc lich king spirit bomb",
         { NextAction("icc lich king spirit bomb", ACTION_RAID +7) }));
+
+    // Tank swaps: the off tank taunts when the current tank's debuff is high.
+    triggers.push_back(new TriggerNode("icc lich king soul reaper swap",
+        { NextAction("taunt spell", ACTION_EMERGENCY) }));
+
+    triggers.push_back(new TriggerNode("icc festergut bloat swap",
+        { NextAction("taunt spell", ACTION_EMERGENCY) }));
+
+    triggers.push_back(new TriggerNode("icc putricide plague swap",
+        { NextAction("taunt spell", ACTION_EMERGENCY) }));
 }
 
 void RaidIccStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
