@@ -253,6 +253,37 @@ public:
     bool IsActive() override;
 };
 
+// A boss or a whole pack has picked a non-tank bot as its victim: the bot has
+// pulled aggro and should pop its personal defensive / threat-drop ability
+// right away instead of waiting for its health to drop or for two mobs.
+class EnemyLookingAtNonTankTrigger : public Trigger
+{
+public:
+    EnemyLookingAtNonTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "enemy looking at non tank", 1) {}
+    bool IsActive() override;
+};
+
+// Shared logic for "the current tank has stacked the swap debuff too high".
+// Encounter specific triggers subclass this with the right spell and stack
+// count; the off tank then taunts the boss over via the existing "taunt spell"
+// action.
+class TankSwapTriggerBase : public Trigger
+{
+public:
+    TankSwapTriggerBase(PlayerbotAI* botAI, std::string const name, uint32 spellId, uint8 minStacks,
+                        char const* bossName)
+        : Trigger(botAI, name, 1), spellId(spellId), minStacks(minStacks), bossName(bossName)
+    {
+    }
+
+    bool IsActive() override;
+
+private:
+    uint32 spellId;
+    uint8 minStacks;
+    std::string bossName;
+};
+
 class LowTankThreatTrigger : public Trigger
 {
 public:

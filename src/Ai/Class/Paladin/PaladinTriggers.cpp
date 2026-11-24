@@ -34,6 +34,41 @@ bool DivineShieldLowHealthTrigger::IsActive()
     return botAI->HasAura("divine shield", bot) && AI_VALUE2(uint8, "health", "self target") < 80;
 }
 
+bool HolyWrathUndeadAoeTrigger::IsActive()
+{
+    if (!bot->IsInCombat())
+        return false;
+    // Fast reject: not enough enemies around at all.
+    if (AI_VALUE(uint8, "aoe count") < 3)
+        return false;
+
+    uint8 undeadOrDemonInRadius = 0;
+    GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+    for (auto& guid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive())
+            continue;
+
+        Creature* creature = unit->ToCreature();
+        if (!creature)
+            continue;
+
+        CreatureTemplate const* proto = creature->GetCreatureTemplate();
+        if (!proto)
+            continue;
+
+        if (proto->type != CREATURE_TYPE_UNDEAD && proto->type != CREATURE_TYPE_DEMON)
+            continue;
+
+        // Holy Wrath (48817) is a 15 yard self-centered AoE.
+        if (unit->GetExactDist2d(bot) <= 15.0f)
+            ++undeadOrDemonInRadius;
+    }
+
+    return undeadOrDemonInRadius >= 3;
+}
+
 Unit* HandOfFreedomOnPartyTrigger::GetTarget()
 {
     bool const selfImpaired = botAI->IsMovementImpaired(bot);
@@ -72,4 +107,21 @@ bool HandOfFreedomOnPartyTrigger::IsActive()
 bool NotSensingUndeadTrigger::IsActive()
 {
     return !botAI->HasAura("sense undead", bot);
+}
+
+bool HolyShieldSuddenDropTrigger::IsActive()
+{
+    uint8 const health = AI_VALUE2(uint8, "health", "self target");
+
+    // Sudden collapse: 60% or more of max health gone since the last check.
+    bool const suddenDrop = lastHealthPct > health && lastHealthPct - health >= 60;
+    lastHealthPct = health;
+
+    if (!suddenDrop)
+        return false;
+
+    // Only holy paladins benefit: they keep healing through Divine Shield.
+    // Prot / ret paladins lose their attacks while immune and the tank guard
+    // inside IsHeal covers protection anyway.
+    return PlayerbotAI::IsHeal(bot);
 }
