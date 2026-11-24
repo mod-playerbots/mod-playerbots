@@ -127,7 +127,7 @@ bool CheckMountStateAction::Execute(Event /*event*/)
 
     bool inBattleground = bot->InBattleground();
     bool const noRealMaster = (!master || master == bot);
-    // Don't remount while OpenLootAction is dismounting to open in-range loot.
+    // Dismounting sends SMSG_FORCE_RUN_SPEED_CHANGE, which re-runs this action; don't remount over in-range loot.
     bool const lootTargetInRange = IsLootTargetInRange();
 
     // If there is a master and bot not in BG, follow master's mount state regardless of group leader

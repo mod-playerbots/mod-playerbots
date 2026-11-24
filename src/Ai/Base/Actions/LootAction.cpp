@@ -96,28 +96,16 @@ bool OpenLootAction::Execute(Event /*event*/)
     if (lootObject.IsEmpty() || !availableLoot->CanAttemptLoot(lootObject.guid))
         return false;
 
-    // Consume the tick: returning false lets mount, grind or move actions undo the stop or
-    // dismount in the same tick.
-    if (bot->isMoving() || bot->IsMounted())
+    // true without looting: false lets lower actions undo the stop this tick.
+    if ((bot->isMoving() || bot->IsMounted()) && lootObject.IsAtInteractDistance(bot))
     {
-        Creature* creature = botAI->GetCreature(lootObject.guid);
-        GameObject* go = botAI->GetGameObject(lootObject.guid);
-        bool const inRange = creature
-                                 ? bot->IsWithinDistInMap(creature, INTERACTION_DISTANCE)
-                                 : (go && go->IsAtInteractDistance(bot));
-        if (inRange)
-        {
-            bool const wasMoving = bot->isMoving();
-            bool const wasMounted = bot->IsMounted();
-            uint32 const delay = wasMoving ? sPlayerbotAIConfig.LootDelay
-                                           : sPlayerbotAIConfig.ReactDelay;
-            if (wasMoving)
-                bot->StopMoving();
-            if (wasMounted)
-                bot->RemoveAurasByType(SPELL_AURA_MOUNTED);
-            botAI->SetNextCheckDelay(delay);
-            return true;
-        }
+        bool const wasMoving = bot->isMoving();
+        if (wasMoving)
+            bot->StopMoving();
+        if (bot->IsMounted())
+            bot->RemoveAurasByType(SPELL_AURA_MOUNTED);
+        botAI->SetNextCheckDelay(wasMoving ? sPlayerbotAIConfig.LootDelay : sPlayerbotAIConfig.ReactDelay);
+        return true;
     }
 
     bool const result = DoLoot(lootObject);
