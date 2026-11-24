@@ -13,16 +13,15 @@ class Player;
 class Item;
 class Event;
 
-// Opens anything a player would "open": loot containers through the open-item opcode, and
-// open junk (clams and similar items whose on-use spell creates the loot) by using the item.
+// Containers open via CMSG_OPEN_ITEM; clam-style junk opens by using the item.
 class OpenItemAction : public UseItemAction
 {
 public:
-    OpenItemAction(PlayerbotAI* botAI) : UseItemAction(botAI, "open items", true) { }
+    OpenItemAction(PlayerbotAI* botAI) : UseItemAction(botAI, "open item", true) { }
 
     // The main function that is executed when the action is triggered
     bool Execute(Event event) override;
-    bool isPossible() override;
+    bool isPossible() override { return true; }
 
 private:
     // Performs the action of opening the item

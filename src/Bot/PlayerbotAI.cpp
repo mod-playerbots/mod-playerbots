@@ -5701,11 +5701,7 @@ Item* PlayerbotAI::FindOpenableItem() const
 
 namespace
 {
-    // Items like clams are "opened" by using them: their on-use spell rolls the loot through
-    // SPELL_EFFECT_CREATE_RANDOM_ITEM. They are not ITEM_FLAG_HAS_LOOT containers, so the
-    // normal open-item opcode never sees them. Only a plain loot spell qualifies - no targets,
-    // focus, aura states or level conditions. StartQuest items are rejected separately because
-    // UseItemAuto would accept the quest instead of casting the loot spell.
+    // Items like clams loot via an on-use SPELL_EFFECT_CREATE_RANDOM_ITEM spell, not ITEM_FLAG_HAS_LOOT.
     bool IsCreateRandomItemSpell(uint32 spellId)
     {
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
@@ -5723,12 +5719,12 @@ Item* PlayerbotAI::FindOpenJunkItem() const
     return FindItemInInventory(
         [](ItemTemplate const* itemTemplate) -> bool
         {
-            // Vanilla's only matches are the seven clam items, all Trade Goods/Other with
-            // ITEM_FLAG_PLAYERCAST. Misc/Junk is accepted for custom content parity.
+            // Misc/Junk is accepted for custom content; stock data only matches clams.
             bool const openJunkClass =
                 (itemTemplate->Class == ITEM_CLASS_TRADE_GOODS &&
                  itemTemplate->SubClass == ITEM_SUBCLASS_TRADE_GOODS_OTHER) ||
                 (itemTemplate->Class == ITEM_CLASS_MISC && itemTemplate->SubClass == ITEM_SUBCLASS_JUNK);
+            // UseItemAuto would accept a StartQuest item's quest instead of casting its loot spell.
             if (!openJunkClass || !itemTemplate->HasFlag(ITEM_FLAG_PLAYERCAST) || itemTemplate->StartQuest != 0)
                 return false;
 
