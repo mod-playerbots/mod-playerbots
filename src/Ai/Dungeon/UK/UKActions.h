@@ -7,11 +7,8 @@
 #ifndef PLAYERBOTS_UKACTIONS_H
 #define PLAYERBOTS_UKACTIONS_H
 
-#include "Action.h"
 #include "AttackAction.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
-#include "UKTriggers.h"
+#include "MovementActions.h"
 
 class AttackFrostTombAction : public AttackAction
 {

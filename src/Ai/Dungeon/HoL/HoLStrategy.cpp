@@ -26,7 +26,6 @@ void WotlkDungeonHoLStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("ionar tank position", ACTION_MOVE + 4) }));
     triggers.push_back(new TriggerNode("static overload",
         { NextAction("static overload spread", ACTION_MOVE + 3) }));
-    // TODO: Targeted player can dodge the ball, but a single player soaking it isn't too bad to heal
     triggers.push_back(new TriggerNode("ball lightning",
         { NextAction("ball lightning spread", ACTION_MOVE + 2) }));
 

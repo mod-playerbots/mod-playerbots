@@ -12,17 +12,17 @@
 
 class WotlkDungeonOKTriggerContext : public NamedObjectContext<Trigger>
 {
-    public:
-        WotlkDungeonOKTriggerContext()
-        {
-            creators["nadox guardian"] = &WotlkDungeonOKTriggerContext::nadox_guardian;
-            creators["jedoga volunteer"] = &WotlkDungeonOKTriggerContext::jedoga_volunteer;
-            creators["shadow crash"] = &WotlkDungeonOKTriggerContext::shadow_crash;
-        }
-    private:
-        static Trigger* nadox_guardian(PlayerbotAI* botAI) { return new NadoxGuardianTrigger(botAI); }
-        static Trigger* jedoga_volunteer(PlayerbotAI* botAI) { return new JedogaVolunteerTrigger(botAI); }
-        static Trigger* shadow_crash(PlayerbotAI* botAI) { return new ShadowCrashTrigger(botAI); }
+public:
+    WotlkDungeonOKTriggerContext()
+    {
+        creators["nadox guardian"] = &WotlkDungeonOKTriggerContext::nadox_guardian;
+        creators["jedoga volunteer"] = &WotlkDungeonOKTriggerContext::jedoga_volunteer;
+        creators["shadow crash"] = &WotlkDungeonOKTriggerContext::shadow_crash;
+    }
+private:
+    static Trigger* nadox_guardian(PlayerbotAI* botAI) { return new NadoxGuardianTrigger(botAI); }
+    static Trigger* jedoga_volunteer(PlayerbotAI* botAI) { return new JedogaVolunteerTrigger(botAI); }
+    static Trigger* shadow_crash(PlayerbotAI* botAI) { return new ShadowCrashTrigger(botAI); }
 };
 
 #endif

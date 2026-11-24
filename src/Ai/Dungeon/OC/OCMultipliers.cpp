@@ -13,6 +13,7 @@
 #include "OCTriggers.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
+#include "ThreatHelpers.h"
 
 float MountingDrakeMultiplier::GetValue(Action* action)
 {
@@ -53,7 +54,7 @@ float UromMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    Unit* boss = AI_VALUE2(Unit*, "find target", "mage-lord urom");
+    Unit* boss = FindThreatTarget(bot, "mage-lord urom");
     if (!boss) { return 1.0f; }
 
     // REAL BOSS FIGHT
@@ -96,7 +97,7 @@ uint8 UromMultiplier::GetPhaseByCurrentPosition(Unit* unit)
 
 float EregosMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ley-guardian eregos");
+    Unit* boss = FindThreatTarget(bot, "ley-guardian eregos");
     if (!boss) { return 1.0f; }
 
     if (boss->HasAura(SPELL_PLANAR_SHIFT) && dynamic_cast<OccDrakeAttackAction*>(action))
