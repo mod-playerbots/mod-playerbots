@@ -142,20 +142,6 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
     if (creature && !bot->IsWithinDistInMap(creature, INTERACTION_DISTANCE))
         return false;
 
-    if (bot->isMoving())
-    {
-        bot->StopMoving();
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig.LootDelay);
-        return false;
-    }
-
-    if (bot->IsMounted())
-    {
-        bot->RemoveAurasByType(SPELL_AURA_MOUNTED);
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig.ReactDelay);
-        return false;
-    }
-
     if (creature && creature->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE))
     {
         WorldPacket* packet = new WorldPacket(CMSG_LOOT, 8);
