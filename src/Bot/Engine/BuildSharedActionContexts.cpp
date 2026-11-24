@@ -75,6 +75,7 @@ void AiObjectContext::BuildSharedActionContexts(
     actionContexts.Add(new WotlkDungeonOccActionContext());
     actionContexts.Add(new WotlkDungeonUPActionContext());
     actionContexts.Add(new WotlkDungeonCoSActionContext());
+    actionContexts.Add(new WotlkDungeonHoRActionContext());
     actionContexts.Add(new WotlkDungeonFoSActionContext());
     actionContexts.Add(new WotlkDungeonPoSActionContext());
     actionContexts.Add(new WotlkDungeonToCActionContext());

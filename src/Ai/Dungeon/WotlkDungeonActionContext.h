@@ -14,6 +14,7 @@
 #include "FoSActionContext.h"
 #include "GDActionContext.h"
 #include "HoLActionContext.h"
+#include "HoRActionContext.h"
 #include "HoSActionContext.h"
 #include "NexActionContext.h"
 #include "OCActionContext.h"
