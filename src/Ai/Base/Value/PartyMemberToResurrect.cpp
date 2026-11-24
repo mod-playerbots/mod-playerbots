@@ -45,7 +45,7 @@ private:
 Unit* PartyMemberToResurrect::Calculate()
 {
     Battleground* bg = bot->GetBattleground();
-    if (bg && bg->GetBgTypeID(true) == BATTLEGROUND_WS)
+    if (bg && !bg->isArena())  // Spirit healers revive the dead in battlegrounds; arenas have none
         return nullptr;
 
     FindDeadPlayer finder(this);
