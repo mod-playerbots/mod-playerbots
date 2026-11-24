@@ -119,11 +119,6 @@ DEBUFF_ACTION_U(CastDisarmAction, "disarm",
 DEBUFF_ENEMY_ACTION(CastDisarmOnAttackerAction, "disarm");
 BUFF_ACTION(CastShieldWallAction, "shield wall");
 // protection 2.4.3
-class CastInterveneAction : public CastProtectSpellAction
-{
-public:
-    CastInterveneAction(PlayerbotAI* botAI) : CastProtectSpellAction(botAI, "intervene") {}
-};
 BUFF_ACTION(CastSpellReflectionAction, "spell reflection");
 
 // protection talents
