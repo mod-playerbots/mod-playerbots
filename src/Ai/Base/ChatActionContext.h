@@ -58,7 +58,6 @@
 #include "RewardAction.h"
 #include "RtiAction.h"
 #include "RtscAction.h"
-#include "SaveManaAction.h"
 #include "SellAction.h"
 #include "SendMailAction.h"
 #include "SetCraftAction.h"
@@ -173,7 +172,6 @@ public:
         creators["target me"] = &ChatActionContext::target_requester;
         creators["summon"] = &ChatActionContext::summon;
         creators["who"] = &ChatActionContext::who;
-        creators["save mana"] = &ChatActionContext::save_mana;
         creators["max dps chat shortcut"] = &ChatActionContext::max_dps_chat_shortcut;
         creators["tell attackers"] = &ChatActionContext::tell_attackers;
         creators["tell target"] = &ChatActionContext::tell_target;
@@ -232,7 +230,6 @@ private:
     static Action* stance(PlayerbotAI* botAI) { return new SetStanceAction(botAI); }
     static Action* tell_attackers(PlayerbotAI* botAI) { return new TellAttackersAction(botAI); }
     static Action* max_dps_chat_shortcut(PlayerbotAI* botAI) { return new MaxDpsChatShortcutAction(botAI); }
-    static Action* save_mana(PlayerbotAI* botAI) { return new SaveManaAction(botAI); }
     static Action* who(PlayerbotAI* botAI) { return new WhoAction(botAI); }
     static Action* summon(PlayerbotAI* botAI) { return new SummonAction(botAI); }
     static Action* tell_target(PlayerbotAI* botAI) { return new TellTargetAction(botAI); }

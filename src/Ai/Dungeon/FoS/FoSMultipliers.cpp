@@ -10,10 +10,12 @@
 #include "FoSTriggers.h"
 #include "GenericSpellActions.h"
 #include "MovementActions.h"
+#include "Playerbots.h"
+#include "ThreatHelpers.h"
 
-float BronjahmMultiplier::GetValue(Action* action) {
-    Unit* boss = AI_VALUE2(Unit *, "find target", "bronjahm");
-    if (!boss)
+float BronjahmMultiplier::GetValue(Action* action)
+{
+    if (!FindThreatTarget(bot, "bronjahm"))
         return 1.0f;
 
     if (dynamic_cast<TankAssistAction*>(action))
@@ -31,7 +33,6 @@ float BronjahmMultiplier::GetValue(Action* action) {
 
 float AttackFragmentMultiplier::GetValue(Action* action)
 {
-
     Unit* fragment = nullptr;
 
     GuidVector targets = AI_VALUE(GuidVector, "possible targets no los");

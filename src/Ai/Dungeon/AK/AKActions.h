@@ -7,11 +7,8 @@
 #ifndef PLAYERBOTS_AKACTIONS_H
 #define PLAYERBOTS_AKACTIONS_H
 
-#include "AKTriggers.h"
-#include "Action.h"
 #include "AttackAction.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
+#include "MovementActions.h"
 
 class AttackNadoxGuardianAction : public AttackAction
 {
