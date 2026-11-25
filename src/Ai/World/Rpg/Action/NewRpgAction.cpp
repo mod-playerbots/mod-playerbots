@@ -37,29 +37,39 @@
 #include "G3D/Vector2.h"
 #include <cmath>
 #include <cstdlib>
+#include <utility>
 
 namespace
 {
-bool IsQuestEnder(WorldObject* ender, uint32 questId)
+std::pair<int32, uint32> ObjectiveSignature(Quest const* quest, int32 objectiveIdx)
 {
-    if (!ender)
-        return false;
+    if (!quest)
+        return {0, 0};
 
-    uint32 const entry = ender->GetEntry();
-    QuestRelations const* relations = nullptr;
-    if (ender->IsCreature())
-        relations = sObjectMgr->GetCreatureQuestInvolvedRelationMap();
-    else if (ender->IsGameObject())
-        relations = sObjectMgr->GetGOQuestInvolvedRelationMap();
-    else
-        return false;
+    if (objectiveIdx >= 0 && objectiveIdx < QUEST_OBJECTIVES_COUNT)
+        return {quest->RequiredNpcOrGo[objectiveIdx], quest->RequiredNpcOrGoCount[objectiveIdx]};
 
-    auto const range = relations->equal_range(entry);
-    for (auto itr = range.first; itr != range.second; ++itr)
-        if (itr->second == questId)
-            return true;
+    if (objectiveIdx >= QUEST_OBJECTIVES_COUNT &&
+        objectiveIdx < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
+    {
+        int32 const itemIdx = objectiveIdx - QUEST_OBJECTIVES_COUNT;
+        return {int32(quest->RequiredItemId[itemIdx]), quest->RequiredItemCount[itemIdx]};
+    }
 
-    return false;
+    return {0, 0};
+}
+
+void SetObjectiveSignature(NewRpgInfo::DoQuest& data, Quest const* quest)
+{
+    auto const signature = ObjectiveSignature(quest, data.objectiveIdx);
+    data.objectiveEntry = signature.first;
+    data.objectiveCount = signature.second;
+}
+
+bool ObjectiveChanged(NewRpgInfo::DoQuest const& data, Quest const* quest)
+{
+    auto const signature = ObjectiveSignature(quest, data.objectiveIdx);
+    return signature.first != data.objectiveEntry || signature.second != data.objectiveCount;
 }
 } // namespace
 
@@ -554,6 +564,21 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             return false;
         }
 
+        if (ObjectiveChanged(data, quest))
+        {
+            // .reload quest_template can replace the required entry/count behind the same slot.
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            data.objectiveEntry = 0;
+            data.objectiveCount = 0;
+            data.exploreTriggerId = 0;
+            data.exploreTriggerSent = false;
+            data.exploreTriggerAttempts = 0;
+            data.exploreTriggerRetryAt = 0;
+            return true;
+        }
+
         QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
         bool completed = true;
         if (currentObjective == QUEST_OBJECTIVE_EXPLORE)
@@ -580,8 +605,12 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.lastReachPOI = 0;
             data.pos = WorldPosition();
             data.objectiveIdx = 0;
+            data.objectiveEntry = 0;
+            data.objectiveCount = 0;
             data.exploreTriggerId = 0;
             data.exploreTriggerSent = false;
+            data.exploreTriggerAttempts = 0;
+            data.exploreTriggerRetryAt = 0;
         }
     }
     if (data.pos == WorldPosition())
@@ -612,8 +641,11 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.lastReachPOI = 0;
             data.pos = best->pos;
             data.objectiveIdx = best->objectiveIdx;
+            SetObjectiveSignature(data, sObjectMgr->GetQuestTemplate(questId));
             data.exploreTriggerId = 0;
             data.exploreTriggerSent = false;
+            data.exploreTriggerAttempts = 0;
+            data.exploreTriggerRetryAt = 0;
         }
         else
         {
@@ -644,8 +676,11 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.lastReachPOI = 0;
             data.pos = pos;
             data.objectiveIdx = poi.objectiveIdx;
+            SetObjectiveSignature(data, sObjectMgr->GetQuestTemplate(questId));
             data.exploreTriggerId = poi.triggerId;
             data.exploreTriggerSent = false;
+            data.exploreTriggerAttempts = 0;
+            data.exploreTriggerRetryAt = 0;
         }
     }
 
@@ -668,6 +703,15 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
 
         exploreTrigger = sObjectMgr->GetAreaTrigger(data.exploreTriggerId);
         exploreInside = exploreTrigger && bot->IsInAreaTriggerRadius(exploreTrigger);
+    }
+
+    // A trigger can be ignored by another script/player. Retry a bounded number of times instead
+    // of starting the five-minute wait after the first attempt.
+    if (exploreObjective && data.exploreTriggerSent && data.exploreTriggerAttempts < 3 &&
+        getMSTime() >= data.exploreTriggerRetryAt)
+    {
+        data.exploreTriggerSent = false;
+        data.lastReachPOI = 0;
     }
 
     // Area triggers are small; decide by the trigger volume, not a 10-yard distance. If the bot
@@ -697,6 +741,8 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         packet.rpos(0);
         bot->GetSession()->HandleAreaTriggerOpcode(packet);
         data.exploreTriggerSent = true;
+        ++data.exploreTriggerAttempts;
+        data.exploreTriggerRetryAt = getMSTime() + 10000;
         return true;
     }
 
@@ -783,7 +829,7 @@ bool NewRpgDoQuestAction::SelectSpawnTurnInDestination(NewRpgInfo::DoQuest& data
         // Reject only an ender that is already loaded and fails the interaction check. An
         // unloaded spawn stays eligible; it is re-checked again when the bot reaches it.
         if (WorldObject* ender = FindLoadedSpawn(bot, candidate))
-            if (!IsQuestEnder(ender, questId) || !NewRpgHelpers::CanInteractWithQuestGiver(bot, ender))
+            if (!NewRpgHelpers::IsQuestEnder(ender, questId) || !NewRpgHelpers::CanInteractWithQuestGiver(bot, ender))
                 continue;
 
         float const distance =
@@ -869,7 +915,8 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
     {
         QuestObjectivePosition current{-1, data.pos, data.enderSpawnId, data.enderIsGameObject};
         WorldObject* ender = FindLoadedSpawn(bot, current);
-        if (!ender || !IsQuestEnder(ender, questId) || !NewRpgHelpers::CanInteractWithQuestGiver(bot, ender))
+        if (!ender || !NewRpgHelpers::IsQuestEnder(ender, questId) ||
+            !NewRpgHelpers::CanInteractWithQuestGiver(bot, ender))
         {
             LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in ender spawn {} is {}",
                       bot->GetName(), questId, data.enderSpawnId,

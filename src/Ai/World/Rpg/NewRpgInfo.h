@@ -55,6 +55,8 @@ struct NewRpgInfo
     {
         uint32 questId{0};
         int32 objectiveIdx{0};
+        int32 objectiveEntry{0};
+        uint32 objectiveCount{0};
         WorldPosition pos{};
         uint32 lastReachPOI{0};
         bool completionAnnounced{false};
@@ -67,6 +69,8 @@ struct NewRpgInfo
         // from movement. Sent once per destination selection.
         uint32 exploreTriggerId{0};
         bool exploreTriggerSent{false};
+        uint8 exploreTriggerAttempts{0};
+        uint32 exploreTriggerRetryAt{0};
     };
     // RPG_TRAVEL_FLIGHT
     struct TravelFlight

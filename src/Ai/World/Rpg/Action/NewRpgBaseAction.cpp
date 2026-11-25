@@ -14,6 +14,7 @@
 #include "GameObjectData.h"
 #include "GatherNodeMgr.h"
 #include "GossipDef.h"
+#include "GridDefines.h"
 #include "GridTerrainData.h"
 #include "IVMapMgr.h"
 #include "NewRpgHelpers.h"
@@ -732,7 +733,23 @@ bool NewRpgBaseAction::HasQuestDestination(uint32 questId)
 
     std::vector<QuestObjectivePosition> positions;
     if (GetQuestObjectivePositions(bot, questId, positions, toComplete))
-        return true;
+    {
+        if (!toComplete)
+            return true;
+
+        // A loaded ender that is dead or no longer ends this quest is not usable. An unloaded
+        // ender stays eligible; it is re-checked on arrival.
+        for (QuestObjectivePosition const& candidate : positions)
+        {
+            WorldObject* ender = FindLoadedSpawn(bot, candidate);
+            if (!ender)
+                return true;
+
+            if (NewRpgHelpers::IsQuestEnder(ender, questId) &&
+                NewRpgHelpers::CanInteractWithQuestGiver(bot, ender))
+                return true;
+        }
+    }
 
     std::vector<POIInfo> poiInfo;
     return GetQuestPOIPosAndObjectiveIdx(questId, poiInfo, toComplete);
@@ -794,6 +811,9 @@ bool NewRpgBaseAction::OrganizeQuestLog()
             continue;
 
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+        if (!quest)
+            continue;
+
         bool const worthDoing = NewRpgHelpers::IsQuestWorthDoing(bot, quest);
         bool const capableDoing = NewRpgHelpers::IsQuestCapableDoing(bot, quest);
         bool const failed = bot->GetQuestStatus(questId) == QUEST_STATUS_FAILED;
@@ -830,6 +850,9 @@ bool NewRpgBaseAction::OrganizeQuestLog()
             continue;
 
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+        if (!quest)
+            continue;
+
         const int64_t botZoneId = this->bot->GetZoneId();
 
         int32 const zoneOrSort = quest->GetZoneOrSort();
@@ -864,6 +887,9 @@ bool NewRpgBaseAction::OrganizeQuestLog()
             continue;
 
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+        if (!quest)
+            continue;
+
         LOG_DEBUG("playerbots", "[New RPG] {} drop quest {}", bot->GetName(), questId);
         WorldPacket packet(CMSG_QUESTLOG_REMOVE_QUEST);
         packet << (uint8)i;
@@ -1062,13 +1088,19 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
             // a second outline POI (e.g. quest 76's POI 2, ~110 yd out) would strand the bot outside
             // the trigger, so fall back to the trigger center.
             float wx = 0.0f, wy = 0.0f, wz = 0.0f;
-            bool insideTrigger = false;
-            if (QuestPoiZStore::Instance().FindNearestWalkablePoint(
-                    questId, qPoi.Id, bot->GetMapId(), trigger->x, trigger->y, wx, wy, wz,
-                    [&](float x, float y, float z) { return IsPositionInAreaTrigger(trigger, x, y, z, -1.0f); }))
+            auto findSample = [&](float margin)
             {
-                insideTrigger = IsPositionInAreaTrigger(trigger, wx, wy, wz);
-            }
+                return QuestPoiZStore::Instance().FindNearestWalkablePoint(
+                    questId, qPoi.Id, bot->GetMapId(), trigger->x, trigger->y, wx, wy, wz,
+                    [&](float x, float y, float z)
+                    {
+                        return IsPositionInAreaTrigger(trigger, x, y, z, margin);
+                    });
+            };
+
+            // Prefer a sample with a one-yard inset, but keep a sample that is still inside the
+            // actual volume rather than falling back to an unverified trigger center.
+            bool const insideTrigger = findSample(-1.0f) || findSample(0.0f);
 
             info.triggerId = trigger->entry;
             if (insideTrigger)
@@ -1092,8 +1124,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
             for (QuestPoiZCandidate const* baked : QuestPoiZStore::Instance().LookupAll(
                      questId, qPoi.Id, bot->GetMapId()))
             {
-                if (!std::isfinite(baked->z) || baked->z == INVALID_HEIGHT ||
-                    baked->z == VMAP_INVALID_HEIGHT_VALUE)
+                if (!Acore::IsValidMapCoord(baked->z))
                     continue;
 
                 if (baked->pointIdx >= qPoi.points.size())

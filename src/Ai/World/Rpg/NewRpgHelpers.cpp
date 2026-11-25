@@ -97,6 +97,28 @@ bool CanInteractWithQuestGiver(Player* bot, Object* questGiver)
     return false;
 }
 
+bool IsQuestEnder(WorldObject* ender, uint32 questId)
+{
+    if (!ender)
+        return false;
+
+    uint32 const entry = ender->GetEntry();
+    QuestRelations const* relations = nullptr;
+    if (ender->IsCreature())
+        relations = sObjectMgr->GetCreatureQuestInvolvedRelationMap();
+    else if (ender->IsGameObject())
+        relations = sObjectMgr->GetGOQuestInvolvedRelationMap();
+    else
+        return false;
+
+    auto const range = relations->equal_range(entry);
+    for (auto itr = range.first; itr != range.second; ++itr)
+        if (itr->second == questId)
+            return true;
+
+    return false;
+}
+
 bool HasQuestToAcceptOrReward(Player* bot, WorldObject* object)
 {
     ObjectGuid guid = object->GetGUID();

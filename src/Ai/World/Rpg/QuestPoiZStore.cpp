@@ -7,6 +7,7 @@
 #include "QuestPoiZStore.h"
 
 #include "DatabaseEnv.h"
+#include "GridDefines.h"
 #include "PlayerbotsDatabase.h"
 #include "QueryResult.h"
 #include "Log.h"
@@ -26,10 +27,11 @@ void QuestPoiZStore::Load()
 
     // The table is optional: a server with Playerbots.Updates.EnableDatabases=0 may not have it.
     // Check information_schema first; the core's MySQL connection treats ER_NO_SUCH_TABLE as
-    // fatal, so a direct SELECT on a missing table would abort worldserver before the fallback.
-    QueryResult table = PlayerbotsDatabase.Query(
-        "SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() "
-        "AND table_name = 'playerbots_quest_poi_z'");
+    // fatal, so a SELECT on a missing table would abort worldserver before the fallback. This
+    // bootstrap check uses a prepared statement; the optional data query below cannot be prepared
+    // at startup because preparing it when the table is absent would abort startup.
+    PreparedQueryResult table = PlayerbotsDatabase.Query(
+        PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_QUEST_POI_Z_TABLE));
     if (!table || !table->Fetch())
     {
         LOG_INFO("playerbots",
@@ -70,6 +72,9 @@ void QuestPoiZStore::Load()
         candidate.mapId = fields[7].Get<uint16>();
         candidate.evidence = fields[8].Get<std::string>();
 
+        if (!Acore::IsValidMapCoord(candidate.z))
+            continue;
+
         if (!fields[9].IsNull())
         {
             std::string const& walkable = fields[9].Get<std::string>();
@@ -81,7 +86,7 @@ void QuestPoiZStore::Load()
                     walkable.substr(start, end == std::string::npos ? std::string::npos : end - start);
 
                 float x = 0.0f, y = 0.0f, z = 0.0f;
-                if (sscanf(token.c_str(), "%f,%f,%f", &x, &y, &z) == 3)
+                if (sscanf(token.c_str(), "%f,%f,%f", &x, &y, &z) == 3 && Acore::IsValidMapCoord(x, y, z))
                     candidate.walkablePoints.push_back({x, y, z});
 
                 if (end == std::string::npos)
