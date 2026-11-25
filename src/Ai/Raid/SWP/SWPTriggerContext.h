@@ -128,6 +128,9 @@ public:
         creators["felmyst landing dps hold is active"] =
             &RaidSwpTriggerContext::felmyst_landing_dps_hold_is_active;
 
+        creators["felmyst should manage pet aggression"] =
+            &RaidSwpTriggerContext::felmyst_should_manage_pet_aggression;
+
         // Eredar Twins
         creators["eredar twins should leave balcony"] =
             &RaidSwpTriggerContext::eredar_twins_should_leave_balcony;
@@ -209,6 +212,12 @@ public:
         creators["m'uru the singularity is near"] =
             &RaidSwpTriggerContext::muru_the_singularity_is_near;
 
+        creators["m'uru should manage pet aggression"] =
+            &RaidSwpTriggerContext::muru_should_manage_pet_aggression;
+
+        creators["m'uru pet should switch target"] =
+            &RaidSwpTriggerContext::muru_pet_should_switch_target;
+
         // Kil'jaeden <The Deceiver>
         creators["kil'jaeden hands of the deceiver are active"] =
             &RaidSwpTriggerContext::kiljaeden_hands_of_the_deceiver_are_active;
@@ -242,6 +251,9 @@ public:
 
         creators["kil'jaeden stale root after dragon"] =
             &RaidSwpTriggerContext::kiljaeden_stale_root_after_dragon;
+
+        creators["kil'jaeden should manage pet aggression"] =
+            &RaidSwpTriggerContext::kiljaeden_should_manage_pet_aggression;
     }
 
 private:
@@ -404,6 +416,10 @@ private:
     {
         return new FelmystLandingDpsHoldIsActiveTrigger(botAI);
     }
+    static Trigger* felmyst_should_manage_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new FelmystShouldManagePetAggressionTrigger(botAI);
+    }
 
     // Eredar Twins
     static Trigger* eredar_twins_should_leave_balcony(PlayerbotAI* botAI)
@@ -520,6 +536,14 @@ private:
     {
         return new MuruTheSingularityIsNearTrigger(botAI);
     }
+    static Trigger* muru_should_manage_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new MuruShouldManagePetAggressionTrigger(botAI);
+    }
+    static Trigger* muru_pet_should_switch_target(PlayerbotAI* botAI)
+    {
+        return new MuruPetShouldSwitchTargetTrigger(botAI);
+    }
 
     // Kil'jaeden <The Deceiver>
     static Trigger* kiljaeden_hands_of_the_deceiver_are_active(PlayerbotAI* botAI)
@@ -565,6 +589,10 @@ private:
     static Trigger* kiljaeden_stale_root_after_dragon(PlayerbotAI* botAI)
     {
         return new KiljaedenStaleRootAfterDragonTrigger(botAI);
+    }
+    static Trigger* kiljaeden_should_manage_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new KiljaedenShouldManagePetAggressionTrigger(botAI);
     }
 };
 

@@ -187,37 +187,58 @@ bool IsNearGauntlet(Player* bot)
     return bot->GetExactDist(GAUNTLET_CENTER) <= GAUNTLET_RADIUS;
 }
 
+// No static fiends stand within GAUNTLET_RADIUS, so these are all gauntlet fiends.
+GuidVector FindGauntletVolatileFiendGuids(Player* bot)
+{
+    return FindCreatureGuidsAround(
+        bot, GAUNTLET_CENTER, GAUNTLET_RADIUS, { Id(SwpNpcs::NPC_VOLATILE_FIEND) });
+}
+
 // Gauntlet fiends: the nearest, engaged or not, since they explode right after engaging.
 // Static fiends: only those engaged (on attackers) since they are harmless until they die.
-ObjectGuid FindSwpVolatileFiendGuid(PlayerbotAI* botAI)
+Creature* GetSwpVolatileFiend(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
+    Creature* nearest = nullptr;
+    float nearestDistance = VOLATILE_FIEND_SEARCH_RADIUS;
     if (IsNearGauntlet(bot))
     {
-        Creature* fiend = bot->FindNearestCreature(
-            Id(SwpNpcs::NPC_VOLATILE_FIEND), VOLATILE_FIEND_SEARCH_RADIUS);
+        GuidVector const& guids = GetInstanceCreatureList(
+            SwpState(bot->GetInstanceId()).gauntletVolatileFiends,
+            VOLATILE_FIEND_CACHE_INTERVAL_MS, bot, FindGauntletVolatileFiendGuids);
+        for (ObjectGuid const& guid : guids)
+        {
+            Creature* fiend = botAI->GetCreature(guid);
+            if (!fiend || !fiend->IsAlive())
+                continue;
 
-        return fiend ? fiend->GetGUID() : ObjectGuid::Empty;
+            float const distance = bot->GetDistance(fiend);
+            if (distance <= nearestDistance)
+            {
+                nearestDistance = distance;
+                nearest = fiend;
+            }
+        }
+
+        return nearest;
     }
 
-    ObjectGuid nearestGuid;
-    float nearestDistance = VOLATILE_FIEND_SEARCH_RADIUS;
     AiObjectContext* context = botAI->GetAiObjectContext();
     for (ObjectGuid const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit || unit->GetEntry() != Id(SwpNpcs::NPC_VOLATILE_FIEND) || !unit->IsAlive())
+        Creature* fiend = botAI->GetCreature(guid);
+        if (!fiend || fiend->GetEntry() != Id(SwpNpcs::NPC_VOLATILE_FIEND) || !fiend->IsAlive())
             continue;
 
-        float const distance = bot->GetExactDist(unit);
+        float const distance = bot->GetExactDist(fiend);
         if (distance <= nearestDistance)
         {
             nearestDistance = distance;
-            nearestGuid = guid;
+            nearest = fiend;
         }
     }
 
-    return nearestGuid;
+    return nearest;
 }
 
 bool IsVolatileFiendInterceptor(Player* bot)

@@ -14,7 +14,7 @@
 #include <array>
 #include <cmath>
 #include <iterator>
-#include <vector>
+#include <utility>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -760,7 +760,7 @@ bool MuruEscapeTheSingularityAction::Execute(Event /*event*/)
     if (!entropius)
         return false;
 
-    Creature* singularity = botAI->GetCreature(AI_VALUE(ObjectGuid, "muru singularity"));
+    Creature* singularity = GetMuruSingularity(bot);
     if (!singularity || !singularity->IsAlive())
         return false;
 
@@ -769,4 +769,37 @@ bool MuruEscapeTheSingularityAction::Execute(Event /*event*/)
         return false;
 
     return FleePosition(singularity->GetPosition(), clearance);
+}
+
+// Pets are held through Darkness so that their owners' attacks don't send them into it. A held pet
+// attacks only the targets it is commanded onto, and those are outside Darkness.
+bool MuruSetPetStanceAction::Execute(Event /*event*/)
+{
+    Unit* muru = GetSwpBoss(bot, SwpBosses::DATA_MURU);
+    return SetMinionStancesForHold(bot, IsMuruPetHoldActive(muru), _previousReactStates);
+}
+
+bool MuruSetPetStanceAction::ResetPetStance()
+{
+    bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
+    _previousReactStates.clear();
+    return restored;
+}
+
+bool MuruCommandPetTargetAction::Execute(Event /*event*/)
+{
+    Pet* pet = bot->GetPet();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    Unit* muru = GetSwpBoss(bot, SwpBosses::DATA_MURU);
+    if (Unit* target = GetMuruPetTarget(botAI, pet, muru))
+        return CommandPetAttack(pet, target);
+
+    // A held pet's commanded target can move into Darkness.
+    if (!IsMuruPetHoldActive(muru) || !IsMeleeTargetInMuruDarkness(muru, pet->GetVictim()))
+        return false;
+
+    CallBackPets(bot);
+    return true;
 }

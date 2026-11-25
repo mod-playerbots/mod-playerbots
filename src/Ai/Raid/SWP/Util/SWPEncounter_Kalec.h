@@ -44,6 +44,9 @@ inline constexpr uint32 SPECTRAL_RIFT_CACHE_INTERVAL_MS = 200;
 // Approximate Z-coordinate of the Spectral Realm, used to force teleport bots down if they are
 // struggling with gravity.
 inline constexpr float SPECTRAL_REALM_Z = -74.5f;
+// Anything under this Z is in the Spectral Realm, the core's own test in Spectral Blast's target
+// filter. Pets never get the Spectral Realm aura, so their side is read from their Z.
+inline constexpr float SPECTRAL_REALM_MAX_Z = 50.0f;
 
 // Spectral Blast hits every other player within 10 yds of the blasted player's center.
 inline constexpr float KALECGOS_SPECTRAL_BLAST_HAZARD_RADIUS = 10.0f;
@@ -62,6 +65,18 @@ inline constexpr float KALECGOS_END_HOLD_PCT = 5.0f;
 
 inline Position const KALECGOS_TANK_POSITION =           { 1703.584f, 895.626f, 53.076f };
 inline Position const KALECGOS_INITIAL_RANGED_POSITION = { 1704.634f, 938.080f, 53.076f };
+
+// The Spectral Realm is the same arena, 128 yd under the surface; it is neither a separate place
+// nor a phase. Teleport Spectral Realm (46019) and Teleport Normal Realm (46020) land at the same X
+// and Y, (1704.34, 928.17), at Z -74.56 and 53.08, and Kalecgos summons Kalec and Sathrovarr at
+// that X and Y at about Z -74. Only invisibility keeps the realms apart: the Spectral Realm aura
+// (46021) makes a player invisible and lets it see invisibility, and Kalec and Sathrovarr carry
+// Spectral Invisibility (44801). A grid search ignores both Z and visibility, so one search around
+// Kalecgos's spawn finds the units of both realms.
+inline Position const KALECGOS_SPAWN_POSITION = { 1704.220f, 924.758f, 53.161f };
+// Around KALECGOS_SPAWN_POSITION. The tank and ranged positions are within 29 yd.
+inline constexpr float KALECGOS_UNIT_SEARCH_RADIUS = 100.0f;
+inline constexpr uint32 KALECGOS_UNIT_CACHE_INTERVAL_MS = 1000;
 
 enum class KalecgosBoss : uint8
 {
@@ -108,16 +123,23 @@ bool UpdateKalecgosEncounterState(Player* player);
 Player* FindKalecgosDesignatedTank(Player* player);
 Player* GetKalecgosDesignatedTank(Player* player);
 ObjectGuid FindKalecgosSpectralRiftGuid(Player* bot);
+// Kalecgos (the dragon) on the surface and Kalec (the humanoid) in the Spectral Realm.
+GuidVector FindKalecgosUnitGuids(Player* bot);
+Creature* GetKalecgosUnit(Player* bot, SwpNpcs npc);
 bool ShouldEnterKalecgosPortal(Player* bot);
 void RecordSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI);
 void RecordSpectralRealmEnter(Player* player);
 // Kalecgos for a surface bot, Sathrovarr for a bot in the Spectral Realm.
 Unit* GetKalecgosSideBoss(Player* bot);
 KalecgosCall GetDueKalecgosCall(Player* bot);
-// The hold on the bot's side of the realms, whatever its role. For pets and cooldowns.
+// The hold on one side of the realms, whatever the role.
+KalecgosDpsHold GetKalecgosSideHoldWindow(uint32 instanceId, bool isRealmSide);
+// The hold on the bot's side of the realms, whatever its role. For cooldowns.
 KalecgosDpsHold GetKalecgosDpsHoldWindow(Player* bot);
 // The hold that applies to the bot itself. Tanks are never held.
 KalecgosDpsHold GetKalecgosDpsHold(Player* bot);
+// True if any of the bot's controllable minions is on a held side.
+bool IsKalecgosPetHoldActive(Player* bot);
 
 // Shared encounter state
 

@@ -10,7 +10,6 @@
 #include "SWPInstanceState.h"
 #include "SWPShared.h"
 #include <algorithm>
-#include <cmath>
 #include <optional>
 #include <vector>
 

@@ -68,10 +68,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("kalecgos update raid assignments", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("kalecgos dps hold is active",
-        {
-            NextAction("kalecgos stop attacking for hold", ACTION_EMERGENCY + 2),
-            NextAction("kalecgos select target for hold", ACTION_RAID),
-        }));
+        { NextAction("kalecgos stop attacking for hold", ACTION_EMERGENCY + 2),
+          NextAction("kalecgos select target for hold", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kalecgos should manage pet aggression",
         { NextAction("kalecgos set pet stance", ACTION_RAID + 4) }));
@@ -112,10 +110,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("felmyst run away from encapsulated player", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("felmyst player has gas nova",
-        {
-            NextAction("felmyst mass dispel gas nova", ACTION_EMERGENCY + 6),
-            NextAction("felmyst move into mass dispel reach", ACTION_EMERGENCY + 5),
-        }));
+        { NextAction("felmyst mass dispel gas nova", ACTION_EMERGENCY + 6),
+          NextAction("felmyst move into mass dispel reach", ACTION_EMERGENCY + 5) }));
 
     triggers.push_back(new TriggerNode("felmyst takeoff is near",
         { NextAction("felmyst move to air group position", ACTION_EMERGENCY + 1) }));
@@ -142,10 +138,11 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("felmyst manage landing dps timer", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("felmyst landing dps hold is active",
-        {
-            NextAction("felmyst stop attacking for landing", ACTION_EMERGENCY + 2),
-            NextAction("felmyst select target for hold", ACTION_RAID),
-        }));
+        { NextAction("felmyst stop attacking for landing", ACTION_EMERGENCY + 2),
+          NextAction("felmyst select target for hold", ACTION_RAID) }));
+
+    triggers.push_back(new TriggerNode("felmyst should manage pet aggression",
+        { NextAction("felmyst set pet stance", ACTION_RAID + 4) }));
 
     // Eredar Twins
     triggers.push_back(new TriggerNode("eredar twins should leave balcony",
@@ -234,6 +231,12 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru the singularity is near",
         { NextAction("m'uru escape the singularity", ACTION_EMERGENCY + 7) }));
 
+    triggers.push_back(new TriggerNode("m'uru should manage pet aggression",
+        { NextAction("m'uru set pet stance", ACTION_RAID + 4) }));
+
+    triggers.push_back(new TriggerNode("m'uru pet should switch target",
+        { NextAction("m'uru command pet target", ACTION_RAID + 3) }));
+
     // Kil'jaeden <The Deceiver>
     triggers.push_back(new TriggerNode("kil'jaeden hands of the deceiver are active",
         { NextAction("kil'jaeden control hands of the deceiver", ACTION_EMERGENCY),
@@ -269,6 +272,10 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("kil'jaeden stale root after dragon",
         { NextAction("kil'jaeden release stale root", ACTION_EMERGENCY + 10) }));
+
+    // Above the stack for Shield of the Blue, so pets are held before their owners move.
+    triggers.push_back(new TriggerNode("kil'jaeden should manage pet aggression",
+        { NextAction("kil'jaeden set pet stance", ACTION_EMERGENCY + 12) }));
 }
 
 void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

@@ -51,7 +51,7 @@ bool SunwellAuraToRemoveTrigger::IsActive()
 
 bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
 {
-    Unit* fiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    Unit* fiend = GetSwpVolatileFiend(botAI);
     return fiend && fiend->IsAlive();
 }
 
@@ -173,8 +173,7 @@ bool KalecgosShouldManagePetAggressionTrigger::IsActiveInEncounter()
     if (!state || (state->healthCall == KalecgosHealthCall::None && !state->endHoldCalled))
         return false;
 
-    return IsMinionStanceWrongForHold(
-        bot, GetKalecgosDpsHoldWindow(bot) != KalecgosDpsHold::None);
+    return IsMinionStanceWrongForHold(bot, IsKalecgosPetHoldActive(bot));
 }
 
 // Brutallus
@@ -465,6 +464,14 @@ bool FelmystLandingDpsHoldIsActiveTrigger::IsActiveInEncounter()
     return IsFelmystLandingDpsHoldActive(botAI);
 }
 
+bool FelmystShouldManagePetAggressionTrigger::IsActiveInEncounter()
+{
+    if (!HasControllableMinion(bot))
+        return false;
+
+    return IsMinionStanceWrongForHold(bot, IsFelmystPetHoldActive(bot));
+}
+
 // Eredar Twins
 
 // Hunters misdirect Sacrolash all through phase 1 and nothing in phase 2.
@@ -570,7 +577,7 @@ bool EredarTwinsShouldManagePetAggressionTrigger::IsActiveInEncounter()
     if (!HasControllableMinion(bot))
         return false;
 
-    return IsMinionStanceWrongForHold(bot, IsEredarTwinsStartHoldActive(botAI));
+    return IsMinionStanceWrongForHold(bot, IsEredarTwinsStartHoldWindowActive(bot));
 }
 
 bool EredarTwinsActiveConflagrationTargetTrigger::IsActiveInEncounter()
@@ -740,16 +747,47 @@ bool MuruTheSingularityIsNearTrigger::IsActiveInEncounter()
     if (!entropius)
         return false;
 
-    Creature* singularity = botAI->GetCreature(AI_VALUE(ObjectGuid, "muru singularity"));
+    Creature* singularity = GetMuruSingularity(bot);
     return singularity && singularity->IsAlive() &&
         bot->GetExactDist(singularity) < GetSingularityClearance(bot, entropius);
+}
+
+// An enslaved Void Spawn is commanded by its own action, so its warlock's stance is left alone.
+bool MuruShouldManagePetAggressionTrigger::IsActiveInEncounter()
+{
+    if (!HasControllableMinion(bot))
+        return false;
+
+    Unit* charm = bot->GetCharm();
+    if (charm && charm->GetEntry() == Id(SwpNpcs::NPC_VOID_SPAWN))
+        return false;
+
+    return IsMinionStanceWrongForHold(bot, IsMuruPetHoldActive(GetEncounterBoss()));
+}
+
+// A passive pet is switched only while Darkness holds it.
+bool MuruPetShouldSwitchTargetTrigger::IsActiveInEncounter()
+{
+    Pet* pet = bot->GetPet();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    Unit* muru = GetEncounterBoss();
+    bool const isHeld = IsMuruPetHoldActive(muru);
+    if (pet->HasReactState(REACT_PASSIVE) && !isHeld)
+        return false;
+
+    if (Unit* target = GetMuruPetTarget(botAI, pet, muru))
+        return pet->GetVictim() != target;
+
+    return isHeld && IsMeleeTargetInMuruDarkness(muru, pet->GetVictim());
 }
 
 // Kil'jaeden <The Deceiver>
 
 bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActiveInEncounter()
 {
-    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > HAND_SEARCH_RADIUS)
+    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > KILJAEDEN_ADD_SEARCH_RADIUS)
         return false;
 
     return FindThreatTarget(bot, "hand of the deceiver");
@@ -903,4 +941,14 @@ bool KiljaedenStaleRootAfterDragonTrigger::IsActiveInEncounter()
         return false;
 
     return HasStaleRootFlag(bot);
+}
+
+// A rider's drake is one of its controlled units, so a rider's stance is left alone until it lands.
+bool KiljaedenShouldManagePetAggressionTrigger::IsActiveInEncounter()
+{
+    if (!HasControllableMinion(bot) || HasKiljaedenDragonAura(bot))
+        return false;
+
+    return IsMinionStanceWrongForHold(
+        bot, IsKiljaedenCastingDarknessOfAThousandSouls(GetEncounterBoss()));
 }

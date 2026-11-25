@@ -20,7 +20,6 @@
 #include <algorithm>
 #include <initializer_list>
 #include <list>
-#include <unordered_map>
 
 using namespace EncounterHelpers;
 
@@ -369,12 +368,8 @@ bool IsAlythessPullMisdirectHunter(Player* bot)
     return false;
 }
 
-bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI)
+bool IsEredarTwinsStartHoldWindowActive(Player* bot)
 {
-    Player* bot = botAI->GetBot();
-    if (PlayerbotAI::IsTank(bot))
-        return false;
-
     if (!FindSacrolash(bot))
         return false;
 
@@ -383,6 +378,12 @@ bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI)
         return true;
 
     return getMSTimeDiff(*state->dpsHoldStartMs, getMSTime()) < EREDAR_TWINS_DPS_HOLD_MS;
+}
+
+bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    return !PlayerbotAI::IsTank(bot) && IsEredarTwinsStartHoldWindowActive(bot);
 }
 
 EredarTwinsThreatHolds FindEredarTwinsThreatHolds(Player* bot)

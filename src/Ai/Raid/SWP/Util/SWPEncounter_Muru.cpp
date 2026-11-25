@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
-#include <list>
 #include <utility>
 
 using namespace EncounterHelpers;
@@ -24,26 +23,19 @@ namespace SwpHelpers
 namespace
 {
 
-MuruEncounterGuids const& GetCachedMuruEncounterGuids(PlayerbotAI* botAI)
-{
-    return botAI->GetAiObjectContext()
-        ->GetValue<MuruEncounterGuids>("muru encounter targets")->RefGet();
-}
-
 Unit* ResolveLivingUnit(PlayerbotAI* botAI, ObjectGuid const& guid)
 {
     Unit* unit = botAI->GetUnit(guid);
     return unit && unit->IsAlive() ? unit : nullptr;
 }
 
-void ResolveLivingUnits(PlayerbotAI* botAI, GuidVector const& guids, std::vector<Unit*>& units)
+// An encounter unit that "possible targets" would list: not M'uru once he turns unselectable for
+// Entropius, and not a Void Spawn a warlock has enslaved, which is friendly.
+Unit* ResolveMuruEncounterTarget(PlayerbotAI* botAI, ObjectGuid const& guid)
 {
-    units.reserve(guids.size());
-    for (ObjectGuid const& guid : guids)
-    {
-        if (Unit* unit = ResolveLivingUnit(botAI, guid))
-            units.push_back(unit);
-    }
+    Unit* unit = ResolveLivingUnit(botAI, guid);
+    return unit && !unit->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) &&
+        !unit->IsFriendlyTo(botAI->GetBot()) ? unit : nullptr;
 }
 
 float GetBerserkerStunReach(Player* bot)
@@ -101,7 +93,7 @@ bool IsSpellFuryBuffedFuryMage(Unit* furyMage)
 }
 
 Unit* SelectNearestQualifying(
-    PlayerbotAI* botAI, GuidVector const& candidates, float reach, bool (*qualifies)(Unit*))
+    PlayerbotAI* botAI, SwpNpcs npc, float reach, bool (*qualifies)(Unit*))
 {
     Player* bot = botAI->GetBot();
     Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
@@ -109,10 +101,13 @@ Unit* SelectNearestQualifying(
     Unit* best = nullptr;
     float bestDistance = std::numeric_limits<float>::max();
 
-    for (ObjectGuid const& guid : candidates)
+    for (ObjectGuid const& guid : GetMuruUnits(bot))
     {
-        Unit* candidate = botAI->GetUnit(guid);
-        if (!candidate || !candidate->IsAlive() || !qualifies(candidate))
+        if (guid.GetEntry() != Id(npc))
+            continue;
+
+        Unit* candidate = ResolveMuruEncounterTarget(botAI, guid);
+        if (!candidate || !qualifies(candidate))
             continue;
 
         float const distance = bot->GetExactDist(candidate);
@@ -175,6 +170,27 @@ bool IsMeleeTargetInMuruDarkness(Unit* muru, Unit* target)
         muru->GetExactDist2d(target) <= MURU_DARKNESS_MELEE_TARGET_DISTANCE;
 }
 
+bool IsMuruPetHoldActive(Unit* muru)
+{
+    return IsMuruPhaseActive(muru) && IsMuruDarknessActive(muru);
+}
+
+// Damage can't kill a Dark Fiend, so a pet is never sent onto one, even when its owner targets it.
+Unit* GetMuruPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* muru)
+{
+    if (!pet)
+        return nullptr;
+
+    Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    if (!target || !target->IsAlive() || target->GetEntry() == Id(SwpNpcs::NPC_DARK_FIEND))
+        return nullptr;
+
+    if (IsMuruPetHoldActive(muru) && IsMeleeTargetInMuruDarkness(muru, target))
+        return nullptr;
+
+    return pet->IsValidAttackTarget(target) ? target : nullptr;
+}
+
 bool IsSpellFuryReservedForMages(Unit* furyMage)
 {
     if (!furyMage)
@@ -198,56 +214,68 @@ bool IsEntropiusDpsHoldActive(Player* bot)
     return getMSTimeDiff(*state->entropiusFirstSeenMs, getMSTime()) < ENTROPIUS_DPS_HOLD_MS;
 }
 
-MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI)
+GuidVector FindMuruUnitGuids(Player* bot)
 {
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    auto const& units = context->GetValue<GuidVector>("possible targets no los")->RefGet();
+    return FindCreatureGuidsAround(
+        bot, MURU_CENTER_POSITION, MURU_ROOM_SEARCH_RADIUS, {
+            Id(SwpNpcs::NPC_MURU),
+            Id(SwpNpcs::NPC_ENTROPIUS),
+            Id(SwpNpcs::NPC_VOID_SENTINEL),
+            Id(SwpNpcs::NPC_VOID_SPAWN),
+            Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE),
+            Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER),
+            Id(SwpNpcs::NPC_DARKNESS),
+            Id(SwpNpcs::NPC_DARK_FIEND),
+            Id(SwpNpcs::NPC_SINGULARITY),
+        });
+}
 
-    MuruEncounterGuids guids;
-    for (ObjectGuid const& guid : units)
+GuidVector const& GetMuruUnits(Player* bot)
+{
+    return GetInstanceCreatureList(
+        SwpState(bot->GetInstanceId()).muruUnits, MURU_UNIT_CACHE_INTERVAL_MS, bot,
+        FindMuruUnitGuids);
+}
+
+void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets)
+{
+    for (ObjectGuid const& guid : GetMuruUnits(botAI->GetBot()))
     {
-        Unit* unit = botAI->GetUnit(guid);
+        uint32 const entry = guid.GetEntry();
+        if (entry == Id(SwpNpcs::NPC_DARKNESS) || entry == Id(SwpNpcs::NPC_DARK_FIEND) ||
+            entry == Id(SwpNpcs::NPC_SINGULARITY))
+        {
+            continue;
+        }
+
+        Unit* unit = ResolveMuruEncounterTarget(botAI, guid);
         if (!unit)
             continue;
 
-        switch (unit->GetEntry())
+        switch (entry)
         {
             case Id(SwpNpcs::NPC_MURU):
-                guids.muru = guid;
+                targets.muru = unit;
                 break;
             case Id(SwpNpcs::NPC_ENTROPIUS):
-                guids.entropius = guid;
+                targets.entropius = unit;
                 break;
             case Id(SwpNpcs::NPC_VOID_SENTINEL):
-                guids.voidSentinels.push_back(guid);
+                targets.voidSentinels.push_back(unit);
                 break;
             case Id(SwpNpcs::NPC_VOID_SPAWN):
-                guids.voidSpawns.push_back(guid);
+                targets.voidSpawns.push_back(unit);
                 break;
             case Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE):
-                guids.furyMages.push_back(guid);
+                targets.furyMages.push_back(unit);
                 break;
             case Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER):
-                guids.berserkers.push_back(guid);
+                targets.berserkers.push_back(unit);
                 break;
             default:
                 break;
         }
     }
-
-    return guids;
-}
-
-void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets)
-{
-    MuruEncounterGuids const& guids = GetCachedMuruEncounterGuids(botAI);
-
-    targets.muru = ResolveLivingUnit(botAI, guids.muru);
-    targets.entropius = ResolveLivingUnit(botAI, guids.entropius);
-    ResolveLivingUnits(botAI, guids.voidSentinels, targets.voidSentinels);
-    ResolveLivingUnits(botAI, guids.voidSpawns, targets.voidSpawns);
-    ResolveLivingUnits(botAI, guids.furyMages, targets.furyMages);
-    ResolveLivingUnits(botAI, guids.berserkers, targets.berserkers);
 }
 
 Unit* SelectNearestMuruTargetByEntry(
@@ -309,7 +337,7 @@ Unit* FindMuruBerserkerToStun(PlayerbotAI* botAI)
         return nullptr;
 
     return SelectNearestQualifying(
-        botAI, GetCachedMuruEncounterGuids(botAI).berserkers, reach, &IsFlurriedBerserker);
+        botAI, SwpNpcs::NPC_SHADOWSWORD_BERSERKER, reach, &IsFlurriedBerserker);
 }
 
 Unit* FindMuruFuryMageToInterrupt(PlayerbotAI* botAI)
@@ -319,7 +347,7 @@ Unit* FindMuruFuryMageToInterrupt(PlayerbotAI* botAI)
         return nullptr;
 
     return SelectNearestQualifying(
-        botAI, GetCachedMuruEncounterGuids(botAI).furyMages, reach, &IsCastingFelFireball);
+        botAI, SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE, reach, &IsCastingFelFireball);
 }
 
 Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI)
@@ -328,7 +356,7 @@ Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI)
         return nullptr;
 
     return SelectNearestQualifying(
-        botAI, GetCachedMuruEncounterGuids(botAI).furyMages, RANGED_ABILITY_REACH,
+        botAI, SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE, RANGED_ABILITY_REACH,
         &IsSpellFuryBuffedFuryMage);
 }
 
@@ -355,9 +383,12 @@ Position const& GetAssignedVoidSentinelTankPosition(Unit* voidSentinel)
 bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    for (ObjectGuid const& guid : GetCachedMuruEncounterGuids(botAI).voidSentinels)
+    for (ObjectGuid const& guid : GetMuruUnits(bot))
     {
-        Unit* voidSentinel = ResolveLivingUnit(botAI, guid);
+        if (guid.GetEntry() != Id(SwpNpcs::NPC_VOID_SENTINEL))
+            continue;
+
+        Unit* voidSentinel = ResolveMuruEncounterTarget(botAI, guid);
         if (voidSentinel && voidSentinel->GetVictim() == bot)
             return true;
     }
@@ -365,57 +396,38 @@ bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI)
     return false;
 }
 
-ObjectGuid FindMuruSingularityGuid(Player* bot)
+Creature* GetMuruSingularity(Player* bot)
 {
-    Creature* singularity = bot->FindNearestCreature(
-        Id(SwpNpcs::NPC_SINGULARITY), SINGULARITY_SEARCH_RADIUS);
-
-    return singularity ? singularity->GetGUID() : ObjectGuid::Empty;
-}
-
-GuidVector FindMuruVoidZoneGuids(Player* bot)
-{
-    std::list<Creature*> voidZones;
-    bot->GetCreatureListWithEntryInGrid(
-        voidZones, Id(SwpNpcs::NPC_DARKNESS), MURU_VOID_ZONE_SEARCH_RADIUS);
-
-    GuidVector guids;
-    guids.reserve(voidZones.size());
-    for (Creature* voidZone : voidZones)
+    Creature* nearest = nullptr;
+    float nearestDistance = SINGULARITY_SEARCH_RADIUS;
+    for (ObjectGuid const& guid : GetMuruUnits(bot))
     {
-        if (voidZone && voidZone->IsAlive())
-            guids.push_back(voidZone->GetGUID());
+        if (guid.GetEntry() != Id(SwpNpcs::NPC_SINGULARITY))
+            continue;
+
+        Creature* singularity = ObjectAccessor::GetCreature(*bot, guid);
+        if (!singularity || !singularity->IsAlive())
+            continue;
+
+        float const distance = bot->GetDistance(singularity);
+        if (distance <= nearestDistance)
+        {
+            nearestDistance = distance;
+            nearest = singularity;
+        }
     }
 
-    return guids;
-}
-
-GuidVector FindMuruDarkFiendGuids(Player* bot)
-{
-    std::list<Creature*> darkFiends;
-    bot->GetCreatureListWithEntryInGrid(
-        darkFiends, Id(SwpNpcs::NPC_DARK_FIEND), DARK_FIEND_SEARCH_RADIUS);
-
-    GuidVector guids;
-    guids.reserve(darkFiends.size());
-    for (Creature* darkFiend : darkFiends)
-    {
-        if (darkFiend && darkFiend->IsAlive())
-            guids.push_back(darkFiend->GetGUID());
-    }
-
-    return guids;
+    return nearest;
 }
 
 std::vector<Creature*> GetMuruDarkFiends(PlayerbotAI* botAI)
 {
-    auto const& guids =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("muru dark fiends")->RefGet();
-
     std::vector<Creature*> darkFiends;
-    darkFiends.reserve(guids.size());
-    for (ObjectGuid const& guid : guids)
+    for (ObjectGuid const& guid : GetMuruUnits(botAI->GetBot()))
     {
+        if (guid.GetEntry() != Id(SwpNpcs::NPC_DARK_FIEND))
+            continue;
+
         Unit* unit = ResolveLivingUnit(botAI, guid);
         if (Creature* darkFiend = unit ? unit->ToCreature() : nullptr)
             darkFiends.push_back(darkFiend);
@@ -456,14 +468,14 @@ float GetMuruVoidZoneClearance(Unit* voidZone)
 Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    auto const& guids =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("muru void zones")->RefGet();
-
     Creature* nearest = nullptr;
     float nearestDistance = std::numeric_limits<float>::max();
 
-    for (ObjectGuid const& guid : guids)
+    for (ObjectGuid const& guid : GetMuruUnits(bot))
     {
+        if (guid.GetEntry() != Id(SwpNpcs::NPC_DARKNESS))
+            continue;
+
         Unit* unit = ResolveLivingUnit(botAI, guid);
         Creature* voidZone = unit ? unit->ToCreature() : nullptr;
         if (!voidZone)
@@ -506,9 +518,11 @@ bool TryGetMuruClearPosition(PlayerbotAI* botAI, Position& destination)
     Player* bot = botAI->GetBot();
 
     std::vector<std::pair<Position, float>> hazards;
-    for (ObjectGuid const& guid :
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("muru void zones")->RefGet())
+    for (ObjectGuid const& guid : GetMuruUnits(bot))
     {
+        if (guid.GetEntry() != Id(SwpNpcs::NPC_DARKNESS))
+            continue;
+
         if (Unit* voidZone = ResolveLivingUnit(botAI, guid))
             hazards.emplace_back(voidZone->GetPosition(), GetMuruVoidZoneClearance(voidZone));
     }
@@ -571,9 +585,12 @@ Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI)
     Creature* bestSpawn = nullptr;
     float closestDistance = std::numeric_limits<float>::max();
 
-    for (ObjectGuid const& guid : GetCachedMuruEncounterGuids(botAI).voidSpawns)
+    for (ObjectGuid const& guid : GetMuruUnits(bot))
     {
-        Unit* unit = ResolveLivingUnit(botAI, guid);
+        if (guid.GetEntry() != Id(SwpNpcs::NPC_VOID_SPAWN))
+            continue;
+
+        Unit* unit = ResolveMuruEncounterTarget(botAI, guid);
         if (!unit || unit->IsCharmed() || unit->GetCharmer() ||
             !bot->IsWithinCombatRange(unit, RANGED_ABILITY_REACH))
         {

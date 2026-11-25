@@ -130,6 +130,8 @@ public:
         creators["felmyst select target for hold"] =
             &RaidSwpActionContext::felmyst_select_target_for_hold;
 
+        creators["felmyst set pet stance"] = &RaidSwpActionContext::felmyst_set_pet_stance;
+
         // Eredar Twins
         creators["eredar twins jump from balcony"] =
             &RaidSwpActionContext::eredar_twins_jump_from_balcony;
@@ -215,6 +217,10 @@ public:
         creators["m'uru escape the singularity"] =
             &RaidSwpActionContext::muru_escape_the_singularity;
 
+        creators["m'uru set pet stance"] = &RaidSwpActionContext::muru_set_pet_stance;
+
+        creators["m'uru command pet target"] = &RaidSwpActionContext::muru_command_pet_target;
+
         // Kil'jaeden <The Deceiver>
         creators["kil'jaeden announce dragon orb user"] =
             &RaidSwpActionContext::kiljaeden_announce_dragon_orb_user;
@@ -256,6 +262,8 @@ public:
 
         creators["kil'jaeden release stale root"] =
             &RaidSwpActionContext::kiljaeden_release_stale_root;
+
+        creators["kil'jaeden set pet stance"] = &RaidSwpActionContext::kiljaeden_set_pet_stance;
     }
 
 private:
@@ -431,6 +439,10 @@ private:
     {
         return new FelmystSelectTargetForHoldAction(botAI);
     }
+    static Action* felmyst_set_pet_stance(PlayerbotAI* botAI)
+    {
+        return new FelmystSetPetStanceAction(botAI);
+    }
 
     // Eredar Twins
     static Action* eredar_twins_jump_from_balcony(PlayerbotAI* botAI)
@@ -548,6 +560,14 @@ private:
     {
         return new MuruEscapeTheSingularityAction(botAI);
     }
+    static Action* muru_set_pet_stance(PlayerbotAI* botAI)
+    {
+        return new MuruSetPetStanceAction(botAI);
+    }
+    static Action* muru_command_pet_target(PlayerbotAI* botAI)
+    {
+        return new MuruCommandPetTargetAction(botAI);
+    }
 
     // Kil'jaeden <The Deceiver>
     static Action* kiljaeden_announce_dragon_orb_user(PlayerbotAI* botAI)
@@ -606,6 +626,10 @@ private:
     static Action* kiljaeden_release_stale_root(PlayerbotAI* botAI)
     {
         return new KiljaedenReleaseStaleRootAction(botAI);
+    }
+    static Action* kiljaeden_set_pet_stance(PlayerbotAI* botAI)
+    {
+        return new KiljaedenSetPetStanceAction(botAI);
     }
 };
 

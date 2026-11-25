@@ -298,9 +298,8 @@ Player* GetKalecgosCurrentVictimTank(
 {
     Unit* kalecgos = GetSwpBoss(player, SwpBosses::DATA_KALECGOS);
 
-    constexpr float searchRadius = 200.0f;
     if (!kalecgos)
-        kalecgos = player->FindNearestCreature(Id(SwpNpcs::NPC_KALECGOS_DRAGON), searchRadius);
+        kalecgos = GetKalecgosUnit(player, SwpNpcs::NPC_KALECGOS_DRAGON);
 
     if (kalecgos)
     {
@@ -689,6 +688,31 @@ ObjectGuid FindKalecgosSpectralRiftGuid(Player* bot)
     return rift ? rift->GetGUID() : ObjectGuid::Empty;
 }
 
+GuidVector FindKalecgosUnitGuids(Player* bot)
+{
+    return EncounterHelpers::FindCreatureGuidsAround(
+        bot, KALECGOS_SPAWN_POSITION, KALECGOS_UNIT_SEARCH_RADIUS,
+        { Id(SwpNpcs::NPC_KALECGOS_DRAGON), Id(SwpNpcs::NPC_KALECGOS_HUMANOID) });
+}
+
+Creature* GetKalecgosUnit(Player* bot, SwpNpcs npc)
+{
+    GuidVector const& guids = EncounterHelpers::GetInstanceCreatureList(
+        SwpState(bot->GetInstanceId()).kalecgosUnits, KALECGOS_UNIT_CACHE_INTERVAL_MS, bot,
+        FindKalecgosUnitGuids);
+    for (ObjectGuid const& guid : guids)
+    {
+        if (guid.GetEntry() != Id(npc))
+            continue;
+
+        Creature* unit = ObjectAccessor::GetCreature(*bot, guid);
+        if (unit && unit->IsAlive())
+            return unit;
+    }
+
+    return nullptr;
+}
+
 // Reads only, so a multiplier may call it. An expired rift not yet cleared counts as closed.
 bool ShouldEnterKalecgosPortal(Player* bot)
 {
@@ -861,13 +885,12 @@ KalecgosCall GetDueKalecgosCall(Player* bot)
 }
 
 // Each side of the realms has one enemy, so a held side holds everything.
-KalecgosDpsHold GetKalecgosDpsHoldWindow(Player* bot)
+KalecgosDpsHold GetKalecgosSideHoldWindow(uint32 instanceId, bool isRealmSide)
 {
-    KalecgosEncounterState const* state = FindKalecgosState(bot->GetInstanceId());
+    KalecgosEncounterState const* state = FindKalecgosState(instanceId);
     if (!state)
         return KalecgosDpsHold::None;
 
-    bool const isRealmSide = IsInSpectralRealm(bot);
     if (state->healthCall == KalecgosHealthCall::GapHold && state->firstLowBoss &&
         (*state->firstLowBoss == KalecgosBoss::Sathrovarr) == isRealmSide)
     {
@@ -880,9 +903,39 @@ KalecgosDpsHold GetKalecgosDpsHoldWindow(Player* bot)
     return KalecgosDpsHold::None;
 }
 
+KalecgosDpsHold GetKalecgosDpsHoldWindow(Player* bot)
+{
+    return GetKalecgosSideHoldWindow(bot->GetInstanceId(), IsInSpectralRealm(bot));
+}
+
 KalecgosDpsHold GetKalecgosDpsHold(Player* bot)
 {
     return PlayerbotAI::IsTank(bot) ? KalecgosDpsHold::None : GetKalecgosDpsHoldWindow(bot);
+}
+
+// The portal unsummons a player's pet and resummons it beside its owner, but a guardian (Feral
+// Spirit, Force of Nature, Army of the Dead) has no path through the floor and stays on the
+// surface, so each minion's own side decides.
+bool IsKalecgosPetHoldActive(Player* bot)
+{
+    uint32 const instanceId = bot->GetInstanceId();
+    bool const isSurfaceHeld =
+        GetKalecgosSideHoldWindow(instanceId, false) != KalecgosDpsHold::None;
+    bool const isRealmHeld =
+        GetKalecgosSideHoldWindow(instanceId, true) != KalecgosDpsHold::None;
+    if (!isSurfaceHeld && !isRealmHeld)
+        return false;
+
+    return std::any_of(
+        bot->m_Controlled.begin(), bot->m_Controlled.end(),
+        [isSurfaceHeld, isRealmHeld](Unit* unit)
+        {
+            Creature* minion = unit ? unit->ToCreature() : nullptr;
+            if (!minion || !minion->IsAlive() || !minion->GetCharmInfo())
+                return false;
+
+            return minion->GetPositionZ() < SPECTRAL_REALM_MAX_Z ? isRealmHeld : isSurfaceHeld;
+        });
 }
 
 // Shared encounter state

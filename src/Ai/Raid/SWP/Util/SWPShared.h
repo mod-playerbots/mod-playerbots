@@ -257,7 +257,8 @@ inline constexpr float GAUNTLET_PATH_RADIUS = 82.4f;
 inline constexpr float GAUNTLET_RADIUS = GAUNTLET_PATH_RADIUS + VOLATILE_FIEND_AGGRO_RADIUS;
 
 bool IsNearGauntlet(Player* bot);
-ObjectGuid FindSwpVolatileFiendGuid(PlayerbotAI* botAI);
+GuidVector FindGauntletVolatileFiendGuids(Player* bot);
+Creature* GetSwpVolatileFiend(PlayerbotAI* botAI);
 bool IsVolatileFiendInterceptor(Player* bot);
 
 // Apocalypse Guards

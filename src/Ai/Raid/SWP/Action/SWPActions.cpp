@@ -74,6 +74,13 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
+    Action* felmystPetAction = context->GetAction("felmyst set pet stance");
+    if (felmystPetAction &&
+        static_cast<FelmystSetPetStanceAction*>(felmystPetAction)->ResetPetStance())
+    {
+        reset = true;
+    }
+
     // Eredar Twins
     Action* twinsAction = context->GetAction("eredar twins alythess tank move out of blaze");
     if (twinsAction && static_cast<EredarTwinsAlythessTankMoveOutOfBlazeAction*>(twinsAction)
@@ -97,9 +104,23 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
+    Action* muruPetAction = context->GetAction("m'uru set pet stance");
+    if (muruPetAction &&
+        static_cast<MuruSetPetStanceAction*>(muruPetAction)->ResetPetStance())
+    {
+        reset = true;
+    }
+
     // Kil'jaeden
     if (KiljaedenEncounterState* kiljaedenState = FindKiljaedenState(instanceId))
         reset |= kiljaedenState->dragonOrbUsers.erase(guid) > 0;
+
+    Action* kiljaedenPetAction = context->GetAction("kil'jaeden set pet stance");
+    if (kiljaedenPetAction &&
+        static_cast<KiljaedenSetPetStanceAction*>(kiljaedenPetAction)->ResetPetStance())
+    {
+        reset = true;
+    }
 
     // A drake lost as Kil'jaeden dies leaves its rider stale-rooted after the encounter, when the
     // in-combat release (KiljaedenReleaseStaleRootAction) can no longer run.
@@ -150,14 +171,14 @@ bool SunwellRemoveAuraAction::Execute(Event /*event*/)
 
 bool VolatileFiendInterceptAction::isUseful()
 {
-    Creature* fiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    Creature* fiend = GetSwpVolatileFiend(botAI);
     return fiend && fiend->IsAlive() && fiend->IsSummon() &&
         AI_VALUE(Unit*, "current target") != fiend && IsVolatileFiendInterceptor(bot);
 }
 
 bool VolatileFiendInterceptAction::Execute(Event /*event*/)
 {
-    Creature* fiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    Creature* fiend = GetSwpVolatileFiend(botAI);
     return fiend && Attack(fiend);
 }
 
@@ -168,7 +189,7 @@ bool VolatileFiendMoveAwayAction::isUseful()
 
 bool VolatileFiendMoveAwayAction::Execute(Event /*event*/)
 {
-    Creature* fiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    Creature* fiend = GetSwpVolatileFiend(botAI);
     if (!fiend || !fiend->IsAlive())
         return false;
 

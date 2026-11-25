@@ -304,6 +304,71 @@ bool IsClassRolePlayer(Player* bot, ClassRoleAssignment const& assignment)
     return !guid.IsEmpty() && guid == bot->GetGUID();
 }
 
+// Instance Creature Lists
+
+GuidVector const& GetInstanceCreatureList(
+    InstanceCreatureList& list, uint32 intervalMs, Player* bot, GuidVector (*search)(Player*))
+{
+    uint32 const now = getMSTime();
+    if (!list.refreshedAt || getMSTimeDiff(*list.refreshedAt, now) >= intervalMs)
+    {
+        list.guids = search(bot);
+        list.refreshedAt = now;
+    }
+
+    return list.guids;
+}
+
+void ResetInstanceCreatureList(InstanceCreatureList& list)
+{
+    list.guids.clear();
+    list.refreshedAt.reset();
+}
+
+namespace
+{
+
+class CreatureEntriesAroundCheck
+{
+public:
+    CreatureEntriesAroundCheck(
+        Position const& center, float radius, std::vector<uint32> const& entries, bool includeDead)
+        : _center(center), _radius(radius), _entries(entries), _includeDead(includeDead) {}
+
+    bool operator()(Creature* creature) const
+    {
+        return std::find(_entries.begin(), _entries.end(), creature->GetEntry()) !=
+            _entries.end() && (_includeDead || creature->IsAlive()) &&
+            creature->GetExactDist2d(_center) <= _radius;
+    }
+
+private:
+    Position const& _center;
+    float const _radius;
+    std::vector<uint32> const& _entries;
+    bool const _includeDead;
+};
+
+} // end anonymous namespace (Instance Creature Lists)
+
+GuidVector FindCreatureGuidsAround(
+    Player* bot, Position const& center, float radius, std::vector<uint32> const& entries,
+    bool includeDead)
+{
+    std::list<Creature*> creatures;
+    CreatureEntriesAroundCheck check(center, radius, entries, includeDead);
+    Acore::CreatureListSearcher<CreatureEntriesAroundCheck> searcher(bot, creatures, check);
+    Cell::VisitObjects(
+        center.GetPositionX(), center.GetPositionY(), bot->GetMap(), searcher, radius);
+
+    GuidVector guids;
+    guids.reserve(creatures.size());
+    for (Creature* creature : creatures)
+        guids.push_back(creature->GetGUID());
+
+    return guids;
+}
+
 // Raid Target Icons (RTI)
 
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
@@ -467,7 +532,7 @@ bool GetStepToPosition(
     float const toPosX = position.GetPositionX() - botX;
     float const toPosY = position.GetPositionY() - botY;
 
-    // 'facing' is optional and is for tanks. Pass the mob being tanked to allow the step to be
+    // "facing" is optional and is for tanks. Pass the mob being tanked to allow the step to be
     // walked backwards when (1) the bot has aggro on the mob it is tanking, (2) the bot is in
     // melee range of the mob, and (3) the destination is on the opposite side of the bot from the
     // mob. Generally, the entire movement would be gated on (1) and (2) anyway, but there are some
@@ -480,13 +545,10 @@ bool GetStepToPosition(
         backwards = (toPosX * toFacingX + toPosY * toFacingY) < 0.0f;
     }
 
-    // Default time between AI ticks is 100ms, and base movement speed for players is 7y/s forwards
-    // and 4.5y/s backwards (i.e., 0.7y/0.45y per tick). There is not really benefit to having the
-    // step be farther than the distance that can be covered in a single tick. But this helper
-    // uses 5x tick distance to account for possible speed boosts, latency, and longer configured
-    // AI ticks. In my experience, this is plenty short enough to navigate poor terrain, but if you
-    // are moving steeply uphill and find that movement is failing, it may be possible that the step
-    // distances would need to be even shorter (in which case you couldn't use this helper).
+    // Default time between AI ticks is 100ms, and base run speed for players is 7 yd/s forwards and
+    // 4.5 yd/s backwards (i.e., 0.7/0.45 per tick). There is not really benefit to having the step
+    // be farther than the distance that can be covered in a single tick. But this uses 5x tick
+    // length to account for possible speed boosts, latency, and longer configured AI ticks.
     constexpr float backwardDistancePerStep = 2.25f;
     constexpr float forwardDistancePerStep = 3.5f;
     float const maxMoveDist = backwards ? backwardDistancePerStep : forwardDistancePerStep;
@@ -685,26 +747,30 @@ bool IsDpsCooldownAction(Player* bot, Action* action)
     switch (bot->getClass())
     {
         case CLASS_DEATH_KNIGHT:
+        {
             isClassCooldown = dynamic_cast<CastSummonGargoyleAction*>(action) ||
                 dynamic_cast<CastDeathchillAction*>(action) ||
                 dynamic_cast<CastEmpowerRuneWeaponAction*>(action) ||
                 dynamic_cast<CastArmyOfTheDeadAction*>(action);
             break;
-
+        }
         case CLASS_DRUID:
+        {
             isClassCooldown = dynamic_cast<CastStarfallAction*>(action) ||
                 dynamic_cast<CastForceOfNatureAction*>(action) ||
                 dynamic_cast<CastBerserkAction*>(action);
             break;
-
+        }
         case CLASS_HUNTER:
+        {
             isClassCooldown = dynamic_cast<CastKillCommandAction*>(action) ||
                 dynamic_cast<CastRapidFireAction*>(action) ||
                 dynamic_cast<CastReadinessAction*>(action) ||
                 dynamic_cast<CastBestialWrathAction*>(action);
             break;
-
+        }
         case CLASS_MAGE:
+        {
             isClassCooldown = dynamic_cast<CastArcanePowerAction*>(action) ||
                 dynamic_cast<CastCombustionAction*>(action) ||
                 dynamic_cast<CastIcyVeinsAction*>(action) ||
@@ -712,35 +778,40 @@ bool IsDpsCooldownAction(Player* bot, Action* action)
                 dynamic_cast<CastColdSnapAction*>(action) ||
                 dynamic_cast<CastPresenceOfMindAction*>(action);
             break;
-
+        }
         case CLASS_SHAMAN:
+        {
             isClassCooldown = dynamic_cast<CastElementalMasteryAction*>(action) ||
                 dynamic_cast<CastFeralSpiritAction*>(action) ||
                 dynamic_cast<CastFireElementalTotemAction*>(action) ||
                 dynamic_cast<CastFireElementalTotemMeleeAction*>(action);
             break;
-
+        }
         case CLASS_PALADIN:
+        {
             isClassCooldown = dynamic_cast<CastAvengingWrathAction*>(action);
             break;
-
+        }
         case CLASS_ROGUE:
+        {
             isClassCooldown = dynamic_cast<CastKillingSpreeAction*>(action) ||
                 dynamic_cast<CastBladeFlurryAction*>(action) ||
                 dynamic_cast<CastAdrenalineRushAction*>(action) ||
                 dynamic_cast<CastColdBloodAction*>(action);
             break;
-
+        }
         case CLASS_WARLOCK:
+        {
             isClassCooldown = dynamic_cast<CastMetamorphosisAction*>(action);
             break;
-
+        }
         case CLASS_WARRIOR:
+        {
             isClassCooldown = dynamic_cast<CastDeathWishAction*>(action) ||
                 dynamic_cast<CastBladestormAction*>(action) ||
                 dynamic_cast<CastRecklessnessAction*>(action);
             break;
-
+        }
         default:
             break; // Priest =(
     }
@@ -752,13 +823,10 @@ bool IsDpsCooldownAction(Player* bot, Action* action)
     {
         case RACE_BLOODELF:
             return dynamic_cast<CastArcaneTorrentAction*>(action);
-
         case RACE_ORC:
             return dynamic_cast<CastBloodFuryAction*>(action);
-
         case RACE_TROLL:
             return dynamic_cast<CastBerserkingAction*>(action);
-
         default:
             return false;
     }
@@ -772,21 +840,25 @@ bool IsTauntAction(Player* bot, Action* action)
     switch (bot->getClass())
     {
         case CLASS_DEATH_KNIGHT:
+        {
             return dynamic_cast<CastDarkCommandAction*>(action) ||
                 dynamic_cast<CastDeathGripAction*>(action);
-
+        }
         case CLASS_DRUID:
+        {
             return dynamic_cast<CastGrowlAction*>(action) ||
                 dynamic_cast<CastChallengingRoarAction*>(action);
-
+        }
         case CLASS_PALADIN:
+        {
             return dynamic_cast<CastHandOfReckoningAction*>(action) ||
                 dynamic_cast<CastRighteousDefenseAction*>(action);
-
+        }
         case CLASS_WARRIOR:
+        {
             return dynamic_cast<CastTauntAction*>(action) ||
                 dynamic_cast<CastChallengingShoutAction*>(action);
-
+        }
         default:
             return false;
     }
@@ -800,29 +872,33 @@ bool IsAoeThreatAction(Player* bot, Action* action)
     switch (bot->getClass())
     {
         case CLASS_DEATH_KNIGHT:
+        {
             return dynamic_cast<CastDeathAndDecayAction*>(action) ||
                 dynamic_cast<CastPestilenceAction*>(action) ||
                 dynamic_cast<CastBloodBoilAction*>(action) ||
                 dynamic_cast<CastHeartStrikeAction*>(action);
-
+        }
         case CLASS_DRUID:
+        {
             return dynamic_cast<CastSwipeBearAction*>(action) ||
                 dynamic_cast<CastMaulAction*>(action) || // Hits multiple targets with the Glyph
                 dynamic_cast<CastDemoralizingRoarAction*>(action) ||
                 dynamic_cast<CastBerserkAction*>(action); // Causes Mangle (Bear) to chain
-
+        }
         case CLASS_PALADIN:
+        {
             return dynamic_cast<CastAvengersShieldAction*>(action) ||
                 dynamic_cast<CastConsecrationAction*>(action) ||
                 dynamic_cast<CastHammerOfTheRighteousAction*>(action);
-
+        }
         case CLASS_WARRIOR:
+        {
             return dynamic_cast<CastThunderClapAction*>(action) ||
                 dynamic_cast<CastShockwaveAction*>(action) ||
                 dynamic_cast<CastCleaveAction*>(action) ||
                 dynamic_cast<CastDemoralizingShoutAction*>(action) ||
                 dynamic_cast<CastDemoralizingShoutWithoutLifeTimeCheckAction*>(action);
-
+        }
         default:
             return false;
     }
@@ -1207,13 +1283,10 @@ uint32 GetSelfImmunitySpell(Player* bot)
     {
         case CLASS_MAGE:
             return SPELL_ICE_BLOCK;
-
         case CLASS_PALADIN:
             return SPELL_DIVINE_SHIELD;
-
         case CLASS_ROGUE:
             return SPELL_CLOAK_OF_SHADOWS;
-
         default:
             return 0;
     }

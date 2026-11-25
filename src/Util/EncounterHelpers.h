@@ -35,22 +35,14 @@ inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
 
 // Instance Script Callers
 
-// InstanceScript::IsEncounterInProgress is a cheap check to use as an initial gate for triggers and
-// multipliers that should run only during a boss fight. This requires the boss to be scripted to
-// report IN_PROGRESS (all TBC raid bosses do). It is possible for a boss script to set IN_PROGRESS
-// upon an event other than the pull (e.g., Leotheras goes IN_PROGRESS when first hit, even while
-// banished, or else when the last Spellbinder dies, not when his Spellbinders are pulled). In any
-// case, the boss script must be consulted to determine viability.
+// Determine if any boss encounter is active on mapId. The check works only for bosses that are
+// scripted to report IN_PROGRESS (all TBC raid bosses do).
 bool IsEncounterInProgress(Player* bot, uint32 mapId);
-
-// Encounters from the instance script. Boss ids follow DungeonEncounter.dbc's order, so they are
-// right only if the instance script numbers its bosses in that same order. Each returns false or
-// nullopt when the bot (or object) isn't on mapId.
-
-// One boss's state, unlike IsEncounterInProgress, which is true with any boss in progress on mapId.
-// It takes any object, so script hooks can gate on a creature.
+// Check if a specific boss encounter is in progress on mapId. To use, bossIds must be declared in
+// the strategy and match the Data for the boss from the instance script. The function takes any
+// WorldObject, so script hooks can call it to gate on any Unit or a DynamicObject.
 bool IsBossInProgress(WorldObject* object, uint32 mapId, uint32 bossId);
-// The lowest boss id that is IN_PROGRESS, if any.
+// The lowest bossId on mapId that is IN_PROGRESS, if any.
 std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId);
 
 // Class Roles
@@ -119,26 +111,37 @@ Player* GetClassRolePlayer(Player* bot, ClassRoleAssignment const& assignment);
 ObjectGuid GetClassRolePlayerGuid(ClassRoleAssignment const& assignment);
 bool IsClassRolePlayer(Player* bot, ClassRoleAssignment const& assignment);
 
-// Locking Encounter States
+// Instance Creature Lists
 
-// Sets the field if it is empty. Returns true if it did.
-template <typename T, typename U>
-bool EmplaceIfUnset(std::optional<T>& field, U&& value)
+// A cached creature search kept once in the raid's instance state, instead of once per bot like a
+// CalculatedValue, so one search serves every bot. Share a list only when its result is the same
+// whichever bot runs the search: a fixed center and no per-bot filter. A search specific to a bot
+// (e.g., nearby hazards) stays a CalculatedValue. Do not put a CalculatedValue on top; that only
+// adds a second delay. A raid's reset clears its lists but does not count them in wasSet (see
+// ResetInstanceCreatureList).
+struct InstanceCreatureList
 {
-    if (field)
-        return false;
-
-    field.emplace(std::forward<U>(value));
-    return true;
-}
-// Clears the field. Returns true if it had a value.
-template <typename T>
-bool ResetIfSet(std::optional<T>& field)
-{
-    bool const wasSet = field.has_value();
-    field.reset();
-    return wasSet;
-}
+    std::optional<uint32> refreshedAt;
+    GuidVector guids;
+};
+// The first read, and the first after intervalMs, runs search(bot) and stores the list. Later reads
+// return it. Readers resolve each GUID and check what they need (usually IsAlive), so deaths,
+// positions, and auras are current on every read, and intervalMs only delays a newly spawned unit.
+// A longer intervalMs is fine for units present at the pull, while a shorter one is needed if bots
+// must respond quickly to a spawn. Read each list through one getter, so every reader passes the
+// same interval.
+GuidVector const& GetInstanceCreatureList(
+    InstanceCreatureList& list, uint32 intervalMs, Player* bot, GuidVector (*search)(Player*));
+// Void because clearing a cache is not a reset worth the bot's tick: a reset action that returns
+// true ends the tick, and a list read outside encounters (e.g., Illidan's speech check) would be
+// set again before every reset.
+void ResetInstanceCreatureList(InstanceCreatureList& list);
+// Creatures of the entries within 2D radius of a fixed center, on the bot's map and in its phase,
+// in loaded grids only. Living only unless includeDead. Unlike a search centered on the bot, the
+// result is the same whichever bot runs it.
+GuidVector FindCreatureGuidsAround(
+    Player* bot, Position const& center, float radius, std::vector<uint32> const& entries,
+    bool includeDead = false);
 
 // Raid Target Icons (RTI)
 
@@ -195,7 +198,7 @@ Player* GetGroupMainTank(Player* bot);
 Player* GetGroupAssistTank(Player* bot, uint8 index);
 // Return the nearest alive player (human or bot) within the specified radius. Distance is
 // measured by GetExactDist2d(), which does not take into account either player's CombatReach
-// (i.e., their hitboxes), which are 1.5y for all races (or 1.95y with Bloodlust/Heroism active).
+// (i.e., their hitboxes), which are 1.5 yd for all races (1.95 yd with Bloodlust/Heroism active).
 Player* GetNearestPlayerInRadius(Player* bot, float radius);
 
 // Action Class Checks for Multipliers
@@ -227,7 +230,7 @@ float GetDpsHoldValue(Player* bot, Action* action);
 //   dps/tank assist will pick a target again unless a target exclusion or a multiplier prevents it.
 // In any case, a spell in flight still lands, a filling cast bar can't be stopped by an action, and
 // pets are not affected (CallBackPets would need to also be called).
-
+//
 // True if the bot's swing, auto shot, wand, or channel is aimed at the target. A channel on the
 // ground at enemies counts as aimed at any enemy.
 bool IsAttackingTarget(Player* bot, Unit* target);
@@ -268,7 +271,6 @@ struct SavedMinionStance
     uint32 petNumber;
     ReactStates reactState;
 };
-
 // True if the bot has a living pet or guardian with pet controls. Totems are in m_Controlled too,
 // so this, not m_Controlled.empty(), is the cheap first check for a pet trigger.
 bool HasControllableMinion(Player* bot);
@@ -281,6 +283,27 @@ bool IsMinionStanceWrongForHold(Player* bot, bool isHeld);
 // savedStances as a member; its reset calls this with isHeld false, then clears the list.
 bool SetMinionStancesForHold(
     Player* bot, bool isHeld, std::vector<SavedMinionStance>& savedStances);
+
+// Locking Encounter States
+
+// Sets the field if it is empty. Returns true if it did.
+template <typename T, typename U>
+bool EmplaceIfUnset(std::optional<T>& field, U&& value)
+{
+    if (field)
+        return false;
+
+    field.emplace(std::forward<U>(value));
+    return true;
+}
+// Clears the field. Returns true if it had a value.
+template <typename T>
+bool ResetIfSet(std::optional<T>& field)
+{
+    bool const wasSet = field.has_value();
+    field.reset();
+    return wasSet;
+}
 
 // Miscellaneous
 

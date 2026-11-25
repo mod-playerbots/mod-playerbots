@@ -32,24 +32,14 @@ struct MuruEncounterTargets
     std::vector<Unit*> berserkers;
 };
 
-struct MuruEncounterGuids
-{
-    ObjectGuid muru;
-    ObjectGuid entropius;
-    GuidVector voidSentinels;
-    GuidVector voidSpawns;
-    GuidVector furyMages;
-    GuidVector berserkers;
-};
-
 inline constexpr float MURU_MISDIRECT_MIN_TARGET_HP_PERCENT = 80.0f;
 // DPS cooldowns are held until 97% to allow for initial positioning.
 inline constexpr float MURU_MAX_DPS_HP_PERCENT = 97.0f;
 
-inline constexpr uint32 MURU_ENCOUNTER_TARGETS_CACHE_INTERVAL_MS = 200;
-inline constexpr uint32 VOID_ZONE_CACHE_INTERVAL_MS = 200;
-inline constexpr uint32 DARK_FIEND_CACHE_INTERVAL_MS = 200;
-inline constexpr uint32 SINGULARITY_CACHE_INTERVAL_MS = 200;
+inline constexpr uint32 MURU_UNIT_CACHE_INTERVAL_MS = 200;
+// Around MURU_CENTER_POSITION. The Shadowsword adds are summoned 55 yd away, and the Void Sentinel
+// portals are within 41 yd.
+inline constexpr float MURU_ROOM_SEARCH_RADIUS = 70.0f;
 
 // Darkness cycle: 45998 ticks every 45s and triggers the 3s pre-effect 45999 on M'uru, whose own
 // tick casts 45996, a zone at M'uru's position doing 3k a second for 20s. The zone is M'uru's
@@ -80,7 +70,6 @@ inline constexpr float MURU_MELEE_ADD_MIN_DIST_FROM_SENTINEL = 15.0f;
 // Everyone keeps clear of it, as touching one is almost a guaranteed wipe.
 inline constexpr float DARK_FIEND_BLAST_RANGE = 7.0f;
 inline constexpr float DARK_FIEND_CLEARANCE = DARK_FIEND_BLAST_RANGE + 5.0f;
-inline constexpr float DARK_FIEND_SEARCH_RADIUS = 50.0f;
 // A void zone (25879) hits within 3 yd of its center (46264). For its first 3s it carries 46265,
 // which summons a Dark Fiend at its center when it ends, so a new zone is kept at the fiend's
 // clearance.
@@ -89,9 +78,6 @@ inline constexpr float MURU_VOID_ZONE_CLEARANCE = MURU_VOID_ZONE_HAZARD_RADIUS +
 // How far a bot looks for a position clear of every void zone and fiend.
 inline constexpr float MURU_CLEAR_POSITION_SEARCH_RADIUS = 15.0f;
 inline constexpr float MURU_CLEAR_POSITION_ARRIVAL_DISTANCE = 0.5f;
-// Covers every zone that can rule out a position the search tries.
-inline constexpr float MURU_VOID_ZONE_SEARCH_RADIUS =
-    MURU_CLEAR_POSITION_SEARCH_RADIUS + DARK_FIEND_CLEARANCE;
 // A Singularity throws everyone within 7 yd of its center (46230) from 8s after it appears. Bots
 // leave from the moment it appears, for time to react. Entropius's victim keeps farther away, so
 // melee on Entropius have room.
@@ -123,9 +109,15 @@ bool IsMuruPhaseActive(Unit* muru);
 bool IsMuruDarknessActive(Unit* muru);
 bool IsMuruDarknessEarly(Unit* muru);
 bool IsMeleeTargetInMuruDarkness(Unit* muru, Unit* target);
+// Phase 1 Darkness, from the pre-effect, whatever the owner's role.
+bool IsMuruPetHoldActive(Unit* muru);
+// The owner's current target, but never a Dark Fiend, and during Darkness never one inside it.
+Unit* GetMuruPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* muru);
 bool IsSpellFuryReservedForMages(Unit* furyMage);
 bool IsEntropiusDpsHoldActive(Player* bot);
-MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI);
+// M'uru, Entropius, their adds, the void zones (Darkness), the Dark Fiends, and the Singularity.
+GuidVector FindMuruUnitGuids(Player* bot);
+GuidVector const& GetMuruUnits(Player* bot);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
 Unit* SelectNearestMuruTargetByEntry(
     Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates,
@@ -136,9 +128,8 @@ Unit* FindMuruFuryMageToInterrupt(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI);
 Position const& GetAssignedVoidSentinelTankPosition(Unit* voidSentinel);
 bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI);
-ObjectGuid FindMuruSingularityGuid(Player* bot);
-GuidVector FindMuruVoidZoneGuids(Player* bot);
-GuidVector FindMuruDarkFiendGuids(Player* bot);
+// The nearest to the bot within SINGULARITY_SEARCH_RADIUS.
+Creature* GetMuruSingularity(Player* bot);
 std::vector<Creature*> GetMuruDarkFiends(PlayerbotAI* botAI);
 Creature* GetNearestMuruDarkFiend(PlayerbotAI* botAI, float radius);
 float GetMuruVoidZoneClearance(Unit* voidZone);

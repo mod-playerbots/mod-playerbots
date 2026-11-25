@@ -110,14 +110,9 @@ struct FogSafeThreshold
     bool safeSideIsNorth;  // true = safe side has higher X (north), false = lower X (south)
 };
 
-struct FelmystDemonicVaporGuids
-{
-    GuidVector heads;
-    GuidVector trails;
-};
-
 inline constexpr uint32 DEMONIC_VAPOR_CACHE_INTERVAL_MS = 200;
-inline constexpr float DEMONIC_VAPOR_SEARCH_RADIUS = 100.0f;
+// Around FELMYST_ROOM_CENTER.
+inline constexpr float DEMONIC_VAPOR_SEARCH_RADIUS = 110.0f;
 // A trail patch's reach, center to center.
 inline constexpr float DEMONIC_VAPOR_HAZARD_RADIUS = 3.0f;
 // How far bots keep from a patch or another player's head, except in the fog move.
@@ -166,6 +161,8 @@ inline Position const FOG_RIGHT_SIDE = { 1458.556f, 502.200f, 59.900f, 1.606f };
 
 inline Position const FELMYST_LEFT_LANDING_POSITION =  { 1476.770f, 665.094f, 20.642f };
 inline Position const FELMYST_RIGHT_LANDING_POSITION = { 1469.930f, 557.009f, 22.632f };
+// Midway between the landing positions. Every bot position in this file is within 97 yd of it.
+inline Position const FELMYST_ROOM_CENTER = { 1473.350f, 611.052f, 21.637f };
 
 // The navmesh treats most of the crate as floor, so stepped moves keep this far from its center.
 inline Position const FELMYST_CRATE_POSITION = { 1483.0f, 591.0f, 23.4f };
@@ -266,7 +263,8 @@ inline std::vector<Position> const FELMYST_EAST_SECOND_VAPOR_ROUTE = {
     Position{ 1469.6f, 624.5f, 22.0f },
 };
 
-FelmystDemonicVaporGuids FindFelmystDemonicVaporGuids(Player* bot);
+// Demonic Vapor heads and their trails.
+GuidVector FindFelmystDemonicVaporGuids(Player* bot);
 std::vector<Creature*> GetDemonicVaporHazards(Player* bot);
 Creature* GetFelmystOwnDemonicVapor(Player* bot);
 bool IsNearFelmystDemonicVaporHazard(Player* bot);
@@ -301,9 +299,13 @@ bool IsFelmystFogMovementSuppressed(Unit* felmyst);
 bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
 bool TryGetFelmystLandingApproachDestination(
     Player* bot, FogLane lastCompletedLane, Unit* felmyst, Position& destination);
-// From the pull or the landing approach to FELMYST_GROUNDED_DPS_WAIT_MS after touchdown, for
-// everyone but the main tank.
+// From the pull or the landing approach to FELMYST_GROUNDED_DPS_WAIT_MS after touchdown, whatever
+// the bot's role.
+bool IsFelmystLandingHoldWindowActive(Player* bot);
+// The landing hold window, for everyone but the main tank.
 bool IsFelmystLandingDpsHoldActive(PlayerbotAI* botAI);
+// While Felmyst is flying and through the landing hold window, whatever the bot's role.
+bool IsFelmystPetHoldActive(Player* bot);
 bool TryGetActiveFogOfCorruptionState(Player* bot, Unit* felmyst, FogOfCorruptionState& state);
 void RecordFelmystIncomingEncapsulateTarget(
     Player* target, uint32 durationMs = 3 * IN_MILLISECONDS);

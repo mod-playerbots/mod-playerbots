@@ -14,7 +14,6 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include "SWPShared.h"
-#include <limits>
 #include <optional>
 #include <string>
 #include <vector>
@@ -394,6 +393,18 @@ public:
     bool Execute(Event event) override;
 };
 
+class FelmystSetPetStanceAction : public Action
+{
+public:
+    FelmystSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "felmyst set pet stance") {}
+    bool Execute(Event event) override;
+    bool ResetPetStance();
+
+private:
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
+};
+
 // Eredar Twins
 
 class EredarTwinsJumpFromBalconyAction : public MovementAction
@@ -649,6 +660,26 @@ public:
     bool Execute(Event event) override;
 };
 
+class MuruSetPetStanceAction : public Action
+{
+public:
+    MuruSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "m'uru set pet stance") {}
+    bool Execute(Event event) override;
+    bool ResetPetStance();
+
+private:
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
+};
+
+class MuruCommandPetTargetAction : public Action
+{
+public:
+    MuruCommandPetTargetAction(PlayerbotAI* botAI)
+        : Action(botAI, "m'uru command pet target") {}
+    bool Execute(Event event) override;
+};
+
 // Kil'jaeden <The Deceiver>
 
 class KiljaedenAnnounceDragonOrbUserAction : public Action
@@ -774,6 +805,18 @@ public:
     KiljaedenReleaseStaleRootAction(PlayerbotAI* botAI)
         : Action(botAI, "kil'jaeden release stale root") {}
     bool Execute(Event event) override;
+};
+
+class KiljaedenSetPetStanceAction : public Action
+{
+public:
+    KiljaedenSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "kil'jaeden set pet stance") {}
+    bool Execute(Event event) override;
+    bool ResetPetStance();
+
+private:
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
 };
 
 #endif

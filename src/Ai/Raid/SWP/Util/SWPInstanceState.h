@@ -27,6 +27,11 @@ struct SwpInstanceState
     std::optional<EredarTwinsEncounterState> eredarTwins;
     std::optional<MuruEncounterState> muru;
     std::optional<KiljaedenEncounterState> kiljaeden;
+    EncounterHelpers::InstanceCreatureList kalecgosUnits;
+    EncounterHelpers::InstanceCreatureList felmystDemonicVapors;
+    EncounterHelpers::InstanceCreatureList gauntletVolatileFiends;
+    EncounterHelpers::InstanceCreatureList muruUnits;
+    EncounterHelpers::InstanceCreatureList kiljaedenAdds;
     // Class roles survive SwpResetInstance (see ClassRoleAssignment).
     EncounterHelpers::ClassRoleAssignment alythessPaladinTank;
     // Not technically a class role (any class works), but chosen, kept, and announced the same way.
@@ -35,8 +40,8 @@ struct SwpInstanceState
 
 SwpInstanceState& SwpState(uint32 instanceId);
 SwpInstanceState* FindSwpState(uint32 instanceId);
-// Clears every boss's state but keeps the class roles and the orb user. Returns true if any boss
-// state was set.
+// Clears every boss's state and creature list but keeps the class roles and the orb user. Returns
+// true if any boss state was set.
 bool SwpResetInstance(uint32 instanceId);
 // Picks every class role player, and Kil'jaeden's orb user, again out of encounters; during one,
 // only fills an empty role or replaces a player who died or left.

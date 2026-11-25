@@ -14,7 +14,6 @@
 #include "ThreatHelpers.h"
 #include <cmath>
 #include <map>
-#include <string>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -127,8 +126,7 @@ bool KalecgosSelectTargetForHoldAction::Execute(Event /*event*/)
 
 bool KalecgosSetPetStanceAction::Execute(Event /*event*/)
 {
-    bool const isHeld = GetKalecgosDpsHoldWindow(bot) != KalecgosDpsHold::None;
-    return SetMinionStancesForHold(bot, isHeld, _previousReactStates);
+    return SetMinionStancesForHold(bot, IsKalecgosPetHoldActive(bot), _previousReactStates);
 }
 
 bool KalecgosSetPetStanceAction::ResetPetStance()
@@ -269,8 +267,8 @@ bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
         return false;
 
     constexpr float searchRadius = 20.0f;
-    Creature* kalec = bot->FindNearestCreature(Id(SwpNpcs::NPC_KALECGOS_HUMANOID), searchRadius);
-    if (!kalec || sathrovarr->GetVictim() != kalec)
+    Creature* kalec = GetKalecgosUnit(bot, SwpNpcs::NPC_KALECGOS_HUMANOID);
+    if (!kalec || bot->GetDistance(kalec) > searchRadius || sathrovarr->GetVictim() != kalec)
         return false;
 
     constexpr float arrivalDist = 3.0f;

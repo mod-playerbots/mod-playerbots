@@ -118,8 +118,6 @@ inline Position const EREDAR_TWINS_ALYTHESS_LANDING_POSITION =  { 1818.600f, 611
 // 12 yd from Alythess, out of reach of their area attacks (8 yd plus her 2.5 yd reach).
 inline constexpr float SACROLASH_TANK_ARRIVAL_DISTANCE = 1.0f;
 inline Position const SACROLASH_TANK_POSITION =               { 1799.000f, 618.900f, 33.404f };
-// The Sacrolash tanks wait here at the pull, on that line, until one of them holds her.
-inline Position const SACROLASH_TANK_PULL_POSITION =          { 1807.400f, 622.800f, 33.404f };
 inline Position const EREDAR_TWINS_P1_RANGED_POSITION =       { 1808.076f, 603.460f, 51.684f };
 // A ranged bot that pulls aggro on Alythess waits here, out of the stack, so Blaze doesn't hit the
 // ranged stack. The twins are in LoS from only ~10 yd of the balcony edge; this is its east end.
@@ -184,7 +182,10 @@ bool ShouldHoldSacrolashThreat(Player* bot, Unit* sacrolash);
 Player* GetSacrolashSecondTank(Player* bot, Unit* sacrolash);
 // The first living bot hunter in group order, who misdirects Alythess at the pull.
 bool IsAlythessPullMisdirectHunter(Player* bot);
-// The first EREDAR_TWINS_DPS_HOLD_MS of Sacrolash's fight, which the tanks spend taking aggro.
+// The first EREDAR_TWINS_DPS_HOLD_MS of Sacrolash's fight, which the tanks spend taking aggro,
+// whatever the bot's role. For pets.
+bool IsEredarTwinsStartHoldWindowActive(Player* bot);
+// The start hold window, for everyone but the tanks.
 bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI);
 EredarTwinsThreatHolds FindEredarTwinsThreatHolds(Player* bot);
 std::vector<Position> FindEredarTwinsBlazePositions(Player* bot);

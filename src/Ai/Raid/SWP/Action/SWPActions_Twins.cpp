@@ -11,7 +11,6 @@
 #include "SWPEncounter_Twins.h"
 #include "SWPShared.h"
 #include "ThreatHelpers.h"
-#include <vector>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -93,24 +92,23 @@ bool EredarTwinsPositionSacrolashTanksAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != sacrolash)
         return Attack(sacrolash);
 
-    // At the pull the tanks wait on the drag line until one of them holds her in its melee range.
-    // Then the tank she is hitting draws her along it, and the other tank simply joins it.
+    // At the pull the tanks go and grab her. Once one of them holds her in its melee range, the
+    // tank she is hitting draws her along the line, and the other tank simply joins it.
     Unit* victim = sacrolash->GetVictim();
     Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
-    bool const isHeldByTank = victimPlayer && IsAnySacrolashTank(victimPlayer) &&
-        victimPlayer->IsWithinMeleeRange(sacrolash);
-    if (!isHeldByTank && !IsEredarTwinsStartHoldActive(botAI))
+    if (!victimPlayer || !IsAnySacrolashTank(victimPlayer) ||
+        !victimPlayer->IsWithinMeleeRange(sacrolash))
+    {
         return false;
-
-    Position const& position =
-        isHeldByTank ? SACROLASH_TANK_POSITION : SACROLASH_TANK_PULL_POSITION;
+    }
 
     // Backwards only for the tank she is hitting, when the step leads away from her.
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, position, SACROLASH_TANK_ARRIVAL_DISTANCE, sacrolash, moveX, moveY, backwards))
+            bot, SACROLASH_TANK_POSITION, SACROLASH_TANK_ARRIVAL_DISTANCE, sacrolash, moveX,
+            moveY, backwards))
     {
         return false;
     }
@@ -288,7 +286,8 @@ bool EredarTwinsDpsPrioritizeSacrolashAction::Execute(Event /*event*/)
 
 bool EredarTwinsSetPetStanceAction::Execute(Event /*event*/)
 {
-    return SetMinionStancesForHold(bot, IsEredarTwinsStartHoldActive(botAI), _previousReactStates);
+    return SetMinionStancesForHold(
+        bot, IsEredarTwinsStartHoldWindowActive(bot), _previousReactStates);
 }
 
 bool EredarTwinsSetPetStanceAction::ResetPetStance()

@@ -17,9 +17,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
-#include <list>
 #include <map>
-#include <optional>
 #include <string>
 
 using namespace EncounterHelpers;
@@ -156,38 +154,65 @@ bool SayKiljaedenDragonOrbUser(PlayerbotAI* botAI, ClassRoleChoice const& choice
 
 } // end anonymous namespace
 
-GuidVector FindKiljaedenHandGuids(Player* bot)
+GuidVector FindKiljaedenAddGuids(Player* bot)
 {
-    GuidVector guids;
-
-    std::list<Creature*> creatures;
-    bot->GetCreatureListWithEntryInGrid(
-        creatures, Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER), HAND_SEARCH_RADIUS);
-
-    for (Creature* creature : creatures)
-    {
-        if (creature && creature->IsAlive() && creature->IsInCombat())
-            guids.push_back(creature->GetGUID());
-    }
-
+    GuidVector guids = FindCreatureGuidsAround(
+        bot, SUNWELL_CENTER_POSITION, KILJAEDEN_ADD_SEARCH_RADIUS,
+        { Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER), Id(SwpNpcs::NPC_SINISTER_REFLECTION) });
     std::sort(guids.begin(), guids.end());
-
     return guids;
 }
+
+namespace
+{
+
+GuidVector const& GetKiljaedenAdds(Player* bot)
+{
+    return GetInstanceCreatureList(
+        SwpState(bot->GetInstanceId()).kiljaedenAdds, KILJAEDEN_ADD_CACHE_INTERVAL_MS, bot,
+        FindKiljaedenAddGuids);
+}
+
+} // end anonymous namespace
 
 std::vector<Unit*> GetKiljaedenHands(PlayerbotAI* botAI)
 {
     std::vector<Unit*> hands;
-
-    for (auto const& guid :
-         botAI->GetAiObjectContext()->GetValue<GuidVector>("kiljaeden hands")->RefGet())
+    for (ObjectGuid const& guid : GetKiljaedenAdds(botAI->GetBot()))
     {
+        if (guid.GetEntry() != Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
+            continue;
+
         Unit* hand = botAI->GetUnit(guid);
         if (hand && hand->IsAlive())
             hands.push_back(hand);
     }
 
     return hands;
+}
+
+Creature* GetNearestSinisterReflection(Player* bot)
+{
+    Creature* nearest = nullptr;
+    float nearestDistance = std::numeric_limits<float>::max();
+    for (ObjectGuid const& guid : GetKiljaedenAdds(bot))
+    {
+        if (guid.GetEntry() != Id(SwpNpcs::NPC_SINISTER_REFLECTION))
+            continue;
+
+        Creature* reflection = ObjectAccessor::GetCreature(*bot, guid);
+        if (!reflection || !reflection->IsAlive())
+            continue;
+
+        float const distance = bot->GetDistance(reflection);
+        if (distance < nearestDistance)
+        {
+            nearestDistance = distance;
+            nearest = reflection;
+        }
+    }
+
+    return nearest;
 }
 
 bool IsKiljaedenHandControlClaimed(Unit* hand)

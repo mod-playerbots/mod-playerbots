@@ -57,7 +57,7 @@ inline constexpr float KILJAEDEN_PHASE5_HP_THRESHOLD = 25.0f;
 // After Kil'jaeden becomes attackable, every bot but the main tank holds DPS on him this long.
 inline constexpr uint32 KILJAEDEN_DPS_HOLD_MS = 5 * IN_MILLISECONDS;
 
-inline constexpr uint32 HAND_CACHE_INTERVAL_MS = 200;
+inline constexpr uint32 KILJAEDEN_ADD_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 DRAGON_ORB_CACHE_INTERVAL_MS = 200;
 
 // The orb user is announced out of combat within this 2D distance of the controller's spawn.
@@ -76,7 +76,9 @@ inline constexpr float KILJAEDEN_ROUTE_LINE_CLEARANCE = KILJAEDEN_KNOCKBACK_RADI
 // How far past its tangent a bot going round him aims along the ring, in radians.
 inline constexpr float KILJAEDEN_ROUTE_LEAD_ANGLE = 0.3f;
 
-inline constexpr float HAND_SEARCH_RADIUS = 80.0f;
+// Around SUNWELL_CENTER_POSITION. The Hands are summoned within 20 yd of it, and every raid
+// position is within 42 yd.
+inline constexpr float KILJAEDEN_ADD_SEARCH_RADIUS = 80.0f;
 // Hammer of Justice is a single-target spell that counts both combat reaches so its actual range is
 // its tooltip range of 10 yd + 1.5 (player) + 2.5 (Hand) = 14 yd. Holding a little inside that
 // threshold leaves room for the Hand to shift between the range check and the cast landing.
@@ -97,7 +99,6 @@ inline constexpr uint32 ARMAGEDDON_HAZARD_DURATION_MS = 10 * IN_MILLISECONDS;
 inline constexpr float ARMAGEDDON_HAZARD_RADIUS = 9.0f; // no combat reaches added
 inline constexpr float ARMAGEDDON_CLEARANCE = ARMAGEDDON_HAZARD_RADIUS + 2.0f;
 
-inline constexpr float KILJAEDEN_REFLECTION_SEARCH_RADIUS = 100.0f;
 inline constexpr float DRAGON_ORB_SEARCH_RADIUS = 200.0f;
 inline constexpr float DRAGON_ORB_IN_USE_HOLD_DISTANCE = 15.0f;
 // Shield of the Blue (45848) lasts 5s and Darkness of a Thousand Souls (46605) is an 8s channel, so
@@ -147,8 +148,10 @@ inline std::array const KILJAEDEN_RANGED_POSITIONS = {
 inline constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
     std::tuple_size_v<decltype(KILJAEDEN_RANGED_POSITIONS)>;
 
-GuidVector FindKiljaedenHandGuids(Player* bot);
+// Hands of the Deceiver and Sinister Reflections.
+GuidVector FindKiljaedenAddGuids(Player* bot);
 std::vector<Unit*> GetKiljaedenHands(PlayerbotAI* botAI);
+Creature* GetNearestSinisterReflection(Player* bot);
 bool IsKiljaedenHandControlClaimed(Unit* hand);
 void ClaimKiljaedenHandControl(Unit* hand);
 void AddKiljaedenArmageddon(

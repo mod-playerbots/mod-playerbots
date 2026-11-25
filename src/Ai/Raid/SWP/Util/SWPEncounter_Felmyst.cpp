@@ -11,7 +11,7 @@
 #include "SWPShared.h"
 #include <algorithm>
 #include <cmath>
-#include <list>
+#include <initializer_list>
 #include <optional>
 
 using namespace EncounterHelpers;
@@ -24,15 +24,11 @@ namespace SwpHelpers
 namespace
 {
 
-FelmystDemonicVaporGuids const& GetCachedDemonicVapors(Player* bot)
+GuidVector const& GetDemonicVapors(Player* bot)
 {
-    static FelmystDemonicVaporGuids const none;
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    if (!botAI)
-        return none;
-
-    return botAI->GetAiObjectContext()
-        ->GetValue<FelmystDemonicVaporGuids>("felmyst demonic vapors")->RefGet();
+    return GetInstanceCreatureList(
+        SwpState(bot->GetInstanceId()).felmystDemonicVapors, DEMONIC_VAPOR_CACHE_INTERVAL_MS, bot,
+        FindFelmystDemonicVaporGuids);
 }
 
 Creature* GetLivingCreature(Player* bot, ObjectGuid const& guid)
@@ -546,42 +542,36 @@ bool TryFindSpotPastFogThreshold(
 
 } // end anonymous namespace
 
-FelmystDemonicVaporGuids FindFelmystDemonicVaporGuids(Player* bot)
+GuidVector FindFelmystDemonicVaporGuids(Player* bot)
 {
-    FelmystDemonicVaporGuids guids;
-
-    auto const addGuids = [bot](uint32 entry, GuidVector& out)
-    {
-        std::list<Creature*> creatures;
-        bot->GetCreatureListWithEntryInGrid(creatures, entry, DEMONIC_VAPOR_SEARCH_RADIUS);
-        for (Creature* creature : creatures)
-        {
-            if (creature && creature->IsAlive())
-                out.push_back(creature->GetGUID());
-        }
-    };
-
-    addGuids(Id(SwpNpcs::NPC_DEMONIC_VAPOR), guids.heads);
-    addGuids(Id(SwpNpcs::NPC_DEMONIC_VAPOR_TRAIL), guids.trails);
-    return guids;
+    return FindCreatureGuidsAround(
+        bot, FELMYST_ROOM_CENTER, DEMONIC_VAPOR_SEARCH_RADIUS,
+        { Id(SwpNpcs::NPC_DEMONIC_VAPOR), Id(SwpNpcs::NPC_DEMONIC_VAPOR_TRAIL) });
 }
 
+// Other players' heads, then every trail.
 std::vector<Creature*> GetDemonicVaporHazards(Player* bot)
 {
-    FelmystDemonicVaporGuids const& guids = GetCachedDemonicVapors(bot);
+    GuidVector const& guids = GetDemonicVapors(bot);
 
     std::vector<Creature*> hazards;
-    hazards.reserve(guids.heads.size() + guids.trails.size());
+    hazards.reserve(guids.size());
 
-    for (ObjectGuid const& guid : guids.heads)
+    for (ObjectGuid const& guid : guids)
     {
+        if (guid.GetEntry() != Id(SwpNpcs::NPC_DEMONIC_VAPOR))
+            continue;
+
         Creature* head = GetLivingCreature(bot, guid);
         if (head && head->GetSummonerGUID() != bot->GetGUID())
             hazards.push_back(head);
     }
 
-    for (ObjectGuid const& guid : guids.trails)
+    for (ObjectGuid const& guid : guids)
     {
+        if (guid.GetEntry() != Id(SwpNpcs::NPC_DEMONIC_VAPOR_TRAIL))
+            continue;
+
         if (Creature* trail = GetLivingCreature(bot, guid))
             hazards.push_back(trail);
     }
@@ -592,8 +582,11 @@ std::vector<Creature*> GetDemonicVaporHazards(Player* bot)
 // Any living head the bot summoned, which is the head chasing it.
 Creature* GetFelmystOwnDemonicVapor(Player* bot)
 {
-    for (ObjectGuid const& guid : GetCachedDemonicVapors(bot).heads)
+    for (ObjectGuid const& guid : GetDemonicVapors(bot))
     {
+        if (guid.GetEntry() != Id(SwpNpcs::NPC_DEMONIC_VAPOR))
+            continue;
+
         Creature* head = GetLivingCreature(bot, guid);
         if (head && head->GetSummonerGUID() == bot->GetGUID())
             return head;
@@ -1086,17 +1079,28 @@ bool TryGetFelmystLandingApproachDestination(
     return TryFindSpotPastFogThreshold(bot, lastCompletedLane, projectFrom, destination);
 }
 
-bool IsFelmystLandingDpsHoldActive(PlayerbotAI* botAI)
+bool IsFelmystLandingHoldWindowActive(Player* bot)
 {
-    if (PlayerbotAI::IsMainTank(botAI->GetBot()))
-        return false;
-
-    Unit* felmyst = GetSwpBoss(botAI->GetBot(), SwpBosses::DATA_FELMYST);
+    Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
     if (!felmyst)
         return false;
 
     FelmystEncounterState const* state = FindFelmystState(felmyst->GetInstanceId());
     return state && state->landingDpsWaitStartMs;
+}
+
+bool IsFelmystLandingDpsHoldActive(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    return !PlayerbotAI::IsMainTank(bot) && IsFelmystLandingHoldWindowActive(bot);
+}
+
+// TEST: pets are held for the whole air phase, so they stop starting chases after Felmyst that
+// fail partway. Held pets don't fight the Unyielding Dead either.
+bool IsFelmystPetHoldActive(Player* bot)
+{
+    Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
+    return felmyst && (felmyst->IsFlying() || IsFelmystLandingHoldWindowActive(bot));
 }
 
 bool TryGetActiveFogOfCorruptionState(Player* bot, Unit* felmyst, FogOfCorruptionState& state)

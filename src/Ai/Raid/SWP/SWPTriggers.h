@@ -447,6 +447,17 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class FelmystShouldManagePetAggressionTrigger : public SunwellEncounterTrigger
+{
+public:
+    FelmystShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "felmyst should manage pet aggression", SwpHelpers::SwpBosses::DATA_FELMYST) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Eredar Twins
 
 class EredarTwinsHunterShouldMisdirectTrigger : public SunwellEncounterTrigger
@@ -770,6 +781,28 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class MuruShouldManagePetAggressionTrigger : public SunwellEncounterTrigger
+{
+public:
+    MuruShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "m'uru should manage pet aggression", SwpHelpers::SwpBosses::DATA_MURU) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class MuruPetShouldSwitchTargetTrigger : public SunwellEncounterTrigger
+{
+public:
+    MuruPetShouldSwitchTargetTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "m'uru pet should switch target", SwpHelpers::SwpBosses::DATA_MURU) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Kil'jaeden <The Deceiver>
 
 class KiljaedenHandsOfTheDeceiverAreActiveTrigger : public SunwellEncounterTrigger
@@ -893,6 +926,18 @@ public:
     KiljaedenStaleRootAfterDragonTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
             botAI, "kil'jaeden stale root after dragon", SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class KiljaedenShouldManagePetAggressionTrigger : public SunwellEncounterTrigger
+{
+public:
+    KiljaedenShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "kil'jaeden should manage pet aggression",
+            SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:
     bool IsActiveInEncounter() override;

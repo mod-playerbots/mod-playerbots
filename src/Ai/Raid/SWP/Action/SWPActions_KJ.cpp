@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
-#include <vector>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -191,8 +190,7 @@ bool KiljaedenPositionAndMoveTanksAction::Execute(Event /*event*/)
     {
         // This grid search captures the 3s after spawn, during which Reflections are passive and
         // neither "find target" nor standard target acquisition through "attackers" can locate it.
-        if (Creature* reflection = bot->FindNearestCreature(
-                Id(SwpNpcs::NPC_SINISTER_REFLECTION), KILJAEDEN_REFLECTION_SEARCH_RADIUS))
+        if (Creature* reflection = GetNearestSinisterReflection(bot))
         {
             // Once Reflections are aggressive, tank assist can take over.
             if (reflection->GetReactState() == REACT_PASSIVE &&
@@ -709,4 +707,20 @@ bool KiljaedenDragonBuffAndProtectRaidAction::ExecuteOutsideDarknessOfAThousandS
 bool KiljaedenReleaseStaleRootAction::Execute(Event /*event*/)
 {
     return ReleaseStaleRootFlag(bot);
+}
+
+// Melee pets attack from behind Kil'jaeden, far from the Shield of the Blue stack, so every pet is
+// held for the Darkness of a Thousand Souls cast and channel, and follows its owner into the stack.
+bool KiljaedenSetPetStanceAction::Execute(Event /*event*/)
+{
+    Unit* kiljaeden = GetSwpBoss(bot, SwpBosses::DATA_KILJAEDEN);
+    return SetMinionStancesForHold(
+        bot, IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden), _previousReactStates);
+}
+
+bool KiljaedenSetPetStanceAction::ResetPetStance()
+{
+    bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
+    _previousReactStates.clear();
+    return restored;
 }
