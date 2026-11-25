@@ -180,9 +180,6 @@ public:
     bool isPossible() override { return true; }
 };
 
-// Pick Deadly or Instant per hand from the actual weapon speeds: Deadly Poison
-// stacks from hit count, so it belongs on the faster weapon (on equal speeds the
-// main hand wins); Instant Poison gets the other hand.
 class UseBestMainHandPoisonAction : public UseItemAction
 {
 public:

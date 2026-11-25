@@ -23,7 +23,6 @@ public:
     SliceAndDiceTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "slice and dice") {}
 };
 
-// Refresh HfB this many ms before it expires; shared with RuptureForHungerTrigger to stay in sync.
 constexpr uint32 HFB_REFRESH_EARLY_MS = 5 * IN_MILLISECONDS;
 
 class HungerForBloodTrigger : public BuffTrigger
@@ -35,8 +34,6 @@ public:
     }
 };
 
-// Applies a low-CP Rupture when HfB is missing or about to expire and the target has no bleed.
-// HfB requires a bleed on the target, so without this the refresh attempt just fails.
 class RuptureForHungerTrigger : public Trigger
 {
 public:

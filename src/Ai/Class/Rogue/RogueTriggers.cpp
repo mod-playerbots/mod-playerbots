@@ -137,8 +137,6 @@ bool OffHandWeaponNoEnchantTrigger::IsActive()
 
 bool RuptureForHungerTrigger::IsActive()
 {
-    // Check our own HfB first: absent (fight start / dropped mid-fight) or within
-    // the refresh window means a Rupture bleed is needed so HfB can be (re)applied.
     Aura* hfb = botAI->GetAura("hunger for blood", bot, true, true);
     if (hfb && hfb->GetDuration() > HFB_REFRESH_EARLY_MS)
         return false;
@@ -147,12 +145,9 @@ bool RuptureForHungerTrigger::IsActive()
     if (!target || !target->IsAlive())
         return false;
 
-    // Same bleed condition HfB itself checks; a cheap flag check instead of
-    // scanning every aura on the target.
     if (target->HasAuraState(AURA_STATE_BLEEDING))
         return false;
 
-    // 1-3 CP only: low-CP Rupture just to create a bleed, 4+ CP stay reserved for Envenom.
     uint32 cp = bot->GetComboPoints();
     return cp >= 1 && cp <= 3;
 }

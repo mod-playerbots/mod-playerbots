@@ -81,8 +81,6 @@ bool CastTricksOfTheTradeOnMainTankAction::isUseful()
 
 namespace
 {
-// Find poisons by item ID from high to low (IX -> I); item_template.name is English on
-// a standard AC db, so a localized-name lookup would be fragile.
 Item* FindHighestRankPoison(PlayerbotAI* botAI, bool deadly)
 {
     static constexpr uint32 deadlyPoisons[] = {
@@ -152,7 +150,6 @@ uint32 GetWeaponDelay(Item const* item)
 }
 }
 
-// Deadly on the faster hand (equal speeds: main hand wins), Instant on the other one.
 bool UseBestMainHandPoisonAction::Execute(Event /*event*/)
 {
     Item* const mh = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);

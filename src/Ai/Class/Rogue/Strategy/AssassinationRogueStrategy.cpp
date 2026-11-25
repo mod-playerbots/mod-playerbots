@@ -64,8 +64,6 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 {
     GenericRogueStrategy::InitTriggers(triggers);
 
-    // "rupture for hunger" sits below Slice and Dice on purpose: SnD is always the
-    // top-priority finisher, and the trigger only fires when HfB needs a bleed.
     triggers.push_back(
         new TriggerNode(
             "high energy available",
