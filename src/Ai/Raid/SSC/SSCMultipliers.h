@@ -94,11 +94,11 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class HydrossTheUnstableWaitForDpsMultiplier : public SscEncounterMultiplier
+class HydrossTheUnstableHoldDpsMultiplier : public SscEncounterMultiplier
 {
 public:
-    HydrossTheUnstableWaitForDpsMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "hydross the unstable wait for dps") {}
+    HydrossTheUnstableHoldDpsMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "hydross the unstable hold dps") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -182,6 +182,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class LeotherasTheBlindControlTargetingMultiplier : public SscEncounterMultiplier
+{
+public:
+    LeotherasTheBlindControlTargetingMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "leotheras the blind control targeting") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class LeotherasTheBlindDisableTankActionsMultiplier : public SscEncounterMultiplier
 {
 public:
@@ -212,11 +222,11 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class LeotherasTheBlindWaitForDpsMultiplier : public SscEncounterMultiplier
+class LeotherasTheBlindHoldDpsMultiplier : public SscEncounterMultiplier
 {
 public:
-    LeotherasTheBlindWaitForDpsMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "leotheras the blind wait for dps") {}
+    LeotherasTheBlindHoldDpsMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "leotheras the blind hold dps") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -264,11 +274,21 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class FathomLordKarathressWaitForDpsMultiplier : public SscEncounterMultiplier
+class FathomLordKarathressStartHoldDpsMultiplier : public SscEncounterMultiplier
 {
 public:
-    FathomLordKarathressWaitForDpsMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "fathom-lord karathress wait for dps") {}
+    FathomLordKarathressStartHoldDpsMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "fathom-lord karathress start hold dps") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class FathomLordKarathressBlessingHoldDpsMultiplier : public SscEncounterMultiplier
+{
+public:
+    FathomLordKarathressBlessingHoldDpsMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "fathom-lord karathress blessing hold dps") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

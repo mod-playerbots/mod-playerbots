@@ -11,10 +11,11 @@
 #include "DTKTriggers.h"
 #include "GenericSpellActions.h"
 #include "MovementActions.h"
+#include "ThreatHelpers.h"
 
 float NovosMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "novos the summoner");
+    Unit* boss = FindThreatTarget(bot, "novos the summoner");
     if (!boss) { return 1.0f; }
 
     if (boss->FindCurrentSpellBySpellId(SPELL_ARCANE_FIELD) && bot->GetTarget())

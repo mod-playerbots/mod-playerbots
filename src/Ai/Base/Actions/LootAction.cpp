@@ -93,18 +93,25 @@ bool OpenLootAction::Execute(Event /*event*/)
         return false;
 
     LootObject lootObject = AI_VALUE(LootObject, "loot target");
-    if (!availableLoot->CanAttemptLoot(lootObject.guid))
+    if (lootObject.IsEmpty() || !availableLoot->CanAttemptLoot(lootObject.guid))
         return false;
 
-    // DoLoot stops the bot first, which means "try again", not a failure; deferring after that
-    // stop would make the bot walk away and come back. Only a dry failure at rest defers.
-    bool const wasMoving = bot->isMoving();
-    bool const wasMounted = bot->IsMounted();
+    // true without looting: false lets lower actions undo the stop this tick.
+    if ((bot->isMoving() || bot->IsMounted()) && lootObject.IsAtInteractDistance(bot))
+    {
+        bool const wasMoving = bot->isMoving();
+        if (wasMoving)
+            bot->StopMoving();
+        if (bot->IsMounted())
+            bot->RemoveAurasByType(SPELL_AURA_MOUNTED);
+        botAI->SetNextCheckDelay(wasMoving ? sPlayerbotAIConfig.LootDelay : sPlayerbotAIConfig.ReactDelay);
+        return true;
+    }
 
     bool const result = DoLoot(lootObject);
     if (result)
         availableLoot->BeginLoot(lootObject.guid);
-    else if (!lootObject.IsEmpty() && !wasMoving && !wasMounted)
+    else
     {
         availableLoot->DeferLoot(lootObject.guid);
         if (AI_VALUE(LootObject, "loot target").guid == lootObject.guid)
@@ -122,20 +129,6 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
     Creature* creature = botAI->GetCreature(lootObject.guid);
     if (creature && !bot->IsWithinDistInMap(creature, INTERACTION_DISTANCE))
         return false;
-
-    if (bot->isMoving())
-    {
-        bot->StopMoving();
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig.LootDelay);
-        return false;
-    }
-
-    if (bot->IsMounted())
-    {
-        bot->RemoveAurasByType(SPELL_AURA_MOUNTED);
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig.ReactDelay);
-        return false;
-    }
 
     if (creature && creature->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE))
     {

@@ -10,6 +10,7 @@
 #include "Creature.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 #include <algorithm>
 #include <list>
 #include <utility>
@@ -120,8 +121,7 @@ Player* GetStackTank(PlayerbotAI* botAI)
         return nullptr;
     }
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    if (!context->GetValue<Unit*>("find target", "slad'ran")->Get())
+    if (!FindThreatTarget(bot, "slad'ran"))
     {
         return nullptr;
     }
@@ -131,7 +131,7 @@ Player* GetStackTank(PlayerbotAI* botAI)
         return nullptr;
     }
 
-    Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
+    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
     if (currentTarget && currentTarget->IsAlive() && currentTarget->GetEntry() == NPC_SNAKE_WRAP)
     {
         return nullptr;
@@ -159,14 +159,13 @@ Unit* GetTankHoldTarget(PlayerbotAI* botAI)
         return nullptr;
     }
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* boss = context->GetValue<Unit*>("find target", "slad'ran")->Get();
+    Unit* boss = FindThreatTarget(bot, "slad'ran");
     if (!boss || !boss->IsAlive())
     {
         return nullptr;
     }
 
-    Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
+    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
     if (currentTarget && currentTarget->IsAlive())
     {
         if (currentTarget == boss)
@@ -187,7 +186,7 @@ Unit* GetTankHoldTarget(PlayerbotAI* botAI)
 
 bool SladranPoisonNovaTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "slad'ran");
+    Unit* boss = FindThreatTarget(bot, "slad'ran");
     if (!boss) { return false; }
 
     return bool(boss->FindCurrentSpellBySpellId(SPELL_POISON_NOVA));
@@ -210,6 +209,6 @@ bool SladranTankHoldTrigger::IsActive()
 
 bool GaldarahWhirlingSlashTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "gal'darah");
+    Unit* boss = FindThreatTarget(bot, "gal'darah");
     return boss && boss->HasAura(SPELL_WHIRLING_SLASH);
 }

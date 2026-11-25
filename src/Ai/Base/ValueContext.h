@@ -55,7 +55,6 @@
 #include "LootStrategyValue.h"
 #include "LootValues.h"
 #include "MaintenanceValues.h"
-#include "ManaSaveLevelValue.h"
 #include "NearestCorpsesValue.h"
 #include "NearestFriendlyPlayersValue.h"
 #include "NearestGameObjects.h"
@@ -217,7 +216,6 @@ public:
         creators["balance"] = &ValueContext::balance;
         creators["attackers"] = &ValueContext::attackers;
         creators["invalid target"] = &ValueContext::invalid_target;
-        creators["mana save level"] = &ValueContext::mana_save_level;
         creators["combat"] = &ValueContext::combat;
         creators["lfg proposal"] = &ValueContext::lfg_proposal;
         creators["bag space"] = &ValueContext::bag_space;
@@ -366,7 +364,6 @@ private:
     static UntypedValue* item_upgrade(PlayerbotAI* botAI) { return new ItemUpgradeValue(botAI); }
     static UntypedValue* formation(PlayerbotAI* botAI) { return new FormationValue(botAI); }
     static UntypedValue* stance(PlayerbotAI* botAI) { return new StanceValue(botAI); }
-    static UntypedValue* mana_save_level(PlayerbotAI* botAI) { return new ManaSaveLevelValue(botAI); }
     static UntypedValue* invalid_target(PlayerbotAI* botAI) { return new InvalidTargetValue(botAI); }
     static UntypedValue* balance(PlayerbotAI* botAI) { return new BalancePercentValue(botAI); }
     static UntypedValue* attackers(PlayerbotAI* botAI) { return new AttackersValue(botAI); }

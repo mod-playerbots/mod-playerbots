@@ -5,9 +5,8 @@
  */
 
 #include "TOCTriggers.h"
-#include "AiObject.h"
-#include "AiObjectContext.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 bool ToCLanceTrigger::IsActive()
 {
@@ -81,9 +80,5 @@ bool ToCMountNearTrigger::IsActive()
 
 bool ToCEadricTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "eadric the pure");
-    if (!boss)
-        return false;
-
-    return true;
+    return FindThreatTarget(bot, "eadric the pure");
 }
