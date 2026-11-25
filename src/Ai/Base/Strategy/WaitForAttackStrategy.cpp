@@ -72,6 +72,7 @@ float WaitForAttackMultiplier::GetValue(Action* action)
     std::string const& actionName = action->getName();
 
     if (actionName != "wait for attack keep safe distance" &&
+        actionName != "avoid aoe" &&
         actionName != "dps assist" &&
         actionName != "set facing" &&
         actionName != "pull my target" &&
