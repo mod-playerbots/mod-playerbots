@@ -74,6 +74,9 @@ bool CanInteractWithQuestGiver(Player* bot, Object* questGiver)
 
             if (GameObject* go = bot->GetMap()->GetGameObject(guid))
             {
+                if (!go->isSpawned())
+                    return false;
+
                 if (go->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
                 {
                     // Players cannot interact with gameobjects that use the "Point" icon

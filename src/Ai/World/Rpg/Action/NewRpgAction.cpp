@@ -8,7 +8,9 @@
 #include "AreaDefines.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
+#include "CreatureData.h"
 #include "DBCStores.h"
+#include "GameObjectData.h"
 #include "GossipDef.h"
 #include "IVMapMgr.h"
 #include "MotionMaster.h"
@@ -27,6 +29,7 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
+#include "PoolMgr.h"
 #include "QuestDef.h"
 #include "Random.h"
 #include "SharedDefines.h"
@@ -57,6 +60,36 @@ std::pair<int32, uint32> ObjectiveSignature(Quest const* quest, int32 objectiveI
     }
 
     return {0, 0};
+}
+
+bool IsSpawnActive(Player* bot, ObjectGuid::LowType spawnId, bool gameObject)
+{
+    Map* map = bot->GetMap();
+    if (!map || !spawnId)
+        return false;
+
+    if (gameObject)
+    {
+        GameObjectData const* data = sObjectMgr->GetGameObjectData(spawnId);
+        if (!data)
+            return false;
+        if (data->spawnGroupId && !map->IsSpawnGroupActive(data->spawnGroupId))
+            return false;
+        if (data->poolId && !map->GetPoolData().IsSpawnedObject<GameObject>(uint32(spawnId)))
+            return false;
+    }
+    else
+    {
+        CreatureData const* data = sObjectMgr->GetCreatureData(spawnId);
+        if (!data)
+            return false;
+        if (data->spawnGroupId && !map->IsSpawnGroupActive(data->spawnGroupId))
+            return false;
+        if (data->poolId && !map->GetPoolData().IsSpawnedObject<Creature>(uint32(spawnId)))
+            return false;
+    }
+
+    return true;
 }
 
 void SetObjectiveSignature(NewRpgInfo::DoQuest& data, Quest const* quest)
@@ -572,6 +605,8 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.objectiveIdx = 0;
             data.objectiveEntry = 0;
             data.objectiveCount = 0;
+            data.objectiveSpawnId = 0;
+            data.objectiveIsGameObject = false;
             data.exploreTriggerId = 0;
             data.exploreTriggerSent = false;
             data.exploreTriggerAttempts = 0;
@@ -607,6 +642,8 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.objectiveIdx = 0;
             data.objectiveEntry = 0;
             data.objectiveCount = 0;
+            data.objectiveSpawnId = 0;
+            data.objectiveIsGameObject = false;
             data.exploreTriggerId = 0;
             data.exploreTriggerSent = false;
             data.exploreTriggerAttempts = 0;
@@ -642,6 +679,8 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.pos = best->pos;
             data.objectiveIdx = best->objectiveIdx;
             SetObjectiveSignature(data, sObjectMgr->GetQuestTemplate(questId));
+            data.objectiveSpawnId = best->spawnId;
+            data.objectiveIsGameObject = best->gameObject;
             data.exploreTriggerId = 0;
             data.exploreTriggerSent = false;
             data.exploreTriggerAttempts = 0;
@@ -677,6 +716,8 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.pos = pos;
             data.objectiveIdx = poi.objectiveIdx;
             SetObjectiveSignature(data, sObjectMgr->GetQuestTemplate(questId));
+            data.objectiveSpawnId = 0;
+            data.objectiveIsGameObject = false;
             data.exploreTriggerId = poi.triggerId;
             data.exploreTriggerSent = false;
             data.exploreTriggerAttempts = 0;
@@ -702,13 +743,30 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         }
 
         exploreTrigger = sObjectMgr->GetAreaTrigger(data.exploreTriggerId);
-        exploreInside = exploreTrigger && bot->IsInAreaTriggerRadius(exploreTrigger);
+
+        // The trigger position/volume can change under the same ID; a saved destination outside
+        // the live volume must be resolved again instead of walking the old route.
+        if (!exploreTrigger ||
+            !IsPositionInAreaTrigger(exploreTrigger, data.pos.GetPositionX(), data.pos.GetPositionY(),
+                                     data.pos.GetPositionZ()))
+        {
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            data.exploreTriggerId = 0;
+            data.exploreTriggerSent = false;
+            data.exploreTriggerAttempts = 0;
+            data.exploreTriggerRetryAt = 0;
+            data.lastReachPOI = 0;
+            return true;
+        }
+
+        exploreInside = bot->IsInAreaTriggerRadius(exploreTrigger);
     }
 
     // A trigger can be ignored by another script/player. Retry a bounded number of times instead
     // of starting the five-minute wait after the first attempt.
     if (exploreObjective && data.exploreTriggerSent && data.exploreTriggerAttempts < 3 &&
-        getMSTime() >= data.exploreTriggerRetryAt)
+        GetMSTimeDiffToNow(data.exploreTriggerRetryAt) >= 10000)
     {
         data.exploreTriggerSent = false;
         data.lastReachPOI = 0;
@@ -742,7 +800,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         bot->GetSession()->HandleAreaTriggerOpcode(packet);
         data.exploreTriggerSent = true;
         ++data.exploreTriggerAttempts;
-        data.exploreTriggerRetryAt = getMSTime() + 10000;
+        data.exploreTriggerRetryAt = getMSTime();
         return true;
     }
 
@@ -757,6 +815,20 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
     // stayed at this POI for more than 5 minutes
     if (GetMSTimeDiffToNow(data.lastReachPOI) >= poiStayTime)
     {
+        // A pool/event roll can move the objective spawn while the bot is travelling; re-resolve
+        // instead of recording NoProgress at a spawn that can no longer appear.
+        if (data.objectiveSpawnId && !IsSpawnActive(bot, data.objectiveSpawnId, data.objectiveIsGameObject))
+        {
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            data.objectiveEntry = 0;
+            data.objectiveCount = 0;
+            data.objectiveSpawnId = 0;
+            data.objectiveIsGameObject = false;
+            return true;
+        }
+
         bool hasProgression = false;
         int32 currentObjective = data.objectiveIdx;
         // check if the objective has progression
@@ -861,7 +933,10 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
     uint32 questId = data.questId;
     Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
     if (!quest)
-        return false;
+    {
+        botAI->rpgInfo.ChangeToIdle();
+        return true;
+    }
 
     if (data.objectiveIdx != -1)
     {
@@ -915,12 +990,26 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
     {
         QuestObjectivePosition current{-1, data.pos, data.enderSpawnId, data.enderIsGameObject};
         WorldObject* ender = FindLoadedSpawn(bot, current);
-        if (!ender || !NewRpgHelpers::IsQuestEnder(ender, questId) ||
+        if (!ender)
+        {
+            // The spawn is absent (script/event state), not merely outside the grid. Mark the
+            // quest unusable so selection does not loop on the same missing ender.
+            LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in ender spawn {} is not loaded",
+                      bot->GetName(), questId, data.enderSpawnId);
+            botAI->lowPriorityQuest.insert(questId);
+            botAI->RecordQuestAbandoned(questId, QuestAbandonReason::CannotTurnIn);
+            data.enderSpawnId = 0;
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            return true;
+        }
+
+        if (!NewRpgHelpers::IsQuestEnder(ender, questId) ||
             !NewRpgHelpers::CanInteractWithQuestGiver(bot, ender))
         {
-            LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in ender spawn {} is {}",
-                      bot->GetName(), questId, data.enderSpawnId,
-                      ender ? "not a valid ender for this quest" : "not loaded");
+            LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in ender spawn {} is not a valid ender",
+                      bot->GetName(), questId, data.enderSpawnId);
             data.failedEnderSpawns.insert({data.enderIsGameObject, data.enderSpawnId});
             data.enderSpawnId = 0;
             data.lastReachPOI = 0;

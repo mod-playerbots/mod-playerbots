@@ -57,6 +57,8 @@ struct NewRpgInfo
         int32 objectiveIdx{0};
         int32 objectiveEntry{0};
         uint32 objectiveCount{0};
+        ObjectGuid::LowType objectiveSpawnId{0};
+        bool objectiveIsGameObject{false};
         WorldPosition pos{};
         uint32 lastReachPOI{0};
         bool completionAnnounced{false};

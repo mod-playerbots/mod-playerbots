@@ -179,10 +179,16 @@ bool QuestPoiZStore::FindNearestWalkablePoint(uint32 questId, uint32 poiId, uint
     {
         if (candidate.mapId != mapId || !candidate.navmeshOk)
             continue;
-        if (candidate.confidence < bestConfidence)
-            continue;
-        if (preferTrigger && candidate.evidence.find("trigger") == std::string::npos)
-            continue;
+
+        // A trigger-volume search is already constrained by the predicate; do not discard a
+        // lower-confidence row whose sample is the only one inside the live volume.
+        if (!accept)
+        {
+            if (candidate.confidence < bestConfidence)
+                continue;
+            if (preferTrigger && candidate.evidence.find("trigger") == std::string::npos)
+                continue;
+        }
 
         for (std::array<float, 3> const& point : candidate.walkablePoints)
         {
