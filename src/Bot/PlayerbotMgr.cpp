@@ -1120,8 +1120,16 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
         {
             messages.push_back("SelfBot is now active.");
             PlayerbotsMgr::instance().AddPlayerbotData(master, true);
-            GET_PLAYERBOT_AI(master)->SetMaster(master);
-            PlayerbotRepository::instance().Load(GET_PLAYERBOT_AI(master));
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(master);
+            botAI->SetMaster(master);
+            botAI->ResetStrategies();
+            PlayerbotRepository::instance().Load(botAI);
+
+            if (sPlayerbotAIConfig.ApplyInstanceStrategies)
+                botAI->ApplyInstanceStrategies(master->GetMapId());
+
+            if (sPlayerbotAIConfig.RestrictHealerDPS)
+                botAI->EvaluateHealerDpsStrategy();
         }
 
         return messages;
