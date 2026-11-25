@@ -45,6 +45,7 @@
 #include "TravelMgr.h"
 #include "G3D/Vector2.h"
 #include <algorithm>
+#include <limits>
 #include <optional>
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
@@ -585,17 +586,39 @@ bool IsSpawnDestinationAllowed(Player* bot, QuestSpawn const& spawn)
                                                         spawn.pos.GetPositionY(), spawn.pos.GetPositionZ());
 }
 
-// Quest -> area trigger. ObjectMgr indexes trigger -> quest only, so keep the reverse mapping
-// built once at startup; DoExploreObjective-style callers use the trigger position from ObjectMgr.
-std::unordered_map<uint32, uint32> const& GetQuestAreaTriggerMap()
+// Match the core's Player::IsInAreaTriggerRadius for a free position. The trigger is either a
+// sphere (radius > 0) or an oriented box; an XY-only test accepts points above a sphere and
+// rejects every off-center point of a box.
+bool IsPositionInAreaTrigger(AreaTrigger const* trigger, float x, float y, float z)
+{
+    if (!trigger)
+        return false;
+
+    if (trigger->radius > 0.0f)
+    {
+        float const dx = x - trigger->x;
+        float const dy = y - trigger->y;
+        float const dz = z - trigger->z;
+        return dx * dx + dy * dy + dz * dz <= trigger->radius * trigger->radius;
+    }
+
+    Position const center(trigger->x, trigger->y, trigger->z, trigger->orientation);
+    return Position(x, y, z).IsWithinBox(center, trigger->length / 2.0f, trigger->width / 2.0f,
+                                         trigger->height / 2.0f);
+}
+
+// Quest -> area triggers. ObjectMgr indexes trigger -> quest only, so keep the reverse mapping
+// built once at startup. A quest can have several triggers (quest 984 has three); keeping them
+// all lets the resolver pick the one nearest the POI instead of the last row in the table.
+std::unordered_map<uint32, std::vector<uint32>> const& GetQuestAreaTriggerMap()
 {
     static auto const map = []()
     {
-        std::unordered_map<uint32, uint32> result;
+        std::unordered_map<uint32, std::vector<uint32>> result;
         if (QueryResult rows = WorldDatabase.Query("SELECT id, quest FROM areatrigger_involvedrelation"))
             do
             {
-                result[(*rows)[1].Get<uint32>()] = (*rows)[0].Get<uint32>();
+                result[(*rows)[1].Get<uint32>()].push_back((*rows)[0].Get<uint32>());
             } while (rows->NextRow());
         return result;
     }();
@@ -603,11 +626,12 @@ std::unordered_map<uint32, uint32> const& GetQuestAreaTriggerMap()
     return map;
 }
 
-uint32 GetQuestAreaTriggerId(uint32 questId)
+std::vector<uint32> const& GetQuestAreaTriggerIds(uint32 questId)
 {
+    static std::vector<uint32> const empty;
     auto const& map = GetQuestAreaTriggerMap();
     auto const itr = map.find(questId);
-    return itr == map.end() ? 0 : itr->second;
+    return itr == map.end() ? empty : itr->second;
 }
 } // namespace
 
@@ -879,13 +903,35 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
 
     QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
 
-    uint32 const triggerId = GetQuestAreaTriggerId(questId);
-    AreaTrigger const* trigger = triggerId ? sObjectMgr->GetAreaTrigger(triggerId) : nullptr;
+    std::vector<uint32> const& triggerIds = GetQuestAreaTriggerIds(questId);
+
+    auto triggerForPoi = [&](float x, float y) -> AreaTrigger const*
+    {
+        AreaTrigger const* best = nullptr;
+        float bestDistance = std::numeric_limits<float>::max();
+        for (uint32 id : triggerIds)
+        {
+            AreaTrigger const* trigger = sObjectMgr->GetAreaTrigger(id);
+            if (!trigger || trigger->map != bot->GetMapId())
+                continue;
+
+            float const dx = trigger->x - x;
+            float const dy = trigger->y - y;
+            float const distance = dx * dx + dy * dy;
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                best = trigger;
+            }
+        }
+        return best;
+    };
+
     bool const hasExplorePoi = std::any_of(poiVector->begin(), poiVector->end(),
                                            [](QuestPOI const& poi) {
                                                return poi.ObjectiveIndex == QUEST_OBJECTIVE_EXPLORE;
                                            });
-    bool const isExplore = trigger || !quest->GetAreaDescription().empty() || hasExplorePoi;
+    bool const isExplore = !triggerIds.empty() || !quest->GetAreaDescription().empty() || hasExplorePoi;
 
     // Resolve one POI to its final destination: the baked floor paired with its own POI point
     // when available, otherwise the weighted-average x/y with the terrain height.
@@ -907,8 +953,8 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
         info.objectiveIdx = qPoi.ObjectiveIndex;
         info.poiId = qPoi.Id;
 
-        if (isExplore && qPoi.ObjectiveIndex == QUEST_OBJECTIVE_EXPLORE && trigger &&
-            trigger->map == bot->GetMapId())
+        AreaTrigger const* trigger = triggerForPoi(dx, dy);
+        if (isExplore && qPoi.ObjectiveIndex == QUEST_OBJECTIVE_EXPLORE && trigger)
         {
             // The POI outline is usually wider than the area trigger. Use the walkable sample
             // nearest the trigger center only when it lies inside the trigger volume; a sample from
@@ -919,11 +965,10 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
             if (QuestPoiZStore::Instance().FindNearestWalkablePoint(questId, qPoi.Id, bot->GetMapId(),
                                                                     trigger->x, trigger->y, wx, wy, wz))
             {
-                float const sx = wx - trigger->x;
-                float const sy = wy - trigger->y;
-                insideTrigger = sx * sx + sy * sy <= trigger->radius * trigger->radius;
+                insideTrigger = IsPositionInAreaTrigger(trigger, wx, wy, wz);
             }
 
+            info.triggerId = trigger->entry;
             if (insideTrigger)
             {
                 info.pos = {wx, wy};
@@ -950,6 +995,12 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
         else
         {
             info.pos = {dx, dy};
+
+            // Reject a distant POI before the terrain lookup: GetHeight/GetWaterLevel can load
+            // terrain, collision and navmesh files synchronously on a cold grid.
+            if (bot->GetDistance2d(dx, dy) >= 1500.0f)
+                return std::nullopt;
+
             info.z = std::max(bot->GetMap()->GetHeight(dx, dy, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(dx, dy));
 
             if (info.z == INVALID_HEIGHT || info.z == VMAP_INVALID_HEIGHT_VALUE)
@@ -1043,18 +1094,28 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
     }
 
     // Trigger-only exploration quests have no ObjectiveIndex 16 POI, but the trigger position is
-    // still a valid destination. The trigger volume is small; its center is on the walkable floor.
-    if (explorePending && trigger && !explorePoiResolved && trigger->map == bot->GetMapId())
+    // still a valid destination. A quest may own several triggers; keep each one that passes the
+    // same distance/zone gates so the nearest can be chosen.
+    if (explorePending && !explorePoiResolved)
     {
-        POIInfo info;
-        info.objectiveIdx = QUEST_OBJECTIVE_EXPLORE;
-        info.pos = {trigger->x, trigger->y};
-        info.z = trigger->z;
-        info.hasBakedZ = true;
+        for (uint32 id : triggerIds)
+        {
+            AreaTrigger const* trigger = sObjectMgr->GetAreaTrigger(id);
+            if (!trigger || trigger->map != bot->GetMapId())
+                continue;
 
-        if (bot->GetDistance2d(info.pos.x, info.pos.y) < 1500.0f &&
-            bot->GetZoneId() == bot->GetMap()->GetZoneId(bot->GetPhaseMask(), info.pos.x, info.pos.y, info.z))
-            poiInfo.push_back(info);
+            POIInfo info;
+            info.objectiveIdx = QUEST_OBJECTIVE_EXPLORE;
+            info.pos = {trigger->x, trigger->y};
+            info.z = trigger->z;
+            info.triggerId = trigger->entry;
+            info.hasBakedZ = true;
+
+            if (bot->GetDistance2d(info.pos.x, info.pos.y) < 1500.0f &&
+                bot->GetZoneId() == bot->GetMap()->GetZoneId(bot->GetPhaseMask(), info.pos.x, info.pos.y,
+                                                              info.z))
+                poiInfo.push_back(info);
+        }
     }
 
     if (poiInfo.size() == 0)

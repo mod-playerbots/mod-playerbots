@@ -24,14 +24,19 @@ void QuestPoiZStore::Load()
 {
     _candidates.clear();
 
-    // The table is created by the module's SQL update; an empty table keeps the fallback path.
-    PreparedQueryResult result =
-        PlayerbotsDatabase.Query(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_QUEST_POI_Z));
+    // The table is optional: a server with Playerbots.Updates.EnableDatabases=0 may not have it.
+    // Use a direct startup query so a missing table logs a fallback instead of failing the
+    // module's prepared-statement setup and aborting worldserver startup. A direct query also
+    // avoids Field::GetData()'s unaligned raw-pointer read for the packed prepared row.
+    QueryResult result = PlayerbotsDatabase.Query(
+        "SELECT `QuestId`, `PoiIdx`, `PointIdx`, `Rank`, `Z`, `Confidence`, `NavmeshOk`, `MapId`, "
+        "`Evidence`, `WalkablePoints` FROM `playerbots_quest_poi_z` "
+        "ORDER BY `QuestId`, `PoiIdx`, `Rank`, `Confidence` DESC, `PointIdx`, `Z`");
 
     if (!result)
     {
         LOG_INFO("playerbots",
-                 "Quest POI Z store: no baked data (playerbots_quest_poi_z empty); "
+                 "Quest POI Z store: no baked data (playerbots_quest_poi_z missing or empty); "
                  "quest destinations use the terrain-height fallback.");
         return;
     }
@@ -49,8 +54,7 @@ void QuestPoiZStore::Load()
         candidate.z = fields[4].Get<float>();
         candidate.confidence = fields[5].Get<uint8>();
         candidate.navmeshOk = fields[6].Get<uint8>() != 0;
-        // PoiIdx and MapId are SMALLINT in the schema; reading them as uint32 would consume the
-        // neighbouring field in the prepared-statement row.
+        // PoiIdx and MapId are SMALLINT in the schema.
         candidate.mapId = fields[7].Get<uint16>();
         candidate.evidence = fields[8].Get<std::string>();
 
@@ -95,7 +99,14 @@ void QuestPoiZStore::Load()
 
             bool const aTrigger = a.evidence.find("trigger") != std::string::npos;
             bool const bTrigger = b.evidence.find("trigger") != std::string::npos;
-            return aTrigger && !bTrigger;
+            if (aTrigger != bTrigger)
+                return aTrigger && !bTrigger;
+
+            // Tied rank/confidence/trigger rows are common (quest 7702 has twelve rank-1
+            // candidates). Order them deterministically instead of trusting database row order.
+            if (a.pointIdx != b.pointIdx)
+                return a.pointIdx < b.pointIdx;
+            return a.z < b.z;
         });
 
     LOG_INFO("playerbots",

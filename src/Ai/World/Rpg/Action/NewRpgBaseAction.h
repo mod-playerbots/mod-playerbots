@@ -23,6 +23,7 @@ struct POIInfo
     G3D::Vector2 pos;
     int32 objectiveIdx;
     uint32 poiId{0};        // quest_poi.Id, the key for the baked Z store
+    uint32 triggerId{0};    // area trigger entry for an explore POI, 0 otherwise
     bool hasBakedZ{false};  // pos comes from the baked store and z is the baked floor
     float z{0.0f};          // walkable floor, baked or terrain-estimated
 };

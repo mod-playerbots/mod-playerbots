@@ -21,6 +21,7 @@
 #include "ObjectDefines.h"
 #include "ObjectGuid.h"
 #include "ObjectMgr.h"
+#include "Opcodes.h"
 #include "PathGenerator.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -527,12 +528,13 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             // destination until then; a mixed explore+kill/collect quest then moves on to the rest.
             completed = q_status.Explored;
         }
-        else if (currentObjective < QUEST_OBJECTIVES_COUNT)
+        else if (currentObjective >= 0 && currentObjective < QUEST_OBJECTIVES_COUNT)
         {
             if (q_status.CreatureOrGOCount[currentObjective] < quest->RequiredNpcOrGoCount[currentObjective])
                 completed = false;
         }
-        else if (currentObjective < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
+        else if (currentObjective >= QUEST_OBJECTIVES_COUNT &&
+                 currentObjective < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
         {
             if (q_status.ItemCount[currentObjective - QUEST_OBJECTIVES_COUNT] <
                 quest->RequiredItemCount[currentObjective - QUEST_OBJECTIVES_COUNT])
@@ -544,6 +546,8 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.lastReachPOI = 0;
             data.pos = WorldPosition();
             data.objectiveIdx = 0;
+            data.exploreTriggerId = 0;
+            data.exploreTriggerSent = false;
         }
     }
     if (data.pos == WorldPosition())
@@ -574,6 +578,8 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.lastReachPOI = 0;
             data.pos = best->pos;
             data.objectiveIdx = best->objectiveIdx;
+            data.exploreTriggerId = 0;
+            data.exploreTriggerSent = false;
         }
         else
         {
@@ -604,10 +610,14 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.lastReachPOI = 0;
             data.pos = pos;
             data.objectiveIdx = poi.objectiveIdx;
+            data.exploreTriggerId = poi.triggerId;
+            data.exploreTriggerSent = false;
         }
     }
 
-    if (bot->GetDistance(data.pos) > 10.0f && !data.lastReachPOI)
+    // Area triggers are small; stopping 10 yards short can leave the bot outside the volume.
+    float const arrivalDistance = data.objectiveIdx == QUEST_OBJECTIVE_EXPLORE ? 2.0f : 10.0f;
+    if (bot->GetDistance(data.pos) > arrivalDistance && !data.lastReachPOI)
     {
         if (MoveFarTo(data.pos))
             return true;
@@ -616,6 +626,23 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         // different position instead of sitting idle.
         return MoveRandomNear(10.0f);
     }
+
+    // Bots do not send CMSG_AREATRIGGER from movement, and the core only sets Explored in the
+    // opcode handler. Send it once now that the destination (inside the trigger volume) is reached.
+    if (data.objectiveIdx == QUEST_OBJECTIVE_EXPLORE && data.exploreTriggerId && !data.exploreTriggerSent)
+    {
+        AreaTrigger const* trigger = sObjectMgr->GetAreaTrigger(data.exploreTriggerId);
+        if (trigger && bot->IsInAreaTriggerRadius(trigger))
+        {
+            WorldPacket packet(CMSG_AREATRIGGER);
+            packet << data.exploreTriggerId;
+            packet.rpos(0);
+            bot->GetSession()->HandleAreaTriggerOpcode(packet);
+            data.exploreTriggerSent = true;
+            return true;
+        }
+    }
+
     // Now we are near the quest objective
     // kill mobs and looting quest should be done automatically by grind strategy
 
@@ -637,12 +664,13 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             // The area trigger changes the quest status; there is no kill/item count to inspect.
             hasProgression = true;
         }
-        else if (currentObjective < QUEST_OBJECTIVES_COUNT)
+        else if (currentObjective >= 0 && currentObjective < QUEST_OBJECTIVES_COUNT)
         {
             if (q_status.CreatureOrGOCount[currentObjective] != 0 && quest->RequiredNpcOrGoCount[currentObjective])
                 hasProgression = true;
         }
-        else if (currentObjective < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
+        else if (currentObjective >= QUEST_OBJECTIVES_COUNT &&
+                 currentObjective < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
         {
             if (q_status.ItemCount[currentObjective - QUEST_OBJECTIVES_COUNT] != 0 &&
                 quest->RequiredItemCount[currentObjective - QUEST_OBJECTIVES_COUNT])

@@ -62,6 +62,10 @@ struct NewRpgInfo
         ObjectGuid::LowType enderSpawnId{0};
         bool enderIsGameObject{false};
         std::unordered_set<ObjectGuid::LowType> failedEnderSpawns;
+        // Explore destinations need an explicit CMSG_AREATRIGGER on arrival; bots do not send it
+        // from movement. Sent once per destination selection.
+        uint32 exploreTriggerId{0};
+        bool exploreTriggerSent{false};
     };
     // RPG_TRAVEL_FLIGHT
     struct TravelFlight
