@@ -396,7 +396,8 @@ CastCureSpellAction::CastCureSpellAction(
 
 Value<Unit*>* CurePartyMemberAction::GetTargetValue()
 {
-    return context->GetValue<Unit*>("party member to dispel", dispelType);
+    std::string const qualifier = std::to_string(dispelType) + " " + spell;
+    return context->GetValue<Unit*>("party member to dispel", qualifier);
 }
 
 Value<Unit*>* BuffOnPartyAction::GetTargetValue()

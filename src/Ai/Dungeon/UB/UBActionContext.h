@@ -7,7 +7,6 @@
 #ifndef PLAYERBOTS_UBACTIONCONTEXT_H
 #define PLAYERBOTS_UBACTIONCONTEXT_H
 
-#include "Action.h"
 #include "NamedObjectContext.h"
 #include "UBActions.h"
 
