@@ -27,11 +27,11 @@ private:
 
 // Vazruden & Nazan
 
-class NazanSetTremorTotemMultiplier : public Multiplier
+class NazanKeepTremorTotemMultiplier : public Multiplier
 {
 public:
-    NazanSetTremorTotemMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "nazan set tremor totem")
+    NazanKeepTremorTotemMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "nazan keep tremor totem")
     {
     }
     float GetValue(Action* action) override;

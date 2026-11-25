@@ -7,13 +7,10 @@
 #ifndef PLAYERBOTS_POSACTIONS_H
 #define PLAYERBOTS_POSACTIONS_H
 
-#include "Action.h"
 #include "AttackAction.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
-#include "PoSTriggers.h"
+#include "Position.h"
 
-const Position ICKANDKRICK_TANK_POSITION = Position(816.8508f, 102.331505f, 509.1586f);
+Position const ICKANDKRICK_TANK_POSITION = Position(816.8508f, 102.331505f, 509.1586f);
 
 class IckAndKrickAction : public AttackAction
 {
@@ -24,7 +21,7 @@ public:
     bool TankPosition(Unit* boss);
     bool Pursuit(bool pursuit, Unit* boss);
     bool PoisonNova(bool poisonNova, Unit* boss);
-    bool ExplosiveBarrage(bool explosiveBarrage, Unit* boss);
+    bool ExplosiveBarrage(Unit* boss);
 };
 
 class TyrannusAction : public AttackAction

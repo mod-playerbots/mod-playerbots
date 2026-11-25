@@ -8,8 +8,6 @@
 #define PLAYERBOTS_UPTRIGGERS_H
 
 #include "DungeonStrategyUtils.h"
-#include "GenericTriggers.h"
-#include "PlayerbotAIConfig.h"
 #include "Trigger.h"
 
 enum UtgardePinnacleIDs
@@ -30,8 +28,6 @@ enum UtgardePinnacleIDs
 #define SPELL_FREEZING_CLOUD        DUNGEON_MODE(bot, SPELL_FREEZING_CLOUD_N, SPELL_FREEZING_CLOUD_H)
 #define SPELL_SKADI_WHIRLWIND       DUNGEON_MODE(bot, SPELL_SKADI_WHIRLWIND_N, SPELL_SKADI_WHIRLWIND_H)
 #define SPELL_BANE                  DUNGEON_MODE(bot, SPELL_BANE_N, SPELL_BANE_H)
-
-// const float SKADI_BREATH_CENTRELINE = -512.46875f;
 
 class SkadiFreezingCloudTrigger : public Trigger
 {

@@ -13,10 +13,11 @@
 #include "MovementActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
+#include "ThreatHelpers.h"
 
 float SladranMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "slad'ran");
+    Unit* boss = FindThreatTarget(bot, "slad'ran");
     if (!boss) { return 1.0f; }
 
     if (boss->FindCurrentSpellBySpellId(SPELL_POISON_NOVA))
@@ -78,15 +79,15 @@ float SladranMultiplier::GetValue(Action* action)
 
 float GaldarahMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "gal'darah");
+    Unit* boss = FindThreatTarget(bot, "gal'darah");
     if (!boss) { return 1.0f; }
 
     if (boss->HasAura(SPELL_WHIRLING_SLASH))
+    {
+        if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AvoidWhirlingSlashAction*>(action))
         {
-            if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AvoidWhirlingSlashAction*>(action))
-            {
-                return 0.0f;
-            }
+            return 0.0f;
         }
+    }
     return 1.0f;
 }
