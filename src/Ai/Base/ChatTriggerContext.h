@@ -104,7 +104,6 @@ public:
         creators["position"] = &ChatTriggerContext::position;
         creators["summon"] = &ChatTriggerContext::summon;
         creators["who"] = &ChatTriggerContext::who;
-        creators["save mana"] = &ChatTriggerContext::save_mana;
         creators["max dps"] = &ChatTriggerContext::max_dps;
         creators["attackers"] = &ChatTriggerContext::attackers;
         creators["target"] = &ChatTriggerContext::target;
@@ -142,6 +141,7 @@ public:
         creators["guild leave"] = &ChatTriggerContext::guild_leave;
         creators["rtsc"] = &ChatTriggerContext::rtsc;
         creators["drink"] = &ChatTriggerContext::drink;
+        creators["eat"] = &ChatTriggerContext::eat;
         creators["dps"] = &ChatTriggerContext::dps;
         creators["disperse"] = &ChatTriggerContext::disperse;
         creators["calc"] = &ChatTriggerContext::calc;
@@ -187,7 +187,6 @@ private:
     static Trigger* target(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "target"); }
     static Trigger* target_me(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "target me"); }
     static Trigger* max_dps(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "max dps"); }
-    static Trigger* save_mana(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "save mana"); }
     static Trigger* who(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "who"); }
     static Trigger* summon(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "summon"); }
     static Trigger* position(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "position"); }
@@ -275,6 +274,7 @@ private:
     static Trigger* guild_leave(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "guild leave"); }
     static Trigger* rtsc(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "rtsc"); }
     static Trigger* drink(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "drink"); }
+    static Trigger* eat(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "eat"); }
     static Trigger* dps(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "dps"); }
     static Trigger* disperse(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "disperse"); }
     static Trigger* calc(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "calc"); }

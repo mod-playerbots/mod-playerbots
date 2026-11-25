@@ -41,7 +41,6 @@ public:
         creators["shield block"] = &shield_block;
         creators["disarm"] = &disarm;
         creators["shield wall"] = &shield_wall;
-        creators["intervene"] = &intervene;
     }
 
 private:
@@ -170,16 +169,6 @@ private:
     {
         return new ActionNode(
             "shield wall",
-            /*P*/ { NextAction("defensive stance") },
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* intervene([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "intervene",
             /*P*/ { NextAction("defensive stance") },
             /*A*/ {},
             /*C*/ {}

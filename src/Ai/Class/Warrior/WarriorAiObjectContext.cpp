@@ -229,7 +229,6 @@ public:
         creators["recklessness"] = &WarriorAiObjectContextInternal::recklessness;
         creators["piercing howl"] = &WarriorAiObjectContextInternal::piercing_howl;
         creators["rampage"] = &WarriorAiObjectContextInternal::rampage;
-        creators["intervene"] = &WarriorAiObjectContextInternal::intervene;
         creators["spell reflection"] = &WarriorAiObjectContextInternal::spell_reflection;
         creators["thunder clap on snare target"] = &WarriorAiObjectContextInternal::thunder_clap_on_snare_target;
         creators["taunt on snare target"] = &WarriorAiObjectContextInternal::taunt_on_snare_target;
@@ -304,7 +303,6 @@ private:
     static Action* pummel_on_enemy_healer(PlayerbotAI* botAI) { return new CastPummelOnEnemyHealerAction(botAI); }
     static Action* piercing_howl(PlayerbotAI* botAI) { return new CastPiercingHowlAction(botAI); }
     static Action* rampage(PlayerbotAI* botAI) { return new CastRampageAction(botAI); }
-    static Action* intervene(PlayerbotAI* botAI) { return new CastInterveneAction(botAI); }
     static Action* spell_reflection(PlayerbotAI* botAI) { return new CastSpellReflectionAction(botAI); }
     static Action* shattering_throw(PlayerbotAI* botAI) { return new CastShatteringThrowAction(botAI); }
     static Action* heroic_throw_on_snare_target(PlayerbotAI* botAI) { return new CastHeroicThrowSnareAction(botAI); }

@@ -12,6 +12,7 @@
 #include "SpellAuras.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
+#include "ThreatHelpers.h"
 #include <algorithm>
 #include <cmath>
 #include <list>
@@ -56,9 +57,9 @@ float MaxEffectRadius(uint32 spellId, float fallback)
     return radius > 0.0f ? radius : fallback;
 }
 
-Unit* HungarfenTarget(AiObjectContext* context)
+Unit* HungarfenTarget(Player* bot)
 {
-    return AI_VALUE2(Unit*, "find target", "hungarfen");
+    return FindThreatTarget(bot, "hungarfen");
 }
 
 ObjectGuid FindHungarfenGuid(Player* bot)

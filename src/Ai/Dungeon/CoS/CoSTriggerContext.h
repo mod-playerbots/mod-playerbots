@@ -12,16 +12,15 @@
 
 class WotlkDungeonCoSTriggerContext : public NamedObjectContext<Trigger>
 {
-    public:
-        WotlkDungeonCoSTriggerContext()
-        {
-            creators["explode ghoul"] = &WotlkDungeonCoSTriggerContext::explode_ghoul;
-            creators["epoch ranged"] = &WotlkDungeonCoSTriggerContext::epoch_ranged;
-
-        }
-    private:
-        static Trigger* explode_ghoul(PlayerbotAI* botAI) { return new ExplodeGhoulTrigger(botAI); }
-        static Trigger* epoch_ranged(PlayerbotAI* botAI) { return new EpochRangedTrigger(botAI); }
+public:
+    WotlkDungeonCoSTriggerContext()
+    {
+        creators["explode ghoul"] = &WotlkDungeonCoSTriggerContext::explode_ghoul;
+        creators["epoch ranged"] = &WotlkDungeonCoSTriggerContext::epoch_ranged;
+    }
+private:
+    static Trigger* explode_ghoul(PlayerbotAI* botAI) { return new ExplodeGhoulTrigger(botAI); }
+    static Trigger* epoch_ranged(PlayerbotAI* botAI) { return new EpochRangedTrigger(botAI); }
 };
 
 #endif

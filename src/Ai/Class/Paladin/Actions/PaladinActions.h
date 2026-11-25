@@ -252,7 +252,7 @@ END_SPELL_ACTION()
 class CastHolyShieldAction : public CastBuffSpellAction
 {
 public:
-    CastHolyShieldAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "holy shield") {}
+    CastHolyShieldAction(PlayerbotAI* botAI);
 };
 
 class CastRedemptionAction : public ResurrectPartyMemberAction
@@ -301,7 +301,14 @@ public:
     bool isUseful() override;
 };
 
-PROTECT_ACTION(CastBlessingOfProtectionProtectAction, "blessing of protection");
+class CastHandOfProtectionOnPartyAction : public CastProtectSpellAction, public PartyMemberActionNameSupport
+{
+public:
+    CastHandOfProtectionOnPartyAction(PlayerbotAI* botAI)
+        : CastProtectSpellAction(botAI, "hand of protection"), PartyMemberActionNameSupport("hand of protection") {}
+
+    std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
+};
 
 class CastDivinePleaAction : public CastBuffSpellAction
 {

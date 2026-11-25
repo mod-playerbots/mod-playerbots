@@ -348,8 +348,13 @@ float HexLordMalacrassUnstableAfflictionMultiplier::GetValueInEncounter(Action* 
     }
     else if (bot->getClass() == CLASS_PALADIN)
     {
+        // Cleanse also dispels magic when it is cast for a poison or disease.
         if (!dynamic_cast<CastCleanseMagicOnPartyAction*>(action) &&
-            !dynamic_cast<CastCleanseMagicAction*>(action))
+            !dynamic_cast<CastCleanseMagicAction*>(action) &&
+            !dynamic_cast<CastCleansePoisonOnPartyAction*>(action) &&
+            !dynamic_cast<CastCleansePoisonAction*>(action) &&
+            !dynamic_cast<CastCleanseDiseaseOnPartyAction*>(action) &&
+            !dynamic_cast<CastCleanseDiseaseAction*>(action))
         {
             return 1.0f;
         }
@@ -363,7 +368,9 @@ float HexLordMalacrassUnstableAfflictionMultiplier::GetValueInEncounter(Action* 
     if (!malacrass)
         return 1.0f;
 
-    Unit* target = AI_VALUE2(Unit*, "party member to dispel", DISPEL_MAGIC);
+    // Mass Dispel's action target is the current target, not a party member.
+    Unit* target = dynamic_cast<CastMassDispelAction*>(action)
+        ? AI_VALUE2(Unit*, "party member to dispel", DISPEL_MAGIC) : action->GetTarget();
     return target && target->HasAura(Id(ZaSpells::SPELL_UNSTABLE_AFFLICTION)) ? 0.0f : 1.0f;
 }
 
