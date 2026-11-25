@@ -635,14 +635,15 @@ public:
     {
         WorldPosition target;      // nearest safe water/land point, cached while escaping
         WorldPosition step;        // current <=50 yd step, kept until reached
-        WorldPosition blockedTarget; // last target whose first step was blocked
-        uint32 blockedUntilMs{0};  // retry/exclude the blocked target before this time
+        std::vector<std::pair<WorldPosition, uint32>> blockedTargets; // rejected targets and expiry
         uint32 targetCheckMs{0};   // last target search timestamp
         uint32 waterCheckMs{0};    // last liquid query timestamp
         bool inDarkWater{false};   // throttled liquid query result
+        bool searched{false};      // a search has run since entering dark water
     };
     WaterEscapeState waterEscape;
     bool IsInDarkWater();
+    bool IsPositionInDarkWater(WorldObject const* object);
     bool IsCorpseInDarkWater();
     WorldPosition FindDarkWaterEscapeTarget();
 

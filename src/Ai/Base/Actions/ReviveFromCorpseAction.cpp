@@ -46,13 +46,19 @@ bool ReviveFromCorpseAction::Execute(Event event)
     if (!corpse)
         return false;
 
-    // A dark-water corpse is irrecoverable. Release immediately, then use the existing spirit
-    // healer/graveyard path instead of trying to reach the corpse.
+    // A dark-water corpse is irrecoverable when the ghost would have to enter the water. A
+    // ghost already on safe ground within reclaim range can still reclaim normally.
     if (botAI->IsCorpseInDarkWater())
     {
-        if (!bot->HasPlayerFlag(PLAYER_FLAGS_GHOST))
-            return botAI->DoSpecificAction("auto release", Event(), true);
-        return botAI->DoSpecificAction("spirit healer", Event(), true);
+        float const corpseDist = WorldPosition(bot).distance(WorldPosition(corpse));
+        bool const safeReclaim = corpseDist < CORPSE_RECLAIM_RADIUS - 5.0f &&
+                                 !botAI->IsPositionInDarkWater(bot);
+        if (!safeReclaim)
+        {
+            if (!bot->HasPlayerFlag(PLAYER_FLAGS_GHOST))
+                return botAI->DoSpecificAction("auto release", Event(), true);
+            return botAI->DoSpecificAction("spirit healer", Event(), true);
+        }
     }
 
     // if (corpse->GetGhostTime() + bot->GetCorpseReclaimDelay(corpse->GetType() == CORPSE_RESURRECTABLE_PVP) >
@@ -98,13 +104,19 @@ bool FindCorpseAction::Execute(Event /*event*/)
     if (!corpse)
         return false;
 
-    // Do not walk toward a dark-water corpse: the fatigue bar will kill the ghost again. Release
-    // at once and use the spirit healer/graveyard path.
+    // Do not walk toward a dark-water corpse: the fatigue bar will kill the ghost again. A ghost
+    // already within reclaim range on safe ground does not need to walk.
     if (botAI->IsCorpseInDarkWater())
     {
-        if (!bot->HasPlayerFlag(PLAYER_FLAGS_GHOST))
-            return botAI->DoSpecificAction("auto release", Event(), true);
-        return botAI->DoSpecificAction("spirit healer", Event(), true);
+        float const corpseDist = WorldPosition(bot).distance(WorldPosition(corpse));
+        bool const safeReclaim = corpseDist < CORPSE_RECLAIM_RADIUS - 5.0f &&
+                                 !botAI->IsPositionInDarkWater(bot);
+        if (!safeReclaim)
+        {
+            if (!bot->HasPlayerFlag(PLAYER_FLAGS_GHOST))
+                return botAI->DoSpecificAction("auto release", Event(), true);
+            return botAI->DoSpecificAction("spirit healer", Event(), true);
+        }
     }
 
     // if (groupLeader)

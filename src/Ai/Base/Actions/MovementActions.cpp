@@ -2829,7 +2829,7 @@ bool MoveOutOfDarkWaterAction::Execute(Event /*event*/)
     // A failed search retries after 10s (each attempt scans up to 144 surface samples); a
     // chosen target is kept for 8s so movement stays on one heading instead of being
     // rewritten on every scan.
-    if ((!hasTarget && sinceCheck > 10000) || (hasTarget && sinceCheck > 8000))
+    if ((!hasTarget && (sinceCheck > 10000 || !state.searched)) || (hasTarget && sinceCheck > 8000))
     {
         WorldPosition const previous = state.target;
         WorldPosition const next = botAI->FindDarkWaterEscapeTarget();
@@ -2846,35 +2846,56 @@ bool MoveOutOfDarkWaterAction::Execute(Event /*event*/)
             }
         }
         state.targetCheckMs = getMSTime();
+        state.searched = true;
     }
 
     if (state.target == WorldPosition())
     {
-        // No safe water or land within the search radius. Do not wait to drown: relocate to a
-        // random valid bot location and let the normal AI resume there.
+        // Only relocate after a search that actually completed and found nothing. A rejected
+        // relocation keeps the result so the retry goes through the normal 10s cooldown.
+        if (!state.searched)
+            return false;
+
         LOG_DEBUG("playerbots", "[AI] {} found no dark-water escape within 240 yd; random teleport",
                   bot->GetName());
-        sRandomPlayerbotMgr.RandomTeleportForLevel(bot);
-        state = PlayerbotAI::WaterEscapeState{};
-        return true;
+        WorldPosition const before(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(),
+                                   bot->GetPositionZ());
+        sRandomPlayerbotMgr.RandomTeleportForLevel(bot, false);
+        if (bot->IsBeingTeleported() || bot->GetExactDist(before) > 1.0f)
+        {
+            state = PlayerbotAI::WaterEscapeState{};
+            return true;
+        }
+
+        // Refused (group, battleground queue, root, nearby player): do not treat this as a
+        // successful escape; retry after the normal cooldown.
+        state.targetCheckMs = getMSTime();
+        return false;
     }
 
     // Keep the step destination stable until it is reached or the target changed.
+    bool stepChanged = false;
     if (state.step == WorldPosition() || bot->GetExactDist(state.step) < 5.0f)
     {
-        float const step = 50.0f;
+        stepChanged = true;
+        float const stepLength = 50.0f;
         float const dx = state.target.GetPositionX() - bot->GetPositionX();
         float const dy = state.target.GetPositionY() - bot->GetPositionY();
         float const len = std::sqrt(dx * dx + dy * dy);
-        if (len > 0.01f)
+        if (len <= stepLength)
         {
-            float const f = std::min(1.0f, step / len);
+            // The final step is the target itself; keep the Z that made it safe.
+            state.step = state.target;
+        }
+        else if (len > 0.01f)
+        {
+            float const f = stepLength / len;
             float const x = bot->GetPositionX() + dx * f;
             float const y = bot->GetPositionY() + dy * f;
 
             // Follow the surface at the step instead of a straight 3D interpolation: a rising
             // shore would otherwise put the step below the terrain and fail its own LOS check.
-            float const groundZ = bot->GetMap()->GetHeight(x, y, MAX_HEIGHT);
+            float const groundZ = bot->GetMap()->GetHeight(bot->GetPhaseMask(), x, y, MAX_HEIGHT);
             float const waterZ = bot->GetMap()->GetWaterLevel(x, y);
             float z = bot->GetPositionZ();
             if (groundZ != INVALID_HEIGHT || waterZ != INVALID_HEIGHT)
@@ -2887,15 +2908,57 @@ bool MoveOutOfDarkWaterAction::Execute(Event /*event*/)
     if (state.step == WorldPosition())
         return false;
 
-    // A direct swim/step must not clip a seawall, cliff or dock. Reject a blocked first step and
-    // exclude that target briefly so the next search can pick another direction.
-    if (!bot->IsWithinLOS(state.step.GetPositionX(), state.step.GetPositionY(), state.step.GetPositionZ()))
+    // The current spline is already carrying the bot toward this step; do not restart it every
+    // tick. A new/changed step or an interrupted spline falls through to MoveTo().
+    if (!stepChanged && bot->isMoving())
+        return true;
+
+    // A direct swim/step must not clip a seawall, cliff or dock. The model LOS check alone can
+    // pass over a low wall, so a water target also gets a surface-height profile along the
+    // segment the bot will actually travel.
+    auto segmentBlocked = [&](WorldPosition const& to)
     {
-        state.blockedTarget = state.target;
-        state.blockedUntilMs = getMSTime();
+        if (!bot->IsWithinLOS(to.GetPositionX(), to.GetPositionY(), to.GetPositionZ()))
+            return true;
+
+        float const groundZ = bot->GetMap()->GetHeight(bot->GetPhaseMask(), to.GetPositionX(),
+                                                       to.GetPositionY(), MAX_HEIGHT);
+        float const waterZ = bot->GetMap()->GetWaterLevel(to.GetPositionX(), to.GetPositionY());
+        bool const waterTarget = waterZ != INVALID_HEIGHT &&
+                                 (groundZ == INVALID_HEIGHT || waterZ >= groundZ);
+        if (!waterTarget)
+            return false;
+
+        float const dx = to.GetPositionX() - bot->GetPositionX();
+        float const dy = to.GetPositionY() - bot->GetPositionY();
+        float const dz = to.GetPositionZ() - bot->GetPositionZ();
+        uint32 const samples = 5;
+        for (uint32 i = 1; i < samples; ++i)
+        {
+            float const f = float(i) / float(samples);
+            float const x = bot->GetPositionX() + dx * f;
+            float const y = bot->GetPositionY() + dy * f;
+            float const surfaceZ = bot->GetMap()->GetHeight(bot->GetPhaseMask(), x, y, MAX_HEIGHT);
+            if (surfaceZ == INVALID_HEIGHT)
+                continue;
+
+            float const lineZ = bot->GetPositionZ() + dz * f;
+            if (surfaceZ > lineZ + 2.0f)
+                return true;
+        }
+        return false;
+    };
+
+    if (segmentBlocked(state.step))
+    {
+        state.blockedTargets.emplace_back(state.target, getMSTime());
+        if (state.blockedTargets.size() > 4)
+            state.blockedTargets.erase(state.blockedTargets.begin());
+
         state.target = WorldPosition();
         state.step = WorldPosition();
         state.targetCheckMs = 0;
+        state.searched = false;
         return false;
     }
 

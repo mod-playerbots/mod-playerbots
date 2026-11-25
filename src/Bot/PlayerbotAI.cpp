@@ -6277,9 +6277,11 @@ bool PlayerbotAI::IsInDarkWater()
     if (!bot->IsInWorld() || !bot->IsAlive() || bot->IsInFlight() || bot->GetTransport() || bot->GetVehicle())
         return false;
 
-    // Drop a target left on another map (teleport, instance change) even while the throttled
-    // water answer below is still valid.
-    if (waterEscape.target != WorldPosition() && waterEscape.target.GetMapId() != bot->GetMapId())
+    // Drop a target left on another map, or after a relocation that moved the bot away from it.
+    // Self-bot teleports are acknowledged by the client and do not visit HandleTeleportAck().
+    if (waterEscape.target != WorldPosition() &&
+        (waterEscape.target.GetMapId() != bot->GetMapId() || bot->GetExactDist(waterEscape.target) > 260.0f ||
+         (waterEscape.step != WorldPosition() && bot->GetExactDist(waterEscape.step) > 260.0f)))
         waterEscape = WaterEscapeState{};
 
     if (waterEscape.waterCheckMs && GetMSTimeDiffToNow(waterEscape.waterCheckMs) < 1000)
@@ -6296,23 +6298,36 @@ bool PlayerbotAI::IsInDarkWater()
     {
         waterEscape.target = WorldPosition();
         waterEscape.step = WorldPosition();
+        waterEscape.blockedTargets.clear();
+        waterEscape.targetCheckMs = 0;
+        waterEscape.searched = false;
     }
     return waterEscape.inDarkWater;
 }
 
-bool PlayerbotAI::IsCorpseInDarkWater()
+bool PlayerbotAI::IsPositionInDarkWater(WorldObject const* object)
 {
-    Corpse* corpse = bot->GetCorpse();
-    if (!corpse || !corpse->GetMap())
+    if (!object || !object->GetMap())
         return false;
 
-    // Use the full terrain query: the corpse may be on a wreck or pier above the dark-water
-    // cell, where Map::GetLiquidData can report no water.
+    // Use the full terrain query: a wreck or pier above the dark-water cell still takes fatigue,
+    // and Map::GetLiquidData alone can report no water there.
     PositionFullTerrainStatus status;
-    corpse->GetMap()->GetFullTerrainStatusForPosition(bot->GetPhaseMask(), corpse->GetPositionX(),
-                                                     corpse->GetPositionY(), corpse->GetPositionZ(),
-                                                     bot->GetCollisionHeight(), status);
+    object->GetMap()->GetFullTerrainStatusForPosition(
+        object->GetPhaseMask(), object->GetPositionX(), object->GetPositionY(), object->GetPositionZ(),
+        object->GetCollisionHeight(), status);
     return (status.liquidInfo.Flags & MAP_LIQUID_TYPE_DARK_WATER) != 0;
+}
+
+bool PlayerbotAI::IsCorpseInDarkWater()
+{
+    // The core creates the Corpse on release, not on death. Before release the body is still at
+    // the death position, so use the player itself as the source.
+    if (Corpse* corpse = bot->GetCorpse())
+        return IsPositionInDarkWater(corpse);
+    if (bot->isDead())
+        return IsPositionInDarkWater(bot);
+    return false;
 }
 
 WorldPosition PlayerbotAI::FindDarkWaterEscapeTarget()
@@ -6323,14 +6338,21 @@ WorldPosition PlayerbotAI::FindDarkWaterEscapeTarget()
     float const rings[] = {10.0f, 20.0f, 30.0f, 40.0f, 80.0f, 120.0f, 160.0f, 200.0f, 240.0f};
     uint32 const directions = 16;
     Map* map = bot->GetMap();
-    bool const skipBlocked = waterEscape.blockedTarget != WorldPosition() &&
-                             GetMSTimeDiffToNow(waterEscape.blockedUntilMs) < 10000;
+    uint32 const phaseMask = bot->GetPhaseMask();
+
+    // Keep several recent rejections: two blocked exits can be far enough apart that keeping
+    // only the last one would let the next search pick the other again.
+    waterEscape.blockedTargets.erase(
+        std::remove_if(waterEscape.blockedTargets.begin(), waterEscape.blockedTargets.end(),
+                       [](std::pair<WorldPosition, uint32> const& blocked)
+                       { return GetMSTimeDiffToNow(blocked.second) >= 10000; }),
+        waterEscape.blockedTargets.end());
 
     // Resolve the surface the bot would occupy at a sample. Querying at the terrain floor
     // misses the surface liquid layer and can accept a point that is still dark water.
-    auto surfaceZ = [map](float x, float y) -> float
+    auto surfaceZ = [map, phaseMask](float x, float y) -> float
     {
-        float const groundZ = map->GetHeight(x, y, MAX_HEIGHT);
+        float const groundZ = map->GetHeight(phaseMask, x, y, MAX_HEIGHT);
         float const waterZ = map->GetWaterLevel(x, y);
         if (waterZ != INVALID_HEIGHT && (groundZ == INVALID_HEIGHT || waterZ >= groundZ))
             return waterZ;
@@ -6400,7 +6422,16 @@ WorldPosition PlayerbotAI::FindDarkWaterEscapeTarget()
             }
 
             WorldPosition const candidate(bot->GetMapId(), x, y, z);
-            if (skipBlocked && candidate.GetExactDist(waterEscape.blockedTarget) < 20.0f)
+            bool blocked = false;
+            for (auto const& rejected : waterEscape.blockedTargets)
+            {
+                if (candidate.GetExactDist(rejected.first) < 20.0f)
+                {
+                    blocked = true;
+                    break;
+                }
+            }
+            if (blocked)
                 continue;
 
             float const d = bot->GetExactDist(candidate);
