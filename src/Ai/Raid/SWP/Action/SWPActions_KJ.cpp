@@ -323,7 +323,7 @@ bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::TryGetMeleePosition(Positi
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+        if (!member || !bot->IsInMap(member) || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsMelee(member) || PlayerbotAI::IsTank(member))
         {
             continue;

@@ -687,7 +687,7 @@ float GetFelmystFrontAngle(Player* bot, Unit* felmyst)
     float frontY = defaultTankPosition.GetPositionY();
 
     Player* mainTank = GetGroupMainTank(bot);
-    if (mainTank && mainTank->IsAlive() && mainTank->GetMapId() == felmyst->GetMapId())
+    if (mainTank && mainTank->IsAlive() && felmyst->IsInMap(mainTank))
     {
         frontX = mainTank->GetPositionX();
         frontY = mainTank->GetPositionY();
@@ -717,7 +717,7 @@ bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+        if (!member || !bot->IsInMap(member) || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsRanged(member))
         {
             continue;
@@ -1254,7 +1254,7 @@ Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == bot || !member->IsAlive() || member->GetMapId() != SWP_MAP_ID)
+        if (!member || member == bot || !member->IsAlive() || !bot->IsInMap(member))
             continue;
 
         if (!member->HasAura(Id(SwpSpells::SPELL_FOG_OF_CORRUPTION_CHARM)))

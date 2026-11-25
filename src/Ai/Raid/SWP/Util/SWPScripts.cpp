@@ -45,7 +45,7 @@ PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == referencePlayer || member->GetMapId() != SWP_MAP_ID)
+        if (!member || member == referencePlayer || !referencePlayer->IsInMap(member))
             continue;
 
         if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);

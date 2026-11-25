@@ -125,7 +125,7 @@ bool MuruPositionRangedByPhaseAction::TryGetEntropiusInitialRangedPosition(
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID)
+        if (!member || !bot->IsInMap(member))
             continue;
 
         if (GET_PLAYERBOT_AI(member) && PlayerbotAI::IsRanged(member))

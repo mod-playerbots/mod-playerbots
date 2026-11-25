@@ -33,7 +33,7 @@ namespace
 bool IsDragonGroupTarget(Player* bot, Player* member)
 {
     return member && member != bot && member->IsAlive() &&
-        member->GetMapId() == SWP_MAP_ID && !PlayerbotAI::IsTank(member);
+        bot->IsInMap(member) && !PlayerbotAI::IsTank(member);
 }
 
 uint32 GetDragonAppliedAuraSpell(uint32 spellId)
@@ -309,7 +309,7 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
             if (!member || member->GetGUID() != assignment.first)
                 continue;
 
-            found = member->GetMapId() == SWP_MAP_ID && GET_PLAYERBOT_AI(member) &&
+            found = bot->IsInMap(member) && GET_PLAYERBOT_AI(member) &&
                 PlayerbotAI::IsRanged(member);
 
             break;
@@ -349,7 +349,7 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+        if (!member || !bot->IsInMap(member) || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsRanged(member))
         {
             continue;
@@ -420,7 +420,7 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+        if (!member || !bot->IsInMap(member) || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsRanged(member))
         {
             continue;
@@ -708,7 +708,7 @@ bool UpdateKiljaedenDragonOrbUser(PlayerbotAI* botAI)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != SWP_MAP_ID ||
+        if (!member || !member->IsAlive() || !bot->IsInMap(member) ||
             !GET_PLAYERBOT_AI(member) || !group->IsAssistant(member->GetGUID()))
         {
             continue;

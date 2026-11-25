@@ -122,7 +122,7 @@ void PruneAssignments(
     }
 }
 
-void EnsureRangedAssignments(Group* group, BrutallusEncounterState& state)
+void EnsureRangedAssignments(Player* bot, Group* group, BrutallusEncounterState& state)
 {
     if (!ShouldRebuildAssignments(state.rangedAssignmentRebuildMs))
         return;
@@ -136,7 +136,7 @@ void EnsureRangedAssignments(Group* group, BrutallusEncounterState& state)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+        if (!member || !bot->IsInMap(member) || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsRanged(member))
         {
             continue;
@@ -185,7 +185,7 @@ void EnsureRangedAssignments(Group* group, BrutallusEncounterState& state)
         assignNextOpenSlot(member);
 }
 
-void EnsureMeleeAssignments(Group* group, BrutallusEncounterState& state)
+void EnsureMeleeAssignments(Player* bot, Group* group, BrutallusEncounterState& state)
 {
     if (!ShouldRebuildAssignments(state.meleeAssignmentRebuildMs))
         return;
@@ -198,7 +198,7 @@ void EnsureMeleeAssignments(Group* group, BrutallusEncounterState& state)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member))
+        if (!member || !bot->IsInMap(member) || !GET_PLAYERBOT_AI(member))
             continue;
 
         if (!PlayerbotAI::IsMelee(member) || PlayerbotAI::IsMainTank(member) ||
@@ -476,9 +476,9 @@ bool TryGetBrutallusAssignedPositionIndex(Player* bot, uint8& positionIndex)
     auto& state = BrutallusState(bot->GetInstanceId());
 
     if (isRanged)
-        EnsureRangedAssignments(group, state);
+        EnsureRangedAssignments(bot, group, state);
     else
-        EnsureMeleeAssignments(group, state);
+        EnsureMeleeAssignments(bot, group, state);
 
     auto& assignments = isRanged ? state.rangedAssignments : state.meleeAssignments;
     auto const assignmentItr = assignments.find(bot->GetGUID());

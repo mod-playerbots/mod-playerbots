@@ -358,7 +358,7 @@ bool IsAlythessPullMisdirectHunter(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->GetMapId() == SWP_MAP_ID &&
+        if (member && member->IsAlive() && bot->IsInMap(member) &&
             member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
         {
             return member == bot;

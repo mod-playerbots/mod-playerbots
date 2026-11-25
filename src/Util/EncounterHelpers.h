@@ -307,8 +307,8 @@ bool ResetIfSet(std::optional<T>& field)
 
 // Miscellaneous
 
-// True if this bot is the first living bot in the group on mapId, for giving one bot a job such as
-// managing shared containers or marking targets.
+// True if this bot is on mapId and is the first living bot in the group in its instance, for giving
+// one bot a job such as managing shared containers or marking targets.
 bool IsMechanicTrackerBot(Player* bot, uint32 mapId);
 // Grid search for dynamic objects for methods to avoid dynobj-based AoE hazards.
 std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId);
