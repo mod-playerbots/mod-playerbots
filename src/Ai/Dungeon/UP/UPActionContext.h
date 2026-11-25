@@ -12,14 +12,15 @@
 
 class WotlkDungeonUPActionContext : public NamedObjectContext<Action>
 {
-    public:
-        WotlkDungeonUPActionContext() {
-            creators["avoid freezing cloud"] = &WotlkDungeonUPActionContext::avoid_freezing_cloud;
-            creators["avoid skadi whirlwind"] = &WotlkDungeonUPActionContext::avoid_whirlwind;
-        }
-    private:
-        static Action* avoid_freezing_cloud(PlayerbotAI* botAI) { return new AvoidFreezingCloudAction(botAI); }
-        static Action* avoid_whirlwind(PlayerbotAI* botAI) { return new AvoidSkadiWhirlwindAction(botAI); }
+public:
+    WotlkDungeonUPActionContext()
+    {
+        creators["avoid freezing cloud"] = &WotlkDungeonUPActionContext::avoid_freezing_cloud;
+        creators["avoid skadi whirlwind"] = &WotlkDungeonUPActionContext::avoid_whirlwind;
+    }
+private:
+    static Action* avoid_freezing_cloud(PlayerbotAI* botAI) { return new AvoidFreezingCloudAction(botAI); }
+    static Action* avoid_whirlwind(PlayerbotAI* botAI) { return new AvoidSkadiWhirlwindAction(botAI); }
 };
 
 #endif

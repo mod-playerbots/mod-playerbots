@@ -280,7 +280,7 @@ public:
         creators["divine favor"] = &PaladinAiObjectContextInternal::divine_favor;
         creators["sense undead"] = &PaladinAiObjectContextInternal::sense_undead;
         creators["turn undead"] = &PaladinAiObjectContextInternal::turn_undead;
-        creators["blessing of protection on party"] = &PaladinAiObjectContextInternal::blessing_of_protection_on_party;
+        creators["hand of protection on party"] = &PaladinAiObjectContextInternal::hand_of_protection_on_party;
         creators["righteous defense"] = &PaladinAiObjectContextInternal::righteous_defense;
         creators["repentance"] = &PaladinAiObjectContextInternal::repentance;
         creators["repentance on snare target"] = &PaladinAiObjectContextInternal::repentance_on_snare_target;
@@ -301,9 +301,9 @@ public:
     }
 
 private:
-    static Action* blessing_of_protection_on_party(PlayerbotAI* botAI)
+    static Action* hand_of_protection_on_party(PlayerbotAI* botAI)
     {
-        return new CastBlessingOfProtectionProtectAction(botAI);
+        return new CastHandOfProtectionOnPartyAction(botAI);
     }
     static Action* sense_undead(PlayerbotAI* botAI) { return new CastSenseUndeadAction(botAI); }
     static Action* turn_undead(PlayerbotAI* botAI) { return new CastTurnUndeadAction(botAI); }

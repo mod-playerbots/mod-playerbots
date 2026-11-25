@@ -5,17 +5,13 @@
  */
 
 #include "CoSMultipliers.h"
-#include "Action.h"
-#include "ChooseTargetActions.h"
-#include "CoSActions.h"
-#include "CoSTriggers.h"
-#include "GenericSpellActions.h"
 #include "MovementActions.h"
+#include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 float EpochMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "chrono-lord epoch");
-    if (!boss) { return 1.0f; }
+    if (!FindThreatTarget(bot, "chrono-lord epoch")) { return 1.0f; }
 
     if (bot->getClass() == CLASS_HUNTER) { return 1.0f; }
 

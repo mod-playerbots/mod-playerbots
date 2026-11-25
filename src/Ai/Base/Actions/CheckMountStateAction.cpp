@@ -67,6 +67,11 @@ MountData CollectMountData(Player const* bot)
     return data;
 }
 
+bool CheckMountStateAction::IsLootTargetInRange()
+{
+    return AI_VALUE(bool, "can loot");
+}
+
 bool CheckMountStateAction::Execute(Event /*event*/)
 {
     // Forced flight dismount:
@@ -122,11 +127,13 @@ bool CheckMountStateAction::Execute(Event /*event*/)
 
     bool inBattleground = bot->InBattleground();
     bool const noRealMaster = (!master || master == bot);
+    // Dismounting sends SMSG_FORCE_RUN_SPEED_CHANGE, which re-runs this action; don't remount over in-range loot.
+    bool const lootTargetInRange = IsLootTargetInRange();
 
     // If there is a master and bot not in BG, follow master's mount state regardless of group leader
     if (!noRealMaster && !inBattleground)
     {
-        if (ShouldFollowMasterMountState(master, noAttackers, shouldMount))
+        if (ShouldFollowMasterMountState(master, noAttackers, shouldMount) && !lootTargetInRange)
             return Mount();
 
         else if (ShouldDismountForMaster(master) && bot->IsMounted())
@@ -140,7 +147,7 @@ bool CheckMountStateAction::Execute(Event /*event*/)
 
     // No real master (random bot or SelfBot) OR bot in BG
     if ((noRealMaster || inBattleground) && !bot->IsMounted() &&
-        noAttackers && shouldMount && !bot->IsInCombat())
+        noAttackers && shouldMount && !bot->IsInCombat() && !lootTargetInRange)
         return Mount();
 
     if (!bot->IsFlying() && shouldDismount && bot->IsMounted() &&

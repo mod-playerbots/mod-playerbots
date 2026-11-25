@@ -9,12 +9,11 @@
 
 #include "Action.h"
 #include "AttackAction.h"
-#include "DTKTriggers.h"
 #include "GenericSpellActions.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
+#include "MovementActions.h"
+#include "Position.h"
 
-const Position NOVOS_PARTY_POSITION = Position(-378.852f, -760.349f, 28.587f);
+Position const NOVOS_PARTY_POSITION = Position(-378.852f, -760.349f, 28.587f);
 
 class CorpseExplodeSpreadAction : public MovementAction
 {
@@ -43,7 +42,6 @@ class NovosTargetPriorityAction : public AttackAction
 public:
     NovosTargetPriorityAction(PlayerbotAI* botAI) : AttackAction(botAI, "novos target priority") {}
     bool Execute(Event event) override;
-    // bool isUseful() override;
 };
 
 class CastSlayingStrikeAction : public CastMeleeSpellAction

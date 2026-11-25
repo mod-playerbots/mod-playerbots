@@ -104,7 +104,6 @@ public:
         creators["position"] = &ChatTriggerContext::position;
         creators["summon"] = &ChatTriggerContext::summon;
         creators["who"] = &ChatTriggerContext::who;
-        creators["save mana"] = &ChatTriggerContext::save_mana;
         creators["max dps"] = &ChatTriggerContext::max_dps;
         creators["attackers"] = &ChatTriggerContext::attackers;
         creators["target"] = &ChatTriggerContext::target;
@@ -188,7 +187,6 @@ private:
     static Trigger* target(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "target"); }
     static Trigger* target_me(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "target me"); }
     static Trigger* max_dps(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "max dps"); }
-    static Trigger* save_mana(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "save mana"); }
     static Trigger* who(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "who"); }
     static Trigger* summon(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "summon"); }
     static Trigger* position(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "position"); }

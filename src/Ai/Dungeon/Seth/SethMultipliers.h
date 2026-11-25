@@ -9,11 +9,11 @@
 
 #include "Multiplier.h"
 
-class SethekkProphetSetTremorTotemMultiplier : public Multiplier
+class SethekkProphetKeepTremorTotemMultiplier : public Multiplier
 {
 public:
-    SethekkProphetSetTremorTotemMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "sethekk prophet set tremor totem") {}
+    SethekkProphetKeepTremorTotemMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "sethekk prophet keep tremor totem") {}
     float GetValue(Action* action) override;
 };
 

@@ -97,10 +97,9 @@ bool UseItemAction::UseGameObject(ObjectGuid guid)
         bool added = availableLoot->Add(guid);
         context->GetValue<LootObject>("loot target")->Set(loot);
 
-        bool retryGuaranteed = inRange && (bot->isMoving() || bot->IsMounted());
         std::string objectName = chat->FormatGameobject(go);
         bool requested = botAI->DoSpecificAction(inRange ? "open loot" : "move to loot", Event(), true);
-        if (!requested && !retryGuaranteed)
+        if (!requested)
         {
             if (added && availableLoot->CanAttemptLoot(guid))
                 availableLoot->Remove(guid);
