@@ -140,7 +140,8 @@ public:
         PLAYERHOOK_CAN_PLAYER_USE_GUILD_CHAT,
         PLAYERHOOK_CAN_PLAYER_USE_CHANNEL_CHAT,
         PLAYERHOOK_ON_GIVE_EXP,
-        PLAYERHOOK_ON_BEFORE_TELEPORT
+        PLAYERHOOK_ON_BEFORE_TELEPORT,
+        PLAYERHOOK_ON_MAP_CHANGED
     }) {}
 
     void OnPlayerLogin(Player* player) override
@@ -243,6 +244,21 @@ public:
         */
 
         return true;
+    }
+
+    // Bots update map strategies in HandleTeleportAck, which selfbots never reach.
+    void OnPlayerMapChanged(Player* player) override
+    {
+        if (!IsSelfBot(player))
+            return;
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+
+        if (sPlayerbotAIConfig.ApplyInstanceStrategies)
+            botAI->ApplyInstanceStrategies(player->GetMapId(), true);
+
+        if (sPlayerbotAIConfig.RestrictHealerDPS)
+            botAI->EvaluateHealerDpsStrategy();
     }
 
     void OnPlayerAfterUpdate(Player* player, uint32 diff) override
