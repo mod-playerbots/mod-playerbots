@@ -523,8 +523,6 @@ struct QuestSpawn
     WorldPosition pos;
     uint32 phaseMask;
     uint8 spawnMask;
-    uint32 poolId;
-    uint32 spawnGroupId;
     ObjectGuid::LowType spawnId;
     bool gameObject;
 };
@@ -550,8 +548,6 @@ QuestSpawnMap const& GetQuestSpawnMap()
                     {{creatureData.mapid, creatureData.posX, creatureData.posY, creatureData.posZ},
                      creatureData.phaseMask,
                      creatureData.spawnMask,
-                     creatureData.poolId,
-                     creatureData.spawnGroupId,
                      creatureData.spawnId,
                      false});
             }
@@ -563,8 +559,6 @@ QuestSpawnMap const& GetQuestSpawnMap()
             result[-int32(goData.id)].push_back({{goData.mapid, goData.posX, goData.posY, goData.posZ},
                                                  goData.phaseMask,
                                                  goData.spawnMask,
-                                                 goData.poolId,
-                                                 goData.spawnGroupId,
                                                  goData.spawnId,
                                                  true});
         }
@@ -588,19 +582,22 @@ bool IsSpawnVisibleTo(Player* bot, QuestSpawn const& spawn)
     if (!(spawn.spawnMask & (1u << bot->GetMap()->GetSpawnMode())))
         return false;
 
-    // `.reload spawn_group` can change membership after the index is built; read the live data.
-    uint32 poolId = spawn.poolId;
-    uint32 spawnGroupId = spawn.spawnGroupId;
+    // `.reload spawn_group` and deletes can change the live record after the index is built.
+    uint32 poolId;
+    uint32 spawnGroupId;
     if (spawn.gameObject)
     {
-        if (GameObjectData const* data = sObjectMgr->GetGameObjectData(spawn.spawnId))
-        {
-            poolId = data->poolId;
-            spawnGroupId = data->spawnGroupId;
-        }
+        GameObjectData const* data = sObjectMgr->GetGameObjectData(spawn.spawnId);
+        if (!data)
+            return false;
+        poolId = data->poolId;
+        spawnGroupId = data->spawnGroupId;
     }
-    else if (CreatureData const* data = sObjectMgr->GetCreatureData(spawn.spawnId))
+    else
     {
+        CreatureData const* data = sObjectMgr->GetCreatureData(spawn.spawnId);
+        if (!data)
+            return false;
         poolId = data->poolId;
         spawnGroupId = data->spawnGroupId;
     }
@@ -760,12 +757,21 @@ WorldObject* NewRpgBaseAction::FindLoadedSpawn(Player* bot, QuestObjectivePositi
 
     if (candidate.gameObject)
     {
+        GameObject* fallback = nullptr;
         auto bounds = map->GetGameObjectBySpawnIdStore().equal_range(candidate.spawnId);
         for (auto itr = bounds.first; itr != bounds.second; ++itr)
-            if (itr->second && itr->second->IsInWorld() && (itr->second->GetPhaseMask() & bot->GetPhaseMask()))
-                return itr->second;
+        {
+            if (!itr->second || !itr->second->IsInWorld() ||
+                !(itr->second->GetPhaseMask() & bot->GetPhaseMask()))
+                continue;
 
-        return nullptr;
+            if (itr->second->isSpawned())
+                return itr->second;
+            if (!fallback)
+                fallback = itr->second;
+        }
+
+        return fallback;
     }
 
     auto bounds = map->GetCreatureBySpawnIdStore().equal_range(candidate.spawnId);

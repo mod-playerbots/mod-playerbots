@@ -59,6 +59,7 @@ struct NewRpgInfo
         uint32 objectiveCount{0};
         ObjectGuid::LowType objectiveSpawnId{0};
         bool objectiveIsGameObject{false};
+        bool objectiveSpawnMissing{false};
         std::set<std::pair<bool, ObjectGuid::LowType>> failedObjectiveSpawns;
         WorldPosition pos{};
         uint32 lastReachPOI{0};
@@ -66,6 +67,7 @@ struct NewRpgInfo
         // Spawn-backed turn-in destination: the loaded object is re-checked on arrival.
         ObjectGuid::LowType enderSpawnId{0};
         bool enderIsGameObject{false};
+        bool enderMissing{false};
         // Creature and gameobject spawn ids are separate namespaces.
         std::set<std::pair<bool, ObjectGuid::LowType>> failedEnderSpawns;
         // Explore destinations need an explicit CMSG_AREATRIGGER on arrival; bots do not send it

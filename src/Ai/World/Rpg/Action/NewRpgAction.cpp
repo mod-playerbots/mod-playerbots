@@ -607,6 +607,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.objectiveCount = 0;
             data.objectiveSpawnId = 0;
             data.objectiveIsGameObject = false;
+            data.objectiveSpawnMissing = false;
             data.failedObjectiveSpawns.clear();
             data.exploreTriggerId = 0;
             data.exploreTriggerSent = false;
@@ -645,6 +646,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.objectiveCount = 0;
             data.objectiveSpawnId = 0;
             data.objectiveIsGameObject = false;
+            data.objectiveSpawnMissing = false;
             data.failedObjectiveSpawns.clear();
             data.exploreTriggerId = 0;
             data.exploreTriggerSent = false;
@@ -690,6 +692,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
                 SetObjectiveSignature(data, sObjectMgr->GetQuestTemplate(questId));
                 data.objectiveSpawnId = best->spawnId;
                 data.objectiveIsGameObject = best->gameObject;
+                data.objectiveSpawnMissing = false;
                 data.exploreTriggerId = 0;
                 data.exploreTriggerSent = false;
                 data.exploreTriggerAttempts = 0;
@@ -827,11 +830,27 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
     // stayed at this POI for more than 5 minutes
     if (GetMSTimeDiffToNow(data.lastReachPOI) >= poiStayTime)
     {
+        if (data.objectiveSpawnMissing)
+        {
+            // The previous target was unavailable, not a failed objective attempt; retry once
+            // before treating the POI visit as no-progress.
+            data.objectiveSpawnMissing = false;
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            data.objectiveEntry = 0;
+            data.objectiveCount = 0;
+            data.objectiveSpawnId = 0;
+            data.objectiveIsGameObject = false;
+            return true;
+        }
+
         // A pool/event roll can move the objective spawn while the bot is travelling; re-resolve
         // instead of recording NoProgress at a spawn that can no longer appear.
         if (data.objectiveSpawnId && !IsSpawnActive(bot, data.objectiveSpawnId, data.objectiveIsGameObject))
         {
             data.failedObjectiveSpawns.insert({data.objectiveIsGameObject, data.objectiveSpawnId});
+            data.objectiveSpawnMissing = true;
             data.lastReachPOI = 0;
             data.pos = WorldPosition();
             data.objectiveIdx = 0;
@@ -851,6 +870,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             {
                 // Event/script despawn: exclude this spawn and re-resolve instead of NoProgress.
                 data.failedObjectiveSpawns.insert({data.objectiveIsGameObject, data.objectiveSpawnId});
+                data.objectiveSpawnMissing = true;
                 data.lastReachPOI = 0;
                 data.pos = WorldPosition();
                 data.objectiveIdx = 0;
@@ -958,6 +978,7 @@ bool NewRpgDoQuestAction::SelectSpawnTurnInDestination(NewRpgInfo::DoQuest& data
     data.objectiveIdx = -1;
     data.enderSpawnId = best->spawnId;
     data.enderIsGameObject = best->gameObject;
+    data.enderMissing = false;
     return true;
 }
 
@@ -989,7 +1010,7 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
             {
                 // No usable spawn ender or reward POI remains. Only a missing ender is made
                 // permanent; a distance/zone rejection stays retryable.
-                if (!data.failedEnderSpawns.empty())
+                if (data.enderMissing)
                 {
                     botAI->lowPriorityQuest.insert(questId);
                     botAI->RecordQuestAbandoned(questId, QuestAbandonReason::CannotTurnIn);
@@ -1017,6 +1038,7 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
             data.pos = WorldPosition(bot->GetMapId(), dx, dy, dz);
             data.objectiveIdx = -1;
             data.enderSpawnId = 0;
+            data.enderMissing = false;
         }
     }
 
@@ -1036,6 +1058,7 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
             LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in ender spawn {} is not loaded",
                       bot->GetName(), questId, data.enderSpawnId);
             data.failedEnderSpawns.insert({data.enderIsGameObject, data.enderSpawnId});
+            data.enderMissing = true;
             data.enderSpawnId = 0;
             data.lastReachPOI = 0;
             data.pos = WorldPosition();
@@ -1049,6 +1072,7 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
             LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in ender spawn {} is not a valid ender",
                       bot->GetName(), questId, data.enderSpawnId);
             data.failedEnderSpawns.insert({data.enderIsGameObject, data.enderSpawnId});
+            data.enderMissing = false;
             data.enderSpawnId = 0;
             data.lastReachPOI = 0;
             data.pos = WorldPosition();
