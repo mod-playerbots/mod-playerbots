@@ -588,12 +588,29 @@ bool IsSpawnVisibleTo(Player* bot, QuestSpawn const& spawn)
     if (!(spawn.spawnMask & (1u << bot->GetMap()->GetSpawnMode())))
         return false;
 
-    if (spawn.spawnGroupId && !bot->GetMap()->IsSpawnGroupActive(spawn.spawnGroupId))
+    // `.reload spawn_group` can change membership after the index is built; read the live data.
+    uint32 poolId = spawn.poolId;
+    uint32 spawnGroupId = spawn.spawnGroupId;
+    if (spawn.gameObject)
+    {
+        if (GameObjectData const* data = sObjectMgr->GetGameObjectData(spawn.spawnId))
+        {
+            poolId = data->poolId;
+            spawnGroupId = data->spawnGroupId;
+        }
+    }
+    else if (CreatureData const* data = sObjectMgr->GetCreatureData(spawn.spawnId))
+    {
+        poolId = data->poolId;
+        spawnGroupId = data->spawnGroupId;
+    }
+
+    if (spawnGroupId && !bot->GetMap()->IsSpawnGroupActive(spawnGroupId))
         return false;
 
     // A pooled spawn can be the inactive member of its pool (e.g. one of Masophet's two spawns).
     uint32 const spawnId = uint32(spawn.spawnId);
-    if (spawn.poolId)
+    if (poolId)
     {
         Map* map = bot->GetMap();
         bool const spawned = spawn.gameObject
@@ -745,8 +762,7 @@ WorldObject* NewRpgBaseAction::FindLoadedSpawn(Player* bot, QuestObjectivePositi
     {
         auto bounds = map->GetGameObjectBySpawnIdStore().equal_range(candidate.spawnId);
         for (auto itr = bounds.first; itr != bounds.second; ++itr)
-            if (itr->second && itr->second->IsInWorld() && itr->second->isSpawned() &&
-                (itr->second->GetPhaseMask() & bot->GetPhaseMask()))
+            if (itr->second && itr->second->IsInWorld() && (itr->second->GetPhaseMask() & bot->GetPhaseMask()))
                 return itr->second;
 
         return nullptr;

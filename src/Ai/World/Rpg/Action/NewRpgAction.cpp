@@ -607,6 +607,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.objectiveCount = 0;
             data.objectiveSpawnId = 0;
             data.objectiveIsGameObject = false;
+            data.failedObjectiveSpawns.clear();
             data.exploreTriggerId = 0;
             data.exploreTriggerSent = false;
             data.exploreTriggerAttempts = 0;
@@ -644,6 +645,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.objectiveCount = 0;
             data.objectiveSpawnId = 0;
             data.objectiveIsGameObject = false;
+            data.failedObjectiveSpawns.clear();
             data.exploreTriggerId = 0;
             data.exploreTriggerSent = false;
             data.exploreTriggerAttempts = 0;
@@ -653,6 +655,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
     if (data.pos == WorldPosition())
     {
         // Spawn-backed objectives first: exact 3D positions (cave floors, tower platforms).
+        bool spawnResolved = false;
         std::vector<QuestObjectivePosition> objectivePositions;
         if (GetQuestObjectivePositions(bot, questId, objectivePositions, false))
         {
@@ -660,6 +663,10 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             float bestDistance = std::numeric_limits<float>::max();
             for (QuestObjectivePosition const& candidate : objectivePositions)
             {
+                if (candidate.spawnId &&
+                    data.failedObjectiveSpawns.count({candidate.gameObject, candidate.spawnId}))
+                    continue;
+
                 float const distance = bot->GetDistance(candidate.pos.GetPositionX(),
                                                         candidate.pos.GetPositionY(),
                                                         candidate.pos.GetPositionZ());
@@ -670,23 +677,28 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
                 }
             }
 
-            LOG_DEBUG("playerbots",
-                      "[New RPG] {} quest {} destination source=spawn idx={} ({:.1f}, {:.1f}, {:.1f}) {:.0f} yd",
-                      bot->GetName(), questId, best->objectiveIdx, best->pos.GetPositionX(),
-                      best->pos.GetPositionY(), best->pos.GetPositionZ(), bestDistance);
+            if (best)
+            {
+                LOG_DEBUG("playerbots",
+                          "[New RPG] {} quest {} destination source=spawn idx={} ({:.1f}, {:.1f}, {:.1f}) {:.0f} yd",
+                          bot->GetName(), questId, best->objectiveIdx, best->pos.GetPositionX(),
+                          best->pos.GetPositionY(), best->pos.GetPositionZ(), bestDistance);
 
-            data.lastReachPOI = 0;
-            data.pos = best->pos;
-            data.objectiveIdx = best->objectiveIdx;
-            SetObjectiveSignature(data, sObjectMgr->GetQuestTemplate(questId));
-            data.objectiveSpawnId = best->spawnId;
-            data.objectiveIsGameObject = best->gameObject;
-            data.exploreTriggerId = 0;
-            data.exploreTriggerSent = false;
-            data.exploreTriggerAttempts = 0;
-            data.exploreTriggerRetryAt = 0;
+                data.lastReachPOI = 0;
+                data.pos = best->pos;
+                data.objectiveIdx = best->objectiveIdx;
+                SetObjectiveSignature(data, sObjectMgr->GetQuestTemplate(questId));
+                data.objectiveSpawnId = best->spawnId;
+                data.objectiveIsGameObject = best->gameObject;
+                data.exploreTriggerId = 0;
+                data.exploreTriggerSent = false;
+                data.exploreTriggerAttempts = 0;
+                data.exploreTriggerRetryAt = 0;
+                spawnResolved = true;
+            }
         }
-        else
+
+        if (!spawnResolved)
         {
             std::vector<POIInfo> poiInfo;
             if (!GetQuestPOIPosAndObjectiveIdx(questId, poiInfo))
@@ -746,9 +758,9 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
 
         // The trigger position/volume can change under the same ID; a saved destination outside
         // the live volume must be resolved again instead of walking the old route.
-        if (!exploreTrigger ||
-            !NewRpgHelpers::IsPositionInAreaTrigger(exploreTrigger, data.pos.GetPositionX(), data.pos.GetPositionY(),
-                                     data.pos.GetPositionZ()))
+        if (!exploreTrigger || exploreTrigger->map != bot->GetMapId() ||
+            !NewRpgHelpers::IsPositionInAreaTrigger(exploreTrigger, data.pos.GetPositionX(),
+                                                     data.pos.GetPositionY(), data.pos.GetPositionZ()))
         {
             data.pos = WorldPosition();
             data.objectiveIdx = 0;
@@ -819,6 +831,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         // instead of recording NoProgress at a spawn that can no longer appear.
         if (data.objectiveSpawnId && !IsSpawnActive(bot, data.objectiveSpawnId, data.objectiveIsGameObject))
         {
+            data.failedObjectiveSpawns.insert({data.objectiveIsGameObject, data.objectiveSpawnId});
             data.lastReachPOI = 0;
             data.pos = WorldPosition();
             data.objectiveIdx = 0;
@@ -833,9 +846,11 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         {
             QuestObjectivePosition current{data.objectiveIdx, data.pos, data.objectiveSpawnId,
                                            data.objectiveIsGameObject};
-            if (!FindLoadedSpawn(bot, current))
+            WorldObject* ender = FindLoadedSpawn(bot, current);
+            if (!ender || (data.objectiveIsGameObject && !ender->ToGameObject()->isSpawned()))
             {
-                // Event/script despawn: re-resolve instead of recording NoProgress.
+                // Event/script despawn: exclude this spawn and re-resolve instead of NoProgress.
+                data.failedObjectiveSpawns.insert({data.objectiveIsGameObject, data.objectiveSpawnId});
                 data.lastReachPOI = 0;
                 data.pos = WorldPosition();
                 data.objectiveIdx = 0;
@@ -972,9 +987,13 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
             std::vector<POIInfo> poiInfo;
             if (!GetQuestPOIPosAndObjectiveIdx(questId, poiInfo, true))
             {
-                // No usable spawn ender or reward POI remains; stop selecting this quest.
-                botAI->lowPriorityQuest.insert(questId);
-                botAI->RecordQuestAbandoned(questId, QuestAbandonReason::CannotTurnIn);
+                // No usable spawn ender or reward POI remains. Only a missing ender is made
+                // permanent; a distance/zone rejection stays retryable.
+                if (!data.failedEnderSpawns.empty())
+                {
+                    botAI->lowPriorityQuest.insert(questId);
+                    botAI->RecordQuestAbandoned(questId, QuestAbandonReason::CannotTurnIn);
+                }
                 botAI->rpgInfo.ChangeToIdle();
                 return false;
             }

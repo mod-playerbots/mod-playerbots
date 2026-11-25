@@ -59,6 +59,7 @@ struct NewRpgInfo
         uint32 objectiveCount{0};
         ObjectGuid::LowType objectiveSpawnId{0};
         bool objectiveIsGameObject{false};
+        std::set<std::pair<bool, ObjectGuid::LowType>> failedObjectiveSpawns;
         WorldPosition pos{};
         uint32 lastReachPOI{0};
         bool completionAnnounced{false};
