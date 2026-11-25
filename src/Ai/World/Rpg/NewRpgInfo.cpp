@@ -32,12 +32,11 @@ void NewRpgInfo::ChangeToWanderRandom()
     data = WanderRandom{};
 }
 
-void NewRpgInfo::ChangeToDoQuest(uint32 questId, Quest const* quest)
+void NewRpgInfo::ChangeToDoQuest(uint32 questId)
 {
     startT = getMSTime();
     DoQuest do_quest;
     do_quest.questId = questId;
-    do_quest.quest = quest;
     data = do_quest;
 }
 

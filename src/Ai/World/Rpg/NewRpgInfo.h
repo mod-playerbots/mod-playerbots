@@ -7,6 +7,7 @@
 #ifndef PLAYERBOTS_NEWRPGINFO_H
 #define PLAYERBOTS_NEWRPGINFO_H
 
+#include <set>
 #include <unordered_set>
 
 #include "Define.h"
@@ -52,7 +53,6 @@ struct NewRpgInfo
     // RPG_DO_QUEST
     struct DoQuest
     {
-        Quest const* quest{nullptr};
         uint32 questId{0};
         int32 objectiveIdx{0};
         WorldPosition pos{};
@@ -61,7 +61,8 @@ struct NewRpgInfo
         // Spawn-backed turn-in destination: the loaded object is re-checked on arrival.
         ObjectGuid::LowType enderSpawnId{0};
         bool enderIsGameObject{false};
-        std::unordered_set<ObjectGuid::LowType> failedEnderSpawns;
+        // Creature and gameobject spawn ids are separate namespaces.
+        std::set<std::pair<bool, ObjectGuid::LowType>> failedEnderSpawns;
         // Explore destinations need an explicit CMSG_AREATRIGGER on arrival; bots do not send it
         // from movement. Sent once per destination selection.
         uint32 exploreTriggerId{0};
@@ -136,7 +137,7 @@ struct NewRpgInfo
     void ChangeToGoCamp(WorldPosition pos);
     void ChangeToWanderNpc();
     void ChangeToWanderRandom();
-    void ChangeToDoQuest(uint32 questId, Quest const* quest);
+    void ChangeToDoQuest(uint32 questId);
     void ChangeToTravelFlight(uint32 flightMasterEntry, WorldPosition flightMasterPos, std::vector<uint32> path);
     void ChangeToOutdoorPvp(ObjectGuid::LowType capturePointSpawnId = 0);
     void ChangeToDoGather();

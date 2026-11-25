@@ -115,20 +115,27 @@ void QuestPoiZStore::Load()
              rows, _candidates.size(), triggerRows, walkableRows);
 }
 
-QuestPoiZCandidate const* QuestPoiZStore::Lookup(uint32 questId, uint32 poiId, uint32 mapId) const
+std::vector<QuestPoiZCandidate const*> QuestPoiZStore::LookupAll(uint32 questId, uint32 poiId, uint32 mapId) const
 {
-    auto itr = _candidates.find(Key(questId, poiId));
-    if (itr == _candidates.end() || itr->second.empty())
-        return nullptr;
+    std::vector<QuestPoiZCandidate const*> result;
 
-    // Rows are rank/confidence ordered; return the best one the baker marked navmesh-reachable on
-    // this map. If every candidate is non-navmesh or belongs to another map the caller keeps the
-    // fallback.
+    auto itr = _candidates.find(Key(questId, poiId));
+    if (itr == _candidates.end())
+        return result;
+
+    // Rows are rank/confidence ordered; keep every candidate the baker marked navmesh-reachable on
+    // this map.
     for (QuestPoiZCandidate const& candidate : itr->second)
         if (candidate.navmeshOk && candidate.mapId == mapId)
-            return &candidate;
+            result.push_back(&candidate);
 
-    return nullptr;
+    return result;
+}
+
+QuestPoiZCandidate const* QuestPoiZStore::Lookup(uint32 questId, uint32 poiId, uint32 mapId) const
+{
+    std::vector<QuestPoiZCandidate const*> const candidates = LookupAll(questId, poiId, mapId);
+    return candidates.empty() ? nullptr : candidates.front();
 }
 
 bool QuestPoiZStore::FindNearestWalkablePoint(uint32 questId, uint32 poiId, uint32 mapId, float x, float y,

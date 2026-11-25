@@ -190,8 +190,7 @@ bool TellRpgStatusAction::Execute(Event event)
                 uint32 qid = bot->GetQuestSlotQuestId(slot);
                 if (!qid)
                     continue;
-                std::vector<POIInfo> poi;
-                if (GetQuestPOIPosAndObjectiveIdx(qid, poi, true))
+                if (HasQuestDestination(qid, true))
                 {
                     questId = qid;
                     break;
@@ -215,7 +214,7 @@ bool TellRpgStatusAction::Execute(Event event)
             bot->Whisper(msg, LANG_UNIVERSAL, owner);
             return false;
         }
-        info.ChangeToDoQuest(questId, quest);
+        info.ChangeToDoQuest(questId);
         WhisperStatusChange(owner, "DO_QUEST " + std::to_string(questId));
         return true;
     }
@@ -240,7 +239,7 @@ bool StartRpgDoQuestAction::Execute(Event event)
     Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
     if (quest)
     {
-        botAI->rpgInfo.ChangeToDoQuest(questId, quest);
+        botAI->rpgInfo.ChangeToDoQuest(questId);
         bot->Whisper("Start to do quest " + std::to_string(questId), LANG_UNIVERSAL, owner);
         return true;
     }
@@ -711,7 +710,7 @@ bool NewRpgDoQuestAction::SelectSpawnTurnInDestination(NewRpgInfo::DoQuest& data
     float bestDistance = std::numeric_limits<float>::max();
     for (QuestObjectivePosition const& candidate : enderPositions)
     {
-        if (candidate.spawnId && data.failedEnderSpawns.count(candidate.spawnId))
+        if (candidate.spawnId && data.failedEnderSpawns.count({candidate.gameObject, candidate.spawnId}))
             continue;
 
         // Reject only an ender that is already loaded and fails the interaction check. An
@@ -747,7 +746,9 @@ bool NewRpgDoQuestAction::SelectSpawnTurnInDestination(NewRpgInfo::DoQuest& data
 bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
 {
     uint32 questId = data.questId;
-    Quest const* quest = data.quest;
+    Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+    if (!quest)
+        return false;
 
     if (data.objectiveIdx != -1)
     {
@@ -800,19 +801,18 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
     if (data.objectiveIdx == -1 && data.enderSpawnId && bot->GetDistance(data.pos) <= 10.0f)
     {
         QuestObjectivePosition current{-1, data.pos, data.enderSpawnId, data.enderIsGameObject};
-        if (WorldObject* ender = FindLoadedSpawn(bot, current))
+        WorldObject* ender = FindLoadedSpawn(bot, current);
+        if (!ender || !NewRpgHelpers::CanInteractWithQuestGiver(bot, ender))
         {
-            if (!NewRpgHelpers::CanInteractWithQuestGiver(bot, ender))
-            {
-                LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in ender spawn {} is not interactable",
-                          bot->GetName(), questId, data.enderSpawnId);
-                data.failedEnderSpawns.insert(data.enderSpawnId);
-                data.enderSpawnId = 0;
-                data.lastReachPOI = 0;
-                data.pos = WorldPosition();
-                data.objectiveIdx = 0;  // reselect a turn-in destination on the next tick
-                return true;
-            }
+            LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in ender spawn {} is not {}",
+                      bot->GetName(), questId, data.enderSpawnId,
+                      ender ? "interactable" : "loaded");
+            data.failedEnderSpawns.insert({data.enderIsGameObject, data.enderSpawnId});
+            data.enderSpawnId = 0;
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;  // reselect a turn-in destination on the next tick
+            return true;
         }
     }
 

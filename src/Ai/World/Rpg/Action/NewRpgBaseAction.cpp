@@ -33,6 +33,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
+#include "PoolMgr.h"
 #include "Position.h"
 #include "QuestDef.h"
 #include "QuestPackets.h"
@@ -573,7 +574,24 @@ bool IsSpawnVisibleTo(Player* bot, QuestSpawn const& spawn)
     if (!(spawn.phaseMask & bot->GetPhaseMask()))
         return false;
 
-    return spawn.spawnMask & (1u << bot->GetMap()->GetSpawnMode());
+    if (!(spawn.spawnMask & (1u << bot->GetMap()->GetSpawnMode())))
+        return false;
+
+    // A pooled spawn can be the inactive member of its pool (e.g. one of Masophet's two spawns).
+    uint32 const spawnId = uint32(spawn.spawnId);
+    uint32 const poolId = spawn.gameObject ? sPoolMgr->GetGameObjectPoolId(spawnId)
+                                           : sPoolMgr->GetCreaturePoolId(spawnId);
+    if (poolId)
+    {
+        Map* map = bot->GetMap();
+        bool const spawned = spawn.gameObject
+                                 ? map->GetPoolData().IsSpawnedObject<GameObject>(spawnId)
+                                 : map->GetPoolData().IsSpawnedObject<Creature>(spawnId);
+        if (!spawned)
+            return false;
+    }
+
+    return true;
 }
 
 bool IsSpawnDestinationAllowed(Player* bot, QuestSpawn const& spawn)
@@ -660,15 +678,15 @@ bool NewRpgBaseAction::GetQuestObjectivePositions(Player* bot, uint32 questId,
     if (toComplete)
     {
         // Quest-ender relations are read live, so relation reloads apply immediately. Turn-ins
-        // pick the nearest valid ender on the map; the objective path applies the POI distance
-        // and zone gates below so a remote spawn cannot hide a nearby collect POI.
+        // obey the same distance/zone gates as the POI reward path; a far spawn cannot turn a
+        // local quest action into cross-zone travel.
         for (auto const& relation : *sObjectMgr->GetCreatureQuestInvolvedRelationMap())
             if (relation.second == questId)
-                addEntry(int32(relation.first), -1, false);
+                addEntry(int32(relation.first), -1, true);
 
         for (auto const& relation : *sObjectMgr->GetGOQuestInvolvedRelationMap())
             if (relation.second == questId)
-                addEntry(-int32(relation.first), -1, false);
+                addEntry(-int32(relation.first), -1, true);
 
         return !outPositions.empty();
     }
@@ -690,6 +708,27 @@ bool NewRpgBaseAction::GetQuestObjectivePositions(Player* bot, uint32 questId,
     }
 
     return !outPositions.empty();
+}
+
+bool NewRpgBaseAction::HasQuestDestination(uint32 questId, bool toComplete)
+{
+    std::vector<QuestObjectivePosition> positions;
+    if (GetQuestObjectivePositions(bot, questId, positions, toComplete))
+        return true;
+
+    std::vector<POIInfo> poiInfo;
+    if (GetQuestPOIPosAndObjectiveIdx(questId, poiInfo, toComplete))
+        return true;
+
+    if (!toComplete)
+        return false;
+
+    // A quest can be selected for its incomplete objectives before it is ready to turn in.
+    if (GetQuestObjectivePositions(bot, questId, positions, false))
+        return true;
+
+    std::vector<POIInfo> objectivePoiInfo;
+    return GetQuestPOIPosAndObjectiveIdx(questId, objectivePoiInfo, false);
 }
 
 WorldObject* NewRpgBaseAction::FindLoadedSpawn(Player* bot, QuestObjectivePosition const& candidate)
@@ -895,15 +934,41 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
     if (!quest)
         return false;
 
+    QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
+    std::vector<uint32> const& triggerIds = GetQuestAreaTriggerIds(questId);
+    bool const baseExplore = !triggerIds.empty() || !quest->GetAreaDescription().empty();
+
+    auto addTriggerDestinations = [&]()
+    {
+        for (uint32 id : triggerIds)
+        {
+            AreaTrigger const* trigger = sObjectMgr->GetAreaTrigger(id);
+            if (!trigger || trigger->map != bot->GetMapId())
+                continue;
+
+            POIInfo info;
+            info.objectiveIdx = QUEST_OBJECTIVE_EXPLORE;
+            info.pos = {trigger->x, trigger->y};
+            info.z = trigger->z;
+            info.triggerId = trigger->entry;
+            info.hasBakedZ = true;
+
+            if (bot->GetDistance2d(info.pos.x, info.pos.y) < 1500.0f &&
+                bot->GetZoneId() == bot->GetMap()->GetZoneId(bot->GetPhaseMask(), info.pos.x, info.pos.y,
+                                                              info.z))
+                poiInfo.push_back(info);
+        }
+    };
+
     QuestPOIVector const* poiVector = sObjectMgr->GetQuestPOIVector(questId);
     if (!poiVector)
     {
-        return false;
+        // Trigger-only exploration quests have no POI vector; the trigger is still a valid
+        // destination. A completed quest must use its turn-in path instead.
+        if (baseExplore && !q_status.Explored && q_status.Status == QUEST_STATUS_INCOMPLETE)
+            addTriggerDestinations();
+        return !poiInfo.empty();
     }
-
-    QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
-
-    std::vector<uint32> const& triggerIds = GetQuestAreaTriggerIds(questId);
 
     auto triggerForPoi = [&](float x, float y) -> AreaTrigger const*
     {
@@ -931,7 +996,29 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
                                            [](QuestPOI const& poi) {
                                                return poi.ObjectiveIndex == QUEST_OBJECTIVE_EXPLORE;
                                            });
-    bool const isExplore = !triggerIds.empty() || !quest->GetAreaDescription().empty() || hasExplorePoi;
+    bool const isExplore = baseExplore || hasExplorePoi;
+
+    auto resolveTerrain = [&](float x, float y, int32 objectiveIdx, uint32 poiId) -> std::optional<POIInfo>
+    {
+        // Reject a distant POI before the terrain lookup: GetHeight/GetWaterLevel can load
+        // terrain, collision and navmesh files synchronously on a cold grid.
+        if (bot->GetDistance2d(x, y) >= 1500.0f)
+            return std::nullopt;
+
+        POIInfo info;
+        info.objectiveIdx = objectiveIdx;
+        info.poiId = poiId;
+        info.pos = {x, y};
+        info.z = std::max(bot->GetMap()->GetHeight(x, y, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(x, y));
+
+        if (info.z == INVALID_HEIGHT || info.z == VMAP_INVALID_HEIGHT_VALUE)
+            return std::nullopt;
+
+        if (bot->GetZoneId() != bot->GetMap()->GetZoneId(bot->GetPhaseMask(), info.pos.x, info.pos.y, info.z))
+            return std::nullopt;
+
+        return info;
+    };
 
     // Resolve one POI to its final destination: the baked floor paired with its own POI point
     // when available, otherwise the weighted-average x/y with the terrain height.
@@ -982,29 +1069,35 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
                 info.hasBakedZ = false;
             }
         }
-        else if (QuestPoiZCandidate const* baked = QuestPoiZStore::Instance().Lookup(questId, qPoi.Id, bot->GetMapId());
-                 baked && baked->pointIdx < qPoi.points.size())
-        {
-            // Pair the baked floor with the exact point it was baked from instead of the
-            // weighted-average x/y, which can sit on a different floor. Idx2 is dense from 0
-            // for all but one POI in the world DB; an out-of-range index falls back below.
-            info.pos = {float(qPoi.points[baked->pointIdx].x), float(qPoi.points[baked->pointIdx].y)};
-            info.hasBakedZ = true;
-            info.z = baked->z;
-        }
         else
         {
-            info.pos = {dx, dy};
+            // Try every ranked baked candidate: a rejected far point must not suppress a nearer
+            // alternate. If none passes, fall back to the terrain destination for this POI.
+            bool bakedResolved = false;
+            for (QuestPoiZCandidate const* baked : QuestPoiZStore::Instance().LookupAll(
+                     questId, qPoi.Id, bot->GetMapId()))
+            {
+                if (baked->pointIdx >= qPoi.points.size())
+                    continue;
 
-            // Reject a distant POI before the terrain lookup: GetHeight/GetWaterLevel can load
-            // terrain, collision and navmesh files synchronously on a cold grid.
-            if (bot->GetDistance2d(dx, dy) >= 1500.0f)
-                return std::nullopt;
+                POIInfo candidate = info;
+                candidate.pos = {float(qPoi.points[baked->pointIdx].x),
+                                 float(qPoi.points[baked->pointIdx].y)};
+                candidate.hasBakedZ = true;
+                candidate.z = baked->z;
 
-            info.z = std::max(bot->GetMap()->GetHeight(dx, dy, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(dx, dy));
+                if (bot->GetDistance2d(candidate.pos.x, candidate.pos.y) < 1500.0f &&
+                    bot->GetZoneId() == bot->GetMap()->GetZoneId(bot->GetPhaseMask(), candidate.pos.x,
+                                                                  candidate.pos.y, candidate.z))
+                {
+                    info = candidate;
+                    bakedResolved = true;
+                    break;
+                }
+            }
 
-            if (info.z == INVALID_HEIGHT || info.z == VMAP_INVALID_HEIGHT_VALUE)
-                return std::nullopt;
+            if (!bakedResolved)
+                return resolveTerrain(dx, dy, qPoi.ObjectiveIndex, qPoi.Id);
         }
 
         if (bot->GetDistance2d(info.pos.x, info.pos.y) >= 1500.0f)
@@ -1094,29 +1187,9 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
     }
 
     // Trigger-only exploration quests have no ObjectiveIndex 16 POI, but the trigger position is
-    // still a valid destination. A quest may own several triggers; keep each one that passes the
-    // same distance/zone gates so the nearest can be chosen.
+    // still a valid destination. The helper keeps every trigger that passes the distance/zone gates.
     if (explorePending && !explorePoiResolved)
-    {
-        for (uint32 id : triggerIds)
-        {
-            AreaTrigger const* trigger = sObjectMgr->GetAreaTrigger(id);
-            if (!trigger || trigger->map != bot->GetMapId())
-                continue;
-
-            POIInfo info;
-            info.objectiveIdx = QUEST_OBJECTIVE_EXPLORE;
-            info.pos = {trigger->x, trigger->y};
-            info.z = trigger->z;
-            info.triggerId = trigger->entry;
-            info.hasBakedZ = true;
-
-            if (bot->GetDistance2d(info.pos.x, info.pos.y) < 1500.0f &&
-                bot->GetZoneId() == bot->GetMap()->GetZoneId(bot->GetPhaseMask(), info.pos.x, info.pos.y,
-                                                              info.z))
-                poiInfo.push_back(info);
-        }
-    }
+        addTriggerDestinations();
 
     if (poiInfo.size() == 0)
     {
@@ -1322,8 +1395,7 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
                 if (botAI->lowPriorityQuest.find(questId) != botAI->lowPriorityQuest.end())
                     continue;
 
-                std::vector<POIInfo> poiInfo;
-                if (GetQuestPOIPosAndObjectiveIdx(questId, poiInfo, true))
+                if (HasQuestDestination(questId, true))
                 {
                     availableQuests.push_back(questId);
                 }
@@ -1334,7 +1406,7 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
                 Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
                 if (quest)
                 {
-                    botAI->rpgInfo.ChangeToDoQuest(questId, quest);
+                    botAI->rpgInfo.ChangeToDoQuest(questId);
                     return true;
                 }
             }

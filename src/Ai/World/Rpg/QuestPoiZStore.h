@@ -42,6 +42,10 @@ public:
     // non-navmesh.
     QuestPoiZCandidate const* Lookup(uint32 questId, uint32 poiId, uint32 mapId) const;
 
+    // All ranked candidates for a quest_poi row on this map, best first. The destination resolver
+    // uses this so a rejected far point does not suppress a nearer alternate or the terrain path.
+    std::vector<QuestPoiZCandidate const*> LookupAll(uint32 questId, uint32 poiId, uint32 mapId) const;
+
     // Walkable sample nearest (x,y) for a quest POI, used to approach an area trigger whose
     // center sits outside the POI outline. Returns false when the POI has no baked samples.
     bool FindNearestWalkablePoint(uint32 questId, uint32 poiId, uint32 mapId, float x, float y,

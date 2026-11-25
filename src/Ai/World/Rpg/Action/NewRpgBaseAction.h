@@ -81,6 +81,9 @@ protected:
 
 protected:
     bool GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector<POIInfo>& poiInfo, bool toComplete = false);
+    // Whether the quest has any usable spawn/trigger/POI destination. Used by the do-quest state
+    // selector so a quest with a spawn-only turn-in is not rejected before the resolver runs.
+    bool HasQuestDestination(uint32 questId, bool toComplete = false);
     static WorldPosition SelectRandomGrindPos(Player* bot);
     static WorldPosition SelectRandomCampPos(Player* bot);
     bool SelectRandomFlightTaxiNode(uint32& flightMasterEntry, WorldPosition& flightMasterPos, std::vector<uint32>& path);
