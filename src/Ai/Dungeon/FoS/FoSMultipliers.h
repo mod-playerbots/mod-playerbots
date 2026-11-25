@@ -11,18 +11,15 @@
 
 class BronjahmMultiplier : public Multiplier
 {
-    public:
+public:
     BronjahmMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "bronjahm") {}
-
-    public:
-        float GetValue(Action* action) override;
+    float GetValue(Action* action) override;
 };
 
 class AttackFragmentMultiplier : public Multiplier
 {
 public:
     AttackFragmentMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "attack fragment") { }
-
     float GetValue(Action* action) override;
 };
 

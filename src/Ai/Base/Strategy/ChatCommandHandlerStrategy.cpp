@@ -137,7 +137,6 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("position");
     supported.push_back("summon");
     supported.push_back("who");
-    supported.push_back("save mana");
     supported.push_back("formation");
     supported.push_back("stance");
     supported.push_back("cancel tree form");
@@ -168,6 +167,7 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("guild remove");
     supported.push_back("guild leave");
     supported.push_back("rtsc");
+    supported.push_back("eat");
     supported.push_back("drink");
     supported.push_back("calc");
     supported.push_back("roll");

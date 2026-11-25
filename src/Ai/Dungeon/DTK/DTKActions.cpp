@@ -5,12 +5,13 @@
  */
 
 #include "DTKActions.h"
+#include "DTKTriggers.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 bool CorpseExplodeSpreadAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "trollgore");
-    if (!boss) { return false; }
+    if (!FindThreatTarget(bot, "trollgore")) { return false; }
 
     float distance = 5.0f;
     float distanceExtra = 2.0f;
@@ -30,7 +31,7 @@ bool CorpseExplodeSpreadAction::Execute(Event /*event*/)
 
 bool AvoidArcaneFieldAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "novos the summoner");
+    Unit* boss = FindThreatTarget(bot, "novos the summoner");
     if (!boss) { return false; }
 
     float distance = 12.0f;  // 11 unit radius, 1 unit added as buffer
@@ -64,14 +65,9 @@ bool NovosDefaultPositionAction::Execute(Event /*event*/)
 
 bool NovosTargetPriorityAction::Execute(Event /*event*/)
 {
-    // TODO: This can be improved, some parts are still buggy.
-    // But it works for now and this fight is very easy
-
     // Designate a dps char to handle the stairs adds.
     // This is probably better as a melee, so just pick the first
     // melee dps in the party. If none exist, pick the first ranged.
-
-    // TODO: Switch to botAI->Index instead, cleaner
     Player* stairsDps = nullptr;
     GuidVector members = AI_VALUE(GuidVector, "group members");
     for (auto& member : members)
@@ -98,8 +94,6 @@ bool NovosTargetPriorityAction::Execute(Event /*event*/)
     }
 
     Unit* selectedTargets[2] = {nullptr, nullptr};
-    // Target is not findable from threat table using AI_VALUE2(),
-    // therefore need to search manually for the unit name
     GuidVector targets = AI_VALUE(GuidVector, "possible targets no los");
 
     for (auto i = targets.begin(); i != targets.end(); ++i)
@@ -154,7 +148,6 @@ bool NovosTargetPriorityAction::Execute(Event /*event*/)
         {
             if (AI_VALUE(Unit*, "current target") != primaryTarget)
             {
-                // bot->Yell(primaryTarget->GetName(), LANG_UNIVERSAL);
                 return Attack(primaryTarget);
             }
             // Don't continue loop here, the target exists so we don't
