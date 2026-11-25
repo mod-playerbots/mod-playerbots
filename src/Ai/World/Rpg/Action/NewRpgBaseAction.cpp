@@ -13,6 +13,7 @@
 #include "GossipDef.h"
 #include "GridTerrainData.h"
 #include "IVMapMgr.h"
+#include "Map.h"
 #include "NewRpgHelpers.h"
 #include "NewRpgInfo.h"
 #include "QuestLevelRules.h"
@@ -39,6 +40,7 @@
 #include "Timer.h"
 #include "TravelMgr.h"
 #include "G3D/Vector2.h"
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <map>
@@ -60,16 +62,14 @@ namespace
 
     bool IsDarkWaterCell(Map* map, uint32 phaseMask, float x, float y, float z, float collisionHeight)
     {
-        // Cache key: map, phase, exact position and collision height. Destination cells store
-        // their centre verbatim, so repeated checks for the same destination hit the cache
-        // across bots; any different position or height is a different key and performs its
-        // own query, so a hit is by definition the same query the map returned before.
-        // Concurrent misses may repeat a query, but the result is identical.
+        // Cache key: map, phase and destination position. Collision height changes the liquid
+        // status but not the dark-water flag this filter tests, so including it would only split
+        // the cache into duplicate entries.
         static std::mutex cacheMutex;
-        static std::map<std::tuple<uint32, uint32, uint32, uint32, uint32, uint32>, bool> darkWaterCells;
+        static std::map<std::tuple<uint32, uint32, uint32, uint32, uint32>, bool> darkWaterCells;
 
-        auto const key = std::make_tuple(map->GetId(), phaseMask, FloatBits(x), FloatBits(y), FloatBits(z),
-                                         FloatBits(collisionHeight));
+        auto const key = std::make_tuple(map->GetId(), phaseMask, FloatBits(x), FloatBits(y), FloatBits(z));
+        bool const gridLoaded = map->IsGridLoaded(x, y);
 
         {
             std::lock_guard<std::mutex> lock(cacheMutex);
@@ -78,13 +78,73 @@ namespace
                 return itr->second;
         }
 
-        LiquidData const liquid = map->GetLiquidData(phaseMask, x, y, z, collisionHeight, {});
-        bool const dark = (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER) != 0;
+        // The player's fatigue flag comes from WorldObject::GetLiquidData(), which is filled by
+        // GetFullTerrainStatusForPosition. Use the same query: Map::GetLiquidData alone can
+        // report NO_WATER at a wreck or pier where the player still takes fatigue damage.
+        PositionFullTerrainStatus status;
+        map->GetFullTerrainStatusForPosition(phaseMask, x, y, z, collisionHeight, status);
+        bool const dark = (status.liquidInfo.Flags & MAP_LIQUID_TYPE_DARK_WATER) != 0;
+
+        // The query loads the grid tile on first use. Do not cache an answer produced while the
+        // tile's terrain and collision data were still loading; the next call performs the full
+        // query and caches that answer.
+        if (gridLoaded)
         {
             std::lock_guard<std::mutex> lock(cacheMutex);
             darkWaterCells.emplace(key, dark);
         }
         return dark;
+    }
+
+    // The cross-zone fallback must not pick a destination that requires crossing dark water.
+    // Sample the straight route conservatively; a destination behind a dark-water strait is
+    // rejected and the caller retries with another candidate.
+    bool RouteCrossesDarkWater(Map* map, uint32 phaseMask, float collisionHeight, WorldLocation const& from,
+                               WorldLocation const& to)
+    {
+        float const dx = to.GetPositionX() - from.GetPositionX();
+        float const dy = to.GetPositionY() - from.GetPositionY();
+        float const dist = std::sqrt(dx * dx + dy * dy);
+        uint32 const samples = std::min<uint32>(20, std::max<uint32>(2, uint32(dist / 128.0f)));
+        for (uint32 i = 1; i < samples; ++i)
+        {
+            float const f = float(i) / float(samples);
+            float const x = from.GetPositionX() + dx * f;
+            float const y = from.GetPositionY() + dy * f;
+
+            // Query the route sample at its surface. The terrain floor can sit below the dark
+            // surface layer, and a query there would miss the water the bot has to cross.
+            float const groundZ = map->GetHeight(x, y, MAX_HEIGHT);
+            float const waterZ = map->GetWaterLevel(x, y);
+            float queryZ = groundZ;
+            if (waterZ != INVALID_HEIGHT && (groundZ == INVALID_HEIGHT || waterZ >= groundZ))
+                queryZ = waterZ;
+            if (queryZ == INVALID_HEIGHT)
+                continue;
+
+            PositionFullTerrainStatus status;
+            map->GetFullTerrainStatusForPosition(phaseMask, x, y, queryZ, collisionHeight, status);
+            if ((status.liquidInfo.Flags & MAP_LIQUID_TYPE_DARK_WATER) != 0)
+                return true;
+        }
+        return false;
+    }
+
+    WorldPosition PickCrossZoneDestination(Player* bot, std::vector<WorldLocation> const& pool)
+    {
+        if (pool.empty())
+            return WorldPosition{};
+
+        WorldLocation const from(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
+        // Random retries keep the fallback to a few route checks instead of scanning the pool.
+        for (uint32 attempt = 0; attempt < 8; ++attempt)
+        {
+            WorldLocation const& candidate = pool[urand(0, pool.size() - 1)];
+            if (!RouteCrossesDarkWater(bot->GetMap(), bot->GetPhaseMask(), bot->GetCollisionHeight(), from,
+                                       candidate))
+                return candidate;
+        }
+        return WorldPosition{};
     }
 }
 
@@ -853,25 +913,25 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
         hiRange /= 3;
         loRange /= 3;
     }
-    // Same-zone candidates are preferred; same-map cross-zone candidates are the fallback, so a
-    // bot in a zone without grind positions (e.g. The Veiled Sea) heads for the nearest safe
-    // spot in a neighbouring zone instead of idling.
-    std::vector<WorldLocation> hiSameZone, loSameZone, hiCrossZone, loCrossZone;
+    // Local candidates are preferred; same-map cross-zone candidates are the fallback, so a bot
+    // in a zone without grind positions (e.g. The Veiled Sea) heads for the nearest safe spot in
+    // a neighbouring zone instead of idling.
+    std::vector<WorldLocation> hiLocal, loLocal, hiCrossZone, loCrossZone;
 
-    bool inCity = false;
+    bool inCapital = false;
     if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(bot->GetZoneId()))
-    {
-        if (zone->flags & AREA_FLAG_CAPITAL)
-            inCity = true;
-    }
+        inCapital = (zone->flags & AREA_FLAG_CAPITAL) != 0;
 
+    // Capital cities have no grind cells of their own; the adjacent zones around them do. That is
+    // why a bot standing in a capital treats every same-map candidate as local instead of
+    // filtering by the capital's own zone id.
     for (auto& loc : locs)
     {
         if (bot->GetMapId() != loc.GetMapId())
             continue;
 
         float dist = bot->GetExactDist(loc);
-        if (dist > loRange)
+        if (dist >= loRange)
             continue;
 
         // Dark water drains the fatigue bar to death; such cells are never valid destinations.
@@ -879,12 +939,12 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
                             loc.GetPositionZ(), bot->GetCollisionHeight()))
             continue;
 
-        bool const sameZone = inCity || bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(),
+        bool const local = inCapital || bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(),
                                                                  loc.GetPositionY(),
                                                                  loc.GetPositionZ()) == bot->GetZoneId();
 
-        auto& hi = sameZone ? hiSameZone : hiCrossZone;
-        auto& lo = sameZone ? loSameZone : loCrossZone;
+        auto& hi = local ? hiLocal : hiCrossZone;
+        auto& lo = local ? loLocal : loCrossZone;
 
         if (dist < hiRange)
             hi.push_back(loc);
@@ -893,31 +953,21 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
     }
 
     WorldPosition dest{};
-    if (urand(1, 100) <= 50 && !hiSameZone.empty())
-    {
-        uint32 idx = urand(0, hiSameZone.size() - 1);
-        dest = hiSameZone[idx];
-    }
-    else if (!loSameZone.empty())
-    {
-        uint32 idx = urand(0, loSameZone.size() - 1);
-        dest = loSameZone[idx];
-    }
-    else if (urand(1, 100) <= 50 && !hiCrossZone.empty())
-    {
-        uint32 idx = urand(0, hiCrossZone.size() - 1);
-        dest = hiCrossZone[idx];
-    }
-    else if (!loCrossZone.empty())
-    {
-        uint32 idx = urand(0, loCrossZone.size() - 1);
-        dest = loCrossZone[idx];
-    }
+    if (urand(1, 100) <= 50 && !hiLocal.empty())
+        dest = hiLocal[urand(0, hiLocal.size() - 1)];
+    if (dest == WorldPosition() && !loLocal.empty())
+        dest = loLocal[urand(0, loLocal.size() - 1)];
+    if (dest == WorldPosition() && urand(1, 100) <= 50 && !hiCrossZone.empty())
+        dest = PickCrossZoneDestination(bot, hiCrossZone);
+    if (dest == WorldPosition() && !loCrossZone.empty())
+        dest = PickCrossZoneDestination(bot, loCrossZone);
+
     LOG_DEBUG("playerbots",
-              "[New RPG] Bot {} select random grind pos Map:{} X:{} Y:{} Z:{} ({}+{} same-zone, {}+{} cross-zone, {} cached)",
+              "[New RPG] Bot {} select random grind pos Map:{} X:{} Y:{} Z:{} "
+              "({}+{} {}, {}+{} cross-zone, {} total)",
               bot->GetName(), dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(),
-              hiSameZone.size(), loSameZone.size() - hiSameZone.size(), hiCrossZone.size(),
-              loCrossZone.size() - hiCrossZone.size(), locs.size());
+              hiLocal.size(), loLocal.size() - hiLocal.size(), inCapital ? "capital-local" : "same-zone",
+              hiCrossZone.size(), loCrossZone.size() - hiCrossZone.size(), locs.size());
     return dest;
 }
 
@@ -925,16 +975,14 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
 {
     const std::vector<WorldLocation> locs = sTravelMgr.GetTravelHubs(bot);
 
-    bool inCity = false;
+    bool inCapital = false;
 
     if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(bot->GetZoneId()))
-    {
-        if (zone->flags & AREA_FLAG_CAPITAL)
-            inCity = true;
-    }
+        inCapital = (zone->flags & AREA_FLAG_CAPITAL) != 0;
 
-    // Same-zone hubs preferred, same-map cross-zone hubs as fallback — see SelectRandomGrindPos.
-    std::vector<WorldLocation> sameZoneLocs, crossZoneLocs;
+    // Local hubs preferred, same-map cross-zone hubs as fallback — see SelectRandomGrindPos.
+    // Capitals have no hubs of their own; the adjacent zones supply them (capital-local).
+    std::vector<WorldLocation> localLocs, crossZoneLocs;
     for (auto& loc : locs)
     {
         if (bot->GetMapId() != loc.GetMapId())
@@ -952,25 +1000,23 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
                             loc.GetPositionZ(), bot->GetCollisionHeight()))
             continue;
 
-        bool const sameZone = inCity || bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(),
+        bool const local = inCapital || bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(),
                                                                  loc.GetPositionY(),
                                                                  loc.GetPositionZ()) == bot->GetZoneId();
-        (sameZone ? sameZoneLocs : crossZoneLocs).push_back(loc);
+        (local ? localLocs : crossZoneLocs).push_back(loc);
     }
-
-    std::vector<WorldLocation>& prepared_locs =
-        !sameZoneLocs.empty() ? sameZoneLocs : crossZoneLocs;
 
     WorldPosition dest{};
-    if (!prepared_locs.empty())
-    {
-        uint32 idx = urand(0, prepared_locs.size() - 1);
-        dest = prepared_locs[idx];
-    }
+    if (!localLocs.empty())
+        dest = localLocs[urand(0, localLocs.size() - 1)];
+    else
+        dest = PickCrossZoneDestination(bot, crossZoneLocs);
+
     LOG_DEBUG("playerbots",
-              "[New RPG] Bot {} select random inn keeper pos Map:{} X:{} Y:{} Z:{} ({} same-zone, {} cross-zone, {} hubs)",
+              "[New RPG] Bot {} select random inn keeper pos Map:{} X:{} Y:{} Z:{} "
+              "({} {}, {} cross-zone, {} hubs)",
               bot->GetName(), dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(),
-              sameZoneLocs.size(), crossZoneLocs.size(), locs.size());
+              localLocs.size(), inCapital ? "capital-local" : "same-zone", crossZoneLocs.size(), locs.size());
     return dest;
 }
 
