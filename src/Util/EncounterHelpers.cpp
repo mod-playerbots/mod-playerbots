@@ -164,8 +164,9 @@ bool SayClassRoleChoice(
 
 ClassRoleChoice FindClassRoleChoice(PlayerbotAI* botAI, uint32 mapId, ClassRole const& role)
 {
-    Group* group = botAI->GetBot()->GetGroup();
-    if (!group)
+    Player* bot = botAI->GetBot();
+    Group* group = bot->GetGroup();
+    if (!group || bot->GetMapId() != mapId)
         return {};
 
     ClassRoleChoice best;
@@ -173,7 +174,7 @@ ClassRoleChoice FindClassRoleChoice(PlayerbotAI* botAI, uint32 mapId, ClassRole 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != mapId || !member->IsAlive() ||
+        if (!member || !member->IsAlive() || !bot->IsInMap(member) ||
             member->getClass() != role.playerClass)
         {
             continue;
@@ -1230,13 +1231,13 @@ bool SetMinionStancesForHold(Player* bot, bool isHeld, std::vector<SavedMinionSt
 bool IsMechanicTrackerBot(Player* bot, uint32 mapId)
 {
     Group* group = bot->GetGroup();
-    if (!group)
+    if (!group || bot->GetMapId() != mapId)
         return false;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != mapId ||
+        if (!member || !member->IsAlive() || !bot->IsInMap(member) ||
             !GET_PLAYERBOT_AI(member))
         {
             continue;

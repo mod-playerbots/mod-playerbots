@@ -614,6 +614,7 @@ void AddPlayerbotsSelfBotAfkScripts();
 void AddSC_Aq40BotScripts();
 void AddSC_BlackTempleBotScripts();
 void AddSC_HyjalBotScripts();
+void AddSC_SunwellBotScripts();
 void AddSC_IcecrownBotScripts();
 void AddSC_MagtheridonBotScripts();
 void AddSC_RubySanctumBotScripts();
@@ -640,6 +641,7 @@ void AddPlayerbotsScripts()
     AddSC_Aq40BotScripts();
     AddSC_BlackTempleBotScripts();
     AddSC_HyjalBotScripts();
+    AddSC_SunwellBotScripts();
     AddSC_IcecrownBotScripts();
     AddSC_MagtheridonBotScripts();
     AddSC_RubySanctumBotScripts();
