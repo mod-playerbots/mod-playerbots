@@ -41,6 +41,7 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("bwl firemaw avoid breath", ACTION_MOVE + 4) }));
     triggers.push_back(new TriggerNode("bwl ebonroc not victim", {
         NextAction("bwl ebonroc avoid breath", ACTION_MOVE + 4) }));
+    triggers.push_back(new TriggerNode("bwl ebonroc shadow tank swap", {NextAction("taunt spell", ACTION_RAID)}));
     triggers.push_back(new TriggerNode("bwl flamegor fire resistance", {
         NextAction("bwl flamegor fire resistance", ACTION_RAID) }));
     triggers.push_back(new TriggerNode("bwl flamegor not victim", {
@@ -69,6 +70,7 @@ void RaidBwlStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new RazorgoreTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszBurningAdrenalineMultiplier(botAI));
+    multipliers.push_back(new EbonrocShadowMultiplier(botAI));
     multipliers.push_back(new NefarianCorruptedHealingMultiplier(botAI));
     multipliers.push_back(new NefarianCorruptedTotemMultiplier(botAI));
 }
