@@ -40,6 +40,7 @@ protected:
     bool ForceToWait(uint32 duration, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
 
     /* QUEST RELATED CHECK */
+    bool IsQuestAcceptableFromMenu(uint32 questId, Quest const* quest);
     bool InteractWithNpcOrGameObjectForQuest(ObjectGuid guid);
     bool IsWithinInteractionDist(Object* object);
     uint32 BestRewardIndex(Quest const* quest);
@@ -52,6 +53,7 @@ protected:
 
 protected:
     bool GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector<POIInfo>& poiInfo, bool toComplete = false);
+    bool AddQuestPoi(QuestPOI const& poi, std::vector<POIInfo>& poiInfo);
     static WorldPosition SelectRandomGrindPos(Player* bot);
     static WorldPosition SelectRandomCampPos(Player* bot);
     bool SelectRandomFlightTaxiNode(uint32& flightMasterEntry, WorldPosition& flightMasterPos, std::vector<uint32>& path);

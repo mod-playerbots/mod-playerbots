@@ -97,6 +97,8 @@ struct NewRpgInfo
     uint32 stuckTs{0};
     uint32 stuckAttempts{0};
     WorldPosition moveFarPos;
+    // Quest log signature of the last cross-zone log-pressure pass (see OrganizeQuestLog).
+    uint64 pressureLogKey{0};
     // END MOVE_FAR
 
     // QUEST GIVER
