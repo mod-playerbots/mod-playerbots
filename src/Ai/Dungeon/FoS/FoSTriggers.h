@@ -8,8 +8,6 @@
 #define PLAYERBOTS_FOSTRIGGERS_H
 
 #include "DungeonStrategyUtils.h"
-#include "GenericTriggers.h"
-#include "PlayerbotAIConfig.h"
 #include "Trigger.h"
 
 enum ForgeOfSoulsBronjahmIDs
@@ -30,7 +28,6 @@ class MoveFromBronjahmTrigger : public Trigger
 {
 public:
     MoveFromBronjahmTrigger(PlayerbotAI* botAI) : Trigger(botAI, "move from bronjahm") {}
-
     bool IsActive() override;
 };
 
@@ -38,7 +35,6 @@ class SwitchToSoulFragment : public Trigger
 {
 public:
     SwitchToSoulFragment(PlayerbotAI* botAI) : Trigger(botAI, "switch to soul fragment") {}
-
     bool IsActive() override;
 };
 

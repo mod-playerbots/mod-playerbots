@@ -7,11 +7,8 @@
 #ifndef PLAYERBOTS_ANACTIONS_H
 #define PLAYERBOTS_ANACTIONS_H
 
-#include "ANTriggers.h"
-#include "Action.h"
 #include "AttackAction.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
+#include "MovementActions.h"
 
 class AttackWebWrapAction : public AttackAction
 {

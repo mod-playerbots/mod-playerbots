@@ -6,18 +6,18 @@
 
 #include "ACTriggers.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 // Shirrak the Dead Watcher
 
 bool ShirrakTankPositionBossTrigger::IsActive()
 {
-    return PlayerbotAI::IsTank(bot) &&
-        AI_VALUE2(Unit*, "find target", "shirrak the dead watcher");
+    return PlayerbotAI::IsTank(bot) && FindThreatTarget(bot, "shirrak the dead watcher");
 }
 
 bool ShirrakFleeFocusFireTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "shirrak the dead watcher"))
+    if (!FindThreatTarget(bot, "shirrak the dead watcher"))
         return false;
 
     return bot->FindNearestCreature(NPC_FOCUS_FIRE, FLARE_SEARCH_RADIUS);
@@ -25,6 +25,5 @@ bool ShirrakFleeFocusFireTrigger::IsActive()
 
 bool ShirrakRangedKeepDistanceTrigger::IsActive()
 {
-    return PlayerbotAI::IsRanged(bot) &&
-        AI_VALUE2(Unit*, "find target", "shirrak the dead watcher");
+    return PlayerbotAI::IsRanged(bot) && FindThreatTarget(bot, "shirrak the dead watcher");
 }

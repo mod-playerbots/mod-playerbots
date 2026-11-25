@@ -5,13 +5,12 @@
  */
 
 #include "CoSTriggers.h"
-#include "AiObjectContext.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 bool ExplodeGhoulTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "salramm the fleshcrafter");
-    if (!boss) { return false; }
+    if (!FindThreatTarget(bot, "salramm the fleshcrafter")) { return false; }
 
     float distance = 10.0f;
     float distanceExtra = 2.0f;
@@ -32,5 +31,5 @@ bool ExplodeGhoulTrigger::IsActive()
 
 bool EpochRangedTrigger::IsActive()
 {
-    return !PlayerbotAI::IsMelee(bot) && AI_VALUE2(Unit*, "find target", "chrono-lord epoch");
+    return !PlayerbotAI::IsMelee(bot) && FindThreatTarget(bot, "chrono-lord epoch");
 }
