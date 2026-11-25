@@ -8,9 +8,7 @@
 #define PLAYERBOTS_GDTRIGGERS_H
 
 #include "DungeonStrategyUtils.h"
-#include "GenericTriggers.h"
 #include "ObjectGuid.h"
-#include "PlayerbotAIConfig.h"
 #include "Trigger.h"
 
 enum GundrakIDs

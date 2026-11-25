@@ -28,4 +28,4 @@ private:
     static Trigger* devourer_of_souls(PlayerbotAI* botAI) { return new DevourerOfSoulsTrigger(botAI); }
 };
 
-#endif  // !_PLAYERBOT_WOTLKDUNGEONFOSTRIGGERCONTEXT_H
+#endif

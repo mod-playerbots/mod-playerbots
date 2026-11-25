@@ -316,9 +316,11 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             auto& data = std::get<NewRpgInfo::TravelFlight>(info.data);
             if (data.inFlight && !bot->IsInFlight())
             {
-                // flight arrival
-                info.ChangeToIdle();
-                return true;
+                if (AI_VALUE(ObjectGuid, "new rpg quest giver").IsEmpty())
+                {
+                    info.ChangeToIdle();
+                    return true;
+                }
             }
             break;
         }
@@ -698,12 +700,19 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         return false;
 
     auto& data = *dataPtr;
+    if (!bot->IsInFlight() && SearchQuestGiverAndAcceptOrReward())
+        return true;
+
     if (bot->IsInFlight())
     {
         data.inFlight = true;
         ContinueCrossMapTaxi();
         return false;
     }
+
+    // after landing, stop here and let the status update switch to idle
+    if (data.inFlight)
+        return false;
 
     if (bot->GetDistance(data.flightMasterPos) > INTERACTION_DISTANCE)
         return MoveFarTo(data.flightMasterPos);

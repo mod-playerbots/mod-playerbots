@@ -7,11 +7,8 @@
 #ifndef PLAYERBOTS_GDACTIONS_H
 #define PLAYERBOTS_GDACTIONS_H
 
-#include "Action.h"
 #include "AttackAction.h"
-#include "GDTriggers.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
+#include "MovementActions.h"
 
 class AvoidPoisonNovaAction : public MovementAction
 {

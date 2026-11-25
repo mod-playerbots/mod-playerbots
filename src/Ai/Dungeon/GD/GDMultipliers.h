@@ -11,20 +11,16 @@
 
 class SladranMultiplier : public Multiplier
 {
-    public:
-        SladranMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "slad'ran") {}
-
-    public:
-        float GetValue(Action* action) override;
+public:
+    SladranMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "slad'ran") {}
+    float GetValue(Action* action) override;
 };
 
 class GaldarahMultiplier : public Multiplier
 {
-    public:
-        GaldarahMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gal'darah") {}
-
-    public:
-        float GetValue(Action* action) override;
+public:
+    GaldarahMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gal'darah") {}
+    float GetValue(Action* action) override;
 };
 
 #endif

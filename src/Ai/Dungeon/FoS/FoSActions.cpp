@@ -5,11 +5,13 @@
  */
 
 #include "FoSActions.h"
+#include "FoSTriggers.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 bool MoveFromBronjahmAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "bronjahm");
+    Unit* boss = FindThreatTarget(bot, "bronjahm");
     if (!boss)
         return false;
 
@@ -34,16 +36,16 @@ bool AttackCorruptedSoulFragmentAction::Execute(Event /*event*/)
 
         if (unit->GetEntry() == NPC_CORRUPTED_SOUL_FRAGMENT)
         {
-                // Mark corrupted soul fragment with skull if in group and not already marked
-                if (Group* group = bot->GetGroup())
+            // Mark corrupted soul fragment with skull if in group and not already marked
+            if (Group* group = bot->GetGroup())
+            {
+                ObjectGuid currentSkullGuid = group->GetTargetIcon(7);
+                if (currentSkullGuid.IsEmpty() || currentSkullGuid != unit->GetGUID())
                 {
-                    ObjectGuid currentSkullGuid = group->GetTargetIcon(7);
-                    if (currentSkullGuid.IsEmpty() || currentSkullGuid != unit->GetGUID())
-                    {
-                        group->SetTargetIcon(7, bot->GetGUID(), unit->GetGUID());  // 7 = skull
-                    }
+                    group->SetTargetIcon(7, bot->GetGUID(), unit->GetGUID());  // 7 = skull
                 }
-                break;
+            }
+            break;
         }
 
     }
@@ -53,7 +55,7 @@ bool AttackCorruptedSoulFragmentAction::Execute(Event /*event*/)
 
 bool BronjahmGroupPositionAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "bronjahm");
+    Unit* boss = FindThreatTarget(bot, "bronjahm");
     if (!boss)
         return false;
 
@@ -143,7 +145,7 @@ bool BronjahmGroupPositionAction::isUseful() { return true; }
 
 bool DevourerOfSoulsAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "devourer of souls");
+    Unit* boss = FindThreatTarget(bot, "devourer of souls");
     if (!boss)
         return false;
 

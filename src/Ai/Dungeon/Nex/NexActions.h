@@ -7,11 +7,8 @@
 #ifndef PLAYERBOTS_NEXACTIONS_H
 #define PLAYERBOTS_NEXACTIONS_H
 
-#include "Action.h"
 #include "AttackAction.h"
-#include "NexTriggers.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
+#include "MovementActions.h"
 
 class MoveFromWhirlwindAction : public MovementAction
 {

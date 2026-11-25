@@ -7,6 +7,7 @@
 #ifndef PLAYERBOTS_MGTACTIONS_H
 #define PLAYERBOTS_MGTACTIONS_H
 
+#include "Action.h"
 #include "AttackAction.h"
 #include "MgTShared.h"
 #include "MovementActions.h"
