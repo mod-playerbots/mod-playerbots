@@ -8,10 +8,12 @@
 #define PLAYERBOTS_NAXXACTIONCONTEXT_H
 
 #include "Action.h"
+#include "FourHorsemen40.h"
 #include "NamedObjectContext.h"
+#include "Naxx40Horsemen.h"
 #include "NaxxActions.h"
 
-class RaidNaxxActionContext : public NamedObjectContext<Action>
+class RaidNaxxActionContext : public FourHorsemen40ActionContext
 {
 public:
     RaidNaxxActionContext()
@@ -34,6 +36,8 @@ public:
 
         creators["four horsemen attract alternatively"] = &RaidNaxxActionContext::four_horsemen_attract_alternatively;
         creators["four horsemen attack in order"] = &RaidNaxxActionContext::four_horsemen_attack_in_order;
+
+        Naxx40Horsemen::RegisterActions(*this);
 
         creators["sapphiron ground position"] = &RaidNaxxActionContext::sapphiron_ground_position;
         creators["sapphiron flight position"] = &RaidNaxxActionContext::sapphiron_flight_position;

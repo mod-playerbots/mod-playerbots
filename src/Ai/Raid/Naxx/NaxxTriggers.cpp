@@ -5,6 +5,8 @@
  */
 
 #include "NaxxTriggers.h"
+
+#include "Naxx40Horsemen.h"
 #include "NaxxSpellIds.h"
 #include "Playerbots.h"
 #include "Timer.h"
@@ -111,7 +113,7 @@ bool RazuviousNontankTrigger::IsActive()
 
 bool FourHorsemenAttractorsTrigger::IsActive()
 {
-    if (!helper.UpdateBossAI())
+    if (Naxx40Horsemen::IsNaxx40(bot) || !helper.UpdateBossAI())
         return false;
 
     return helper.IsAttracter(bot);
@@ -119,7 +121,7 @@ bool FourHorsemenAttractorsTrigger::IsActive()
 
 bool FourHorsemenExceptAttractorsTrigger::IsActive()
 {
-    if (!helper.UpdateBossAI())
+    if (Naxx40Horsemen::IsNaxx40(bot) || !helper.UpdateBossAI())
         return false;
 
     return !helper.IsAttracter(bot);

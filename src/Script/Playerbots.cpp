@@ -616,6 +616,7 @@ void AddSC_BlackTempleBotScripts();
 void AddSC_HyjalBotScripts();
 void AddSC_IcecrownBotScripts();
 void AddSC_MagtheridonBotScripts();
+void AddSC_Naxx40HorsemenBotScripts();
 void AddSC_RubySanctumBotScripts();
 void AddSC_SerpentshrineCavernBotScripts();
 void AddSC_TempestKeepBotScripts();
@@ -641,6 +642,7 @@ void AddPlayerbotsScripts()
     AddSC_BlackTempleBotScripts();
     AddSC_HyjalBotScripts();
     AddSC_IcecrownBotScripts();
+    AddSC_Naxx40HorsemenBotScripts();
     AddSC_MagtheridonBotScripts();
     AddSC_RubySanctumBotScripts();
     AddSC_SerpentshrineCavernBotScripts();

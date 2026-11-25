@@ -4,12 +4,13 @@
  * or (at your option) any later version.
  */
 
+#include "Naxx40Horsemen.h"
 #include "NaxxActions.h"
 #include "Playerbots.h"
 
 bool FourHorsemenAttractAlternativelyAction::Execute(Event /*event*/)
 {
-    if (!helper.UpdateBossAI())
+    if (Naxx40Horsemen::IsNaxx40(bot) || !helper.UpdateBossAI())
         return false;
 
     helper.CalculatePosToGo(bot);
@@ -26,7 +27,7 @@ bool FourHorsemenAttractAlternativelyAction::Execute(Event /*event*/)
 
 bool FourHorsemenAttackInOrderAction::Execute(Event /*event*/)
 {
-    if (!helper.UpdateBossAI())
+    if (Naxx40Horsemen::IsNaxx40(bot) || !helper.UpdateBossAI())
         return false;
 
     Unit* target = nullptr;

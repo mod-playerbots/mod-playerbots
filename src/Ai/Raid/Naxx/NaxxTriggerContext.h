@@ -7,10 +7,12 @@
 #ifndef PLAYERBOTS_NAXXTRIGGERCONTEXT_H
 #define PLAYERBOTS_NAXXTRIGGERCONTEXT_H
 
+#include "FourHorsemen40.h"
 #include "NamedObjectContext.h"
+#include "Naxx40Horsemen.h"
 #include "NaxxTriggers.h"
 
-class RaidNaxxTriggerContext : public NamedObjectContext<Trigger>
+class RaidNaxxTriggerContext : public FourHorsemen40TriggerContext
 {
 public:
     RaidNaxxTriggerContext()
@@ -32,6 +34,8 @@ public:
 
         creators["four horsemen attractors"] = &RaidNaxxTriggerContext::four_horsemen_attractors;
         creators["four horsemen except attractors"] = &RaidNaxxTriggerContext::four_horsemen_except_attractors;
+
+        Naxx40Horsemen::RegisterTriggers(*this);
 
         creators["sapphiron ground"] = &RaidNaxxTriggerContext::sapphiron_ground;
         creators["sapphiron flight"] = &RaidNaxxTriggerContext::sapphiron_flight;

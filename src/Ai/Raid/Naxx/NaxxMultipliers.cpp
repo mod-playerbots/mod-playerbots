@@ -5,6 +5,7 @@
  */
 
 #include "NaxxMultipliers.h"
+
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
@@ -14,6 +15,7 @@
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "MovementActions.h"
+#include "Naxx40Horsemen.h"
 #include "NaxxActions.h"
 #include "NaxxSpellIds.h"
 #include "PaladinActions.h"
@@ -240,6 +242,9 @@ float AnubrekhanGenericMultiplier::GetValue(Action* action)
 
 float FourHorsemenGenericMultiplier::GetValue(Action* action)
 {
+    if (Naxx40Horsemen::IsNaxx40(bot))
+        return 1.0f;
+
     Unit* boss = AI_VALUE2(Unit*, "find target", "sir zeliek");
     if (!boss)
         return 1.0f;
