@@ -5,15 +5,14 @@
  */
 
 #include "ANActions.h"
+#include "ANTriggers.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 bool AttackWebWrapAction::isUseful() { return !PlayerbotAI::IsHeal(bot); }
 bool AttackWebWrapAction::Execute(Event /*event*/)
 {
     Unit* webWrap = nullptr;
-
-    // Target is not findable from threat table using AI_VALUE2(),
-    // therefore need to search manually for the unit name
     GuidVector targets = AI_VALUE(GuidVector, "possible targets no los");
 
     for (auto i = targets.begin(); i != targets.end(); ++i)
@@ -86,7 +85,6 @@ bool WatchersTargetAction::Execute(Event /*event*/)
         {
             if (currTarget != target)
             {
-                // bot->Yell("ATTACKING "+target->GetName(), LANG_UNIVERSAL);
                 return Attack(target);
             }
             // Don't continue loop here, the target exists so we don't
@@ -102,7 +100,7 @@ bool WatchersTargetAction::Execute(Event /*event*/)
 bool AnubarakDodgePoundAction::isUseful() { return !AI_VALUE2(bool, "behind", "current target"); }
 bool AnubarakDodgePoundAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "anub'arak");
+    Unit* boss = FindThreatTarget(bot, "anub'arak");
     if (!boss) { return false; }
 
     float distance = bot->GetExactDist2d(boss->GetPosition());

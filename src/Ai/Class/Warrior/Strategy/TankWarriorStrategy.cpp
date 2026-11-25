@@ -321,14 +321,6 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     );
     triggers.push_back(
         new TriggerNode(
-            "protect party member",
-            {
-                NextAction("intervene", ACTION_EMERGENCY)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
             "high rage available",
             {
                 NextAction("heroic strike", ACTION_HIGH)

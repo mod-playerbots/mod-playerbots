@@ -51,12 +51,14 @@
 #include "SocialMgr.h"
 #include "SpellAuraEffects.h"
 #include "SpellInfo.h"
+#include "SpellMgr.h"
 #include "Transport.h"
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
 #include "WsgRouteState.h"
 #include <algorithm>
+#include <cfloat>
 #include <cmath>
 #include <map>
 #include <mutex>
@@ -75,6 +77,9 @@ constexpr uint32 VEHICLE_FLAG_FIXED_POSITION = 0x00200000;
 std::vector<std::string> PlayerbotAI::dispel_whitelist = {
     "mutating injection",
     "frostbolt",
+    "dreamless sleep",
+    "greater dreamless sleep",
+    "major dreamless sleep",
 };
 
 std::vector<std::string>& split(std::string const s, char delim, std::vector<std::string>& elems);
@@ -288,6 +293,10 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     bool isCasting = bot->IsNonMeleeSpellCast(true);
     if (bot->IsInCombat())
     {
+        // RPG move action may not run in combat, so reset its stuck timer here
+        rpgInfo.stuckTs = getMSTime();
+        rpgInfo.stuckAttempts = 0;
+
         if (!inCombat)
         {
             // "attackers" is cached for 1 s; refresh it so the assist actions see the new attacker
@@ -303,6 +312,10 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     {
         if (inCombat && !isCasting)
             ResetActionDuration();
+
+        // after combat, measure travel progress from the current spot
+        if (inCombat)
+            rpgInfo.nearestMoveFarDis = FLT_MAX;
 
         inCombat = false;
     }
@@ -1736,7 +1749,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
 {
     static const std::vector<std::string> allInstanceStrategies =
     {
-        "aq20", "blacktemple", "bwl", "gruulslair", "hyjal", "icc", "karazhan", "magtheridon",
+        "aq20", "aq40", "blacktemple", "bwl", "gruulslair", "hyjal", "icc", "karazhan", "magtheridon",
         "moltencore", "naxx", "onyxia", "rs", "ssc", "tbc-ac", "tbc-mech", "tbc-mgt", "tbc-ramp",
         "tbc-seth", "tbc-ub", "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk",
         "wotlk-eoe", "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hos", "wotlk-nex", "wotlk-occ",
@@ -1767,6 +1780,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         case 509:
             strategyName = "aq20";  // Ruins of Ahn'Qiraj
+            break;
+        case 531:
+            strategyName = "aq40";  // Temple of Ahn'Qiraj
             break;
         case 532:
             strategyName = "karazhan";  // Karazhan
@@ -5734,45 +5750,48 @@ Item* PlayerbotAI::FindStoneFor(Item* weapon) const
     if (!item_template)
         return nullptr;
 
-    static const std::vector<uint32_t> uPrioritizedSharpStoneIds = {
-        ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE,   ELEMENTAL_SHARPENING_STONE, DENSE_SHARPENING_STONE,
-        SOLID_SHARPENING_STONE,      HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE,    ROUGH_SHARPENING_STONE};
+    // Weapons only: a shield's SHIELD (6) collides with POLEARM (6).
+    if (item_template->Class != ITEM_CLASS_WEAPON)
+        return nullptr;
 
-    // Elemental Sharpening Stone also works on maces/staves/fists, so it is a valid fallback.
-    static const std::vector<uint32_t> uPrioritizedWeightStoneIds = {
-        ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE,    ELEMENTAL_SHARPENING_STONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
-        HEAVY_WEIGHTSTONE,      COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
+    // The use spell's weapon mask decides fit; list is best-first.
+    static const std::vector<uint32_t> uPrioritizedStoneIds = {
+        ADAMANTITE_SHARPENING_STONE, ADAMANTITE_WEIGHTSTONE, FEL_SHARPENING_STONE,   FEL_WEIGHTSTONE,
+        ELEMENTAL_SHARPENING_STONE,  DENSE_SHARPENING_STONE, DENSE_WEIGHTSTONE,      SOLID_SHARPENING_STONE,
+        SOLID_WEIGHTSTONE,           HEAVY_SHARPENING_STONE, HEAVY_WEIGHTSTONE,      COARSE_SHARPENING_STONE,
+        COARSE_WEIGHTSTONE,          ROUGH_SHARPENING_STONE, ROUGH_WEIGHTSTONE};
 
-    Item* stone = nullptr;
-    ItemTemplate const* pProto = weapon->GetTemplate();
-    if (pProto && (pProto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD || pProto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD2 ||
-                   pProto->SubClass == ITEM_SUBCLASS_WEAPON_AXE || pProto->SubClass == ITEM_SUBCLASS_WEAPON_AXE2 ||
-                   pProto->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER || pProto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM))
+    uint32 const subclassBit = 1u << item_template->SubClass;
+    for (uint32_t stoneId : uPrioritizedStoneIds)
     {
-        for (uint8 i = 0; i < std::size(uPrioritizedSharpStoneIds); ++i)
+        Item* stone = FindConsumable(stoneId);
+        if (!stone)
+            continue;
+
+        ItemTemplate const* stoneProto = stone->GetTemplate();
+        bool fits = false;
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS && !fits; ++i)
         {
-            stone = FindConsumable(uPrioritizedSharpStoneIds[i]);
-            if (stone)
-            {
-                return stone;
-            }
+            uint32 const spellId = stoneProto->Spells[i].SpellId;
+            if (!spellId)
+                continue;
+
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+            if (!spellInfo)
+                continue;
+
+            if (spellInfo->EquippedItemClass != -1 && spellInfo->EquippedItemClass != ITEM_CLASS_WEAPON)
+                continue;
+
+            fits = spellInfo->EquippedItemSubClassMask == 0 ||
+                   (spellInfo->EquippedItemSubClassMask & subclassBit) != 0;
         }
-    }
-    else if (pProto &&
-             (pProto->SubClass == ITEM_SUBCLASS_WEAPON_MACE || pProto->SubClass == ITEM_SUBCLASS_WEAPON_MACE2 ||
-              pProto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF || pProto->SubClass == ITEM_SUBCLASS_WEAPON_FIST))
-    {
-        for (uint8 i = 0; i < std::size(uPrioritizedWeightStoneIds); ++i)
-        {
-            stone = FindConsumable(uPrioritizedWeightStoneIds[i]);
-            if (stone)
-            {
-                return stone;
-            }
-        }
+
+        if (fits)
+            return stone;
     }
 
-    return stone;
+    return nullptr;
 }
 
 Item* PlayerbotAI::FindOilFor(Item* weapon) const
@@ -5782,6 +5801,9 @@ Item* PlayerbotAI::FindOilFor(Item* weapon) const
 
     ItemTemplate const* item_template = weapon->GetTemplate();
     if (!item_template)
+        return nullptr;
+
+    if (item_template->Class != ITEM_CLASS_WEAPON)
         return nullptr;
 
     static const std::vector<uint32_t> uPrioritizedWizardOilIds = {
