@@ -14,6 +14,8 @@
 namespace ai::paladin
 {
 static constexpr uint32 SPELL_HAND_OF_PROTECTION = 1022;
+static constexpr uint32 SPELL_HAND_OF_PROTECTION_RANK_2 = 5599;
+static constexpr uint32 SPELL_HAND_OF_PROTECTION_RANK_3 = 10278;
 static constexpr uint32 SPELL_HAND_OF_SALVATION = 1038;
 static constexpr uint32 SPELL_HAND_OF_FREEDOM = 1044;
 static constexpr uint32 SPELL_HAND_OF_SACRIFICE = 6940;
@@ -37,7 +39,8 @@ inline bool HasHandFromCaster(Unit* target, Unit* caster, std::initializer_list<
 inline bool HasAnyPaladinHandFromCaster(Unit* target, Unit* caster)
 {
     return HasHandFromCaster(target, caster,
-        { SPELL_HAND_OF_PROTECTION, SPELL_HAND_OF_SALVATION, SPELL_HAND_OF_FREEDOM, SPELL_HAND_OF_SACRIFICE });
+        { SPELL_HAND_OF_PROTECTION, SPELL_HAND_OF_PROTECTION_RANK_2, SPELL_HAND_OF_PROTECTION_RANK_3,
+          SPELL_HAND_OF_SALVATION, SPELL_HAND_OF_FREEDOM, SPELL_HAND_OF_SACRIFICE });
 }
 }
 
