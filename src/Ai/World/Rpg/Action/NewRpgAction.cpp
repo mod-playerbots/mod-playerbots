@@ -747,7 +747,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         // The trigger position/volume can change under the same ID; a saved destination outside
         // the live volume must be resolved again instead of walking the old route.
         if (!exploreTrigger ||
-            !IsPositionInAreaTrigger(exploreTrigger, data.pos.GetPositionX(), data.pos.GetPositionY(),
+            !NewRpgHelpers::IsPositionInAreaTrigger(exploreTrigger, data.pos.GetPositionX(), data.pos.GetPositionY(),
                                      data.pos.GetPositionZ()))
         {
             data.pos = WorldPosition();
@@ -827,6 +827,24 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.objectiveSpawnId = 0;
             data.objectiveIsGameObject = false;
             return true;
+        }
+
+        if (data.objectiveSpawnId)
+        {
+            QuestObjectivePosition current{data.objectiveIdx, data.pos, data.objectiveSpawnId,
+                                           data.objectiveIsGameObject};
+            if (!FindLoadedSpawn(bot, current))
+            {
+                // Event/script despawn: re-resolve instead of recording NoProgress.
+                data.lastReachPOI = 0;
+                data.pos = WorldPosition();
+                data.objectiveIdx = 0;
+                data.objectiveEntry = 0;
+                data.objectiveCount = 0;
+                data.objectiveSpawnId = 0;
+                data.objectiveIsGameObject = false;
+                return true;
+            }
         }
 
         bool hasProgression = false;
@@ -954,7 +972,9 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
             std::vector<POIInfo> poiInfo;
             if (!GetQuestPOIPosAndObjectiveIdx(questId, poiInfo, true))
             {
-                // can't find a poi pos to reward, stop doing quest for now
+                // No usable spawn ender or reward POI remains; stop selecting this quest.
+                botAI->lowPriorityQuest.insert(questId);
+                botAI->RecordQuestAbandoned(questId, QuestAbandonReason::CannotTurnIn);
                 botAI->rpgInfo.ChangeToIdle();
                 return false;
             }
@@ -992,12 +1012,11 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
         WorldObject* ender = FindLoadedSpawn(bot, current);
         if (!ender)
         {
-            // The spawn is absent (script/event state), not merely outside the grid. Mark the
-            // quest unusable so selection does not loop on the same missing ender.
+            // The spawn is absent (script/event state), not merely outside the grid. Exclude this
+            // ender and let the next tick try another one; only give up when none remains.
             LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in ender spawn {} is not loaded",
                       bot->GetName(), questId, data.enderSpawnId);
-            botAI->lowPriorityQuest.insert(questId);
-            botAI->RecordQuestAbandoned(questId, QuestAbandonReason::CannotTurnIn);
+            data.failedEnderSpawns.insert({data.enderIsGameObject, data.enderSpawnId});
             data.enderSpawnId = 0;
             data.lastReachPOI = 0;
             data.pos = WorldPosition();

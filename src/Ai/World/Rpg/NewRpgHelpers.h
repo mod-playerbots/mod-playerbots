@@ -14,6 +14,7 @@ class Player;
 class PlayerbotAI;
 class Quest;
 class WorldObject;
+struct AreaTrigger;
 
 // Quest checks shared by the new RPG actions and values. They encode new RPG questing policy
 // (solo, non-repeatable, level window), not general quest rules.
@@ -25,6 +26,7 @@ constexpr float QUEST_GIVER_SEARCH_DISTANCE = 80.0f;
 // Player::CanInteractWithQuestGiver without the distance check.
 bool CanInteractWithQuestGiver(Player* bot, Object* questGiver);
 bool IsQuestEnder(WorldObject* ender, uint32 questId);
+bool IsPositionInAreaTrigger(AreaTrigger const* trigger, float x, float y, float z, float margin = 0.0f);
 bool HasQuestToAcceptOrReward(Player* bot, WorldObject* object);
 bool IsQuestWorthDoing(Player* bot, Quest const* quest);
 bool IsQuestCapableDoing(Player* bot, Quest const* quest);

@@ -12,6 +12,7 @@
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "Player.h"
+#include "Position.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "QuestDef.h"
@@ -120,6 +121,33 @@ bool IsQuestEnder(WorldObject* ender, uint32 questId)
             return true;
 
     return false;
+}
+
+bool IsPositionInAreaTrigger(AreaTrigger const* trigger, float x, float y, float z, float margin)
+{
+    if (!trigger)
+        return false;
+
+    if (trigger->radius > 0.0f)
+    {
+        float const radius = trigger->radius + margin;
+        if (radius <= 0.0f)
+            return false;
+
+        float const dx = x - trigger->x;
+        float const dy = y - trigger->y;
+        float const dz = z - trigger->z;
+        return dx * dx + dy * dy + dz * dz <= radius * radius;
+    }
+
+    float const xRadius = trigger->length / 2.0f + margin;
+    float const yRadius = trigger->width / 2.0f + margin;
+    float const zRadius = trigger->height / 2.0f + margin;
+    if (xRadius <= 0.0f || yRadius <= 0.0f || zRadius <= 0.0f)
+        return false;
+
+    Position const center(trigger->x, trigger->y, trigger->z, trigger->orientation);
+    return Position(x, y, z).IsWithinBox(center, xRadius, yRadius, zRadius);
 }
 
 bool HasQuestToAcceptOrReward(Player* bot, WorldObject* object)

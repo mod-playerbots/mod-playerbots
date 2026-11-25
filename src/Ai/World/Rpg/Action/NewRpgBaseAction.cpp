@@ -327,6 +327,9 @@ bool NewRpgBaseAction::InteractWithNpcOrGameObjectForQuest(ObjectGuid guid)
     if (!object || !bot->CanInteractWithQuestGiver(object))
         return false;
 
+    if (object->IsGameObject() && !object->ToGameObject()->isSpawned())
+        return false;
+
     // Creature* creature = bot->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_NONE);
     // if (creature)
     // {
@@ -520,6 +523,8 @@ struct QuestSpawn
     WorldPosition pos;
     uint32 phaseMask;
     uint8 spawnMask;
+    uint32 poolId;
+    uint32 spawnGroupId;
     ObjectGuid::LowType spawnId;
     bool gameObject;
 };
@@ -545,6 +550,8 @@ QuestSpawnMap const& GetQuestSpawnMap()
                     {{creatureData.mapid, creatureData.posX, creatureData.posY, creatureData.posZ},
                      creatureData.phaseMask,
                      creatureData.spawnMask,
+                     creatureData.poolId,
+                     creatureData.spawnGroupId,
                      creatureData.spawnId,
                      false});
             }
@@ -556,6 +563,8 @@ QuestSpawnMap const& GetQuestSpawnMap()
             result[-int32(goData.id)].push_back({{goData.mapid, goData.posX, goData.posY, goData.posZ},
                                                  goData.phaseMask,
                                                  goData.spawnMask,
+                                                 goData.poolId,
+                                                 goData.spawnGroupId,
                                                  goData.spawnId,
                                                  true});
         }
@@ -579,11 +588,12 @@ bool IsSpawnVisibleTo(Player* bot, QuestSpawn const& spawn)
     if (!(spawn.spawnMask & (1u << bot->GetMap()->GetSpawnMode())))
         return false;
 
+    if (spawn.spawnGroupId && !bot->GetMap()->IsSpawnGroupActive(spawn.spawnGroupId))
+        return false;
+
     // A pooled spawn can be the inactive member of its pool (e.g. one of Masophet's two spawns).
     uint32 const spawnId = uint32(spawn.spawnId);
-    uint32 const poolId = spawn.gameObject ? sPoolMgr->GetGameObjectPoolId(spawnId)
-                                           : sPoolMgr->GetCreaturePoolId(spawnId);
-    if (poolId)
+    if (spawn.poolId)
     {
         Map* map = bot->GetMap();
         bool const spawned = spawn.gameObject
@@ -604,36 +614,6 @@ bool IsSpawnDestinationAllowed(Player* bot, QuestSpawn const& spawn)
 
     return bot->GetZoneId() == bot->GetMap()->GetZoneId(bot->GetPhaseMask(), spawn.pos.GetPositionX(),
                                                         spawn.pos.GetPositionY(), spawn.pos.GetPositionZ());
-}
-
-// Match the core's Player::IsInAreaTriggerRadius for a free position. The trigger is either a
-// sphere (radius > 0) or an oriented box; an XY-only test accepts points above a sphere and
-// rejects every off-center point of a box.
-bool IsPositionInAreaTrigger(AreaTrigger const* trigger, float x, float y, float z, float margin = 0.0f)
-{
-    if (!trigger)
-        return false;
-
-    if (trigger->radius > 0.0f)
-    {
-        float const radius = trigger->radius + margin;
-        if (radius <= 0.0f)
-            return false;
-
-        float const dx = x - trigger->x;
-        float const dy = y - trigger->y;
-        float const dz = z - trigger->z;
-        return dx * dx + dy * dy + dz * dz <= radius * radius;
-    }
-
-    float const xRadius = trigger->length / 2.0f + margin;
-    float const yRadius = trigger->width / 2.0f + margin;
-    float const zRadius = trigger->height / 2.0f + margin;
-    if (xRadius <= 0.0f || yRadius <= 0.0f || zRadius <= 0.0f)
-        return false;
-
-    Position const center(trigger->x, trigger->y, trigger->z, trigger->orientation);
-    return Position(x, y, z).IsWithinBox(center, xRadius, yRadius, zRadius);
 }
 
 // Quest -> area triggers. ObjectMgr indexes trigger -> quest only, so keep the reverse mapping
@@ -765,7 +745,8 @@ WorldObject* NewRpgBaseAction::FindLoadedSpawn(Player* bot, QuestObjectivePositi
     {
         auto bounds = map->GetGameObjectBySpawnIdStore().equal_range(candidate.spawnId);
         for (auto itr = bounds.first; itr != bounds.second; ++itr)
-            if (itr->second && itr->second->IsInWorld() && (itr->second->GetPhaseMask() & bot->GetPhaseMask()))
+            if (itr->second && itr->second->IsInWorld() && itr->second->isSpawned() &&
+                (itr->second->GetPhaseMask() & bot->GetPhaseMask()))
                 return itr->second;
 
         return nullptr;
@@ -916,6 +897,9 @@ bool NewRpgBaseAction::SearchQuestGiverAndAcceptOrReward()
 
     WorldObject* object = ObjectAccessor::GetWorldObject(*bot, npcOrGo);
     if (!object)
+        return false;
+
+    if (object->IsGameObject() && !object->ToGameObject()->isSpawned())
         return false;
 
     NewRpgInfo& info = botAI->rpgInfo;
@@ -1094,7 +1078,9 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
                     questId, qPoi.Id, bot->GetMapId(), trigger->x, trigger->y, wx, wy, wz,
                     [&](float x, float y, float z)
                     {
-                        return IsPositionInAreaTrigger(trigger, x, y, z, margin);
+                        return NewRpgHelpers::IsPositionInAreaTrigger(trigger, x, y, z, margin) &&
+                               bot->GetDistance2d(x, y) < 1500.0f &&
+                               bot->GetZoneId() == bot->GetMap()->GetZoneId(bot->GetPhaseMask(), x, y, z);
                     });
             };
 
