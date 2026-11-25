@@ -103,20 +103,10 @@ std::string PullStrategy::GetSpellName() const
         return spellName;
 
     Item* equippedWeapon = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
-    if (!equippedWeapon)
-        return spellName;
+    if (equippedWeapon && equippedWeapon->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_THROWN)
+        return "throw";
 
-    ItemTemplate const* itemTemplate = equippedWeapon->GetTemplate();
-    if (!itemTemplate)
-        return spellName;
-
-    switch (itemTemplate->SubClass)
-    {
-        case ITEM_SUBCLASS_WEAPON_THROWN:
-            return "throw";
-        default:
-            return spellName;
-    }
+    return spellName;
 }
 
 float PullStrategy::GetRange() const
@@ -178,23 +168,15 @@ bool PullStrategy::CanDoPullAction(Unit* target)
         return false;
 
     std::string const actionName = GetPullActionNameFor(target);
-
-    if (bot->getClass() != CLASS_DRUID && bot->getClass() != CLASS_PALADIN &&
-        actionName == "shoot" && !bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
-    {
+    if (actionName.empty())
         return false;
-    }
 
     if (actionName == "shoot")
     {
         Item const* weapon = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
-        if (weapon && !HasAmmoFor(bot, weapon))
+        if (!weapon || !HasAmmoFor(bot, weapon))
             return false;
     }
-
-    std::string const spellName = GetSpellName();
-    if (spellName.empty())
-        return false;
 
     return true;
 }
