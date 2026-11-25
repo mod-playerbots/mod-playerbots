@@ -15,6 +15,7 @@
 #include "Spell.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
+#include "ThreatHelpers.h"
 #include "Timer.h"
 #include <algorithm>
 #include <cmath>
@@ -1043,12 +1044,12 @@ float BurningPhoenixKaelGap(Player* bot, Unit* kael)
 
 Unit* GetSelin(Player* bot)
 {
-    return GET_PLAYERBOT_AI(bot)->GetAiObjectContext()->GetValue<Unit*>("find target", SELIN_NAME)->Get();
+    return FindThreatTarget(bot, SELIN_NAME);
 }
 
 Unit* GetKaelthas(Player* bot)
 {
-    return GET_PLAYERBOT_AI(bot)->GetAiObjectContext()->GetValue<Unit*>("find target", KAEL_NAME)->Get();
+    return FindThreatTarget(bot, KAEL_NAME);
 }
 
 Unit* GetActiveFelCrystal(Player* bot)

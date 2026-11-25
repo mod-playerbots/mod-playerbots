@@ -11,29 +11,23 @@
 
 class ErekemMultiplier : public Multiplier
 {
-    public:
-        ErekemMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "erekem") {}
-
-    public:
-        float GetValue(Action* action) override;
+public:
+    ErekemMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "erekem") {}
+    float GetValue(Action* action) override;
 };
 
 class IchoronMultiplier : public Multiplier
 {
-    public:
-        IchoronMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "ichoron") {}
-
-    public:
-        float GetValue(Action* action) override;
+public:
+    IchoronMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "ichoron") {}
+    float GetValue(Action* action) override;
 };
 
 class ZuramatMultiplier : public Multiplier
 {
-    public:
-        ZuramatMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "zuramat the obliterator") {}
-
-    public:
-        float GetValue(Action* action) override;
+public:
+    ZuramatMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "zuramat the obliterator") {}
+    float GetValue(Action* action) override;
 };
 
 #endif

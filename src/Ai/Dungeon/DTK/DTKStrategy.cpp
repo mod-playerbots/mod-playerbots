@@ -14,16 +14,12 @@ void WotlkDungeonDTKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("corpse explode spread", ACTION_MOVE + 5) }));
 
     // Novos the Summoner
-    // TODO: Can be improved - it's a pretty easy fight but complex to program, revisit if needed
     triggers.push_back(new TriggerNode("arcane field",
         { NextAction("avoid arcane field", ACTION_MOVE + 5) }));
     triggers.push_back(new TriggerNode("arcane field",
         { NextAction("novos positioning", ACTION_MOVE + 4) }));
     triggers.push_back(new TriggerNode("arcane field",
         { NextAction("novos target priority", ACTION_NORMAL + 1) }));
-
-    // King Dred
-    // TODO: tremor totem, or general anti-fear strat development
 
     //The Prophet Tharon'ja
     triggers.push_back(new TriggerNode("gift of tharon'ja",

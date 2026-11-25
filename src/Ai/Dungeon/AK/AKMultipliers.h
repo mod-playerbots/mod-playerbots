@@ -11,29 +11,23 @@
 
 class ElderNadoxMultiplier : public Multiplier
 {
-    public:
-        ElderNadoxMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "elder nadox") {}
-
-    public:
-        float GetValue(Action* action) override;
+public:
+    ElderNadoxMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "elder nadox") {}
+    float GetValue(Action* action) override;
 };
 
 class JedogaShadowseekerMultiplier : public Multiplier
 {
-    public:
-        JedogaShadowseekerMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "jedoga shadowseeker") {}
-
-    public:
-        float GetValue(Action* action) override;
+public:
+    JedogaShadowseekerMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "jedoga shadowseeker") {}
+    float GetValue(Action* action) override;
 };
 
 class ForgottenOneMultiplier : public Multiplier
 {
-    public:
-        ForgottenOneMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "forgotten one") {}
-
-    public:
-        float GetValue(Action* action) override;
+public:
+    ForgottenOneMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "forgotten one") {}
+    float GetValue(Action* action) override;
 };
 
 #endif

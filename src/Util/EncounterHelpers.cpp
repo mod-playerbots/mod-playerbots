@@ -57,6 +57,33 @@ bool IsEncounterInProgress(Player* bot, uint32 mapId)
     return instance && instance->IsEncounterInProgress();
 }
 
+bool IsBossInProgress(Player* bot, uint32 mapId, uint32 bossId)
+{
+    if (bot->GetMapId() != mapId)
+        return false;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    return instance && instance->GetBossState(bossId) == IN_PROGRESS;
+}
+
+std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId)
+{
+    if (bot->GetMapId() != mapId)
+        return std::nullopt;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    if (!instance)
+        return std::nullopt;
+
+    for (uint32 bossId = 0; bossId < instance->GetEncounterCount(); ++bossId)
+    {
+        if (instance->GetBossState(bossId) == IN_PROGRESS)
+            return bossId;
+    }
+
+    return std::nullopt;
+}
+
 // Class Roles
 // A job given to one raid member of a class, such as a mage tank.
 
@@ -769,16 +796,19 @@ bool IsAoeThreatAction(Player* bot, Action* action)
         case CLASS_DEATH_KNIGHT:
             return dynamic_cast<CastDeathAndDecayAction*>(action) ||
                 dynamic_cast<CastPestilenceAction*>(action) ||
-                dynamic_cast<CastBloodBoilAction*>(action);
+                dynamic_cast<CastBloodBoilAction*>(action) ||
+                dynamic_cast<CastHeartStrikeAction*>(action);
 
         case CLASS_DRUID:
             return dynamic_cast<CastSwipeBearAction*>(action) ||
                 dynamic_cast<CastMaulAction*>(action) || // Hits multiple targets with the Glyph
-                dynamic_cast<CastDemoralizingRoarAction*>(action);
+                dynamic_cast<CastDemoralizingRoarAction*>(action) ||
+                dynamic_cast<CastBerserkAction*>(action); // Causes Mangle (Bear) to chain
 
         case CLASS_PALADIN:
             return dynamic_cast<CastAvengersShieldAction*>(action) ||
-                dynamic_cast<CastConsecrationAction*>(action);
+                dynamic_cast<CastConsecrationAction*>(action) ||
+                dynamic_cast<CastHammerOfTheRighteousAction*>(action);
 
         case CLASS_WARRIOR:
             return dynamic_cast<CastThunderClapAction*>(action) ||
@@ -821,37 +851,42 @@ namespace
 
 // Blizzard, Hurricane, Rain of Fire, and Volley have no unit target. TARGET_DEST_DYNOBJ_ENEMY
 // excludes friendly channeled AoEs.
-bool IsGroundChannelOnEnemies(Spell const& channel)
+bool IsGroundChannelOnEnemies(Spell const* channel)
 {
-    for (SpellEffectInfo const& effect : channel.GetSpellInfo()->Effects)
-    {
-        if (effect.TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY)
-            return true;
-    }
-
-    return false;
+    return channel && std::ranges::any_of(
+        channel->GetSpellInfo()->Effects, [](SpellEffectInfo const& effect)
+        { return effect.TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY; });
 }
 
-bool IsAutoRepeatAimedAt(Player* bot, Unit const& target)
+bool IsAutoRepeatAimedAt(Player* bot, Unit* target)
 {
+    if (!target)
+        return false;
+
     Spell* shot = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
-    return shot && shot->m_targets.GetUnitTargetGUID() == target.GetGUID();
+    return shot && shot->m_targets.GetUnitTargetGUID() == target->GetGUID();
 }
 
 // True if the channel is on this unit, or on the ground at enemies (which counts as on every
 // enemy). Excludes a self-channel (e.g., Evocation).
-bool IsChannelAimedAt(Player* bot, Unit const& target)
+bool IsChannelAimedAt(Player* bot, Unit* target)
 {
+    if (!target)
+        return false;
+
     Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-    return channel && (channel->m_targets.GetUnitTargetGUID() == target.GetGUID() ||
-        IsGroundChannelOnEnemies(*channel));
+    return channel && (channel->m_targets.GetUnitTargetGUID() == target->GetGUID() ||
+        IsGroundChannelOnEnemies(channel));
 }
 
 // True if the channel is on a hostile unit, whichever one, or on the ground at enemies. Excludes a
 // self-channel or channeled heal (Tranquility, Divine Hymn, Penance on an ally).
-bool IsOffensiveChannel(Player* bot, Spell const& channel)
+bool IsOffensiveChannel(Player* bot, Spell const* channel)
 {
-    if (Unit* unitTarget = channel.m_targets.GetUnitTarget())
+    if (!channel)
+        return false;
+
+    if (Unit* unitTarget = channel->m_targets.GetUnitTarget())
         return bot->IsHostileTo(unitTarget);
 
     return IsGroundChannelOnEnemies(channel);
@@ -859,9 +894,12 @@ bool IsOffensiveChannel(Player* bot, Spell const& channel)
 
 } // end anonymous namespace (Stopping Attacks and Spells)
 
-bool IsAttackingTarget(Player* bot, Unit const& target)
+bool IsAttackingTarget(Player* bot, Unit* target)
 {
-    return bot->GetVictim() == &target || IsAutoRepeatAimedAt(bot, target) ||
+    if (!target)
+        return false;
+
+    return bot->GetVictim() == target || IsAutoRepeatAimedAt(bot, target) ||
         IsChannelAimedAt(bot, target);
 }
 
@@ -876,7 +914,7 @@ bool StopAttackingAndChanneling(Player* bot)
 
     if (bot->GetCurrentSpell(CURRENT_MELEE_SPELL))
     {
-        // AttackStop() returns early without a victim, which would leave a queued swing ability.
+        // AttackStop returns early without a victim, which would leave a queued swing ability.
         bot->InterruptSpell(CURRENT_MELEE_SPELL);
         isStopped = true;
     }
@@ -888,7 +926,7 @@ bool StopAttackingAndChanneling(Player* bot)
     }
 
     Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-    if (channel && IsOffensiveChannel(bot, *channel))
+    if (channel && IsOffensiveChannel(bot, channel))
     {
         bot->InterruptSpell(CURRENT_CHANNELED_SPELL);
         isStopped = true;
@@ -897,12 +935,15 @@ bool StopAttackingAndChanneling(Player* bot)
     return isStopped;
 }
 
-// Unlike StopAttackingAndChanneling(), a queued swing ability is canceled only if the bot's swing is
-// on the target (by AttackStop()). Otherwise, it fires at the bot's actual victim, not the target.
-bool StopAttackingTarget(Player* bot, Unit const& target)
+// Unlike StopAttackingAndChanneling, a queued swing ability is canceled only if the bot's swing is
+// on the target (by AttackStop). Otherwise, it fires at the bot's actual victim, not the target.
+bool StopAttackingTarget(Player* bot, Unit* target)
 {
+    if (!target)
+        return false;
+
     bool isStopped = false;
-    if (bot->GetVictim() == &target)
+    if (bot->GetVictim() == target)
     {
         bot->AttackStop();
         isStopped = true;
@@ -944,8 +985,9 @@ bool SelectTarget(PlayerbotAI* botAI, Unit* target)
         return false;
 
     if (oldTarget && oldTarget != target)
-        StopAttackingTarget(bot, *oldTarget);
+        StopAttackingTarget(bot, oldTarget);
 
+    // The swing and the current target can differ if the target changed without calling Attack.
     if (bot->GetVictim() && bot->GetVictim() != target)
         bot->AttackStop();
 
@@ -956,6 +998,17 @@ bool SelectTarget(PlayerbotAI* botAI, Unit* target)
 }
 
 // Commanding Pets
+
+namespace
+{
+
+bool IsControllableMinion(Unit* unit)
+{
+    Creature* creature = unit ? unit->ToCreature() : nullptr;
+    return creature && creature->IsAlive() && creature->GetCharmInfo();
+}
+
+} // end anonymous namespace (Commanding Pets)
 
 void CallBackPets(Player* bot)
 {
@@ -1015,6 +1068,77 @@ bool CommandPetAttack(Creature* pet, Unit* target)
         pet->AI()->AttackStart(target);
     else
         pet->Attack(target, true);
+
+    return true;
+}
+
+bool HasControllableMinion(Player* bot)
+{
+    return std::any_of(bot->m_Controlled.begin(), bot->m_Controlled.end(), IsControllableMinion);
+}
+
+bool IsMinionStanceWrongForHold(Player* bot, bool isHeld)
+{
+    return std::any_of(
+        bot->m_Controlled.begin(), bot->m_Controlled.end(),
+        [isHeld](Unit* unit)
+        {
+            return IsControllableMinion(unit) &&
+                unit->ToCreature()->HasReactState(REACT_PASSIVE) != isHeld;
+        });
+}
+
+bool SetMinionStancesForHold(Player* bot, bool isHeld, std::vector<SavedMinionStance>& savedStances)
+{
+    if (!isHeld)
+    {
+        Pet* pet = bot->GetPet();
+        CharmInfo* petCharmInfo = pet ? pet->GetCharmInfo() : nullptr;
+        uint32 const petNumber = petCharmInfo ? petCharmInfo->GetPetNumber() : 0;
+
+        bool restored = false;
+        std::vector<SavedMinionStance> petsAway;
+        for (SavedMinionStance const& saved : savedStances)
+        {
+            Creature* minion = nullptr;
+            if (!saved.petNumber)
+                minion = ObjectAccessor::GetCreatureOrPetOrVehicle(*bot, saved.guid);
+            else if (saved.petNumber == petNumber)
+                minion = pet;
+
+            if (minion)
+            {
+                minion->SetReactState(saved.reactState);
+                restored = true;
+            }
+            // A missing guardian has expired, and a new one starts with its default stance, so
+            // its entry is dropped. A missing pet keeps its entry: it comes back passive when it
+            // is revived or summoned again.
+            else if (saved.petNumber)
+                petsAway.push_back(saved);
+        }
+
+        savedStances = std::move(petsAway);
+        return restored;
+    }
+
+    std::vector<Creature*> minionsToHold;
+    for (Unit* unit : bot->m_Controlled)
+    {
+        if (IsControllableMinion(unit) && !unit->ToCreature()->HasReactState(REACT_PASSIVE))
+            minionsToHold.push_back(unit->ToCreature());
+    }
+
+    if (minionsToHold.empty())
+        return false;
+
+    CallBackPets(bot);
+    for (Creature* minion : minionsToHold)
+    {
+        uint32 const petNumber = minion->IsPet() ? minion->GetCharmInfo()->GetPetNumber() : 0;
+        savedStances.push_back({ minion->GetGUID(), petNumber, minion->GetReactState() });
+        minion->SetReactState(REACT_PASSIVE);
+    }
 
     return true;
 }

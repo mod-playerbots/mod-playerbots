@@ -10,7 +10,7 @@
 #include "Multiplier.h"
 #include "Unit.h"
 
-const float uromCoords[4][4] =
+float const uromCoords[4][4] =
 {   // Platform coordinates
     {1177.47f, 937.722f, 527.405f, 2.21657f},
     {968.66f, 1042.53f, 527.32f, 0.077f},
@@ -20,40 +20,32 @@ const float uromCoords[4][4] =
 
 class MountingDrakeMultiplier : public Multiplier
 {
-    public:
-        MountingDrakeMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "mounting drake") {}
-
-    public:
-        float GetValue(Action* action) override;
+public:
+    MountingDrakeMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "mounting drake") {}
+    float GetValue(Action* action) override;
 };
 
 class OccFlyingMultiplier : public Multiplier
 {
-    public:
-        OccFlyingMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "occ flying drake") {}
-
-    public:
-        float GetValue(Action* action) override;
+public:
+    OccFlyingMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "occ flying drake") {}
+    float GetValue(Action* action) override;
 };
 
 class UromMultiplier : public Multiplier
 {
-    public:
-        UromMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "mage-lord urom") {}
-
-    public:
-        float GetValue(Action* action) override;
-    protected:
-        uint8 GetPhaseByCurrentPosition(Unit* boss);
+public:
+    UromMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "mage-lord urom") {}
+    float GetValue(Action* action) override;
+protected:
+    uint8 GetPhaseByCurrentPosition(Unit* boss);
 };
 
 class EregosMultiplier : public Multiplier
 {
-    public:
-        EregosMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "ley-guardian eregos") {}
-
-    public:
-        float GetValue(Action* action) override;
+public:
+    EregosMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "ley-guardian eregos") {}
+    float GetValue(Action* action) override;
 };
 
 #endif

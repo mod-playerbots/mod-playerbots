@@ -11,11 +11,9 @@
 
 class KrikthirMultiplier : public Multiplier
 {
-    public:
-        KrikthirMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "krik'thir the gatewatcher") {}
-
-    public:
-        float GetValue(Action* action) override;
+public:
+    KrikthirMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "krik'thir the gatewatcher") {}
+    float GetValue(Action* action) override;
 };
 
 #endif
