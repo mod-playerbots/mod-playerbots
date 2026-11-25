@@ -5703,6 +5703,41 @@ Item* PlayerbotAI::FindOpenableItem() const
         });
 }
 
+namespace
+{
+    // Items like clams loot via an on-use SPELL_EFFECT_CREATE_RANDOM_ITEM spell, not ITEM_FLAG_HAS_LOOT.
+    bool IsCreateRandomItemSpell(uint32 spellId)
+    {
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (!spellInfo || spellInfo->Effects[0].Effect != SPELL_EFFECT_CREATE_RANDOM_ITEM)
+            return false;
+
+        return spellInfo->TargetCreatureType == 0 && spellInfo->RequiresSpellFocus == 0 &&
+               spellInfo->CasterAuraState == 0 && spellInfo->TargetAuraState == 0 && spellInfo->MaxLevel == 0 &&
+               spellInfo->BaseLevel == 0;
+    }
+}
+
+Item* PlayerbotAI::FindOpenJunkItem() const
+{
+    return FindItemInInventory(
+        [](ItemTemplate const* itemTemplate) -> bool
+        {
+            // Misc/Junk is accepted for custom content; stock data only matches clams.
+            bool const openJunkClass =
+                (itemTemplate->Class == ITEM_CLASS_TRADE_GOODS &&
+                 itemTemplate->SubClass == ITEM_SUBCLASS_TRADE_GOODS_OTHER) ||
+                (itemTemplate->Class == ITEM_CLASS_MISC && itemTemplate->SubClass == ITEM_SUBCLASS_JUNK);
+            // UseItemAuto would accept a StartQuest item's quest instead of casting its loot spell.
+            if (!openJunkClass || !itemTemplate->HasFlag(ITEM_FLAG_PLAYERCAST) || itemTemplate->StartQuest != 0)
+                return false;
+
+            return itemTemplate->Spells[0].SpellId != 0 &&
+                   itemTemplate->Spells[0].SpellTrigger == ITEM_SPELLTRIGGER_ON_USE &&
+                   IsCreateRandomItemSpell(itemTemplate->Spells[0].SpellId);
+        });
+}
+
 Item* PlayerbotAI::FindLockedItem() const
 {
     return FindItemInInventory(
