@@ -25,9 +25,21 @@ void QuestPoiZStore::Load()
     _candidates.clear();
 
     // The table is optional: a server with Playerbots.Updates.EnableDatabases=0 may not have it.
-    // Use a direct startup query so a missing table logs a fallback instead of failing the
-    // module's prepared-statement setup and aborting worldserver startup. A direct query also
-    // avoids Field::GetData()'s unaligned raw-pointer read for the packed prepared row.
+    // Check information_schema first; the core's MySQL connection treats ER_NO_SUCH_TABLE as
+    // fatal, so a direct SELECT on a missing table would abort worldserver before the fallback.
+    QueryResult table = PlayerbotsDatabase.Query(
+        "SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() "
+        "AND table_name = 'playerbots_quest_poi_z'");
+    if (!table || !table->Fetch())
+    {
+        LOG_INFO("playerbots",
+                 "Quest POI Z store: playerbots_quest_poi_z is not present; "
+                 "quest destinations use the terrain-height fallback.");
+        return;
+    }
+
+    // A direct startup query also avoids Field::GetData()'s unaligned raw-pointer read for the
+    // packed prepared row.
     QueryResult result = PlayerbotsDatabase.Query(
         "SELECT `QuestId`, `PoiIdx`, `PointIdx`, `Rank`, `Z`, `Confidence`, `NavmeshOk`, `MapId`, "
         "`Evidence`, `WalkablePoints` FROM `playerbots_quest_poi_z` "
@@ -36,7 +48,7 @@ void QuestPoiZStore::Load()
     if (!result)
     {
         LOG_INFO("playerbots",
-                 "Quest POI Z store: no baked data (playerbots_quest_poi_z missing or empty); "
+                 "Quest POI Z store: no baked data (playerbots_quest_poi_z empty); "
                  "quest destinations use the terrain-height fallback.");
         return;
     }
@@ -139,7 +151,8 @@ QuestPoiZCandidate const* QuestPoiZStore::Lookup(uint32 questId, uint32 poiId, u
 }
 
 bool QuestPoiZStore::FindNearestWalkablePoint(uint32 questId, uint32 poiId, uint32 mapId, float x, float y,
-                                              float& outX, float& outY, float& outZ) const
+                                              float& outX, float& outY, float& outZ,
+                                              std::function<bool(float, float, float)> const& accept) const
 {
     QuestPoiZCandidate const* best = Lookup(questId, poiId, mapId);
     if (!best)
@@ -168,6 +181,9 @@ bool QuestPoiZStore::FindNearestWalkablePoint(uint32 questId, uint32 poiId, uint
 
         for (std::array<float, 3> const& point : candidate.walkablePoints)
         {
+            if (accept && !accept(point[0], point[1], point[2]))
+                continue;
+
             float const dx = point[0] - x;
             float const dy = point[1] - y;
             float const dist = dx * dx + dy * dy;

@@ -9,6 +9,7 @@
 
 #include "Define.h"
 #include <array>
+#include <functional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -47,9 +48,11 @@ public:
     std::vector<QuestPoiZCandidate const*> LookupAll(uint32 questId, uint32 poiId, uint32 mapId) const;
 
     // Walkable sample nearest (x,y) for a quest POI, used to approach an area trigger whose
-    // center sits outside the POI outline. Returns false when the POI has no baked samples.
+    // center sits outside the POI outline. `accept` filters samples by the trigger volume before
+    // the nearest-point test. Returns false when the POI has no accepted baked samples.
     bool FindNearestWalkablePoint(uint32 questId, uint32 poiId, uint32 mapId, float x, float y,
-                                  float& outX, float& outY, float& outZ) const;
+                                  float& outX, float& outY, float& outZ,
+                                  std::function<bool(float, float, float)> const& accept = {}) const;
 
 private:
     static uint64_t Key(uint32 questId, uint32 poiId) { return (uint64_t(questId) << 32) | uint64_t(poiId); }

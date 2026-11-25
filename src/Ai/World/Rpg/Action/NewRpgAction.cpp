@@ -38,6 +38,31 @@
 #include <cmath>
 #include <cstdlib>
 
+namespace
+{
+bool IsQuestEnder(WorldObject* ender, uint32 questId)
+{
+    if (!ender)
+        return false;
+
+    uint32 const entry = ender->GetEntry();
+    QuestRelations const* relations = nullptr;
+    if (ender->IsCreature())
+        relations = sObjectMgr->GetCreatureQuestInvolvedRelationMap();
+    else if (ender->IsGameObject())
+        relations = sObjectMgr->GetGOQuestInvolvedRelationMap();
+    else
+        return false;
+
+    auto const range = relations->equal_range(entry);
+    for (auto itr = range.first; itr != range.second; ++itr)
+        if (itr->second == questId)
+            return true;
+
+    return false;
+}
+} // namespace
+
 void TellRpgStatusAction::WhisperStatusChange(Player* owner, std::string const& statusName)
 {
     std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
@@ -190,7 +215,7 @@ bool TellRpgStatusAction::Execute(Event event)
                 uint32 qid = bot->GetQuestSlotQuestId(slot);
                 if (!qid)
                     continue;
-                if (HasQuestDestination(qid, true))
+                if (HasQuestDestination(qid))
                 {
                     questId = qid;
                     break;
@@ -519,6 +544,16 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         int32 currentObjective = data.objectiveIdx;
         // check if the objective has completed
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+        if (!quest)
+        {
+            // .reload quest_template can free the template while the bot is travelling.
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            botAI->rpgInfo.ChangeToIdle();
+            return false;
+        }
+
         QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
         bool completed = true;
         if (currentObjective == QUEST_OBJECTIVE_EXPLORE)
@@ -614,12 +649,39 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         }
     }
 
-    // Area triggers are small; stopping 10 yards short can leave the bot outside the volume.
-    float const arrivalDistance = data.objectiveIdx == QUEST_OBJECTIVE_EXPLORE ? 2.0f : 10.0f;
-    if (bot->GetDistance(data.pos) > arrivalDistance && !data.lastReachPOI)
+    bool const exploreObjective = data.objectiveIdx == QUEST_OBJECTIVE_EXPLORE && data.exploreTriggerId != 0;
+    AreaTrigger const* exploreTrigger = nullptr;
+    bool exploreInside = false;
+    if (exploreObjective)
+    {
+        // .reload areatrigger_involvedrelation can move or remove the relation; never send a
+        // stale trigger.
+        if (sObjectMgr->GetQuestForAreaTrigger(data.exploreTriggerId) != questId)
+        {
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            data.exploreTriggerId = 0;
+            data.exploreTriggerSent = false;
+            data.lastReachPOI = 0;
+            return true;
+        }
+
+        exploreTrigger = sObjectMgr->GetAreaTrigger(data.exploreTriggerId);
+        exploreInside = exploreTrigger && bot->IsInAreaTriggerRadius(exploreTrigger);
+    }
+
+    // Area triggers are small; decide by the trigger volume, not a 10-yard distance. If the bot
+    // is outside, keep approaching instead of starting the five-minute idle timer.
+    float const arrivalDistance = exploreObjective ? 0.5f : 10.0f;
+    bool const needApproach = exploreObjective
+                                  ? (!exploreInside && !data.lastReachPOI)
+                                  : (bot->GetDistance(data.pos) > arrivalDistance && !data.lastReachPOI);
+    if (needApproach)
     {
         if (MoveFarTo(data.pos))
             return true;
+        if (exploreObjective)
+            return MoveRandomNear(1.0f);
         // Long-range sampler couldn't land a candidate — nudge the
         // bot a short distance so the next tick retries from a
         // different position instead of sitting idle.
@@ -628,18 +690,14 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
 
     // Bots do not send CMSG_AREATRIGGER from movement, and the core only sets Explored in the
     // opcode handler. Send it once now that the destination (inside the trigger volume) is reached.
-    if (data.objectiveIdx == QUEST_OBJECTIVE_EXPLORE && data.exploreTriggerId && !data.exploreTriggerSent)
+    if (exploreTrigger && exploreInside && !data.exploreTriggerSent)
     {
-        AreaTrigger const* trigger = sObjectMgr->GetAreaTrigger(data.exploreTriggerId);
-        if (trigger && bot->IsInAreaTriggerRadius(trigger))
-        {
-            WorldPacket packet(CMSG_AREATRIGGER);
-            packet << data.exploreTriggerId;
-            packet.rpos(0);
-            bot->GetSession()->HandleAreaTriggerOpcode(packet);
-            data.exploreTriggerSent = true;
-            return true;
-        }
+        WorldPacket packet(CMSG_AREATRIGGER);
+        packet << data.exploreTriggerId;
+        packet.rpos(0);
+        bot->GetSession()->HandleAreaTriggerOpcode(packet);
+        data.exploreTriggerSent = true;
+        return true;
     }
 
     // Now we are near the quest objective
@@ -657,6 +715,15 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         int32 currentObjective = data.objectiveIdx;
         // check if the objective has progression
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+        if (!quest)
+        {
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            botAI->rpgInfo.ChangeToIdle();
+            return false;
+        }
+
         QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
         if (currentObjective == QUEST_OBJECTIVE_EXPLORE)
         {
@@ -716,7 +783,7 @@ bool NewRpgDoQuestAction::SelectSpawnTurnInDestination(NewRpgInfo::DoQuest& data
         // Reject only an ender that is already loaded and fails the interaction check. An
         // unloaded spawn stays eligible; it is re-checked again when the bot reaches it.
         if (WorldObject* ender = FindLoadedSpawn(bot, candidate))
-            if (!NewRpgHelpers::CanInteractWithQuestGiver(bot, ender))
+            if (!IsQuestEnder(ender, questId) || !NewRpgHelpers::CanInteractWithQuestGiver(bot, ender))
                 continue;
 
         float const distance =
@@ -802,11 +869,11 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
     {
         QuestObjectivePosition current{-1, data.pos, data.enderSpawnId, data.enderIsGameObject};
         WorldObject* ender = FindLoadedSpawn(bot, current);
-        if (!ender || !NewRpgHelpers::CanInteractWithQuestGiver(bot, ender))
+        if (!ender || !IsQuestEnder(ender, questId) || !NewRpgHelpers::CanInteractWithQuestGiver(bot, ender))
         {
-            LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in ender spawn {} is not {}",
+            LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in ender spawn {} is {}",
                       bot->GetName(), questId, data.enderSpawnId,
-                      ender ? "interactable" : "loaded");
+                      ender ? "not a valid ender for this quest" : "not loaded");
             data.failedEnderSpawns.insert({data.enderIsGameObject, data.enderSpawnId});
             data.enderSpawnId = 0;
             data.lastReachPOI = 0;

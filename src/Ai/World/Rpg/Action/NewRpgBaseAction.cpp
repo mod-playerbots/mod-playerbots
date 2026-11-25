@@ -46,6 +46,7 @@
 #include "TravelMgr.h"
 #include "G3D/Vector2.h"
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <optional>
 
@@ -607,22 +608,31 @@ bool IsSpawnDestinationAllowed(Player* bot, QuestSpawn const& spawn)
 // Match the core's Player::IsInAreaTriggerRadius for a free position. The trigger is either a
 // sphere (radius > 0) or an oriented box; an XY-only test accepts points above a sphere and
 // rejects every off-center point of a box.
-bool IsPositionInAreaTrigger(AreaTrigger const* trigger, float x, float y, float z)
+bool IsPositionInAreaTrigger(AreaTrigger const* trigger, float x, float y, float z, float margin = 0.0f)
 {
     if (!trigger)
         return false;
 
     if (trigger->radius > 0.0f)
     {
+        float const radius = trigger->radius + margin;
+        if (radius <= 0.0f)
+            return false;
+
         float const dx = x - trigger->x;
         float const dy = y - trigger->y;
         float const dz = z - trigger->z;
-        return dx * dx + dy * dy + dz * dz <= trigger->radius * trigger->radius;
+        return dx * dx + dy * dy + dz * dz <= radius * radius;
     }
 
+    float const xRadius = trigger->length / 2.0f + margin;
+    float const yRadius = trigger->width / 2.0f + margin;
+    float const zRadius = trigger->height / 2.0f + margin;
+    if (xRadius <= 0.0f || yRadius <= 0.0f || zRadius <= 0.0f)
+        return false;
+
     Position const center(trigger->x, trigger->y, trigger->z, trigger->orientation);
-    return Position(x, y, z).IsWithinBox(center, trigger->length / 2.0f, trigger->width / 2.0f,
-                                         trigger->height / 2.0f);
+    return Position(x, y, z).IsWithinBox(center, xRadius, yRadius, zRadius);
 }
 
 // Quest -> area triggers. ObjectMgr indexes trigger -> quest only, so keep the reverse mapping
@@ -710,25 +720,22 @@ bool NewRpgBaseAction::GetQuestObjectivePositions(Player* bot, uint32 questId,
     return !outPositions.empty();
 }
 
-bool NewRpgBaseAction::HasQuestDestination(uint32 questId, bool toComplete)
+bool NewRpgBaseAction::HasQuestDestination(uint32 questId)
 {
+    QuestStatus const status = bot->GetQuestStatus(questId);
+    if (status != QUEST_STATUS_COMPLETE && status != QUEST_STATUS_INCOMPLETE)
+        return false;
+
+    // Resolve only the destination type that matches the live status. An incomplete quest must
+    // have an objective destination; a complete quest must have a turn-in destination.
+    bool const toComplete = status == QUEST_STATUS_COMPLETE;
+
     std::vector<QuestObjectivePosition> positions;
     if (GetQuestObjectivePositions(bot, questId, positions, toComplete))
         return true;
 
     std::vector<POIInfo> poiInfo;
-    if (GetQuestPOIPosAndObjectiveIdx(questId, poiInfo, toComplete))
-        return true;
-
-    if (!toComplete)
-        return false;
-
-    // A quest can be selected for its incomplete objectives before it is ready to turn in.
-    if (GetQuestObjectivePositions(bot, questId, positions, false))
-        return true;
-
-    std::vector<POIInfo> objectivePoiInfo;
-    return GetQuestPOIPosAndObjectiveIdx(questId, objectivePoiInfo, false);
+    return GetQuestPOIPosAndObjectiveIdx(questId, poiInfo, toComplete);
 }
 
 WorldObject* NewRpgBaseAction::FindLoadedSpawn(Player* bot, QuestObjectivePosition const& candidate)
@@ -946,6 +953,10 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
             if (!trigger || trigger->map != bot->GetMapId())
                 continue;
 
+            // The startup reverse index can be stale after a reload; keep only live relations.
+            if (sObjectMgr->GetQuestForAreaTrigger(id) != questId)
+                continue;
+
             POIInfo info;
             info.objectiveIdx = QUEST_OBJECTIVE_EXPLORE;
             info.pos = {trigger->x, trigger->y};
@@ -978,6 +989,9 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
         {
             AreaTrigger const* trigger = sObjectMgr->GetAreaTrigger(id);
             if (!trigger || trigger->map != bot->GetMapId())
+                continue;
+
+            if (sObjectMgr->GetQuestForAreaTrigger(id) != questId)
                 continue;
 
             float const dx = trigger->x - x;
@@ -1049,8 +1063,9 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
             // the trigger, so fall back to the trigger center.
             float wx = 0.0f, wy = 0.0f, wz = 0.0f;
             bool insideTrigger = false;
-            if (QuestPoiZStore::Instance().FindNearestWalkablePoint(questId, qPoi.Id, bot->GetMapId(),
-                                                                    trigger->x, trigger->y, wx, wy, wz))
+            if (QuestPoiZStore::Instance().FindNearestWalkablePoint(
+                    questId, qPoi.Id, bot->GetMapId(), trigger->x, trigger->y, wx, wy, wz,
+                    [&](float x, float y, float z) { return IsPositionInAreaTrigger(trigger, x, y, z, -1.0f); }))
             {
                 insideTrigger = IsPositionInAreaTrigger(trigger, wx, wy, wz);
             }
@@ -1077,6 +1092,10 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
             for (QuestPoiZCandidate const* baked : QuestPoiZStore::Instance().LookupAll(
                      questId, qPoi.Id, bot->GetMapId()))
             {
+                if (!std::isfinite(baked->z) || baked->z == INVALID_HEIGHT ||
+                    baked->z == VMAP_INVALID_HEIGHT_VALUE)
+                    continue;
+
                 if (baked->pointIdx >= qPoi.points.size())
                     continue;
 
@@ -1392,10 +1411,10 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             for (uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
             {
                 uint32 questId = bot->GetQuestSlotQuestId(slot);
-                if (botAI->lowPriorityQuest.find(questId) != botAI->lowPriorityQuest.end())
+                if (!questId || botAI->lowPriorityQuest.find(questId) != botAI->lowPriorityQuest.end())
                     continue;
 
-                if (HasQuestDestination(questId, true))
+                if (HasQuestDestination(questId))
                 {
                     availableQuests.push_back(questId);
                 }
@@ -1484,18 +1503,14 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
         }
         case RPG_DO_QUEST:
         {
-            std::vector<uint32> availableQuests;
             for (uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
             {
                 uint32 questId = bot->GetQuestSlotQuestId(slot);
-                if (botAI->lowPriorityQuest.find(questId) != botAI->lowPriorityQuest.end())
+                if (!questId || botAI->lowPriorityQuest.find(questId) != botAI->lowPriorityQuest.end())
                     continue;
 
-                std::vector<POIInfo> poiInfo;
-                if (GetQuestPOIPosAndObjectiveIdx(questId, poiInfo, true))
-                {
+                if (HasQuestDestination(questId))
                     return true;
-                }
             }
             return false;
         }
