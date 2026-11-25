@@ -54,7 +54,7 @@ enum class SwpSpells : uint32
 
     // Brutallus
     SPELL_METEOR_SLASH                 = 45150, // 120° cone
-    SPELL_BURN                         = 46394, // Spread radius is 2y, no combat reaches added
+    SPELL_BURN                         = 46394, // Spread radius is 2 yd, no combat reaches added
 
     // Felmyst
     SPELL_SUMMON_DEMONIC_VAPOR         = 45391,
