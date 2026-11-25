@@ -9,6 +9,7 @@
 
 void CombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    triggers.push_back(new TriggerNode("drowning", { NextAction("swim to surface", ACTION_EMERGENCY) }));
     triggers.push_back(
         new TriggerNode(
             "enemy out of spell",

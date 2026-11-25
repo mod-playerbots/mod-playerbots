@@ -23,6 +23,8 @@ struct Position;
 #define ANGLE_90_DEG M_PI_2
 #define ANGLE_120_DEG (2.f * static_cast<float>(M_PI) / 3.f)
 
+constexpr float SWIM_SURFACE_OFFSET = 1.5f;
+
 class MovementAction : public Action
 {
 public:
@@ -254,6 +256,15 @@ class MoveOutOfCollisionAction : public MovementAction
 {
 public:
     MoveOutOfCollisionAction(PlayerbotAI* botAI) : MovementAction(botAI, "move out of collision") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+class SwimToSurfaceAction : public MovementAction
+{
+public:
+    SwimToSurfaceAction(PlayerbotAI* botAI) : MovementAction(botAI, "swim to surface") {}
 
     bool Execute(Event event) override;
     bool isUseful() override;

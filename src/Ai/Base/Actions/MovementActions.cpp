@@ -3027,3 +3027,20 @@ bool MoveAwayFromPlayerWithDebuffAction::Execute(Event /*event*/)
 }
 
 bool MoveAwayFromPlayerWithDebuffAction::isPossible() { return bot->CanFreeMove(); }
+
+bool SwimToSurfaceAction::isUseful()
+{
+    return !botAI->IsInVehicle() && bot->GetLiquidData().Status == LIQUID_MAP_UNDER_WATER;
+}
+
+bool SwimToSurfaceAction::Execute(Event /*event*/)
+{
+    LiquidData const liquid = bot->GetLiquidData();
+    if (liquid.Level == INVALID_HEIGHT)
+        return false;
+
+    // Aim just above the water line so the bot leaves LIQUID_MAP_UNDER_WATER, which makes the breath timer refill
+    float const surfaceZ = liquid.Level + SWIM_SURFACE_OFFSET;
+    return MoveTo(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), surfaceZ, false, false, false, false,
+                  MovementPriority::MOVEMENT_FORCED);
+}
