@@ -47,6 +47,7 @@ public:
     bool HasTarget() const;
 
     virtual std::string GetPullActionName() const;
+    std::string GetPullActionNameFor(Unit* target);
     std::string GetSpellName() const;
     float GetRange() const;
     virtual std::string GetPreActionName() const;
