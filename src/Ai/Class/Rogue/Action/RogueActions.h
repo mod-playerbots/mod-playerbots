@@ -180,13 +180,22 @@ public:
     bool isPossible() override { return true; }
 };
 
-// Apply Deadly Poison to main hand. Previously only off-hand Deadly existed (UseDeadlyPoisonAction),
-// this class serves the "MH Deadly + OH Instant" poison setup.
-class UseDeadlyPoisonOnMainHandAction : public UseItemAction
+// Pick Deadly or Instant per hand from the actual weapon speeds: Deadly Poison
+// stacks from hit count, so it belongs on the faster weapon (on equal speeds the
+// main hand wins); Instant Poison gets the other hand.
+class UseBestMainHandPoisonAction : public UseItemAction
 {
 public:
-    UseDeadlyPoisonOnMainHandAction(PlayerbotAI* botAI)
-        : UseItemAction(botAI, "deadly poison main hand") {}
+    UseBestMainHandPoisonAction(PlayerbotAI* botAI) : UseItemAction(botAI, "best main hand poison") {}
+
+    bool Execute(Event event) override;
+    bool isPossible() override { return true; }
+};
+
+class UseBestOffHandPoisonAction : public UseItemAction
+{
+public:
+    UseBestOffHandPoisonAction(PlayerbotAI* botAI) : UseItemAction(botAI, "best off hand poison") {}
 
     bool Execute(Event event) override;
     bool isPossible() override { return true; }

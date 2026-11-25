@@ -81,9 +81,8 @@ bool CastTricksOfTheTradeOnMainTankAction::isUseful()
 
 namespace
 {
-// Find poisons by item ID from high to low (IX -> I).
-// Cannot search by name: item_template.name is localized (e.g. Chinese "Deadly Poison IX"),
-// while FindNamedItemVisitor does an English substring match - looking for "Deadly Poison" always returns empty.
+// Find poisons by item ID from high to low (IX -> I); item_template.name is English on
+// a standard AC db, so a localized-name lookup would be fragile.
 Item* FindHighestRankPoison(PlayerbotAI* botAI, bool deadly)
 {
     static constexpr uint32 deadlyPoisons[] = {
@@ -122,17 +121,6 @@ bool UseDeadlyPoisonAction::Execute(Event /*event*/)
                    bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND));
 }
 
-// Main-hand Deadly Poison (part of the "MH Deadly + OH Instant" setup)
-bool UseDeadlyPoisonOnMainHandAction::Execute(Event /*event*/)
-{
-    Item* const poison = FindHighestRankPoison(botAI, true);
-    if (!poison)
-        return false;
-
-    return UseItem(poison, ObjectGuid::Empty,
-                   bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND));
-}
-
 bool UseInstantPoisonAction::Execute(Event /*event*/)
 {
     Item* const poison = FindHighestRankPoison(botAI, false);
@@ -151,4 +139,48 @@ bool UseInstantPoisonOffHandAction::Execute(Event /*event*/)
 
     return UseItem(poison, ObjectGuid::Empty,
                    bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND));
+}
+
+namespace
+{
+uint32 GetWeaponDelay(Item const* item)
+{
+    if (!item)
+        return 0;
+    ItemTemplate const* proto = item->GetTemplate();
+    return proto ? proto->Delay : 0;
+}
+}
+
+// Deadly on the faster hand (equal speeds: main hand wins), Instant on the other one.
+bool UseBestMainHandPoisonAction::Execute(Event /*event*/)
+{
+    Item* const mh = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    if (!mh)
+        return false;
+
+    Item* const oh = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+    bool const useDeadly = !oh || GetWeaponDelay(mh) <= GetWeaponDelay(oh);
+
+    Item* const poison = FindHighestRankPoison(botAI, useDeadly);
+    if (!poison)
+        return false;
+
+    return UseItem(poison, ObjectGuid::Empty, mh);
+}
+
+bool UseBestOffHandPoisonAction::Execute(Event /*event*/)
+{
+    Item* const oh = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+    if (!oh)
+        return false;
+
+    Item* const mh = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    bool const useDeadly = mh && GetWeaponDelay(oh) < GetWeaponDelay(mh);
+
+    Item* const poison = FindHighestRankPoison(botAI, useDeadly);
+    if (!poison)
+        return false;
+
+    return UseItem(poison, ObjectGuid::Empty, oh);
 }

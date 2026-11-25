@@ -23,22 +23,20 @@ public:
     SliceAndDiceTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "slice and dice") {}
 };
 
+// Refresh HfB this many ms before it expires; shared with RuptureForHungerTrigger to stay in sync.
+constexpr uint32 HFB_REFRESH_EARLY_MS = 5 * IN_MILLISECONDS;
+
 class HungerForBloodTrigger : public BuffTrigger
 {
 public:
-    // Was BuffTrigger(botAI, "hunger for blood"): only fired when absent, never refreshed early.
-    // Now uses checkDuration + beforeDuration: refreshes with 10s remaining.
-    // (HBF lasts 60s; 10s early is enough for two GCDs - Rupture then buff - and leaves Rupture coverage).
     HungerForBloodTrigger(PlayerbotAI* botAI)
-        : BuffTrigger(botAI, "hunger for blood", 1, false, true, 10000)
+        : BuffTrigger(botAI, "hunger for blood", 1, false, true, HFB_REFRESH_EARLY_MS)
     {
     }
 };
 
-// HBF expiring + target not bleeding + 1-3 combo points
-// -> Apply a low-CP Rupture first. HBF requires a bleed on the target, but the assassination rotation itself does not apply Rupture,
-//   so if there is no bleed when HBF is about to expire, Rupture must create one so the next tick can refresh HBF.
-// Limited to 1-3 CP: high CP saved for Envenom, low-CP Rupture only serves to apply a bleed.
+// Applies a low-CP Rupture when HfB is missing or about to expire and the target has no bleed.
+// HfB requires a bleed on the target, so without this the refresh attempt just fails.
 class RuptureForHungerTrigger : public Trigger
 {
 public:

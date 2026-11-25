@@ -165,10 +165,12 @@ public:
             &RogueAiObjectContextInternal::use_instant_poison;
         creators["use deadly poison on off hand"] =
             &RogueAiObjectContextInternal::use_deadly_poison;
-        creators["use deadly poison on main hand"] =
-            &RogueAiObjectContextInternal::use_deadly_poison_main_hand;
         creators["use instant poison on off hand"] =
             &RogueAiObjectContextInternal::use_instant_poison_off_hand;
+        creators["use best main hand poison"] =
+            &RogueAiObjectContextInternal::use_best_main_hand_poison;
+        creators["use best off hand poison"] =
+            &RogueAiObjectContextInternal::use_best_off_hand_poison;
         creators["fan of knives"] = &RogueAiObjectContextInternal::fan_of_knives;
         creators["killing spree"] = &RogueAiObjectContextInternal::killing_spree;
         creators["cold blood"] = &RogueAiObjectContextInternal::cold_blood;
@@ -231,13 +233,17 @@ private:
     {
         return new UseDeadlyPoisonAction(botAI);
     }
-    static Action* use_deadly_poison_main_hand(PlayerbotAI* botAI)
-    {
-        return new UseDeadlyPoisonOnMainHandAction(botAI);
-    }
     static Action* use_instant_poison_off_hand(PlayerbotAI* botAI)
     {
         return new UseInstantPoisonOffHandAction(botAI);
+    }
+    static Action* use_best_main_hand_poison(PlayerbotAI* botAI)
+    {
+        return new UseBestMainHandPoisonAction(botAI);
+    }
+    static Action* use_best_off_hand_poison(PlayerbotAI* botAI)
+    {
+        return new UseBestOffHandPoisonAction(botAI);
     }
     static Action* fan_of_knives(PlayerbotAI* botAI) { return new FanOfKnivesAction(botAI); }
     static Action* killing_spree(PlayerbotAI* botAI) { return new CastKillingSpreeAction(botAI); }

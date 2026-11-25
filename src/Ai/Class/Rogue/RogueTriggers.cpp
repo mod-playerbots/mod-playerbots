@@ -135,23 +135,24 @@ bool OffHandWeaponNoEnchantTrigger::IsActive()
     return true;
 }
 
-// HBF expiring and target not bleeding -> apply a low-CP Rupture first so HBF can be refreshed.
 bool RuptureForHungerTrigger::IsActive()
 {
+    // Check our own HfB first: absent (fight start / dropped mid-fight) or within
+    // the refresh window means a Rupture bleed is needed so HfB can be (re)applied.
+    Aura* hfb = botAI->GetAura("hunger for blood", bot, true, true);
+    if (hfb && hfb->GetDuration() > HFB_REFRESH_EARLY_MS)
+        return false;
+
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target || !target->IsAlive())
         return false;
 
-    // Target already bleeding (Rupture/Rend/Mangle or any bleed) -> HBF can be refreshed directly, no Rupture needed
-    if (target->HasAuraWithMechanic(uint64(1) << MECHANIC_BLEED))
+    // Same bleed condition HfB itself checks; a cheap flag check instead of
+    // scanning every aura on the target.
+    if (target->HasAuraState(AURA_STATE_BLEEDING))
         return false;
 
-    // HBF absent or >10s remaining -> not urgent. It lasts 60s; act 10s early.
-    Aura* hfb = botAI->GetAura("hunger for blood", bot, true, true);
-    if (!hfb || hfb->GetDuration() > 10000)
-        return false;
-
-    // Only apply with 1-3 CP (low-CP Rupture purely to create a bleed); at 0 CP build points first, at 4+ CP use Envenom
+    // 1-3 CP only: low-CP Rupture just to create a bleed, 4+ CP stay reserved for Envenom.
     uint32 cp = bot->GetComboPoints();
     return cp >= 1 && cp <= 3;
 }
