@@ -60,8 +60,9 @@ directory); pass `--mmaps` explicitly if your layout differs.
 - `manifest.json` — source database, mmaps path, generation time, script and
   bundle SHA-256, SQL SHA-256, and row/pair/triple counts.
 
-The diagnostic `quest_poi_z_report.csv` and `quest_poi_z_candidates.jsonl` are
-written beside them and are gitignored.
+The diagnostic `quest_poi_z_report.csv` is written beside them and is gitignored.
+`quest_poi_z_candidates.json` is written when the run has at most 5,000 entries;
+larger runs write `quest_poi_z_candidates.jsonl` instead. Both are gitignored.
 
 The SQL is generated data. **Do not hand-edit it.** If the algorithm or the
 source data changes, rerun the full bake and commit the new SQL + manifest
@@ -72,8 +73,11 @@ so an out-of-sync SQL file fails the test suite.
 
 For every `quest_poi_points` row:
 
-1. Load the navmesh polygons within `SCAN_RADIUS` (40 yd) of the POI point,
-   grouped by Detour tile so each tile group's polygons are walked once.
+1. Load the navmesh polygons whose vertex centroid is within `SCAN_RADIUS`
+   (40 yd) of the POI point, grouped by Detour tile so each tile group's
+   polygons are walked once. The centroid test is a cheap prefilter: a long
+   polygon that extends into the radius but has its centroid outside it is not
+   scanned.
 2. Find creature/GO spawns within the same radius. Spawns belonging to the
    quest's own objectives (NPC/GO objectives, item droppers, quest enders) are
    ground truth; other spawns are semantic anchors. Item droppers are resolved
