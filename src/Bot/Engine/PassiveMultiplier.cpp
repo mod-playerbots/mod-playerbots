@@ -19,6 +19,7 @@ PassiveMultiplier::PassiveMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "pa
         allowedActions.push_back("reset botAI");
         allowedActions.push_back("check mount state");
         allowedActions.push_back("lfg");
+        allowedActions.push_back("move out of dark water");
     }
 
     if (allowedParts.empty())

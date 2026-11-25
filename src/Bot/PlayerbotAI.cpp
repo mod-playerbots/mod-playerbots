@@ -10,6 +10,7 @@
 #include "ChannelMgr.h"
 #include "CharacterPackets.h"
 #include "ChatHelper.h"
+#include "Corpse.h"
 #include "CheckMountStateAction.h"
 #include "Common.h"
 #include "CreatureData.h"
@@ -880,6 +881,11 @@ void PlayerbotAI::HandleTeleportAck()
     if (!bot || !bot->GetSession())
         return;
 
+    // A relocation invalidates the cached dark-water target/step; keep it only across engine
+    // switches, not across teleports. Reset before the self-bot early-out as well: the client
+    // handles the ACK there, but the map can still change under the AI.
+    waterEscape = WaterEscapeState{};
+
     // Skip acknowledgment for SelfBots. The player's client handles that.
     if (IsSelfBot(bot))
         return;
@@ -1657,7 +1663,8 @@ void PlayerbotAI::DoNextAction(bool min)
         if (!bot->isAFK() && !bot->InBattleground() && !HasGameClientMaster())
             bot->ToggleAFK();
 
-        SetNextCheckDelay(sPlayerbotAIConfig.PassiveDelay);
+        // Dark-water recovery needs a normal cadence even in passive/minimal mode.
+        SetNextCheckDelay(waterEscape.inDarkWater ? 1000 : sPlayerbotAIConfig.PassiveDelay);
         return;
     }
     else if (bot->isAFK() && !IsSelfBot(bot))
@@ -6270,14 +6277,19 @@ bool PlayerbotAI::IsInDarkWater()
     if (!bot->IsInWorld() || !bot->IsAlive() || bot->IsInFlight() || bot->GetTransport() || bot->GetVehicle())
         return false;
 
+    // Drop a target left on another map (teleport, instance change) even while the throttled
+    // water answer below is still valid.
+    if (waterEscape.target != WorldPosition() && waterEscape.target.GetMapId() != bot->GetMapId())
+        waterEscape = WaterEscapeState{};
+
     if (waterEscape.waterCheckMs && GetMSTimeDiffToNow(waterEscape.waterCheckMs) < 1000)
         return waterEscape.inDarkWater;
 
-    // Query the map directly: the bot's cached liquid state can be stale right after a
-    // teleport. The fatigue bar only drains in authored dark water, not in deep water.
-    LiquidData const liquid = bot->GetMap()->GetLiquidData(bot->GetPhaseMask(), bot->GetPositionX(),
-                                                           bot->GetPositionY(), bot->GetPositionZ(),
-                                                           bot->GetCollisionHeight(), {});
+    // Use the liquid data that Player::ProcessTerrainStatusUpdate() uses for the fatigue bar.
+    // WorldObject keeps it current with the position data, so this costs no terrain query while
+    // the bot is on dry land. The fatigue bar only drains in authored dark water, not in deep
+    // water, so the flag alone is the right test.
+    LiquidData const& liquid = bot->GetLiquidData();
     waterEscape.inDarkWater = (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER) != 0;
     waterEscape.waterCheckMs = getMSTime();
     if (!waterEscape.inDarkWater)
@@ -6288,35 +6300,109 @@ bool PlayerbotAI::IsInDarkWater()
     return waterEscape.inDarkWater;
 }
 
+bool PlayerbotAI::IsCorpseInDarkWater()
+{
+    Corpse* corpse = bot->GetCorpse();
+    if (!corpse || !corpse->GetMap())
+        return false;
+
+    // Use the full terrain query: the corpse may be on a wreck or pier above the dark-water
+    // cell, where Map::GetLiquidData can report no water.
+    PositionFullTerrainStatus status;
+    corpse->GetMap()->GetFullTerrainStatusForPosition(bot->GetPhaseMask(), corpse->GetPositionX(),
+                                                     corpse->GetPositionY(), corpse->GetPositionZ(),
+                                                     bot->GetCollisionHeight(), status);
+    return (status.liquidInfo.Flags & MAP_LIQUID_TYPE_DARK_WATER) != 0;
+}
+
 WorldPosition PlayerbotAI::FindDarkWaterEscapeTarget()
 {
-    // The way out is the nearest point that is not dark water: regular water or land. Sample
-    // rings around the bot so the escape is a short swim the ordinary move path can cover.
-    float const rings[] = {40.0f, 80.0f, 120.0f, 160.0f, 200.0f, 240.0f};
+    // The way out is the nearest non-dark point: regular water or land. Scan rings from the bot
+    // outward so a 10 yd step ashore wins over a 200 yd swim; stop once no outer ring can hold a
+    // closer point. Water targets get a 15 yd outward buffer; land is already out of the water.
+    float const rings[] = {10.0f, 20.0f, 30.0f, 40.0f, 80.0f, 120.0f, 160.0f, 200.0f, 240.0f};
     uint32 const directions = 16;
+    Map* map = bot->GetMap();
+    bool const skipBlocked = waterEscape.blockedTarget != WorldPosition() &&
+                             GetMSTimeDiffToNow(waterEscape.blockedUntilMs) < 10000;
+
+    // Resolve the surface the bot would occupy at a sample. Querying at the terrain floor
+    // misses the surface liquid layer and can accept a point that is still dark water.
+    auto surfaceZ = [map](float x, float y) -> float
+    {
+        float const groundZ = map->GetHeight(x, y, MAX_HEIGHT);
+        float const waterZ = map->GetWaterLevel(x, y);
+        if (waterZ != INVALID_HEIGHT && (groundZ == INVALID_HEIGHT || waterZ >= groundZ))
+            return waterZ;
+        return groundZ;
+    };
+
+    WorldPosition best{};
+    float bestDist = std::numeric_limits<float>::max();
+
     for (float radius : rings)
     {
-        WorldPosition best{};
-        float bestDist = std::numeric_limits<float>::max();
+        // Candidates in this ring are at least `radius` away; a water candidate is farther after
+        // the buffer. Once the ring starts beyond the best point, no later ring can beat it.
+        if (best != WorldPosition() && radius > bestDist)
+            break;
+
         for (uint32 i = 0; i < directions; ++i)
         {
             float const angle = float(i) * 2.0f * float(M_PI) / float(directions);
-            float const x = bot->GetPositionX() + std::cos(angle) * radius;
-            float const y = bot->GetPositionY() + std::sin(angle) * radius;
+            float x = bot->GetPositionX() + std::cos(angle) * radius;
+            float y = bot->GetPositionY() + std::sin(angle) * radius;
 
-            LiquidData const liquid = bot->GetMap()->GetLiquidData(bot->GetPhaseMask(), x, y, bot->GetPositionZ(),
-                                                                   bot->GetCollisionHeight(), {});
-            if (liquid.Flags & MAP_LIQUID_TYPE_DARK_WATER)
+            // Query at the sample's own surface, not at the bot's current Z: a point above the
+            // dark-water column would otherwise look like a valid exit.
+            float const queryZ = surfaceZ(x, y);
+            if (queryZ == INVALID_HEIGHT)
                 continue;
 
-            float const groundZ = bot->GetMap()->GetHeight(x, y, MAX_HEIGHT);
-            float const waterZ = bot->GetMap()->GetWaterLevel(x, y);
-            if (groundZ == INVALID_HEIGHT && waterZ == INVALID_HEIGHT)
+            PositionFullTerrainStatus status;
+            map->GetFullTerrainStatusForPosition(bot->GetPhaseMask(), x, y, queryZ,
+                                                 bot->GetCollisionHeight(), status);
+            if (status.liquidInfo.Flags & MAP_LIQUID_TYPE_DARK_WATER)
                 continue;
-            float const z = std::max(groundZ, waterZ);
+
+            bool const isWater = status.liquidInfo.Level != INVALID_HEIGHT &&
+                                 status.liquidInfo.Level > status.floorZ;
+            float z = isWater ? status.liquidInfo.Level : status.floorZ;
             if (z == INVALID_HEIGHT)
                 continue;
+
+            if (isWater)
+            {
+                // Keep ~15 yd between the bot and the dark-water edge. The buffered point may be
+                // land or regular water; either is a valid escape target.
+                float const bx = x + std::cos(angle) * 15.0f;
+                float const by = y + std::sin(angle) * 15.0f;
+                float const bufferedQueryZ = surfaceZ(bx, by);
+                if (bufferedQueryZ == INVALID_HEIGHT)
+                    continue;
+
+                PositionFullTerrainStatus buffered;
+                map->GetFullTerrainStatusForPosition(bot->GetPhaseMask(), bx, by, bufferedQueryZ,
+                                                     bot->GetCollisionHeight(), buffered);
+                if (buffered.liquidInfo.Flags & MAP_LIQUID_TYPE_DARK_WATER)
+                    continue;
+
+                bool const bufferedIsWater = buffered.liquidInfo.Level != INVALID_HEIGHT &&
+                                             buffered.liquidInfo.Level > buffered.floorZ;
+                float const bufferedZ =
+                    bufferedIsWater ? buffered.liquidInfo.Level : buffered.floorZ;
+                if (bufferedZ == INVALID_HEIGHT)
+                    continue;
+
+                x = bx;
+                y = by;
+                z = bufferedZ;
+            }
+
             WorldPosition const candidate(bot->GetMapId(), x, y, z);
+            if (skipBlocked && candidate.GetExactDist(waterEscape.blockedTarget) < 20.0f)
+                continue;
+
             float const d = bot->GetExactDist(candidate);
             if (d < bestDist)
             {
@@ -6324,10 +6410,8 @@ WorldPosition PlayerbotAI::FindDarkWaterEscapeTarget()
                 best = candidate;
             }
         }
-        if (best != WorldPosition())
-            return best;
     }
-    return WorldPosition{};
+    return best;
 }
 
 bool PlayerbotAI::CanMove()

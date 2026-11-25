@@ -633,14 +633,17 @@ public:
     // Dark-water escape: survival state shared by the general trigger/action in every engine.
     struct WaterEscapeState
     {
-        WorldPosition target;      // nearest non-dark-water point, cached while escaping
+        WorldPosition target;      // nearest safe water/land point, cached while escaping
         WorldPosition step;        // current <=50 yd step, kept until reached
+        WorldPosition blockedTarget; // last target whose first step was blocked
+        uint32 blockedUntilMs{0};  // retry/exclude the blocked target before this time
         uint32 targetCheckMs{0};   // last target search timestamp
         uint32 waterCheckMs{0};    // last liquid query timestamp
         bool inDarkWater{false};   // throttled liquid query result
     };
     WaterEscapeState waterEscape;
     bool IsInDarkWater();
+    bool IsCorpseInDarkWater();
     WorldPosition FindDarkWaterEscapeTarget();
 
     NewRpgStatistic rpgStatistic;

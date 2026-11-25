@@ -24,6 +24,7 @@
 #include "Position.h"
 #include "PositionValue.h"
 #include "Random.h"
+#include "RandomPlayerbotMgr.h"
 #include "ServerFacade.h"
 #include "SharedDefines.h"
 #include "SpellAuraEffects.h"
@@ -167,18 +168,18 @@ bool MovementAction::MoveToLOS(WorldObject* target, bool ranged)
 }
 
 bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool /*idle*/, bool /*react*/, bool normal_only,
-                            bool exact_waypoint, MovementPriority priority, bool lessDelay, bool backwards)
+                            bool exact_waypoint, MovementPriority priority, bool lessDelay, bool backwards, bool force)
 {
     UpdateMovementState();
     if (!IsMovingAllowed())
     {
         return false;
     }
-    if (IsDuplicateMove(x, y, z))
+    if (!force && IsDuplicateMove(x, y, z))
     {
         return false;
     }
-    if (IsWaitingForLastMove(priority))
+    if (!force && IsWaitingForLastMove(priority))
     {
         return false;
     }
@@ -1088,6 +1089,10 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
     UpdateMovementState();
 
     if (!target)
+        return false;
+
+    // A dark-water escape owns movement; follow/melee formation must not clear it.
+    if (botAI->waterEscape.target != WorldPosition() && botAI->IsInDarkWater())
         return false;
 
     if (!bot->InBattleground() && ServerFacade::instance().IsDistanceLessOrEqualThan(ServerFacade::instance().GetDistance2d(bot, target),
@@ -2821,7 +2826,7 @@ bool MoveOutOfDarkWaterAction::Execute(Event /*event*/)
     PlayerbotAI::WaterEscapeState& state = botAI->waterEscape;
     bool const hasTarget = state.target != WorldPosition();
     uint32 const sinceCheck = GetMSTimeDiffToNow(state.targetCheckMs);
-    // A failed search retries after 10s (each attempt scans up to 96 liquid samples); a
+    // A failed search retries after 10s (each attempt scans up to 144 surface samples); a
     // chosen target is kept for 8s so movement stays on one heading instead of being
     // rewritten on every scan.
     if ((!hasTarget && sinceCheck > 10000) || (hasTarget && sinceCheck > 8000))
@@ -2844,7 +2849,15 @@ bool MoveOutOfDarkWaterAction::Execute(Event /*event*/)
     }
 
     if (state.target == WorldPosition())
-        return false;
+    {
+        // No safe water or land within the search radius. Do not wait to drown: relocate to a
+        // random valid bot location and let the normal AI resume there.
+        LOG_DEBUG("playerbots", "[AI] {} found no dark-water escape within 240 yd; random teleport",
+                  bot->GetName());
+        sRandomPlayerbotMgr.RandomTeleportForLevel(bot);
+        state = PlayerbotAI::WaterEscapeState{};
+        return true;
+    }
 
     // Keep the step destination stable until it is reached or the target changed.
     if (state.step == WorldPosition() || bot->GetExactDist(state.step) < 5.0f)
@@ -2852,30 +2865,52 @@ bool MoveOutOfDarkWaterAction::Execute(Event /*event*/)
         float const step = 50.0f;
         float const dx = state.target.GetPositionX() - bot->GetPositionX();
         float const dy = state.target.GetPositionY() - bot->GetPositionY();
-        float const dz = state.target.GetPositionZ() - bot->GetPositionZ();
-        float const len = std::sqrt(dx * dx + dy * dy + dz * dz);
+        float const len = std::sqrt(dx * dx + dy * dy);
         if (len > 0.01f)
         {
             float const f = std::min(1.0f, step / len);
-            state.step = WorldPosition(bot->GetMapId(), bot->GetPositionX() + dx * f,
-                                       bot->GetPositionY() + dy * f, bot->GetPositionZ() + dz * f);
+            float const x = bot->GetPositionX() + dx * f;
+            float const y = bot->GetPositionY() + dy * f;
+
+            // Follow the surface at the step instead of a straight 3D interpolation: a rising
+            // shore would otherwise put the step below the terrain and fail its own LOS check.
+            float const groundZ = bot->GetMap()->GetHeight(x, y, MAX_HEIGHT);
+            float const waterZ = bot->GetMap()->GetWaterLevel(x, y);
+            float z = bot->GetPositionZ();
+            if (groundZ != INVALID_HEIGHT || waterZ != INVALID_HEIGHT)
+                z = std::max(groundZ, waterZ);
+
+            state.step = WorldPosition(bot->GetMapId(), x, y, z);
         }
     }
 
     if (state.step == WorldPosition())
         return false;
 
+    // A direct swim/step must not clip a seawall, cliff or dock. Reject a blocked first step and
+    // exclude that target briefly so the next search can pick another direction.
+    if (!bot->IsWithinLOS(state.step.GetPositionX(), state.step.GetPositionY(), state.step.GetPositionZ()))
+    {
+        state.blockedTarget = state.target;
+        state.blockedUntilMs = getMSTime();
+        state.target = WorldPosition();
+        state.step = WorldPosition();
+        state.targetCheckMs = 0;
+        return false;
+    }
+
     // Swimming issues a direct move anyway; use combat priority so the escape is not
-    // overridden by the current combat movement.
+    // overridden by the current combat movement. Force bypasses the duplicate-step check that
+    // would otherwise let follow/melee movement clear the escape on the next tick.
     MovementPriority const priority = bot->IsInCombat() ? MovementPriority::MOVEMENT_COMBAT
                                                         : MovementPriority::MOVEMENT_NORMAL;
     return MoveTo(bot->GetMapId(), state.step.GetPositionX(), state.step.GetPositionY(), state.step.GetPositionZ(),
-                  false, false, false, true, priority);
+                  false, false, false, true, priority, false, false, true);
 }
 
 bool MoveOutOfDarkWaterAction::isUseful()
 {
-    return !botAI->IsInVehicle() && botAI->IsInDarkWater();
+    return !botAI->IsInVehicle() && botAI->CanMove() && botAI->IsInDarkWater();
 }
 
 bool MoveRandomAction::Execute(Event /*event*/)

@@ -46,6 +46,15 @@ bool ReviveFromCorpseAction::Execute(Event event)
     if (!corpse)
         return false;
 
+    // A dark-water corpse is irrecoverable. Release immediately, then use the existing spirit
+    // healer/graveyard path instead of trying to reach the corpse.
+    if (botAI->IsCorpseInDarkWater())
+    {
+        if (!bot->HasPlayerFlag(PLAYER_FLAGS_GHOST))
+            return botAI->DoSpecificAction("auto release", Event(), true);
+        return botAI->DoSpecificAction("spirit healer", Event(), true);
+    }
+
     // if (corpse->GetGhostTime() + bot->GetCorpseReclaimDelay(corpse->GetType() == CORPSE_RESURRECTABLE_PVP) >
     // time(nullptr))
     //     return false;
@@ -88,6 +97,15 @@ bool FindCorpseAction::Execute(Event /*event*/)
     Corpse* corpse = bot->GetCorpse();
     if (!corpse)
         return false;
+
+    // Do not walk toward a dark-water corpse: the fatigue bar will kill the ghost again. Release
+    // at once and use the spirit healer/graveyard path.
+    if (botAI->IsCorpseInDarkWater())
+    {
+        if (!bot->HasPlayerFlag(PLAYER_FLAGS_GHOST))
+            return botAI->DoSpecificAction("auto release", Event(), true);
+        return botAI->DoSpecificAction("spirit healer", Event(), true);
+    }
 
     // if (groupLeader)
     // {
