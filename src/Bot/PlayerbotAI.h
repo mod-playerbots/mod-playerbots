@@ -415,6 +415,9 @@ public:
     void HandleCommand(uint32 type, std::string const text, Player* fromPlayer);
     void QueueChatResponse(const ChatQueuedReply reply);
     void HandleBotOutgoingPacket(WorldPacket const& packet);
+    // Milliseconds of breath left, or -1 when the breath timer is not running. Player::m_MirrorTimer is private,
+    // so the value is rebuilt from the mirror timer packets the server sends to the bot.
+    int32 GetBreathRemainingMs() const;
     void HandleMasterIncomingPacket(WorldPacket const& packet);
     void HandleMasterOutgoingPacket(WorldPacket const& packet);
     void HandleTeleportAck();
@@ -689,6 +692,10 @@ protected:
     Position jumpDestination = Position();
     uint32 nextTransportCheck = 0;
     bool spellInterruptRequested = false;
+    bool breathTimerActive = false;
+    int32 breathTimerValueMs = 0;
+    int32 breathTimerScale = 0;
+    uint32 breathTimerUpdateMs = 0;
 };
 
 #endif

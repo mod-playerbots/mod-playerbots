@@ -1497,9 +1497,44 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
             CheckMountStateAction::CompleteDismount(bot);
             return;
         }
+        case SMSG_START_MIRROR_TIMER:
+        {
+            WorldPacket p(packet);
+            p.rpos(0);
+            uint32 timer, value, maxValue;
+            int32 scale;
+            p >> timer >> value >> maxValue >> scale;
+            if (timer != BREATH_TIMER)
+                return;
+            breathTimerActive = true;
+            breathTimerValueMs = static_cast<int32>(value);
+            breathTimerScale = scale;
+            breathTimerUpdateMs = getMSTime();
+            return;
+        }
+        case SMSG_STOP_MIRROR_TIMER:
+        {
+            WorldPacket p(packet);
+            p.rpos(0);
+            uint32 timer;
+            p >> timer;
+            if (timer == BREATH_TIMER)
+                breathTimerActive = false;
+            return;
+        }
         default:
             botOutgoingPacketHandlers.AddPacket(packet);
     }
+}
+
+int32 PlayerbotAI::GetBreathRemainingMs() const
+{
+    if (!breathTimerActive)
+        return -1;
+
+    // The server drains the timer by 1 ms per ms (scale -1) and refills it at 10 ms per ms (scale 10).
+    int32 elapsed = static_cast<int32>(getMSTimeDiff(breathTimerUpdateMs, getMSTime()));
+    return std::max(0, breathTimerValueMs + breathTimerScale * elapsed);
 }
 
 void PlayerbotAI::SpellInterrupted(uint32 spellid)

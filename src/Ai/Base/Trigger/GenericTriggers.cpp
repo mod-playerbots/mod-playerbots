@@ -583,6 +583,15 @@ bool NotDpsAoeTargetActiveTrigger::IsActive()
 
 bool IsSwimmingTrigger::IsActive() { return AI_VALUE2(bool, "swimming", "self target"); }
 
+bool DrowningTrigger::IsActive()
+{
+    if (bot->GetLiquidData().Status != LIQUID_MAP_UNDER_WATER)
+        return false;
+
+    int32 breathMs = botAI->GetBreathRemainingMs();
+    return breathMs >= 0 && breathMs <= DROWNING_SURFACE_THRESHOLD_MS;
+}
+
 bool HasItemForSpellTrigger::IsActive()
 {
     std::string const spell = getName();

@@ -774,6 +774,17 @@ public:
     bool IsActive() override;
 };
 
+// Start swimming up when this much breath is left (the server default is 180000 ms)
+constexpr int32 DROWNING_SURFACE_THRESHOLD_MS = 30000;
+
+class DrowningTrigger : public Trigger
+{
+public:
+    DrowningTrigger(PlayerbotAI* botAI) : Trigger(botAI, "drowning") {}
+
+    bool IsActive() override;
+};
+
 class HasItemForSpellTrigger : public Trigger
 {
 public:
