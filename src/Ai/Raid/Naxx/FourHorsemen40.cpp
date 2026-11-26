@@ -21,6 +21,7 @@
 #include "AttackAction.h"
 #include "CellImpl.h"
 #include "DruidShapeshiftActions.h"
+#include "DisableMgr.h"
 #include "EncounterHelpers.h"
 #include "FourHorsemen40Hazards.h"
 #include "GenericSpellActions.h"
@@ -5748,9 +5749,28 @@ private:
                 SpellInfo const* info = sSpellMgr->GetSpellInfo(spellId);
                 if (cast == RearHealCast::InstantOnly && (!info || info->IsChanneled() || info->CalcCastTime(bot) > 0))
                     continue;
-                if (info && bot->HasSpell(spellId) && !bot->HasSpellCooldown(spellId) &&
+                if (cast == RearHealCast::StopIfNeeded && info &&
                     (info->IsChanneled() ? info->GetDuration() != 0 : info->CalcCastTime(bot) > 0))
+                {
+                    if (!bot->HasSpell(spellId) || bot->HasSpellCooldown(spellId) ||
+                        bot->HasUnitState(UNIT_STATE_LOST_CONTROL | UNIT_STATE_IN_FLIGHT) || bot->IsFlying() ||
+                        !tank.IsInWorld() || tank.IsDuringRemoveFromWorld() || tank.IsImmunedToSpell(info) ||
+                        sDisableMgr->IsDisabledFor(DISABLE_TYPE_SPELL, spellId, bot))
+                        continue;
+
+                    // Check mana separately so the probe does not register charged spell modifiers.
+                    if (!bot->GetCommandStatus(CHEAT_POWER) &&
+                        int32(bot->GetPower(POWER_MANA)) < info->CalcPowerCost(bot, info->GetSchoolMask()))
+                        continue;
+
+                    // CanCastSpell rejects timed heals in motion. Check the spell before stopping.
+                    Spell check(bot, info, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+                    check.m_targets.SetUnitTarget(&tank);
+                    if (check.CheckCast(true) != SPELL_CAST_OK)
+                        continue;
+
                     bot->StopMoving();
+                }
             }
             if (botAI->CanCastSpell(spell, &tank) && botAI->CastSpell(spell, &tank))
                 return true;
