@@ -207,6 +207,7 @@ void AddWayAhead(std::vector<IdleMob>& mobs, IdleMob const& mob, BotTargets cons
     G3D::Vector3 end = from;
     float gone = 0.0f;      // yards of its way looked at so far
     float lastSpot = 0.0f;  // how far along the last spot was put
+    int nextStep = 1;
     for (int32 i = walk->_currentSplineIdx() + 1; i <= spline.last() && gone < ahead; ++i)
     {
         G3D::Vector3 const to = spline.getPoint(i);
@@ -214,10 +215,15 @@ void AddWayAhead(std::vector<IdleMob>& mobs, IdleMob const& mob, BotTargets cons
         if (leg > 0.01f)
         {
             float const upTo = std::min(gone + leg, ahead);
-            for (float at = lastSpot + AHEAD_STEP; at <= upTo; at += AHEAD_STEP)
+            while (true)
             {
+                float const at = float(nextStep) * AHEAD_STEP;
+                if (!(at <= upTo))
+                    break;
+
                 add(from + (to - from) * ((at - gone) / leg));
                 lastSpot = at;
+                ++nextStep;
             }
             end = from + (to - from) * ((upTo - gone) / leg);
             gone = upTo;
@@ -369,10 +375,13 @@ bool FindWayOut(PlayerbotAI* botAI, Player& bot, GapAt const& gapAt, float want,
     // What a spot has to beat: good enough, or that much better than here.
     float bestGap = (shortest ? want : std::min(gapAt(botX, botY, botZ) + worthIt, want)) - 0.01f;
     float bestLength = std::numeric_limits<float>::max();
-    for (float ring = nearest;
-         ring <= search && (shortest ? ring <= bestLength + WayOutEndSlack : !found || bestGap < want);
-         ring += ringStep)
+    int ringIndex = 0;
+    while (true)
     {
+        float const ring = nearest + float(ringIndex) * ringStep;
+        if (!(ring <= search && (shortest ? ring <= bestLength + WayOutEndSlack : !found || bestGap < want)))
+            break;
+
         for (int i = 0; i < STEPS; ++i)
         {
             float const angle = angleOffset + float(i) * 2.0f * float(M_PI) / float(STEPS);
@@ -414,6 +423,7 @@ bool FindWayOut(PlayerbotAI* botAI, Player& bot, GapAt const& gapAt, float want,
             spot.Relocate(end.x, end.y, end.z);
             checkedPath = path.GetPath();
         }
+        ++ringIndex;
     }
     return found;
 }
