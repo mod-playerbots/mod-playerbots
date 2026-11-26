@@ -510,6 +510,7 @@ public:
     Item* FindAmmo() const;
     Item* FindBandage() const;
     Item* FindOpenableItem() const;
+    Item* FindOpenJunkItem() const;
     Item* FindLockedItem() const;
     Item* FindConsumable(uint32 itemId) const;
     Item* FindStoneFor(Item* weapon) const;

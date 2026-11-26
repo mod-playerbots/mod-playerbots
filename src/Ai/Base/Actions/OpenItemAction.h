@@ -7,19 +7,21 @@
 #ifndef PLAYERBOTS_OPENITEMACTION_H
 #define PLAYERBOTS_OPENITEMACTION_H
 
-#include "Action.h"
+#include "UseItemAction.h"
 
 class Player;
 class Item;
 class Event;
 
-class OpenItemAction : public Action
+// Containers open via CMSG_OPEN_ITEM; clam-style junk opens by using the item.
+class OpenItemAction : public UseItemAction
 {
 public:
-    OpenItemAction(PlayerbotAI* botAI) : Action(botAI, "open item") { }
+    OpenItemAction(PlayerbotAI* botAI) : UseItemAction(botAI, "open item", true) { }
 
     // The main function that is executed when the action is triggered
     bool Execute(Event event) override;
+    bool isPossible() override { return true; }
 
 private:
     // Performs the action of opening the item
