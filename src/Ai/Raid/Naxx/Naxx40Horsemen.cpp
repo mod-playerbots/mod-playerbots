@@ -463,11 +463,16 @@ void ScheduleRestore(Player* player)
 
     player->CustomData.GetDefault<ScheduledRestoration>(RESTORATION_KEY);
     player->m_Events.AddEventAtOffset(
-        [player]
+        [guid = player->GetGUID()]
         {
+            // The player's own queue runs on its current map while the player is in world.
+            Player* const player = ObjectAccessor::FindPlayer(guid);
+            if (!player)
+                return;
+
             player->CustomData.Erase(RESTORATION_KEY);
             PlayerbotAI* ai = GET_PLAYERBOT_AI(player);
-            if (!ai || !player->IsInWorld() || !player->IsAlive() || IsNaxx40(player))
+            if (!ai || !player->IsAlive() || IsNaxx40(player))
                 return;
             FourHorsemen40::RestoreWarriorStance(*ai);
             ScheduleRestore(player);
