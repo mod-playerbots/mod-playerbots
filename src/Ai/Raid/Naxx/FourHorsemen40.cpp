@@ -115,13 +115,13 @@ constexpr uint32 FrontOpeningThreatWindow = 8000;
 constexpr uint32 FrontOpeningShotWait = 900;
 constexpr uint32 FrontHandoffThreatWindow = 2000;
 constexpr float FrontThreatLead = 500.0f;
-constexpr uint32 ShadowProtectionItem = 13459;
-constexpr uint32 ShadowProtectionAura = 17548;
-constexpr uint32 FlaskItem = 13510;
-constexpr uint32 FlaskAura = 17626;
-constexpr uint32 FoodItem = 21023;
-constexpr uint32 FoodAura = 25661;
-constexpr uint32 EatingAura = 25660;
+constexpr uint32 ITEM_SHADOW_PROTECTION = 13459;
+constexpr uint32 SPELL_SHADOW_PROTECTION = 17548;
+constexpr uint32 ITEM_FLASK = 13510;
+constexpr uint32 SPELL_FLASK = 17626;
+constexpr uint32 ITEM_FOOD = 21023;
+constexpr uint32 SPELL_FOOD = 25661;
+constexpr uint32 SPELL_EATING = 25660;
 constexpr int32 MinimumFlaskMs = 180000;
 constexpr int32 MinimumFoodMs = 180000;
 constexpr uint32 TankSuppliesWaitMs = 20000;
@@ -158,25 +158,25 @@ constexpr float MeteorApproachRadius = 5.75f;
 constexpr uint32 MeteorArrivalMarginMs = 150;
 // The two rear marks have a 45-yard radius. Leave room for combat reach.
 constexpr float RearMarkClearance = 48.0f;
-constexpr uint32 TauntSpell = 355;
-constexpr uint32 MockingBlow = 694;
-constexpr uint32 ShootRangedWeapon = 3018;
-constexpr uint32 Bloodrage = 2687;
-constexpr uint32 DefensiveStance = 71;
-constexpr uint32 BattleStance = 2457;
-constexpr uint32 BerserkerStance = 2458;
-constexpr uint32 Growl = 6795;
-constexpr uint32 FeralFaerieFire = 16857;
-constexpr uint32 BearForm = 5487;
-constexpr uint32 DireBearForm = 9634;
-constexpr uint32 HandOfReckoning = 62124;
-constexpr uint32 RighteousDefense = 31789;
-constexpr uint32 HammerOfTheRighteous = 53595;
-constexpr uint32 RighteousFury = 25780;
-constexpr uint32 DarkCommand = 56222;
-constexpr uint32 FrostPresence = 48263;
-constexpr uint32 BloodPresence = 48266;
-constexpr uint32 UnholyPresence = 48265;
+constexpr uint32 SPELL_TAUNT = 355;
+constexpr uint32 SPELL_MOCKING_BLOW = 694;
+constexpr uint32 SPELL_SHOOT_RANGED_WEAPON = 3018;
+constexpr uint32 SPELL_BLOODRAGE = 2687;
+constexpr uint32 SPELL_DEFENSIVE_STANCE = 71;
+constexpr uint32 SPELL_BATTLE_STANCE = 2457;
+constexpr uint32 SPELL_BERSERKER_STANCE = 2458;
+constexpr uint32 SPELL_GROWL = 6795;
+constexpr uint32 SPELL_FERAL_FAERIE_FIRE = 16857;
+constexpr uint32 SPELL_BEAR_FORM = 5487;
+constexpr uint32 SPELL_DIRE_BEAR_FORM = 9634;
+constexpr uint32 SPELL_HAND_OF_RECKONING = 62124;
+constexpr uint32 SPELL_RIGHTEOUS_DEFENSE = 31789;
+constexpr uint32 SPELL_HAMMER_OF_THE_RIGHTEOUS = 53595;
+constexpr uint32 SPELL_RIGHTEOUS_FURY = 25780;
+constexpr uint32 SPELL_DARK_COMMAND = 56222;
+constexpr uint32 SPELL_FROST_PRESENCE = 48263;
+constexpr uint32 SPELL_BLOOD_PRESENCE = 48266;
+constexpr uint32 SPELL_UNHOLY_PRESENCE = 48265;
 
 struct Horseman
 {
@@ -569,13 +569,14 @@ bool CanHold(Player* player)
     switch (player->getClass())
     {
         case CLASS_WARRIOR:
-            return player->HasSpell(TauntSpell) && player->HasSpell(DefensiveStance);
+            return player->HasSpell(SPELL_TAUNT) && player->HasSpell(SPELL_DEFENSIVE_STANCE);
         case CLASS_PALADIN:
-            return player->HasSpell(HandOfReckoning);
+            return player->HasSpell(SPELL_HAND_OF_RECKONING);
         case CLASS_DRUID:
-            return player->HasSpell(Growl) && (player->HasSpell(DireBearForm) || player->HasSpell(BearForm));
+            return player->HasSpell(SPELL_GROWL) &&
+                   (player->HasSpell(SPELL_DIRE_BEAR_FORM) || player->HasSpell(SPELL_BEAR_FORM));
         case CLASS_DEATH_KNIGHT:
-            return player->HasSpell(DarkCommand);
+            return player->HasSpell(SPELL_DARK_COMMAND);
         default:
             return false;
     }
@@ -587,15 +588,17 @@ uint32 RequiredHolderBuff(Player const& player)
     switch (player.getClass())
     {
         case CLASS_WARRIOR:
-            return form == FORM_DEFENSIVESTANCE ? 0 : DefensiveStance;
+            return form == FORM_DEFENSIVESTANCE ? 0 : SPELL_DEFENSIVE_STANCE;
         case CLASS_DRUID:
             if (form == FORM_BEAR || form == FORM_DIREBEAR)
                 return 0;
-            return player.HasSpell(DireBearForm) ? DireBearForm : BearForm;
+            return player.HasSpell(SPELL_DIRE_BEAR_FORM) ? SPELL_DIRE_BEAR_FORM : SPELL_BEAR_FORM;
         case CLASS_PALADIN:
-            return player.HasSpell(RighteousFury) && !player.HasAura(RighteousFury) ? RighteousFury : 0;
+            return player.HasSpell(SPELL_RIGHTEOUS_FURY) && !player.HasAura(SPELL_RIGHTEOUS_FURY) ? SPELL_RIGHTEOUS_FURY
+                                                                                                  : 0;
         case CLASS_DEATH_KNIGHT:
-            return player.HasSpell(FrostPresence) && !player.HasAura(FrostPresence) ? FrostPresence : 0;
+            return player.HasSpell(SPELL_FROST_PRESENCE) && !player.HasAura(SPELL_FROST_PRESENCE) ? SPELL_FROST_PRESENCE
+                                                                                                  : 0;
         default:
             return 0;
     }
@@ -646,7 +649,7 @@ bool ApplyHolderBuff(PlayerbotAI& ai, uint32 spell, uint32 openingStartedAt = 0)
     if (!IsAutonomousBot(tank) || !ai.CastSpell(spell, tank))
         return false;
 
-    if (spell == DefensiveStance && original != FORM_DEFENSIVESTANCE)
+    if (spell == SPELL_DEFENSIVE_STANCE && original != FORM_DEFENSIVESTANCE)
     {
         if (!tank->CustomData.Get<WarriorStanceChange>(StanceKey))
         {
@@ -683,8 +686,9 @@ bool PrepareWarriorStances(Player& leader, RaidPlan const& plan, OpeningPlan con
         uint8 const spec = AiFactory::GetPlayerSpecTab(warrior);
         if (spec != WARRIOR_TAB_ARMS && spec != WARRIOR_TAB_FURY)
             continue;
-        uint32 const stance =
-            spec == WARRIOR_TAB_FURY && warrior->HasSpell(BerserkerStance) ? BerserkerStance : BattleStance;
+        uint32 const stance = spec == WARRIOR_TAB_FURY && warrior->HasSpell(SPELL_BERSERKER_STANCE)
+                                  ? SPELL_BERSERKER_STANCE
+                                  : SPELL_BATTLE_STANCE;
         if (!warrior->HasSpell(stance))
             continue;
 
@@ -1076,8 +1080,8 @@ bool PrepareTankSupplies(Player& leader, RaidPlan const& plan, OpeningPlan& open
         Player* tank = HolderInRaid(leader, plan.holders[corner]);
         if (!tank)
             continue;
-        bool const flask = HasTimeRemaining(*tank, FlaskAura, MinimumFlaskMs);
-        bool const food = HasTimeRemaining(*tank, FoodAura, MinimumFoodMs);
+        bool const flask = HasTimeRemaining(*tank, SPELL_FLASK, MinimumFlaskMs);
+        bool const food = HasTimeRemaining(*tank, SPELL_FOOD, MinimumFoodMs);
         if (flask && food)
         {
             ++ready;
@@ -1086,12 +1090,12 @@ bool PrepareTankSupplies(Player& leader, RaidPlan const& plan, OpeningPlan& open
         constexpr uint8 FlaskUsed = 1u;
         constexpr uint8 FoodUsed = 2u;
         uint8& used = opening.suppliesUsed[corner];
-        bool const canFlask = !flask && !(used & FlaskUsed) && tank->HasItemCount(FlaskItem, 1);
+        bool const canFlask = !flask && !(used & FlaskUsed) && tank->HasItemCount(ITEM_FLASK, 1);
         bool const canEat =
-            !food && !(used & FoodUsed) && !tank->HasAura(EatingAura) && tank->HasItemCount(FoodItem, 1);
-        uint32 const item = canFlask ? FlaskItem : canEat ? FoodItem : 0;
+            !food && !(used & FoodUsed) && !tank->HasAura(SPELL_EATING) && tank->HasItemCount(ITEM_FOOD, 1);
+        uint32 const item = canFlask ? ITEM_FLASK : canEat ? ITEM_FOOD : 0;
         uint32& eating = opening.eatingStarted[corner];
-        if (!food && tank->HasAura(EatingAura) && !eating)
+        if (!food && tank->HasAura(SPELL_EATING) && !eating)
         {
             eating = now;
             GET_PLAYERBOT_AI(tank)->SetActionDuration(TankFoodWaitMs);
@@ -1106,13 +1110,13 @@ bool PrepareTankSupplies(Player& leader, RaidPlan const& plan, OpeningPlan& open
             HorsemenTankConsumable(tankAI).Use(item);
             if (tank->GetItemCount(item) < before)
             {
-                used |= item == FlaskItem ? FlaskUsed : FoodUsed;
-                if (item == FoodItem)
+                used |= item == ITEM_FLASK ? FlaskUsed : FoodUsed;
+                if (item == ITEM_FOOD)
                 {
                     eating = now;
                     tankAI->SetActionDuration(TankFoodWaitMs);
                     LOG_INFO("playerbots", "[Naxx40] Horsemen instance={} {} started tank food (eating aura={})",
-                             leader.GetInstanceId(), tank->GetName(), tank->HasAura(EatingAura));
+                             leader.GetInstanceId(), tank->GetName(), tank->HasAura(SPELL_EATING));
                 }
             }
         }
@@ -1124,7 +1128,7 @@ bool PrepareTankSupplies(Player& leader, RaidPlan const& plan, OpeningPlan& open
     for (ObjectGuid holder : plan.holders)
         if (Player* tank = HolderInRaid(leader, holder))
             LOG_INFO("playerbots", "[Naxx40] Horsemen instance={} tank {} supplies flask={} food={} health={}/{}",
-                     leader.GetInstanceId(), tank->GetName(), tank->HasAura(FlaskAura), tank->HasAura(FoodAura),
+                     leader.GetInstanceId(), tank->GetName(), tank->HasAura(SPELL_FLASK), tank->HasAura(SPELL_FOOD),
                      tank->GetHealth(), tank->GetMaxHealth());
     LOG_INFO("playerbots", "[Naxx40] Horsemen instance={} tank supplies confirmed {}/{}", leader.GetInstanceId(), ready,
              CornerCount);
@@ -1139,7 +1143,7 @@ bool ConfirmFirstShadowProtection(Player& tank, RearProtection& protection, uint
         protection.tank = tank.GetGUID();
         protection.startedAt = now;
     }
-    if (AuraEffect const* absorb = tank.GetAuraEffect(ShadowProtectionAura, EFFECT_0))
+    if (AuraEffect const* absorb = tank.GetAuraEffect(SPELL_SHADOW_PROTECTION, EFFECT_0))
     {
         protection.remaining = absorb->GetAmount();
         LOG_INFO("playerbots",
@@ -1149,20 +1153,21 @@ bool ConfirmFirstShadowProtection(Player& tank, RearProtection& protection, uint
                  uint32(tank.GetShapeshiftForm()), tank.GetLastPotionId());
         return true;
     }
-    if ((!protection.attemptedAt && (!tank.HasItemCount(ShadowProtectionItem, 1) || tank.GetLastPotionId() ||
-                                     tank.HasSpellCooldown(ShadowProtectionAura))) ||
+    if ((!protection.attemptedAt && (!tank.HasItemCount(ITEM_SHADOW_PROTECTION, 1) || tank.GetLastPotionId() ||
+                                     tank.HasSpellCooldown(SPELL_SHADOW_PROTECTION))) ||
         now - protection.startedAt >= ShadowProtectionWaitMs)
     {
         LOG_INFO("playerbots",
                  "[Naxx40] Horsemen instance={} {} first rear swap without Shadow Protection "
                  "(items={}, usedPotion={})",
-                 tank.GetInstanceId(), tank.GetName(), tank.GetItemCount(ShadowProtectionItem), tank.GetLastPotionId());
+                 tank.GetInstanceId(), tank.GetName(), tank.GetItemCount(ITEM_SHADOW_PROTECTION),
+                 tank.GetLastPotionId());
         return true;
     }
     if (!tank.GetLastPotionId() && (!protection.attemptedAt || now - protection.attemptedAt >= ItemRetryMs))
     {
         protection.attemptedAt = now;
-        HorsemenTankConsumable(GET_PLAYERBOT_AI(&tank)).Use(ShadowProtectionItem);
+        HorsemenTankConsumable(GET_PLAYERBOT_AI(&tank)).Use(ITEM_SHADOW_PROTECTION);
     }
     return false;
 }
@@ -1174,7 +1179,7 @@ void MeasureShadowProtection(Player& bot, RearProtection& protection)
     Player* tank = ObjectAccessor::GetPlayer(bot, protection.tank);
     if (!tank)
         return;
-    AuraEffect const* absorb = tank->GetAuraEffect(ShadowProtectionAura, EFFECT_0);
+    AuraEffect const* absorb = tank->GetAuraEffect(SPELL_SHADOW_PROTECTION, EFFECT_0);
     int32 const remaining = absorb ? absorb->GetAmount() : -1;
     if (remaining == protection.remaining)
         return;
@@ -1417,18 +1422,18 @@ OpeningTag OpeningTagFor(Player& leader, RaidPlan const& plan, Bosses const& bos
     switch (tag.tank->getClass())
     {
         case CLASS_WARRIOR:
-            tag.taunt = TauntSpell;
+            tag.taunt = SPELL_TAUNT;
             break;
         case CLASS_DRUID:
-            tag.taunt = Growl;
-            tag.attack = FeralFaerieFire;
+            tag.taunt = SPELL_GROWL;
+            tag.attack = SPELL_FERAL_FAERIE_FIRE;
             break;
         case CLASS_PALADIN:
-            tag.taunt = HandOfReckoning;
-            tag.attack = HandOfReckoning;
+            tag.taunt = SPELL_HAND_OF_RECKONING;
+            tag.attack = SPELL_HAND_OF_RECKONING;
             break;
         case CLASS_DEATH_KNIGHT:
-            tag.taunt = DarkCommand;
+            tag.taunt = SPELL_DARK_COMMAND;
             break;
         default:
             break;
@@ -1440,13 +1445,13 @@ bool BuildFeralOpeningThreat(PlayerbotAI& ai, Creature& boss)
 {
     Player& tank = *ai.GetBot();
     ShapeshiftForm const form = tank.GetShapeshiftForm();
-    if ((form != FORM_BEAR && form != FORM_DIREBEAR) || !tank.HasSpell(FeralFaerieFire) ||
-        tank.HasSpellCooldown(FeralFaerieFire) || tank.GetExactDist(&boss) > OpeningTauntRange ||
+    if ((form != FORM_BEAR && form != FORM_DIREBEAR) || !tank.HasSpell(SPELL_FERAL_FAERIE_FIRE) ||
+        tank.HasSpellCooldown(SPELL_FERAL_FAERIE_FIRE) || tank.GetExactDist(&boss) > OpeningTauntRange ||
         !tank.IsWithinLOSInMap(&boss))
         return false;
 
     float const before = boss.GetThreatMgr().GetThreat(&tank);
-    if (!ai.CastSpell(FeralFaerieFire, &boss))
+    if (!ai.CastSpell(SPELL_FERAL_FAERIE_FIRE, &boss))
         return false;
 
     Unit const* victim = boss.GetThreatMgr().GetCurrentVictim();
@@ -1465,7 +1470,7 @@ void StartFrontOpeningShot(OpeningTag const& tag)
     Player& tank = *tag.tank;
     Creature& boss = *tag.boss;
     Item const* weapon = tank.GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
-    SpellInfo const* shot = sSpellMgr->GetSpellInfo(ShootRangedWeapon);
+    SpellInfo const* shot = sSpellMgr->GetSpellInfo(SPELL_SHOOT_RANGED_WEAPON);
     if (!weapon || !shot)
         return;
 
@@ -1478,7 +1483,7 @@ void StartFrontOpeningShot(OpeningTag const& tag)
         return;
 
     PlayerbotAI* ai = GET_PLAYERBOT_AI(&tank);
-    if (ai->CanCastSpell(ShootRangedWeapon, &boss, false) && ai->CastSpell(ShootRangedWeapon, &boss))
+    if (ai->CanCastSpell(SPELL_SHOOT_RANGED_WEAPON, &boss, false) && ai->CastSpell(SPELL_SHOOT_RANGED_WEAPON, &boss))
         LOG_INFO("playerbots", "[Naxx40] Horsemen opening instance={} {} readies Shoot on {}", tank.GetInstanceId(),
                  tank.GetName(), boss.GetName());
 }
@@ -1513,7 +1518,7 @@ void FinishOpeningTags(Player& leader, RaidPlan& plan, Bosses const& bosses)
         if (first != corner)
             StartFrontOpeningShot(OpeningTagFor(leader, plan, bosses, corner));
     OpeningTag const zeliek = OpeningTagFor(leader, plan, bosses, ZeliekCorner);
-    if (first != ZeliekCorner && zeliek.attack == FeralFaerieFire)
+    if (first != ZeliekCorner && zeliek.attack == SPELL_FERAL_FAERIE_FIRE)
         BuildFeralOpeningThreat(*GET_PLAYERBOT_AI(zeliek.tank), *zeliek.boss);
 }
 
@@ -1543,13 +1548,13 @@ bool CastRearTaunt(PlayerbotAI& ai, Creature& boss)
                tank.IsWithinCombatRange(&target, tank.GetSpellMaxRangeForTarget(&target, spell)) &&
                tank.IsWithinLOSInMap(&target) && ai.CanCastSpell(id, &target) && ai.CastSpell(id, &target);
     };
-    for (uint32 spell : {TauntSpell, Growl, HandOfReckoning, DarkCommand})
+    for (uint32 spell : {SPELL_TAUNT, SPELL_GROWL, SPELL_HAND_OF_RECKONING, SPELL_DARK_COMMAND})
         if (cast(spell, boss))
             return true;
 
     Unit* const victim = boss.GetVictim();
     return tank.getClass() == CLASS_PALADIN && victim && CanRetakeWithRighteousDefense(*victim, boss) &&
-           cast(RighteousDefense, *victim);
+           cast(SPELL_RIGHTEOUS_DEFENSE, *victim);
 }
 
 bool IsIsolatedForHammer(Creature const& target, Bosses const& bosses)
@@ -5488,7 +5493,8 @@ private:
                 bot->StopMoving();
             if (TauntHorseman(*botAI, target) ||
                 (bot->getClass() == CLASS_PALADIN && CanRetakeWithRighteousDefense(*holder, target) &&
-                 botAI->CanCastSpell(RighteousDefense, holder) && botAI->CastSpell(RighteousDefense, holder)))
+                 botAI->CanCastSpell(SPELL_RIGHTEOUS_DEFENSE, holder) &&
+                 botAI->CastSpell(SPELL_RIGHTEOUS_DEFENSE, holder)))
             {
                 handoff.tauntAt = now;
                 LOG_INFO("playerbots", "[Naxx40] Horsemen instance={} {} taunt requested by {} at corner",
@@ -5650,7 +5656,7 @@ private:
             return false;
 
         uint32 const holderBuff = RequiredHolderBuff(*bot);
-        if (holderBuff && (holderBuff != RighteousFury && holderBuff != FrostPresence) &&
+        if (holderBuff && (holderBuff != SPELL_RIGHTEOUS_FURY && holderBuff != SPELL_FROST_PRESENCE) &&
             ApplyHolderBuff(*botAI, holderBuff))
         {
             LOG_INFO("playerbots", "[Naxx40] Horsemen instance={} {} prepares for {} with spell {}",
@@ -5691,7 +5697,8 @@ private:
             {
                 Player* const victim = RearHealingTarget(*bot, target->GetVictim());
                 if (victim && CanRetakeWithRighteousDefense(*victim, *target) &&
-                    botAI->CanCastSpell(RighteousDefense, victim) && botAI->CastSpell(RighteousDefense, victim))
+                    botAI->CanCastSpell(SPELL_RIGHTEOUS_DEFENSE, victim) &&
+                    botAI->CastSpell(SPELL_RIGHTEOUS_DEFENSE, victim))
                 {
                     LOG_INFO("playerbots", "[Naxx40] Horsemen instance={} {} uses Righteous Defense on {} for {}",
                              bot->GetInstanceId(), bot->GetName(), victim->GetName(), target->GetName());
@@ -5703,9 +5710,10 @@ private:
                 if ((bot->GetVictim() != target || !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING)) &&
                     _attack.Attack(target))
                     return true;
-                if (!bot->HasSpellCooldown(HammerOfTheRighteous) && bot->HasSpell(HammerOfTheRighteous) &&
-                    IsIsolatedForHammer(*target, ResolveBosses()) &&
-                    botAI->CanCastSpell(HammerOfTheRighteous, target) && botAI->CastSpell(HammerOfTheRighteous, target))
+                if (!bot->HasSpellCooldown(SPELL_HAMMER_OF_THE_RIGHTEOUS) &&
+                    bot->HasSpell(SPELL_HAMMER_OF_THE_RIGHTEOUS) && IsIsolatedForHammer(*target, ResolveBosses()) &&
+                    botAI->CanCastSpell(SPELL_HAMMER_OF_THE_RIGHTEOUS, target) &&
+                    botAI->CastSpell(SPELL_HAMMER_OF_THE_RIGHTEOUS, target))
                     return true;
             }
         }
@@ -5714,7 +5722,7 @@ private:
         {
             ShapeshiftForm const form = bot->GetShapeshiftForm();
             if ((form == FORM_BATTLESTANCE || form == FORM_DEFENSIVESTANCE) &&
-                botAI->CanCastSpell(MockingBlow, target) && botAI->CastSpell(MockingBlow, target))
+                botAI->CanCastSpell(SPELL_MOCKING_BLOW, target) && botAI->CastSpell(SPELL_MOCKING_BLOW, target))
             {
                 LOG_INFO("playerbots", "[Naxx40] Horsemen front instance={} {} uses Mocking Blow on {} (victim {})",
                          bot->GetInstanceId(), bot->GetName(), target->GetName(), actualVictim->GetName());
@@ -5742,7 +5750,8 @@ private:
             return AI_VALUE(Unit*, "current target") != target && _attack.Attack(target);
         }
 
-        return (holderBuff == RighteousFury || holderBuff == FrostPresence) && botAI->CastSpell(holderBuff, bot);
+        return (holderBuff == SPELL_RIGHTEOUS_FURY || holderBuff == SPELL_FROST_PRESENCE) &&
+               botAI->CastSpell(holderBuff, bot);
     }
 
     bool TakePosition()
@@ -6026,8 +6035,8 @@ private:
             bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
         }
 
-        bool const castBloodrage =
-            bot->GetPower(POWER_RAGE) < 150 && botAI->CanCastSpell(Bloodrage, bot) && botAI->CastSpell(Bloodrage, bot);
+        bool const castBloodrage = bot->GetPower(POWER_RAGE) < 150 && botAI->CanCastSpell(SPELL_BLOODRAGE, bot) &&
+                                   botAI->CastSpell(SPELL_BLOODRAGE, bot);
         if (!meleeRange)
         {
             float const contactRange = std::max(8.0f, bot->GetMeleeRange(&target));
@@ -6198,11 +6207,11 @@ public:
             cast ? sSpellMgr->GetSpellInfo(AI_VALUE2(uint32, "spell id", cast->getSpell())) : nullptr;
         if (tactics && tactics->HoldingCorner() && spell)
         {
-            if (spell->Id == BattleStance || spell->Id == BerserkerStance || spell->Id == BloodPresence ||
-                spell->Id == UnholyPresence)
+            if (spell->Id == SPELL_BATTLE_STANCE || spell->Id == SPELL_BERSERKER_STANCE ||
+                spell->Id == SPELL_BLOOD_PRESENCE || spell->Id == SPELL_UNHOLY_PRESENCE)
                 return 0.0f;
-            if (bot->getClass() == CLASS_DRUID && spell->HasAura(SPELL_AURA_MOD_SHAPESHIFT) && spell->Id != BearForm &&
-                spell->Id != DireBearForm)
+            if (bot->getClass() == CLASS_DRUID && spell->HasAura(SPELL_AURA_MOD_SHAPESHIFT) &&
+                spell->Id != SPELL_BEAR_FORM && spell->Id != SPELL_DIRE_BEAR_FORM)
                 return 0.0f;
         }
 
@@ -6343,7 +6352,7 @@ bool FourHorsemen40::PullOpening(PlayerbotAI& coordinatorAI)
     OpeningTag const* first = nullptr;
     for (OpeningTag const& tag : tags)
         if (tag.attack && GET_PLAYERBOT_AI(tag.tank)->CanCastSpell(tag.attack, tag.boss) &&
-            (!first || tag.attack == HandOfReckoning))
+            (!first || tag.attack == SPELL_HAND_OF_RECKONING))
             first = &tag;
     bool cast = false;
     if (first)
@@ -6389,7 +6398,7 @@ bool FourHorsemen40::ProtectsTankSupplies(Player* player)
 bool FourHorsemen40::ConflictsWithTankSupplies(uint32 spellId)
 {
     SpellInfo const* const spell = sSpellMgr->GetSpellInfo(spellId);
-    if (!spell || spellId == FlaskAura || spellId == FoodAura)
+    if (!spell || spellId == SPELL_FLASK || spellId == SPELL_FOOD)
         return false;
 
     auto const conflicts = [spell](uint32 supply)
@@ -6400,7 +6409,7 @@ bool FourHorsemen40::ConflictsWithTankSupplies(uint32 spellId)
         SpellGroupStackRule const rule = sSpellMgr->CheckSpellGroupStackRules(spell, desired);
         return rule == SPELL_GROUP_STACK_RULE_EXCLUSIVE || rule == SPELL_GROUP_STACK_RULE_EXCLUSIVE_FROM_SAME_CASTER;
     };
-    return conflicts(FlaskAura) || conflicts(FoodAura);
+    return conflicts(SPELL_FLASK) || conflicts(SPELL_FOOD);
 }
 
 bool FourHorsemen40::HasTemporaryStance(Player const& player)
@@ -6443,11 +6452,11 @@ bool FourHorsemen40::RestoreWarriorStance(PlayerbotAI& ai)
     if (current != saved.original && (current == FORM_DEFENSIVESTANCE || current == FORM_NONE))
     {
         if (saved.original == FORM_BATTLESTANCE)
-            return ai.CastSpell(BattleStance, bot);
+            return ai.CastSpell(SPELL_BATTLE_STANCE, bot);
         if (saved.original == FORM_BERSERKERSTANCE)
-            return ai.CastSpell(BerserkerStance, bot);
+            return ai.CastSpell(SPELL_BERSERKER_STANCE, bot);
         if (saved.original == FORM_NONE)
-            bot->RemoveAurasDueToSpell(DefensiveStance);
+            bot->RemoveAurasDueToSpell(SPELL_DEFENSIVE_STANCE);
     }
 
     bot->CustomData.Erase(StanceKey);

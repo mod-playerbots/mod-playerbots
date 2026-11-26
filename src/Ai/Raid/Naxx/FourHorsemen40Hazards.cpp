@@ -73,6 +73,11 @@ constexpr float CornerLateralAllowance = 5.0f;
 constexpr float CornerEscapeRingStep = 1.5f;
 constexpr float CenterwardProbeDistances[] = {3.0f, 6.0f};
 constexpr int CenterwardProbeAngles[] = {0, -30, 30, -60, 60, -85, 85, -89, 89};
+constexpr float RoomMinX = 2450.0f;
+constexpr float RoomMaxX = 2630.0f;
+constexpr float RoomMaxY = -2880.0f;
+constexpr float RoomMinZ = 239.0f;
+constexpr float RoomMaxZ = 248.0f;
 constexpr float EntranceOuterY = -3040.0f;
 constexpr float EntranceInnerY = -3016.0f;
 constexpr float MarkMargin = 3.0f;
@@ -303,15 +308,7 @@ bool Approaches(Player const& bot, BotTargets const& targets, float x, float y)
     return false;
 }
 
-// Whether a stretch of a walk passes too close to one of the mobs.
-//   - A walk toward a target (going to the fight, or pulling): mobs tied to the target don't
-//     count, and the others only have to be passed by half the buffer. Round the corner of a
-//     pack is fine, through it is not.
-//   - Any other walk (backing off, spreading out, dodging): every mob counts. A boss tanked
-//     next to an idle pack doesn't make that pack safe to back into. The full buffer for
-//     most; half of it for a mob tied to the target, so a melee bot shifting a few yards
-//     around its target isn't stopped for nothing.
-//   - An idle boss counts for every walk, tied or not, by at least BOSS_FLOOR.
+// An idle boss needs clearance even when tied to the target because it can still be pulled.
 bool StretchPulls(Player const& bot, std::vector<IdleMob> const& mobs, bool approach, G3D::Vector3 const& from,
                   G3D::Vector3 const& to)
 {
@@ -447,7 +444,7 @@ bool InsideHorsemenRoom(float x, float y, float z)
 {
     // The entrance gate is at Y -3017.17. This boundary preserves the
     // dry Korth'azz pads while excluding the corridor from retreat paths.
-    return x >= 2450.0f && x <= 2630.0f && y >= EntranceInnerY && y <= -2880.0f && z >= 239.0f && z <= 248.0f;
+    return x >= RoomMinX && x <= RoomMaxX && y >= EntranceInnerY && y <= RoomMaxY && z >= RoomMinZ && z <= RoomMaxZ;
 }
 
 bool InsideHorsemenEntrance(G3D::Vector3 const& point)
