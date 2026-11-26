@@ -292,7 +292,6 @@ public:
     ListItemsVisitor() : IterateItemsVisitor() {}
 
     std::map<uint32, uint32> items;
-    std::map<uint32, bool> soulbound;
 
     bool Visit(Item* item) override
     {
@@ -302,7 +301,6 @@ public:
             items[id] = 0;
 
         items[id] += item->GetCount();
-        soulbound[id] = item->IsSoulBound();
         return true;
     }
 };

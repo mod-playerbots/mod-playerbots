@@ -8,13 +8,17 @@
 #include "AiFactory.h"
 #include "Common.h"
 #include "DBCStores.h"
+#include "Item.h"
 #include "ItemTemplate.h"
 #include "ObjectMgr.h"
+#include "Player.h"
 #include "PlayerbotSpellRepository.h"
 #include "Playerbots.h"
 #include "SpellInfo.h"
 #include "World.h"
+#include <array>
 #include <regex>
+#include <sstream>
 
 std::map<std::string, uint32> ChatHelper::consumableSubClasses;
 std::map<std::string, uint32> ChatHelper::tradeSubClasses;
@@ -495,23 +499,87 @@ std::string const ChatHelper::FormatProfessionLink(Player* player, uint32 skill)
                                 player->GetGUID(), EncodeRecipeBits(known));
 }
 
+std::string const ChatHelper::GetItemName(ItemTemplate const* proto, int32 randomPropertyId)
+{
+    std::string itemName;
+    LocaleConstant locale = sWorld->GetDefaultDbcLocale();
+    ItemLocale const* itemLocale = sObjectMgr->GetItemLocale(proto->ItemId);
+
+    if (itemLocale && itemLocale->Name.size() > locale)
+        itemName = itemLocale->Name[locale];
+
+    if (itemName.empty())
+    {
+        itemName = proto->Name1;
+        locale = LOCALE_enUS;
+    }
+
+    if (!randomPropertyId)
+        return itemName;
+
+    // Negative ids are random suffixes ("of the Bear"), positive ids are random properties.
+    std::array<char const*, 16> const* suffixNames = nullptr;
+    if (randomPropertyId < 0)
+    {
+        if (ItemRandomSuffixEntry const* entry = sItemRandomSuffixStore.LookupEntry(-randomPropertyId))
+            suffixNames = &entry->Name;
+    }
+    else if (ItemRandomPropertiesEntry const* entry = sItemRandomPropertiesStore.LookupEntry(randomPropertyId))
+        suffixNames = &entry->Name;
+
+    if (!suffixNames)
+        return itemName;
+
+    // The core's link validator only accepts a name and suffix from the same locale.
+    char const* suffixName = (*suffixNames)[locale];
+    if ((!suffixName || !*suffixName) && locale != LOCALE_enUS)
+    {
+        itemName = proto->Name1;
+        suffixName = (*suffixNames)[LOCALE_enUS];
+    }
+
+    if (suffixName && *suffixName)
+    {
+        itemName += ' ';
+        itemName += suffixName;
+    }
+
+    return itemName;
+}
+
 std::string const ChatHelper::FormatItem(ItemTemplate const* proto, uint32 count, uint32 total)
 {
     char color[32];
     snprintf(color, sizeof(color), "%x", ItemQualityColors[proto->Quality]);
 
-    std::string itemName;
-    ItemLocale const* locale = sObjectMgr->GetItemLocale(proto->ItemId);
-
-    if (locale && locale->Name.size() > sWorld->GetDefaultDbcLocale())
-        itemName = locale->Name[sWorld->GetDefaultDbcLocale()];
-
-    if (itemName.empty())
-        itemName = proto->Name1;
-
     std::ostringstream out;
     out << "|c" << color << "|Hitem:" << proto->ItemId << ":0:0:0:0:0:0:0:0"
-        << "|h[" << itemName << "]|h|r";
+        << "|h[" << GetItemName(proto) << "]|h|r";
+
+    if (count > 1)
+        out << "x" << count;
+
+    if (total > 0)
+        out << " (" << total << ")";
+
+    return out.str();
+}
+
+std::string const ChatHelper::FormatItem(Item const* item, uint32 count, uint32 total)
+{
+    ItemTemplate const* proto = item->GetTemplate();
+
+    char color[32];
+    snprintf(color, sizeof(color), "%x", ItemQualityColors[proto->Quality]);
+
+    // Field six stays 0: the core's link validator rejects anything else.
+    Player const* owner = item->GetOwner();
+    std::ostringstream out;
+    out << "|c" << color << "|Hitem:" << proto->ItemId << ":" << item->GetEnchantmentId(PERM_ENCHANTMENT_SLOT) << ":"
+        << item->GetEnchantmentId(SOCK_ENCHANTMENT_SLOT) << ":" << item->GetEnchantmentId(SOCK_ENCHANTMENT_SLOT_2)
+        << ":" << item->GetEnchantmentId(SOCK_ENCHANTMENT_SLOT_3) << ":0:" << item->GetItemRandomPropertyId() << ":"
+        << item->GetItemSuffixFactor() << ":" << static_cast<uint32>(owner ? owner->GetLevel() : 0) << "|h["
+        << GetItemName(proto, item->GetItemRandomPropertyId()) << "]|h|r";
 
     if (count > 1)
         out << "x" << count;

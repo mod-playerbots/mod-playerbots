@@ -15,6 +15,7 @@
 #include <vector>
 
 class GameObject;
+class Item;
 class Quest;
 class Player;
 class PlayerbotAI;
@@ -45,6 +46,7 @@ public:
 
     static std::string const FormatQuest(Quest const* quest);
     static std::string const FormatItem(ItemTemplate const* proto, uint32 count = 0, uint32 total = 0);
+    static std::string const FormatItem(Item const* item, uint32 count = 0, uint32 total = 0);
     static std::string const FormatQItem(uint32 itemId);
     static std::string const FormatSpell(SpellInfo const* spellInfo);
     static std::string const FormatProfessionLink(Player* player, uint32 skill);
@@ -77,6 +79,7 @@ public:
     static std::set<uint32> ExtractAllItemIds(std::string const& text);
 
 private:
+    static std::string const GetItemName(ItemTemplate const* proto, int32 randomPropertyId = 0);
     static std::string EncodeRecipeBits(std::vector<bool> const& known);
 
     static std::map<std::string, uint32> consumableSubClasses;

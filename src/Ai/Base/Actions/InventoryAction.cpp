@@ -9,6 +9,8 @@
 #include "ItemCountValue.h"
 #include "ItemVisitors.h"
 #include "Playerbots.h"
+#include <array>
+#include <tuple>
 
 namespace
 {
@@ -138,19 +140,61 @@ bool compare_items_by_level(Item const* item1, Item const* item2)
     return compare_items(item1->GetTemplate(), item2->GetTemplate());
 }
 
-void InventoryAction::TellItems(std::map<uint32, uint32> itemMap, std::map<uint32, bool> soulbound)
+void InventoryAction::TellItems(std::vector<Item*> const& items)
 {
-    std::vector<ItemTemplate const*> items;
-    for (std::map<uint32, uint32>::iterator i = itemMap.begin(); i != itemMap.end(); i++)
+    // Stacks merge only when their chat link and soulbound state are identical.
+    struct ItemLinkKey
     {
-        items.push_back(sObjectMgr->GetItemTemplate(i->first));
+        uint32 itemId;
+        int32 randomPropertyId;
+        uint32 suffixFactor;
+        uint32 enchantId;
+        std::array<uint32, MAX_ITEM_PROTO_SOCKETS> gems;
+        bool soulbound;
+
+        bool operator<(ItemLinkKey const& other) const
+        {
+            return std::tie(itemId, randomPropertyId, suffixFactor, enchantId, gems, soulbound) <
+                   std::tie(other.itemId, other.randomPropertyId, other.suffixFactor, other.enchantId, other.gems,
+                            other.soulbound);
+        }
+    };
+
+    struct ItemGroup
+    {
+        Item const* item = nullptr;
+        uint32 count = 0;
+    };
+
+    std::map<ItemLinkKey, ItemGroup> groupMap;
+    for (Item const* item : items)
+    {
+        ItemLinkKey key;
+        key.itemId = item->GetEntry();
+        key.randomPropertyId = item->GetItemRandomPropertyId();
+        key.suffixFactor = item->GetItemSuffixFactor();
+        key.enchantId = item->GetEnchantmentId(PERM_ENCHANTMENT_SLOT);
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_SOCKETS; ++i)
+            key.gems[i] = item->GetEnchantmentId(EnchantmentSlot(SOCK_ENCHANTMENT_SLOT + i));
+
+        key.soulbound = item->IsSoulBound();
+
+        ItemGroup& group = groupMap[key];
+        group.item = item;
+        group.count += item->GetCount();
     }
 
-    std::sort(items.begin(), items.end(), compare_items);
+    std::vector<ItemGroup> groups;
+    for (auto const& entry : groupMap)
+        groups.push_back(entry.second);
+
+    std::sort(groups.begin(), groups.end(), [](ItemGroup const& a, ItemGroup const& b)
+              { return compare_items(a.item->GetTemplate(), b.item->GetTemplate()); });
 
     uint32 oldClass = -1;
-    for (ItemTemplate const* proto : items)
+    for (ItemGroup const& group : groups)
     {
+        ItemTemplate const* proto = group.item->GetTemplate();
         if (proto->Class != oldClass)
         {
             oldClass = proto->Class;
@@ -195,14 +239,14 @@ void InventoryAction::TellItems(std::map<uint32, uint32> itemMap, std::map<uint3
             }
         }
 
-        TellItem(proto, itemMap[proto->ItemId], soulbound[proto->ItemId]);
+        TellItem(group.item, group.count, group.item->IsSoulBound());
     }
 }
 
-void InventoryAction::TellItem(ItemTemplate const* proto, uint32 count, bool soulbound)
+void InventoryAction::TellItem(Item const* item, uint32 count, bool soulbound)
 {
     std::ostringstream out;
-    out << chat->FormatItem(proto, count);
+    out << chat->FormatItem(item, count);
     if (soulbound)
         out << " (soulbound)";
 
