@@ -38,6 +38,7 @@ public:
         creators["sit"] = &TriggerContext::sit;
         creators["return to stay position"] = &TriggerContext::return_to_stay_position;
         creators["collision"] = &TriggerContext::collision;
+        creators["dark water"] = &TriggerContext::dark_water;
 
         creators["timer"] = &TriggerContext::Timer;
         creators["timer bg"] = &TriggerContext::TimerBG;
@@ -268,6 +269,7 @@ private:
     static Trigger* no_rpg_target(PlayerbotAI* botAI) { return new NoRpgTargetTrigger(botAI); }
     static Trigger* has_rpg_target(PlayerbotAI* botAI) { return new HasRpgTargetTrigger(botAI); }
     static Trigger* collision(PlayerbotAI* botAI) { return new CollisionTrigger(botAI); }
+    static Trigger* dark_water(PlayerbotAI* botAI) { return new DarkWaterTrigger(botAI); }
     static Trigger* lfg_proposal_active(PlayerbotAI* botAI) { return new LfgProposalActiveTrigger(botAI); }
     static Trigger* unknown_dungeon(PlayerbotAI* botAI) { return new UnknownDungeonTrigger(botAI); }
     static Trigger* invalid_target(PlayerbotAI* botAI) { return new InvalidTargetTrigger(botAI); }

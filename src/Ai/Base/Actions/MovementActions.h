@@ -36,7 +36,7 @@ protected:
     bool MoveTo(uint32 mapId, float x, float y, float z, bool idle = false, bool react = false,
                 bool normal_only = false, bool exact_waypoint = false,
                 MovementPriority priority = MovementPriority::MOVEMENT_NORMAL, bool lessDelay = false,
-                bool backwards = false);
+                bool backwards = false, bool force = false);
     bool MoveTo(WorldObject* target, float distance = 0.0f,
                 MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
     bool MoveNear(WorldObject* target, float distance = sPlayerbotAIConfig.ContactDistance,
@@ -254,6 +254,15 @@ class MoveOutOfCollisionAction : public MovementAction
 {
 public:
     MoveOutOfCollisionAction(PlayerbotAI* botAI) : MovementAction(botAI, "move out of collision") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+class MoveOutOfDarkWaterAction : public MovementAction
+{
+public:
+    MoveOutOfDarkWaterAction(PlayerbotAI* botAI) : MovementAction(botAI, "move out of dark water") {}
 
     bool Execute(Event event) override;
     bool isUseful() override;

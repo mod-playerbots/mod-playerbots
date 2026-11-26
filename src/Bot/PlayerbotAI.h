@@ -631,6 +631,23 @@ public:
     static bool IsHealingSpell(uint32 spellFamilyName, flag96 spellFamilyFlags);
     static SpellFamilyNames Class2SpellFamilyName(uint8 cls);
     NewRpgInfo rpgInfo;
+    // Dark-water escape: survival state shared by the general trigger/action in every engine.
+    struct WaterEscapeState
+    {
+        WorldPosition target;      // nearest safe water/land point, cached while escaping
+        WorldPosition step;        // current <=50 yd step, kept until reached
+        std::vector<std::pair<WorldPosition, uint32>> blockedTargets; // rejected targets and expiry
+        uint32 targetCheckMs{0};   // last target search timestamp
+        uint32 waterCheckMs{0};    // last liquid query timestamp
+        bool inDarkWater{false};   // throttled liquid query result
+        bool searched{false};      // a search has run since entering dark water
+    };
+    WaterEscapeState waterEscape;
+    bool IsInDarkWater();
+    bool IsPositionInDarkWater(WorldObject const* object);
+    bool IsCorpseInDarkWater();
+    WorldPosition FindDarkWaterEscapeTarget();
+
     NewRpgStatistic rpgStatistic;
     std::unordered_set<uint32> countedQuestCompletions;
     void RecordQuestAccepted(uint32 questId);

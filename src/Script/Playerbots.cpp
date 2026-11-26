@@ -252,6 +252,12 @@ public:
         if (botAI != nullptr)
         {
             botAI->UpdateAI(diff);
+
+            // A passive/minimal bot can be on a 20 s check delay when it enters dark water.
+            // Wake it now instead of letting the fatigue bar run down before the first escape
+            // check can run.
+            if (botAI->IsInDarkWater() && !botAI->CanUpdateAI())
+                botAI->SetNextCheckDelay(0);
         }
 
         if (PlayerbotMgr* playerbotMgr = GET_PLAYERBOT_MGR(player))

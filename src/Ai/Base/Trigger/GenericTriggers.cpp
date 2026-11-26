@@ -621,6 +621,8 @@ bool NewPlayerNearbyTrigger::IsActive() { return AI_VALUE(ObjectGuid, "new playe
 
 bool CollisionTrigger::IsActive() { return AI_VALUE2(bool, "collision", "self target"); }
 
+bool DarkWaterTrigger::IsActive() { return botAI->IsInDarkWater(); }
+
 bool ReturnToStayPositionTrigger::IsActive()
 {
     PositionInfo stayPosition = AI_VALUE(PositionMap&, "position")["stay"];

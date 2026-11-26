@@ -1994,6 +1994,11 @@ void RandomPlayerbotMgr::InitArenaTeams()
 
 void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
 {
+    RandomTeleportForLevel(bot, true);
+}
+
+void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot, bool allowHearth)
+{
     if (bot->InBattleground())
         return;
 
@@ -2031,7 +2036,7 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
         std::vector<WorldLocation> locs = sTravelMgr.GetCityLocations(bot);
         if (!locs.empty())
         {
-            RandomTeleport(bot, locs, /*hearth=*/true);
+            RandomTeleport(bot, locs, allowHearth);
             return;
         }
     }

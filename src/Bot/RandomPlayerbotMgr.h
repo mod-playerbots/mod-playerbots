@@ -164,6 +164,7 @@ public:
     uint32 GetTradeDiscount(Player* bot, Player* master);
     void Refresh(Player* bot);
     void RandomTeleportForLevel(Player* bot);
+    void RandomTeleportForLevel(Player* bot, bool allowHearth);
     void RandomTeleportGrindForLevel(Player* bot);
     void RandomTeleportForRpg(Player* bot);
     uint32 GetMaxAllowedBotCount();

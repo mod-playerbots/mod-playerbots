@@ -111,6 +111,11 @@ bool AutoReleaseSpiritAction::isUseful()
     if (!bot->isDead() || bot->InArena())
         return false;
 
+    // A dark-water corpse is not recoverable; release immediately, without the group/dungeon
+    // wait, so the corpse can be moved to the graveyard.
+    if (!bot->HasPlayerFlag(PLAYER_FLAGS_GHOST) && botAI->IsCorpseInDarkWater())
+        return true;
+
     if (bot->InBattleground())
         return ShouldDelayBattlegroundRelease();
 
