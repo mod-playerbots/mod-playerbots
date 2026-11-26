@@ -654,7 +654,7 @@ bool PrepareWarriorStances(Player& leader, RaidPlan const& plan, OpeningPlan con
     for (Member const& member : plan.members)
     {
         Player* const warrior = PlayerInRaid(leader, member.guid);
-        if (!warrior || warrior->getClass() != CLASS_WARRIOR || warrior->GetGroup() != leader.GetGroup())
+        if (!IsAutonomousBot(warrior) || warrior->getClass() != CLASS_WARRIOR)
             continue;
 
         WarriorStanceChange const* const previous = warrior->CustomData.Get<WarriorStanceChange>(StanceKey);
@@ -756,7 +756,8 @@ void StartPlan(Player& bot, RaidPlan& plan, bool preparing = false)
     Group* group = bot.GetGroup();
     plan.group = group->GetGUID();
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        if (Player* member = ref->GetSource(); CanAssign(member, bot) && (!preparing || member->IsAlive()))
+        if (Player* member = ref->GetSource();
+            CanAssign(member, bot) && (!preparing || (IsAutonomousBot(member) && member->IsAlive())))
             plan.members.push_back({member->GetGUID(), NoCorner});
         else if (member && !GET_PLAYERBOT_AI(member))
             LOG_INFO("playerbots",
@@ -855,7 +856,7 @@ bool StartOpening(Player& coordinator, RaidPlan& plan, uint32 now)
     {
         if (member.home == 0 || member.home >= CornerCount)
             continue;
-        if (Player* player = PlayerInRaid(leader, member.guid))
+        if (Player* player = PlayerInRaid(leader, member.guid); IsAutonomousBot(player))
         {
             bool const tank = plan.holders[member.home] == member.guid;
             if (tank || (member.home >= 2 && PlayerbotAI::IsHeal(player) && member.supportSlot < 2))
@@ -876,8 +877,9 @@ bool NeedsAdditionalOpeningHealers(Player& coordinator, OpeningPlan const& openi
 
     std::ptrdiff_t healers = 0;
     for (GroupReference* ref = coordinator.GetGroup()->GetFirstMember(); ref; ref = ref->next())
-        if (Player* member = ref->GetSource(); CanAssign(member, coordinator) && member->IsAlive() &&
-                                               PlayerbotAI::IsHeal(member) && ++healers == rearHealers)
+        if (Player* member = ref->GetSource(); CanAssign(member, coordinator) && IsAutonomousBot(member) &&
+                                               member->IsAlive() && PlayerbotAI::IsHeal(member) &&
+                                               ++healers == rearHealers)
             return true;
     return false;
 }
@@ -1173,8 +1175,8 @@ FourHorsemen40::Preparation DriveOpening(Player& leader, RaidPlan& plan, Bosses 
                 continue;
             Player* member = PlayerInRaid(leader, moving.guid);
             bool const hadArrived = moving.arrived;
-            moving.arrived = member && member->GetGroup() == leader.GetGroup() && member->InSamePhase(&leader) &&
-                             !member->IsInCombat() && PlaceOpeningMember(moving, *member, bosses, now);
+            moving.arrived =
+                IsAutonomousBot(member) && !member->IsInCombat() && PlaceOpeningMember(moving, *member, bosses, now);
             if (moving.arrived && !hadArrived)
                 LOG_INFO("playerbots",
                          "[Naxx40] Horsemen opening instance={} {} reached {} as {} at ({:.2f}, {:.2f}, {:.2f})",
@@ -3656,7 +3658,7 @@ Assignment AssignmentFor(Player& bot, Bosses const& bosses, Member*& plannedMemb
         FinishOpeningTags(bot, plan, bosses);
         plan.opening->pulled = true;
         for (OpeningMember const& member : plan.opening->members)
-            if (Player* player = PlayerInRaid(bot, member.guid))
+            if (Player* player = PlayerInRaid(bot, member.guid); IsAutonomousBot(player))
             {
                 if (!player->movespline->Finalized() && player->movespline->GetId() == member.spline)
                     player->StopMoving();
@@ -6006,7 +6008,8 @@ FourHorsemen40::Preparation FourHorsemen40::PrepareOpening(PlayerbotAI& ai)
                             [coordinator](auto const& seat)
                             {
                                 Player* member = PlayerInRaid(*coordinator, seat.guid);
-                                return member && (seat.healerSlot == NoSupportSlot || PlayerbotAI::IsHeal(member));
+                                return IsAutonomousBot(member) &&
+                                       (seat.healerSlot == NoSupportSlot || PlayerbotAI::IsHeal(member));
                             });
     bool const ownsOpening = plan.group == coordinator->GetGroup()->GetGUID() && plan.opening;
     if (!ownsOpening || !validStaging || plan.opening->pulled || !validHolders || OpeningExpired(*plan.opening, now) ||

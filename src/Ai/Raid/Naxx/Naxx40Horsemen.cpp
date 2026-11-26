@@ -144,7 +144,7 @@ bool CanDriveOpening(Player* player)
 
 PlayerbotAI* GetOpeningMemberAI(Player* player, Player* member)
 {
-    if (!member || !member->IsInWorld() || !member->IsAlive() || !member->IsInMap(player) ||
+    if (!IsAutonomous(member) || !member->IsInWorld() || !member->IsAlive() || !member->IsInMap(player) ||
         !member->InSamePhase(player))
         return nullptr;
     return GET_PLAYERBOT_AI(member);
@@ -205,10 +205,8 @@ MusterStatus ReadMuster(Player* player)
             supportInside = false;
 
         muster.rebuffing |= ai->forceRebuff.IsPending();
-        if (IsAutonomous(member))
-            muster.rested &=
-                member->GetHealthPct() >= OPENING_REST_PERCENT &&
-                (!member->GetMaxPower(POWER_MANA) || member->GetPowerPct(POWER_MANA) >= OPENING_REST_PERCENT);
+        muster.rested &= member->GetHealthPct() >= OPENING_REST_PERCENT &&
+                         (!member->GetMaxPower(POWER_MANA) || member->GetPowerPct(POWER_MANA) >= OPENING_REST_PERCENT);
     }
     muster.roomReady = supportInside && living && inside * 100 >= living * ROOM_READY_PERCENT;
     return muster;
