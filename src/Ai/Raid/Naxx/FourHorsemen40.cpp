@@ -6028,6 +6028,11 @@ public:
 
 void FourHorsemen40::AddRearHealingScript() { new RearHealerConfirmationScript(); }
 
+void FourHorsemen40::ObserveVoidExposure(Player& bot)
+{
+    FourHorsemen40Hazards::ObserveVoidExposure(bot, ActiveEncounter(&bot) && bot.IsAlive());
+}
+
 FourHorsemen40::Preparation FourHorsemen40::PrepareOpening(PlayerbotAI& ai)
 {
     Player* const coordinator = ai.GetBot();

@@ -36,6 +36,7 @@
 #include <iterator>
 #include <limits>
 #include <list>
+#include <map>
 #include <optional>
 #include <string>
 #include <utility>
@@ -87,6 +88,21 @@ constexpr float MarkRetreatStep = 6.0f;
 constexpr float DegreesToRadians = static_cast<float>(M_PI) / 180.0f;
 constexpr int MarkRetreatAngles[] = {0,   -5, 5,   -10, 10,  -15, 15,  -20, 20,  -25, 25,
                                      -30, 30, -45, 45,  -60, 60,  -75, 75,  -90, 90};
+
+std::string const VoidExposureKey = "naxx40 horsemen void exposure";
+
+struct VoidContact
+{
+    std::optional<uint32> lastOutsideAt;
+    std::optional<uint32> enteredAt;
+};
+
+struct VoidExposure : DataMap::Base
+{
+    uint32 instanceId = 0;
+    std::optional<uint32> scannedAt;
+    std::map<ObjectGuid, VoidContact> contacts;
+};
 
 // The path-only part of RaidClear's idle-creature leash and escape search
 // is adapted from reddevilnlp/mod-playerbots (13492578), under the MIT License.
@@ -664,21 +680,74 @@ bool FindCenterwardMarkExit(Player& bot, std::span<FourHorsemenMarkSource const>
 }
 }  // namespace
 
+void FourHorsemen40Hazards::ObserveVoidExposure(Player& bot, bool active)
+{
+    if (!active)
+    {
+        if (bot.CustomData.Get<VoidExposure>(VoidExposureKey))
+            bot.CustomData.Erase(VoidExposureKey);
+        return;
+    }
+
+    VoidExposure& exposure = *bot.CustomData.GetDefault<VoidExposure>(VoidExposureKey);
+    uint32 const now = getMSTime();
+    if (exposure.instanceId != bot.GetInstanceId())
+    {
+        exposure = VoidExposure{};
+        exposure.instanceId = bot.GetInstanceId();
+    }
+
+    if (!exposure.scannedAt || getMSTimeDiff(*exposure.scannedAt, now) >= ZoneUpdateMs)
+    {
+        exposure.scannedAt = now;
+        std::list<Creature*> zones;
+        bot.GetCreatureListWithEntryInGrid(zones, NPC_VOID_ZONE, ZoneScanRadius);
+        for (Creature const* zone : zones)
+            if (zone->IsAlive())
+                exposure.contacts.try_emplace(zone->GetGUID());
+    }
+
+    static float const damageRadiusSquared = std::pow(ConsumptionRadius(), 2.0f);
+    static float const scanRadiusSquared = ZoneScanRadius * ZoneScanRadius;
+    G3D::Vector3 const current = CurrentPoint(bot);
+    Map* const map = bot.GetMap();
+    for (auto contact = exposure.contacts.begin(); contact != exposure.contacts.end();)
+    {
+        Creature const* const zone = map->GetCreature(contact->first);
+        if (!zone || !zone->IsAlive() || !bot.InSamePhase(zone))
+        {
+            contact = exposure.contacts.erase(contact);
+            continue;
+        }
+
+        float const distanceSquared = (current - Point(zone->GetPosition())).squaredLength();
+        if (distanceSquared > scanRadiusSquared)
+        {
+            contact = exposure.contacts.erase(contact);
+            continue;
+        }
+
+        VoidContact& state = contact->second;
+        if (distanceSquared > damageRadiusSquared)
+        {
+            state.lastOutsideAt = now;
+            state.enteredAt.reset();
+        }
+        else if (state.lastOutsideAt)
+        {
+            // Entry occurred between observations. Count from the earlier sample.
+            state.enteredAt = std::exchange(state.lastOutsideAt, std::nullopt);
+        }
+        ++contact;
+    }
+}
+
 void FourHorsemen40Hazards::RefreshVoidZones(Player& bot)
 {
     uint32 const now = getMSTime();
     if (_instanceId == bot.GetInstanceId() && _checkedAt && getMSTimeDiff(_checkedAt, now) < ZoneUpdateMs)
         return;
 
-    std::vector<std::pair<ObjectGuid, uint32>> occupied;
-    if (_instanceId == bot.GetInstanceId())
-    {
-        static float const damageRadiusSquared = std::pow(ConsumptionRadius(), 2.0f);
-        G3D::Vector3 const current = CurrentPoint(bot);
-        for (VoidZone const& zone : _voidZones)
-            if (zone.enteredAt && (current - Point(zone.position)).squaredLength() <= damageRadiusSquared)
-                occupied.emplace_back(zone.guid, zone.enteredAt);
-    }
     _instanceId = bot.GetInstanceId();
     _checkedAt = now;
     _voidZones.clear();
@@ -686,13 +755,8 @@ void FourHorsemen40Hazards::RefreshVoidZones(Player& bot)
     std::list<Creature*> zones;
     bot.GetCreatureListWithEntryInGrid(zones, NPC_VOID_ZONE, ZoneScanRadius);
     for (Creature const* zone : zones)
-    {
-        if (!zone->IsAlive())
-            continue;
-        ObjectGuid const guid = zone->GetGUID();
-        auto const contact = std::ranges::find(occupied, guid, &std::pair<ObjectGuid, uint32>::first);
-        _voidZones.push_back({guid, zone->GetPosition(), contact != occupied.end() ? contact->second : 0});
-    }
+        if (zone->IsAlive())
+            _voidZones.push_back({zone->GetGUID(), zone->GetPosition()});
 }
 
 float FourHorsemen40Hazards::Clearance(Position const& point) const
@@ -750,22 +814,32 @@ Position const* FourHorsemen40Hazards::FirstBlockedZone(Player const& bot, std::
 
 std::string_view FourHorsemen40Hazards::RearExchangeCrossingBlock(Player const& bot, std::span<G3D::Vector3 const> path,
                                                                   FourHorsemenRearCrossing crossing,
-                                                                  bool& crossesDamage)
+                                                                  bool& crossesDamage) const
 {
     static float const damageRadiusSquared = std::pow(ConsumptionRadius(), 2.0f);
     float const speed = bot.GetSpeed(MOVE_RUN);
     uint32 const now = getMSTime();
     uint32 damageBudget = 0;
     G3D::Vector3 const start = CurrentPoint(bot);
-    for (VoidZone& zone : _voidZones)
+    VoidExposure const* const exposure = bot.CustomData.Get<VoidExposure>(VoidExposureKey);
+    for (VoidZone const& zone : _voidZones)
     {
+        Creature const* const creature = bot.GetMap()->GetCreature(zone.guid);
+        if (!creature || !creature->IsAlive())
+            continue;
+
         G3D::Vector3 const center = Point(zone.position);
         bool const inside = (start - center).squaredLength() <= damageRadiusSquared;
-        if (!inside)
-            zone.enteredAt = 0;
-        else if (!zone.enteredAt)
-            zone.enteredAt = now;
-        uint32 const elapsed = inside ? getMSTimeDiff(zone.enteredAt, now) : 0;
+        uint32 elapsed = 0;
+        if (inside)
+        {
+            if (!exposure || exposure->instanceId != bot.GetInstanceId())
+                return "entry time into a void zone is unknown";
+            auto const contact = exposure->contacts.find(zone.guid);
+            if (contact == exposure->contacts.end() || !contact->second.enteredAt)
+                return "entry time into a void zone is unknown";
+            elapsed = getMSTimeDiff(*contact->second.enteredAt, now);
+        }
         float distance = 0.0f;
         bool canTakeDamage = inside;
         bool leftZone = false;

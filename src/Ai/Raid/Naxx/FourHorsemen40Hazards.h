@@ -44,6 +44,8 @@ class FourHorsemen40Hazards
 public:
     explicit FourHorsemen40Hazards(PlayerbotAI* ai) : _ai(ai) {}
 
+    static void ObserveVoidExposure(Player& bot, bool active);
+
     bool EscapeVoidZones(Player& bot, Position const& corner, float cornerRadius);
     bool EscapeCornerVoidZones(Player& bot, Position const& corner, Position const& center, float cornerRadius);
     bool EscapeRearExchangeVoidZone(Player& bot, Position const* toward = nullptr);
@@ -106,7 +108,6 @@ private:
     {
         ObjectGuid guid;
         Position position;
-        uint32 enteredAt = 0;
     };
 
     void RefreshVoidZones(Player& bot);
@@ -116,7 +117,7 @@ private:
                                      VoidPath mode = VoidPath::Padded) const;
     bool IsDryRearExchangeExit(Player const& bot, std::span<G3D::Vector3 const> path, VoidPath mode) const;
     std::string_view RearExchangeCrossingBlock(Player const& bot, std::span<G3D::Vector3 const> path,
-                                               FourHorsemenRearCrossing crossing, bool& crossesDamage);
+                                               FourHorsemenRearCrossing crossing, bool& crossesDamage) const;
     bool FindCenterRetreatStep(Player& bot, Position const& destination, Movement::PointsArray& path);
     bool FindLanePath(Player& bot, G3D::Vector3 const& destination, std::span<Position const> lane, float arrival,
                       std::span<FourHorsemenMarkSource const> avoid, Movement::PointsArray& path, bool detour) const;

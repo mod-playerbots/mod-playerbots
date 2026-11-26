@@ -35,6 +35,7 @@ bool ConflictsWithTankSupplies(uint32 spell);
 ObjectGuid GetOpeningHolder(Player const& member);
 bool StagePullHolder(PlayerbotAI& holder);
 void AddRearHealingScript();
+void ObserveVoidExposure(Player& bot);
 }  // namespace FourHorsemen40
 
 class FourHorsemen40ActionContext : public NamedObjectContext<Action>

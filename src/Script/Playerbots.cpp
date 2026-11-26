@@ -16,6 +16,7 @@
 #include "PlayerbotsDatabase.h"
 #include <mysqld_error.h>
 #include "AllMapScript.h"
+#include "FourHorsemen40.h"
 #include "GatherNodeMgr.h"
 #include "GlobalScript.h"
 #include "GuildTaskMgr.h"
@@ -251,6 +252,7 @@ public:
 
         if (botAI != nullptr)
         {
+            FourHorsemen40::ObserveVoidExposure(*player);
             botAI->UpdateAI(diff);
         }
 
