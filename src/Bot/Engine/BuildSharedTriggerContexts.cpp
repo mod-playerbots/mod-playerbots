@@ -31,6 +31,8 @@
 #include "WotlkDungeonTriggerContext.h"
 #include "ZATriggerContext.h"
 
+#include "RaidTocTriggerContext.h"
+
 void AiObjectContext::BuildSharedTriggerContexts(
     SharedNamedObjectContextList<Trigger>& triggerContexts)
 {
@@ -78,4 +80,5 @@ void AiObjectContext::BuildSharedTriggerContexts(
     triggerContexts.Add(new WotlkDungeonFoSTriggerContext());
     triggerContexts.Add(new WotlkDungeonPoSTriggerContext());
     triggerContexts.Add(new WotlkDungeonToCTriggerContext());
+    triggerContexts.Add(new RaidTocTriggerContext());
 }

@@ -10,6 +10,14 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
+namespace
+{
+    // Trial of the Crusader debuffs that force the healer to pump heals into a
+    // specific player ahead of everything else.
+    constexpr uint32 SPELL_TOC_INCINERATE_FLESH = 66237;  // Lord Jaraxxus: absorbs healing, detonates on the raid if not healed through
+    constexpr uint32 SPELL_TOC_IMPALE = 65919;            // Anub'arak: heavy bleed on the impaled player
+}
+
 class IsTargetOfHealingSpell : public SpellEntryPredicate
 {
 public:
@@ -98,6 +106,20 @@ Unit* PartyMemberToHeal::Calculate()
                     player->GetDistance2d(bot) <= sPlayerbotAIConfig.HealDistance && player->IsInWorld() &&
                     player->GetMap() == bot->GetMap())
                     probeValue -= carrierPriority;
+
+                // Trial of the Crusader: Incinerate Flesh absorbs healing and
+                // blows up the whole raid when it expires unhealed, so the
+                // victim must be healed through even at full health - give it
+                // absolute priority. Impale is a heavy bleed and gets the next
+                // priority.
+                if (botAI->HasStrategy("toc", BOT_STATE_COMBAT))
+                {
+                    if (player->HasAura(SPELL_TOC_INCINERATE_FLESH))
+                        probeValue = 0.0f;
+                    else if (player->HasAura(SPELL_TOC_IMPALE))
+                        probeValue -= 25.0f;
+                }
+
                 // delay Check player to here for better performance
                 if (probeValue < calc.minValue && Check(player))
                     calc.probe(probeValue, player);
