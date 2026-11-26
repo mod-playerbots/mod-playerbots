@@ -22,6 +22,23 @@ struct POIInfo
 {
     G3D::Vector2 pos;
     int32 objectiveIdx;
+    uint32 poiId{0};        // quest_poi.Id, the key for the baked Z store
+    uint32 triggerId{0};    // area trigger entry for an explore POI, 0 otherwise
+    bool hasBakedZ{false};  // pos comes from the baked store and z is the baked floor
+    float z{0.0f};          // walkable floor, baked or terrain-estimated
+};
+
+// quest_poi.ObjectiveIndex used by scout/explore objectives. It is outside the four NPC/GO and
+// six item slots, so the normal incomplete-objective loop never matches it.
+constexpr int32 QUEST_OBJECTIVE_EXPLORE = 16;
+
+// A resolved 3D objective/turn-in position from spawn data (quest guidp map).
+struct QuestObjectivePosition
+{
+    int32 objectiveIdx;  // 0..3 NpcOrGo kill/GO objective slot, -1 turn-in
+    WorldPosition pos;
+    ObjectGuid::LowType spawnId{0};  // core spawn id, used to find the loaded object
+    bool gameObject{false};
 };
 
 /// A base (composition) class for all new rpg actions
@@ -31,6 +48,10 @@ class NewRpgBaseAction : public MovementAction
 {
 public:
     NewRpgBaseAction(PlayerbotAI* botAI, std::string name) : MovementAction(botAI, name) {}
+
+    // Builds the spawn index once on the world thread at startup, so the first questing bot does
+    // not pay a full spawn scan on a map thread.
+    static void WarmUpQuestObjectiveSpawnIndex();
 
 protected:
     /* MOVEMENT RELATED */
@@ -50,8 +71,20 @@ protected:
     bool TurnInQuest(Quest const* quest, ObjectGuid guid);
     bool OrganizeQuestLog();
 
+    // Correct 3D positions for a quest's incomplete objectives (toComplete = turn-in) from the
+    // spawn/quest-ender index: covers cave floors and tower platforms alike. Empty when the map
+    // has no entry - callers fall back to POI + baked/terrain height.
+    static bool GetQuestObjectivePositions(Player* bot, uint32 questId,
+                                           std::vector<QuestObjectivePosition>& outPositions, bool toComplete);
+    // Loaded creature/gameobject for a spawn entry, or nullptr when the spawn is not loaded.
+    static WorldObject* FindLoadedSpawn(Player* bot, QuestObjectivePosition const& candidate);
+
 protected:
     bool GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector<POIInfo>& poiInfo, bool toComplete = false);
+    // Whether the quest has a usable destination for its live status (objective while
+    // incomplete, turn-in while complete). Used by the do-quest state selector so spawn-only
+    // turn-ins and trigger-only quests are not rejected before the resolver runs.
+    bool HasQuestDestination(uint32 questId);
     static WorldPosition SelectRandomGrindPos(Player* bot);
     static WorldPosition SelectRandomCampPos(Player* bot);
     bool SelectRandomFlightTaxiNode(uint32& flightMasterEntry, WorldPosition& flightMasterPos, std::vector<uint32>& path);

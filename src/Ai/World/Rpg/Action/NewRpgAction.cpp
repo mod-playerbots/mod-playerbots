@@ -8,7 +8,9 @@
 #include "AreaDefines.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
+#include "CreatureData.h"
 #include "DBCStores.h"
+#include "GameObjectData.h"
 #include "GossipDef.h"
 #include "IVMapMgr.h"
 #include "MotionMaster.h"
@@ -21,20 +23,88 @@
 #include "ObjectDefines.h"
 #include "ObjectGuid.h"
 #include "ObjectMgr.h"
+#include "Opcodes.h"
 #include "PathGenerator.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
+#include "PoolMgr.h"
 #include "QuestDef.h"
 #include "Random.h"
 #include "SharedDefines.h"
 #include "Timer.h"
 #include "TravelMgr.h"
 #include "WaypointMovementGenerator.h"
+#include <limits>
 #include "G3D/Vector2.h"
 #include <cmath>
 #include <cstdlib>
+#include <utility>
+
+namespace
+{
+std::pair<int32, uint32> ObjectiveSignature(Quest const* quest, int32 objectiveIdx)
+{
+    if (!quest)
+        return {0, 0};
+
+    if (objectiveIdx >= 0 && objectiveIdx < QUEST_OBJECTIVES_COUNT)
+        return {quest->RequiredNpcOrGo[objectiveIdx], quest->RequiredNpcOrGoCount[objectiveIdx]};
+
+    if (objectiveIdx >= QUEST_OBJECTIVES_COUNT &&
+        objectiveIdx < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
+    {
+        int32 const itemIdx = objectiveIdx - QUEST_OBJECTIVES_COUNT;
+        return {int32(quest->RequiredItemId[itemIdx]), quest->RequiredItemCount[itemIdx]};
+    }
+
+    return {0, 0};
+}
+
+bool IsSpawnActive(Player* bot, ObjectGuid::LowType spawnId, bool gameObject)
+{
+    Map* map = bot->GetMap();
+    if (!map || !spawnId)
+        return false;
+
+    if (gameObject)
+    {
+        GameObjectData const* data = sObjectMgr->GetGameObjectData(spawnId);
+        if (!data)
+            return false;
+        if (data->spawnGroupId && !map->IsSpawnGroupActive(data->spawnGroupId))
+            return false;
+        if (data->poolId && !map->GetPoolData().IsSpawnedObject<GameObject>(uint32(spawnId)))
+            return false;
+    }
+    else
+    {
+        CreatureData const* data = sObjectMgr->GetCreatureData(spawnId);
+        if (!data)
+            return false;
+        if (data->spawnGroupId && !map->IsSpawnGroupActive(data->spawnGroupId))
+            return false;
+        if (data->poolId && !map->GetPoolData().IsSpawnedObject<Creature>(uint32(spawnId)))
+            return false;
+    }
+
+    return true;
+}
+
+void SetObjectiveSignature(NewRpgInfo::DoQuest& data, Quest const* quest)
+{
+    auto const signature = ObjectiveSignature(quest, data.objectiveIdx);
+    data.objectiveEntry = signature.first;
+    data.objectiveCount = signature.second;
+}
+
+bool ObjectiveChanged(NewRpgInfo::DoQuest const& data, Quest const* quest)
+{
+    auto const signature = ObjectiveSignature(quest, data.objectiveIdx);
+    return signature.first != data.objectiveEntry || signature.second != data.objectiveCount;
+}
+} // namespace
 
 void TellRpgStatusAction::WhisperStatusChange(Player* owner, std::string const& statusName)
 {
@@ -188,8 +258,7 @@ bool TellRpgStatusAction::Execute(Event event)
                 uint32 qid = bot->GetQuestSlotQuestId(slot);
                 if (!qid)
                     continue;
-                std::vector<POIInfo> poi;
-                if (GetQuestPOIPosAndObjectiveIdx(qid, poi, true))
+                if (HasQuestDestination(qid))
                 {
                     questId = qid;
                     break;
@@ -213,7 +282,7 @@ bool TellRpgStatusAction::Execute(Event event)
             bot->Whisper(msg, LANG_UNIVERSAL, owner);
             return false;
         }
-        info.ChangeToDoQuest(questId, quest);
+        info.ChangeToDoQuest(questId);
         WhisperStatusChange(owner, "DO_QUEST " + std::to_string(questId));
         return true;
     }
@@ -238,7 +307,7 @@ bool StartRpgDoQuestAction::Execute(Event event)
     Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
     if (quest)
     {
-        botAI->rpgInfo.ChangeToDoQuest(questId, quest);
+        botAI->rpgInfo.ChangeToDoQuest(questId);
         bot->Whisper("Start to do quest " + std::to_string(questId), LANG_UNIVERSAL, owner);
         return true;
     }
@@ -518,14 +587,50 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         int32 currentObjective = data.objectiveIdx;
         // check if the objective has completed
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+        if (!quest)
+        {
+            // .reload quest_template can free the template while the bot is travelling.
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            botAI->rpgInfo.ChangeToIdle();
+            return false;
+        }
+
+        if (ObjectiveChanged(data, quest))
+        {
+            // .reload quest_template can replace the required entry/count behind the same slot.
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            data.objectiveEntry = 0;
+            data.objectiveCount = 0;
+            data.objectiveSpawnId = 0;
+            data.objectiveIsGameObject = false;
+            data.objectiveSpawnMissing = false;
+            data.failedObjectiveSpawns.clear();
+            data.exploreTriggerId = 0;
+            data.exploreTriggerSent = false;
+            data.exploreTriggerAttempts = 0;
+            data.exploreTriggerRetryAt = 0;
+            return true;
+        }
+
         QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
         bool completed = true;
-        if (currentObjective < QUEST_OBJECTIVES_COUNT)
+        if (currentObjective == QUEST_OBJECTIVE_EXPLORE)
+        {
+            // Exploration completes through the area trigger, which sets Explored. Keep the
+            // destination until then; a mixed explore+kill/collect quest then moves on to the rest.
+            completed = q_status.Explored;
+        }
+        else if (currentObjective >= 0 && currentObjective < QUEST_OBJECTIVES_COUNT)
         {
             if (q_status.CreatureOrGOCount[currentObjective] < quest->RequiredNpcOrGoCount[currentObjective])
                 completed = false;
         }
-        else if (currentObjective < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
+        else if (currentObjective >= QUEST_OBJECTIVES_COUNT &&
+                 currentObjective < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
         {
             if (q_status.ItemCount[currentObjective - QUEST_OBJECTIVES_COUNT] <
                 quest->RequiredItemCount[currentObjective - QUEST_OBJECTIVES_COUNT])
@@ -537,45 +642,183 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.lastReachPOI = 0;
             data.pos = WorldPosition();
             data.objectiveIdx = 0;
+            data.objectiveEntry = 0;
+            data.objectiveCount = 0;
+            data.objectiveSpawnId = 0;
+            data.objectiveIsGameObject = false;
+            data.objectiveSpawnMissing = false;
+            data.failedObjectiveSpawns.clear();
+            data.exploreTriggerId = 0;
+            data.exploreTriggerSent = false;
+            data.exploreTriggerAttempts = 0;
+            data.exploreTriggerRetryAt = 0;
         }
     }
     if (data.pos == WorldPosition())
     {
-        std::vector<POIInfo> poiInfo;
-        if (!GetQuestPOIPosAndObjectiveIdx(questId, poiInfo))
+        // Spawn-backed objectives first: exact 3D positions (cave floors, tower platforms).
+        bool spawnResolved = false;
+        std::vector<QuestObjectivePosition> objectivePositions;
+        if (GetQuestObjectivePositions(bot, questId, objectivePositions, false))
         {
-            // can't find a poi pos to go, stop doing quest for now
-            botAI->rpgInfo.ChangeToIdle();
-            return true;
+            QuestObjectivePosition const* best = nullptr;
+            float bestDistance = std::numeric_limits<float>::max();
+            for (QuestObjectivePosition const& candidate : objectivePositions)
+            {
+                if (candidate.spawnId &&
+                    data.failedObjectiveSpawns.count({candidate.gameObject, candidate.spawnId}))
+                    continue;
+
+                float const distance = bot->GetDistance(candidate.pos.GetPositionX(),
+                                                        candidate.pos.GetPositionY(),
+                                                        candidate.pos.GetPositionZ());
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    best = &candidate;
+                }
+            }
+
+            if (best)
+            {
+                LOG_DEBUG("playerbots",
+                          "[New RPG] {} quest {} destination source=spawn idx={} ({:.1f}, {:.1f}, {:.1f}) {:.0f} yd",
+                          bot->GetName(), questId, best->objectiveIdx, best->pos.GetPositionX(),
+                          best->pos.GetPositionY(), best->pos.GetPositionZ(), bestDistance);
+
+                data.lastReachPOI = 0;
+                data.pos = best->pos;
+                data.objectiveIdx = best->objectiveIdx;
+                SetObjectiveSignature(data, sObjectMgr->GetQuestTemplate(questId));
+                data.objectiveSpawnId = best->spawnId;
+                data.objectiveIsGameObject = best->gameObject;
+                data.objectiveSpawnMissing = false;
+                data.exploreTriggerId = 0;
+                data.exploreTriggerSent = false;
+                data.exploreTriggerAttempts = 0;
+                data.exploreTriggerRetryAt = 0;
+                spawnResolved = true;
+            }
         }
-        uint32 rndIdx = urand(0, poiInfo.size() - 1);
-        G3D::Vector2 nearestPoi = poiInfo[rndIdx].pos;
-        int32 objectiveIdx = poiInfo[rndIdx].objectiveIdx;
 
-        float dx = nearestPoi.x, dy = nearestPoi.y;
+        if (!spawnResolved)
+        {
+            std::vector<POIInfo> poiInfo;
+            if (!GetQuestPOIPosAndObjectiveIdx(questId, poiInfo))
+            {
+                // can't find a poi pos to go, stop doing quest for now
+                botAI->rpgInfo.ChangeToIdle();
+                return true;
+            }
+            uint32 rndIdx = urand(0, poiInfo.size() - 1);
+            POIInfo const& poi = poiInfo[rndIdx];
+            float dx = poi.pos.x, dy = poi.pos.y;
+            float dz = poi.z;
 
-        // z = MAX_HEIGHT as we do not know accurate z
-        float dz = std::max(bot->GetMap()->GetHeight(dx, dy, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(dx, dy));
+            if (poi.hasBakedZ)
+            {
+                LOG_DEBUG("playerbots", "[New RPG] {} quest {} destination source=baked ({:.1f}, {:.1f}, {:.1f})",
+                          bot->GetName(), questId, dx, dy, dz);
+            }
+            else
+            {
+                LOG_DEBUG("playerbots", "[New RPG] {} quest {} destination source=poi ({:.1f}, {:.1f}, {:.1f})",
+                          bot->GetName(), questId, dx, dy, dz);
+            }
 
-        // double check for GetQuestPOIPosAndObjectiveIdx
-        if (dz == INVALID_HEIGHT || dz == VMAP_INVALID_HEIGHT_VALUE)
-            return false;
-
-        WorldPosition pos(bot->GetMapId(), dx, dy, dz);
-        data.lastReachPOI = 0;
-        data.pos = pos;
-        data.objectiveIdx = objectiveIdx;
+            WorldPosition pos(bot->GetMapId(), dx, dy, dz);
+            data.lastReachPOI = 0;
+            data.pos = pos;
+            data.objectiveIdx = poi.objectiveIdx;
+            SetObjectiveSignature(data, sObjectMgr->GetQuestTemplate(questId));
+            data.objectiveSpawnId = 0;
+            data.objectiveIsGameObject = false;
+            data.exploreTriggerId = poi.triggerId;
+            data.exploreTriggerSent = false;
+            data.exploreTriggerAttempts = 0;
+            data.exploreTriggerRetryAt = 0;
+        }
     }
 
-    if (bot->GetDistance(data.pos) > 10.0f && !data.lastReachPOI)
+    bool const exploreObjective = data.objectiveIdx == QUEST_OBJECTIVE_EXPLORE && data.exploreTriggerId != 0;
+    AreaTrigger const* exploreTrigger = nullptr;
+    bool exploreInside = false;
+    if (exploreObjective)
+    {
+        // .reload areatrigger_involvedrelation can move or remove the relation; never send a
+        // stale trigger.
+        if (sObjectMgr->GetQuestForAreaTrigger(data.exploreTriggerId) != questId)
+        {
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            data.exploreTriggerId = 0;
+            data.exploreTriggerSent = false;
+            data.lastReachPOI = 0;
+            return true;
+        }
+
+        exploreTrigger = sObjectMgr->GetAreaTrigger(data.exploreTriggerId);
+
+        // The trigger position/volume can change under the same ID; a saved destination outside
+        // the live volume must be resolved again instead of walking the old route.
+        if (!exploreTrigger || exploreTrigger->map != bot->GetMapId() ||
+            !NewRpgHelpers::IsPositionInAreaTrigger(exploreTrigger, data.pos.GetPositionX(),
+                                                     data.pos.GetPositionY(), data.pos.GetPositionZ()))
+        {
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            data.exploreTriggerId = 0;
+            data.exploreTriggerSent = false;
+            data.exploreTriggerAttempts = 0;
+            data.exploreTriggerRetryAt = 0;
+            data.lastReachPOI = 0;
+            return true;
+        }
+
+        exploreInside = bot->IsInAreaTriggerRadius(exploreTrigger);
+    }
+
+    // A trigger can be ignored by another script/player. Retry a bounded number of times instead
+    // of starting the five-minute wait after the first attempt.
+    if (exploreObjective && data.exploreTriggerSent && data.exploreTriggerAttempts < 3 &&
+        GetMSTimeDiffToNow(data.exploreTriggerRetryAt) >= 10000)
+    {
+        data.exploreTriggerSent = false;
+        data.lastReachPOI = 0;
+    }
+
+    // Area triggers are small; decide by the trigger volume, not a 10-yard distance. If the bot
+    // is outside, keep approaching instead of starting the five-minute idle timer.
+    float const arrivalDistance = exploreObjective ? 0.5f : 10.0f;
+    bool const needApproach = exploreObjective
+                                  ? (!exploreInside && !data.lastReachPOI)
+                                  : (bot->GetDistance(data.pos) > arrivalDistance && !data.lastReachPOI);
+    if (needApproach)
     {
         if (MoveFarTo(data.pos))
             return true;
+        if (exploreObjective)
+            return MoveRandomNear(1.0f);
         // Long-range sampler couldn't land a candidate — nudge the
         // bot a short distance so the next tick retries from a
         // different position instead of sitting idle.
         return MoveRandomNear(10.0f);
     }
+
+    // Bots do not send CMSG_AREATRIGGER from movement, and the core only sets Explored in the
+    // opcode handler. Send it once now that the destination (inside the trigger volume) is reached.
+    if (exploreTrigger && exploreInside && !data.exploreTriggerSent)
+    {
+        WorldPacket packet(CMSG_AREATRIGGER);
+        packet << data.exploreTriggerId;
+        packet.rpos(0);
+        bot->GetSession()->HandleAreaTriggerOpcode(packet);
+        data.exploreTriggerSent = true;
+        ++data.exploreTriggerAttempts;
+        data.exploreTriggerRetryAt = getMSTime();
+        return true;
+    }
+
     // Now we are near the quest objective
     // kill mobs and looting quest should be done automatically by grind strategy
 
@@ -587,17 +830,84 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
     // stayed at this POI for more than 5 minutes
     if (GetMSTimeDiffToNow(data.lastReachPOI) >= poiStayTime)
     {
+        if (data.objectiveSpawnMissing)
+        {
+            // The previous target was unavailable, not a failed objective attempt; retry once
+            // before treating the POI visit as no-progress.
+            data.objectiveSpawnMissing = false;
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            data.objectiveEntry = 0;
+            data.objectiveCount = 0;
+            data.objectiveSpawnId = 0;
+            data.objectiveIsGameObject = false;
+            return true;
+        }
+
+        // A pool/event roll can move the objective spawn while the bot is travelling; re-resolve
+        // instead of recording NoProgress at a spawn that can no longer appear.
+        if (data.objectiveSpawnId && !IsSpawnActive(bot, data.objectiveSpawnId, data.objectiveIsGameObject))
+        {
+            data.failedObjectiveSpawns.insert({data.objectiveIsGameObject, data.objectiveSpawnId});
+            data.objectiveSpawnMissing = true;
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            data.objectiveEntry = 0;
+            data.objectiveCount = 0;
+            data.objectiveSpawnId = 0;
+            data.objectiveIsGameObject = false;
+            return true;
+        }
+
+        if (data.objectiveSpawnId)
+        {
+            QuestObjectivePosition current{data.objectiveIdx, data.pos, data.objectiveSpawnId,
+                                           data.objectiveIsGameObject};
+            WorldObject* ender = FindLoadedSpawn(bot, current);
+            if (!ender || (data.objectiveIsGameObject && !ender->ToGameObject()->isSpawned()))
+            {
+                // Event/script despawn: exclude this spawn and re-resolve instead of NoProgress.
+                data.failedObjectiveSpawns.insert({data.objectiveIsGameObject, data.objectiveSpawnId});
+                data.objectiveSpawnMissing = true;
+                data.lastReachPOI = 0;
+                data.pos = WorldPosition();
+                data.objectiveIdx = 0;
+                data.objectiveEntry = 0;
+                data.objectiveCount = 0;
+                data.objectiveSpawnId = 0;
+                data.objectiveIsGameObject = false;
+                return true;
+            }
+        }
+
         bool hasProgression = false;
         int32 currentObjective = data.objectiveIdx;
         // check if the objective has progression
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+        if (!quest)
+        {
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            botAI->rpgInfo.ChangeToIdle();
+            return false;
+        }
+
         QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
-        if (currentObjective < QUEST_OBJECTIVES_COUNT)
+        if (currentObjective == QUEST_OBJECTIVE_EXPLORE)
+        {
+            // The area trigger changes the quest status; there is no kill/item count to inspect.
+            hasProgression = true;
+        }
+        else if (currentObjective >= 0 && currentObjective < QUEST_OBJECTIVES_COUNT)
         {
             if (q_status.CreatureOrGOCount[currentObjective] != 0 && quest->RequiredNpcOrGoCount[currentObjective])
                 hasProgression = true;
         }
-        else if (currentObjective < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
+        else if (currentObjective >= QUEST_OBJECTIVES_COUNT &&
+                 currentObjective < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
         {
             if (q_status.ItemCount[currentObjective - QUEST_OBJECTIVES_COUNT] != 0 &&
                 quest->RequiredItemCount[currentObjective - QUEST_OBJECTIVES_COUNT])
@@ -628,41 +938,148 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
     return MoveRandomNear(8.0f);
 }
 
+bool NewRpgDoQuestAction::SelectSpawnTurnInDestination(NewRpgInfo::DoQuest& data, uint32 questId)
+{
+    std::vector<QuestObjectivePosition> enderPositions;
+    if (!GetQuestObjectivePositions(bot, questId, enderPositions, true))
+        return false;
+
+    QuestObjectivePosition const* best = nullptr;
+    float bestDistance = std::numeric_limits<float>::max();
+    for (QuestObjectivePosition const& candidate : enderPositions)
+    {
+        if (candidate.spawnId && data.failedEnderSpawns.count({candidate.gameObject, candidate.spawnId}))
+            continue;
+
+        // Reject only an ender that is already loaded and fails the interaction check. An
+        // unloaded spawn stays eligible; it is re-checked again when the bot reaches it.
+        if (WorldObject* ender = FindLoadedSpawn(bot, candidate))
+            if (!NewRpgHelpers::IsQuestEnder(ender, questId) || !NewRpgHelpers::CanInteractWithQuestGiver(bot, ender))
+                continue;
+
+        float const distance =
+            bot->GetDistance(candidate.pos.GetPositionX(), candidate.pos.GetPositionY(), candidate.pos.GetPositionZ());
+        if (distance < bestDistance)
+        {
+            bestDistance = distance;
+            best = &candidate;
+        }
+    }
+
+    if (!best)
+        return false;
+
+    LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in source=spawn ({:.1f}, {:.1f}, {:.1f}) {:.0f} yd",
+              bot->GetName(), questId, best->pos.GetPositionX(), best->pos.GetPositionY(), best->pos.GetPositionZ(),
+              bestDistance);
+
+    data.lastReachPOI = 0;
+    data.pos = best->pos;
+    data.objectiveIdx = -1;
+    data.enderSpawnId = best->spawnId;
+    data.enderIsGameObject = best->gameObject;
+    data.enderMissing = false;
+    return true;
+}
+
 bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
 {
     uint32 questId = data.questId;
-    Quest const* quest = data.quest;
+    Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+    if (!quest)
+    {
+        botAI->rpgInfo.ChangeToIdle();
+        return true;
+    }
 
     if (data.objectiveIdx != -1)
     {
         // if quest is completed, back to poi with -1 idx to reward
-        BroadcastHelper::BroadcastQuestUpdateComplete(botAI, bot, quest);
-        botAI->RecordQuestCompleted(questId);
-        std::vector<POIInfo> poiInfo;
-        if (!GetQuestPOIPosAndObjectiveIdx(questId, poiInfo, true))
+        if (!data.completionAnnounced)
         {
-            // can't find a poi pos to reward, stop doing quest for now
-            botAI->rpgInfo.ChangeToIdle();
-            return false;
+            BroadcastHelper::BroadcastQuestUpdateComplete(botAI, bot, quest);
+            botAI->RecordQuestCompleted(questId);
+            data.completionAnnounced = true;
         }
-        assert(poiInfo.size() > 0);
-        // now we get the place to get rewarded
-        float dx = poiInfo[0].pos.x, dy = poiInfo[0].pos.y;
-        // z = MAX_HEIGHT as we do not know accurate z
-        float dz = std::max(bot->GetMap()->GetHeight(dx, dy, MAX_HEIGHT), bot->GetMap()->GetWaterLevel(dx, dy));
 
-        // double check for GetQuestPOIPosAndObjectiveIdx
-        if (dz == INVALID_HEIGHT || dz == VMAP_INVALID_HEIGHT_VALUE)
-            return false;
+        // Spawn-backed quest enders first: exact 3D positions (indoor NPCs, cave turn-ins).
+        if (!SelectSpawnTurnInDestination(data, questId))
+        {
+            std::vector<POIInfo> poiInfo;
+            if (!GetQuestPOIPosAndObjectiveIdx(questId, poiInfo, true))
+            {
+                // No usable spawn ender or reward POI remains. Only a missing ender is made
+                // permanent; a distance/zone rejection stays retryable.
+                if (data.enderMissing)
+                {
+                    botAI->lowPriorityQuest.insert(questId);
+                    botAI->RecordQuestAbandoned(questId, QuestAbandonReason::CannotTurnIn);
+                }
+                botAI->rpgInfo.ChangeToIdle();
+                return false;
+            }
+            assert(poiInfo.size() > 0);
+            // now we get the place to get rewarded
+            POIInfo const& poi = poiInfo[0];
+            float dx = poi.pos.x, dy = poi.pos.y, dz = poi.z;
 
-        WorldPosition pos(bot->GetMapId(), dx, dy, dz);
-        data.lastReachPOI = 0;
-        data.pos = pos;
-        data.objectiveIdx = -1;
+            if (poi.hasBakedZ)
+            {
+                LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in source=baked ({:.1f}, {:.1f}, {:.1f})",
+                          bot->GetName(), questId, dx, dy, dz);
+            }
+            else
+            {
+                LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in source=poi ({:.1f}, {:.1f}, {:.1f})",
+                          bot->GetName(), questId, dx, dy, dz);
+            }
+
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition(bot->GetMapId(), dx, dy, dz);
+            data.objectiveIdx = -1;
+            data.enderSpawnId = 0;
+            data.enderMissing = false;
+        }
     }
 
     if (data.pos == WorldPosition())
         return false;
+
+    // A spawn that only loaded while approaching can still fail the interaction check. Drop it
+    // and reselect the next nearest ender instead of waiting out the full turn-in timeout.
+    if (data.objectiveIdx == -1 && data.enderSpawnId && bot->GetDistance(data.pos) <= 10.0f)
+    {
+        QuestObjectivePosition current{-1, data.pos, data.enderSpawnId, data.enderIsGameObject};
+        WorldObject* ender = FindLoadedSpawn(bot, current);
+        if (!ender)
+        {
+            // The spawn is absent (script/event state), not merely outside the grid. Exclude this
+            // ender and let the next tick try another one; only give up when none remains.
+            LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in ender spawn {} is not loaded",
+                      bot->GetName(), questId, data.enderSpawnId);
+            data.failedEnderSpawns.insert({data.enderIsGameObject, data.enderSpawnId});
+            data.enderMissing = true;
+            data.enderSpawnId = 0;
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;
+            return true;
+        }
+
+        if (!NewRpgHelpers::IsQuestEnder(ender, questId) ||
+            !NewRpgHelpers::CanInteractWithQuestGiver(bot, ender))
+        {
+            LOG_DEBUG("playerbots", "[New RPG] {} quest {} turn-in ender spawn {} is not a valid ender",
+                      bot->GetName(), questId, data.enderSpawnId);
+            data.failedEnderSpawns.insert({data.enderIsGameObject, data.enderSpawnId});
+            data.enderMissing = false;
+            data.enderSpawnId = 0;
+            data.lastReachPOI = 0;
+            data.pos = WorldPosition();
+            data.objectiveIdx = 0;  // reselect a turn-in destination on the next tick
+            return true;
+        }
+    }
 
     if (bot->GetDistance(data.pos) > 10.0f && !data.lastReachPOI)
     {
