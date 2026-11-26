@@ -373,12 +373,18 @@ struct InterruptedRearTank
     uint32 spline = 0;
 };
 
+enum class ZeliekWrathJump : uint8
+{
+    Unknown,
+    Blocked,
+    Clear
+};
+
 struct ZeliekWrathTarget
 {
     ObjectGuid guid;
-    Position position;
-    float reach;
-    std::vector<std::size_t> nextTargets;
+    std::array<float, 6> geometry;
+    std::vector<ZeliekWrathJump> jumps;
 };
 
 struct ZeliekWrathSnapshot
@@ -3566,23 +3572,20 @@ void UpdateZeliekMelee(Player& bot, RaidPlan& plan, Bosses const& bosses)
     }
 }
 
-void UpdateZeliekWrathChain(RaidPlan& plan, Creature& zeliek)
+std::vector<Unit const*> UpdateZeliekWrathChain(ZeliekWrathSnapshot& wrath, Creature& zeliek)
 {
-    ZeliekWrathSnapshot& wrath = plan.zeliekWrath;
-    wrath.targets.clear();
     Unit* const victim = zeliek.GetVictim();
     SpellInfo const* const spell = sSpellMgr->GetSpellInfo(ZeliekHolyWrath);
     if (!spell || !victim)
-        return;
+        return {};
 
     // Holy Wrath uses a damaging magic chain that starts at Zeliek's victim.
     SpellEffectInfo const& effect = spell->GetEffect(EFFECT_0);
-    wrath.maxTargets = effect.ChainTarget;
-    wrath.jumpRadius = spell->JumpDistance > 0.0f ? spell->JumpDistance : ZeliekWrathDefaultJump;
-    if (wrath.maxTargets <= 1)
-        return;
+    float const jumpRadius = spell->JumpDistance > 0.0f ? spell->JumpDistance : ZeliekWrathDefaultJump;
+    if (effect.ChainTarget <= 1)
+        return {};
 
-    float const searchRadius = wrath.jumpRadius * (wrath.maxTargets - 1);
+    float const searchRadius = jumpRadius * (effect.ChainTarget - 1);
     std::list<WorldObject*> nearby;
     Acore::WorldObjectSpellAreaTargetCheck check(
         searchRadius, victim, &zeliek, &zeliek, spell, effect.TargetA.GetCheckType(), effect.ImplicitTargetConditions,
@@ -3595,33 +3598,57 @@ void UpdateZeliekWrathChain(RaidPlan& plan, Creature& zeliek)
     for (WorldObject const* object : nearby)
         if (Unit const* unit = object->ToUnit(); unit && unit != victim && unit->IsAlive())
             units.push_back(unit);
-    wrath.targets.reserve(units.size());
-    for (Unit const* unit : units)
-        wrath.targets.push_back({unit->GetGUID(), unit->GetPosition(), unit->GetObjectSize(), {}});
+    std::sort(units.begin() + 1, units.end(),
+              [](Unit const* left, Unit const* right) { return left->GetGUID() < right->GetGUID(); });
 
-    // Cache only legal spell jumps. Keep alternate routes because a bot can move out of a chain it was extending.
-    std::vector<uint32> hops(units.size(), wrath.maxTargets);
-    hops.front() = 0;
-    std::vector<std::size_t> pending{0};
-    for (std::size_t i = 0; i < pending.size(); ++i)
+    if (wrath.jumpRadius != jumpRadius || wrath.targets.size() != units.size() ||
+        !std::ranges::equal(wrath.targets, units, {}, &ZeliekWrathTarget::guid,
+                            [](Unit const* unit) { return unit->GetGUID(); }))
+        wrath.targets.assign(units.size(), {});
+    wrath.maxTargets = effect.ChainTarget;
+    wrath.jumpRadius = jumpRadius;
+    for (std::size_t index = 0; index < units.size(); ++index)
     {
-        std::size_t const origin = pending[i];
-        uint32 const nextHop = hops[origin] + 1;
-        if (nextHop >= wrath.maxTargets)
+        Unit const& unit = *units[index];
+        ZeliekWrathTarget& target = wrath.targets[index];
+        target.guid = unit.GetGUID();
+        std::array const geometry{unit.GetPositionX(),  unit.GetPositionY(),       unit.GetPositionZ(),
+                                  unit.GetObjectSize(), unit.GetCollisionHeight(), unit.GetCombatReach()};
+        if (target.geometry == geometry)
             continue;
-        for (std::size_t next = 1; next < units.size(); ++next)
-        {
-            if (next == origin || !units[origin]->IsWithinDist(units[next], wrath.jumpRadius) ||
-                !units[origin]->IsWithinLOSInMap(units[next], VMAP::ModelIgnoreFlags::M2))
-                continue;
-            wrath.targets[origin].nextTargets.push_back(next);
-            if (hops[next] == wrath.maxTargets)
-            {
-                hops[next] = nextHop;
-                pending.push_back(next);
-            }
-        }
+
+        // A move can add or remove jumps in both directions, even for a previously unreachable target.
+        target.geometry = geometry;
+        target.jumps.clear();
+        for (ZeliekWrathTarget& origin : wrath.targets)
+            if (!origin.jumps.empty())
+                origin.jumps[index] = ZeliekWrathJump::Unknown;
     }
+    return units;
+}
+
+bool CanJumpZeliekWrath(ZeliekWrathSnapshot& wrath, std::span<Unit const* const> units, std::size_t origin,
+                        std::size_t next)
+{
+    Unit const& source = *units[origin];
+    Unit const& target = *units[next];
+    if (source.GetTransport() || target.GetTransport())
+        return source.IsWithinDist(&target, wrath.jumpRadius) &&
+               source.IsWithinLOSInMap(&target, VMAP::ModelIgnoreFlags::M2);
+
+    auto& jumps = wrath.targets[origin].jumps;
+    if (jumps.empty())
+        jumps.resize(units.size(), ZeliekWrathJump::Unknown);
+    ZeliekWrathJump& jump = jumps[next];
+    if (jump == ZeliekWrathJump::Unknown)
+        jump = source.IsWithinDist(&target, wrath.jumpRadius) &&
+                       source.IsWithinLOSInMap(&target, VMAP::ModelIgnoreFlags::M2, LINEOFSIGHT_CHECK_VMAP)
+                   ? ZeliekWrathJump::Clear
+                   : ZeliekWrathJump::Blocked;
+
+    // Game objects can block or unblock a jump while both units stand still.
+    return jump == ZeliekWrathJump::Clear &&
+           source.IsWithinLOSInMap(&target, VMAP::ModelIgnoreFlags::M2, LINEOFSIGHT_CHECK_GOBJECT_ALL);
 }
 
 std::optional<Position> RearOpeningHealPosition(Player& healer, RaidPlan const& plan, uint8 corner, uint8 slot)
@@ -3728,8 +3755,6 @@ Assignment AssignmentFor(Player& bot, Bosses const& bosses, Member*& plannedMemb
                          bot.GetInstanceId());
         }
         UpdateZeliekMelee(bot, plan, bosses);
-        if (OnlyZeliekAlive(bosses))
-            UpdateZeliekWrathChain(plan, *bosses[ZeliekCorner]);
         AllocateSupport(bot, plan, bosses);
         for (uint8 corner = 0; corner < CornerCount; ++corner)
         {
@@ -4378,13 +4403,13 @@ private:
         return {_tick.protectedMarks.data(), _tick.protectedMarkCount};
     }
 
-    void PrepareZeliekWrathAvoidance(RaidPlan const& plan)
+    void PrepareZeliekWrathAvoidance(RaidPlan& plan, Creature& zeliek)
     {
         auto const marks = std::span(_tick.protectedMarks.data(), _tick.protectedMarkCount);
         _zeliekWrathAvoid.assign(marks.begin(), marks.end());
-        ZeliekWrathSnapshot const& wrath = plan.zeliekWrath;
-        ObjectGuid const botGuid = bot->GetGUID();
-        if (wrath.targets.empty() || wrath.targets.front().guid == botGuid)
+        ZeliekWrathSnapshot& wrath = plan.zeliekWrath;
+        std::vector<Unit const*> const units = UpdateZeliekWrathChain(wrath, zeliek);
+        if (units.empty() || units.front() == bot)
             return;
 
         // Remove this bot from the chain so its proposed move can break the connection to the players behind it.
@@ -4395,13 +4420,15 @@ private:
         {
             std::size_t const origin = pending[i];
             uint32 const nextHop = hops[origin] + 1;
-            if (nextHop >= wrath.maxTargets)
+            Unit const& source = *units[origin];
+            float const radius = wrath.jumpRadius + source.GetObjectSize() + bot->GetObjectSize();
+            _zeliekWrathAvoid.push_back({source.GetPosition(), radius, false, source.GetGUID()});
+            if (nextHop == wrath.maxTargets - 1)
                 continue;
-            ZeliekWrathTarget const& source = wrath.targets[origin];
-            _zeliekWrathAvoid.push_back(
-                {source.position, wrath.jumpRadius + source.reach + bot->GetObjectSize(), false, source.guid});
-            for (std::size_t next : source.nextTargets)
-                if (hops[next] == wrath.maxTargets && wrath.targets[next].guid != botGuid)
+
+            for (std::size_t next = 1; next < units.size(); ++next)
+                if (hops[next] == wrath.maxTargets && units[next] != bot &&
+                    CanJumpZeliekWrath(wrath, units, origin, next))
                 {
                     hops[next] = nextHop;
                     pending.push_back(next);
@@ -4413,8 +4440,8 @@ private:
     {
         constexpr uint8 allMarks = (1u << CornerCount) - 1;
         _tick.protectedMarkCount = CollectProtectedMarks(*bot, bosses, allMarks, _tick.protectedMarks);
-        RaidPlan const& plan = *GetPlan(*bot);
-        PrepareZeliekWrathAvoidance(plan);
+        RaidPlan& plan = *GetPlan(*bot);
+        PrepareZeliekWrathAvoidance(plan, *bosses[ZeliekCorner]);
         auto const canUsePad = [&](Position const& pad, bool current)
         {
             float const margin =
@@ -4782,9 +4809,9 @@ private:
                                   { return boss && boss->GetGUID() == member.returnDamageTarget; })))
             member.returnDamageTarget.Clear();
 
-        RaidPlan const& plan = *GetPlan(*bot);
+        RaidPlan& plan = *GetPlan(*bot);
         if (finalRanged)
-            PrepareZeliekWrathAvoidance(plan);
+            PrepareZeliekWrathAvoidance(plan, *bosses[ZeliekCorner]);
         if (focus == ZeliekCorner && !ranged &&
             std::ranges::find(plan.zeliekMelee, member.guid) == plan.zeliekMelee.end())
         {
