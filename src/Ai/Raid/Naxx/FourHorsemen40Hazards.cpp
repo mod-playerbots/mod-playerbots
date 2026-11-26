@@ -1795,16 +1795,16 @@ bool FourHorsemen40Hazards::FindVoidDetour(Player& bot, G3D::Vector3 const& from
 bool FourHorsemen40Hazards::ApproachRear(Player& bot, Unit const& target, float range, float arrival,
                                          float minimumRange, float maxPathLength,
                                          std::span<FourHorsemenMarkSource const> avoid, Position* exchangeDestination,
-                                         uint32* exchangeSpline, bool allowExchangeVoidCrossing)
+                                         uint32* exchangeSpline, bool allowExchangeVoidCrossing,
+                                         std::function<bool(Position const&)> const& usable)
 {
     RefreshVoidZones(bot);
     auto const canReachTargetFrom = [&](float x, float y, float z)
     {
-        return InsideHorsemenRoom(x, y, z) && target.GetExactDist(x, y, z) < range &&
-               target.GetExactDist2d(x, y) >= minimumRange &&
-               std::ranges::none_of(
-                   avoid, [x, y](FourHorsemenMarkSource const& source)
-                   { return source.location.GetExactDist2d(x, y) < source.radius; }) &&
+        return InsideHorsemenRoom(x, y, z) && (!usable || usable(Position(x, y, z))) &&
+               target.GetExactDist(x, y, z) < range && target.GetExactDist2d(x, y) >= minimumRange &&
+               std::ranges::none_of(avoid, [x, y](FourHorsemenMarkSource const& source)
+                                    { return source.location.GetExactDist2d(x, y) < source.radius; }) &&
                bot.GetMap()->isInLineOfSight(x, y, z + 1.5f, target.GetPositionX(), target.GetPositionY(),
                                              target.GetPositionZ() + 1.5f, bot.GetPhaseMask(), LINEOFSIGHT_ALL_CHECKS,
                                              VMAP::ModelIgnoreFlags::Nothing);

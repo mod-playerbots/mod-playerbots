@@ -77,7 +77,7 @@ public:
     bool ApproachRear(Player& bot, Unit const& target, float range, float arrival, float minimumRange = 0.0f,
                       float maxPathLength = 0.0f, std::span<FourHorsemenMarkSource const> avoid = {},
                       Position* exchangeDestination = nullptr, uint32* exchangeSpline = nullptr,
-                      bool allowExchangeVoidCrossing = true);
+                      bool allowExchangeVoidCrossing = true, std::function<bool(Position const&)> const& usable = {});
     bool KeepRearMarkSeparation(Player& bot, Unit const& source, float minimumDistance);
     bool WalkRearOutsideMark(Player& bot, Unit const& source, float minimumDistance);
     static bool CanReceiveZeliekWrath(Player const& bot, Position const& point,

@@ -1736,10 +1736,13 @@ bool RearReserveHealedRecently(EarlyRearHealerAssignment const& binding)
     return binding.reserveHealAt && getMSTimeDiff(binding.reserveHealAt, getMSTime()) <= RearHealerConfirmationWindow;
 }
 
-bool IsOnRearHealingFloor(Player const& healer)
+bool IsOnRearHealingFloor(Position const& position)
 {
-    return std::abs(healer.GetPositionZ() - Horsemen[BlaumeuxCorner].corner.GetPositionZ()) <= RearHealerFloorTolerance;
+    return std::abs(position.GetPositionZ() - Horsemen[BlaumeuxCorner].corner.GetPositionZ()) <=
+           RearHealerFloorTolerance;
 }
+
+bool UnsafeRearHealingPosition(Position const& position, Bosses const& bosses, uint8 highMarks = 0);
 
 bool IsEarlyRearReplacement(RaidPlan const& plan, uint8 corner, Unit const* victim)
 {
@@ -1800,6 +1803,12 @@ Player* RearExchangeHealer(Player& observer, RaidPlan const& plan, Player const&
         if (Player* const reserve = ResolveEarlyHealer(observer, binding.reserve);
             reserve && IsOnRearHealingFloor(*reserve) && RearTankCanBeHealedBy(*reserve, &tank))
         {
+            Bosses bosses = {};
+            for (uint8 corner : {BlaumeuxCorner, ZeliekCorner})
+                bosses[corner] = FindEncounterCreature(observer, corner, Horsemen[corner].entry);
+            if (UnsafeRearHealingPosition(*reserve, bosses, MarksToClear(*reserve, RearPrepareStacks)))
+                continue;
+
             if (RearReserveHealedRecently(binding))
                 return reserve;
             if (Player* const patient = tank.IsFullHealth() ? PlayerInRaid(observer, tank.GetGUID()) : nullptr;
@@ -1945,6 +1954,19 @@ uint8 EarlyHealerHighMarks(Player& healer, Bosses const& bosses)
     return highStacks || (exposed & (exposed - 1)) ? exposed : 0;
 }
 
+bool UnsafeRearHealingPosition(Position const& position, Bosses const& bosses, uint8 highMarks)
+{
+    Creature const* const blaumeux = bosses[BlaumeuxCorner];
+    Creature const* const zeliek = bosses[ZeliekCorner];
+    if (!blaumeux || !zeliek || !blaumeux->IsAlive() || !zeliek->IsAlive())
+        return false;
+
+    bool const inBlaumeux = position.GetExactDist2d(blaumeux) < MarkRadius(BlaumeuxCorner) + CornerArrival;
+    bool const inZeliek = position.GetExactDist2d(zeliek) < MarkRadius(ZeliekCorner) + CornerArrival;
+    return (inBlaumeux && (inZeliek || (highMarks & (1u << BlaumeuxCorner)))) ||
+           (inZeliek && (highMarks & (1u << ZeliekCorner)));
+}
+
 bool IsRearSpareHealer(Member const& member, RaidPlan const& plan, Bosses const& bosses)
 {
     if (member.home == NoCorner || IsEarlyRearHealer(plan, member.guid) || plan.mograineHealing.healer == member.guid)
@@ -2056,14 +2078,19 @@ void UpdateEarlyRearHealing(Player& observer, RaidPlan& plan, Bosses const& boss
             continue;
         Player* const healer = ResolveEarlyHealer(observer, binding.healer);
         bool const inCoverage = healer && RearTankCanBeHealedBy(*healer, tank);
-        bool const needsRelief = !inCoverage || EarlyHealerHighMarks(*healer, bosses);
+        bool const overlapping = healer && UnsafeRearHealingPosition(*healer, bosses);
+        bool const needsRelief = !inCoverage || EarlyHealerHighMarks(*healer, bosses) ||
+                                 (overlapping && MarksToClear(*healer, RotationStacks));
         uint32 const marks = early ? highestMarks : tank->GetAuraCount(Horsemen[binding.corner].mark);
         if (marks < RearPrepareStacks && !plan.earlyRearSwapAt)
             binding.rotated = false;
         binding.rotationPending |=
             !binding.rotated &&
             (plan.earlyRearSwapAt || (!early && (marks >= RearSwapStacks || plan.tankHandoffs[binding.corner].active)));
-        bool const preparing = binding.rotationPending || (!binding.rotated && marks >= RearPrepareStacks);
+        bool const bothRearAlive = bosses[BlaumeuxCorner] && bosses[ZeliekCorner];
+        uint32 const prepareAt = bothRearAlive ? RotationStacks : RearPrepareStacks;
+        bool const preparing = binding.rotationPending || (!binding.rotated && marks >= prepareAt) ||
+                               (overlapping && MarksToClear(*healer, 1));
 
         if (!PlayerInRaid(observer, binding.reserve))
         {
@@ -2100,6 +2127,7 @@ void UpdateEarlyRearHealing(Player& observer, RaidPlan& plan, Bosses const& boss
         }
         if (!reserve || target.IsEmpty() || (!needsRelief && !binding.rotationPending) ||
             !IsOnRearHealingFloor(*reserve) || reserve->GetExactDist(tank) > RearHealerFollowRange ||
+            UnsafeRearHealingPosition(*reserve, bosses, MarksToClear(*reserve, RearPrepareStacks)) ||
             !RearTankCanBeHealedBy(*reserve, tank) ||
             (wrathVictim && reserve->GetExactDist2d(wrathVictim) < HolyWrathClearance) ||
             !(RearReserveHealedRecently(binding) || (tank->IsFullHealth() && RearHealerReadyToCast(*reserve, *tank))))
@@ -2115,9 +2143,16 @@ void UpdateEarlyRearHealing(Player& observer, RaidPlan& plan, Bosses const& boss
             continue;
         Movement::PointsArray path;
         std::optional<Position> station;
-        for (Position const& pad : RearSupport[destination - BlaumeuxCorner])
+        uint8 const highMarks = MarksToClear(*reserve, RearPrepareStacks);
+        if (bothRearAlive && !plan.earlyRearSwapAt && hazards.IsSafeFromVoidZones(*reserve, reserve->GetPosition()))
+            station = reserve->GetPosition();
+        std::span<Position const> const pads =
+            station ? std::span<Position const>{}
+                    : std::span<Position const>(RearSupport[destination - BlaumeuxCorner]);
+        for (Position const& pad : pads)
         {
             if (pad.GetExactDist2d(corner) < HolyWrathClearance || pad.GetExactDist(corner) > RearHealerFollowRange ||
+                UnsafeRearHealingPosition(pad, bosses, highMarks) ||
                 (wrathVictim && pad.GetExactDist2d(wrathVictim) < HolyWrathClearance) ||
                 !reserve->GetMap()->isInLineOfSight(pad.GetPositionX(), pad.GetPositionY(), pad.GetPositionZ() + 1.5f,
                                                     corner.GetPositionX(), corner.GetPositionY(),
@@ -5093,8 +5128,28 @@ private:
                !assignment.standby && !assignment.healingTarget.IsEmpty();
     }
 
+    bool CheckRearHealerMarks(Bosses const& bosses, RaidPlan const* plan) const
+    {
+        // The first tank exchange can use a temporary meeting point.
+        return bosses[BlaumeuxCorner] && bosses[ZeliekCorner] &&
+               (_tick.assignment.reserveRearHealer ||
+                (plan && (plan->earlyRearSecuredAt || !EarlyRearPhase(*plan, bosses))));
+    }
+
     bool FollowingRearExchangeHealerPath(std::span<FourHorsemenMarkSource const> avoid)
     {
+        if (!IsMovingAlongRearExchangeHealerPath())
+            return false;
+        Bosses const bosses = ResolveBosses();
+        if ((_tick.assignment.reserveRearHealer && !IsOnRearHealingFloor(_earlyRearHealerDestination)) ||
+            (CheckRearHealerMarks(bosses, GetPlan(*bot)) &&
+             UnsafeRearHealingPosition(_earlyRearHealerDestination, bosses, MarksToClear(*bot, RearPrepareStacks))))
+        {
+            StopRearExchangePath(bot, _earlyRearHealerSpline);
+            _earlyRearHealerSpline = 0;
+            return false;
+        }
+
         bool crossesPool = false;
         if (!_hazards.IsFollowingRearExchangePath(*bot, _earlyRearHealerDestination, CornerArrival,
                                                   _earlyRearHealerSpline, {true}, &crossesPool, nullptr, avoid))
@@ -5160,8 +5215,8 @@ private:
     }
 
     bool MoveRearExchangeHealer(Player& tank, Position const* station, bool preparingExchange, bool needsApproach,
-                                float range,
-                                std::span<FourHorsemenMarkSource const> avoid)
+                                float range, std::span<FourHorsemenMarkSource const> avoid,
+                                std::function<bool(Position const&)> const& usable)
     {
         if (_earlyRearHealerSpline && _earlyRearHealerPatient == tank.GetGUID() &&
             ((station && _earlyRearHealerDestination.GetExactDist(*station) <= CornerArrival) ||
@@ -5193,8 +5248,9 @@ private:
         };
         bool moving = hasStationPath && !stationCrossesPool && startStation();
         if (!moving && (needsApproach || hasStationPath))
-            moving = _hazards.ApproachRear(*bot, tank, range, CornerArrival, HolyWrathClearance, 0.0f, avoid,
-                                           &_earlyRearHealerDestination, &_earlyRearHealerSpline, !hasStationPath);
+            moving =
+                _hazards.ApproachRear(*bot, tank, range, CornerArrival, HolyWrathClearance, 0.0f, avoid,
+                                      &_earlyRearHealerDestination, &_earlyRearHealerSpline, !hasStationPath, usable);
         if (!moving && !(hasStationPath && stationCrossesPool && needsApproach && startStation()))
             return false;
         _earlyRearHealerPatient = tank.GetGUID();
@@ -5202,13 +5258,17 @@ private:
         return FollowingRearExchangeHealerPath(avoid);
     }
 
-    bool DescendRearHealerReserve(Player& tank, std::span<FourHorsemenMarkSource const> avoid)
+    bool DescendRearHealerReserve(Player& tank, std::span<FourHorsemenMarkSource const> avoid, Bosses const& bosses)
     {
-        if (_rearHealerDescentCorner == _corner && _earlyRearHealerPatient == tank.GetGUID() &&
+        bool const onFloor = IsOnRearHealingFloor(*bot);
+        if (_earlyRearHealerPatient == tank.GetGUID() && IsMovingAlongRearExchangeHealerPath() &&
+            (_rearHealerDescentCorner == _corner ||
+             (!onFloor && _hazards.CanAttackFrom(*bot, tank, _earlyRearHealerDestination, RearHealerFollowRange, avoid,
+                                                 {}, HolyWrathClearance))) &&
             FollowingRearExchangeHealerPath(avoid))
             return true;
         _rearHealerDescentCorner = NoCorner;
-        if (IsOnRearHealingFloor(*bot))
+        if (onFloor)
             return false;
 
         uint32 const now = getMSTime();
@@ -5222,8 +5282,11 @@ private:
         Position const* bestPad = nullptr;
         float bestLength = std::numeric_limits<float>::max();
         bool bestCrosses = true;
+        uint8 const highMarks = MarksToClear(*bot, RearPrepareStacks);
         for (Position const& pad : RearSupport[_corner - BlaumeuxCorner])
         {
+            if (UnsafeRearHealingPosition(pad, bosses, highMarks))
+                continue;
             Movement::PointsArray path;
             bool crossesPool = false;
             if (!_hazards.PrepareRearExchangePath(*bot, pad, CornerArrival, path, {true}, &crossesPool, nullptr, avoid))
@@ -5253,6 +5316,21 @@ private:
 
     bool CoverEarlyRearTank()
     {
+        RaidPlan const* const plan = GetPlan(*bot);
+        Bosses const bosses = ResolveBosses();
+        bool const protectPosition = CheckRearHealerMarks(bosses, plan);
+        bool const confirmCoverage = _tick.assignment.reserveRearHealer;
+        uint8 const highMarks = protectPosition ? MarksToClear(*bot, RearPrepareStacks) : 0;
+        auto const usable = [&](Position const& position)
+        {
+            return (!confirmCoverage || IsOnRearHealingFloor(position)) &&
+                   (!protectPosition || !UnsafeRearHealingPosition(position, bosses, highMarks));
+        };
+        if (IsMovingAlongRearExchangeHealerPath() && !usable(_earlyRearHealerDestination))
+        {
+            StopRearExchangePath(bot, _earlyRearHealerSpline);
+            _earlyRearHealerSpline = 0;
+        }
         if (bot->IsNonMeleeSpellCast(true))
             return false;
         Assignment const& assignment = _tick.assignment;
@@ -5261,7 +5339,7 @@ private:
             return false;
 
         bool const covered = RearTankCanBeHealedBy(*bot, tank);
-        Creature const* const zeliek = Resolve(_tick.bosses[ZeliekCorner]);
+        Creature const* const zeliek = bosses[ZeliekCorner];
         Unit* const wrathTarget = zeliek ? zeliek->GetVictim() : nullptr;
         bool const tooClose = wrathTarget && bot->GetExactDist2d(wrathTarget) < HolyWrathClearance;
         bool const critical = tank->GetHealthPct() <= sPlayerbotAIConfig.CriticalHealth;
@@ -5271,17 +5349,18 @@ private:
         if (wrathTarget)
             avoid[count++] = {wrathTarget->GetPosition(), HolyWrathClearance, false};
         std::span const protectedPositions(avoid.data(), count);
-        bool const confirmCoverage = assignment.reserveRearHealer;
+        bool const needsSaferPosition = protectPosition && UnsafeRearHealingPosition(*bot, bosses, highMarks);
         if (confirmCoverage && _corner >= BlaumeuxCorner && _corner < CornerCount)
         {
-            if (DescendRearHealerReserve(*tank, protectedPositions))
+            if (DescendRearHealerReserve(*tank, protectedPositions, bosses))
             {
                 if (covered && !tooClose)
                     HealRearTank(*tank, RearHealCast::InstantOnly, true);
                 return true;
             }
-            if (!IsOnRearHealingFloor(*bot))
-                return covered && !tooClose && HealRearTank(*tank, RearHealCast::InstantOnly, true);
+            if (!IsOnRearHealingFloor(*bot) && covered && !tooClose &&
+                HealRearTank(*tank, RearHealCast::InstantOnly, true))
+                return true;
         }
         Player* const doubleTarget = DoubleTargetedRearTank(tank->GetGUID());
         if (IsMovingAlongRearExchangeHealerPath() && _earlyRearHealerPatient == tank->GetGUID() &&
@@ -5294,7 +5373,7 @@ private:
             return true;
         }
 
-        if (covered &&
+        if (covered && (!needsSaferPosition || critical) &&
             (critical || (!tooClose && (confirmCoverage || bot->GetExactDist(tank) <= castWhileFollowingRange))) &&
             HealRearTank(*tank, RearHealCast::StopIfNeeded, confirmCoverage))
             return true;
@@ -5302,7 +5381,6 @@ private:
             HealRearTank(*doubleTarget, RearHealCast::StopIfNeeded))
             return true;
 
-        RaidPlan const* const plan = GetPlan(*bot);
         if (IsRearExchangeHealer(plan))
         {
             Position const* station = nullptr;
@@ -5313,7 +5391,7 @@ private:
                 binding->exchangePosition)
             {
                 Position const& prepared = *binding->exchangePosition;
-                if ((!wrathTarget || prepared.GetExactDist2d(wrathTarget) >= HolyWrathClearance) &&
+                if (usable(prepared) && (!wrathTarget || prepared.GetExactDist2d(wrathTarget) >= HolyWrathClearance) &&
                     prepared.GetExactDist(tank) <= RearHealerFollowRange &&
                     tank->IsWithinLOS(prepared.GetPositionX(), prepared.GetPositionY(), prepared.GetPositionZ()))
                 {
@@ -5322,9 +5400,11 @@ private:
                 }
             }
             // Follow ahead of the 35 yd coverage limit so a moving tank stays in range.
-            bool const needsApproach = !covered || tooClose || bot->GetExactDist(tank) > RearHealerFollowRange;
+            bool const needsApproach = needsSaferPosition || !covered || tooClose ||
+                                       bot->GetExactDist(tank) > RearHealerFollowRange ||
+                                       (confirmCoverage && !IsOnRearHealingFloor(*bot));
             if (MoveRearExchangeHealer(*tank, station, preparingExchange, needsApproach, RearHealerFollowRange,
-                                       protectedPositions))
+                                       protectedPositions, usable))
                 return true;
         }
 
