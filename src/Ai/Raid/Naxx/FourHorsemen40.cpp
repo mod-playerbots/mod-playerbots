@@ -5864,8 +5864,8 @@ private:
             bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
         }
 
-        if (bot->GetPower(POWER_RAGE) < 150 && botAI->CanCastSpell(Bloodrage, bot))
-            botAI->CastSpell(Bloodrage, bot);
+        bool const castBloodrage =
+            bot->GetPower(POWER_RAGE) < 150 && botAI->CanCastSpell(Bloodrage, bot) && botAI->CastSpell(Bloodrage, bot);
         if (!meleeRange)
         {
             float const contactRange = std::max(8.0f, bot->GetMeleeRange(&target));
@@ -5873,8 +5873,9 @@ private:
                 return true;
         }
 
-        if (bot->GetVictim() != &target)
-            _attack.Attack(&target);
+        // AttackAction can accept the target even if the attack did not start.
+        bool const startedAttack =
+            bot->GetVictim() != &target && _attack.Attack(&target) && bot->GetVictim() == &target;
         if (meleeRange)
             for (char const* ability : {"shield slam", "devastate"})
                 if (botAI->CanCastSpell(ability, &target) && botAI->CastSpell(ability, &target))
@@ -5882,9 +5883,9 @@ private:
                     LOG_INFO("playerbots", "[Naxx40] Horsemen {} instance={} {} uses {} on {} threat {:.0f}->{:.0f}",
                              openingAt ? "opening" : "front handoff", bot->GetInstanceId(), bot->GetName(), ability,
                              target.GetName(), ownThreat, threat.GetThreat(bot));
-                    break;
+                    return true;
                 }
-        return true;
+        return castBloodrage || startedAttack;
     }
 
     Position SpacedBlaumeuxPosition(Position const& center, float radius)
