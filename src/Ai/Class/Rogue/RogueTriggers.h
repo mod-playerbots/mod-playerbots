@@ -23,10 +23,22 @@ public:
     SliceAndDiceTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "slice and dice") {}
 };
 
+constexpr uint32 HFB_REFRESH_EARLY_MS = 5 * IN_MILLISECONDS;
+
 class HungerForBloodTrigger : public BuffTrigger
 {
 public:
-    HungerForBloodTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "hunger for blood") {}
+    HungerForBloodTrigger(PlayerbotAI* botAI)
+        : BuffTrigger(botAI, "hunger for blood", 1, false, true, HFB_REFRESH_EARLY_MS)
+    {
+    }
+};
+
+class RuptureForHungerTrigger : public Trigger
+{
+public:
+    RuptureForHungerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "rupture for hunger", 1) {}
+    bool IsActive() override;
 };
 
 class AdrenalineRushTrigger : public BoostTrigger

@@ -79,54 +79,105 @@ bool CastTricksOfTheTradeOnMainTankAction::isUseful()
     return CastSpellAction::isUseful() && AI_VALUE2(float, "distance", GetTargetName()) < 20.0f;
 }
 
-bool UseDeadlyPoisonAction::Execute(Event /*event*/)
+namespace
 {
-    std::vector<Item*> const items =
-        AI_VALUE2(std::vector<Item*>, "inventory items", "Deadly Poison");
-    for (Item* const item : items)
-    {
-        // This check is needed only if there is a name match. I think the only one is Handbook
-        // of Deadly Poison V, which might be restored by IP. Keeping this here just in case.
-        if (item->GetTemplate()->Class != ITEM_CLASS_CONSUMABLE)
-            continue;
+Item* FindHighestRankPoison(PlayerbotAI* botAI, bool deadly)
+{
+    static constexpr uint32 deadlyPoisons[] = {
+        DEADLY_POISON_IX, DEADLY_POISON_VIII, DEADLY_POISON_VII, DEADLY_POISON_VI, DEADLY_POISON_V,
+        DEADLY_POISON_IV, DEADLY_POISON_III, DEADLY_POISON_II, DEADLY_POISON
+    };
+    static constexpr uint32 instantPoisons[] = {
+        INSTANT_POISON_IX, INSTANT_POISON_VIII, INSTANT_POISON_VII, INSTANT_POISON_VI, INSTANT_POISON_V,
+        INSTANT_POISON_IV, INSTANT_POISON_III, INSTANT_POISON_II, INSTANT_POISON
+    };
 
-        Item* const itemForSpell = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-        return UseItem(item, ObjectGuid::Empty, itemForSpell);
+    if (deadly)
+    {
+        for (uint32 id : deadlyPoisons)
+            if (Item* const poison = botAI->FindConsumable(id))
+                return poison;
+    }
+    else
+    {
+        for (uint32 id : instantPoisons)
+            if (Item* const poison = botAI->FindConsumable(id))
+                return poison;
     }
 
-    return false;
+    return nullptr;
+}
+}
+
+bool UseDeadlyPoisonAction::Execute(Event /*event*/)
+{
+    Item* const poison = FindHighestRankPoison(botAI, true);
+    if (!poison)
+        return false;
+
+    return UseItem(poison, ObjectGuid::Empty,
+                   bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND));
 }
 
 bool UseInstantPoisonAction::Execute(Event /*event*/)
 {
-    std::vector<Item*> const items =
-        AI_VALUE2(std::vector<Item*>, "inventory items", "Instant Poison");
-    for (Item* const item : items)
-    {
-        // Not necessary for instant but keeping for symmetry and to guide a potential refactor.
-        if (item->GetTemplate()->Class != ITEM_CLASS_CONSUMABLE)
-            continue;
+    Item* const poison = FindHighestRankPoison(botAI, false);
+    if (!poison)
+        return false;
 
-        Item* const itemForSpell = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-        return UseItem(item, ObjectGuid::Empty, itemForSpell);
-    }
-
-    return false;
+    return UseItem(poison, ObjectGuid::Empty,
+                   bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND));
 }
 
 bool UseInstantPoisonOffHandAction::Execute(Event /*event*/)
 {
-    std::vector<Item*> const items =
-        AI_VALUE2(std::vector<Item*>, "inventory items", "Instant Poison");
-    for (Item* const item : items)
-    {
-        // Not necessary for instant but keeping for symmetry and to guide a potential refactor.
-        if (item->GetTemplate()->Class != ITEM_CLASS_CONSUMABLE)
-            continue;
+    Item* const poison = FindHighestRankPoison(botAI, false);
+    if (!poison)
+        return false;
 
-        Item* const itemForSpell = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-        return UseItem(item, ObjectGuid::Empty, itemForSpell);
-    }
+    return UseItem(poison, ObjectGuid::Empty,
+                   bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND));
+}
 
-    return false;
+namespace
+{
+uint32 GetWeaponDelay(Item const* item)
+{
+    if (!item)
+        return 0;
+    ItemTemplate const* proto = item->GetTemplate();
+    return proto ? proto->Delay : 0;
+}
+}
+
+bool UseBestMainHandPoisonAction::Execute(Event /*event*/)
+{
+    Item* const mh = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    if (!mh)
+        return false;
+
+    Item* const oh = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+    bool const useDeadly = !oh || GetWeaponDelay(mh) <= GetWeaponDelay(oh);
+
+    Item* const poison = FindHighestRankPoison(botAI, useDeadly);
+    if (!poison)
+        return false;
+
+    return UseItem(poison, ObjectGuid::Empty, mh);
+}
+
+bool UseBestOffHandPoisonAction::Execute(Event /*event*/)
+{
+    Item* const oh = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+    if (!oh)
+        return false;
+
+    Item* const mh = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    bool const useDeadly = mh && GetWeaponDelay(oh) < GetWeaponDelay(mh);
+
+    Item* const poison = FindHighestRankPoison(botAI, useDeadly);
+    if (!poison)
+        return false;
+
+    return UseItem(poison, ObjectGuid::Empty, oh);
 }

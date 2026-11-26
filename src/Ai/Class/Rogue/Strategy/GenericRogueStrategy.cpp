@@ -50,7 +50,7 @@ void GenericRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "main hand weapon no enchant",
             {
-                NextAction("use instant poison on main hand", ACTION_HIGH + 6)
+                NextAction("use best main hand poison", ACTION_HIGH + 6)
             }
         )
     );
@@ -58,7 +58,7 @@ void GenericRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "off hand weapon no enchant",
             {
-                NextAction("use deadly poison on off hand", ACTION_HIGH + 5.5f)
+                NextAction("use best off hand poison", ACTION_HIGH + 5.5f)
             }
         )
     );

@@ -76,15 +76,6 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 
     triggers.push_back(
         new TriggerNode(
-            "high energy available",
-            {
-                NextAction("mutilate", ACTION_NORMAL + 3)
-            }
-        )
-    );
-
-    triggers.push_back(
-        new TriggerNode(
             "hunger for blood",
             {
                 NextAction("hunger for blood", ACTION_HIGH + 6),
@@ -97,6 +88,15 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
             "slice and dice",
             {
                 NextAction("slice and dice", ACTION_HIGH + 5),
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "rupture for hunger",
+            {
+                NextAction("rupture", ACTION_HIGH + 4)
             }
         )
     );
@@ -125,6 +125,15 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
             "expose armor",
             {
                 NextAction("expose armor", ACTION_HIGH + 3),
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "high energy available",
+            {
+                NextAction("mutilate", ACTION_NORMAL + 3)
             }
         )
     );

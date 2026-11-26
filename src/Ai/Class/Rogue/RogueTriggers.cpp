@@ -134,3 +134,20 @@ bool OffHandWeaponNoEnchantTrigger::IsActive()
         return false;
     return true;
 }
+
+bool RuptureForHungerTrigger::IsActive()
+{
+    Aura* hfb = botAI->GetAura("hunger for blood", bot, true, true);
+    if (hfb && hfb->GetDuration() > HFB_REFRESH_EARLY_MS)
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive())
+        return false;
+
+    if (target->HasAuraState(AURA_STATE_BLEEDING))
+        return false;
+
+    uint32 cp = bot->GetComboPoints();
+    return cp >= 1 && cp <= 3;
+}

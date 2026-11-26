@@ -180,6 +180,24 @@ public:
     bool isPossible() override { return true; }
 };
 
+class UseBestMainHandPoisonAction : public UseItemAction
+{
+public:
+    UseBestMainHandPoisonAction(PlayerbotAI* botAI) : UseItemAction(botAI, "best main hand poison") {}
+
+    bool Execute(Event event) override;
+    bool isPossible() override { return true; }
+};
+
+class UseBestOffHandPoisonAction : public UseItemAction
+{
+public:
+    UseBestOffHandPoisonAction(PlayerbotAI* botAI) : UseItemAction(botAI, "best off hand poison") {}
+
+    bool Execute(Event event) override;
+    bool isPossible() override { return true; }
+};
+
 class FanOfKnivesAction : public CastMeleeSpellAction
 {
 public:

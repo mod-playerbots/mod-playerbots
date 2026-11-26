@@ -69,6 +69,7 @@ public:
         creators["rupture"] = &RogueTriggerFactoryInternal::rupture;
         creators["slice and dice"] = &RogueTriggerFactoryInternal::slice_and_dice;
         creators["hunger for blood"] = &RogueTriggerFactoryInternal::hunger_for_blood;
+        creators["rupture for hunger"] = &RogueTriggerFactoryInternal::rupture_for_hunger;
         creators["expose armor"] = &RogueTriggerFactoryInternal::expose_armor;
         creators["kick on enemy healer"] = &RogueTriggerFactoryInternal::kick_on_enemy_healer;
         creators["unstealth"] = &RogueTriggerFactoryInternal::unstealth;
@@ -93,6 +94,10 @@ private:
     static Trigger* rupture(PlayerbotAI* botAI) { return new RuptureTrigger(botAI); }
     static Trigger* slice_and_dice(PlayerbotAI* botAI) { return new SliceAndDiceTrigger(botAI); }
     static Trigger* hunger_for_blood(PlayerbotAI* botAI) { return new HungerForBloodTrigger(botAI); }
+    static Trigger* rupture_for_hunger(PlayerbotAI* botAI)
+    {
+        return new RuptureForHungerTrigger(botAI);
+    }
     static Trigger* expose_armor(PlayerbotAI* botAI) { return new ExposeArmorTrigger(botAI); }
     static Trigger* kick_on_enemy_healer(PlayerbotAI* botAI)
     {
@@ -162,6 +167,10 @@ public:
             &RogueAiObjectContextInternal::use_deadly_poison;
         creators["use instant poison on off hand"] =
             &RogueAiObjectContextInternal::use_instant_poison_off_hand;
+        creators["use best main hand poison"] =
+            &RogueAiObjectContextInternal::use_best_main_hand_poison;
+        creators["use best off hand poison"] =
+            &RogueAiObjectContextInternal::use_best_off_hand_poison;
         creators["fan of knives"] = &RogueAiObjectContextInternal::fan_of_knives;
         creators["killing spree"] = &RogueAiObjectContextInternal::killing_spree;
         creators["cold blood"] = &RogueAiObjectContextInternal::cold_blood;
@@ -227,6 +236,14 @@ private:
     static Action* use_instant_poison_off_hand(PlayerbotAI* botAI)
     {
         return new UseInstantPoisonOffHandAction(botAI);
+    }
+    static Action* use_best_main_hand_poison(PlayerbotAI* botAI)
+    {
+        return new UseBestMainHandPoisonAction(botAI);
+    }
+    static Action* use_best_off_hand_poison(PlayerbotAI* botAI)
+    {
+        return new UseBestOffHandPoisonAction(botAI);
     }
     static Action* fan_of_knives(PlayerbotAI* botAI) { return new FanOfKnivesAction(botAI); }
     static Action* killing_spree(PlayerbotAI* botAI) { return new CastKillingSpreeAction(botAI); }
