@@ -1259,7 +1259,8 @@ bool FourHorsemen40Hazards::FindCenterRetreatStep(Player& bot, Position const& d
                       crossingRoute, path, true, CornerEscapeRingStep, bearing, true);
 }
 
-bool FourHorsemen40Hazards::WalkToFixedPoint(Player& bot, Position const& destination, float arrival, bool centerward)
+bool FourHorsemen40Hazards::WalkToFixedPoint(Player& bot, Position const& destination, float arrival, bool centerward,
+                                             std::span<Position const> alternatives)
 {
     G3D::Vector3 const from = CurrentPoint(bot);
     bool const entry = InsideHorsemenEntrance(from);
@@ -1276,13 +1277,18 @@ bool FourHorsemen40Hazards::WalkToFixedPoint(Player& bot, Position const& destin
     bool const validGoal = InsideHorsemenRoom(to) && (to - from).length() > arrival;
     bool const dryGoal = validGoal && Clearance(destination) >= MovementClearance;
     bool const startsInDamage = centerward && Clearance(Position(from.x, from.y, from.z)) <= 0.0f;
+    Movement::PointsArray const remaining =
+        dryGoal || !alternatives.empty() ? RemainingSpline(bot, _fixedPointSpline) : Movement::PointsArray{};
+    auto const canContinueTo = [&](G3D::Vector3 const& goal)
+    {
+        return !startsInDamage && !remaining.empty() && (remaining.back() - goal).length() <= arrival &&
+               !FirstBlockedZone(bot, remaining) &&
+               (!centerward || _fixedPointCenterward || StartsToward(remaining, from, goal));
+    };
     Movement::PointsArray crossingPath;
     if (dryGoal)
     {
-        Movement::PointsArray const remaining = RemainingSpline(bot, _fixedPointSpline);
-        if (!startsInDamage && !remaining.empty() && (remaining.back() - to).length() <= arrival &&
-            !FirstBlockedZone(bot, remaining) &&
-            (!centerward || _fixedPointCenterward || StartsToward(remaining, from, to)))
+        if (canContinueTo(to))
         {
             _fixedPointCenterward = centerward;
             return true;
@@ -1347,6 +1353,15 @@ bool FourHorsemen40Hazards::WalkToFixedPoint(Player& bot, Position const& destin
         _blockedFixedCenterward = centerward;
         _fixedPointRetryAt = now;
     }
+    // Let the caller try the next waypoint without interrupting its active route.
+    if (!remaining.empty() && (remaining.back() - to).length() > arrival)
+        for (Position const& alternative : alternatives)
+        {
+            G3D::Vector3 const goal = Point(alternative);
+            if (InsideHorsemenRoom(goal) && (goal - from).length() > arrival &&
+                Clearance(alternative) >= MovementClearance && canContinueTo(goal))
+                return false;
+        }
     if (bot.isMoving())
         bot.StopMoving();
     return false;

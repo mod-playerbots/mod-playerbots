@@ -4274,7 +4274,7 @@ private:
             if (_tick.centerRetreat && !atCenter && !_hazards.IsEscapingRearExchangeVoidZone(*bot))
             {
                 for (Position const& waypoint : lane)
-                    if (_hazards.WalkToFixedPoint(*bot, waypoint, CornerArrival, true))
+                    if (_hazards.WalkToFixedPoint(*bot, waypoint, CornerArrival, true, lane))
                         return true;
                 if (_hazards.WalkToFixedPoint(*bot, TransitionCenter, CornerArrival, true))
                     return true;
@@ -4308,7 +4308,7 @@ private:
                 return true;
             if (_tick.centerRetreat)
                 for (Position const& waypoint : lane)
-                    if (_hazards.WalkToFixedPoint(*bot, waypoint, CornerArrival, true))
+                    if (_hazards.WalkToFixedPoint(*bot, waypoint, CornerArrival, true, lane))
                         return true;
         }
 

@@ -55,7 +55,8 @@ public:
     bool IsSafeFromVoidZones(Player& bot, Position const& destination);
     bool IsSafeFromVoidDamage(Player& bot, Position const& position);
     bool ContinueCenterRetreat(Player& bot, bool clearingMarks, bool& crossesVoid);
-    bool WalkToFixedPoint(Player& bot, Position const& destination, float arrival, bool centerward = false);
+    bool WalkToFixedPoint(Player& bot, Position const& destination, float arrival, bool centerward = false,
+                          std::span<Position const> alternatives = {});
     bool PrepareRearExchangePath(Player& bot, Position const& destination, float arrival, Movement::PointsArray& path,
                                  FourHorsemenRearCrossing crossing, bool* crossesVoid = nullptr,
                                  std::string_view* blockReason = nullptr,
