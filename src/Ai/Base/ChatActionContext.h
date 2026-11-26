@@ -46,6 +46,7 @@
 #include "OpenItemAction.h"
 #include "PassLeadershipToMasterAction.h"
 #include "PetsAction.h"
+#include "PortalAction.h"
 #include "PositionAction.h"
 #include "PullActions.h"
 #include "QueryItemUsageAction.h"
@@ -210,6 +211,7 @@ public:
         creators["roll"] = &ChatActionContext::roll_action;
         creators["wait for attack time"] = &ChatActionContext::wait_for_attack_time;
         creators["focus heal targets"] = &ChatActionContext::focus_heal_targets;
+        creators["portal"] = &ChatActionContext::cast_portal;
     }
 
 private:
@@ -328,6 +330,7 @@ private:
     static Action* roll_action(PlayerbotAI* botAI) { return new RollAction(botAI); }
     static Action* wait_for_attack_time(PlayerbotAI* botAI) { return new SetWaitForAttackTimeAction(botAI); }
     static Action* focus_heal_targets(PlayerbotAI* botAI) { return new SetFocusHealTargetsAction(botAI); }
+    static Action* cast_portal(PlayerbotAI* botAI) { return new PortalAction(botAI); }
 };
 
 #endif
