@@ -15,6 +15,7 @@
 #include "FoSStrategy.h"
 #include "GDStrategy.h"
 #include "HoLStrategy.h"
+#include "HoRStrategy.h"
 #include "HoSStrategy.h"
 #include "MechStrategy.h"
 #include "MgTStrategy.h"
@@ -56,6 +57,7 @@ public:
         creators["wotlk-gd"] = &DungeonStrategyContext::wotlk_gd;       // Gundrak
         creators["wotlk-hos"] = &DungeonStrategyContext::wotlk_hos;     // Halls of Stone
         creators["wotlk-hol"] = &DungeonStrategyContext::wotlk_hol;     // Halls of Lightning
+        creators["wotlk-hor"] = &DungeonStrategyContext::wotlk_hor;     // Halls of Reflection
         creators["wotlk-occ"] = &DungeonStrategyContext::wotlk_occ;     // The Oculus
         creators["wotlk-up"] = &DungeonStrategyContext::wotlk_up;       // Utgarde Pinnacle
         creators["wotlk-cos"] = &DungeonStrategyContext::wotlk_cos;     // The Culling of Stratholme
@@ -65,6 +67,7 @@ public:
     }
 
 private:
+    static Strategy* wotlk_hor(PlayerbotAI* botAI) { return new WotlkDungeonHoRStrategy(botAI); }
     static Strategy* tbc_ac(PlayerbotAI* botAI) { return new TbcDungeonAuchenaiCryptsStrategy(botAI); }
     static Strategy* tbc_seth(PlayerbotAI* botAI) { return new TbcDungeonSethekkHallsStrategy(botAI); }
     static Strategy* tbc_mech(PlayerbotAI* botAI) { return new TbcDungeonMechanarStrategy(botAI); }
