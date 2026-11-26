@@ -4416,14 +4416,22 @@ private:
 
         bool const atCenter = bot->GetExactDist(TransitionCenter) <= CornerArrival;
         std::span<Position const> const lane = ZeliekRetreatLane();
+        auto const walkRetreatWaypoint = [&]()
+        {
+            if (lane.empty())
+                return false;
+
+            std::array<Position, 3> const alternatives = {lane.front(), lane.back(), TransitionCenter};
+            for (Position const& waypoint : lane)
+                if (_hazards.WalkToFixedPoint(*bot, waypoint, CornerArrival, true, alternatives))
+                    return true;
+            return false;
+        };
         if (_hazards.HasActiveRearExchangeExit(*bot) || !_hazards.IsSafeFromVoidDamage(*bot, bot->GetPosition()))
         {
             if (_tick.centerRetreat && !atCenter && !_hazards.IsEscapingRearExchangeVoidZone(*bot))
             {
-                for (Position const& waypoint : lane)
-                    if (_hazards.WalkToFixedPoint(*bot, waypoint, CornerArrival, true, lane))
-                        return true;
-                if (_hazards.WalkToFixedPoint(*bot, TransitionCenter, CornerArrival, true))
+                if (walkRetreatWaypoint() || _hazards.WalkToFixedPoint(*bot, TransitionCenter, CornerArrival, true))
                     return true;
             }
             return _hazards.EscapeRearExchangeVoidZone(*bot, atCenter ? nullptr : &TransitionCenter);
@@ -4453,10 +4461,8 @@ private:
         {
             if (_hazards.WalkRear(*bot, TransitionCenter, CornerArrival, true, 0.0f, {}, nullptr, true, lane))
                 return true;
-            if (_tick.centerRetreat)
-                for (Position const& waypoint : lane)
-                    if (_hazards.WalkToFixedPoint(*bot, waypoint, CornerArrival, true, lane))
-                        return true;
+            if (_tick.centerRetreat && walkRetreatWaypoint())
+                return true;
         }
 
         uint32 const previousSpline = bot->movespline->GetId();
