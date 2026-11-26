@@ -434,18 +434,23 @@ public:
             return 1.0f;
 
         std::string const name = action->getName();
+        // DungeonClear can engage Mograine from a previously completed muster.
         if (name == "dungeon clear objective arrive")
             return 0.0f;
-        if (!control->coordinator || control->phase == OpeningPhase::Muster)
+        if (!control->coordinator)
             return 1.0f;
 
-        if (name == "dungeon clear recover stranded")
+        bool const openingActive = GetOpeningControl(bot) != nullptr;
+        if (openingActive && control->phase == OpeningPhase::Muster)
+            return 1.0f;
+        if (openingActive && name == "dungeon clear recover stranded")
             return 0.0f;
         if (!IsInsideGate(*bot))
             return 1.0f;
-        if (name == "open loot" || name == "loot" || dynamic_cast<MovementAction*>(action) ||
-            dynamic_cast<CastReachTargetSpellAction*>(action) || dynamic_cast<AttackAction*>(action) ||
+        if (dynamic_cast<CastReachTargetSpellAction*>(action) || dynamic_cast<AttackAction*>(action) ||
             dynamic_cast<PetAttackAction*>(action))
+            return 0.0f;
+        if (openingActive && (name == "open loot" || name == "loot" || dynamic_cast<MovementAction*>(action)))
             return 0.0f;
         return 1.0f;
     }
