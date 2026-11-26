@@ -401,6 +401,7 @@ struct ZeliekWrathSnapshot
 struct RaidPlan : DataMap::Base
 {
     ObjectGuid group;
+    ObjectGuid explicitMainTank;
     std::vector<Member> members;
     std::array<ObjectGuid, CornerCount> holders;
     std::array<ObjectGuid, CornerCount> openingHolders;
@@ -560,7 +561,10 @@ Bosses ReadBosses(Player* bot, InstanceScript& instance)
     return bosses;
 }
 
-bool IsTank(Player* player) { return PlayerbotAI::IsTank(player) || PlayerbotAI::IsExplicitMainTank(player); }
+bool IsTank(Player* player, ObjectGuid explicitMainTank)
+{
+    return PlayerbotAI::IsTank(player) || (explicitMainTank && player->GetGUID() == explicitMainTank);
+}
 
 bool CanHold(Player* player)
 {
@@ -679,7 +683,7 @@ bool PrepareWarriorStances(Player& leader, RaidPlan const& plan, OpeningPlan con
         }
 
         // Recover DPS from an older build or a worldserver restart without a stance record.
-        if (warrior->GetShapeshiftForm() != FORM_DEFENSIVESTANCE || IsTank(warrior) ||
+        if (warrior->GetShapeshiftForm() != FORM_DEFENSIVESTANCE || IsTank(warrior, plan.explicitMainTank) ||
             std::ranges::find(plan.holders, member.guid) != plan.holders.end())
             continue;
 
@@ -900,6 +904,7 @@ bool StartPlan(Player& bot, RaidPlan& plan, bool preparing = false)
     plan = {};
     Group* group = bot.GetGroup();
     plan.group = group->GetGUID();
+    plan.explicitMainTank = roster->mainTank;
     for (RosterMember const& entry : roster->members)
     {
         Player* member = ObjectAccessor::GetPlayer(bot, entry.guid);
@@ -3466,8 +3471,8 @@ Player* FindRearReserve(Player& bot, RaidPlan const& plan, Bosses const& bosses,
             continue;
         if (member.guid == preferred)
             return candidate;
-        if (!closest || (IsTank(candidate) && !IsTank(closest)) ||
-            (IsTank(candidate) == IsTank(closest) &&
+        if (!closest || (IsTank(candidate, plan.explicitMainTank) && !IsTank(closest, plan.explicitMainTank)) ||
+            (IsTank(candidate, plan.explicitMainTank) == IsTank(closest, plan.explicitMainTank) &&
              candidate->GetExactDist(bosses[corner]) < closest->GetExactDist(bosses[corner])))
             closest = candidate;
     }
@@ -3718,7 +3723,7 @@ void UpdateZeliekMelee(Player& bot, RaidPlan& plan, Bosses const& bosses)
 
     auto eligible = [&](Player* player)
     {
-        if (!IsAutonomousBot(player) || IsTank(player) || PlayerbotAI::IsHeal(player) ||
+        if (!IsAutonomousBot(player) || IsTank(player, plan.explicitMainTank) || PlayerbotAI::IsHeal(player) ||
             PlayerbotAI::IsRangedDps(player))
             return false;
         ObjectGuid const guid = player->GetGUID();
