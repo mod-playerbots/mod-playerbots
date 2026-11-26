@@ -631,6 +631,16 @@ public:
     static bool IsHealingSpell(uint32 spellFamilyName, flag96 spellFamilyFlags);
     static SpellFamilyNames Class2SpellFamilyName(uint8 cls);
     NewRpgInfo rpgInfo;
+    // The availability check and the start action both ask for a destination in the same tick.
+    // Reuse the one the availability check already validated instead of drawing a second time.
+    struct RpgPendingDestination
+    {
+        WorldPosition dest;
+        WorldPosition from;
+        uint32 ms{0};
+    };
+    RpgPendingDestination pendingGrindDestination;
+    RpgPendingDestination pendingCampDestination;
     NewRpgStatistic rpgStatistic;
     std::unordered_set<uint32> countedQuestCompletions;
     void RecordQuestAccepted(uint32 questId);
