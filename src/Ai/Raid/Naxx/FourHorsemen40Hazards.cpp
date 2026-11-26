@@ -42,7 +42,6 @@
 #include <utility>
 
 #include "Creature.h"
-#include "Group.h"
 #include "LastMovementValue.h"
 #include "Log.h"
 #include "Map.h"
@@ -2161,9 +2160,9 @@ bool FourHorsemen40Hazards::EscapeMarks(Player& bot, std::span<FourHorsemenMarkS
 
     std::vector<Position> occupied;
     if (Group* group = toward ? nullptr : bot.GetGroup())
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            if (Player* member = ref->GetSource();
-                member && member != &bot && member->IsInWorld() && member->IsAlive() && member->IsInMap(&bot))
+        for (auto const& ref : bot.GetMap()->GetPlayers())
+            if (Player* member = ref.GetSource(); member && member != &bot && member->GetGroup() == group &&
+                                                  member->IsInWorld() && member->IsAlive() && member->IsInMap(&bot))
             {
                 Position position = member->GetPosition();
                 if (member->isMoving() && !member->movespline->Finalized())

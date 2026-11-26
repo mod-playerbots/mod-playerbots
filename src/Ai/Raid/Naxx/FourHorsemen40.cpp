@@ -8,10 +8,12 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cmath>
 #include <cstddef>
 #include <limits>
 #include <list>
+#include <memory>
 #include <optional>
 #include <span>
 #include <string_view>
@@ -20,13 +22,13 @@
 #include "AiFactory.h"
 #include "AttackAction.h"
 #include "CellImpl.h"
-#include "DruidShapeshiftActions.h"
 #include "DisableMgr.h"
+#include "DruidShapeshiftActions.h"
 #include "EncounterHelpers.h"
 #include "FourHorsemen40Hazards.h"
 #include "GenericSpellActions.h"
-#include "Group.h"
 #include "GridNotifiersImpl.h"
+#include "Group.h"
 #include "InstanceScript.h"
 #include "Item.h"
 #include "LastMovementValue.h"
@@ -40,6 +42,7 @@
 #include "ObjectAccessor.h"
 #include "PathGenerator.h"
 #include "PetsAction.h"
+#include "PlayerbotWorldThreadProcessor.h"
 #include "Playerbots.h"
 #include "Spell.h"
 #include "SpellAuraEffects.h"
@@ -724,25 +727,151 @@ std::optional<Position> TankReliefPosition(Player& tank, Creature const& boss, B
     return hazards.FindAttackPosition(tank, boss, TauntRange, true, avoid, {});
 }
 
-void SelectOpeningHolders(Player& bot, RaidPlan& plan)
+struct RosterMember
+{
+    ObjectGuid guid;
+    bool assistant;
+};
+
+struct OpeningRoster
+{
+    ObjectGuid mainTank;
+    std::vector<RosterMember> members;
+    std::atomic<bool> ready{false};
+};
+
+constexpr uint32 RosterRetryMs = 250;
+constexpr uint32 RosterLifetimeMs = 1000;
+
+class ReadOpeningRoster final : public PlayerbotOperation
+{
+public:
+    ReadOpeningRoster(Player const& bot, ObjectGuid group, uint32 requestedAt, std::weak_ptr<OpeningRoster> roster)
+        : _bot(bot.GetGUID()),
+          _group(group),
+          _instance(bot.GetInstanceId()),
+          _requestedAt(requestedAt),
+          _roster(std::move(roster))
+    {
+    }
+
+    bool Execute() override
+    {
+        auto roster = _roster.lock();
+        if (!roster || getMSTimeDiff(_requestedAt, getMSTime()) >= RosterLifetimeMs)
+            return true;
+
+        Player const* bot = ObjectAccessor::FindPlayer(_bot);
+        Group const* group = bot ? bot->GetGroup() : nullptr;
+        if (!group || group->GetGUID() != _group || bot->GetMapId() != NaxxramasMap ||
+            bot->GetInstanceId() != _instance)
+            return true;
+
+        for (auto const& slot : group->GetMemberSlots())
+            if (slot.flags & MEMBER_FLAG_MAINTANK)
+            {
+                roster->mainTank = slot.guid;
+                break;
+            }
+
+        for (GroupReference const* ref = group->GetFirstMember(); ref; ref = ref->next())
+            if (Player const* member = ref->GetSource())
+                roster->members.push_back({member->GetGUID(), group->IsAssistant(member->GetGUID())});
+
+        roster->ready.store(true, std::memory_order_release);
+        return true;
+    }
+
+    std::string GetName() const override { return "FourHorsemenRoster"; }
+
+private:
+    ObjectGuid _bot;
+    ObjectGuid _group;
+    uint32 _instance;
+    uint32 _requestedAt;
+    std::weak_ptr<OpeningRoster> _roster;
+};
+
+OpeningRoster const* GetOpeningRoster(Player& bot)
+{
+    struct Request : DataMap::Base
+    {
+        ObjectGuid group;
+        uint32 requestedAt = 0;
+        std::shared_ptr<OpeningRoster> roster;
+    };
+    static std::string const key = "playerbots.naxx40.horsemen.roster";
+    auto& request = *bot.GetMap()->CustomData.GetDefault<Request>(key);
+    ObjectGuid const group = bot.GetGroup()->GetGUID();
+    uint32 const now = getMSTime();
+    uint32 const age = getMSTimeDiff(request.requestedAt, now);
+
+    if (request.group != group || age >= RosterLifetimeMs)
+        request.roster.reset();
+    if (request.roster && request.roster->ready.load(std::memory_order_acquire))
+    {
+        // A new arrival on this map may have joined after the world snapshot.
+        bool current = true;
+        for (auto const& ref : bot.GetMap()->GetPlayers())
+            if (Player const* member = ref.GetSource();
+                member->IsInWorld() && member->GetGroup() == bot.GetGroup() &&
+                std::ranges::find(request.roster->members, member->GetGUID(), &RosterMember::guid) ==
+                    request.roster->members.end())
+            {
+                current = false;
+                break;
+            }
+        if (current)
+            return request.roster.get();
+        request.roster.reset();
+    }
+
+    if (!request.roster && (!request.group || age >= RosterRetryMs))
+    {
+        request.group = group;
+        request.requestedAt = now;
+        auto roster = std::make_shared<OpeningRoster>();
+        if (PlayerbotWorldThreadProcessor::instance().QueueOperation(
+                std::make_unique<ReadOpeningRoster>(bot, group, now, roster)))
+            request.roster = std::move(roster);
+    }
+    return nullptr;
+}
+void SelectOpeningHolders(Player& bot, RaidPlan& plan, OpeningRoster const& roster)
 {
     std::vector<Player*> candidates;
     for (Member const& member : plan.members)
         if (Player* player = HolderInRaid(bot, member.guid); CanHold(player))
             candidates.push_back(player);
 
-    Group* group = bot.GetGroup();
+    ObjectGuid mainTank = roster.mainTank;
+    if (!mainTank)
+        for (RosterMember const& member : roster.members)
+            if (Player* player = ObjectAccessor::GetPlayer(bot, member.guid);
+                player && player->GetGroup() == bot.GetGroup() && player->IsAlive() && PlayerbotAI::IsTank(player))
+            {
+                mainTank = member.guid;
+                break;
+            }
+
+    auto const isTank = [&roster](Player* player)
+    { return PlayerbotAI::IsTank(player) || player->GetGUID() == roster.mainTank; };
     std::sort(
         candidates.begin(), candidates.end(),
-        [group](Player* lhs, Player* rhs)
+        [&](Player* lhs, Player* rhs)
         {
-            auto priority = [group](Player* p)
+            auto priority = [&](Player* player)
             {
-                return PlayerbotAI::IsMainTank(p) ? 0 : IsTank(p) ? (group->IsAssistant(p->GetGUID()) ? 1 : 2) : 3;
+                if (player->GetGUID() == mainTank)
+                    return 0;
+                if (!isTank(player))
+                    return 3;
+                auto const member = std::ranges::find(roster.members, player->GetGUID(), &RosterMember::guid);
+                return member->assistant ? 1 : 2;
             };
             if (priority(lhs) != priority(rhs))
                 return priority(lhs) < priority(rhs);
-            if (!IsTank(lhs) && !IsTank(rhs) && (lhs->getClass() == CLASS_DRUID) != (rhs->getClass() == CLASS_DRUID))
+            if (!isTank(lhs) && !isTank(rhs) && (lhs->getClass() == CLASS_DRUID) != (rhs->getClass() == CLASS_DRUID))
                 return lhs->getClass() == CLASS_DRUID;
             if (lhs->GetMaxHealth() != rhs->GetMaxHealth())
                 return lhs->GetMaxHealth() > rhs->GetMaxHealth();
@@ -758,21 +887,29 @@ void SelectOpeningHolders(Player& bot, RaidPlan& plan)
     plan.openingHolders = plan.holders;
 }
 
-void StartPlan(Player& bot, RaidPlan& plan, bool preparing = false)
+bool StartPlan(Player& bot, RaidPlan& plan, bool preparing = false)
 {
+    OpeningRoster const* roster = GetOpeningRoster(bot);
+    if (!roster)
+        return false;
+
     plan = {};
     Group* group = bot.GetGroup();
     plan.group = group->GetGUID();
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        if (Player* member = ref->GetSource();
-            CanAssign(member, bot) && (!preparing || (IsAutonomousBot(member) && member->IsAlive())))
+    for (RosterMember const& entry : roster->members)
+    {
+        Player* member = ObjectAccessor::GetPlayer(bot, entry.guid);
+        if (!member || member->GetGroup() != group)
+            continue;
+        if (CanAssign(member, bot) && (!preparing || (IsAutonomousBot(member) && member->IsAlive())))
             plan.members.push_back({member->GetGUID(), NoCorner});
-        else if (member && !GET_PLAYERBOT_AI(member))
+        else if (!GET_PLAYERBOT_AI(member))
             LOG_INFO("playerbots",
                      "[Naxx40] Horsemen manual player {} at ({:.1f}, {:.1f}, {:.1f}); outside the bot formation",
                      member->GetName(), member->GetPositionX(), member->GetPositionY(), member->GetPositionZ());
+    }
 
-    SelectOpeningHolders(bot, plan);
+    SelectOpeningHolders(bot, plan, *roster);
     std::array<uint8, 3> counts = {};  // healers, ranged, melee and spare tanks
     std::array<uint8, CornerCount> cornerSizes = {};
     for (Member& member : plan.members)
@@ -804,12 +941,15 @@ void StartPlan(Player& bot, RaidPlan& plan, bool preparing = false)
     {
         Player* player = HolderInRaid(bot, plan.holders[corner]);
         Position const& position = Horsemen[corner].corner;
-        LOG_INFO("playerbots",
-                 "[Naxx40] Horsemen instance={} {} corner=({:.1f}, {:.1f}, {:.2f}) bots={} holder={} role={}",
-                 bot.GetInstanceId(), Horsemen[corner].name, position.GetPositionX(), position.GetPositionY(),
-                 position.GetPositionZ(), cornerSizes[corner], player ? player->GetName() : "none",
-                 player ? (IsTank(player) ? "tank" : "taunt-capable reserve") : "none");
+        LOG_INFO(
+            "playerbots", "[Naxx40] Horsemen instance={} {} corner=({:.1f}, {:.1f}, {:.2f}) bots={} holder={} role={}",
+            bot.GetInstanceId(), Horsemen[corner].name, position.GetPositionX(), position.GetPositionY(),
+            position.GetPositionZ(), cornerSizes[corner], player ? player->GetName() : "none",
+            player ? (PlayerbotAI::IsTank(player) || player->GetGUID() == roster->mainTank ? "tank"
+                                                                                           : "taunt-capable reserve")
+                   : "none");
     }
+    return true;
 }
 
 void JoinLivePlan(Player& bot, RaidPlan& plan)
@@ -851,7 +991,8 @@ void JoinLivePlan(Player& bot, RaidPlan& plan)
 
 bool StartOpening(Player& coordinator, RaidPlan& plan, uint32 now)
 {
-    StartPlan(coordinator, plan, true);
+    if (!StartPlan(coordinator, plan, true))
+        return false;
     Player* const firstHolder = HolderInRaid(coordinator, plan.holders[0]);
     if (!CanHold(firstHolder))
         return false;
@@ -884,10 +1025,10 @@ bool NeedsAdditionalOpeningHealers(Player& coordinator, OpeningPlan const& openi
         return false;
 
     std::ptrdiff_t healers = 0;
-    for (GroupReference* ref = coordinator.GetGroup()->GetFirstMember(); ref; ref = ref->next())
-        if (Player* member = ref->GetSource(); CanAssign(member, coordinator) && IsAutonomousBot(member) &&
-                                               member->IsAlive() && PlayerbotAI::IsHeal(member) &&
-                                               ++healers == rearHealers)
+    for (auto const& ref : coordinator.GetMap()->GetPlayers())
+        if (Player* member = ref.GetSource();
+            CanAssign(member, coordinator) && member->GetGroup() == coordinator.GetGroup() && IsAutonomousBot(member) &&
+            member->IsAlive() && PlayerbotAI::IsHeal(member) && ++healers == rearHealers)
             return true;
     return false;
 }
@@ -3703,7 +3844,8 @@ Assignment AssignmentFor(Player& bot, Bosses const& bosses, Member*& plannedMemb
     if (plan.group != bot.GetGroup()->GetGUID() ||
         (!openingPull && (riderReturned || (fullRoster && now - plan.sampledAt > RetryDelay))))
     {
-        StartPlan(bot, plan);
+        if (!StartPlan(bot, plan))
+            return {};
         if (!fullRoster)
             for (Member& member : plan.members)
                 member.centerPending = true;

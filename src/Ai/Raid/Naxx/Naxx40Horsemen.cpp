@@ -144,8 +144,8 @@ bool CanDriveOpening(Player* player)
 
 PlayerbotAI* GetOpeningMemberAI(Player* player, Player* member)
 {
-    if (!IsAutonomous(member) || !member->IsInWorld() || !member->IsAlive() || !member->IsInMap(player) ||
-        !member->InSamePhase(player))
+    if (!member || member->GetGroup() != player->GetGroup() || !IsAutonomous(member) || !member->IsInWorld() ||
+        !member->IsAlive() || !member->IsInMap(player) || !member->InSamePhase(player))
         return nullptr;
     return GET_PLAYERBOT_AI(member);
 }
@@ -191,9 +191,9 @@ MusterStatus ReadMuster(Player* player)
     uint32 living = 0;
     uint32 inside = 0;
     bool supportInside = true;
-    for (GroupReference* ref = player->GetGroup()->GetFirstMember(); ref; ref = ref->next())
+    for (auto const& ref : player->GetMap()->GetPlayers())
     {
-        Player* member = ref->GetSource();
+        Player* member = ref.GetSource();
         PlayerbotAI* const ai = GetOpeningMemberAI(player, member);
         if (!ai)
             continue;
@@ -214,8 +214,8 @@ MusterStatus ReadMuster(Player* player)
 
 void BeginOpeningRebuff(Player* player)
 {
-    for (GroupReference* ref = player->GetGroup()->GetFirstMember(); ref; ref = ref->next())
-        if (PlayerbotAI* ai = GetOpeningMemberAI(player, ref->GetSource());
+    for (auto const& ref : player->GetMap()->GetPlayers())
+        if (PlayerbotAI* ai = GetOpeningMemberAI(player, ref.GetSource());
             ai && ai->HasStrategy("force rebuff", BOT_STATE_NON_COMBAT))
             ai->forceRebuff.Begin(false);
 }
