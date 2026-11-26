@@ -5950,7 +5950,7 @@ public:
             return 1.0f;
 
         bool const melee = dynamic_cast<MeleeAction*>(action) != nullptr;
-        if ((dynamic_cast<MovementAction*>(action) && !melee) || IsTauntAction(action) ||
+        if ((bot->IsInCombat() && dynamic_cast<MovementAction*>(action) && !melee) || IsTauntAction(action) ||
             EncounterHelpers::IsAoeThreatAction(bot, action))
             return 0.0f;
         auto* tactics = static_cast<AssignHorsemenAction*>(context->GetAction(JobName(Job::Assign)));
