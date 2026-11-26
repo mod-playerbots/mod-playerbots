@@ -101,8 +101,6 @@ std::string PlayerbotTextMgr::GetBotText(std::string name)
         return "";
     }
 
-    // find(), not operator[]: the bots ask from every map update thread at once, and an insert there
-    // rebalances the shared tree under the other readers
     auto const found = botTexts.find(name);
     if (found == botTexts.end() || found->second.empty())
     {
