@@ -112,6 +112,16 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+    // Holy Wrath doubles against undead/demons - the ICC dungeons are full of
+    // them. Cast it on undead/demon packs before the generic AoE actions.
+    triggers.push_back(
+        new TriggerNode(
+            "holy wrath undead aoe",
+            {
+                NextAction("holy wrath", ACTION_HIGH + 8)
+            }
+        )
+    );
     triggers.push_back(
         new TriggerNode(
             "lose aggro",

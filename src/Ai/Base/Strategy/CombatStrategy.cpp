@@ -9,6 +9,33 @@
 
 void CombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // Pulled aggro (a boss or a pack picked a non-tank bot): pop a personal
+    // defensive / threat-drop ability immediately instead of waiting for HP to
+    // drop. Only the abilities the class actually has are registered, the
+    // unknown ones are skipped by the engine.
+    //
+    // Deliberately NOT listed (already driven by class strategies, listing
+    // them here would burn a global cooldown twice): fade (priest medium
+    // threat), soulshatter (warlock), feint / cower (rogue / druid).
+    // Divine Shield / Divine Protection are also excluded: protection and
+    // retribution paladins lose their attacks while immune, so the bubble is
+    // handled by a paladin-only trigger with a sudden-health-drop condition.
+    triggers.push_back(
+        new TriggerNode(
+            "enemy looking at non tank",
+            {
+                NextAction("ice block", ACTION_EMERGENCY - 1),
+                NextAction("dispersion", ACTION_EMERGENCY - 1),
+                NextAction("icebound fortitude", ACTION_EMERGENCY - 1),
+                NextAction("deterrence", ACTION_EMERGENCY - 2),
+                NextAction("vanish", ACTION_EMERGENCY - 2),
+                NextAction("invisibility", ACTION_EMERGENCY - 2),
+                NextAction("feign death", ACTION_EMERGENCY - 2),
+                NextAction("evasion", ACTION_EMERGENCY - 4),
+                NextAction("barkskin", ACTION_EMERGENCY - 4),
+            }
+        )
+    );
     triggers.push_back(
         new TriggerNode(
             "enemy out of spell",

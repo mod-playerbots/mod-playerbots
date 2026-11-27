@@ -22,6 +22,13 @@ void HealPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericPaladinStrategy::InitTriggers(triggers);
 
+    // Holy paladin only: bubble when health suddenly collapses. Healing keeps
+    // working through Divine Shield, so this buys the healer time without
+    // stopping the heals.
+    triggers.push_back(new TriggerNode(
+        "holy shield sudden drop",
+        { NextAction("divine shield", ACTION_EMERGENCY) }));
+
     triggers.push_back(
         new TriggerNode(
             "seal",

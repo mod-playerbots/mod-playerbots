@@ -175,6 +175,38 @@ bool MediumThreatTrigger::IsActive()
     return MyAttackerCountTrigger::IsActive();
 }
 
+bool EnemyLookingAtNonTankTrigger::IsActive()
+{
+    // Tanks are supposed to be looked at - nothing to save here.
+    if (PlayerbotAI::IsTank(bot))
+        return false;
+
+    GuidVector attackers = AI_VALUE(GuidVector, "attackers");
+    bool const pack = attackers.size() >= 2;
+
+    for (ObjectGuid const guid : attackers)
+    {
+        Unit* attacker = botAI->GetUnit(guid);
+        if (!attacker || !attacker->IsAlive())
+            continue;
+
+        // Only when the mob actually picked the bot as its victim.
+        if (attacker->GetVictim() != bot)
+            continue;
+
+        // A single wandering trash mob is not worth a defensive ability; a
+        // pack, a boss or an elite is.
+        if (pack)
+            return true;
+
+        Creature* creature = attacker->ToCreature();
+        if (creature && creature->GetCreatureTemplate()->rank >= CREATURE_ELITE_ELITE)
+            return true;
+    }
+
+    return false;
+}
+
 bool LowTankThreatTrigger::IsActive()
 {
     Unit* current_target = AI_VALUE(Unit*, "current target");
@@ -710,4 +742,28 @@ bool NewPetTrigger::IsActive()
 bool ForceRebuffPendingTrigger::IsActive()
 {
     return botAI->forceRebuff.IsPending();
+}
+
+bool TankSwapTriggerBase::IsActive()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", bossName);
+    if (!boss || !boss->IsAlive() || !boss->IsInCombat())
+        return false;
+
+    // This trigger runs on the OFF tank. The current victim accumulates the
+    // swap debuff; when its stacks reach the threshold, this bot (not the
+    // victim) taunts to take the boss over. Requiring victim != bot keeps the
+    // current tank from pointlessly taunting itself and matches the "taunt
+    // spell" action, which only works when the target is held by someone else.
+    Unit* victim = boss->GetVictim();
+    if (!victim || victim == bot)
+        return false;
+
+    if (Aura* aura = victim->GetAura(spellId))
+        return aura->GetStackAmount() >= minStacks;
+
+    return false;
 }
