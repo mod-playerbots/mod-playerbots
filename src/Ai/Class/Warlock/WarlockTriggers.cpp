@@ -10,7 +10,9 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
+#include "RitualOfSoulsValues.h"
 #include "TargetValue.h"
+#include "WarlockValues.h"
 
 static const uint32 SOUL_SHARD_ITEM_ID = 6265;
 
@@ -254,4 +256,15 @@ bool RainOfFireChannelCheckTrigger::IsActive()
 
     // Not channeling Rain of Fire
     return false;
+}
+
+bool RitualOfSoulsTrigger::IsActive()
+{
+    if (bot->IsInCombat() || !bot->GetGroup())
+        return false;
+
+    if (bot->GetGameObject(SPELL_RITUAL_OF_SOULS_R2) || bot->GetGameObject(SPELL_RITUAL_OF_SOULS_R1))
+        return false;
+
+    return ReadyRitualOfSoulsRank(bot) && AI_VALUE(bool, "should cast ritual of souls");
 }
