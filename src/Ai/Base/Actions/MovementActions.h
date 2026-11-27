@@ -36,7 +36,7 @@ protected:
     bool MoveTo(uint32 mapId, float x, float y, float z, bool idle = false, bool react = false,
                 bool normal_only = false, bool exact_waypoint = false,
                 MovementPriority priority = MovementPriority::MOVEMENT_NORMAL, bool lessDelay = false,
-                bool backwards = false);
+                bool backwards = false, float speed = 0.0f);
     bool MoveTo(WorldObject* target, float distance = 0.0f,
                 MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
     bool MoveNear(WorldObject* target, float distance = sPlayerbotAIConfig.ContactDistance,
@@ -83,7 +83,7 @@ private:
     const Movement::PointsArray SearchForBestPath(float x, float y, float z, float& modified_z, int maxSearchCount = 5,
                                                   bool normal_only = false, float step = 8.0f);
     bool wasMovementRestricted = false;
-    void DoMovePoint(Unit* unit, float x, float y, float z, bool generatePath, bool backwards);
+    void DoMovePoint(Unit* unit, float x, float y, float z, bool generatePath, bool backwards, float speed = 0.0f);
 };
 
 class FleeAction : public MovementAction
