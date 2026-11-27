@@ -10,6 +10,7 @@
 #include "LastMovementValue.h"
 #include "Map.h"
 #include "MotionMaster.h"
+#include "PathGenerator.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
@@ -20,6 +21,17 @@
 
 namespace
 {
+    // Without a real path the core moves a unit on a straight spline, through walls and out over drops. A real path
+    // has a point about every 4 yd, so two points over a longer distance are such a spline too.
+    bool WouldMoveInStraightLine(Player* bot, float x, float y, float z)
+    {
+        constexpr float maxDirectDistance = 8.0f;
+        PathGenerator path(bot);
+        path.CalculatePath(x, y, z);
+        return (path.GetPathType() & PATHFIND_NOPATH) ||
+               (path.GetPath().size() <= 2 && bot->GetExactDist(x, y, z) > maxDirectDistance);
+    }
+
     Transport* GetTransportForPosTolerant(Map* map, WorldObject* ref, uint32 phaseMask, float x, float y, float z)
     {
         if (!map || !ref)
@@ -217,8 +229,43 @@ bool FollowAction::Execute(Event /*event*/)
             return false;
 
         MovementPriority priority = botAI->GetState() == BOT_STATE_COMBAT ? MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_NORMAL;
-        moved = MoveTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), false, false, false,
-                       true, priority, true);
+        float x = loc.GetPositionX();
+        float y = loc.GetPositionY();
+        float z = loc.GetPositionZ();
+        // Other players see a straight spline in a battleground, so cut it to one step. The route is searched again
+        // from there, and a step usually has one.
+        if (bot->InBattleground() && IsMovingAllowed() && !IsDuplicateMove(x, y, z) &&
+            !IsWaitingForLastMove(priority))
+        {
+            float const distance = bot->GetExactDist(x, y, z);
+            if (distance > sPlayerbotAIConfig.SpellDistance && WouldMoveInStraightLine(bot, x, y, z))
+            {
+                float const fraction = sPlayerbotAIConfig.SpellDistance / distance;
+                x = bot->GetPositionX() + (x - bot->GetPositionX()) * fraction;
+                y = bot->GetPositionY() + (y - bot->GetPositionY()) * fraction;
+                z = bot->GetPositionZ() + (z - bot->GetPositionZ()) * fraction;
+                float ground = INVALID_HEIGHT;
+                bot->UpdateAllowedPositionZ(x, y, z, &ground);
+                // There is no floor below a point inside a hill.
+                if (ground <= INVALID_HEIGHT)
+                    z = std::max(z, bot->GetMap()->GetGridHeight(x, y));
+
+                // Not taken: a step over 45 degrees (a cliff hop) or under a yard, except in water. The formation spot
+                // is recorded as the last move, so the search repeats after it changes or MaxWaitForMove.
+                constexpr float minRun = 1.0f;
+                constexpr float maxSlope = 1.0f;
+                float const run = bot->GetExactDist2d(x, y);
+                if (!bot->IsInWater() && (run < minRun || std::abs(z - bot->GetPositionZ()) > run * maxSlope))
+                {
+                    AI_VALUE(LastMovement&, "last movement")
+                        .Set(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(),
+                             bot->GetOrientation(), 0.0f, priority);
+                    return false;
+                }
+            }
+        }
+
+        moved = MoveTo(loc.GetMapId(), x, y, z, false, false, false, true, priority, true);
     }
 
     // This section has been commented out because it was forcing the pet to
