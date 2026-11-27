@@ -620,6 +620,7 @@ void AddSC_RubySanctumBotScripts();
 void AddSC_SerpentshrineCavernBotScripts();
 void AddSC_TempestKeepBotScripts();
 void AddSC_randombot_level_mgr();
+void AddSC_RaidInstanceStateScripts();
 
 void AddPlayerbotsScripts()
 {
@@ -646,4 +647,5 @@ void AddPlayerbotsScripts()
     AddSC_SerpentshrineCavernBotScripts();
     AddSC_TempestKeepBotScripts();
     AddSC_randombot_level_mgr();
+    AddSC_RaidInstanceStateScripts();
 }
