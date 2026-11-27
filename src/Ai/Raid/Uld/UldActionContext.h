@@ -40,6 +40,10 @@ public:
         creators["kologarn crunch armor action"] = &RaidUlduarActionContext::kologarn_crunch_armor_action;
         creators["auriaya fall from floor action"] = &RaidUlduarActionContext::auriaya_fall_from_floor_action;
         creators["hodir move snowpacked icicle"] = &RaidUlduarActionContext::hodir_move_snowpacked_icicle;
+        creators["xt-002 move away bomb"] = &RaidUlduarActionContext::xt_002_move_away_bomb;
+        creators["xt-002 attack heart"] = &RaidUlduarActionContext::xt_002_attack_heart;
+        creators["algalon enter black hole"] = &RaidUlduarActionContext::algalon_enter_black_hole;
+        creators["algalon attack constellation"] = &RaidUlduarActionContext::algalon_attack_constellation;
         creators["hodir biting cold jump"] = &RaidUlduarActionContext::hodir_biting_cold_jump;
         creators["hodir frost resistance action"] = &RaidUlduarActionContext::hodir_frost_resistance_action;
         creators["freya move away nature bomb"] = &RaidUlduarActionContext::freya_move_away_nature_bomb;
@@ -110,6 +114,10 @@ private:
     static Action* kologarn_crunch_armor_action(PlayerbotAI* botAI) { return new KologarnCrunchArmorAction(botAI); }
     static Action* auriaya_fall_from_floor_action(PlayerbotAI* botAI) { return new AuriayaFallFromFloorAction(botAI); }
     static Action* hodir_move_snowpacked_icicle(PlayerbotAI* botAI) { return new HodirMoveSnowpackedIcicleAction(botAI); }
+    static Action* xt_002_move_away_bomb(PlayerbotAI* botAI) { return new Xt002MoveAwayBombAction(botAI); }
+    static Action* xt_002_attack_heart(PlayerbotAI* botAI) { return new Xt002AttackHeartAction(botAI); }
+    static Action* algalon_enter_black_hole(PlayerbotAI* botAI) { return new AlgalonEnterBlackHoleAction(botAI); }
+    static Action* algalon_attack_constellation(PlayerbotAI* botAI) { return new AlgalonAttackConstellationAction(botAI); }
     static Action* hodir_biting_cold_jump(PlayerbotAI* botAI) { return new HodirBitingColdJumpAction(botAI); }
     static Action* hodir_frost_resistance_action(PlayerbotAI* botAI) { return new BossFrostResistanceAction(botAI, "hodir"); }
     static Action* freya_move_away_nature_bomb(PlayerbotAI* botAI) { return new FreyaMoveAwayNatureBombAction(botAI); }

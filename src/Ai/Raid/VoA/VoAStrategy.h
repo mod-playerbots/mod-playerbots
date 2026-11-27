@@ -8,6 +8,7 @@
 #define PLAYERBOTS_VOASTRATEGY_H
 
 #include "Strategy.h"
+#include "TargetValue.h"
 
 class RaidVoAStrategy : public Strategy
 {
@@ -15,6 +16,7 @@ public:
     RaidVoAStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
     virtual std::string const getName() override { return "voa"; }
     virtual void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+    void AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) override;
 };
 
 #endif

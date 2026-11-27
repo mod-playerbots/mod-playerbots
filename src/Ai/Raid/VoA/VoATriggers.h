@@ -18,6 +18,36 @@ enum VoAIDs
     NPC_TEMPEST_MINION = 33998,
     SPELL_LIGHTNING_NOVA_10_MAN = 64216,
     SPELL_LIGHTNING_NOVA_25_MAN = 65279,
+
+    // Toravon the Ice Watcher
+    BOSS_TORAVON_10 = 38433,
+    BOSS_TORAVON_25 = 38462,
+    NPC_FROZEN_ORB_10 = 38456,
+    NPC_FROZEN_ORB_25 = 38698,
+};
+
+//
+// Toravon the Ice Watcher
+//
+
+// An ice orb is up during the Toravon fight. The orbs must be killed by the
+// DPS; the tank has to keep the boss still (see RaidVoAStrategy::
+// AppendTargetExclusions, which removes orbs from the tank target value).
+class VoAToravonFrozenOrbTrigger : public Trigger
+{
+public:
+    VoAToravonFrozenOrbTrigger(PlayerbotAI* botAI) : Trigger(botAI, "voa toravon frozen orb", 1) {}
+    bool IsActive() override;
+};
+
+// Frozen Mallet (71993) stacks on the current tank; swap at 3 stacks.
+class VoAToravonTankSwapTrigger : public TankSwapTriggerBase
+{
+public:
+    VoAToravonTankSwapTrigger(PlayerbotAI* botAI)
+        : TankSwapTriggerBase(botAI, "voa toravon tank swap", 71993, 3, "toravon the ice watcher")
+    {
+    }
 };
 
 //

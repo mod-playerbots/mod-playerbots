@@ -191,3 +191,65 @@ bool EmalonFallFromFloorAction::isUseful()
     EmalonFallFromFloorTrigger emalonFallFromFloorTrigger(botAI);
     return emalonFallFromFloorTrigger.IsActive();
 }
+
+//
+// Toravon the Ice Watcher
+//
+
+bool VoAToravonFrozenOrbAction::Execute(Event /*event*/)
+{
+    if (bot->GetMapId() != 624)
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "toravon the ice watcher");
+    if (!boss || !boss->IsInCombat())
+        return false;
+
+    Unit* orb = nullptr;
+    for (uint32 entry : {NPC_FROZEN_ORB_10, NPC_FROZEN_ORB_25})
+    {
+        Unit* candidate = bot->FindNearestCreature(entry, 60.0f);
+        if (candidate && candidate->IsAlive() && candidate->IsHostileTo(bot))
+        {
+            orb = candidate;
+            break;
+        }
+    }
+    if (!orb)
+        return false;
+
+    // Skull the orb so every DPS focuses it.
+    if (Group* group = bot->GetGroup())
+    {
+        ObjectGuid currentSkull = group->GetTargetIcon(7);
+        if (currentSkull.IsEmpty() || currentSkull != orb->GetGUID())
+            group->SetTargetIcon(7, bot->GetGUID(), orb->GetGUID());
+    }
+
+    return Attack(orb);
+}
+
+bool VoAToravonFrozenOrbAction::isUseful()
+{
+    // Tanks never chase the orb: moving the boss turns its breath into the
+    // raid. Their target value excludes orbs (RaidVoAStrategy::
+    // AppendTargetExclusions), so this action must not fire for them either.
+    if (PlayerbotAI::IsTank(bot))
+        return false;
+
+    if (bot->GetMapId() != 624)  // Vault of Archavon only
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "toravon the ice watcher");
+    if (!boss || !boss->IsAlive() || !boss->IsInCombat())
+        return false;
+
+    for (uint32 entry : {NPC_FROZEN_ORB_10, NPC_FROZEN_ORB_25})
+    {
+        Unit* orb = bot->FindNearestCreature(entry, 60.0f);
+        if (orb && orb->IsAlive() && orb->IsHostileTo(bot))
+            return true;
+    }
+
+    return false;
+}

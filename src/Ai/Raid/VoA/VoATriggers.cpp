@@ -140,3 +140,26 @@ bool EmalonFallFromFloorTrigger::IsActive()
     // Check if bot is on the floor
     return bot->GetPositionZ() < 80.0f;
 }
+
+//
+// Toravon the Ice Watcher
+//
+
+bool VoAToravonFrozenOrbTrigger::IsActive()
+{
+    if (bot->GetMapId() != 624)  // Vault of Archavon only
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "toravon the ice watcher");
+    if (!boss || !boss->IsAlive() || !boss->IsInCombat())
+        return false;
+
+    for (uint32 entry : {NPC_FROZEN_ORB_10, NPC_FROZEN_ORB_25})
+    {
+        if (Unit* orb = bot->FindNearestCreature(entry, 60.0f))
+            if (orb->IsAlive() && orb->IsHostileTo(bot))
+                return true;
+    }
+
+    return false;
+}
