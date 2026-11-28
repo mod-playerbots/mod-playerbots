@@ -6,6 +6,7 @@
 
 #include "MovementActions.h"
 #include "Corpse.h"
+#include "EncounterHelpers.h"
 #include "Event.h"
 #include "FleeManager.h"
 #include "GameObject.h"
@@ -34,6 +35,7 @@
 #include "Vehicle.h"
 #include "WaypointMovementGenerator.h"
 #include "G3D/Vector3.h"
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <iomanip>
@@ -1899,6 +1901,19 @@ bool AvoidAoeAction::Execute(Event /*event*/)
     return false;
 }
 
+namespace
+{
+constexpr float AREA_EXIT_MARGIN = 1.5f;
+constexpr float AREA_EXIT_ANGLES[] = {0.0f, float(M_PI) / 4, -float(M_PI) / 4, float(M_PI) / 2, -float(M_PI) / 2};
+
+void PruneFleeInfo(std::list<FleeInfo>& infoList)
+{
+    uint32 const curTS = getMSTime();
+    while (!infoList.empty() && (infoList.size() > 10 || infoList.front().timestamp + 5000 < curTS))
+        infoList.pop_front();
+}
+}  // namespace
+
 bool AvoidAoeAction::AvoidAuraWithDynamicObj()
 {
     Aura* aura = AI_VALUE(Aura*, "area debuff");
@@ -1938,7 +1953,14 @@ bool AvoidAoeAction::AvoidAuraWithDynamicObj()
     }
     std::ostringstream name;
     name << spellInfo->SpellName[LOCALE_enUS];  // << "] (aura)";
-    if (FleePosition(dynOwner->GetPosition(), radius))
+    // Both moves below are refused while the last combat move still runs; skip their searches.
+    if (!IsMovingAllowed() || IsWaitingForLastMove(MovementPriority::MOVEMENT_COMBAT))
+        return false;
+    // The same reach test as the in-cloud check above (GetDistance less both object sizes).
+    float const edge = radius + bot->GetObjectSize() + dynOwner->GetObjectSize();
+    std::vector<Position> const clouds = EncounterHelpers::GetDynamicObjectPositions(
+        bot, bot->GetExactDist(dynOwner) + 2 * edge + AREA_EXIT_MARGIN, dynOwner->GetSpellId());
+    if (StepOutOfArea(dynOwner->GetPosition(), edge, clouds) || FleePosition(dynOwner->GetPosition(), radius))
     {
         if (sPlayerbotAIConfig.TellWhenAvoidAoe && lastTellTimer < time(NULL) - 10)
         {
@@ -2249,40 +2271,91 @@ bool MovementAction::FleePosition(Position pos, float radius, uint32 minInterval
         if (MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(), false,
                    false, true, false, MovementPriority::MOVEMENT_COMBAT))
         {
-            uint32 curTS = getMSTime();
-            while (!infoList.empty())
-            {
-                if (infoList.size() > 10 || infoList.front().timestamp + 5000 < curTS)
-                {
-                    infoList.pop_front();
-                }
-                else
-                {
-                    break;
-                }
-            }
-            infoList.push_back({pos, radius, bot->GetAngle(&bestPos), curTS});
+            RecordFlee(pos, radius, bot->GetAngle(&bestPos));
             return true;
         }
     }
     return false;
 }
 
+bool MovementAction::StepOutOfArea(Position const& centre, float radius, std::vector<Position> const& otherAreas,
+                                   uint32 minInterval)
+{
+    // FleePosition steps at most 5 yd from the bot and never checks the spot against the area, so from
+    // near the centre it often ends inside.
+    std::list<FleeInfo>& infoList = AI_VALUE(std::list<FleeInfo>&, "recently flee info");
+    if (!infoList.empty() && infoList.back().timestamp + minInterval > getMSTime())
+        return false;
+
+    float const exitDistance = radius + AREA_EXIT_MARGIN;
+    Unit* target = AI_VALUE(Unit*, "current target");
+    bool const melee = PlayerbotAI::IsMelee(bot);
+    // A tank backs away from its target, which follows it and keeps facing away from the group.
+    bool const tanking =
+        target && melee && target->GetVictim() == bot && !target->isFrozen() && !target->HasRootAura();
+    // Other melee head for the edge nearest their target; ranged head straight out.
+    float base = centre.GetAngle(bot);
+    if (tanking)
+        base = target->GetAngle(bot);
+    else if (target && melee)
+        base = centre.GetAngle(target);
+
+    std::vector<Position> spots;
+    for (float offset : AREA_EXIT_ANGLES)
+    {
+        float x = centre.GetPositionX() + std::cos(base + offset) * exitDistance;
+        float y = centre.GetPositionY() + std::sin(base + offset) * exitDistance;
+        float z = bot->GetPositionZ();
+        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
+                                                            bot->GetPositionZ(), x, y, z))
+            continue;
+
+        // Cut short by a wall, inside another area, or back the way it just fled.
+        Position const spot(x, y, z);
+        if (spot.GetExactDist(centre) < radius ||
+            std::any_of(otherAreas.begin(), otherAreas.end(),
+                        [&](Position const& other) { return other.GetExactDist(spot) < radius; }) ||
+            !CheckLastFlee(bot->GetAngle(&spot), infoList))
+            continue;
+
+        if (target && !tanking)
+        {
+            float const reach = spot.GetExactDist(target) - target->GetCombatReach();
+            if (melee ? spot.GetExactDist(target) > bot->GetMeleeRange(target)
+                      : reach > sPlayerbotAIConfig.SpellDistance || reach < sPlayerbotAIConfig.TooCloseDistance)
+                continue;
+        }
+        spots.push_back(spot);
+    }
+
+    if (target && !melee)
+        std::stable_sort(spots.begin(), spots.end(), [&](Position const& a, Position const& b)
+                         { return a.GetExactDist(target) > b.GetExactDist(target); });
+
+    for (Position const& spot : spots)
+    {
+        if (MoveTo(bot->GetMapId(), spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ(), false, false,
+                   true, false, MovementPriority::MOVEMENT_COMBAT))
+        {
+            RecordFlee(centre, radius, bot->GetAngle(&spot));
+            return true;
+        }
+    }
+    return false;
+}
+
+void MovementAction::RecordFlee(Position const& pos, float radius, float angle)
+{
+    std::list<FleeInfo>& infoList = AI_VALUE(std::list<FleeInfo>&, "recently flee info");
+    PruneFleeInfo(infoList);
+    infoList.push_back({pos, radius, angle, getMSTime()});
+}
+
 bool MovementAction::CheckLastFlee(float curAngle, std::list<FleeInfo>& infoList)
 {
     uint32 curTS = getMSTime();
     curAngle = Position::NormalizeOrientation(curAngle);
-    while (!infoList.empty())
-    {
-        if (infoList.size() > 10 || infoList.front().timestamp + 5000 < curTS)
-        {
-            infoList.pop_front();
-        }
-        else
-        {
-            break;
-        }
-    }
+    PruneFleeInfo(infoList);
     for (FleeInfo& info : infoList)
     {
         // more than 5 sec

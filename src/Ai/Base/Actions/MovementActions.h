@@ -11,6 +11,7 @@
 #include "LastMovementValue.h"
 #include "PlayerbotAIConfig.h"
 #include <cmath>
+#include <vector>
 
 class Player;
 class PlayerbotAI;
@@ -68,6 +69,9 @@ protected:
     Position BestPositionForMeleeToFlee(Position pos, float radius);
     Position BestPositionForRangedToFlee(Position pos, float radius);
     bool FleePosition(Position pos, float radius, uint32 minInterval = 1000);
+    bool StepOutOfArea(Position const& centre, float radius, std::vector<Position> const& otherAreas = {},
+                       uint32 minInterval = 1000);
+    void RecordFlee(Position const& pos, float radius, float angle);
     bool CheckLastFlee(float curAngle, std::list<FleeInfo>& infoList);
 
 protected:
