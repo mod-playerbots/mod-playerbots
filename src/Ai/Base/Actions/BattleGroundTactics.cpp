@@ -42,6 +42,7 @@
 #include <mutex>
 #include <optional>
 #include <span>
+#include <unordered_map>
 
 // common bg positions
 Position const WS_WAITING_POS_HORDE_1 = {944.981f, 1423.478f, 345.434f, 6.18f};
@@ -125,6 +126,35 @@ constexpr uint32 AV_MINE_SQUAD_MIN = 3;
 constexpr uint32 AV_MINE_SQUAD_MAX = 5;
 constexpr uint32 AV_MINE_SQUAD_READY = 3;       // teammates at the mine before the squad goes in
 constexpr float AV_MINE_RALLY_RADIUS = 35.0f;
+constexpr uint32 AV_MINE_SQUAD_COMMIT_MS = 120000;  // the squad keeps going in this long after it was last ready
+
+// The route to the boss leaves the rally area, which drops the ready count, so a squad that re-checked it would turn
+// back. Reads and refreshes the last time this team's squad was ready; shared because bot AI runs on map threads.
+static bool IsAvMineSquadCommitted(uint32 instanceId, TeamId team, bool ready)
+{
+    static std::mutex commitLock;
+    static std::unordered_map<uint64, uint32> lastReadyMs;
+
+    uint64 const key = (static_cast<uint64>(instanceId) << 1) | (team == TEAM_HORDE ? 1 : 0);
+    uint32 const now = getMSTime();
+
+    std::lock_guard<std::mutex> guard(commitLock);
+    if (ready)
+    {
+        lastReadyMs[key] = now;
+        return true;
+    }
+
+    auto const it = lastReadyMs.find(key);
+    if (it == lastReadyMs.end())
+        return false;
+
+    if (getMSTimeDiff(it->second, now) < AV_MINE_SQUAD_COMMIT_MS)
+        return true;
+
+    lastReadyMs.erase(it);
+    return false;
+}
 
 constexpr uint8 WSG_DEFENDER_ROLES_VS_DEFENSIVE = 2;
 constexpr float WSG_CLIFF_HEIGHT_TOLERANCE = 10.0f;
@@ -2335,7 +2365,8 @@ bool BGTactics::selectObjective(bool reset)
 
                         // Inside the cave, keep fighting; outside, go in once the squad is there (one straggler allowed)
                         bool insideMine = bot->GetAreaId() == mineArea && !bot->IsOutdoors();
-                        if (insideMine || atMine >= std::min(AV_MINE_SQUAD_READY, squadSize - 1))
+                        uint32 needed = std::min(AV_MINE_SQUAD_READY, squadSize - 1);
+                        if (IsAvMineSquadCommitted(bg->GetInstanceID(), team, atMine >= needed) || insideMine)
                             BgObjective = mineBoss;
                         else
                         {
