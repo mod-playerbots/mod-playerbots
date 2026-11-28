@@ -2111,7 +2111,7 @@ void RandomItemMgr::BuildCacheItemInfo()
             Field* fields = result->Fetch();
             uint32 id = fields[0].Get<uint32>();
             std::string field = fields[1].Get<std::string>();
-            uint32 weight = fields[2].Get<uint32>();
+            uint32 weight = fields[2].Get<uint16>();
 
             WeightScaleStat stat;
             stat.stat = field;

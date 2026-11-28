@@ -2314,7 +2314,7 @@ void TravelNodeMap::loadNodeStore()
                 startNode->setPathTo(
                     endNode,
                     TravelNodePath(fields[4].Get<float>(), fields[6].Get<float>(), fields[2].Get<uint8>(),
-                                   fields[3].Get<uint64>(), fields[7].Get<bool>(),
+                                   fields[3].Get<uint32>(), fields[7].Get<bool>(),
                                    {fields[8].Get<uint8>(), fields[9].Get<uint8>(), fields[10].Get<uint8>()},
                                    fields[5].Get<float>()),
                     true);
