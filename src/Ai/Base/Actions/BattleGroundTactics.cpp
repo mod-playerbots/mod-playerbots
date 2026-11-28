@@ -128,6 +128,8 @@ constexpr uint32 AV_MINE_SQUAD_MIN = 3;
 constexpr uint32 AV_MINE_SQUAD_MAX = 5;
 constexpr uint32 AV_MINE_SQUAD_READY = 3;       // teammates at the mine before the squad goes in
 constexpr float AV_MINE_RALLY_RADIUS = 35.0f;
+constexpr float AV_MINE_RALLY_SCATTER = 5.0f;
+constexpr float AV_MINE_ROUTE_CHECK_RANGE = 300.0f;  // route check range from the mine boss; both rallies are closer
 constexpr uint32 AV_MINE_SQUAD_COMMIT_MS = 120000;  // the squad keeps going in this long after it was last ready
 
 // The route to the boss leaves the rally area, which drops the ready count, so a squad that re-checked it would turn
@@ -1833,26 +1835,35 @@ bool BGTactics::Execute(Event /*event*/)
                 PositionInfo mineBossPos = posMap["bg mine boss"];
                 if (mineBossPos.isSet())
                 {
-                    PathGenerator path(bot);
-                    path.CalculatePath(mineBossPos.x, mineBossPos.y, mineBossPos.z);
-                    uint32 const pathType = static_cast<uint32>(path.GetPathType());
-                    bool const fullRoute = (pathType & PATHFIND_NORMAL) &&
-                                           !(pathType & (PATHFIND_INCOMPLETE | PATHFIND_NOPATH | PATHFIND_SHORT));
+                    bool fullRoute = false;
+                    if (bot->GetExactDist2d(mineBossPos.x, mineBossPos.y) < AV_MINE_ROUTE_CHECK_RANGE)
+                    {
+                        PathGenerator path(bot);
+                        path.CalculatePath(mineBossPos.x, mineBossPos.y, mineBossPos.z);
+                        uint32 const pathType = static_cast<uint32>(path.GetPathType());
+                        fullRoute = (pathType & PATHFIND_NORMAL) &&
+                                    !(pathType & (PATHFIND_INCOMPLETE | PATHFIND_NOPATH | PATHFIND_SHORT |
+                                                  PATHFIND_NOT_USING_PATH));
+                    }
+
+                    if (fullRoute)
+                    {
+                        posMap["bg objective"] = mineBossPos;
+                        return moveToObjective(true);
+                    }
 
                     // A member still too far out for a full route heads for the rally point first; the waypoint
-                    // routes lead there, and from there the pathfinder reaches the boss.
-                    if (fullRoute)
-                        posMap["bg objective"] = mineBossPos;
-                    else
+                    // routes lead there, and from there the pathfinder reaches the boss. One already inside the
+                    // cave keeps the boss as its objective.
+                    uint32 const mineArea =
+                        (bot->GetTeamId() == TEAM_HORDE) ? AV_AREA_COLDTOOTH_MINE : AV_AREA_IRONDEEP_MINE;
+                    if (bot->GetAreaId() != mineArea || bot->IsOutdoors())
                     {
                         Position const& rally =
                             (bot->GetTeamId() == TEAM_HORDE) ? AV_MINE_RALLY_SOUTH : AV_MINE_RALLY_NORTH;
                         posMap["bg objective"].Set(rally.GetPositionX(), rally.GetPositionY(), rally.GetPositionZ(),
                                                    bot->GetMapId());
                     }
-
-                    if (fullRoute)
-                        return moveToObjective(true);
                 }
             }
 
@@ -2374,11 +2385,13 @@ bool BGTactics::selectObjective(bool reset)
                 uint32 ownCounter = bot->GetGUID().GetCounter();
                 uint32 ownHash = stableHash(ownCounter, 8);
                 uint32 lowerBots = 0;
+                uint32 teamBots = 1;  // this bot
                 for (auto const& [guid, player] : bg->GetPlayers())
                 {
                     if (!player || player == bot || player->GetTeamId() != team || !GET_PLAYERBOT_AI(player))
                         continue;
 
+                    ++teamBots;
                     uint32 hash = stableHash(guid.GetCounter(), 8);
                     if (hash < ownHash || (hash == ownHash && guid.GetCounter() < ownCounter))
                         ++lowerBots;
@@ -2405,7 +2418,9 @@ bool BGTactics::selectObjective(bool reset)
 
                         // Inside the cave, keep fighting; outside, go in once the squad is there (one straggler allowed)
                         bool insideMine = bot->GetAreaId() == mineArea && !bot->IsOutdoors();
-                        uint32 needed = std::min(AV_MINE_SQUAD_READY, squadSize - 1);
+                        // A team with fewer bots than squadSize uses all of them
+                        uint32 const squadCount = std::min(squadSize, teamBots);
+                        uint32 needed = std::clamp<uint32>(squadCount - 1, 1, AV_MINE_SQUAD_READY);
                         if (IsAvMineSquadCommitted(bg->GetInstanceID(), team, atMine >= needed) || insideMine)
                         {
                             BgObjective = mineBoss;
@@ -2416,7 +2431,7 @@ bool BGTactics::selectObjective(bool reset)
                         else
                         {
                             float rx, ry, rz;
-                            bot->GetRandomPoint(rally, 5.0f, rx, ry, rz);
+                            bot->GetRandomPoint(rally, AV_MINE_RALLY_SCATTER, rx, ry, rz);
                             pos.Set(rx, ry, rz, bot->GetMapId());
                             posMap["bg objective"] = pos;
                             return true;
