@@ -11,8 +11,8 @@
 #include "LastMovementValue.h"
 #include "PlayerbotAIConfig.h"
 #include <cmath>
+#include <vector>
 
-class DynamicObject;
 class Player;
 class PlayerbotAI;
 class Unit;
@@ -69,6 +69,8 @@ protected:
     Position BestPositionForMeleeToFlee(Position pos, float radius);
     Position BestPositionForRangedToFlee(Position pos, float radius);
     bool FleePosition(Position pos, float radius, uint32 minInterval = 1000);
+    bool StepOutOfArea(Position const& centre, float radius, std::vector<Position> const& otherAreas = {},
+                       uint32 minInterval = 1000);
     void RecordFlee(Position const& pos, float radius, float angle);
     bool CheckLastFlee(float curAngle, std::list<FleeInfo>& infoList);
 
@@ -120,7 +122,6 @@ public:
 
 protected:
     bool AvoidAuraWithDynamicObj();
-    bool StepOutOfCloud(DynamicObject* cloud);
     bool AvoidGameObjectWithDamage();
     bool AvoidUnitWithDamageAura();
     time_t lastTellTimer = 0;
