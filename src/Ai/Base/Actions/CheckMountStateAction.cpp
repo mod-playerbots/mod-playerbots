@@ -370,7 +370,7 @@ void CheckMountStateAction::LoadPreferredMounts()
         Field* fields = result->Fetch();
         uint32 guid = fields[0].Get<uint32>();
         uint32 spellId = fields[1].Get<uint32>();
-        uint32 mountType = fields[2].Get<uint32>();
+        uint8 mountType = fields[2].Get<uint8>();
 
         if (mountType == 0)
             mountCache[guid].groundMounts.push_back(spellId);

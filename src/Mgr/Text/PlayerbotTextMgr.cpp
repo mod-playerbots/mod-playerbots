@@ -83,7 +83,7 @@ void PlayerbotTextMgr::LoadBotTextChance()
             {
                 Field* fields = results->Fetch();
                 std::string name = fields[0].Get<std::string>();
-                uint32 probability = fields[1].Get<uint32>();
+                uint32 probability = static_cast<uint32>(fields[1].Get<uint64>());
 
                 botTextChance[name] = probability;
             } while (results->NextRow());
