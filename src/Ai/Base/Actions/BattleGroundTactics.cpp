@@ -94,7 +94,9 @@ Position const AV_MINE_SOUTH_3 = {-920.228f, -134.594f, 61.478f, 0.0f};
 Position const AV_MINE_NORTH_1 = {822.477f, -456.782f, 48.569f, 0.0f};
 Position const AV_MINE_NORTH_2 = {966.362f, -446.570f, 56.641f, 0.0f};
 Position const AV_MINE_NORTH_3 = {952.081f, -335.073f, 63.579f, 0.0f};
-Position const AV_MINE_RALLY_NORTH = {792.851f, -487.656f, 99.622f, 0.0f};   // outside Irondeep Mine
+// On vPath_AV_AllianceCrossroad1_To_AllianceMine, about 29 yd before the mine entrance; the pathfinder has a full route
+// to the boss from here (it has none from the Alliance start cave)
+Position const AV_MINE_RALLY_NORTH = {783.734f, -342.468f, 61.410f, 0.0f};   // outside Irondeep Mine
 Position const AV_MINE_RALLY_SOUTH = {-955.916f, -280.473f, 63.588f, 0.0f};  // outside Coldtooth Mine
 Position const EY_WAITING_POS_HORDE = {1809.102f, 1540.854f, 1267.142f, 0.0f};
 Position const EY_WAITING_POS_ALLIANCE = {2523.827f, 1596.915f, 1270.204f, 0.0f};
