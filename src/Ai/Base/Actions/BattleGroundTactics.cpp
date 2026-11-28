@@ -1820,8 +1820,43 @@ bool BGTactics::Execute(Event /*event*/)
         }
 
         if (!moveToObjective(false))
+        {
+            // An AV mine squad that is going in follows the pathfinder to the boss whenever it has a full route.
+            // The waypoint routes stop at the mine entrance, which can be further from the boss than
+            // moveToObjective() accepts; selectObjectiveWp() would then pick the next route by straight-line
+            // distance, through the mountain, and lead the squad away from the mine.
+            if (bgType == BATTLEGROUND_AV)
+            {
+                PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
+                PositionInfo mineBossPos = posMap["bg mine boss"];
+                if (mineBossPos.isSet())
+                {
+                    PathGenerator path(bot);
+                    path.CalculatePath(mineBossPos.x, mineBossPos.y, mineBossPos.z);
+                    uint32 const pathType = static_cast<uint32>(path.GetPathType());
+                    bool const fullRoute = (pathType & PATHFIND_NORMAL) &&
+                                           !(pathType & (PATHFIND_INCOMPLETE | PATHFIND_NOPATH | PATHFIND_SHORT));
+
+                    // A member still too far out for a full route heads for the rally point first; the waypoint
+                    // routes lead there, and from there the pathfinder reaches the boss.
+                    if (fullRoute)
+                        posMap["bg objective"] = mineBossPos;
+                    else
+                    {
+                        Position const& rally =
+                            (bot->GetTeamId() == TEAM_HORDE) ? AV_MINE_RALLY_SOUTH : AV_MINE_RALLY_NORTH;
+                        posMap["bg objective"].Set(rally.GetPositionX(), rally.GetPositionY(), rally.GetPositionZ(),
+                                                   bot->GetMapId());
+                    }
+
+                    if (fullRoute)
+                        return moveToObjective(true);
+                }
+            }
+
             if (!selectObjectiveWp(*vPaths))
                 return moveToObjective(true);
+        }
 
         // bot with flag should only move to objective
         if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) ||
@@ -2188,6 +2223,9 @@ bool BGTactics::selectObjective(bool reset)
     if (pos.isSet() && !reset)
         return false;
 
+    // Set again below only while this bot is an AV mine squad member heading for the mine boss
+    posMap["bg mine boss"].Reset();
+
     WorldObject* BgObjective = nullptr;
 
     BattlegroundTypeId bgType = bg->GetBgTypeID();
@@ -2367,7 +2405,12 @@ bool BGTactics::selectObjective(bool reset)
                         bool insideMine = bot->GetAreaId() == mineArea && !bot->IsOutdoors();
                         uint32 needed = std::min(AV_MINE_SQUAD_READY, squadSize - 1);
                         if (IsAvMineSquadCommitted(bg->GetInstanceID(), team, atMine >= needed) || insideMine)
+                        {
                             BgObjective = mineBoss;
+                            // Lets "move to objective" follow the pathfinder into the mine (see Execute)
+                            posMap["bg mine boss"].Set(mineBoss->GetPositionX(), mineBoss->GetPositionY(),
+                                                       mineBoss->GetPositionZ(), mineBoss->GetMapId());
+                        }
                         else
                         {
                             float rx, ry, rz;
