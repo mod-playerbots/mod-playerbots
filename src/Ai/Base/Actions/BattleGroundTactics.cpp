@@ -42,6 +42,7 @@
 #include <mutex>
 #include <optional>
 #include <span>
+#include <unordered_map>
 
 // common bg positions
 Position const WS_WAITING_POS_HORDE_1 = {944.981f, 1423.478f, 345.434f, 6.18f};
@@ -93,6 +94,10 @@ Position const AV_MINE_SOUTH_3 = {-920.228f, -134.594f, 61.478f, 0.0f};
 Position const AV_MINE_NORTH_1 = {822.477f, -456.782f, 48.569f, 0.0f};
 Position const AV_MINE_NORTH_2 = {966.362f, -446.570f, 56.641f, 0.0f};
 Position const AV_MINE_NORTH_3 = {952.081f, -335.073f, 63.579f, 0.0f};
+// On vPath_AV_AllianceCrossroad1_To_AllianceMine, about 29 yd before the mine entrance; the pathfinder has a full route
+// to the boss from here (it has none from the Alliance start cave)
+Position const AV_MINE_RALLY_NORTH = {783.734f, -342.468f, 61.410f, 0.0f};   // outside Irondeep Mine
+Position const AV_MINE_RALLY_SOUTH = {-955.916f, -280.473f, 63.588f, 0.0f};  // outside Coldtooth Mine
 Position const EY_WAITING_POS_HORDE = {1809.102f, 1540.854f, 1267.142f, 0.0f};
 Position const EY_WAITING_POS_ALLIANCE = {2523.827f, 1596.915f, 1270.204f, 0.0f};
 Position const EY_FLAG_RETURN_POS_RETREAT_HORDE = {1885.529f, 1532.157f, 1200.635f, 0.0f};
@@ -115,6 +120,45 @@ Position const IC_CANNON_POS_ALLIANCE2 = {425.525f, -779.538f, 87.717f, 5.88f};
 
 Position const IC_GATE_ATTACK_POS_HORDE = {478.3f, -830.2f, 40.0f, 0.0f};  // z from the map at runtime
 Position const IC_GATE_ATTACK_POS_ALLIANCE = {1091.273f, -763.619f, 42.352f, 0.0f};
+
+constexpr uint32 AV_AREA_IRONDEEP_MINE = 2957;
+constexpr uint32 AV_AREA_COLDTOOTH_MINE = 2963;
+constexpr uint32 AV_MINE_SQUAD_TEAM_SHARE = 8;  // one mine squad member per this many players on the team
+constexpr uint32 AV_MINE_SQUAD_MIN = 3;
+constexpr uint32 AV_MINE_SQUAD_MAX = 5;
+constexpr uint32 AV_MINE_SQUAD_READY = 3;       // teammates at the mine before the squad goes in
+constexpr float AV_MINE_RALLY_RADIUS = 35.0f;
+constexpr float AV_MINE_RALLY_SCATTER = 5.0f;
+constexpr float AV_MINE_ROUTE_CHECK_RANGE = 300.0f;  // route check range from the mine boss; both rallies are closer
+constexpr uint32 AV_MINE_SQUAD_COMMIT_MS = 120000;  // the squad keeps going in this long after it was last ready
+
+// The route to the boss leaves the rally area, which drops the ready count, so a squad that re-checked it would turn
+// back. Reads and refreshes the last time this team's squad was ready; shared because bot AI runs on map threads.
+static bool IsAvMineSquadCommitted(uint32 instanceId, TeamId team, bool ready)
+{
+    static std::mutex commitLock;
+    static std::unordered_map<uint64, uint32> lastReadyMs;
+
+    uint64 const key = (static_cast<uint64>(instanceId) << 1) | (team == TEAM_HORDE ? 1 : 0);
+    uint32 const now = getMSTime();
+
+    std::lock_guard<std::mutex> guard(commitLock);
+    if (ready)
+    {
+        lastReadyMs[key] = now;
+        return true;
+    }
+
+    auto const it = lastReadyMs.find(key);
+    if (it == lastReadyMs.end())
+        return false;
+
+    if (getMSTimeDiff(it->second, now) < AV_MINE_SQUAD_COMMIT_MS)
+        return true;
+
+    lastReadyMs.erase(it);
+    return false;
+}
 
 constexpr uint8 WSG_DEFENDER_ROLES_VS_DEFENSIVE = 2;
 constexpr float WSG_CLIFF_HEIGHT_TOLERANCE = 10.0f;
@@ -1780,8 +1824,52 @@ bool BGTactics::Execute(Event /*event*/)
         }
 
         if (!moveToObjective(false))
+        {
+            // An AV mine squad that is going in follows the pathfinder to the boss whenever it has a full route.
+            // The waypoint routes stop at the mine entrance, which can be further from the boss than
+            // moveToObjective() accepts; selectObjectiveWp() would then pick the next route by straight-line
+            // distance, through the mountain, and lead the squad away from the mine.
+            if (bgType == BATTLEGROUND_AV)
+            {
+                PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
+                PositionInfo mineBossPos = posMap["bg mine boss"];
+                if (mineBossPos.isSet())
+                {
+                    bool fullRoute = false;
+                    if (bot->GetExactDist2d(mineBossPos.x, mineBossPos.y) < AV_MINE_ROUTE_CHECK_RANGE)
+                    {
+                        PathGenerator path(bot);
+                        path.CalculatePath(mineBossPos.x, mineBossPos.y, mineBossPos.z);
+                        uint32 const pathType = static_cast<uint32>(path.GetPathType());
+                        fullRoute = (pathType & PATHFIND_NORMAL) &&
+                                    !(pathType & (PATHFIND_INCOMPLETE | PATHFIND_NOPATH | PATHFIND_SHORT |
+                                                  PATHFIND_NOT_USING_PATH));
+                    }
+
+                    if (fullRoute)
+                    {
+                        posMap["bg objective"] = mineBossPos;
+                        return moveToObjective(true);
+                    }
+
+                    // A member still too far out for a full route heads for the rally point first; the waypoint
+                    // routes lead there, and from there the pathfinder reaches the boss. One already inside the
+                    // cave keeps the boss as its objective.
+                    uint32 const mineArea =
+                        (bot->GetTeamId() == TEAM_HORDE) ? AV_AREA_COLDTOOTH_MINE : AV_AREA_IRONDEEP_MINE;
+                    if (bot->GetAreaId() != mineArea || bot->IsOutdoors())
+                    {
+                        Position const& rally =
+                            (bot->GetTeamId() == TEAM_HORDE) ? AV_MINE_RALLY_SOUTH : AV_MINE_RALLY_NORTH;
+                        posMap["bg objective"].Set(rally.GetPositionX(), rally.GetPositionY(), rally.GetPositionZ(),
+                                                   bot->GetMapId());
+                    }
+                }
+            }
+
             if (!selectObjectiveWp(*vPaths))
                 return moveToObjective(true);
+        }
 
         // bot with flag should only move to objective
         if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) ||
@@ -2148,6 +2236,9 @@ bool BGTactics::selectObjective(bool reset)
     if (pos.isSet() && !reset)
         return false;
 
+    // Set again below only while this bot is an AV mine squad member heading for the mine boss
+    posMap["bg mine boss"].Reset();
+
     WorldObject* BgObjective = nullptr;
 
     BattlegroundTypeId bgType = bg->GetBgTypeID();
@@ -2285,29 +2376,67 @@ bool BGTactics::selectObjective(bool reset)
             uint32 bossGatherCount = std::clamp<uint32>(bg->GetPlayersCountByTeam(team) / 2, 5, 20);
 
             // --- Mine Capture ---
-            // The two bots of the team with the lowest roll take our side's mine, and go back whenever it is lost
+            // A squad of our lowest-roll bots gathers outside our side's mine and goes in once enough of them are there
             BG_AV_OTHER_VALUES mineType = (team == TEAM_HORDE) ? AV_SOUTH_MINE : AV_NORTH_MINE;
             if (!BgObjective && av->GetMineOwner(mineType) != team)
             {
+                uint32 squadSize = std::clamp<uint32>(bg->GetPlayersCountByTeam(team) / AV_MINE_SQUAD_TEAM_SHARE,
+                                                      AV_MINE_SQUAD_MIN, AV_MINE_SQUAD_MAX);
                 uint32 ownCounter = bot->GetGUID().GetCounter();
                 uint32 ownHash = stableHash(ownCounter, 8);
                 uint32 lowerBots = 0;
+                uint32 teamBots = 1;  // this bot
                 for (auto const& [guid, player] : bg->GetPlayers())
                 {
                     if (!player || player == bot || player->GetTeamId() != team || !GET_PLAYERBOT_AI(player))
                         continue;
 
+                    ++teamBots;
                     uint32 hash = stableHash(guid.GetCounter(), 8);
                     if (hash < ownHash || (hash == ownHash && guid.GetCounter() < ownCounter))
                         ++lowerBots;
                 }
 
-                if (lowerBots < 2)
+                if (lowerBots < squadSize)
                 {
                     uint32 bossEntry = (team == TEAM_HORDE) ? AV_CPLACE_MINE_S_3 : AV_CPLACE_MINE_N_3;
                     Creature* mineBoss = bg->GetBGCreature(bossEntry);
                     if (mineBoss && mineBoss->IsAlive())
-                        BgObjective = mineBoss;
+                    {
+                        uint32 mineArea = (team == TEAM_HORDE) ? AV_AREA_COLDTOOTH_MINE : AV_AREA_IRONDEEP_MINE;
+                        Position const& rally = (team == TEAM_HORDE) ? AV_MINE_RALLY_SOUTH : AV_MINE_RALLY_NORTH;
+
+                        // Teammates at the rally point or anywhere in the mine area, including any already inside
+                        uint32 atMine = 0;
+                        for (auto const& ref : bg->GetBgMap()->GetPlayers())
+                        {
+                            Player* player = ref.GetSource();
+                            if (player && player->IsAlive() && player->GetTeamId() == team &&
+                                (player->GetAreaId() == mineArea || player->GetExactDist2d(rally) < AV_MINE_RALLY_RADIUS))
+                                ++atMine;
+                        }
+
+                        // Inside the cave, keep fighting; outside, go in once the squad is there (one straggler allowed)
+                        bool insideMine = bot->GetAreaId() == mineArea && !bot->IsOutdoors();
+                        // A team with fewer bots than squadSize uses all of them
+                        uint32 const squadCount = std::min(squadSize, teamBots);
+                        uint32 needed = std::clamp<uint32>(squadCount - 1, 1, AV_MINE_SQUAD_READY);
+                        if (IsAvMineSquadCommitted(bg->GetInstanceID(), team, atMine >= needed) || insideMine)
+                        {
+                            BgObjective = mineBoss;
+                            // Lets "move to objective" follow the pathfinder into the mine (see Execute)
+                            posMap["bg mine boss"].Set(mineBoss->GetPositionX(), mineBoss->GetPositionY(),
+                                                       mineBoss->GetPositionZ(), mineBoss->GetMapId());
+                        }
+                        else
+                        {
+                            float rx, ry, rz;
+                            bot->GetRandomPoint(rally, AV_MINE_RALLY_SCATTER, rx, ry, rz);
+                            pos.Set(rx, ry, rz, bot->GetMapId());
+                            posMap["bg objective"] = pos;
+                            return true;
+                        }
+                    }
                     else
                     {
                         Position const* minePositions[] = {(team == TEAM_HORDE) ? &AV_MINE_SOUTH_1 : &AV_MINE_NORTH_1,
